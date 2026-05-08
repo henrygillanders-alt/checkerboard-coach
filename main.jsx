@@ -2,289 +2,263 @@ import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
-const CATEGORIES = [
-  { id: 'atl-btl', title: 'ATL / BTL', subtitle: 'Above & below line', color: 'blue',
-    games: ['Above the Line Drives', 'Below the Line Pressure', 'Tape Height Control'] },
-  { id: 't-zone', title: 'T-ZONE', subtitle: 'T-Zone games', color: 'amber',
-    games: ['Return to T Score', 'Opponent Off T Bonus', 'T-Zone Volley Finish'] },
-  { id: 'classic', title: 'CLASSIC CONDITIONED', subtitle: 'Classic conditioned', color: 'green',
-    games: ['Serve Box Length', 'Straight Drive Constraint', 'Boast and Recover'] },
-  { id: 'tactical', title: 'TACTICAL GAMES', subtitle: 'Tactical formats', color: 'orange',
-    games: ['Route Breaker', 'Pressure Side Change', 'Volley Intercept'] },
-  { id: 'cb-tactical', title: 'CB TACTICAL', subtitle: 'Tactical patterns', color: 'green',
-    games: ['[6-4] then [8-1]', '[5-3] then [7-2]', 'Triple Challenge'] },
-  { id: 'cb-volleys', title: 'CB VOLLEYS', subtitle: 'Volley games', color: 'teal',
-    games: ['Volley Singles', 'Volley Pairs', 'Volley Clean Finish'] },
-  { id: 'cb-blind', title: 'CB BLIND', subtitle: 'Blind challenges', color: 'purple',
-    games: ['Blind Pair', 'Blind Triple', 'Hidden Finish'] },
-  { id: 'double-bounce', title: 'DOUBLE BOUNCE', subtitle: 'Double bounce', color: 'green',
-    games: ['Incoming Double Bounce', 'Winner Loses Bounce', 'Double Bounce Pressure'] },
+const GAMES = [
+  {
+    id: 't-zone-return',
+    category: 'T-Zone',
+    title: 'Return to T Score',
+    level: 'Junior beginner to Professional',
+    purpose: 'Build awareness of recovery to the T after every shot.',
+    setup: 'Normal rally. Mark or define the T-zone clearly.',
+    scoring: 'Win rally +1. Each time opponent fails to recover to T before your next contact, you score +1.',
+    coach: 'Look for players recognising opponent position before choosing the next shot.',
+    progressions: ['Beginner: generous T-zone', 'Intermediate: smaller T-zone', 'Performance: bonus only if next shot creates pressure']
+  },
+  {
+    id: 't-zone-off-t-finish',
+    category: 'T-Zone',
+    title: 'Opponent Off T Bonus',
+    level: 'Intermediate to Professional',
+    purpose: 'Reward recognising when the opponent is not recovered.',
+    setup: 'Normal rally. T-zone is marked or agreed.',
+    scoring: 'Win rally +1. +3 bonus if the winning shot is played while opponent is outside the T-zone.',
+    coach: 'Do not force a winner. The aim is to notice the affordance when it appears.',
+    progressions: ['Level 4: finish within 4 shots after opponent off T', 'Level 5: finish within 2 shots']
+  },
+  {
+    id: 'cb-single',
+    category: 'Checkerboard',
+    title: 'CB Singles',
+    level: 'Level 1',
+    purpose: 'Introduce one-shot checkerboard targeting.',
+    setup: 'Coach calls or player draws one checkerboard target.',
+    scoring: 'Win rally +1. Complete single challenge +1. Clean winner bonus +2 sits on top.',
+    coach: 'Keep the challenge simple enough that the player can still play a representative rally.',
+    progressions: ['Use floor zones first', 'Add wall zones later', 'Add opponent off-T condition at Level 3']
+  },
+  {
+    id: 'cb-pair',
+    category: 'Checkerboard',
+    title: 'CB Pairs',
+    level: 'Level 2 to 5',
+    purpose: 'Train tactical two-shot combinations.',
+    setup: 'Player must complete a nominated pair such as [6-4] + [8-1].',
+    scoring: 'Complete pair +2. If rally ends on second shot of pair, total is rally win + pair = 3. Win after pair +3 bonus.',
+    coach: 'Watch whether the first shot actually creates the affordance for the second.',
+    progressions: ['Level 3: opponent must be off T', 'Level 4: win within 4 shots', 'Level 5: win within 2 shots']
+  },
+  {
+    id: 'cb-blind-pair',
+    category: 'CB Blind',
+    title: 'Blind Pair Challenge',
+    level: 'Intermediate to Professional',
+    purpose: 'Train disguised tactical intention and decision-making.',
+    setup: 'Each player secretly receives a pair challenge. Opponent does not know the target.',
+    scoring: 'Win rally +1. Complete pair +2. Win after challenge +3. Clean winner +2.',
+    coach: 'Ensure players still respond to the rally, not blindly force the card.',
+    progressions: ['Intermediate: no movement condition', 'Elite: opponent off T required', 'Professional: convert within 2 shots']
+  },
+  {
+    id: 'double-bounce-winner-loses',
+    category: 'Double Bounce',
+    title: 'Winner Loses a Bounce',
+    level: 'Junior beginner to Intermediate',
+    purpose: 'Balance rallies and create adaptive pressure.',
+    setup: 'Incoming player starts with double bounce. Winner loses one bounce after every rally they win.',
+    scoring: 'Normal rally scoring. Constraint changes after each rally.',
+    coach: 'Good for mixed ability groups because the advantage shifts dynamically.',
+    progressions: ['Limit double bounce to back corners', 'Use only on defensive retrievals', 'Add target zones']
+  },
+  {
+    id: 'classic-clean-winner',
+    category: 'Classic Conditioned',
+    title: 'Clean Winner Bonus',
+    level: 'All levels',
+    purpose: 'Reward genuine tactical advantage rather than forced errors only.',
+    setup: 'Use with any conditioned game.',
+    scoring: 'Clean winner bonus +2 sits on top of all other scoring.',
+    coach: 'A clean winner means opponent cannot touch the ball with racquet despite trying.',
+    progressions: ['Junior: coach decides', 'Performance: opponent/referee calls honestly']
+  },
+  {
+    id: 'atl-btl-tape',
+    category: 'ATL / BTL',
+    title: 'Tape Height Control',
+    level: 'Beginner to Elite',
+    purpose: 'Train shot height variation using a visual cue.',
+    setup: 'Use tape/visual band on front wall rather than service line where useful.',
+    scoring: 'Point only counts if nominated shot travels above or below the tape as required.',
+    coach: 'Tape is clearer and often more representative than the service line for juniors.',
+    progressions: ['Above tape for length', 'Below tape for pressure', 'Player chooses based on opponent position']
+  }
 ];
+
+const CATEGORIES = ['All', 'T-Zone', 'Checkerboard', 'CB Blind', 'Double Bounce', 'Classic Conditioned', 'ATL / BTL'];
 
 const QUICK = [
-  { id: 'quick-singles', title: 'CB SINGLES', subtitle: 'Single shot challenges', page: 'generator', mode: 'Singles' },
-  { id: 'quick-pairs', title: 'CB PAIRS', subtitle: 'Pair challenges', page: 'generator', mode: 'Pairs' },
-  { id: 'quick-custom', title: 'CUSTOM SESSION', subtitle: 'Build your own', page: 'session' },
-  { id: 'quick-main', title: 'MAIN MENU', subtitle: 'All features & tabs', page: 'library' },
+  { title: 'CB Singles', challenge: '[6-3]', note: 'Single target challenge' },
+  { title: 'CB Pairs', challenge: '[5-4] + [8-1]', note: 'Two-shot tactical chain' },
+  { title: 'CB Triples', challenge: '[6-4] + [8-1] + clean finish', note: 'Advanced challenge' }
 ];
-
-const CHALLENGES = {
-  Singles: ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]'],
-  Pairs: ['[6-4] + [8-1]', '[5-3] + [7-2]', '[6-3] + [8-1]', '[5-4] + [7-2]'],
-  Triples: ['[6-4] + [8-1] + clean finish', '[5-3] + [7-2] + clean finish'],
-};
-
-const LEVELS = [
-  'Level 1: complete a single challenge',
-  'Level 2: complete a pair challenge',
-  'Level 3: complete challenge when opponent is off T',
-  'Level 4: complete challenge and win within 4 shots',
-  'Level 5: complete challenge and win within 2 shots',
-];
-
-function randomFrom(list) {
-  return list[Math.floor(Math.random() * list.length)];
-}
-
-function Header({ onHome, page }) {
-  return (
-    <header className="header">
-      <button className="homeBtn" onClick={onHome}>HOME</button>
-      <div>
-        <div className="eyebrow">SQUASH TACTICAL TRAINING</div>
-        <h1>CHECKERBOARD</h1>
-        <p>Constraints-led coach app · stable navigation build</p>
-      </div>
-      <div className="pageTag">{page}</div>
-    </header>
-  );
-}
-
-function Home({ openCategory, goPage }) {
-  return (
-    <main className="screen">
-      <section className="titleBlock">
-        <h2>Start a Session</h2>
-        <p>Choose a game family or quick-start a Checkerboard challenge.</p>
-      </section>
-
-      <div className="grid three">
-        {CATEGORIES.map(cat => (
-          <button key={cat.id} className={`tile ${cat.color}`} onClick={() => openCategory(cat.id)}>
-            <strong>{cat.title}</strong>
-            <span>{cat.subtitle}</span>
-          </button>
-        ))}
-        <button className="tile purple" onClick={() => goPage('library')}>
-          <strong>ALL GAMES</strong>
-          <span>Browse everything</span>
-        </button>
-      </div>
-
-      <h3 className="sectionLabel">Quick Start</h3>
-      <div className="grid two">
-        {QUICK.map(item => (
-          <button key={item.id} className="tile blue" onClick={() => goPage(item.page, item.mode)}>
-            <strong>{item.title}</strong>
-            <span>{item.subtitle}</span>
-          </button>
-        ))}
-      </div>
-    </main>
-  );
-}
-
-function Library({ openCategory, openGame, onHome }) {
-  return (
-    <main className="screen">
-      <div className="topline">
-        <h2>Game Library</h2>
-        <button className="secondary" onClick={onHome}>Return Home</button>
-      </div>
-      <div className="grid two">
-        {CATEGORIES.map(cat => (
-          <button key={cat.id} className={`tile ${cat.color}`} onClick={() => openCategory(cat.id)}>
-            <strong>{cat.title}</strong>
-            <span>{cat.games.length} games</span>
-          </button>
-        ))}
-      </div>
-      <div className="panel">
-        <h3>All Games</h3>
-        {CATEGORIES.flatMap(cat => cat.games.map(game => ({ cat, game }))).map(({cat, game}) => (
-          <button key={cat.id + game} className="listRow" onClick={() => openGame(cat.id, game)}>
-            <span>{game}</span><em>{cat.title}</em>
-          </button>
-        ))}
-      </div>
-    </main>
-  );
-}
-
-function Category({ category, openGame, onLibrary, onHome }) {
-  return (
-    <main className="screen">
-      <div className="topline">
-        <div>
-          <h2>{category.title}</h2>
-          <p>{category.subtitle}</p>
-        </div>
-        <div className="actions">
-          <button className="secondary" onClick={onLibrary}>Library</button>
-          <button className="secondary" onClick={onHome}>Home</button>
-        </div>
-      </div>
-      <div className="panel">
-        {category.games.map(game => (
-          <button key={game} className="listRow" onClick={() => openGame(category.id, game)}>
-            <span>{game}</span><em>Open game card</em>
-          </button>
-        ))}
-      </div>
-    </main>
-  );
-}
-
-function GameDetail({ category, game, onBack, onHome }) {
-  return (
-    <main className="screen">
-      <div className="topline">
-        <div>
-          <h2>{game}</h2>
-          <p>{category.title}</p>
-        </div>
-        <div className="actions">
-          <button className="secondary" onClick={onBack}>Back</button>
-          <button className="secondary" onClick={onHome}>Home</button>
-        </div>
-      </div>
-
-      <div className="panel">
-        <h3>Coach Card</h3>
-        <p><strong>Set-up:</strong> Start with a normal rally. Add the constraint clearly before the rally begins.</p>
-        <p><strong>Scoring:</strong> Win rally +1. Complete challenge for bonus. Clean winner sits on top.</p>
-        <p><strong>Level 4:</strong> must convert within 4 shots. <strong>Level 5:</strong> must convert within 2 shots.</p>
-      </div>
-    </main>
-  );
-}
-
-function Generator({ initialMode, onHome }) {
-  const [mode, setMode] = useState(initialMode || 'Singles');
-  const [level, setLevel] = useState(1);
-  const [challenge, setChallenge] = useState(randomFrom(CHALLENGES[mode]));
-
-  function generate(nextMode = mode) {
-    setChallenge(randomFrom(CHALLENGES[nextMode]));
-  }
-
-  function changeMode(nextMode) {
-    setMode(nextMode);
-    generate(nextMode);
-  }
-
-  return (
-    <main className="screen">
-      <div className="topline">
-        <h2>Challenge Generator</h2>
-        <button className="secondary" onClick={onHome}>Home</button>
-      </div>
-
-      <div className="panel bigChallenge">
-        <div className="challenge">{challenge}</div>
-        <p>{LEVELS[level - 1]}</p>
-      </div>
-
-      <div className="grid three">
-        {['Singles', 'Pairs', 'Triples'].map(m => (
-          <button key={m} className={m === mode ? 'tile active' : 'tile'} onClick={() => changeMode(m)}>
-            <strong>{m}</strong>
-            <span>challenge mode</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="levelRow">
-        {[1,2,3,4,5].map(n => (
-          <button key={n} className={n === level ? 'level active' : 'level'} onClick={() => setLevel(n)}>L{n}</button>
-        ))}
-      </div>
-
-      <button className="primary" onClick={() => generate()}>Generate New Challenge</button>
-    </main>
-  );
-}
-
-function SessionBuilder({ onHome }) {
-  return (
-    <main className="screen">
-      <div className="topline">
-        <h2>Session Builder</h2>
-        <button className="secondary" onClick={onHome}>Home</button>
-      </div>
-      <div className="panel">
-        <p>Version 1 keeps this simple: pick one warm-up game, one tactical challenge, one pressure finish.</p>
-        <ol>
-          <li>Warm-up: CB Singles</li>
-          <li>Main block: CB Pairs</li>
-          <li>Pressure block: Level 4 or Level 5 conversion</li>
-        </ol>
-      </div>
-    </main>
-  );
-}
 
 function App() {
   const [page, setPage] = useState('home');
-  const [categoryId, setCategoryId] = useState(null);
-  const [game, setGame] = useState(null);
-  const [generatorMode, setGeneratorMode] = useState('Singles');
+  const [category, setCategory] = useState('All');
+  const [selectedGame, setSelectedGame] = useState(null);
 
-  const category = useMemo(() => CATEGORIES.find(c => c.id === categoryId), [categoryId]);
+  const filteredGames = useMemo(() => {
+    if (category === 'All') return GAMES;
+    return GAMES.filter(g => g.category === category);
+  }, [category]);
 
-  function goHome() {
+  function home() {
     setPage('home');
-    setCategoryId(null);
-    setGame(null);
-    setGeneratorMode('Singles');
+    setCategory('All');
+    setSelectedGame(null);
     window.scrollTo(0, 0);
   }
 
-  function goPage(nextPage, mode) {
-    setCategoryId(null);
-    setGame(null);
-    if (mode) setGeneratorMode(mode);
-    setPage(nextPage);
+  function openLibrary(cat = 'All') {
+    setCategory(cat);
+    setSelectedGame(null);
+    setPage('library');
     window.scrollTo(0, 0);
   }
 
-  function openCategory(id) {
-    setGame(null);
-    setCategoryId(id);
-    setPage('category');
-    window.scrollTo(0, 0);
-  }
-
-  function openGame(catId, gameName) {
-    setCategoryId(catId);
-    setGame(gameName);
+  function openGame(game) {
+    setSelectedGame(game);
     setPage('game');
     window.scrollTo(0, 0);
   }
 
-  const pageLabel = page === 'home' ? 'Home' : page;
-
   return (
-    <>
-      <Header onHome={goHome} page={pageLabel} />
-      {page === 'home' && <Home openCategory={openCategory} goPage={goPage} />}
-      {page === 'library' && <Library openCategory={openCategory} openGame={openGame} onHome={goHome} />}
-      {page === 'category' && category && <Category category={category} openGame={(g) => openGame(category.id, g)} onLibrary={() => goPage('library')} onHome={goHome} />}
-      {page === 'game' && category && game && <GameDetail category={category} game={game} onBack={() => openCategory(category.id)} onHome={goHome} />}
-      {page === 'generator' && <Generator initialMode={generatorMode} onHome={goHome} />}
-      {page === 'session' && <SessionBuilder onHome={goHome} />}
-      <footer>Checkerboard Coach · Stabilised navigation v3</footer>
-    </>
+    <div>
+      <header className="hero">
+        <button className="home" onClick={home}>HOME</button>
+        <div>
+          <div className="eyebrow">SQUASH TACTICAL TRAINING</div>
+          <h1>Checkerboard Coach</h1>
+          <p>PHASE 2 - GAME LIBRARY STARTED</p>
+        </div>
+      </header>
+
+      {page === 'home' && (
+        <main className="container">
+          <h2>Courtside Checkerboard Tool</h2>
+          <p className="lead">Stable navigation. First real games added. Match analysis kept separate.</p>
+
+          <div className="grid two">
+            <button className="card blue" onClick={() => openLibrary('All')}>
+              <h3>Game Library</h3><p>{GAMES.length} games loaded</p>
+            </button>
+            <button className="card green" onClick={() => setPage('generator')}>
+              <h3>Challenge Generator</h3><p>Singles, pairs, triples</p>
+            </button>
+            <button className="card amber" onClick={() => setPage('scoring')}>
+              <h3>Scoring Protocol</h3><p>Default Checkerboard rules</p>
+            </button>
+            <button className="card purple" onClick={() => setPage('session')}>
+              <h3>Session Builder</h3><p>Pick a simple session flow</p>
+            </button>
+          </div>
+
+          <section className="panel">
+            <h3>Quick Start</h3>
+            {QUICK.map(q => (
+              <button key={q.title} className="row" onClick={() => setPage('generator')}>
+                <strong>{q.title}</strong>
+                <span>{q.note}</span>
+                <em>{q.challenge}</em>
+              </button>
+            ))}
+          </section>
+        </main>
+      )}
+
+      {page === 'library' && (
+        <main className="container">
+          <div className="topline">
+            <h2>Game Library</h2>
+            <button className="secondary" onClick={home}>Return Home</button>
+          </div>
+          <div className="chips">
+            {CATEGORIES.map(c => (
+              <button key={c} className={category === c ? 'chip active' : 'chip'} onClick={() => setCategory(c)}>{c}</button>
+            ))}
+          </div>
+          <section className="panel">
+            {filteredGames.map(game => (
+              <button key={game.id} className="gameRow" onClick={() => openGame(game)}>
+                <div><strong>{game.title}</strong><span>{game.category}</span></div>
+                <em>{game.level}</em>
+              </button>
+            ))}
+          </section>
+        </main>
+      )}
+
+      {page === 'game' && selectedGame && (
+        <main className="container">
+          <div className="topline">
+            <div>
+              <h2>{selectedGame.title}</h2>
+              <p className="lead">{selectedGame.category} - {selectedGame.level}</p>
+            </div>
+            <div className="buttons">
+              <button className="secondary" onClick={() => openLibrary(selectedGame.category)}>Back to Library</button>
+              <button className="secondary" onClick={home}>Home</button>
+            </div>
+          </div>
+          <section className="panel gameCard">
+            <h3>Purpose</h3><p>{selectedGame.purpose}</p>
+            <h3>Set-up</h3><p>{selectedGame.setup}</p>
+            <h3>Scoring</h3><p>{selectedGame.scoring}</p>
+            <h3>Coach Observation</h3><p>{selectedGame.coach}</p>
+            <h3>Progressions</h3>
+            <ul>{selectedGame.progressions.map(p => <li key={p}>{p}</li>)}</ul>
+          </section>
+        </main>
+      )}
+
+      {page === 'generator' && (
+        <main className="container">
+          <div className="topline"><h2>Challenge Generator</h2><button className="secondary" onClick={home}>Home</button></div>
+          <section className="panel">
+            <h3>Starter Challenges</h3>
+            {QUICK.map(q => <div className="challenge" key={q.title}><strong>{q.title}</strong><span>{q.challenge}</span></div>)}
+          </section>
+        </main>
+      )}
+
+      {page === 'scoring' && (
+        <main className="container">
+          <div className="topline"><h2>Default Scoring Protocol</h2><button className="secondary" onClick={home}>Home</button></div>
+          <section className="panel">
+            <p><strong>Win rally:</strong> +1</p>
+            <p><strong>Single challenge:</strong> +1</p>
+            <p><strong>Pair challenge:</strong> +2</p>
+            <p><strong>Triple challenge:</strong> +3</p>
+            <p><strong>Win after challenge:</strong> +3 bonus</p>
+            <p><strong>Clean winner:</strong> +2 bonus sits on top of all scoring</p>
+            <p><strong>Level 4:</strong> convert within 4 shots. <strong>Level 5:</strong> convert within 2 shots.</p>
+          </section>
+        </main>
+      )}
+
+      {page === 'session' && (
+        <main className="container">
+          <div className="topline"><h2>Simple Session Builder</h2><button className="secondary" onClick={home}>Home</button></div>
+          <section className="panel">
+            <ol>
+              <li>Warm-up: Tape Height Control</li>
+              <li>Main tactical block: CB Pairs</li>
+              <li>Pressure block: Opponent Off T Bonus</li>
+              <li>Finish: Clean Winner Bonus overlay</li>
+            </ol>
+          </section>
+        </main>
+      )}
+    </div>
   );
 }
 
