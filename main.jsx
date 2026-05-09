@@ -236,6 +236,8 @@ function Competition(){
   const [format, setFormat] = useState('Round Robin');
   const [players, setPlayers] = useState('');
   const [generated, setGenerated] = useState([]);
+  const [courts, setCourts] = useState(3);
+  const [courtLives, setCourtLives] = useState(20);
 
   function buildCompetition(){
     const names = players
@@ -280,11 +282,28 @@ function Competition(){
     }
 
     if(format === 'Invasion Game'){
+      const groups = Array.from({ length: courts }, () => []);
+
+      names.forEach((name, index) => {
+        groups[index % courts].push(name);
+      });
+
+      const output = groups.map((group, index) => {
+        const playerCount = group.length;
+        if(playerCount === 0){
+          return `Court ${index + 1}: no players allocated`;
+        }
+
+        const livesEach = Math.floor(courtLives / playerCount);
+        const spare = courtLives % playerCount;
+
+        return `Court ${index + 1}: ${group.join(', ')} — ${courtLives} total lives — ${livesEach} lives each${spare ? ` + ${spare} spare lives to allocate` : ''}`;
+      });
+
       setGenerated([
-        '3v3 or 4v4 team format',
-        'Teams invade target zones for points',
-        'Rotate every 5–8 minutes',
-        'Add checkerboard overlays where appropriate'
+        `Invasion setup: ${courts} courts · ${courtLives} lives per court`,
+        ...output,
+        'Principle: every court has the same total lives. Uneven player numbers are balanced by lives per player.'
       ]);
     }
   }
@@ -308,6 +327,28 @@ function Competition(){
           <option>NSL</option>
         </select>
 
+        <div className="competitionControls">
+          <div>
+            <label>Courts</label>
+            <div className="stepper">
+              <button onClick={() => setCourts(Math.max(1, courts - 1))}>−</button>
+              <strong>{courts}</strong>
+              <button onClick={() => setCourts(Math.min(6, courts + 1))}>+</button>
+            </div>
+            <small>Supports 1–6 courts. Default is 3.</small>
+          </div>
+
+          <div>
+            <label>Total Lives Per Court</label>
+            <div className="stepper">
+              <button onClick={() => setCourtLives(Math.max(1, courtLives - 1))}>−</button>
+              <strong>{courtLives}</strong>
+              <button onClick={() => setCourtLives(courtLives + 1)}>+</button>
+            </div>
+            <small>Each court gets the same total lives.</small>
+          </div>
+        </div>
+
         <label>Players</label>
 
         <textarea
@@ -320,6 +361,12 @@ function Competition(){
         <button className="primaryBtn" onClick={buildCompetition}>
           Generate Competition
         </button>
+
+        {format === 'Invasion Game' && (
+          <div className="hintBox">
+            Example: 20 lives per court. Court with 5 players = 4 lives each. Court with 4 players = 5 lives each.
+          </div>
+        )}
       </div>
 
       {generated.length > 0 && (
@@ -362,7 +409,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 38 · Competition foundation</p>
+          <p>Phase 39 · Invasion lives calculator</p>
         </div>
       </header>
 

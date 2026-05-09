@@ -288,3 +288,56 @@ body{
   padding:14px;
   margin-bottom:10px;
 }
+
+.competitionControls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.stepper{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:8px;
+  margin-top:6px;
+}
+
+.stepper button{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:10px;
+  width:44px;
+  height:38px;
+  font-weight:900;
+  font-size:20px;
+}
+
+.stepper strong{
+  font-size:26px;
+  color:#ffd980;
+}
+
+.competitionControls small{
+  display:block;
+  color:#9fb0c8;
+  margin-top:6px;
+}
+
+.hintBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:12px;
+  color:#dce8ff;
+}
+
+@media(max-width:800px){
+  .competitionControls{
+    grid-template-columns:1fr;
+  }
+}
