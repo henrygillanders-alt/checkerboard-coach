@@ -15,7 +15,7 @@ const layers = [
 ];
 
 const activities = [
-  {category:'ATL / BTL', title:'ATL / BTL Tape Height Control', duration:6, format:'King of Court', task:'Use tape cue to shape above-tape and below-tape shot choices.', rationale:'Creates a clear visual affordance for trajectory selection while keeping decisions embedded in live play.', layers:['Clean Winner'], coach:'Use tape as a clear visual cue. Reward recognition of trajectory.',
+  {category:'ATL / BTL', title:'ATL / BTL Tape Height Control', duration:6, format:'King of Court', hasAtlOptions:true, task:'Use tape cue to shape above-tape and below-tape shot choices.', rationale:'Creates a clear visual affordance for trajectory selection while keeping decisions embedded in live play.', layers:['Clean Winner'], coach:'Use tape as a clear visual cue. Reward recognition of trajectory.',
     variations:[
       {name:'1 Shot Below', duration:6, task:'Each rally must include one shot below the tape cue.', rationale:'Introduces trajectory control without overloading the player. One below-tape shot creates a simple perception-action target inside live play.', layers:['Clean Winner']},
       {name:'2 Shots Below', duration:8, task:'Each player must produce two below-tape shots before bonus scoring opens.', rationale:'Increases stability of lower trajectory control while retaining rally realism and tactical decision-making.', layers:['Clean Winner']},
@@ -50,6 +50,60 @@ const activities = [
 
 const categories = ['ATL / BTL','Classic Conditioned','Checkerboard','Technical Constraints','Volley / Intercept','Pressure / Matchplay'];
 
+
+const atlOptions = {
+  belowCount: ['1 shot below', '2 shots below'],
+  side: ['Both sides', 'Right side only', 'Left side only'],
+  shotRule: ['Any shot', 'Must be volley', 'Must be boast', 'Must be consecutive', 'Must be straight drop', 'Must be straight drop + boast'],
+  cbReference: ['None', '[8-1]', '[7-2]', '[6-4]', '[5-3]']
+};
+
+function buildAtlFromOptions(item) {
+  const options = item.atlOptions || {
+    belowCount: '1 shot below',
+    side: 'Both sides',
+    shotRule: 'Any shot',
+    cbReference: 'None'
+  };
+
+  const countText = options.belowCount === '1 shot below'
+    ? 'Player must include 1 below-tape shot in the rally.'
+    : 'Player must include 2 below-tape shots in the rally.';
+
+  const sideText = options.side === 'Both sides'
+    ? ''
+    : ` Constraint applies on ${options.side.replace(' only','').toLowerCase()}.`;
+
+  const ruleText = options.shotRule === 'Any shot'
+    ? ''
+    : ` Below-tape shot rule: ${options.shotRule.toLowerCase()}.`;
+
+  const cbText = options.cbReference === 'None'
+    ? ''
+    : ` Checkerboard reference: ${options.cbReference}.`;
+
+  const tacticalReason = [];
+  if (options.belowCount === '1 shot below') tacticalReason.push('keeps the perceptual load simple and lets the player explore when a low trajectory is available');
+  if (options.belowCount === '2 shots below') tacticalReason.push('requires repeated control of lower trajectory and better rally patience');
+  if (options.side.includes('Right')) tacticalReason.push('narrows the affordance to the right side so decisions become more specific');
+  if (options.side.includes('Left')) tacticalReason.push('narrows the affordance to the left side so decisions become more specific');
+  if (options.shotRule.includes('volley')) tacticalReason.push('links low trajectory to early interception');
+  if (options.shotRule.includes('boast')) tacticalReason.push('connects height control to front-court disruption and angle creation');
+  if (options.shotRule.includes('straight drop')) tacticalReason.push('links the low cue to a front-court finishing or pressure option');
+  if (options.cbReference !== 'None') tacticalReason.push(`uses ${options.cbReference} as a spatial reference so the task has a clear tactical target`);
+
+  return {
+    task: `${countText}${sideText}${ruleText}${cbText}`,
+    rationale: `This ATL / BTL variation ${tacticalReason.join(', ')}.`,
+    layers: [
+      ...(options.shotRule.includes('volley') ? ['Volley Finish'] : []),
+      ...(options.cbReference !== 'None' ? ['Clean Winner'] : []),
+      ...(options.belowCount === '2 shots below' ? ['Opponent Off T'] : []),
+      ...(options.shotRule.includes('boast') ? ['Blind Finish'] : [])
+    ].filter((v, i, a) => a.indexOf(v) === i)
+  };
+}
+
 function cloneActivity(a) {
   return {
     id: Date.now() + Math.random(),
@@ -64,6 +118,8 @@ function cloneActivity(a) {
     progression: 'Duplicate and add/change one layer after 1–2 rotations.',
     variations: a.variations || [],
     selectedVariation: a.variations?.[0]?.name || '',
+    hasAtlOptions: a.hasAtlOptions || false,
+    atlOptions: a.hasAtlOptions ? { belowCount:'1 shot below', side:'Both sides', shotRule:'Any shot', cbReference:'None' } : null,
     editing: false
   };
 }
@@ -123,6 +179,17 @@ function App(){
     setSession(copy);
   }
 
+  function updateAtlOption(i, key, value){
+    const copy = [...session];
+    const item = copy[i];
+    item.atlOptions = {...item.atlOptions, [key]: value};
+    const built = buildAtlFromOptions(item);
+    item.task = built.task;
+    item.rationale = built.rationale;
+    item.layers = built.layers;
+    setSession(copy);
+  }
+
   function removeItem(i){ setSession(session.filter((_,idx) => idx !== i)); }
 
   function moveItem(i, dir){
@@ -166,7 +233,7 @@ function App(){
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
         <h1>Session Builder</h1>
-        <p>Phase 21 · Selectable variations</p>
+        <p>Phase 22 · ATL combination options</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -241,6 +308,12 @@ function App(){
                 {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
               </select>
             </div>}
+            {item.hasAtlOptions && <div className="atlOptions">
+              <div><span>Below</span><select value={item.atlOptions.belowCount} onChange={e => updateAtlOption(i,'belowCount',e.target.value)}>{atlOptions.belowCount.map(o => <option key={o}>{o}</option>)}</select></div>
+              <div><span>Side</span><select value={item.atlOptions.side} onChange={e => updateAtlOption(i,'side',e.target.value)}>{atlOptions.side.map(o => <option key={o}>{o}</option>)}</select></div>
+              <div><span>Rule</span><select value={item.atlOptions.shotRule} onChange={e => updateAtlOption(i,'shotRule',e.target.value)}>{atlOptions.shotRule.map(o => <option key={o}>{o}</option>)}</select></div>
+              <div><span>CB Ref</span><select value={item.atlOptions.cbReference} onChange={e => updateAtlOption(i,'cbReference',e.target.value)}>{atlOptions.cbReference.map(o => <option key={o}>{o}</option>)}</select></div>
+            </div>}
           </div>
           <div className="miniButtons">
             <button onClick={() => moveItem(i,-1)}>↑</button>
@@ -277,6 +350,12 @@ function App(){
           {item.variations?.length > 0 && <label className="wide">Variation<select value={item.selectedVariation} onChange={e => applyVariation(i, e.target.value)}>
             {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
           </select></label>}
+          {item.hasAtlOptions && <div className="wide atlOptions editAtl">
+            <label>Below<select value={item.atlOptions.belowCount} onChange={e => updateAtlOption(i,'belowCount',e.target.value)}>{atlOptions.belowCount.map(o => <option key={o}>{o}</option>)}</select></label>
+            <label>Side<select value={item.atlOptions.side} onChange={e => updateAtlOption(i,'side',e.target.value)}>{atlOptions.side.map(o => <option key={o}>{o}</option>)}</select></label>
+            <label>Rule<select value={item.atlOptions.shotRule} onChange={e => updateAtlOption(i,'shotRule',e.target.value)}>{atlOptions.shotRule.map(o => <option key={o}>{o}</option>)}</select></label>
+            <label>CB Reference<select value={item.atlOptions.cbReference} onChange={e => updateAtlOption(i,'cbReference',e.target.value)}>{atlOptions.cbReference.map(o => <option key={o}>{o}</option>)}</select></label>
+          </div>}
           <label>Name<input value={item.title} onChange={e => updateItem(i,'title',e.target.value)} /></label>
           <label>Duration<select value={item.duration} onChange={e => updateItem(i,'duration',e.target.value)}><option>5</option><option>6</option><option>7</option><option>8</option><option>10</option></select></label>
           <label>Format<select value={item.format} onChange={e => updateItem(i,'format',e.target.value)}><option>King of Court</option><option>Challenger Court</option><option>Winner Stays On</option><option>2v1 Pressure</option><option>Conditioned Matchplay</option><option>Feed + Live Rally</option></select></label>

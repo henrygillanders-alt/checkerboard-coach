@@ -18,3 +18,10 @@
 .variationInline{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .variationInline span{color:#ffd980;font-weight:900}
 .variationInline select{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:10px;padding:8px 10px}
+
+.atlOptions{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.atlOptions div{display:flex;flex-direction:column;gap:5px}
+.atlOptions span{color:#ffd980;font-weight:900;font-size:13px}
+.atlOptions select{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:10px;padding:8px 10px}
+.editAtl label{font-size:14px}
+@media(max-width:800px){.atlOptions{grid-template-columns:1fr 1fr}}
