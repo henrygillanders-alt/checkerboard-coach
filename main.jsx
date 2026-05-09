@@ -39,9 +39,8 @@ function Home({goTo}){
   );
 }
 
-function Players(){
-  const [players, setPlayers] = useState(starterPlayers);
-  const [history, setHistory] = useState([]);
+function Players({players, setPlayers}){
+    const [history, setHistory] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -54,7 +53,8 @@ function Players(){
     juniorRanking:'',
     guestEstimate:'',
     attendance:'0 sessions',
-    focus:''
+    focus:'',
+    present:false
   });
 
   function saveSnapshot(){
@@ -102,7 +102,8 @@ function Players(){
       juniorRanking:'',
       guestEstimate:'',
       attendance:'0 sessions',
-      focus:''
+      focus:'',
+      present:false
     });
     setEditingIndex(null);
     setShowForm(false);
@@ -119,6 +120,12 @@ function Players(){
   function deletePlayer(index){
     saveSnapshot();
     setPlayers(players.filter((_, i) => i !== index));
+  }
+
+  function togglePresent(index){
+    const updated = [...players];
+    updated[index] = {...updated[index], present: !updated[index].present};
+    setPlayers(updated);
   }
 
   return (
@@ -178,6 +185,11 @@ function Players(){
         </div>
       )}
 
+      <div className="attendanceSummary">
+        <strong>Present today:</strong> {players.filter(p => p.present).length}
+        <span>Competition will auto-use marked-present players.</span>
+      </div>
+
       <div className="rankingNote">
         <strong>Competition ordering:</strong> programme players are sorted by Junior Programme Ranking #1, #2, #3, etc. Use Edit or Change Ranking on a player card to correct a ranking. Guests and coaches can join sessions/competitions but do not affect the junior ranking unless manually changed.
       </div>
@@ -219,7 +231,9 @@ function Players(){
             </div>
 
             <div className="actionRow">
-              <button>Attendance</button>
+              <button className={p.present ? 'presentBtn activePresent' : 'presentBtn'} onClick={() => togglePresent(p.originalIndex)}>
+                {p.present ? 'Present ✓' : 'Mark Present'}
+              </button>
               <button onClick={() => editPlayer(p, p.originalIndex)}>Edit</button>
               <button onClick={() => editPlayer(p, p.originalIndex)}>Change Ranking</button>
               <button onClick={() => deletePlayer(p.originalIndex)}>Delete</button>
@@ -232,18 +246,25 @@ function Players(){
 }
 
 
-function Competition(){
+function Competition({players}){
   const [format, setFormat] = useState('Round Robin');
-  const [players, setPlayers] = useState('');
+  const [manualPlayers, setManualPlayers] = useState('');
   const [generated, setGenerated] = useState([]);
   const [courts, setCourts] = useState(3);
   const [courtLives, setCourtLives] = useState(20);
 
   function buildCompetition(){
-    const names = players
-      .split('\n')
-      .map(p => p.trim())
-      .filter(Boolean);
+    const presentPlayers = players
+      .filter(p => p.present)
+      .sort((a,b) => {
+        const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
+        const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+        return aRank - bRank;
+      });
+
+    const names = presentPlayers.length > 0
+      ? presentPlayers.map(p => p.name)
+      : manualPlayers.split('\n').map(p => p.trim()).filter(Boolean);
 
     if(names.length < 2){
       setGenerated([]);
@@ -349,17 +370,34 @@ function Competition(){
           </div>
         </div>
 
-        <label>Players</label>
+        <div className="presentCompetitionBox">
+          <strong>Auto-entry from attendance</strong>
+          <p>{players.filter(p => p.present).length} players marked present.</p>
+          {players.filter(p => p.present).length > 0 && (
+            <ol>
+              {players
+                .filter(p => p.present)
+                .sort((a,b) => {
+                  const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
+                  const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+                  return aRank - bRank;
+                })
+                .map(p => <li key={p.name}>{p.name} {p.playerType === 'Programme Player' ? `(JPR #${p.juniorRanking || 'not set'})` : '(Guest)'}</li>)}
+            </ol>
+          )}
+        </div>
+
+        <label>Manual Players</label>
 
         <textarea
-          rows="10"
-          placeholder="Enter one player per line"
-          value={players}
-          onChange={e => setPlayers(e.target.value)}
+          rows="6"
+          placeholder="Optional fallback: enter one player per line if no one is marked present"
+          value={manualPlayers}
+          onChange={e => setManualPlayers(e.target.value)}
         />
 
         <button className="primaryBtn" onClick={buildCompetition}>
-          Generate Competition
+          Generate From Present Players
         </button>
 
         {format === 'Invasion Game' && (
@@ -398,6 +436,7 @@ function Placeholder({title}){
 
 function App(){
   const [screen, setScreen] = useState('home');
+  const [players, setPlayers] = useState(starterPlayers);
 
   return (
     <div>
@@ -409,16 +448,16 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 39 · Invasion lives calculator</p>
+          <p>Phase 40 · Attendance to competition</p>
         </div>
       </header>
 
       <main className="container">
         {screen === 'home' && <Home goTo={setScreen} />}
-        {screen === 'players' && <Players />}
+        {screen === 'players' && <Players players={players} setPlayers={setPlayers} />}
         {screen === 'sessions' && <Placeholder title="Sessions" />}
         {screen === 'games' && <Placeholder title="Games" />}
-        {screen === 'competition' && <Competition />}
+        {screen === 'competition' && <Competition players={players} />}
       </main>
     </div>
   );

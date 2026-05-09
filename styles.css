@@ -341,3 +341,42 @@ body{
     grid-template-columns:1fr;
   }
 }
+
+.attendanceSummary,
+.presentCompetitionBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:16px;
+  color:#dce8ff;
+}
+
+.attendanceSummary strong,
+.presentCompetitionBox strong{
+  color:#ffd980;
+}
+
+.attendanceSummary span{
+  display:block;
+  margin-top:5px;
+  color:#9fb0c8;
+}
+
+.presentCompetitionBox p{
+  margin:8px 0;
+}
+
+.presentCompetitionBox ol{
+  margin:8px 0 0 22px;
+  padding:0;
+}
+
+.presentBtn.activePresent{
+  background:#159947;
+  border-color:#5ee38a;
+}
+
+.presentBtn{
+  font-weight:900;
+}
