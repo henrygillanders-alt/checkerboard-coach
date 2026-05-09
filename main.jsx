@@ -97,8 +97,8 @@ function Players(){
   }
 
   const sortedPlayers = players.map((p, originalIndex) => ({...p, originalIndex})).sort((a,b) => {
-    const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
-    const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+    const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking && String(a.juniorRanking).trim() !== '' ? a.juniorRanking : 9999) : 99999;
+    const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking && String(b.juniorRanking).trim() !== '' ? b.juniorRanking : 9999) : 99999;
     return aRank - bRank;
   });
 
@@ -130,7 +130,8 @@ function Players(){
   }
 
   function editPlayer(player, index){
-    setNewPlayer({...player});
+    const { originalIndex, ...cleanPlayer } = player;
+    setNewPlayer({...cleanPlayer, juniorRanking: cleanPlayer.juniorRanking || ''});
     setEditingIndex(index);
     setShowForm(true);
     window.scrollTo(0,0);
@@ -177,8 +178,8 @@ function Players(){
             type="number"
             min="1"
             placeholder="Absolute junior programme ranking"
-            value={newPlayer.clubRank}
-            onChange={e => setNewPlayer({...newPlayer, clubRank:e.target.value})}
+            value={newPlayer.juniorRanking || ''}
+              onChange={e => setNewPlayer({...newPlayer, juniorRanking:e.target.value})}
           />
 
           <textarea
@@ -220,12 +221,12 @@ function Players(){
               <span className="badge">{p.playerType}</span>
               <span className="badge">{p.category}</span>
               <span className="badge">Level {p.level}</span>
-              <span className="badge displayOnly">{p.playerType === 'Programme Player' ? `Junior Ranking #${p.juniorRanking || 'not set'}` : 'Guest / Unranked'}</span>
+              <span className="badge displayOnly">{p.playerType === 'Programme Player' ? `Junior Ranking #${p.juniorRanking && String(p.juniorRanking).trim() !== '' ? p.juniorRanking : 'not set'}` : 'Guest / Unranked'}</span>
             </div>
 
             <div className="infoBox">
               <strong>Competition Slot</strong>
-              <p>{p.playerType === 'Programme Player' ? `Junior Programme Ranking #${p.juniorRanking || 'not set'}` : `Guest Estimate: ${p.guestEstimate || 'Not set'}`} · Level {p.level} · {p.category}</p>
+              <p>{p.playerType === 'Programme Player' ? `Junior Programme Ranking #${p.juniorRanking && String(p.juniorRanking).trim() !== '' ? p.juniorRanking : 'not set'}` : `Guest Estimate: ${p.guestEstimate || 'Not set'}`} · Level {p.level} · {p.category}</p>
             </div>
 
             <div className="infoBox">
@@ -275,7 +276,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 35 · Ranking edit fix</p>
+          <p>Phase 36 · Ranking save fix</p>
         </div>
       </header>
 

@@ -250,3 +250,9 @@ body{
 .actionRow button{
   min-width:120px;
 }
+
+.fieldLabel{
+  color:#ffd980;
+  font-weight:900;
+  margin-bottom:-6px;
+}
