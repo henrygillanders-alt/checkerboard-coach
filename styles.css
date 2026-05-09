@@ -74,3 +74,31 @@
 @media(max-width:800px){
   .coachHelpGrid{grid-template-columns:1fr}
 }
+
+.cbCodeBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+
+.cbCodeBox strong{
+  color:#ffd980;
+  display:block;
+  margin-bottom:8px;
+}
+
+.cbCodeBox select{
+  background:#091625;
+  border:1px solid #375174;
+  color:#eef4ff;
+  border-radius:12px;
+  padding:10px;
+  min-width:220px;
+}
+
+.cbCodeBox p{
+  margin:10px 0 0;
+  color:#dce8ff;
+}

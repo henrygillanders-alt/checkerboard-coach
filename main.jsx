@@ -11,7 +11,24 @@ const layers = [
   '4-Shot Window',
   '2-Shot Window',
   'Double Bounce',
-  'Quality Length Before Attack'
+  'Quality Length Before Attack',
+  'CB Code'
+];
+
+const checkerboardCodes = [
+  'None',
+  '[6-3]',
+  '[7-3]',
+  '[5-4]',
+  '[8-4]',
+  '[6-4]',
+  '[8-1]',
+  '[5-3]',
+  '[7-2]',
+  '[6-4] + [8-1]',
+  '[5-3] + [7-2]',
+  '[6-3] + [8-1]',
+  '[5-4] + [7-2]'
 ];
 
 const activities = [
@@ -134,6 +151,7 @@ function cloneActivity(a) {
     format: a.format,
     task: a.task,
     layers: [...(a.layers || [])],
+    cbCode: 'None',
     coach: a.coach || '',
     rationale: a.rationale || 'This activity creates a representative problem for the player to solve under live rally information.',
     progression: 'Duplicate and add/change one layer after 1–2 rotations.',
@@ -152,7 +170,7 @@ function buildCoachHelp(item){
       coach:'Use the tape as an external visual cue. Keep the rally live and coach balance, vision and shot choice.',
       player:'Recognise when the lower trajectory is available while staying balanced enough to see the opponent.',
       error:'Do not force the BTL shot from poor balance or lose opponent information.',
-      progress:'Progress by adding Opponent Off T, more BTL shots, volley method, or a conversion window.'
+      progress:'Progress by adding Opponent Off T, a CB code, more BTL shots, volley method, or a 4-shot / 2-shot window.'
     };
   }
 
@@ -170,7 +188,7 @@ function buildCoachHelp(item){
       coach:'Keep the condition clear and binary. Reward good decisions, not just rule compliance.',
       player:'Understand what tactical problem the condition is creating and wait for the opportunity.',
       error:'Avoid forcing the condition too early or playing the rule instead of the rally.',
-      progress:'Add Clean Winner, Off T, side-specific layer, or shorter conversion window.'
+      progress:'Add Clean Winner, Off T, CB code, side-specific layer, 4-shot window or 2-shot window.'
     };
   }
 
@@ -223,6 +241,7 @@ function App(){
       format:'King of Court',
       task:'Tap Edit to add task',
       layers:[],
+      cbCode:'None',
       coach:'',
       rationale:'',
       progression:'',
@@ -284,6 +303,18 @@ function App(){
     setSession(copy);
   }
 
+  function updateCbCode(i, code){
+    const copy = [...session];
+    copy[i].cbCode = code;
+    if(code !== 'None' && !copy[i].layers.includes('CB Code')){
+      copy[i].layers.push('CB Code');
+    }
+    if(code === 'None'){
+      copy[i].layers = copy[i].layers.filter(l => l !== 'CB Code');
+    }
+    setSession(copy);
+  }
+
   function duplicateProgress(i){
     const source = session[i];
     const copy = [...session];
@@ -305,7 +336,7 @@ function App(){
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
         <h1>Session Builder</h1>
-        <p>Phase 28 · Stable navigation + coach help</p>
+        <p>Phase 29 · Universal layers + CB code</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -409,6 +440,14 @@ function App(){
 
         <CoachHelpPanel item={item} />
 
+        <div className="cbCodeBox">
+          <strong>Checkerboard Code</strong>
+          <select value={item.cbCode || 'None'} onChange={e => updateCbCode(i, e.target.value)}>
+            {checkerboardCodes.map(code => <option key={code}>{code}</option>)}
+          </select>
+          {item.cbCode && item.cbCode !== 'None' && <p>Spatial reference added to this rotation: <strong>{item.cbCode}</strong></p>}
+        </div>
+
         <div className="layerLine">
           <strong>Layers</strong>
           <div className="chips">
@@ -418,7 +457,7 @@ function App(){
         </div>
 
         <div className="quickLayers">
-          {layers.filter(l => !item.layers.includes(l)).slice(0,4).map(l => <button key={l} onClick={() => addLayer(i,l)}>+ {l}</button>)}
+          {layers.filter(l => !item.layers.includes(l)).map(l => <button key={l} onClick={() => addLayer(i,l)}>+ {l}</button>)}
         </div>
 
         {item.editing && <div className="editPanel">
@@ -438,6 +477,9 @@ function App(){
           <label>Name<input value={item.title} onChange={e => updateItem(i,'title',e.target.value)} /></label>
           <label>Duration<select value={item.duration} onChange={e => updateItem(i,'duration',e.target.value)}><option>5</option><option>6</option><option>7</option><option>8</option><option>10</option></select></label>
           <label>Format<select value={item.format} onChange={e => updateItem(i,'format',e.target.value)}><option>King of Court</option><option>Challenger Court</option><option>Winner Stays On</option><option>2v1 Pressure</option><option>Conditioned Matchplay</option><option>Feed + Live Rally</option></select></label>
+          <label className="wide">Checkerboard Code<select value={item.cbCode || 'None'} onChange={e => updateCbCode(i, e.target.value)}>
+            {checkerboardCodes.map(code => <option key={code}>{code}</option>)}
+          </select></label>
           <label className="wide">Task<textarea value={item.task} onChange={e => updateItem(i,'task',e.target.value)} /></label>
           <label className="wide">Rationale<textarea value={item.rationale} onChange={e => updateItem(i,'rationale',e.target.value)} /></label>
           <label>Coach Focus<textarea value={item.coach} onChange={e => updateItem(i,'coach',e.target.value)} /></label>
