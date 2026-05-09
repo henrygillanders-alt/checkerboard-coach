@@ -62,6 +62,8 @@ function Home({goTo}){
 
 function Players(){
   const [players, setPlayers] = useState(starterPlayers);
+  const [history, setHistory] = useState([]);
+  const [editingIndex, setEditingIndex] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   const [newPlayer, setNewPlayer] = useState({
@@ -76,12 +78,25 @@ function Players(){
     focus:''
   });
 
+  function saveSnapshot(){
+    setHistory([...history, players]);
+  }
+
+  function undoLastChange(){
+    if(history.length === 0) return;
+    const previous = history[history.length - 1];
+    setPlayers(previous);
+    setHistory(history.slice(0, -1));
+    setEditingIndex(null);
+    setShowForm(false);
+  }
+
   function updateCategory(category){
     const found = levelCategories.find(c => c.label === category);
     setNewPlayer({...newPlayer, category, level: found ? found.level : 1});
   }
 
-  const sortedPlayers = [...players].sort((a,b) => {
+  const sortedPlayers = players.map((p, originalIndex) => ({...p, originalIndex})).sort((a,b) => {
     const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
     const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
     return aRank - bRank;
@@ -89,7 +104,16 @@ function Players(){
 
   function addPlayer(){
     if(!newPlayer.name) return;
-    setPlayers([...players, newPlayer]);
+    saveSnapshot();
+
+    if(editingIndex !== null){
+      const updated = [...players];
+      updated[editingIndex] = newPlayer;
+      setPlayers(updated);
+    } else {
+      setPlayers([...players, newPlayer]);
+    }
+
     setNewPlayer({
       name:'',
       playerType:'Programme Player',
@@ -101,20 +125,39 @@ function Players(){
       attendance:'0 sessions',
       focus:''
     });
+    setEditingIndex(null);
     setShowForm(false);
+  }
+
+  function editPlayer(player, index){
+    setNewPlayer({...player});
+    setEditingIndex(index);
+    setShowForm(true);
+    window.scrollTo(0,0);
+  }
+
+  function deletePlayer(index){
+    saveSnapshot();
+    setPlayers(players.filter((_, i) => i !== index));
   }
 
   return (
     <div className="page">
       <div className="pageTop">
         <h1>Players</h1>
-        <button className="primaryBtn" onClick={() => setShowForm(!showForm)}>
-          + Add Player
-        </button>
+        <div className="buttonRow">
+          <button className="secondaryBtn" onClick={undoLastChange} disabled={history.length === 0}>
+            Undo Last Change
+          </button>
+          <button className="primaryBtn" onClick={() => { setEditingIndex(null); setShowForm(!showForm); }}>
+            + Add Player
+          </button>
+        </div>
       </div>
 
       {showForm && (
         <div className="formCard">
+          <h3>{editingIndex !== null ? 'Edit Player' : 'Add Player'}</h3>
           <input
             placeholder="Player name"
             value={newPlayer.name}
@@ -144,9 +187,14 @@ function Players(){
             onChange={e => setNewPlayer({...newPlayer, focus:e.target.value})}
           />
 
-          <button className="primaryBtn" onClick={addPlayer}>
-            Save Player
-          </button>
+          <div className="buttonRow">
+            <button className="primaryBtn" onClick={addPlayer}>
+              {editingIndex !== null ? 'Update Player' : 'Save Player'}
+            </button>
+            <button className="secondaryBtn" onClick={() => { setShowForm(false); setEditingIndex(null); }}>
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -192,8 +240,8 @@ function Players(){
 
             <div className="actionRow">
               <button>Attendance</button>
-              <button>Competition</button>
-              <button>Notes</button>
+              <button onClick={() => editPlayer(p, p.originalIndex)}>Edit</button>
+              <button onClick={() => deletePlayer(p.originalIndex)}>Delete</button>
             </div>
           </div>
         ))}
@@ -226,7 +274,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 33 · Junior ranking + guests</p>
+          <p>Phase 34 · Player edit delete undo</p>
         </div>
       </header>
 
