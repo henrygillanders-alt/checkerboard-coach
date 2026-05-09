@@ -11,28 +11,7 @@ const levelCategories = [
   { label:'Professional', level:5 }
 ];
 
-const starterPlayers = [
-  {
-    name:'Anna Murphy',
-    playerType:'Programme Player',
-    category:'Gold / Elite',
-    level:3,
-    rankingStatus:'Ranked',
-    juniorRanking:1,
-    attendance:'18 sessions',
-    focus:'Early volley recognition'
-  },
-  {
-    name:'Jack Byrne',
-    playerType:'Programme Player',
-    category:'Silver',
-    level:2,
-    rankingStatus:'Ranked',
-    juniorRanking:15,
-    attendance:'11 sessions',
-    focus:'Balance before attack'
-  }
-];
+const starterPlayers = [];
 
 function Home({goTo}){
   return (
@@ -276,7 +255,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 36 · Ranking save fix</p>
+          <p>Phase 37 · Remove sample players</p>
         </div>
       </header>
 
