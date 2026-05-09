@@ -9,3 +9,6 @@
 .layerTop{display:flex;justify-content:space-between;align-items:center;margin-top:18px}.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.chip{background:#102645;border:1px solid #5e83be;color:#eef4ff;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer}.chip.active{background:#1f5dd0;border-color:#8ab6ff}.selector .chip{border-radius:12px}.muted{color:#9fb0c8}
 .gameRow{width:100%;display:flex;justify-content:space-between;gap:14px;align-items:center;margin:10px 0;background:#17263a;border:1px solid #2e4c73;border-radius:14px;color:white;padding:16px;text-align:left;cursor:pointer}.gameRow span{display:block;color:#9fb0c8;margin-top:4px;line-height:1.35}.gameRow em{font-style:normal;color:#ffd980;font-weight:900;text-align:right;min-width:70px}
 @media(max-width:800px){.hero,.topline,.blockHeader,.layerTop{flex-direction:column}.homeGrid,.grid{grid-template-columns:1fr}.total{width:100%}.gameRow{flex-direction:column;align-items:flex-start}.gameRow em{text-align:left}.topButtons{width:100%}.topButtons button{width:100%}}
+
+.emptyState{border-style:dashed;border-color:#5e83be;background:#0d1a2b}
+.emptyState h3{margin-top:0;color:#9bc1ff}

@@ -16,7 +16,7 @@ const layerOptions = [
 
 const activityLibrary = [
   {
-    category:'ATL / BTL Warm-up',
+    category:'ATL / BTL',
     title:'ATL Tape Height Control',
     type:'ATL / BTL',
     defaultFormat:'King of Court',
@@ -26,7 +26,7 @@ const activityLibrary = [
     layers:['Clean Winner']
   },
   {
-    category:'ATL / BTL Warm-up',
+    category:'ATL / BTL',
     title:'Height Change Recognition',
     type:'ATL / BTL',
     defaultFormat:'King of Court',
@@ -36,7 +36,7 @@ const activityLibrary = [
     layers:['Opponent Off T']
   },
   {
-    category:'ATL / BTL Warm-up',
+    category:'ATL / BTL',
     title:'Soft / Working / Fast Pace Rotation',
     type:'Pace Variation',
     defaultFormat:'Challenger Court',
@@ -233,10 +233,7 @@ function makeBlock(activity = activityLibrary[0]) {
 function App(){
   const [page, setPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [blocks, setBlocks] = useState([
-    makeBlock(activityLibrary.find(a => a.title === 'ATL Tape Height Control')),
-    makeBlock(activityLibrary.find(a => a.title === 'CB Pairs'))
-  ]);
+  const [blocks, setBlocks] = useState([]);
 
   const categories = ['All', ...Array.from(new Set(activityLibrary.map(a => a.category)))];
   const filteredActivities = selectedCategory === 'All'
@@ -332,8 +329,8 @@ function App(){
       <button className="homeBtn" onClick={home}>HOME</button>
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
-        <h1>Universal Rotation Builder</h1>
-        <p>Phase 16 · Any activity can become a rotation</p>
+        <h1>Checkerboard Coach</h1>
+        <p>Phase 18 · Empty rotation builder</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -341,20 +338,23 @@ function App(){
     {page === 'home' && <main className="container">
       <div className="homeGrid">
         <button className="tile blue" onClick={openBuilder}>
-          <h2>Flexible Rotation Builder</h2>
-          <p>Main workflow: build the session as a stack of rotations.</p>
+          <h2>Sessions</h2>
+          <p>Build flexible King of Court / challenger rotation sessions.</p>
         </button>
+
         <button className="tile purple" onClick={openLibrary}>
-          <h2>Activity Library</h2>
-          <p>ATL, technical, conditioned games, CB, volley and pressure games.</p>
+          <h2>Games</h2>
+          <p>ATL / BTL, technical constraints, conditioned games, checkerboard, volley and pressure games.</p>
         </button>
-        <button className="tile green" onClick={() => addActivity(activityLibrary.find(a => a.title === 'ATL Tape Height Control'))}>
-          <h2>Quick Add ATL Warm-up</h2>
-          <p>Start with a 6-minute tape height rotation.</p>
+
+        <button className="tile green">
+          <h2>Players</h2>
+          <p>Player notes and history will sit here later.</p>
         </button>
-        <button className="tile red" onClick={() => addActivity(activityLibrary.find(a => a.title === 'CB + Blind Finish'))}>
-          <h2>Quick Add CB + Blind Finish</h2>
-          <p>Add a visible CB challenge with hidden finish.</p>
+
+        <button className="tile red">
+          <h2>Competition</h2>
+          <p>Future competition, ladder, teams and match-day tools.</p>
         </button>
       </div>
     </main>}
@@ -362,8 +362,8 @@ function App(){
     {page === 'library' && <main className="container">
       <div className="topline">
         <div>
-          <h2>Activity Library</h2>
-          <p>Select any activity. It adds directly to the rotation builder.</p>
+          <h2>Games / Activity Library</h2>
+          <p>Choose any game/activity and add it directly to the session rotation builder.</p>
         </div>
         <button className="secondary" onClick={home}>Home</button>
       </div>
@@ -390,10 +390,16 @@ function App(){
           <p>Choose from all games and exercises. Use 5–8 minute King of Court rotations, then duplicate and progress.</p>
         </div>
         <div className="topButtons">
-          <button className="secondary" onClick={openLibrary}>Add From Library</button>
+          <button className="secondary" onClick={openLibrary}>Add From Games</button>
           <button className="primary" onClick={addBlank}>Add Custom Rotation</button>
         </div>
       </div>
+
+      {blocks.length === 0 && <section className="panel emptyState">
+        <h3>No rotations added yet</h3>
+        <p>Use <strong>Add From Games</strong> to choose ATL / BTL, classic conditioned games, technical constraints, checkerboard challenges, volley games or pressure games.</p>
+        <p>Or use <strong>Add Custom Rotation</strong> to build a rotation from scratch.</p>
+      </section>}
 
       {blocks.map((b,i) => <section className="block" key={i}>
         <div className="blockHeader">
