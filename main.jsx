@@ -155,9 +155,9 @@ function App() {
     }
   }
   function generate(){ setGenerated(makeChallenge(genMode, genLevel)); }
-  function addGenerated(){ setSession([...session, {type:'challenge', block: genLevel <= 2 ? 'Warm-up' : genLevel >= 4 ? 'Pressure Block' : 'Main Block', generated}]); setPage('session'); window.scrollTo(0,0); }
+  function addGenerated(){ setSession([...session, {type:'challenge', block: genLevel <= 2 ? 'Warm-up' : genLevel >= 4 ? 'Pressure Block' : 'Main Block', generated}]); setPage('rotationBuilder'); window.scrollTo(0,0); }
   function drawCard(){ setBlindCard(drawBlindCard(deckType, deckLevel)); setRevealed(false); }
-  function addBlindCard(){ setSession([...session, {type:'blind', block:'Finish', blindCard}]); setPage('session'); window.scrollTo(0,0); }
+  function addBlindCard(){ setSession([...session, {type:'blind', block:'Finish', blindCard}]); setPage('rotationBuilder'); window.scrollTo(0,0); }
   function removeSessionItem(index){ setSession(session.filter((_, i) => i !== index)); }
   function moveSessionItem(index, dir){
     const copy = [...session];
@@ -253,7 +253,7 @@ function App() {
         <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and CB + blind finish</p></button>
         <button className="card red" onClick={() => setPage('blindDeck')}><h3>Blind Deck</h3><p>Secret cards for players</p></button>
         <button className="card purple" onClick={() => setPage('rotationBuilder')}><h3>Flexible Session Builder</h3><p>King of Court rotations · live total time</p></button>
-        <button className="card red" onClick={() => setPage('session')}><h3>Old Saved Items</h3><p>Secondary review only</p></button>
+        <button className="card red" onClick={() => setPage('rotationBuilder')}><h3>Old Saved Items</h3><p>Secondary review only</p></button>
         <button className="card amber" onClick={() => setPage('scoring')}><h3>Scoring Protocol</h3><p>Default Checkerboard rules</p></button>
       </div>
     </main>}
@@ -293,8 +293,8 @@ function App() {
       <section className="panel sessionOverview">
         <div className="cardHead">
           <div>
-            <h3>Optional Time Guide</h3>
-            <p className="lead">This is only a guide. Your main workflow is rotation-based, not fixed-template based.</p>
+            <h3>Legacy Session View (secondary)</h3>
+            <p className="lead">This legacy page is no longer the primary workflow. Use Flexible Rotation Builder instead.</p>
           </div>
           <div className="chips compact">
             <button className={sessionDuration === 60 ? 'chip active' : 'chip'} onClick={() => setSessionDuration(60)}>60 min</button>
