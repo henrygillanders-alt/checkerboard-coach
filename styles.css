@@ -1,104 +1,168 @@
-*{box-sizing:border-box} body{margin:0;background:#08111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif}button,input,select,textarea{font:inherit}
-.hero{padding:26px 34px;background:linear-gradient(135deg,#123f74,#0a1e38);display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid #27486e}
-.homeBtn,.primary,.secondary,.miniButtons button,.quickLayers button{border:1px solid #5e83be;background:#102645;color:white;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:800}
-.primary{background:#215bd6}.eyebrow{font-size:12px;font-weight:900;letter-spacing:.22em;color:#92b8ff}h1{margin:6px 0}.hero p{margin:0;color:#bccce5}
-.total{background:#15263f;border:1px solid #395a82;border-radius:18px;padding:14px 20px;text-align:center}.total strong,.total span{display:block}.total span{font-size:32px;font-weight:900}
-.container{max-width:1120px;margin:0 auto;padding:28px}.homeGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.tile{text-align:left;border:1px solid #355276;border-radius:20px;padding:24px;color:white;cursor:pointer}.tile h2{margin-top:0}.tile p{color:#d5e2f7}.blue{background:linear-gradient(135deg,#155faa,#12396f)}.green{background:linear-gradient(135deg,#0e874f,#0d5b40)}.red{background:linear-gradient(135deg,#aa2b37,#651922)}.purple{background:linear-gradient(135deg,#7132a2,#3f236f)}
-.topline{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.topButtons{display:flex;gap:10px;flex-wrap:wrap}.panel,.picker,.empty,.rotationCard{background:#101b2a;border:1px solid #2e486d;border-radius:20px;padding:18px}.picker,.empty,.rotationCard{margin-bottom:18px}.empty{border-style:dashed}.empty h3{margin-top:0;color:#9bc1ff}
-.chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.chip{background:#102645;border:1px solid #5e83be;color:#eef4ff;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer}.chip.active{background:#1f5dd0;border-color:#8ab6ff}.categoryChips .chip{border-radius:12px}.muted{color:#9fb0c8}
-.activityRow{width:100%;display:flex;justify-content:space-between;gap:14px;align-items:center;margin:10px 0;background:#17263a;border:1px solid #2e4c73;border-radius:14px;color:white;padding:16px;text-align:left;cursor:pointer}.activityRow span{display:block;color:#9fb0c8;margin-top:4px;line-height:1.35}.activityRow em{font-style:normal;color:#ffd980;font-weight:900;text-align:right;min-width:70px}
-.rotationCard{border-color:#496da2}.cardTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.rotationNum{color:#ffd980;font-weight:900}.rotationCard h3{font-size:24px;margin:6px 0}.category{color:#9fb0c8;margin:0}.miniButtons{display:flex;gap:8px;flex-wrap:wrap}.taskBox{background:#0b1727;border:1px solid #2d4568;border-radius:14px;padding:14px;margin-top:14px}.taskBox p{margin:6px 0 0;color:#dbe8ff}.layerLine{margin-top:14px}.quickLayers{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.quickLayers button{font-size:13px;padding:8px 10px}
-.editPanel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;border-top:1px solid #2e486d;padding-top:18px}label{display:flex;flex-direction:column;gap:8px;font-weight:800}input,select,textarea{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:12px;padding:12px}textarea{min-height:90px}.wide{grid-column:1/-1}
-@media(max-width:800px){.hero,.topline,.cardTop{flex-direction:column}.homeGrid,.editPanel{grid-template-columns:1fr}.total{width:100%}.activityRow{flex-direction:column;align-items:flex-start}.activityRow em{text-align:left}.topButtons{width:100%}.topButtons button{width:100%}}
 
-.rationaleBox{background:#0c1a2c;border:1px solid #315075;border-radius:14px;padding:14px;margin-top:12px}
-.rationaleBox p{margin:6px 0 0;color:#dbe8ff;line-height:1.4}
-.rationaleBox strong{color:#ffd980}
+*{box-sizing:border-box}
 
-.variationInline{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.variationInline span{color:#ffd980;font-weight:900}
-.variationInline select{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:10px;padding:8px 10px}
-
-.atlOptions{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.atlOptions div{display:flex;flex-direction:column;gap:5px}
-.atlOptions span{color:#ffd980;font-weight:900;font-size:13px}
-.atlOptions select{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:10px;padding:8px 10px}
-.editAtl label{font-size:14px}
-@media(max-width:800px){.atlOptions{grid-template-columns:1fr 1fr}}
-
-.sequenceOptions{grid-template-columns:repeat(4,1fr)}
-@media(max-width:800px){.sequenceOptions{grid-template-columns:1fr 1fr}}
-
-.coachHelpPanel{
-  background:#101f33;
-  border:1px solid #5e83be;
-  border-radius:14px;
-  padding:14px;
-  margin:14px 0;
+body{
+  margin:0;
+  background:#07111f;
+  color:#eef4ff;
+  font-family:Inter,system-ui,sans-serif;
 }
 
-.coachHelpPanel h4{
-  margin:0 0 12px;
-  color:#ffd980;
-  font-size:18px;
-}
-
-.coachHelpGrid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.coachHelpGrid div{
-  background:#0b1727;
-  border:1px solid #2d4568;
-  border-radius:12px;
-  padding:12px;
-}
-
-.coachHelpGrid strong{
-  color:#9bc1ff;
-}
-
-.coachHelpGrid p{
-  margin:6px 0 0;
-  line-height:1.35;
-  color:#dce8ff;
+.hero{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+  padding:24px 30px;
+  background:linear-gradient(135deg,#123f74,#0b203d);
+  border-bottom:1px solid #35567e;
 }
 
 .homeBtn{
-  position:relative;
-  z-index:10;
+  background:#102844;
+  border:1px solid #7ea6e8;
+  color:white;
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:900;
+}
+
+.eyebrow{
+  font-size:12px;
+  letter-spacing:.2em;
+  color:#9bc1ff;
+  font-weight:900;
+}
+
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:24px;
+}
+
+.homeGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.tile{
+  border:none;
+  border-radius:24px;
+  padding:28px;
+  text-align:left;
+  color:white;
+  min-height:180px;
+}
+
+.tile h2{
+  font-size:42px;
+  margin:0 0 14px;
+}
+
+.tile p{
+  font-size:22px;
+  line-height:1.4;
+}
+
+.blue{background:linear-gradient(135deg,#1f67c8,#19478b)}
+.purple{background:linear-gradient(135deg,#7a2cc8,#51208d)}
+.green{background:linear-gradient(135deg,#16934d,#0d6b38)}
+.red{background:linear-gradient(135deg,#b32836,#7e1621)}
+
+.pageTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.primaryBtn{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:14px;
+  padding:14px 18px;
+  font-weight:800;
+}
+
+.formCard,
+.playerCard,
+.placeholder{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+}
+
+.formCard{
+  display:grid;
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.formCard input,
+.formCard select,
+.formCard textarea{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+
+.playerGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.badgeRow{
+  display:flex;
+  gap:10px;
+  margin:10px 0 16px;
+}
+
+.badge{
+  background:#1f5dd0;
+  padding:8px 12px;
+  border-radius:999px;
+  font-weight:800;
+}
+
+.infoBox{
+  background:#091625;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+}
+
+.actionRow{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+.actionRow button{
+  flex:1;
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:10px;
+  padding:10px;
 }
 
 @media(max-width:800px){
-  .coachHelpGrid{grid-template-columns:1fr}
-}
+  .homeGrid,
+  .playerGrid{
+    grid-template-columns:1fr;
+  }
 
-.cbCodeBox{
-  background:#0c1a2c;
-  border:1px solid #5e83be;
-  border-radius:14px;
-  padding:14px;
-  margin:14px 0;
-}
+  .tile h2{
+    font-size:32px;
+  }
 
-.cbCodeBox strong{
-  color:#ffd980;
-  display:block;
-  margin-bottom:8px;
-}
-
-.cbCodeBox select{
-  background:#091625;
-  border:1px solid #375174;
-  color:#eef4ff;
-  border-radius:12px;
-  padding:10px;
-  min-width:220px;
-}
-
-.cbCodeBox p{
-  margin:10px 0 0;
-  color:#dce8ff;
+  .tile p{
+    font-size:18px;
+  }
 }
