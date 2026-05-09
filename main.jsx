@@ -138,7 +138,22 @@ function App() {
   function openGame(game){ setSelected(game); setCurrentBlock(game.block || 'Main Block'); setActive(game.overlays.includes('clean') ? ['clean'] : []); setPage('game'); window.scrollTo(0,0); }
   function toggleFamily(fam){ setOpenFamilies(v => v.includes(fam) ? v.filter(x => x !== fam) : [...v, fam]); }
   function toggleOverlay(id){ if(!selected?.overlays.includes(id)) return; setActive(v => v.includes(id) ? v.filter(x => x !== id) : [...v, id]); }
-  function addToSession(){ if(selected){ setSession([...session, {type:'game', block:currentBlock, game:selected, overlays:active}]); setPage('session'); window.scrollTo(0,0); } }
+  function addToSession(){
+    if(selected){
+      setRotationBlocks([...rotationBlocks, {
+        title: selected.title,
+        format: 'King of Court',
+        duration: 8,
+        challengeType: selected.family.includes('Checkerboard') ? 'Pairs' : 'Pairs',
+        challenge: selected.title === 'CB Singles' ? '[6-4]' : '[6-4] + [8-1]',
+        overlays: active.map(id => overlayBank[id]?.title).filter(Boolean),
+        coach: selected.coach || selected.objective,
+        progression: 'After 1–2 rotations, duplicate this block and add the next layer.'
+      }]);
+      setPage('rotationBuilder');
+      window.scrollTo(0,0);
+    }
+  }
   function generate(){ setGenerated(makeChallenge(genMode, genLevel)); }
   function addGenerated(){ setSession([...session, {type:'challenge', block: genLevel <= 2 ? 'Warm-up' : genLevel >= 4 ? 'Pressure Block' : 'Main Block', generated}]); setPage('session'); window.scrollTo(0,0); }
   function drawCard(){ setBlindCard(drawBlindCard(deckType, deckLevel)); setRevealed(false); }
@@ -227,7 +242,7 @@ function App() {
   return <div>
     <header className="hero">
       <button className="home" onClick={home}>HOME</button>
-      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 12 · FLEXIBLE ROTATION-FIRST SESSION</p></div>
+      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 13 · ROTATION-ONLY WORKFLOW</p></div>
     </header>
 
     {page === 'home' && <main className="container">
@@ -238,7 +253,7 @@ function App() {
         <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and CB + blind finish</p></button>
         <button className="card red" onClick={() => setPage('blindDeck')}><h3>Blind Deck</h3><p>Secret cards for players</p></button>
         <button className="card purple" onClick={() => setPage('rotationBuilder')}><h3>Flexible Session Builder</h3><p>King of Court rotations · live total time</p></button>
-        <button className="card red" onClick={() => setPage('session')}><h3>Saved Session Items</h3><p>Review games saved from library/deck</p></button>
+        <button className="card red" onClick={() => setPage('session')}><h3>Old Saved Items</h3><p>Secondary review only</p></button>
         <button className="card amber" onClick={() => setPage('scoring')}><h3>Scoring Protocol</h3><p>Default Checkerboard rules</p></button>
       </div>
     </main>}
@@ -247,14 +262,14 @@ function App() {
       <div className="topline"><div><h2>Blind Challenge Deck</h2><p className="lead">Draw a secret card. CB + Finish combines visible tactical pattern with hidden finish condition.</p></div><button className="secondary" onClick={home}>Home</button></div>
       <section className="panel"><h3>Deck Type</h3><div className="chips">{['Mixed','Singles','Pairs','Triples','Finish','CB + Finish'].map(t => <button key={t} className={deckType===t?'chip active':'chip'} onClick={() => { setDeckType(t); setBlindCard(drawBlindCard(t, deckLevel)); setRevealed(false); }}>{t}</button>)}</div><h3>Level</h3><div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={deckLevel===l?'chip active':'chip'} onClick={() => { setDeckLevel(l); setBlindCard(drawBlindCard(deckType, l)); setRevealed(false); }}>Level {l}</button>)}</div></section>
       <section className="panel blindCard"><div className="playingCard"><div className="cardRank">{blindCard.card}</div><div className="cardTitle">{blindCard.title}</div><div className="cardCondition">{revealed ? blindCard.condition : 'Hidden Condition'}</div><div className="cardLevel">Level {blindCard.level}</div></div>{revealed && <div className="blindDetails"><p><strong>Scoring:</strong> {blindCard.scoring}</p>{blindCard.windowText && <p><strong>Window:</strong> {blindCard.windowText}</p>}<p><strong>Coach:</strong> {blindCard.coach}</p></div>}</section>
-      <div className="buttons"><button className="primary" onClick={drawCard}>Draw New Card</button><button className="secondary" onClick={() => setRevealed(!revealed)}>{revealed ? 'Hide Card' : 'Reveal Card'}</button><button className="secondary" onClick={addBlindCard}>Add to Session</button></div>
+      <div className="buttons"><button className="primary" onClick={drawCard}>Draw New Card</button><button className="secondary" onClick={() => setRevealed(!revealed)}>{revealed ? 'Hide Card' : 'Reveal Card'}</button><button className="secondary" onClick={addBlindCard}>Add to Rotation Builder</button></div>
     </main>}
 
     {page === 'generator' && <main className="container">
       <div className="topline"><div><h2>Random Challenge Generator</h2><p className="lead">Generate tactical challenges that scale by level.</p></div><button className="secondary" onClick={home}>Home</button></div>
       <section className="panel"><h3>Mode</h3><div className="chips">{['Singles','Pairs','Triples','Blind','CB + Blind Finish'].map(m => <button key={m} className={genMode === m ? 'chip active' : 'chip'} onClick={() => { setGenMode(m); setGenerated(makeChallenge(m, genLevel)); }}>{m}</button>)}</div><h3>Level</h3><div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={genLevel === l ? 'chip active' : 'chip'} onClick={() => { setGenLevel(l); setGenerated(makeChallenge(genMode, l)); }}>Level {l}</button>)}</div></section>
       <section className="panel challengeCard"><div className="challengeTop"><span>{generated.mode}</span><em>Level {generated.level}</em></div><div className="challengeText">{generated.challenge}</div><p><strong>Base scoring:</strong> {generated.baseScore}</p><p><strong>Coach focus:</strong> {generated.coach}</p><h4>Overlays attached</h4>{generatedOverlays.map(o => <p key={o.title}><strong>{o.title}:</strong> {o.scoring}</p>)}</section>
-      <div className="buttons"><button className="primary" onClick={generate}>Generate New Challenge</button><button className="secondary" onClick={addGenerated}>Add to Session</button></div>
+      <div className="buttons"><button className="primary" onClick={generate}>Generate New Challenge</button><button className="secondary" onClick={addGenerated}>Add to Rotation Builder</button></div>
     </main>}
 
     {page === 'library' && <main className="container">
@@ -265,10 +280,10 @@ function App() {
     {page === 'game' && selected && <main className="container">
       <div className="topline"><div><h2>{selected.title}</h2><p className="lead">{selected.family} · {selected.level}</p></div><div className="buttons"><button className="secondary" onClick={library}>Back to Library</button><button className="secondary" onClick={home}>Home</button></div></div>
       <section className="panel gameCard"><h3>Objective</h3><p>{selected.objective}</p><h3>Set-up</h3><p>{selected.setup}</p><h3>Rules</h3><p>{selected.rules}</p><h3>Base Scoring</h3><p>{selected.scoring}</p><h3>Coach Observation</h3><p>{selected.coach}</p></section>
-      <section className="panel"><h3>Overlay Builder</h3><p className="lead">Select overlays, then choose where this sits in the session.</p><div className="overlayGrid">{Object.entries(overlayBank).map(([id, o]) => { const allowed = selected.overlays.includes(id); const isActive = active.includes(id); return <button key={id} disabled={!allowed} className={isActive ? 'overlay active' : allowed ? 'overlay' : 'overlay disabled'} onClick={() => toggleOverlay(id)}><strong>{o.title}</strong><span>{o.short}</span></button> })}</div></section>
-      <section className="panel coachCard"><div className="cardHead"><h3>Live Coach Card</h3><button className="primary" onClick={addToSession}>Add to Session</button></div>
+      <section className="panel"><h3>Overlay Builder</h3><p className="lead">Select overlays, then add this game as a rotation block.</p><div className="overlayGrid">{Object.entries(overlayBank).map(([id, o]) => { const allowed = selected.overlays.includes(id); const isActive = active.includes(id); return <button key={id} disabled={!allowed} className={isActive ? 'overlay active' : allowed ? 'overlay' : 'overlay disabled'} onClick={() => toggleOverlay(id)}><strong>{o.title}</strong><span>{o.short}</span></button> })}</div></section>
+      <section className="panel coachCard"><div className="cardHead"><h3>Live Coach Card</h3><button className="primary" onClick={addToSession}>Add to Rotation Builder</button></div>
         <p><strong>Game:</strong> {selected.title}</p><p><strong>Base task:</strong> {selected.objective}</p><p><strong>Base scoring:</strong> {selected.scoring}</p>
-        <h4>Session block</h4><div className="chips">{sessionBlocks.map(b => <button key={b} className={currentBlock === b ? 'chip active' : 'chip'} onClick={() => setCurrentBlock(b)}>{b}</button>)}</div>
+        
         {activeOverlayObjects.length > 0 && <><h4>Active overlay scoring</h4>{activeOverlayObjects.map(o => <p key={o.title}><strong>{o.title}:</strong> {o.scoring}</p>)}<h4>Coach reminders</h4>{activeOverlayObjects.map(o => <p key={o.title + 'c'}>• {o.coach}</p>)}</>}
       </section>
     </main>}
@@ -288,7 +303,7 @@ function App() {
         </div>
         <p><strong>Warm-up:</strong> {blockMinutes('Warm-up')} · <strong>Main:</strong> {blockMinutes('Main Block')} · <strong>Pressure:</strong> {blockMinutes('Pressure Block')} · <strong>Finish:</strong> {blockMinutes('Finish')}</p>
       </section>
-      {session.length === 0 ? <section className="panel"><p>No games saved yet.</p><p>Open a game, generate a challenge or draw a blind card, then tap Add to Session.</p></section> :
+      {session.length === 0 ? <section className="panel"><p>No games saved yet.</p><p>Open a game, generate a challenge or draw a blind card, then tap Add to Rotation Builder.</p></section> :
         sessionBlocks.map(block => {
           const blockItems = session.filter(item => item.block === block);
           const isOpen = openSessionBlocks.includes(block);
@@ -308,14 +323,14 @@ function App() {
 
     {page === 'rotationBuilder' && <main className="container">
       <div className="topline">
-        <div><h2>Modular Rotation Builder</h2><p className="lead">Build flexible King of Court / challenger rotations. Select a different CB challenge for each rotation and add layers every 1–2 rotations.</p></div>
+        <div><h2>Modular Rotation Builder</h2><p className="lead">Build King of Court / challenger rotations. Each block has its own challenge, duration, format and layers.</p></div>
         <button className="secondary" onClick={home}>Home</button>
       </div>
 
       <section className="panel sessionOverview">
         <div className="cardHead">
           <div>
-            <h3>Rotation-Based Session</h3>
+            <h3>Rotation-Based Session — No Fixed Template</h3>
             <p className="lead">No fixed 60-minute template. Build 5–8 minute rotations and let total time calculate itself.</p>
           </div>
           <div className="totalCard inline">
