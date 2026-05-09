@@ -72,7 +72,7 @@ function Players(){
     category:'Bronze',
     level:1,
     rankingStatus:'Ranked',
-    juniorRanking:1,
+    juniorRanking:'',
     guestEstimate:'',
     attendance:'0 sessions',
     focus:''
@@ -120,7 +120,7 @@ function Players(){
       category:'Bronze',
       level:1,
       rankingStatus:'Ranked',
-      juniorRanking:1,
+      juniorRanking:'',
       guestEstimate:'',
       attendance:'0 sessions',
       focus:''
@@ -199,7 +199,7 @@ function Players(){
       )}
 
       <div className="rankingNote">
-        <strong>Competition ordering:</strong> programme players are sorted by Junior Programme Ranking #1, #2, #3, etc. Guests and coaches can join sessions/competitions but do not affect the junior ranking unless manually changed.
+        <strong>Competition ordering:</strong> programme players are sorted by Junior Programme Ranking #1, #2, #3, etc. Use Edit or Change Ranking on a player card to correct a ranking. Guests and coaches can join sessions/competitions but do not affect the junior ranking unless manually changed.
       </div>
 
       <div className="levelGuide">
@@ -220,12 +220,12 @@ function Players(){
               <span className="badge">{p.playerType}</span>
               <span className="badge">{p.category}</span>
               <span className="badge">Level {p.level}</span>
-              <span className="badge">{p.playerType === 'Programme Player' ? `Junior Ranking #${p.juniorRanking}` : 'Guest / Unranked'}</span>
+              <span className="badge displayOnly">{p.playerType === 'Programme Player' ? `Junior Ranking #${p.juniorRanking || 'not set'}` : 'Guest / Unranked'}</span>
             </div>
 
             <div className="infoBox">
               <strong>Competition Slot</strong>
-              <p>{p.playerType === 'Programme Player' ? `Junior Programme Ranking #${p.juniorRanking}` : `Guest Estimate: ${p.guestEstimate || 'Not set'}`} · Level {p.level} · {p.category}</p>
+              <p>{p.playerType === 'Programme Player' ? `Junior Programme Ranking #${p.juniorRanking || 'not set'}` : `Guest Estimate: ${p.guestEstimate || 'Not set'}`} · Level {p.level} · {p.category}</p>
             </div>
 
             <div className="infoBox">
@@ -241,6 +241,7 @@ function Players(){
             <div className="actionRow">
               <button>Attendance</button>
               <button onClick={() => editPlayer(p, p.originalIndex)}>Edit</button>
+              <button onClick={() => editPlayer(p, p.originalIndex)}>Change Ranking</button>
               <button onClick={() => deletePlayer(p.originalIndex)}>Delete</button>
             </div>
           </div>
@@ -274,7 +275,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 34 · Player edit delete undo</p>
+          <p>Phase 35 · Ranking edit fix</p>
         </div>
       </header>
 

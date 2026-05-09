@@ -238,3 +238,15 @@ body{
   margin:0;
   color:#ffd980;
 }
+
+.displayOnly{
+  cursor:default;
+}
+
+.actionRow{
+  flex-wrap:wrap;
+}
+
+.actionRow button{
+  min-width:120px;
+}
