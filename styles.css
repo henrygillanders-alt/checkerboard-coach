@@ -29,3 +29,5 @@
 
 .fullRow{grid-column:1 / -1}
 .fullRow .secondary{width:100%}
+
+.smallLead{font-size:14px;color:#9fb0c8;margin-top:8px}

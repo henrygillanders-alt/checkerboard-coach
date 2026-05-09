@@ -109,7 +109,7 @@ function App() {
   const [session, setSession] = useState([]);
   const [rotationBlocks, setRotationBlocks] = useState([
     {
-      title:'CB Pairs',
+      title:'Rotation 1',
       format:'King of Court',
       duration:8,
       challengeType:'Pairs',
@@ -227,7 +227,7 @@ function App() {
   return <div>
     <header className="hero">
       <button className="home" onClick={home}>HOME</button>
-      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 11 · ROTATION CHALLENGE SELECTOR</p></div>
+      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 12 · FLEXIBLE ROTATION-FIRST SESSION</p></div>
     </header>
 
     {page === 'home' && <main className="container">
@@ -237,8 +237,8 @@ function App() {
         <button className="card blue" onClick={library}><h3>Game Library</h3><p>{families.length} families · {games.length} games</p></button>
         <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and CB + blind finish</p></button>
         <button className="card red" onClick={() => setPage('blindDeck')}><h3>Blind Deck</h3><p>Secret cards for players</p></button>
-        <button className="card purple" onClick={() => setPage('session')}><h3>Session Flow</h3><p>{session.length} saved items</p></button>
-        <button className="card red" onClick={() => setPage('rotationBuilder')}><h3>Modular Rotation Builder</h3><p>King of Court blocks and progressive layers</p></button>
+        <button className="card purple" onClick={() => setPage('rotationBuilder')}><h3>Flexible Session Builder</h3><p>King of Court rotations · live total time</p></button>
+        <button className="card red" onClick={() => setPage('session')}><h3>Saved Session Items</h3><p>Review games saved from library/deck</p></button>
         <button className="card amber" onClick={() => setPage('scoring')}><h3>Scoring Protocol</h3><p>Default Checkerboard rules</p></button>
       </div>
     </main>}
@@ -274,12 +274,12 @@ function App() {
     </main>}
 
     {page === 'session' && <main className="container">
-      <div className="topline"><div><h2>Session Flow</h2><p className="lead">Organise saved games into expandable Warm-up, Main Block, Pressure Block and Finish sections.</p></div><button className="secondary" onClick={home}>Home</button></div>
+      <div className="topline"><div><h2>Session Flow</h2><p className="lead">Review saved items from the game library or blind deck. For normal coaching, use Flexible Session Builder.</p></div><button className="secondary" onClick={home}>Home</button></div>
       <section className="panel sessionOverview">
         <div className="cardHead">
           <div>
-            <h3>{sessionDuration}-Minute Template</h3>
-            <p className="lead">60 minutes is the default. Use 80 minutes for longer court bookings.</p>
+            <h3>Optional Time Guide</h3>
+            <p className="lead">This is only a guide. Your main workflow is rotation-based, not fixed-template based.</p>
           </div>
           <div className="chips compact">
             <button className={sessionDuration === 60 ? 'chip active' : 'chip'} onClick={() => setSessionDuration(60)}>60 min</button>
@@ -308,7 +308,7 @@ function App() {
 
     {page === 'rotationBuilder' && <main className="container">
       <div className="topline">
-        <div><h2>Modular Rotation Builder</h2><p className="lead">Build King of Court / challenger blocks, select different singles/pairs/triples per rotation, and add a layer every 1–2 rotations.</p></div>
+        <div><h2>Modular Rotation Builder</h2><p className="lead">Build flexible King of Court / challenger rotations. Select a different CB challenge for each rotation and add layers every 1–2 rotations.</p></div>
         <button className="secondary" onClick={home}>Home</button>
       </div>
 
@@ -316,7 +316,7 @@ function App() {
         <div className="cardHead">
           <div>
             <h3>Rotation-Based Session</h3>
-            <p className="lead">Designed for your flexible court workflow rather than a rigid lesson plan.</p>
+            <p className="lead">No fixed 60-minute template. Build 5–8 minute rotations and let total time calculate itself.</p>
           </div>
           <div className="totalCard inline">
             <strong>Total</strong>
@@ -338,6 +338,7 @@ function App() {
             </div>
           </div>
 
+          <p className="lead smallLead">Choose the challenge type and exact CB challenge for this rotation. Use Duplicate + Progress to create the next rotation with an added layer.</p>
           <div className="builderGrid">
             <label>Block Name<input value={b.title} onChange={e=>updateRotationBlock(i,'title',e.target.value)} /></label>
             <label>Format<select value={b.format} onChange={e=>updateRotationBlock(i,'format',e.target.value)}>
