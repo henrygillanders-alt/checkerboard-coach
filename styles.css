@@ -10,3 +10,11 @@
 .rotationCard{border-color:#496da2}.cardTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.rotationNum{color:#ffd980;font-weight:900}.rotationCard h3{font-size:24px;margin:6px 0}.category{color:#9fb0c8;margin:0}.miniButtons{display:flex;gap:8px;flex-wrap:wrap}.taskBox{background:#0b1727;border:1px solid #2d4568;border-radius:14px;padding:14px;margin-top:14px}.taskBox p{margin:6px 0 0;color:#dbe8ff}.layerLine{margin-top:14px}.quickLayers{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.quickLayers button{font-size:13px;padding:8px 10px}
 .editPanel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;border-top:1px solid #2e486d;padding-top:18px}label{display:flex;flex-direction:column;gap:8px;font-weight:800}input,select,textarea{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:12px;padding:12px}textarea{min-height:90px}.wide{grid-column:1/-1}
 @media(max-width:800px){.hero,.topline,.cardTop{flex-direction:column}.homeGrid,.editPanel{grid-template-columns:1fr}.total{width:100%}.activityRow{flex-direction:column;align-items:flex-start}.activityRow em{text-align:left}.topButtons{width:100%}.topButtons button{width:100%}}
+
+.rationaleBox{background:#0c1a2c;border:1px solid #315075;border-radius:14px;padding:14px;margin-top:12px}
+.rationaleBox p{margin:6px 0 0;color:#dbe8ff;line-height:1.4}
+.rationaleBox strong{color:#ffd980}
+
+.variationInline{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.variationInline span{color:#ffd980;font-weight:900}
+.variationInline select{background:#091625;border:1px solid #375174;color:#eef4ff;border-radius:10px;padding:8px 10px}

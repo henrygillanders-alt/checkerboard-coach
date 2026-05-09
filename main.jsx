@@ -15,9 +15,17 @@ const layers = [
 ];
 
 const activities = [
-  {category:'ATL / BTL', title:'ATL Tape Height Control', duration:6, format:'King of Court', task:'Above tape / below tape cue', layers:['Clean Winner'], coach:'Use tape as a clear visual cue. Reward recognition of trajectory.'},
-  {category:'ATL / BTL', title:'Height Change Recognition', duration:8, format:'King of Court', task:'Change height when opponent is late or off balance', layers:['Opponent Off T'], coach:'Player reads opponent position before choosing height.'},
-  {category:'ATL / BTL', title:'Pace Variation Rotation', duration:8, format:'Challenger Court', task:'Soft dying / working / fast penetrating pace', layers:['Clean Winner'], coach:'Same prep, different ball outcome.'},
+  {category:'ATL / BTL', title:'ATL / BTL Tape Height Control', duration:6, format:'King of Court', task:'Use tape cue to shape above-tape and below-tape shot choices.', rationale:'Creates a clear visual affordance for trajectory selection while keeping decisions embedded in live play.', layers:['Clean Winner'], coach:'Use tape as a clear visual cue. Reward recognition of trajectory.',
+    variations:[
+      {name:'1 Shot Below', duration:6, task:'Each rally must include one shot below the tape cue.', rationale:'Introduces trajectory control without overloading the player. One below-tape shot creates a simple perception-action target inside live play.', layers:['Clean Winner']},
+      {name:'2 Shots Below', duration:8, task:'Each player must produce two below-tape shots before bonus scoring opens.', rationale:'Increases stability of lower trajectory control while retaining rally realism and tactical decision-making.', layers:['Clean Winner']},
+      {name:'Right Side Only', duration:6, format:'Challenger Court', task:'Below-tape scoring only applies on the right side of the court.', rationale:'Narrows the task constraint to one side so the player can explore better affordances for low trajectory under pressure.', layers:['Opponent Off T']},
+      {name:'Below Must Be Volley', duration:8, task:'Below-tape bonus only counts if the below-tape shot is played as a volley.', rationale:'Links trajectory control with earlier interception and central positioning.', layers:['Volley Finish','Clean Winner']},
+      {name:'Below-Tape Winner', duration:8, task:'Bonus only if the winning shot travels below the tape cue.', rationale:'Connects lower trajectory to tactical conversion rather than just technical execution.', layers:['Clean Winner','Opponent Off T']}
+    ]
+  },
+  {category:'ATL / BTL', title:'Height Change Recognition', duration:8, format:'King of Court', task:'Change height when opponent is late or off balance.', rationale:'Develops perception of opponent recovery state and matching ball height to the opportunity.', layers:['Opponent Off T'], coach:'Player reads opponent position before choosing height.'},
+  {category:'ATL / BTL', title:'Pace Variation Rotation', duration:8, format:'Challenger Court', task:'Soft dying / working / fast penetrating pace.', rationale:'Players learn that similar preparation can produce different ball speeds and shapes according to the rally problem.', layers:['Clean Winner'], coach:'Same prep, different ball outcome.'},
 
   {category:'Classic Conditioned', title:'Length Before Attack', duration:8, format:'King of Court', task:'Must create length before attacking short', layers:['Quality Length Before Attack'], coach:'Length should create the attack.'},
   {category:'Classic Conditioned', title:'Opponent Off-T Bonus', duration:8, format:'King of Court', task:'Bonus if winner is played while opponent is outside T-zone', layers:['Opponent Off T'], coach:'Notice the affordance; do not force the winner.'},
@@ -52,7 +60,10 @@ function cloneActivity(a) {
     task: a.task,
     layers: [...(a.layers || [])],
     coach: a.coach || '',
+    rationale: a.rationale || 'This activity creates a representative problem for the player to solve under live rally information.',
     progression: 'Duplicate and add/change one layer after 1–2 rotations.',
+    variations: a.variations || [],
+    selectedVariation: a.variations?.[0]?.name || '',
     editing: false
   };
 }
@@ -85,6 +96,7 @@ function App(){
       task:'Tap Edit to add task',
       layers:[],
       coach:'',
+      rationale:'',
       progression:'',
       editing:true
     }]);
@@ -94,6 +106,20 @@ function App(){
   function updateItem(i, key, value){
     const copy = [...session];
     copy[i][key] = value;
+    setSession(copy);
+  }
+
+  function applyVariation(i, variationName){
+    const copy = [...session];
+    const item = copy[i];
+    const variation = item.variations.find(v => v.name === variationName);
+    if(!variation) return;
+    item.selectedVariation = variation.name;
+    item.duration = variation.duration || item.duration;
+    item.format = variation.format || item.format;
+    item.task = variation.task || item.task;
+    item.rationale = variation.rationale || item.rationale;
+    item.layers = [...(variation.layers || item.layers || [])];
     setSession(copy);
   }
 
@@ -140,7 +166,7 @@ function App(){
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
         <h1>Session Builder</h1>
-        <p>Phase 19 · Compact cards + add-from-library workflow</p>
+        <p>Phase 21 · Selectable variations</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -172,7 +198,7 @@ function App(){
 
       <section className="panel">
         {activities.filter(a => a.category === category).map((a, i) => <button key={i} className="activityRow" onClick={() => addActivity(a)}>
-          <div><strong>{a.title}</strong><span>{a.task}</span></div>
+          <div><strong>{a.title}</strong><span>{a.task}{a.variations ? ` · ${a.variations.length} variations` : ''}</span></div>
           <em>{a.duration} min</em>
         </button>)}
       </section>
@@ -183,7 +209,7 @@ function App(){
         <div><h2>Session Builder</h2><p>Start empty. Add from Games, then duplicate and progress every 1–2 rotations.</p></div>
         <div className="topButtons">
           <button className="primary" onClick={() => setPickerOpen(!pickerOpen)}>+ Add From Games</button>
-          <button className="secondary" onClick={addCustomNote}>+ Custom Rotation</button>
+          
         </div>
       </div>
 
@@ -193,14 +219,14 @@ function App(){
           {categories.map(c => <button key={c} className={category === c ? 'chip active' : 'chip'} onClick={() => setCategory(c)}>{c}</button>)}
         </div>
         {activities.filter(a => a.category === category).map((a, i) => <button key={i} className="activityRow" onClick={() => addActivity(a)}>
-          <div><strong>{a.title}</strong><span>{a.task}</span></div>
+          <div><strong>{a.title}</strong><span>{a.task}{a.variations ? ` · ${a.variations.length} variations` : ''}</span></div>
           <em>{a.duration} min</em>
         </button>)}
       </section>}
 
       {session.length === 0 && <section className="empty">
         <h3>No rotations yet</h3>
-        <p>Add from Games to build the session with compact cards. Nothing is preloaded.</p>
+        <p>Add from Games to build the session with compact cards. Nothing is preloaded and there are no dead custom forms.</p>
       </section>}
 
       {session.map((item, i) => <section className="rotationCard" key={item.id}>
@@ -209,6 +235,12 @@ function App(){
             <div className="rotationNum">Rotation {i+1} · {item.duration} min · {item.format}</div>
             <h3>{item.title}</h3>
             <p className="category">{item.category}</p>
+            {item.variations?.length > 0 && <div className="variationInline">
+              <span>Variation</span>
+              <select value={item.selectedVariation} onChange={e => applyVariation(i, e.target.value)}>
+                {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
+              </select>
+            </div>}
           </div>
           <div className="miniButtons">
             <button onClick={() => moveItem(i,-1)}>↑</button>
@@ -224,6 +256,11 @@ function App(){
           <p>{item.task}</p>
         </div>
 
+        <div className="rationaleBox">
+          <strong>Rationale</strong>
+          <p>{item.rationale}</p>
+        </div>
+
         <div className="layerLine">
           <strong>Layers</strong>
           <div className="chips">
@@ -237,10 +274,14 @@ function App(){
         </div>
 
         {item.editing && <div className="editPanel">
+          {item.variations?.length > 0 && <label className="wide">Variation<select value={item.selectedVariation} onChange={e => applyVariation(i, e.target.value)}>
+            {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
+          </select></label>}
           <label>Name<input value={item.title} onChange={e => updateItem(i,'title',e.target.value)} /></label>
           <label>Duration<select value={item.duration} onChange={e => updateItem(i,'duration',e.target.value)}><option>5</option><option>6</option><option>7</option><option>8</option><option>10</option></select></label>
           <label>Format<select value={item.format} onChange={e => updateItem(i,'format',e.target.value)}><option>King of Court</option><option>Challenger Court</option><option>Winner Stays On</option><option>2v1 Pressure</option><option>Conditioned Matchplay</option><option>Feed + Live Rally</option></select></label>
           <label className="wide">Task<textarea value={item.task} onChange={e => updateItem(i,'task',e.target.value)} /></label>
+          <label className="wide">Rationale<textarea value={item.rationale} onChange={e => updateItem(i,'rationale',e.target.value)} /></label>
           <label>Coach Focus<textarea value={item.coach} onChange={e => updateItem(i,'coach',e.target.value)} /></label>
           <label>Next Progression<textarea value={item.progression} onChange={e => updateItem(i,'progression',e.target.value)} /></label>
         </div>}
