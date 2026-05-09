@@ -231,6 +231,113 @@ function Players(){
   );
 }
 
+
+function Competition(){
+  const [format, setFormat] = useState('Round Robin');
+  const [players, setPlayers] = useState('');
+  const [generated, setGenerated] = useState([]);
+
+  function buildCompetition(){
+    const names = players
+      .split('\n')
+      .map(p => p.trim())
+      .filter(Boolean);
+
+    if(names.length < 2){
+      setGenerated([]);
+      return;
+    }
+
+    if(format === 'Round Robin'){
+      const rounds = [];
+      for(let i=0;i<names.length;i++){
+        for(let j=i+1;j<names.length;j++){
+          rounds.push(`${names[i]} vs ${names[j]}`);
+        }
+      }
+      setGenerated(rounds);
+    }
+
+    if(format === 'Monrad'){
+      const rounds = names
+        .map((p,i) => `Seed ${i+1}: ${p}`)
+      setGenerated([
+        'Round 1 pairings:',
+        ...rounds
+      ]);
+    }
+
+    if(format === 'NSL'){
+      const teamA = names.filter((_,i) => i % 2 === 0);
+      const teamB = names.filter((_,i) => i % 2 !== 0);
+
+      setGenerated([
+        `Team A: ${teamA.join(', ')}`,
+        `Team B: ${teamB.join(', ')}`,
+        'Rotate courts every 8 minutes.',
+        'Winning team stays on.'
+      ]);
+    }
+
+    if(format === 'Invasion Game'){
+      setGenerated([
+        '3v3 or 4v4 team format',
+        'Teams invade target zones for points',
+        'Rotate every 5–8 minutes',
+        'Add checkerboard overlays where appropriate'
+      ]);
+    }
+  }
+
+  return (
+    <div className="page">
+      <div className="pageTop">
+        <h1>Competition</h1>
+      </div>
+
+      <div className="competitionCard">
+        <label>Competition Format</label>
+
+        <select
+          value={format}
+          onChange={e => setFormat(e.target.value)}
+        >
+          <option>Round Robin</option>
+          <option>Monrad</option>
+          <option>Invasion Game</option>
+          <option>NSL</option>
+        </select>
+
+        <label>Players</label>
+
+        <textarea
+          rows="10"
+          placeholder="Enter one player per line"
+          value={players}
+          onChange={e => setPlayers(e.target.value)}
+        />
+
+        <button className="primaryBtn" onClick={buildCompetition}>
+          Generate Competition
+        </button>
+      </div>
+
+      {generated.length > 0 && (
+        <div className="competitionOutput">
+          <h2>{format}</h2>
+
+          {generated.map((g, i) => (
+            <div className="fixtureCard" key={i}>
+              {g}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function Placeholder({title}){
   return (
     <div className="page">
@@ -255,7 +362,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 37 · Remove sample players</p>
+          <p>Phase 38 · Competition foundation</p>
         </div>
       </header>
 
@@ -264,7 +371,7 @@ function App(){
         {screen === 'players' && <Players />}
         {screen === 'sessions' && <Placeholder title="Sessions" />}
         {screen === 'games' && <Placeholder title="Games" />}
-        {screen === 'competition' && <Placeholder title="Competition" />}
+        {screen === 'competition' && <Competition />}
       </main>
     </div>
   );

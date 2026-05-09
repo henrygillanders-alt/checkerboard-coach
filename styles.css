@@ -256,3 +256,35 @@ body{
   font-weight:900;
   margin-bottom:-6px;
 }
+
+
+.competitionCard,
+.competitionOutput{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:20px;
+}
+
+.competitionCard{
+  display:grid;
+  gap:12px;
+}
+
+.competitionCard textarea,
+.competitionCard select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+
+.fixtureCard{
+  background:#091625;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
