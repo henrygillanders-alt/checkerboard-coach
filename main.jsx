@@ -42,6 +42,8 @@ function Home({goTo}){
 function Players({players, setPlayers}){
     const [history, setHistory] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [guestName, setGuestName] = useState('');
+  const [guestEstimate, setGuestEstimate] = useState('Level 3');
   const [showForm, setShowForm] = useState(false);
 
   const [newPlayer, setNewPlayer] = useState({
@@ -128,6 +130,32 @@ function Players({players, setPlayers}){
     setPlayers(updated);
   }
 
+  function addQuickGuest(){
+    if(!guestName.trim()) return;
+
+    const levelGuess = guestEstimate.includes('5') ? 5 :
+      guestEstimate.includes('4') ? 4 :
+      guestEstimate.includes('3') ? 3 :
+      guestEstimate.includes('2') ? 2 : 1;
+
+    const guest = {
+      name: guestName.trim(),
+      playerType:'Guest Player',
+      category:'Guest',
+      level:levelGuess,
+      rankingStatus:'Guest Estimate',
+      juniorRanking:'',
+      guestEstimate,
+      attendance:'Guest today',
+      focus:'',
+      present:true
+    };
+
+    setPlayers([...players, guest]);
+    setGuestName('');
+    setGuestEstimate('Level 3');
+  }
+
   return (
     <div className="page">
       <div className="pageTop">
@@ -188,6 +216,30 @@ function Players({players, setPlayers}){
       <div className="attendanceSummary">
         <strong>Present today:</strong> {players.filter(p => p.present).length}
         <span>Competition will auto-use marked-present players.</span>
+      </div>
+
+      <div className="quickGuestBox">
+        <strong>Add Guest To Today’s Attendance</strong>
+        <div className="quickGuestRow">
+          <input
+            placeholder="Guest name"
+            value={guestName}
+            onChange={e => setGuestName(e.target.value)}
+          />
+          <select value={guestEstimate} onChange={e => setGuestEstimate(e.target.value)}>
+            <option>Level 1 guest</option>
+            <option>Level 2 guest</option>
+            <option>Level 3 guest</option>
+            <option>Level 4 guest</option>
+            <option>Level 5 guest</option>
+            <option>Adult challenge player</option>
+            <option>Coach playing</option>
+          </select>
+          <button className="primaryBtn" onClick={addQuickGuest}>
+            Add Present Guest
+          </button>
+        </div>
+        <p>Guests are marked present immediately and flow into sessions and competitions, but do not affect Junior Programme Ranking.</p>
       </div>
 
       <div className="rankingNote">
@@ -257,8 +309,8 @@ function Competition({players}){
     const presentPlayers = players
       .filter(p => p.present)
       .sort((a,b) => {
-        const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
-        const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+        const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 9000 - Number(a.level || 0);
+        const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 9000 - Number(b.level || 0);
         return aRank - bRank;
       });
 
@@ -378,11 +430,11 @@ function Competition({players}){
               {players
                 .filter(p => p.present)
                 .sort((a,b) => {
-                  const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
-                  const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+                  const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 9000 - Number(a.level || 0);
+                  const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 9000 - Number(b.level || 0);
                   return aRank - bRank;
                 })
-                .map(p => <li key={p.name}>{p.name} {p.playerType === 'Programme Player' ? `(JPR #${p.juniorRanking || 'not set'})` : '(Guest)'}</li>)}
+                .map(p => <li key={p.name}>{p.name} {p.playerType === 'Programme Player' ? `(JPR #${p.juniorRanking || 'not set'})` : `(${p.guestEstimate || 'Guest'})`}</li>)}
             </ol>
           )}
         </div>
@@ -448,7 +500,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 40 · Attendance to competition</p>
+          <p>Phase 41 · Attendance guest entry</p>
         </div>
       </header>
 
