@@ -166,3 +166,50 @@ body{
     font-size:18px;
   }
 }
+
+.levelGuide{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.levelGuide div{
+  background:#091625;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:12px;
+}
+
+.levelGuide strong,
+.levelGuide span{
+  display:block;
+}
+
+.levelGuide strong{
+  color:#ffd980;
+}
+
+.levelGuide span{
+  color:#c9d8ee;
+  margin-top:4px;
+}
+
+@media(max-width:800px){
+  .levelGuide{
+    grid-template-columns:1fr;
+  }
+}
+
+.rankingNote{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:16px;
+  color:#dce8ff;
+}
+
+.rankingNote strong{
+  color:#ffd980;
+}

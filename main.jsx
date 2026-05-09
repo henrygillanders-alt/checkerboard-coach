@@ -3,18 +3,32 @@ import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
+const levelCategories = [
+  { label:'Bronze', level:1 },
+  { label:'Silver', level:2 },
+  { label:'Gold / Elite', level:3 },
+  { label:'Performance', level:4 },
+  { label:'Professional', level:5 }
+];
+
 const starterPlayers = [
   {
     name:'Anna Murphy',
-    squad:'Gold',
-    level:'Elite',
+    playerType:'Programme Player',
+    category:'Gold / Elite',
+    level:3,
+    rankingStatus:'Ranked',
+    juniorRanking:1,
     attendance:'18 sessions',
     focus:'Early volley recognition'
   },
   {
     name:'Jack Byrne',
-    squad:'Silver',
-    level:'Intermediate',
+    playerType:'Programme Player',
+    category:'Silver',
+    level:2,
+    rankingStatus:'Ranked',
+    juniorRanking:15,
     attendance:'11 sessions',
     focus:'Balance before attack'
   }
@@ -35,7 +49,7 @@ function Home({goTo}){
 
       <button className="tile green" onClick={() => goTo('players')}>
         <h2>Players</h2>
-        <p>Squads, attendance and player history.</p>
+        <p>Player levels, absolute junior programme rankinging, attendance and history.</p>
       </button>
 
       <button className="tile red" onClick={() => goTo('competition')}>
@@ -52,10 +66,25 @@ function Players(){
 
   const [newPlayer, setNewPlayer] = useState({
     name:'',
-    squad:'Bronze',
-    level:'Beginner',
+    playerType:'Programme Player',
+    category:'Bronze',
+    level:1,
+    rankingStatus:'Ranked',
+    juniorRanking:1,
+    guestEstimate:'',
     attendance:'0 sessions',
     focus:''
+  });
+
+  function updateCategory(category){
+    const found = levelCategories.find(c => c.label === category);
+    setNewPlayer({...newPlayer, category, level: found ? found.level : 1});
+  }
+
+  const sortedPlayers = [...players].sort((a,b) => {
+    const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 99999;
+    const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 99999;
+    return aRank - bRank;
   });
 
   function addPlayer(){
@@ -63,8 +92,12 @@ function Players(){
     setPlayers([...players, newPlayer]);
     setNewPlayer({
       name:'',
-      squad:'Bronze',
-      level:'Beginner',
+      playerType:'Programme Player',
+      category:'Bronze',
+      level:1,
+      rankingStatus:'Ranked',
+      juniorRanking:1,
+      guestEstimate:'',
       attendance:'0 sessions',
       focus:''
     });
@@ -89,27 +122,21 @@ function Players(){
           />
 
           <select
-            value={newPlayer.squad}
-            onChange={e => setNewPlayer({...newPlayer, squad:e.target.value})}
+            value={newPlayer.category}
+            onChange={e => updateCategory(e.target.value)}
           >
-            <option>Mini Squash</option>
-            <option>Bronze</option>
-            <option>Silver</option>
-            <option>Gold</option>
-            <option>Performance</option>
-            <option>Professional</option>
+            {levelCategories.map(c => (
+              <option key={c.label}>{c.label}</option>
+            ))}
           </select>
 
-          <select
-            value={newPlayer.level}
-            onChange={e => setNewPlayer({...newPlayer, level:e.target.value})}
-          >
-            <option>Beginner</option>
-            <option>Intermediate</option>
-            <option>Elite</option>
-            <option>Performance</option>
-            <option>Professional</option>
-          </select>
+          <input
+            type="number"
+            min="1"
+            placeholder="Absolute junior programme ranking"
+            value={newPlayer.clubRank}
+            onChange={e => setNewPlayer({...newPlayer, clubRank:e.target.value})}
+          />
 
           <textarea
             placeholder="Current coaching focus"
@@ -123,14 +150,34 @@ function Players(){
         </div>
       )}
 
+      <div className="rankingNote">
+        <strong>Competition ordering:</strong> programme players are sorted by Junior Programme Ranking #1, #2, #3, etc. Guests and coaches can join sessions/competitions but do not affect the junior ranking unless manually changed.
+      </div>
+
+      <div className="levelGuide">
+        {levelCategories.map(c => (
+          <div key={c.label}>
+            <strong>{c.label}</strong>
+            <span>Level {c.level}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="playerGrid">
-        {players.map((p, i) => (
+        {sortedPlayers.map((p, i) => (
           <div className="playerCard" key={i}>
             <h3>{p.name}</h3>
 
             <div className="badgeRow">
-              <span className="badge">{p.squad}</span>
-              <span className="badge">{p.level}</span>
+              <span className="badge">{p.playerType}</span>
+              <span className="badge">{p.category}</span>
+              <span className="badge">Level {p.level}</span>
+              <span className="badge">{p.playerType === 'Programme Player' ? `Junior Ranking #${p.juniorRanking}` : 'Guest / Unranked'}</span>
+            </div>
+
+            <div className="infoBox">
+              <strong>Competition Slot</strong>
+              <p>{p.playerType === 'Programme Player' ? `Junior Programme Ranking #${p.juniorRanking}` : `Guest Estimate: ${p.guestEstimate || 'Not set'}`} · Level {p.level} · {p.category}</p>
             </div>
 
             <div className="infoBox">
@@ -179,7 +226,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 30 · Player database foundation</p>
+          <p>Phase 33 · Junior ranking + guests</p>
         </div>
       </header>
 
