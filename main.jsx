@@ -13,6 +13,13 @@ const overlayBank = {
   weak: { title:'Weak Side', short:'Attack weaker side', scoring:'+2 tactical bonus if point is built by attacking identified weakness.', coach:'Check that the player is changing the opponent’s movement problem.' }
 };
 
+const rotationChallengeBanks = {
+  Singles: ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]', '[8-2]', '[7-1]'],
+  Pairs: ['[6-4] + [8-1]', '[5-3] + [7-2]', '[6-3] + [8-1]', '[5-4] + [7-2]', '[6-4] + [5-3]', '[7-2] + [8-1]'],
+  Triples: ['[6-4] + [8-1] + [5-3]', '[5-3] + [7-2] + [8-1]', '[6-3] + [8-1] + [7-2]', '[5-4] + [7-2] + [6-3]'],
+  'CB + Blind Finish': ['[6-4] + [8-1] → blind finish', '[5-3] + [7-2] → blind finish', '[6-3] + [8-1] → blind finish', '[5-4] + [7-2] → blind finish']
+};
+
 const sessionBlocks = ['Warm-up', 'Main Block', 'Pressure Block', 'Finish'];
 
 const singles = ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]', '[8-2]', '[7-1]'];
@@ -105,6 +112,7 @@ function App() {
       title:'CB Pairs',
       format:'King of Court',
       duration:8,
+      challengeType:'Pairs',
       challenge:'[6-4] + [8-1]',
       overlays:['Clean Winner'],
       coach:'Create pressure before attacking.',
@@ -152,6 +160,7 @@ function App() {
       title:'New Block',
       format:'King of Court',
       duration:8,
+      challengeType:'Pairs',
       challenge:'[5-3] + [7-2]',
       overlays:[],
       coach:'',
@@ -161,6 +170,18 @@ function App() {
   function updateRotationBlock(i,key,val){
     const copy=[...rotationBlocks];
     copy[i][key]=val;
+    setRotationBlocks(copy);
+  }
+  function setRotationChallengeType(i,type){
+    const copy=[...rotationBlocks];
+    copy[i].challengeType = type;
+    copy[i].challenge = rotationChallengeBanks[type][0];
+    setRotationBlocks(copy);
+  }
+  function drawRotationChallenge(i){
+    const copy=[...rotationBlocks];
+    const type = copy[i].challengeType || 'Pairs';
+    copy[i].challenge = rotationChallengeBanks[type][Math.floor(Math.random() * rotationChallengeBanks[type].length)];
     setRotationBlocks(copy);
   }
   function addRotationLayer(i){
@@ -206,7 +227,7 @@ function App() {
   return <div>
     <header className="hero">
       <button className="home" onClick={home}>HOME</button>
-      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 10C · FULL APP + MODULAR BUILDER</p></div>
+      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 11 · ROTATION CHALLENGE SELECTOR</p></div>
     </header>
 
     {page === 'home' && <main className="container">
@@ -287,7 +308,7 @@ function App() {
 
     {page === 'rotationBuilder' && <main className="container">
       <div className="topline">
-        <div><h2>Modular Rotation Builder</h2><p className="lead">Build King of Court / challenger blocks, usually 5–8 minute rotations, and add a layer every 1–2 rotations.</p></div>
+        <div><h2>Modular Rotation Builder</h2><p className="lead">Build King of Court / challenger blocks, select different singles/pairs/triples per rotation, and add a layer every 1–2 rotations.</p></div>
         <button className="secondary" onClick={home}>Home</button>
       </div>
 
@@ -325,7 +346,15 @@ function App() {
             <label>Rotation Duration<select value={b.duration} onChange={e=>updateRotationBlock(i,'duration',e.target.value)}>
               <option>5</option><option>6</option><option>7</option><option>8</option><option>10</option>
             </select></label>
-            <label>Challenge<input value={b.challenge} onChange={e=>updateRotationBlock(i,'challenge',e.target.value)} /></label>
+            <label>Challenge Type<select value={b.challengeType || 'Pairs'} onChange={e=>setRotationChallengeType(i,e.target.value)}>
+              <option>Singles</option><option>Pairs</option><option>Triples</option><option>CB + Blind Finish</option>
+            </select></label>
+            <label>Challenge<select value={b.challenge} onChange={e=>updateRotationBlock(i,'challenge',e.target.value)}>
+              {(rotationChallengeBanks[b.challengeType || 'Pairs']).map(c=><option key={c}>{c}</option>)}
+            </select></label>
+            <div className="fullRow">
+              <button className="secondary" onClick={()=>drawRotationChallenge(i)}>Draw New {b.challengeType || 'Pairs'} Challenge</button>
+            </div>
           </div>
 
           <div className="overlayTop">
