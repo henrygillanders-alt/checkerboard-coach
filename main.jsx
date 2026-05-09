@@ -15,8 +15,8 @@ const overlayBank = {
 
 const singles = ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]', '[8-2]', '[7-1]'];
 const pairs = ['[6-4] + [8-1]', '[5-3] + [7-2]', '[6-3] + [8-1]', '[5-4] + [7-2]', '[6-4] + [5-3]', '[7-2] + [8-1]'];
-const triples = ['[6-4] + [8-1] + clean finish', '[5-3] + [7-2] + clean finish', '[6-3] + [8-1] + volley finish', '[5-4] + [7-2] + off-T finish'];
-const blindFinishes = ['front wall finish', 'floor finish', 'side wall finish', 'volley finish', 'clean winner', 'opponent off T'];
+const triples = ['[6-4] + [8-1] + [5-3]', '[5-3] + [7-2] + [8-1]', '[6-3] + [8-1] + [7-2]', '[5-4] + [7-2] + [6-3]'];
+const blindFinishes = ['front wall finish', 'floor finish', 'side wall finish', 'volley finish', 'clean winner', 'opponent off T', 'front-court finish', 'back-court finish'];
 const suits = ['♠', '♥', '♦', '♣'];
 const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
@@ -28,8 +28,9 @@ function g(title, family, level, objective, setup, rules, scoring, coach, overla
 
 const games = [
   g('CB Singles','Checkerboard Games','Level 1','Introduce one-shot checkerboard targeting inside a live rally.','Coach calls/draws one target such as [6-4], [8-1], [5-3] or [7-2].','Normal rally. Player earns challenge credit by completing the nominated target.','Win rally +1. Complete single challenge +1.','Keep the target simple enough that the rally remains representative.',['clean','offt','cb']),
-  g('CB Pairs','Checkerboard Games','Level 2–5','Train tactical two-shot combinations that create and then exploit space.','Use a pair such as [6-4] + [8-1] or [5-3] + [7-2].','Player must complete both parts in order during the rally.','Complete pair +2. Win after pair +3.','The first shot should create the affordance for the second.',['clean','offt','four','two']),
-  g('CB Triples','Checkerboard Games','Level 3–5','Develop advanced tactical chaining and delayed conversion.','Player receives a three-part checkerboard chain.','Complete the chain in order. At higher levels, convert within the window.','Complete triple +3. Win after challenge +3.','Only use once players can complete pairs without losing rally realism.',['clean','offt','four','two']),
+  g('CB Pairs','Checkerboard Games','Level 2–5','Train tactical two-shot combinations that create and then exploit space.','Use a pair such as [6-4] + [8-1] or [5-3] + [7-2].','Player must complete both parts in order during the rally.','Complete pair +2. Win after pair +3.','The first shot should create the affordance for the second.',['clean','offt','four','two','blind']),
+  g('CB Triples','Checkerboard Games','Level 3–5','Develop advanced tactical chaining and delayed conversion.','Player receives a three-part checkerboard chain.','Complete the chain in order. At higher levels, convert within the window.','Complete triple +3. Win after challenge +3.','Only use once players can complete pairs without losing rally realism.',['clean','offt','four','two','blind']),
+  g('CB Challenge + Blind Finish','Checkerboard Games','Level 3–5','Complete a visible CB pair/triple, then convert with a hidden finish condition.','Player receives a checkerboard challenge and a secret finish card.','The CB challenge opens the scoring window. The final bonus depends on the hidden finish.','Pair +2 or triple +3. Win after challenge +3. Blind finish +3. Clean winner +2.','This is the strongest blind format: the pattern creates pressure, but the finish stays disguised.',['blind','clean','offt','four','two']),
   g('Blind Pairs','Checkerboard Games','Intermediate–Professional','Train hidden intention, disguise and decision-making.','Each player secretly receives a pair challenge.','Normal rally. Each player works toward hidden pair without announcing it.','Win rally +1. Complete pair +2. Win after challenge +3.','Stop players forcing the card. The game must still reward adaptation.',['blind','clean','four','two']),
   g('Return to T Score','T Zone Games','All levels','Build awareness of recovery to the T after every shot.','Normal rally. Mark or define the T-zone clearly.','Coach/referee observes whether the opponent recovers before next contact.','Win rally +1. Opponent fails to recover to T before next contact = +1.','Look for players recognising opponent position before choosing the next shot.',['clean','volley']),
   g('Opponent Off-T Bonus','T Zone Games','Intermediate–Professional','Reward recognising when the opponent is not recovered.','Normal rally. T-zone is marked or agreed.','Bonus only if winner is played while opponent is outside the T-zone.','Win rally +1. +3 off-T winning shot bonus.','Do not force a winner. Notice the affordance when it appears.',['clean','four','two','volley']),
@@ -51,6 +52,7 @@ function makeChallenge(mode, level) {
   if (mode === 'Pairs') { challenge = pick(pairs); baseScore = 'Pair challenge +2. Win after pair +3.'; overlayIds = ['clean', 'offt']; }
   if (mode === 'Triples') { challenge = pick(triples); baseScore = 'Triple challenge +3. Win after challenge +3.'; overlayIds = ['clean', 'offt']; }
   if (mode === 'Blind') { challenge = pick(pairs); baseScore = 'Hidden pair +2. Win after hidden challenge +3.'; overlayIds = ['blind', 'clean']; }
+  if (mode === 'CB + Blind Finish') { challenge = pick(pairs) + ' → blind finish: ' + pick(blindFinishes); baseScore = 'Visible pair +2. Win after challenge +3. Blind finish +3. Clean winner +2.'; overlayIds = ['blind','clean','offt']; }
 
   if (level >= 3 && !overlayIds.includes('offt')) overlayIds.push('offt');
   if (level === 4) overlayIds.push('four');
@@ -58,7 +60,9 @@ function makeChallenge(mode, level) {
   if (mode === 'Blind') challenge = challenge + ' / secret finish: ' + pick(blindFinishes);
 
   return { mode, level, challenge, baseScore, overlayIds,
-    coach: level <= 2 ? 'Keep the challenge playable and do not let the target dominate the rally.' :
+    coach: mode === 'CB + Blind Finish'
+      ? 'The CB challenge creates the pressure picture; the finish card keeps the final intention disguised.'
+      : level <= 2 ? 'Keep the challenge playable and do not let the target dominate the rally.' :
       level === 3 ? 'Challenge only matters when it connects to opponent position, especially off T.' :
       level === 4 ? 'Use the four-shot window only if the player can still perceive and adapt.' :
       'Professional difficulty: convert quickly without forcing the pattern.'
@@ -74,18 +78,17 @@ function drawBlindCard(deckType, level) {
   if (deckType === 'Singles') { condition = pick(singles); title = 'Blind Single'; scoring = 'Complete hidden single +1. Win rally +1. Clean winner +2.'; }
   if (deckType === 'Triples') { condition = pick(triples); title = 'Blind Triple'; scoring = 'Complete hidden triple +3. Win after hidden challenge +3. Clean winner +2.'; }
   if (deckType === 'Finish') { condition = pick(blindFinishes); title = 'Blind Finish'; scoring = 'Win rally using secret finish condition +3. Clean winner +2.'; }
-  if (deckType === 'Mixed') {
-    const options = ['Singles', 'Pairs', 'Triples', 'Finish'];
-    return drawBlindCard(pick(options), level);
-  }
+  if (deckType === 'CB + Finish') { condition = `${pick(pairs)} → ${pick(blindFinishes)}`; title = 'CB + Blind Finish'; scoring = 'Complete visible CB pair +2. Win after challenge +3. Secret finish +3. Clean winner +2.'; }
+  if (deckType === 'Mixed') { return drawBlindCard(pick(['Singles', 'Pairs', 'Triples', 'Finish', 'CB + Finish']), level); }
 
   let windowText = '';
-  if (level === 4) windowText = 'Must convert within 4 shots after completing the condition.';
-  if (level === 5) windowText = 'Must convert within 2 shots after completing the condition.';
+  if (level === 4) windowText = 'Must convert within 4 shots after completing the CB condition.';
+  if (level === 5) windowText = 'Must convert within 2 shots after completing the CB condition.';
 
-  return {
-    card, title, deckType, level, condition, scoring, windowText,
-    coach: 'Player keeps the card secret. The task should shape intention without forcing the rally.'
+  return { card, title, deckType, level, condition, scoring, windowText,
+    coach: deckType === 'CB + Finish'
+      ? 'Player may know the CB pair but must keep the finish hidden. Use this to train disguise after creating pressure.'
+      : 'Player keeps the card secret. The task should shape intention without forcing the rally.'
   };
 }
 
@@ -120,15 +123,15 @@ function App() {
   return <div>
     <header className="hero">
       <button className="home" onClick={home}>HOME</button>
-      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 6 · BLIND CHALLENGE DECK</p></div>
+      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 7 · CB CHALLENGE + BLIND FINISH</p></div>
     </header>
 
     {page === 'home' && <main className="container">
       <h2>Courtside Coaching Tool</h2>
-      <p className="lead">Game library, live coach cards, random challenges and blind card deck.</p>
+      <p className="lead">Game library, live coach cards, random challenges and CB + Blind Finish deck.</p>
       <div className="grid two">
         <button className="card blue" onClick={library}><h3>Game Library</h3><p>{families.length} families · {games.length} games</p></button>
-        <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and blind</p></button>
+        <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and CB + blind finish</p></button>
         <button className="card red" onClick={() => setPage('blindDeck')}><h3>Blind Deck</h3><p>Secret cards for players</p></button>
         <button className="card purple" onClick={() => setPage('session')}><h3>Session Flow</h3><p>{session.length} saved items</p></button>
         <button className="card amber" onClick={() => setPage('scoring')}><h3>Scoring Protocol</h3><p>Default Checkerboard rules</p></button>
@@ -136,15 +139,13 @@ function App() {
     </main>}
 
     {page === 'blindDeck' && <main className="container">
-      <div className="topline"><div><h2>Blind Challenge Deck</h2><p className="lead">Draw a secret card. Player keeps the condition hidden until scored or revealed.</p></div><button className="secondary" onClick={home}>Home</button></div>
-
+      <div className="topline"><div><h2>Blind Challenge Deck</h2><p className="lead">Draw a secret card. CB + Finish combines visible tactical pattern with hidden finish condition.</p></div><button className="secondary" onClick={home}>Home</button></div>
       <section className="panel">
         <h3>Deck Type</h3>
-        <div className="chips">{['Mixed','Singles','Pairs','Triples','Finish'].map(t => <button key={t} className={deckType===t?'chip active':'chip'} onClick={() => { setDeckType(t); setBlindCard(drawBlindCard(t, deckLevel)); setRevealed(false); }}>{t}</button>)}</div>
+        <div className="chips">{['Mixed','Singles','Pairs','Triples','Finish','CB + Finish'].map(t => <button key={t} className={deckType===t?'chip active':'chip'} onClick={() => { setDeckType(t); setBlindCard(drawBlindCard(t, deckLevel)); setRevealed(false); }}>{t}</button>)}</div>
         <h3>Level</h3>
         <div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={deckLevel===l?'chip active':'chip'} onClick={() => { setDeckLevel(l); setBlindCard(drawBlindCard(deckType, l)); setRevealed(false); }}>Level {l}</button>)}</div>
       </section>
-
       <section className="panel blindCard">
         <div className="playingCard">
           <div className="cardRank">{blindCard.card}</div>
@@ -152,23 +153,14 @@ function App() {
           <div className="cardCondition">{revealed ? blindCard.condition : 'Hidden Condition'}</div>
           <div className="cardLevel">Level {blindCard.level}</div>
         </div>
-        {revealed && <div className="blindDetails">
-          <p><strong>Scoring:</strong> {blindCard.scoring}</p>
-          {blindCard.windowText && <p><strong>Window:</strong> {blindCard.windowText}</p>}
-          <p><strong>Coach:</strong> {blindCard.coach}</p>
-        </div>}
+        {revealed && <div className="blindDetails"><p><strong>Scoring:</strong> {blindCard.scoring}</p>{blindCard.windowText && <p><strong>Window:</strong> {blindCard.windowText}</p>}<p><strong>Coach:</strong> {blindCard.coach}</p></div>}
       </section>
-
-      <div className="buttons">
-        <button className="primary" onClick={drawCard}>Draw New Card</button>
-        <button className="secondary" onClick={() => setRevealed(!revealed)}>{revealed ? 'Hide Card' : 'Reveal Card'}</button>
-        <button className="secondary" onClick={addBlindCard}>Add to Session</button>
-      </div>
+      <div className="buttons"><button className="primary" onClick={drawCard}>Draw New Card</button><button className="secondary" onClick={() => setRevealed(!revealed)}>{revealed ? 'Hide Card' : 'Reveal Card'}</button><button className="secondary" onClick={addBlindCard}>Add to Session</button></div>
     </main>}
 
     {page === 'generator' && <main className="container">
       <div className="topline"><div><h2>Random Challenge Generator</h2><p className="lead">Generate tactical challenges that scale by level.</p></div><button className="secondary" onClick={home}>Home</button></div>
-      <section className="panel"><h3>Mode</h3><div className="chips">{['Singles','Pairs','Triples','Blind'].map(m => <button key={m} className={genMode === m ? 'chip active' : 'chip'} onClick={() => { setGenMode(m); setGenerated(makeChallenge(m, genLevel)); }}>{m}</button>)}</div><h3>Level</h3><div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={genLevel === l ? 'chip active' : 'chip'} onClick={() => { setGenLevel(l); setGenerated(makeChallenge(genMode, l)); }}>Level {l}</button>)}</div></section>
+      <section className="panel"><h3>Mode</h3><div className="chips">{['Singles','Pairs','Triples','Blind','CB + Blind Finish'].map(m => <button key={m} className={genMode === m ? 'chip active' : 'chip'} onClick={() => { setGenMode(m); setGenerated(makeChallenge(m, genLevel)); }}>{m}</button>)}</div><h3>Level</h3><div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={genLevel === l ? 'chip active' : 'chip'} onClick={() => { setGenLevel(l); setGenerated(makeChallenge(genMode, l)); }}>Level {l}</button>)}</div></section>
       <section className="panel challengeCard"><div className="challengeTop"><span>{generated.mode}</span><em>Level {generated.level}</em></div><div className="challengeText">{generated.challenge}</div><p><strong>Base scoring:</strong> {generated.baseScore}</p><p><strong>Coach focus:</strong> {generated.coach}</p><h4>Overlays attached</h4>{generatedOverlays.map(o => <p key={o.title}><strong>{o.title}:</strong> {o.scoring}</p>)}</section>
       <div className="buttons"><button className="primary" onClick={generate}>Generate New Challenge</button><button className="secondary" onClick={addGenerated}>Add to Session</button></div>
     </main>}
@@ -191,7 +183,7 @@ function App() {
       <button className="primary" onClick={() => setSession([])}>Clear Session</button>
     </main>}
 
-    {page === 'scoring' && <main className="container"><div className="topline"><h2>Default Scoring Protocol</h2><button className="secondary" onClick={home}>Home</button></div><section className="panel"><p><strong>Win rally:</strong> +1</p><p><strong>Single challenge:</strong> +1</p><p><strong>Pair challenge:</strong> +2</p><p><strong>Triple challenge:</strong> +3</p><p><strong>Win after challenge:</strong> +3 bonus</p><p><strong>Clean winner:</strong> +2 bonus sits on top of all scoring</p><p><strong>Level 4:</strong> convert within 4 shots. <strong>Level 5:</strong> convert within 2 shots.</p></section></main>}
+    {page === 'scoring' && <main className="container"><div className="topline"><h2>Default Scoring Protocol</h2><button className="secondary" onClick={home}>Home</button></div><section className="panel"><p><strong>Win rally:</strong> +1</p><p><strong>Single challenge:</strong> +1</p><p><strong>Pair challenge:</strong> +2</p><p><strong>Triple challenge:</strong> +3</p><p><strong>Win after challenge:</strong> +3 bonus</p><p><strong>Blind finish after CB challenge:</strong> +3 bonus</p><p><strong>Clean winner:</strong> +2 bonus sits on top of all scoring</p><p><strong>Level 4:</strong> convert within 4 shots. <strong>Level 5:</strong> convert within 2 shots.</p></section></main>}
   </div>
 }
 
