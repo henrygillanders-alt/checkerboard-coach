@@ -13,6 +13,8 @@ const overlayBank = {
   weak: { title:'Weak Side', short:'Attack weaker side', scoring:'+2 tactical bonus if point is built by attacking identified weakness.', coach:'Check that the player is changing the opponent’s movement problem.' }
 };
 
+const sessionBlocks = ['Warm-up', 'Main Block', 'Pressure Block', 'Finish'];
+
 const singles = ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]', '[8-2]', '[7-1]'];
 const pairs = ['[6-4] + [8-1]', '[5-3] + [7-2]', '[6-3] + [8-1]', '[5-4] + [7-2]', '[6-4] + [5-3]', '[7-2] + [8-1]'];
 const triples = ['[6-4] + [8-1] + [5-3]', '[5-3] + [7-2] + [8-1]', '[6-3] + [8-1] + [7-2]', '[5-4] + [7-2] + [6-3]'];
@@ -22,24 +24,24 @@ const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
 function pick(list){ return list[Math.floor(Math.random() * list.length)]; }
 
-function g(title, family, level, objective, setup, rules, scoring, coach, overlays) {
-  return { id:title.toLowerCase().replaceAll(' ','-'), title, family, level, objective, setup, rules, scoring, coach, overlays };
+function g(title, family, level, objective, setup, rules, scoring, coach, overlays, block='Main Block') {
+  return { id:title.toLowerCase().replaceAll(' ','-'), title, family, level, objective, setup, rules, scoring, coach, overlays, block };
 }
 
 const games = [
-  g('CB Singles','Checkerboard Games','Level 1','Introduce one-shot checkerboard targeting inside a live rally.','Coach calls/draws one target such as [6-4], [8-1], [5-3] or [7-2].','Normal rally. Player earns challenge credit by completing the nominated target.','Win rally +1. Complete single challenge +1.','Keep the target simple enough that the rally remains representative.',['clean','offt','cb']),
-  g('CB Pairs','Checkerboard Games','Level 2–5','Train tactical two-shot combinations that create and then exploit space.','Use a pair such as [6-4] + [8-1] or [5-3] + [7-2].','Player must complete both parts in order during the rally.','Complete pair +2. Win after pair +3.','The first shot should create the affordance for the second.',['clean','offt','four','two','blind']),
-  g('CB Triples','Checkerboard Games','Level 3–5','Develop advanced tactical chaining and delayed conversion.','Player receives a three-part checkerboard chain.','Complete the chain in order. At higher levels, convert within the window.','Complete triple +3. Win after challenge +3.','Only use once players can complete pairs without losing rally realism.',['clean','offt','four','two','blind']),
-  g('CB Challenge + Blind Finish','Checkerboard Games','Level 3–5','Complete a visible CB pair/triple, then convert with a hidden finish condition.','Player receives a checkerboard challenge and a secret finish card.','The CB challenge opens the scoring window. The final bonus depends on the hidden finish.','Pair +2 or triple +3. Win after challenge +3. Blind finish +3. Clean winner +2.','This is the strongest blind format: the pattern creates pressure, but the finish stays disguised.',['blind','clean','offt','four','two']),
-  g('Blind Pairs','Checkerboard Games','Intermediate–Professional','Train hidden intention, disguise and decision-making.','Each player secretly receives a pair challenge.','Normal rally. Each player works toward hidden pair without announcing it.','Win rally +1. Complete pair +2. Win after challenge +3.','Stop players forcing the card. The game must still reward adaptation.',['blind','clean','four','two']),
-  g('Return to T Score','T Zone Games','All levels','Build awareness of recovery to the T after every shot.','Normal rally. Mark or define the T-zone clearly.','Coach/referee observes whether the opponent recovers before next contact.','Win rally +1. Opponent fails to recover to T before next contact = +1.','Look for players recognising opponent position before choosing the next shot.',['clean','volley']),
-  g('Opponent Off-T Bonus','T Zone Games','Intermediate–Professional','Reward recognising when the opponent is not recovered.','Normal rally. T-zone is marked or agreed.','Bonus only if winner is played while opponent is outside the T-zone.','Win rally +1. +3 off-T winning shot bonus.','Do not force a winner. Notice the affordance when it appears.',['clean','four','two','volley']),
-  g('Tape Height Control','ATL / BTL Games','Beginner–Elite','Train shot height variation with a clear front-wall cue.','Use tape/visual band rather than service line where useful.','Coach nominates ATL or BTL for selected shots/phases.','Point only counts if nominated shot travels above or below tape.','Tape is clearer and usually more representative than the service line for juniors.',['clean','offt','cb']),
-  g('Length Before Attack','Classic Conditioned Games','Beginner–Performance','Build pressure before attacking short.','Attacking short is only allowed after achieving length.','Player must first create pressure with length before attacking.','Win rally +1. Bonus +2 for winning after legal sequence.','Length must create the attack, not become a hoop to jump through.',['clean','offt','four','two']),
-  g('Midcourt Intercept','Volley Games','Intermediate–Elite','Train earlier perception and interception opportunities.','Normal rally. Bonus for legal volley interceptions from midcourt/T-zone.','Player scores bonus when they volley from an appropriate central position.','Win rally +1. Volley intercept +1. Win after volley intercept +3.','Volleys should emerge from pressure and positioning.',['clean','offt','four']),
-  g('Winner Loses a Bounce','Double Bounce Games','Junior beginner–Intermediate','Balance rallies and create adaptive pressure.','Incoming player starts with double bounce. Winner loses one bounce after each rally they win.','Constraint changes after each rally to stop over-domination.','Normal rally scoring.','Useful for mixed standards because advantage shifts dynamically.',['clean','cb']),
-  g('Tempo Pressure','Pressure / Chaos Games','Elite–Professional','Train decision-making under reduced time.','Normal rally with coach-called tempo blocks or rapid restarts.','Player must maintain tactical quality under increased tempo.','Win rally +1. Quality decision under pressure +1.','Do not turn this into mindless speed. Decision quality is the point.',['clean','four','two']),
-  g('Vs Tall Player','Tactical Opponent Games','Intermediate–Professional','Train low, quick direction changes against reach advantage.','Opponent plays as tall/reach-dominant profile.','Reward successful low pressure and quick switch of direction.','Win rally +1. Tactical success +2. Clean winner +2.','Watch whether player is changing the opponent movement problem.',['clean','offt','cb','weak'])
+  g('CB Singles','Checkerboard Games','Level 1','Introduce one-shot checkerboard targeting inside a live rally.','Coach calls/draws one target such as [6-4], [8-1], [5-3] or [7-2].','Normal rally. Player earns challenge credit by completing the nominated target.','Win rally +1. Complete single challenge +1.','Keep the target simple enough that the rally remains representative.',['clean','offt','cb'],'Warm-up'),
+  g('CB Pairs','Checkerboard Games','Level 2–5','Train tactical two-shot combinations that create and then exploit space.','Use a pair such as [6-4] + [8-1] or [5-3] + [7-2].','Player must complete both parts in order during the rally.','Complete pair +2. Win after pair +3.','The first shot should create the affordance for the second.',['clean','offt','four','two','blind'],'Main Block'),
+  g('CB Triples','Checkerboard Games','Level 3–5','Develop advanced tactical chaining and delayed conversion.','Player receives a three-part checkerboard chain.','Complete the chain in order. At higher levels, convert within the window.','Complete triple +3. Win after challenge +3.','Only use once players can complete pairs without losing rally realism.',['clean','offt','four','two','blind'],'Pressure Block'),
+  g('CB Challenge + Blind Finish','Checkerboard Games','Level 3–5','Complete a visible CB pair/triple, then convert with a hidden finish condition.','Player receives a checkerboard challenge and a secret finish card.','The CB challenge opens the scoring window. The final bonus depends on the hidden finish.','Pair +2 or triple +3. Win after challenge +3. Blind finish +3. Clean winner +2.','The pattern creates pressure, but the finish stays disguised.',['blind','clean','offt','four','two'],'Finish'),
+  g('Blind Pairs','Checkerboard Games','Intermediate–Professional','Train hidden intention, disguise and decision-making.','Each player secretly receives a pair challenge.','Normal rally. Each player works toward hidden pair without announcing it.','Win rally +1. Complete pair +2. Win after challenge +3.','Stop players forcing the card. The game must still reward adaptation.',['blind','clean','four','two'],'Pressure Block'),
+  g('Return to T Score','T Zone Games','All levels','Build awareness of recovery to the T after every shot.','Normal rally. Mark or define the T-zone clearly.','Coach/referee observes whether the opponent recovers before next contact.','Win rally +1. Opponent fails to recover to T before next contact = +1.','Look for players recognising opponent position before choosing the next shot.',['clean','volley'],'Warm-up'),
+  g('Opponent Off-T Bonus','T Zone Games','Intermediate–Professional','Reward recognising when the opponent is not recovered.','Normal rally. T-zone is marked or agreed.','Bonus only if winner is played while opponent is outside the T-zone.','Win rally +1. +3 off-T winning shot bonus.','Do not force a winner. Notice the affordance when it appears.',['clean','four','two','volley'],'Pressure Block'),
+  g('Tape Height Control','ATL / BTL Games','Beginner–Elite','Train shot height variation with a clear front-wall cue.','Use tape/visual band rather than service line where useful.','Coach nominates ATL or BTL for selected shots/phases.','Point only counts if nominated shot travels above or below tape.','Tape is clearer and usually more representative than the service line for juniors.',['clean','offt','cb'],'Warm-up'),
+  g('Length Before Attack','Classic Conditioned Games','Beginner–Performance','Build pressure before attacking short.','Attacking short is only allowed after achieving length.','Player must first create pressure with length before attacking.','Win rally +1. Bonus +2 for winning after legal sequence.','Length must create the attack, not become a hoop to jump through.',['clean','offt','four','two'],'Main Block'),
+  g('Midcourt Intercept','Volley Games','Intermediate–Elite','Train earlier perception and interception opportunities.','Normal rally. Bonus for legal volley interceptions from midcourt/T-zone.','Player scores bonus when they volley from an appropriate central position.','Win rally +1. Volley intercept +1. Win after volley intercept +3.','Volleys should emerge from pressure and positioning.',['clean','offt','four'],'Main Block'),
+  g('Winner Loses a Bounce','Double Bounce Games','Junior beginner–Intermediate','Balance rallies and create adaptive pressure.','Incoming player starts with double bounce. Winner loses one bounce after each rally they win.','Constraint changes after each rally to stop over-domination.','Normal rally scoring.','Useful for mixed standards because advantage shifts dynamically.',['clean','cb'],'Warm-up'),
+  g('Tempo Pressure','Pressure / Chaos Games','Elite–Professional','Train decision-making under reduced time.','Normal rally with coach-called tempo blocks or rapid restarts.','Player must maintain tactical quality under increased tempo.','Win rally +1. Quality decision under pressure +1.','Do not turn this into mindless speed. Decision quality is the point.',['clean','four','two'],'Pressure Block'),
+  g('Vs Tall Player','Tactical Opponent Games','Intermediate–Professional','Train low, quick direction changes against reach advantage.','Opponent plays as tall/reach-dominant profile.','Reward successful low pressure and quick switch of direction.','Win rally +1. Tactical success +2. Clean winner +2.','Watch whether player is changing the opponent movement problem.',['clean','offt','cb','weak'],'Main Block')
 ];
 
 const families = [...new Set(games.map(g => g.family))];
@@ -98,6 +100,9 @@ function App() {
   const [selected, setSelected] = useState(null);
   const [active, setActive] = useState(['clean']);
   const [session, setSession] = useState([]);
+  const [currentBlock, setCurrentBlock] = useState('Main Block');
+  const [sessionDuration, setSessionDuration] = useState(60);
+  const [openSessionBlocks, setOpenSessionBlocks] = useState(['Warm-up','Main Block','Pressure Block','Finish']);
   const [genMode, setGenMode] = useState('Pairs');
   const [genLevel, setGenLevel] = useState(3);
   const [generated, setGenerated] = useState(makeChallenge('Pairs', 3));
@@ -111,24 +116,45 @@ function App() {
 
   function home(){ setPage('home'); setSelected(null); window.scrollTo(0,0); }
   function library(){ setPage('library'); setSelected(null); window.scrollTo(0,0); }
-  function openGame(game){ setSelected(game); setActive(game.overlays.includes('clean') ? ['clean'] : []); setPage('game'); window.scrollTo(0,0); }
+  function openGame(game){ setSelected(game); setCurrentBlock(game.block || 'Main Block'); setActive(game.overlays.includes('clean') ? ['clean'] : []); setPage('game'); window.scrollTo(0,0); }
   function toggleFamily(fam){ setOpenFamilies(v => v.includes(fam) ? v.filter(x => x !== fam) : [...v, fam]); }
   function toggleOverlay(id){ if(!selected?.overlays.includes(id)) return; setActive(v => v.includes(id) ? v.filter(x => x !== id) : [...v, id]); }
-  function addToSession(){ if(selected){ setSession([...session, {type:'game', game:selected, overlays:active}]); setPage('session'); window.scrollTo(0,0); } }
+  function addToSession(){ if(selected){ setSession([...session, {type:'game', block:currentBlock, game:selected, overlays:active}]); setPage('session'); window.scrollTo(0,0); } }
   function generate(){ setGenerated(makeChallenge(genMode, genLevel)); }
-  function addGenerated(){ setSession([...session, {type:'challenge', generated}]); setPage('session'); window.scrollTo(0,0); }
+  function addGenerated(){ setSession([...session, {type:'challenge', block: genLevel <= 2 ? 'Warm-up' : genLevel >= 4 ? 'Pressure Block' : 'Main Block', generated}]); setPage('session'); window.scrollTo(0,0); }
   function drawCard(){ setBlindCard(drawBlindCard(deckType, deckLevel)); setRevealed(false); }
-  function addBlindCard(){ setSession([...session, {type:'blind', blindCard}]); setPage('session'); window.scrollTo(0,0); }
+  function addBlindCard(){ setSession([...session, {type:'blind', block:'Finish', blindCard}]); setPage('session'); window.scrollTo(0,0); }
+  function removeSessionItem(index){ setSession(session.filter((_, i) => i !== index)); }
+  function moveSessionItem(index, dir){
+    const copy = [...session];
+    const newIndex = index + dir;
+    if(newIndex < 0 || newIndex >= copy.length) return;
+    [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+    setSession(copy);
+  }
+  function setItemBlock(index, block) {
+    setSession(session.map((item, i) => i === index ? {...item, block} : item));
+  }
+  function toggleSessionBlock(block) {
+    setOpenSessionBlocks(v => v.includes(block) ? v.filter(x => x !== block) : [...v, block]);
+  }
+  function blockMinutes(block) {
+    const plans = {
+      60: {'Warm-up':'8–10 min', 'Main Block':'20–25 min', 'Pressure Block':'15–20 min', 'Finish':'5–10 min'},
+      80: {'Warm-up':'10–12 min', 'Main Block':'30–35 min', 'Pressure Block':'20–25 min', 'Finish':'10–12 min'}
+    };
+    return plans[sessionDuration][block];
+  }
 
   return <div>
     <header className="hero">
       <button className="home" onClick={home}>HOME</button>
-      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 7 · CB CHALLENGE + BLIND FINISH</p></div>
+      <div><div className="eyebrow">SQUASH TACTICAL TRAINING</div><h1>Checkerboard Coach</h1><p>PHASE 9 · EXPANDABLE SESSION TIMES</p></div>
     </header>
 
     {page === 'home' && <main className="container">
       <h2>Courtside Coaching Tool</h2>
-      <p className="lead">Game library, live coach cards, random challenges and CB + Blind Finish deck.</p>
+      <p className="lead">Game library, live coach cards, random challenges, blind deck and expandable 60/80 minute session flow.</p>
       <div className="grid two">
         <button className="card blue" onClick={library}><h3>Game Library</h3><p>{families.length} families · {games.length} games</p></button>
         <button className="card green" onClick={() => setPage('generator')}><h3>Challenge Generator</h3><p>Singles, pairs, triples and CB + blind finish</p></button>
@@ -140,21 +166,8 @@ function App() {
 
     {page === 'blindDeck' && <main className="container">
       <div className="topline"><div><h2>Blind Challenge Deck</h2><p className="lead">Draw a secret card. CB + Finish combines visible tactical pattern with hidden finish condition.</p></div><button className="secondary" onClick={home}>Home</button></div>
-      <section className="panel">
-        <h3>Deck Type</h3>
-        <div className="chips">{['Mixed','Singles','Pairs','Triples','Finish','CB + Finish'].map(t => <button key={t} className={deckType===t?'chip active':'chip'} onClick={() => { setDeckType(t); setBlindCard(drawBlindCard(t, deckLevel)); setRevealed(false); }}>{t}</button>)}</div>
-        <h3>Level</h3>
-        <div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={deckLevel===l?'chip active':'chip'} onClick={() => { setDeckLevel(l); setBlindCard(drawBlindCard(deckType, l)); setRevealed(false); }}>Level {l}</button>)}</div>
-      </section>
-      <section className="panel blindCard">
-        <div className="playingCard">
-          <div className="cardRank">{blindCard.card}</div>
-          <div className="cardTitle">{blindCard.title}</div>
-          <div className="cardCondition">{revealed ? blindCard.condition : 'Hidden Condition'}</div>
-          <div className="cardLevel">Level {blindCard.level}</div>
-        </div>
-        {revealed && <div className="blindDetails"><p><strong>Scoring:</strong> {blindCard.scoring}</p>{blindCard.windowText && <p><strong>Window:</strong> {blindCard.windowText}</p>}<p><strong>Coach:</strong> {blindCard.coach}</p></div>}
-      </section>
+      <section className="panel"><h3>Deck Type</h3><div className="chips">{['Mixed','Singles','Pairs','Triples','Finish','CB + Finish'].map(t => <button key={t} className={deckType===t?'chip active':'chip'} onClick={() => { setDeckType(t); setBlindCard(drawBlindCard(t, deckLevel)); setRevealed(false); }}>{t}</button>)}</div><h3>Level</h3><div className="chips">{[1,2,3,4,5].map(l => <button key={l} className={deckLevel===l?'chip active':'chip'} onClick={() => { setDeckLevel(l); setBlindCard(drawBlindCard(deckType, l)); setRevealed(false); }}>Level {l}</button>)}</div></section>
+      <section className="panel blindCard"><div className="playingCard"><div className="cardRank">{blindCard.card}</div><div className="cardTitle">{blindCard.title}</div><div className="cardCondition">{revealed ? blindCard.condition : 'Hidden Condition'}</div><div className="cardLevel">Level {blindCard.level}</div></div>{revealed && <div className="blindDetails"><p><strong>Scoring:</strong> {blindCard.scoring}</p>{blindCard.windowText && <p><strong>Window:</strong> {blindCard.windowText}</p>}<p><strong>Coach:</strong> {blindCard.coach}</p></div>}</section>
       <div className="buttons"><button className="primary" onClick={drawCard}>Draw New Card</button><button className="secondary" onClick={() => setRevealed(!revealed)}>{revealed ? 'Hide Card' : 'Reveal Card'}</button><button className="secondary" onClick={addBlindCard}>Add to Session</button></div>
     </main>}
 
@@ -173,17 +186,65 @@ function App() {
     {page === 'game' && selected && <main className="container">
       <div className="topline"><div><h2>{selected.title}</h2><p className="lead">{selected.family} · {selected.level}</p></div><div className="buttons"><button className="secondary" onClick={library}>Back to Library</button><button className="secondary" onClick={home}>Home</button></div></div>
       <section className="panel gameCard"><h3>Objective</h3><p>{selected.objective}</p><h3>Set-up</h3><p>{selected.setup}</p><h3>Rules</h3><p>{selected.rules}</p><h3>Base Scoring</h3><p>{selected.scoring}</p><h3>Coach Observation</h3><p>{selected.coach}</p></section>
-      <section className="panel"><h3>Overlay Builder</h3><p className="lead">Select one or two overlays. The Coach Card below updates automatically.</p><div className="overlayGrid">{Object.entries(overlayBank).map(([id, o]) => { const allowed = selected.overlays.includes(id); const isActive = active.includes(id); return <button key={id} disabled={!allowed} className={isActive ? 'overlay active' : allowed ? 'overlay' : 'overlay disabled'} onClick={() => toggleOverlay(id)}><strong>{o.title}</strong><span>{o.short}</span></button> })}</div></section>
-      <section className="panel coachCard"><div className="cardHead"><h3>Live Coach Card</h3><button className="primary" onClick={addToSession}>Add to Session</button></div><p><strong>Game:</strong> {selected.title}</p><p><strong>Base task:</strong> {selected.objective}</p><p><strong>Base scoring:</strong> {selected.scoring}</p>{activeOverlayObjects.length > 0 && <><h4>Active overlay scoring</h4>{activeOverlayObjects.map(o => <p key={o.title}><strong>{o.title}:</strong> {o.scoring}</p>)}<h4>Coach reminders</h4>{activeOverlayObjects.map(o => <p key={o.title + 'c'}>• {o.coach}</p>)}</>}</section>
+      <section className="panel"><h3>Overlay Builder</h3><p className="lead">Select overlays, then choose where this sits in the session.</p><div className="overlayGrid">{Object.entries(overlayBank).map(([id, o]) => { const allowed = selected.overlays.includes(id); const isActive = active.includes(id); return <button key={id} disabled={!allowed} className={isActive ? 'overlay active' : allowed ? 'overlay' : 'overlay disabled'} onClick={() => toggleOverlay(id)}><strong>{o.title}</strong><span>{o.short}</span></button> })}</div></section>
+      <section className="panel coachCard"><div className="cardHead"><h3>Live Coach Card</h3><button className="primary" onClick={addToSession}>Add to Session</button></div>
+        <p><strong>Game:</strong> {selected.title}</p><p><strong>Base task:</strong> {selected.objective}</p><p><strong>Base scoring:</strong> {selected.scoring}</p>
+        <h4>Session block</h4><div className="chips">{sessionBlocks.map(b => <button key={b} className={currentBlock === b ? 'chip active' : 'chip'} onClick={() => setCurrentBlock(b)}>{b}</button>)}</div>
+        {activeOverlayObjects.length > 0 && <><h4>Active overlay scoring</h4>{activeOverlayObjects.map(o => <p key={o.title}><strong>{o.title}:</strong> {o.scoring}</p>)}<h4>Coach reminders</h4>{activeOverlayObjects.map(o => <p key={o.title + 'c'}>• {o.coach}</p>)}</>}
+      </section>
     </main>}
 
     {page === 'session' && <main className="container">
-      <div className="topline"><div><h2>Session Flow</h2><p className="lead">Build a simple courtside flow from selected games, generated challenges and blind cards.</p></div><button className="secondary" onClick={home}>Home</button></div>
-      <section className="panel">{session.length === 0 ? <div><p>No games saved yet.</p><p>Open a game, generate a challenge or draw a blind card, then tap Add to Session.</p></div> : session.map((item, i) => item.type === 'blind' ? <div className="sessionItem" key={i}><strong>{i+1}. Blind Card {item.blindCard.card}</strong><span>{item.blindCard.title}: {item.blindCard.condition}</span><em>Level {item.blindCard.level}</em></div> : item.type === 'challenge' ? <div className="sessionItem" key={i}><strong>{i+1}. Generated {item.generated.mode}</strong><span>{item.generated.challenge}</span><em>Level {item.generated.level} · {item.generated.overlayIds.map(id => overlayBank[id]?.title).filter(Boolean).join(' + ')}</em></div> : <div className="sessionItem" key={i}><strong>{i+1}. {item.game.title}</strong><span>{item.game.family}</span><em>{item.overlays.map(id => overlayBank[id]?.title).filter(Boolean).join(' + ') || 'No overlay'}</em></div>)}</section>
-      <button className="primary" onClick={() => setSession([])}>Clear Session</button>
+      <div className="topline"><div><h2>Session Flow</h2><p className="lead">Organise saved games into expandable Warm-up, Main Block, Pressure Block and Finish sections.</p></div><button className="secondary" onClick={home}>Home</button></div>
+      <section className="panel sessionOverview">
+        <div className="cardHead">
+          <div>
+            <h3>{sessionDuration}-Minute Template</h3>
+            <p className="lead">60 minutes is the default. Use 80 minutes for longer court bookings.</p>
+          </div>
+          <div className="chips compact">
+            <button className={sessionDuration === 60 ? 'chip active' : 'chip'} onClick={() => setSessionDuration(60)}>60 min</button>
+            <button className={sessionDuration === 80 ? 'chip active' : 'chip'} onClick={() => setSessionDuration(80)}>80 min</button>
+          </div>
+        </div>
+        <p><strong>Warm-up:</strong> {blockMinutes('Warm-up')} · <strong>Main:</strong> {blockMinutes('Main Block')} · <strong>Pressure:</strong> {blockMinutes('Pressure Block')} · <strong>Finish:</strong> {blockMinutes('Finish')}</p>
+      </section>
+      {session.length === 0 ? <section className="panel"><p>No games saved yet.</p><p>Open a game, generate a challenge or draw a blind card, then tap Add to Session.</p></section> :
+        sessionBlocks.map(block => {
+          const blockItems = session.filter(item => item.block === block);
+          const isOpen = openSessionBlocks.includes(block);
+          return <section className="panel sessionBlock" key={block}>
+            <button className="sessionBlockHeader" onClick={() => toggleSessionBlock(block)}>
+              <div><strong>{isOpen ? '▼' : '▶'} {block}</strong><span>{blockMinutes(block)} · {blockItems.length} item{blockItems.length === 1 ? '' : 's'}</span></div>
+            </button>
+            {isOpen && <>
+              {blockItems.length === 0 && <p className="muted">No items yet.</p>}
+              {session.map((item, i) => item.block === block ? <SessionItem key={i} item={item} i={i} move={moveSessionItem} remove={removeSessionItem} setBlock={setItemBlock} /> : null)}
+            </>}
+          </section>
+        })
+      }
+      {session.length > 0 && <button className="primary" onClick={() => setSession([])}>Clear Session</button>}
     </main>}
 
     {page === 'scoring' && <main className="container"><div className="topline"><h2>Default Scoring Protocol</h2><button className="secondary" onClick={home}>Home</button></div><section className="panel"><p><strong>Win rally:</strong> +1</p><p><strong>Single challenge:</strong> +1</p><p><strong>Pair challenge:</strong> +2</p><p><strong>Triple challenge:</strong> +3</p><p><strong>Win after challenge:</strong> +3 bonus</p><p><strong>Blind finish after CB challenge:</strong> +3 bonus</p><p><strong>Clean winner:</strong> +2 bonus sits on top of all scoring</p><p><strong>Level 4:</strong> convert within 4 shots. <strong>Level 5:</strong> convert within 2 shots.</p></section></main>}
+  </div>
+}
+
+function SessionItem({ item, i, move, remove, setBlock }) {
+  let title = '', subtitle = '', detail = '';
+  if(item.type === 'blind') { title = `Blind Card ${item.blindCard.card}`; subtitle = `${item.blindCard.title}: ${item.blindCard.condition}`; detail = `Level ${item.blindCard.level}`; }
+  else if(item.type === 'challenge') { title = `Generated ${item.generated.mode}`; subtitle = item.generated.challenge; detail = `Level ${item.generated.level} · ${item.generated.overlayIds.map(id => overlayBank[id]?.title).filter(Boolean).join(' + ')}`; }
+  else { title = item.game.title; subtitle = item.game.family; detail = item.overlays.map(id => overlayBank[id]?.title).filter(Boolean).join(' + ') || 'No overlay'; }
+
+  return <div className="sessionItem">
+    <strong>{i+1}. {title}</strong><span>{subtitle}</span><em>{detail}</em>
+    <div className="miniButtons">
+      <button onClick={() => move(i, -1)}>↑</button>
+      <button onClick={() => move(i, 1)}>↓</button>
+      {sessionBlocks.map(b => <button key={b} onClick={() => setBlock(i, b)}>{b}</button>)}
+      <button onClick={() => remove(i)}>Remove</button>
+    </div>
   </div>
 }
 
