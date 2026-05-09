@@ -304,80 +304,92 @@ function Competition({players}){
   const [generated, setGenerated] = useState([]);
   const [courts, setCourts] = useState(3);
   const [courtLives, setCourtLives] = useState(20);
+  const [monradRounds, setMonradRounds] = useState(3);
+  const [matchFormat, setMatchFormat] = useState('First to 11');
+
+  const presentPlayers = players
+    .filter(p => p.present)
+    .sort((a,b) => {
+      const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 9000 - Number(a.level || 0);
+      const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 9000 - Number(b.level || 0);
+      return aRank - bRank;
+    });
+
+  const names = presentPlayers.length > 0
+    ? presentPlayers.map(p => p.name)
+    : manualPlayers.split('\n').map(p => p.trim()).filter(Boolean);
 
   function buildCompetition(){
-    const presentPlayers = players
-      .filter(p => p.present)
-      .sort((a,b) => {
-        const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 9000 - Number(a.level || 0);
-        const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 9000 - Number(b.level || 0);
-        return aRank - bRank;
-      });
-
-    const names = presentPlayers.length > 0
-      ? presentPlayers.map(p => p.name)
-      : manualPlayers.split('\n').map(p => p.trim()).filter(Boolean);
-
     if(names.length < 2){
-      setGenerated([]);
+      setGenerated(['Need at least 2 players marked present or entered manually.']);
       return;
     }
 
     if(format === 'Round Robin'){
-      const rounds = [];
+      const fixtures = [];
       for(let i=0;i<names.length;i++){
         for(let j=i+1;j<names.length;j++){
-          rounds.push(`${names[i]} vs ${names[j]}`);
+          fixtures.push(`${names[i]} vs ${names[j]}`);
         }
       }
-      setGenerated(rounds);
+      setGenerated([
+        `Round Robin · ${courts} courts · ${matchFormat}`,
+        ...fixtures
+      ]);
+      return;
     }
 
     if(format === 'Monrad'){
-      const rounds = names
-        .map((p,i) => `Seed ${i+1}: ${p}`)
+      const pairings = [];
+      for(let i = 0; i < Math.floor(names.length / 2); i++){
+        const a = names[i];
+        const b = names[names.length - 1 - i];
+        pairings.push(`Court ${(i % courts) + 1}: ${a} vs ${b}`);
+      }
+      if(names.length % 2 === 1){
+        pairings.push(`Bye: ${names[Math.floor(names.length / 2)]}`);
+      }
       setGenerated([
-        'Round 1 pairings:',
-        ...rounds
+        `Monrad · ${monradRounds} rounds · ${courts} courts · ${matchFormat}`,
+        'Round 1 seeded pairings:',
+        ...pairings,
+        'After each round: winners play winners, losers play losers, avoiding repeat matches where possible.'
       ]);
+      return;
     }
 
     if(format === 'NSL'){
       const teamA = names.filter((_,i) => i % 2 === 0);
       const teamB = names.filter((_,i) => i % 2 !== 0);
-
       setGenerated([
+        `NSL · ${courts} courts · ${matchFormat}`,
         `Team A: ${teamA.join(', ')}`,
         `Team B: ${teamB.join(', ')}`,
-        'Rotate courts every 8 minutes.',
-        'Winning team stays on.'
+        'Teams are seeded from attendance order / Junior Programme Ranking.'
       ]);
+      return;
     }
 
     if(format === 'Invasion Game'){
       const groups = Array.from({ length: courts }, () => []);
-
       names.forEach((name, index) => {
         groups[index % courts].push(name);
       });
 
       const output = groups.map((group, index) => {
         const playerCount = group.length;
-        if(playerCount === 0){
-          return `Court ${index + 1}: no players allocated`;
-        }
-
+        if(playerCount === 0) return `Court ${index + 1}: no players allocated`;
         const livesEach = Math.floor(courtLives / playerCount);
         const spare = courtLives % playerCount;
-
         return `Court ${index + 1}: ${group.join(', ')} — ${courtLives} total lives — ${livesEach} lives each${spare ? ` + ${spare} spare lives to allocate` : ''}`;
       });
 
       setGenerated([
-        `Invasion setup: ${courts} courts · ${courtLives} lives per court`,
+        `Invasion Game · ${courts} courts · ${courtLives} lives per court`,
         ...output,
         'Principle: every court has the same total lives. Uneven player numbers are balanced by lives per player.'
       ]);
+      return;
     }
   }
 
@@ -389,11 +401,7 @@ function Competition({players}){
 
       <div className="competitionCard">
         <label>Competition Format</label>
-
-        <select
-          value={format}
-          onChange={e => setFormat(e.target.value)}
-        >
+        <select value={format} onChange={e => setFormat(e.target.value)}>
           <option>Round Robin</option>
           <option>Monrad</option>
           <option>Invasion Game</option>
@@ -411,36 +419,72 @@ function Competition({players}){
             <small>Supports 1–6 courts. Default is 3.</small>
           </div>
 
-          <div>
-            <label>Total Lives Per Court</label>
-            <div className="stepper">
-              <button onClick={() => setCourtLives(Math.max(1, courtLives - 1))}>−</button>
-              <strong>{courtLives}</strong>
-              <button onClick={() => setCourtLives(courtLives + 1)}>+</button>
+          {format === 'Invasion Game' && (
+            <div>
+              <label>Total Lives Per Court</label>
+              <div className="stepper livesStepper">
+                <button onClick={() => setCourtLives(Math.max(1, courtLives - 1))}>−</button>
+                <strong>{courtLives}</strong>
+                <button onClick={() => setCourtLives(courtLives + 1)}>+</button>
+              </div>
+              <small>Only used for Invasion Game.</small>
             </div>
-            <small>Each court gets the same total lives.</small>
-          </div>
+          )}
+
+          {format === 'Monrad' && (
+            <>
+              <div>
+                <label>Rounds</label>
+                <div className="stepper">
+                  <button onClick={() => setMonradRounds(Math.max(1, monradRounds - 1))}>−</button>
+                  <strong>{monradRounds}</strong>
+                  <button onClick={() => setMonradRounds(monradRounds + 1)}>+</button>
+                </div>
+                <small>Typical Monrad: 3–5 rounds.</small>
+              </div>
+              <div>
+                <label>Match Format</label>
+                <select value={matchFormat} onChange={e => setMatchFormat(e.target.value)}>
+                  <option>First to 11</option>
+                  <option>Timed</option>
+                  <option>Best of 3</option>
+                  <option>Best of 5</option>
+                </select>
+                <small>Monrad does not use lives.</small>
+              </div>
+            </>
+          )}
+
+          {(format === 'Round Robin' || format === 'NSL') && (
+            <div>
+              <label>Match Format</label>
+              <select value={matchFormat} onChange={e => setMatchFormat(e.target.value)}>
+                <option>First to 11</option>
+                <option>Timed</option>
+                <option>Best of 3</option>
+                <option>Best of 5</option>
+                <option>Timed periods</option>
+              </select>
+              <small>{format} does not use lives.</small>
+            </div>
+          )}
         </div>
 
         <div className="presentCompetitionBox">
           <strong>Auto-entry from attendance</strong>
-          <p>{players.filter(p => p.present).length} players marked present.</p>
-          {players.filter(p => p.present).length > 0 && (
+          <p>{presentPlayers.length} players marked present.</p>
+          {presentPlayers.length > 0 && (
             <ol>
-              {players
-                .filter(p => p.present)
-                .sort((a,b) => {
-                  const aRank = a.playerType === 'Programme Player' ? Number(a.juniorRanking || 9999) : 9000 - Number(a.level || 0);
-                  const bRank = b.playerType === 'Programme Player' ? Number(b.juniorRanking || 9999) : 9000 - Number(b.level || 0);
-                  return aRank - bRank;
-                })
-                .map(p => <li key={p.name}>{p.name} {p.playerType === 'Programme Player' ? `(JPR #${p.juniorRanking || 'not set'})` : `(${p.guestEstimate || 'Guest'})`}</li>)}
+              {presentPlayers.map(p => (
+                <li key={p.name}>
+                  {p.name} {p.playerType === 'Programme Player' ? `(JPR #${p.juniorRanking || 'not set'})` : `(${p.guestEstimate || 'Guest'})`}
+                </li>
+              ))}
             </ol>
           )}
         </div>
 
         <label>Manual Players</label>
-
         <textarea
           rows="6"
           placeholder="Optional fallback: enter one player per line if no one is marked present"
@@ -449,7 +493,7 @@ function Competition({players}){
         />
 
         <button className="primaryBtn" onClick={buildCompetition}>
-          Generate From Present Players
+          {format === 'Invasion Game' ? 'Generate Invasion Game' : `Generate ${format}`}
         </button>
 
         {format === 'Invasion Game' && (
@@ -462,18 +506,14 @@ function Competition({players}){
       {generated.length > 0 && (
         <div className="competitionOutput">
           <h2>{format}</h2>
-
           {generated.map((g, i) => (
-            <div className="fixtureCard" key={i}>
-              {g}
-            </div>
+            <div className="fixtureCard" key={i}>{g}</div>
           ))}
         </div>
       )}
     </div>
   );
 }
-
 
 function Placeholder({title}){
   return (
@@ -500,7 +540,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 41 · Attendance guest entry</p>
+          <p>Phase 43 · Lives only for invasion</p>
         </div>
       </header>
 

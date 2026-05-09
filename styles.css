@@ -419,3 +419,13 @@ body{
     grid-template-columns:1fr;
   }
 }
+
+.competitionControls select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+  width:100%;
+  margin-top:6px;
+}
