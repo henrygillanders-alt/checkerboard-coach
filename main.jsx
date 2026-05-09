@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
@@ -357,6 +357,7 @@ function Competition({players}){
       setGenerated([
         `Round Robin · ${rrBoxes} box${rrBoxes > 1 ? 'es' : ''} · ${courts} courts · ${matchFormat}`,
         formatNote,
+        'Standings order: matches won → games difference → points difference → head-to-head.',
         ...output
       ]);
       return;
@@ -434,6 +435,9 @@ function Competition({players}){
         {format === 'Round Robin' && (
           <div className="rrBoxSelector">
             <label>Round Robin Box Format</label>
+            <div className="standingsNote">
+              Final placings: matches won → games difference → points difference → head-to-head.
+            </div>
             <div className="boxGrid">
               {[1,2,3,4].map(n => (
                 <button
@@ -574,7 +578,18 @@ function Placeholder({title}){
 
 function App(){
   const [screen, setScreen] = useState('home');
-  const [players, setPlayers] = useState(starterPlayers);
+  const [players, setPlayers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('checkerboardPlayers');
+      return saved ? JSON.parse(saved) : starterPlayers;
+    } catch {
+      return starterPlayers;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('checkerboardPlayers', JSON.stringify(players));
+  }, [players]);
 
   return (
     <div>
@@ -586,7 +601,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 44 · Round robin box selector</p>
+          <p>Phase 45 · Persistent players + RR standings</p>
         </div>
       </header>
 

@@ -485,3 +485,12 @@ body{
     grid-template-columns:1fr 1fr;
   }
 }
+
+.standingsNote{
+  background:#081320;
+  border:1px solid #5e83be;
+  color:#dce8ff;
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:10px;
+}
