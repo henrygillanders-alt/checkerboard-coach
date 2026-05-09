@@ -1,0 +1,55 @@
+CHECKERBOARD COACH – PHASE 30
+PLAYER DATABASE FOUNDATION
+
+GOAL
+Transform the app from a session builder into a programme management platform.
+
+NEW HOME TILE
+PLAYERS
+
+CORE FEATURES
+1. Add Player
+- Name
+- Level
+- Squad
+- Age
+- Parent contact
+- Notes
+
+2. Player Card
+- Attendance history
+- Competition history
+- Coach observations
+- Current focus themes
+- Injury notes
+
+3. Squad Structure
+- Mini Squash
+- Bronze
+- Silver
+- Gold
+- Performance
+- Professional
+
+4. Session Integration
+- Tick attendance from session builder
+- Save attendance automatically to player profile
+
+5. Competition Integration
+- Round robin
+- Monrad
+- NSL
+- Invasion games
+
+DESIGN PRINCIPLES
+- Courtside fast
+- Minimal typing
+- Large buttons
+- One-tap attendance
+- Ecological coaching logic maintained
+
+NEXT BUILD ORDER
+Phase 30 → Player Database
+Phase 31 → Attendance Tracking
+Phase 32 → Competition Engine
+Phase 33 → Integrated Player History
