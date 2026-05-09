@@ -1,6 +1,210 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
+
+const layerOptions = [
+  'Clean Winner',
+  'Opponent Off T',
+  '4-Shot Window',
+  '2-Shot Window',
+  'Blind Finish',
+  'Volley Finish',
+  'Weak Side Only',
+  'Double Bounce',
+  'Quality Length Before Attack'
+];
+
+const activityLibrary = [
+  {
+    category:'ATL / BTL Warm-up',
+    title:'ATL Tape Height Control',
+    type:'ATL / BTL',
+    defaultFormat:'King of Court',
+    defaultDuration:6,
+    challenge:'Above tape / below tape cue',
+    coach:'Use tape as a clear front-wall reference. Reward recognition of trajectory rather than technical shape alone.',
+    layers:['Clean Winner']
+  },
+  {
+    category:'ATL / BTL Warm-up',
+    title:'Height Change Recognition',
+    type:'ATL / BTL',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'Change height when opponent is late/off balance',
+    coach:'Player reads the opponent before choosing ATL or BTL.',
+    layers:['Opponent Off T']
+  },
+  {
+    category:'ATL / BTL Warm-up',
+    title:'Soft / Working / Fast Pace Rotation',
+    type:'Pace Variation',
+    defaultFormat:'Challenger Court',
+    defaultDuration:8,
+    challenge:'Vary pace: soft dying, working, fast penetrating',
+    coach:'Same preparation, different ball outcome. Keep it live and adaptive.',
+    layers:['Clean Winner']
+  },
+
+  {
+    category:'Classic Conditioned Games',
+    title:'Length Before Attack',
+    type:'Conditioned Game',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'Must create length before attacking short',
+    coach:'Length should create the attack, not become a hoop to jump through.',
+    layers:['Quality Length Before Attack','Clean Winner']
+  },
+  {
+    category:'Classic Conditioned Games',
+    title:'Opponent Off-T Bonus',
+    type:'Conditioned Game',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'Bonus if winning shot is played while opponent is outside T-zone',
+    coach:'Do not force the winner. Notice the affordance when it appears.',
+    layers:['Opponent Off T','Clean Winner']
+  },
+  {
+    category:'Classic Conditioned Games',
+    title:'Straight Drive Constraint',
+    type:'Conditioned Game',
+    defaultFormat:'Challenger Court',
+    defaultDuration:6,
+    challenge:'Mostly straight rally with agreed escape rule',
+    coach:'Simplify the problem without removing live opponent information.',
+    layers:['Clean Winner']
+  },
+
+  {
+    category:'Technical Constraint Exercises',
+    title:'Late Prep Obstacle Constraint',
+    type:'Technical Constraint',
+    defaultFormat:'Feed + Live Rally',
+    defaultDuration:6,
+    challenge:'Obstacle limits excessive backswing in back court',
+    coach:'Constraint should guide organisation, then return quickly to live rally.',
+    layers:[]
+  },
+  {
+    category:'Technical Constraint Exercises',
+    title:'Quiet Eye / Information Pick-up',
+    type:'Technical Constraint',
+    defaultFormat:'Conditioned Matchplay',
+    defaultDuration:6,
+    challenge:'Call opponent position before choosing shot',
+    coach:'The goal is earlier information pick-up, not staring at the ball.',
+    layers:['Opponent Off T']
+  },
+  {
+    category:'Technical Constraint Exercises',
+    title:'Wrist Control Constraint',
+    type:'Technical Constraint',
+    defaultFormat:'Challenger Court',
+    defaultDuration:5,
+    challenge:'Tape/feel constraint to reduce wrist break',
+    coach:'Use briefly as a sensation cue, then remove and test in rally.',
+    layers:['Clean Winner']
+  },
+
+  {
+    category:'Checkerboard Challenges',
+    title:'CB Singles',
+    type:'Checkerboard',
+    defaultFormat:'King of Court',
+    defaultDuration:6,
+    challenge:'[6-4]',
+    challengeType:'Singles',
+    coach:'Simple one-shot target challenge inside live rally.',
+    layers:['Clean Winner']
+  },
+  {
+    category:'Checkerboard Challenges',
+    title:'CB Pairs',
+    type:'Checkerboard',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'[6-4] + [8-1]',
+    challengeType:'Pairs',
+    coach:'Two-shot chain: create then exploit space.',
+    layers:['Clean Winner']
+  },
+  {
+    category:'Checkerboard Challenges',
+    title:'CB Triples',
+    type:'Checkerboard',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'[6-4] + [8-1] + [5-3]',
+    challengeType:'Triples',
+    coach:'Only use when pairs remain playable and representative.',
+    layers:['Opponent Off T','Clean Winner']
+  },
+  {
+    category:'Checkerboard Challenges',
+    title:'CB + Blind Finish',
+    type:'Checkerboard',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'[6-4] + [8-1] → blind finish',
+    challengeType:'CB + Blind Finish',
+    coach:'Visible checkerboard pressure, hidden finish condition.',
+    layers:['Blind Finish','Clean Winner']
+  },
+
+  {
+    category:'Volley / Intercept Games',
+    title:'Midcourt Intercept',
+    type:'Volley Game',
+    defaultFormat:'King of Court',
+    defaultDuration:8,
+    challenge:'Volley intercept from midcourt/T-zone',
+    coach:'Earn the volley through pressure and positioning, not reckless hunting.',
+    layers:['Volley Finish','Clean Winner']
+  },
+  {
+    category:'Volley / Intercept Games',
+    title:'Rapid Reload',
+    type:'Pressure Game',
+    defaultFormat:'2v1 Pressure',
+    defaultDuration:5,
+    challenge:'Fast restart after selected rally or loose ball',
+    coach:'This is a time-pressure decision task, not just fitness.',
+    layers:['2-Shot Window']
+  },
+
+  {
+    category:'Pressure / Matchplay',
+    title:'Tempo Pressure',
+    type:'Pressure Game',
+    defaultFormat:'King of Court',
+    defaultDuration:6,
+    challenge:'Maintain decision quality under increased tempo',
+    coach:'Do not make it mindless speed. Decision quality is the point.',
+    layers:['4-Shot Window','Clean Winner']
+  },
+  {
+    category:'Pressure / Matchplay',
+    title:'Winner Loses a Bounce',
+    type:'Double Bounce',
+    defaultFormat:'Winner Stays On',
+    defaultDuration:8,
+    challenge:'Winner loses one bounce after each rally won',
+    coach:'Useful for mixed levels; advantage shifts dynamically.',
+    layers:['Double Bounce']
+  },
+  {
+    category:'Pressure / Matchplay',
+    title:'Vs Tall Player',
+    type:'Opponent Type',
+    defaultFormat:'Conditioned Matchplay',
+    defaultDuration:8,
+    challenge:'Low trajectory and quick direction change',
+    coach:'Train the movement problem, not just the label “tall player”.',
+    layers:['Weak Side Only','Clean Winner']
+  }
+];
 
 const challengeBanks = {
   Singles: ['[6-4]', '[8-1]', '[5-3]', '[7-2]', '[6-3]', '[5-4]', '[8-2]', '[7-1]'],
@@ -9,46 +213,44 @@ const challengeBanks = {
   'CB + Blind Finish': ['[6-4] + [8-1] → blind finish', '[5-3] + [7-2] → blind finish', '[6-3] + [8-1] → blind finish', '[5-4] + [7-2] → blind finish']
 };
 
-const layerOptions = ['Clean Winner', 'Opponent Off T', '4-Shot Window', '2-Shot Window', 'Blind Finish', 'Volley Finish'];
-
-const libraryGames = [
-  { title:'CB Singles', type:'Singles', challenge:'[6-4]', coach:'One-shot checkerboard targeting inside a live rally.' },
-  { title:'CB Pairs', type:'Pairs', challenge:'[6-4] + [8-1]', coach:'Two-shot tactical chain: create then exploit space.' },
-  { title:'CB Triples', type:'Triples', challenge:'[6-4] + [8-1] + [5-3]', coach:'Three-shot tactical chain with delayed conversion.' },
-  { title:'CB + Blind Finish', type:'CB + Blind Finish', challenge:'[6-4] + [8-1] → blind finish', coach:'Visible checkerboard challenge, hidden finish condition.' },
-  { title:'Opponent Off-T Bonus', type:'Pairs', challenge:'[5-3] + [7-2]', coach:'Recognise opponent not recovered before attacking.' },
-  { title:'Tape Height Control', type:'Singles', challenge:'[6-4]', coach:'Use ATL/BTL cue to vary trajectory.' },
-  { title:'Midcourt Intercept', type:'Pairs', challenge:'[6-3] + [8-1]', coach:'Earn the volley/intercept through pressure.' },
-  { title:'Length Before Attack', type:'Pairs', challenge:'[5-4] + [7-2]', coach:'Use length to create the attack.' }
-];
-
 function rand(list){ return list[Math.floor(Math.random() * list.length)]; }
 
-function makeBlock(source = {}) {
-  const type = source.type || 'Pairs';
+function makeBlock(activity = activityLibrary[0]) {
   return {
-    title: source.title || 'Rotation',
-    format: source.format || 'King of Court',
-    duration: source.duration || 8,
-    challengeType: type,
-    challenge: source.challenge || challengeBanks[type][0],
-    layers: source.layers || ['Clean Winner'],
-    coach: source.coach || 'Coach the information source, not just the shot.',
-    progression: source.progression || 'After 1–2 rotations, duplicate this block and add the next layer.'
+    title: activity.title,
+    category: activity.category,
+    type: activity.type,
+    format: activity.defaultFormat || 'King of Court',
+    duration: activity.defaultDuration || 8,
+    challengeType: activity.challengeType || '',
+    challenge: activity.challenge,
+    layers: [...(activity.layers || [])],
+    coach: activity.coach,
+    progression: 'After 1–2 rotations, duplicate this block and add/change the layer.'
   };
 }
 
 function App(){
   const [page, setPage] = useState('home');
-  const [blocks, setBlocks] = useState([makeBlock({title:'Rotation 1', type:'Pairs'})]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [blocks, setBlocks] = useState([
+    makeBlock(activityLibrary.find(a => a.title === 'ATL Tape Height Control')),
+    makeBlock(activityLibrary.find(a => a.title === 'CB Pairs'))
+  ]);
+
+  const categories = ['All', ...Array.from(new Set(activityLibrary.map(a => a.category)))];
+  const filteredActivities = selectedCategory === 'All'
+    ? activityLibrary
+    : activityLibrary.filter(a => a.category === selectedCategory);
 
   const total = blocks.reduce((sum,b) => sum + Number(b.duration || 0), 0);
 
   function home(){ setPage('home'); window.scrollTo(0,0); }
   function openBuilder(){ setPage('builder'); window.scrollTo(0,0); }
+  function openLibrary(){ setPage('library'); window.scrollTo(0,0); }
 
-  function addBlock(source){
-    setBlocks([...blocks, makeBlock(source)]);
+  function addActivity(activity){
+    setBlocks([...blocks, makeBlock(activity)]);
     setPage('builder');
     window.scrollTo(0,0);
   }
@@ -68,8 +270,8 @@ function App(){
 
   function drawChallenge(i){
     const copy = [...blocks];
-    const type = copy[i].challengeType || 'Pairs';
-    copy[i].challenge = rand(challengeBanks[type]);
+    const type = copy[i].challengeType;
+    if(type && challengeBanks[type]) copy[i].challenge = rand(challengeBanks[type]);
     setBlocks(copy);
   }
 
@@ -80,13 +282,19 @@ function App(){
     setBlocks(copy);
   }
 
+  function removeLayer(i, layer){
+    const copy = [...blocks];
+    copy[i].layers = copy[i].layers.filter(l => l !== layer);
+    setBlocks(copy);
+  }
+
   function duplicateProgress(i){
     const source = blocks[i];
     const copy = [...blocks];
     const evolved = {...source, title: source.title + ' + layer', layers:[...source.layers]};
     const next = layerOptions.find(l => !evolved.layers.includes(l));
     if(next) evolved.layers.push(next);
-    evolved.progression = 'Progressed block: same game, added layer.';
+    evolved.progression = 'Progressed block: same activity with added layer.';
     copy.splice(i+1,0,evolved);
     setBlocks(copy);
   }
@@ -103,13 +311,29 @@ function App(){
     setBlocks(blocks.filter((_,idx) => idx !== i));
   }
 
+  function addBlank(){
+    setBlocks([...blocks, {
+      title:'Custom Rotation',
+      category:'Custom',
+      type:'Custom',
+      format:'King of Court',
+      duration:8,
+      challengeType:'',
+      challenge:'Type your own challenge',
+      layers:[],
+      coach:'',
+      progression:''
+    }]);
+    setPage('builder');
+  }
+
   return <div>
     <header className="hero">
       <button className="homeBtn" onClick={home}>HOME</button>
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
-        <h1>Rotation Session Builder</h1>
-        <p>Phase 15 · Clean rotation-only workflow</p>
+        <h1>Universal Rotation Builder</h1>
+        <p>Phase 16 · Any activity can become a rotation</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -118,32 +342,43 @@ function App(){
       <div className="homeGrid">
         <button className="tile blue" onClick={openBuilder}>
           <h2>Flexible Rotation Builder</h2>
-          <p>Main workflow: King of Court, 5–8 minute rotations, add layers every 1–2 rotations.</p>
+          <p>Main workflow: build the session as a stack of rotations.</p>
         </button>
-        <button className="tile green" onClick={() => addBlock({title:'Random CB Pair', type:'Pairs', challenge:rand(challengeBanks.Pairs)})}>
-          <h2>Quick Add Random Pair</h2>
-          <p>Add a pair challenge directly as a rotation.</p>
+        <button className="tile purple" onClick={openLibrary}>
+          <h2>Activity Library</h2>
+          <p>ATL, technical, conditioned games, CB, volley and pressure games.</p>
         </button>
-        <button className="tile red" onClick={() => addBlock({title:'CB + Blind Finish', type:'CB + Blind Finish', challenge:rand(challengeBanks['CB + Blind Finish']), layers:['Clean Winner','Blind Finish']})}>
+        <button className="tile green" onClick={() => addActivity(activityLibrary.find(a => a.title === 'ATL Tape Height Control'))}>
+          <h2>Quick Add ATL Warm-up</h2>
+          <p>Start with a 6-minute tape height rotation.</p>
+        </button>
+        <button className="tile red" onClick={() => addActivity(activityLibrary.find(a => a.title === 'CB + Blind Finish'))}>
           <h2>Quick Add CB + Blind Finish</h2>
-          <p>Visible CB pair with hidden finish condition.</p>
-        </button>
-        <button className="tile purple" onClick={() => setPage('library')}>
-          <h2>Game Library</h2>
-          <p>Choose a game and add it directly to the rotation builder.</p>
+          <p>Add a visible CB challenge with hidden finish.</p>
         </button>
       </div>
     </main>}
 
     {page === 'library' && <main className="container">
       <div className="topline">
-        <div><h2>Game Library</h2><p>Every game adds directly to the Rotation Builder. No Warm-up/Main/Pressure/Finish page exists in this build.</p></div>
+        <div>
+          <h2>Activity Library</h2>
+          <p>Select any activity. It adds directly to the rotation builder.</p>
+        </div>
         <button className="secondary" onClick={home}>Home</button>
       </div>
+
+      <div className="chips selector">
+        {categories.map(cat => <button key={cat} className={selectedCategory === cat ? 'chip active' : 'chip'} onClick={() => setSelectedCategory(cat)}>{cat}</button>)}
+      </div>
+
       <section className="panel">
-        {libraryGames.map((g,i) => <button key={i} className="gameRow" onClick={() => addBlock(g)}>
-          <div><strong>{g.title}</strong><span>{g.coach}</span></div>
-          <em>{g.type}</em>
+        {filteredActivities.map((a,i) => <button key={i} className="gameRow" onClick={() => addActivity(a)}>
+          <div>
+            <strong>{a.title}</strong>
+            <span>{a.category} · {a.coach}</span>
+          </div>
+          <em>{a.defaultDuration} min</em>
         </button>)}
       </section>
     </main>}
@@ -152,14 +387,20 @@ function App(){
       <div className="topline">
         <div>
           <h2>Flexible Rotation Builder</h2>
-          <p>Build the session as a stack of rotations. No fixed template. Total time updates automatically.</p>
+          <p>Choose from all games and exercises. Use 5–8 minute King of Court rotations, then duplicate and progress.</p>
         </div>
-        <button className="primary" onClick={() => addBlock({title:'New Rotation', type:'Pairs'})}>Add Rotation</button>
+        <div className="topButtons">
+          <button className="secondary" onClick={openLibrary}>Add From Library</button>
+          <button className="primary" onClick={addBlank}>Add Custom Rotation</button>
+        </div>
       </div>
 
       {blocks.map((b,i) => <section className="block" key={i}>
         <div className="blockHeader">
-          <strong>Rotation {i+1}</strong>
+          <div>
+            <strong>Rotation {i+1}: {b.title}</strong>
+            <span>{b.category} · {b.type}</span>
+          </div>
           <div className="miniButtons">
             <button onClick={() => moveBlock(i,-1)}>↑</button>
             <button onClick={() => moveBlock(i,1)}>↓</button>
@@ -171,25 +412,31 @@ function App(){
         <div className="grid">
           <label>Rotation Name<input value={b.title} onChange={e => updateBlock(i,'title',e.target.value)} /></label>
           <label>Format<select value={b.format} onChange={e => updateBlock(i,'format',e.target.value)}>
-            <option>King of Court</option><option>Challenger Court</option><option>Winner Stays On</option><option>2v1 Pressure</option><option>Conditioned Matchplay</option>
+            <option>King of Court</option><option>Challenger Court</option><option>Winner Stays On</option><option>2v1 Pressure</option><option>Conditioned Matchplay</option><option>Feed + Live Rally</option>
           </select></label>
           <label>Duration<select value={b.duration} onChange={e => updateBlock(i,'duration',e.target.value)}>
             <option>5</option><option>6</option><option>7</option><option>8</option><option>10</option>
           </select></label>
-          <label>Challenge Type<select value={b.challengeType} onChange={e => changeChallengeType(i,e.target.value)}>
+
+          {b.challengeType ? <label>CB Challenge Type<select value={b.challengeType} onChange={e => changeChallengeType(i,e.target.value)}>
             <option>Singles</option><option>Pairs</option><option>Triples</option><option>CB + Blind Finish</option>
-          </select></label>
-          <label className="wide">CB Challenge<select value={b.challenge} onChange={e => updateBlock(i,'challenge',e.target.value)}>
+          </select></label> : <label>Activity Type<input value={b.type} onChange={e => updateBlock(i,'type',e.target.value)} /></label>}
+
+          {b.challengeType ? <label className="wide">CB Challenge<select value={b.challenge} onChange={e => updateBlock(i,'challenge',e.target.value)}>
             {challengeBanks[b.challengeType].map(c => <option key={c}>{c}</option>)}
-          </select></label>
-          <div className="wide"><button className="secondary full" onClick={() => drawChallenge(i)}>Draw New {b.challengeType}</button></div>
+          </select></label> : <label className="wide">Challenge / Task<input value={b.challenge} onChange={e => updateBlock(i,'challenge',e.target.value)} /></label>}
+
+          {b.challengeType && <div className="wide"><button className="secondary full" onClick={() => drawChallenge(i)}>Draw New {b.challengeType}</button></div>}
         </div>
 
         <div className="layerTop">
-          <h3>Layers</h3>
+          <h3>Layers / Constraints</h3>
           <button className="secondary" onClick={() => addLayer(i)}>Add Next Layer</button>
         </div>
-        <div className="chips">{b.layers.map((l,idx) => <span key={idx} className="chip">{l}</span>)}</div>
+        <div className="chips">
+          {b.layers.length === 0 && <span className="muted">No layers yet.</span>}
+          {b.layers.map((l,idx) => <button key={idx} className="chip active" onClick={() => removeLayer(i,l)}>{l} ×</button>)}
+        </div>
 
         <div className="grid">
           <label>Coach Focus<textarea value={b.coach} onChange={e => updateBlock(i,'coach',e.target.value)} /></label>
