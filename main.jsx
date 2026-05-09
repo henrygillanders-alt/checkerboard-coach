@@ -52,7 +52,7 @@ const categories = ['ATL / BTL','Classic Conditioned','Checkerboard','Technical 
 
 
 const atlOptions = {
-  btlCount: ['1 BTL shot', '2 BTL shots', '3 BTL shots'],
+  btlCount: ['0 BTL shots', '1 BTL shot', '2 BTL shots', '3 BTL shots'],
   side: ['Both sides', 'Right side only', 'Left side only'],
   consecutive: ['No', 'Yes'],
   shotChoice: ['Any shot', 'Straight drop', 'Crosscourt drop', 'Boast', 'Volley', 'Drive', 'Kill'],
@@ -70,17 +70,15 @@ function buildAtlFromOptions(item) {
     cbReference: 'None'
   };
 
-  const countNum = options.btlCount.startsWith('1') ? 1 : options.btlCount.startsWith('2') ? 2 : 3;
+  const countNum = options.btlCount.startsWith('0') ? 0 : options.btlCount.startsWith('1') ? 1 : options.btlCount.startsWith('2') ? 2 : 3;
   const shots = [options.shot1, options.shot2, options.shot3].slice(0, countNum);
-  const shotText = shots.map((s, idx) => `BTL shot ${idx + 1}: ${s.toLowerCase()}`).join('; ');
+  const shotText = countNum === 0 ? 'No compulsory BTL shot; use ATL / BTL cue to manage tempo, balance and visual control.' : shots.map((s, idx) => `BTL shot ${idx + 1}: ${s.toLowerCase()}`).join('; ');
 
   const sideText = options.side === 'Both sides'
     ? 'Applies on both sides.'
     : `Applies on ${options.side.replace(' only','').toLowerCase()}.`;
 
-  const consecutiveText = options.consecutive === 'Yes'
-    ? 'BTL shots must be consecutive.'
-    : 'BTL shots do not need to be consecutive.';
+  const consecutiveText = countNum <= 1 ? '' : (options.consecutive === 'Yes' ? 'BTL shots must be consecutive.' : 'BTL shots do not need to be consecutive.');
 
   const cbText = options.cbReference === 'None'
     ? ''
@@ -89,11 +87,14 @@ function buildAtlFromOptions(item) {
   const task = `${options.btlCount}: ${shotText}. ${consecutiveText} ${sideText}${cbText}`;
 
   const rationaleParts = [];
-  rationaleParts.push(countNum === 1
-    ? 'uses one BTL event to create a simple low-trajectory decision inside live play'
-    : countNum === 2
-      ? 'requires the player to repeat or connect low-trajectory decisions under rally pressure'
-      : 'creates a more complex sequence where the player must manage several low-trajectory decisions without losing tactical awareness');
+  rationaleParts.push('slows the rally problem down enough for players to attend to balance, vision and better information pick-up');
+  rationaleParts.push(countNum === 0
+    ? 'uses the ATL / BTL cue as a tempo and visual-control reference without forcing a specific low shot'
+    : countNum === 1
+      ? 'uses one BTL event to create a simple low-trajectory decision inside live play'
+      : countNum === 2
+        ? 'requires the player to repeat or connect low-trajectory decisions under rally pressure'
+        : 'creates a more complex sequence where the player must manage several low-trajectory decisions without losing tactical awareness');
 
   if (options.consecutive === 'Yes') rationaleParts.push('the consecutive requirement increases pressure and tests whether the player can sustain the constraint across linked shots');
   if (options.side.includes('Right')) rationaleParts.push('right-side restriction narrows the information source and encourages side-specific solutions');
@@ -131,7 +132,7 @@ function cloneActivity(a) {
     variations: a.variations || [],
     selectedVariation: a.variations?.[0]?.name || '',
     hasAtlOptions: a.hasAtlOptions || false,
-    atlOptions: a.hasAtlOptions ? { btlCount:'1 BTL shot', side:'Both sides', consecutive:'No', shot1:'Any shot', shot2:'Any shot', shot3:'Any shot', cbReference:'None' } : null,
+    atlOptions: a.hasAtlOptions ? { btlCount:'0 BTL shots', side:'Both sides', consecutive:'No', shot1:'Any shot', shot2:'Any shot', shot3:'Any shot', cbReference:'None' } : null,
     editing: false
   };
 }
@@ -245,7 +246,7 @@ function App(){
       <div>
         <div className="eyebrow">CHECKERBOARD COACH</div>
         <h1>Session Builder</h1>
-        <p>Phase 23 · ATL / BTL sequence selector</p>
+        <p>Phase 24 · ATL rationale cleanup</p>
       </div>
       {page === 'builder' && <div className="total"><strong>Total</strong><span>{total} min</span></div>}
     </header>
@@ -314,18 +315,13 @@ function App(){
             <div className="rotationNum">Rotation {i+1} · {item.duration} min · {item.format}</div>
             <h3>{item.title}</h3>
             <p className="category">{item.category}</p>
-            {item.variations?.length > 0 && <div className="variationInline">
-              <span>Variation</span>
-              <select value={item.selectedVariation} onChange={e => applyVariation(i, e.target.value)}>
-                {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
-              </select>
-            </div>}
+            
             {item.hasAtlOptions && <div className="atlOptions sequenceOptions">
               <div><span>BTL Count</span><select value={item.atlOptions.btlCount} onChange={e => updateAtlOption(i,'btlCount',e.target.value)}>{atlOptions.btlCount.map(o => <option key={o}>{o}</option>)}</select></div>
               <div><span>Side</span><select value={item.atlOptions.side} onChange={e => updateAtlOption(i,'side',e.target.value)}>{atlOptions.side.map(o => <option key={o}>{o}</option>)}</select></div>
               <div><span>Consecutive</span><select value={item.atlOptions.consecutive} onChange={e => updateAtlOption(i,'consecutive',e.target.value)}>{atlOptions.consecutive.map(o => <option key={o}>{o}</option>)}</select></div>
               <div><span>CB Ref</span><select value={item.atlOptions.cbReference} onChange={e => updateAtlOption(i,'cbReference',e.target.value)}>{atlOptions.cbReference.map(o => <option key={o}>{o}</option>)}</select></div>
-              <div><span>BTL Shot 1</span><select value={item.atlOptions.shot1} onChange={e => updateAtlOption(i,'shot1',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></div>
+              {item.atlOptions.btlCount !== '0 BTL shots' && <div><span>BTL Shot 1</span><select value={item.atlOptions.shot1} onChange={e => updateAtlOption(i,'shot1',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></div>}
               {(item.atlOptions.btlCount === '2 BTL shots' || item.atlOptions.btlCount === '3 BTL shots') && <div><span>BTL Shot 2</span><select value={item.atlOptions.shot2} onChange={e => updateAtlOption(i,'shot2',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></div>}
               {item.atlOptions.btlCount === '3 BTL shots' && <div><span>BTL Shot 3</span><select value={item.atlOptions.shot3} onChange={e => updateAtlOption(i,'shot3',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></div>}
             </div>}
@@ -362,15 +358,13 @@ function App(){
         </div>
 
         {item.editing && <div className="editPanel">
-          {item.variations?.length > 0 && <label className="wide">Variation<select value={item.selectedVariation} onChange={e => applyVariation(i, e.target.value)}>
-            {item.variations.map(v => <option key={v.name}>{v.name}</option>)}
-          </select></label>}
+          
           {item.hasAtlOptions && <div className="wide atlOptions editAtl">
             <label>BTL Count<select value={item.atlOptions.btlCount} onChange={e => updateAtlOption(i,'btlCount',e.target.value)}>{atlOptions.btlCount.map(o => <option key={o}>{o}</option>)}</select></label>
             <label>Side<select value={item.atlOptions.side} onChange={e => updateAtlOption(i,'side',e.target.value)}>{atlOptions.side.map(o => <option key={o}>{o}</option>)}</select></label>
             <label>Consecutive<select value={item.atlOptions.consecutive} onChange={e => updateAtlOption(i,'consecutive',e.target.value)}>{atlOptions.consecutive.map(o => <option key={o}>{o}</option>)}</select></label>
             <label>CB Reference<select value={item.atlOptions.cbReference} onChange={e => updateAtlOption(i,'cbReference',e.target.value)}>{atlOptions.cbReference.map(o => <option key={o}>{o}</option>)}</select></label>
-            <label>BTL Shot 1<select value={item.atlOptions.shot1} onChange={e => updateAtlOption(i,'shot1',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></label>
+            {item.atlOptions.btlCount !== '0 BTL shots' && <label>BTL Shot 1<select value={item.atlOptions.shot1} onChange={e => updateAtlOption(i,'shot1',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></label>}
             {(item.atlOptions.btlCount === '2 BTL shots' || item.atlOptions.btlCount === '3 BTL shots') && <label>BTL Shot 2<select value={item.atlOptions.shot2} onChange={e => updateAtlOption(i,'shot2',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></label>}
             {item.atlOptions.btlCount === '3 BTL shots' && <label>BTL Shot 3<select value={item.atlOptions.shot3} onChange={e => updateAtlOption(i,'shot3',e.target.value)}>{atlOptions.shotChoice.map(o => <option key={o}>{o}</option>)}</select></label>}
           </div>}
