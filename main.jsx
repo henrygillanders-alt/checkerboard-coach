@@ -301,6 +301,7 @@ function Players({players, setPlayers}){
 function Competition({players}){
   const [format, setFormat] = useState('Round Robin');
   const [manualPlayers, setManualPlayers] = useState('');
+  const [rrBoxes, setRrBoxes] = useState(1);
   const [generated, setGenerated] = useState([]);
   const [courts, setCourts] = useState(3);
   const [courtLives, setCourtLives] = useState(20);
@@ -326,15 +327,37 @@ function Competition({players}){
     }
 
     if(format === 'Round Robin'){
-      const fixtures = [];
-      for(let i=0;i<names.length;i++){
-        for(let j=i+1;j<names.length;j++){
-          fixtures.push(`${names[i]} vs ${names[j]}`);
+      const boxCount = Math.min(rrBoxes, names.length);
+      const boxes = Array.from({ length: boxCount }, () => []);
+
+      names.forEach((name, index) => {
+        boxes[index % boxCount].push(name);
+      });
+
+      const output = [];
+
+      boxes.forEach((box, boxIndex) => {
+        output.push(`Box ${boxIndex + 1}: ${box.join(', ')}`);
+
+        for(let i=0;i<box.length;i++){
+          for(let j=i+1;j<box.length;j++){
+            output.push(`Box ${boxIndex + 1}: ${box[i]} vs ${box[j]}`);
+          }
         }
-      }
+      });
+
+      const formatNote = rrBoxes === 1
+        ? 'All players in one box.'
+        : rrBoxes === 2
+          ? 'Two pools. Use results for final / re-seed.'
+          : rrBoxes === 3
+            ? 'Three pools. Use results for second round.'
+            : 'Four pools. Use results for second round.';
+
       setGenerated([
-        `Round Robin · ${courts} courts · ${matchFormat}`,
-        ...fixtures
+        `Round Robin · ${rrBoxes} box${rrBoxes > 1 ? 'es' : ''} · ${courts} courts · ${matchFormat}`,
+        formatNote,
+        ...output
       ]);
       return;
     }
@@ -407,6 +430,29 @@ function Competition({players}){
           <option>Invasion Game</option>
           <option>NSL</option>
         </select>
+
+        {format === 'Round Robin' && (
+          <div className="rrBoxSelector">
+            <label>Round Robin Box Format</label>
+            <div className="boxGrid">
+              {[1,2,3,4].map(n => (
+                <button
+                  key={n}
+                  className={rrBoxes === n ? 'boxOption activeBox' : 'boxOption'}
+                  onClick={() => setRrBoxes(n)}
+                >
+                  <strong>{n} {n === 1 ? 'Box' : 'Boxes'}</strong>
+                  <span>
+                    {n === 1 ? 'All players in one group' :
+                     n === 2 ? 'Two pools · final / re-seed' :
+                     n === 3 ? 'Three pools · second round' :
+                     'Four pools · second round'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="competitionControls">
           <div>
@@ -540,7 +586,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 43 · Lives only for invasion</p>
+          <p>Phase 44 · Round robin box selector</p>
         </div>
       </header>
 

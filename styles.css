@@ -429,3 +429,59 @@ body{
   width:100%;
   margin-top:6px;
 }
+
+.rrBoxSelector{
+  background:#0c1a2c;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+
+.rrBoxSelector label{
+  display:block;
+  margin-bottom:10px;
+  font-weight:900;
+  color:#ffd980;
+}
+
+.boxGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.boxOption{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+  text-align:center;
+}
+
+.boxOption strong,
+.boxOption span{
+  display:block;
+}
+
+.boxOption span{
+  color:#9fb0c8;
+  font-size:12px;
+  margin-top:5px;
+}
+
+.activeBox{
+  border-color:#8ab6ff;
+  background:#1f5dd0;
+}
+
+.activeBox span{
+  color:#eaf2ff;
+}
+
+@media(max-width:800px){
+  .boxGrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
