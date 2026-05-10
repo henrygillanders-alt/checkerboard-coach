@@ -171,7 +171,7 @@ return <div className="page">
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{game.coach}</p></div>
+<div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring condition.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!game.layers.includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
@@ -474,7 +474,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       format:'King of Court',
       task:'Normal rally. A point is scored for winning the rally. Bonus is available when the winning shot is played after a visible advantage: opponent outside the T-zone, late, off balance, or still moving.',
       rationale:'Teaches players to recognise the state of the opponent before choosing to attack.',
-      coach:'Ask: “What did the opponent look like before you attacked?” Reward recognition more than shot choice.',
+      coach:'Ask: “What did the opponent look like before you attacked?” Reward recognition more than shot choice.',playerFocus:'Notice opponent position, balance and recovery before choosing to attack.',
       scoring:'Win rally = 1 · Win after visible advantage = +3 · Clean winner = +2',
       layers:['Opponent Off T','Clean Winner'],
       antiGaming:'If a player deliberately kills the rally to avoid the opponent earning a bonus, normal rally point is awarded to the opponent.'
@@ -487,7 +487,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       format:'King of Court',
       task:'Bonus unlocks when the player wins the rally while the opponent is outside the marked T-zone. From higher levels, add 4-shot or 2-shot conversion windows.',
       rationale:'Connects tactical construction with opponent displacement and recovery prevention.',
-      coach:'Use a marked T-zone. The opponent must clearly be outside it when the winning shot is played.',
+      coach:'Use a marked T-zone. The opponent must clearly be outside it when the winning shot is played.',playerFocus:'Move the opponent away from the T before trying to finish.',
       scoring:'Win rally = 1 · Win while opponent outside T-zone = +3 · Clean winner = +2',
       layers:['Opponent Off T','4-Shot Window','2-Shot Window','Clean Winner'],
       antiGaming:'Opponent cannot intentionally stop movement or abandon recovery to distort the condition.'
@@ -526,7 +526,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       format:'King of Court',
       task:'Player must first create length pressure before attacking short. The attack bonus opens after the opponent is delayed, displaced or unable to recover normally.',
       rationale:'Prevents rushed front-court attacks and encourages pressure construction first.',
-      coach:'Watch whether the attack is invited by opponent state or forced without advantage.',
+      coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',
       scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',
       layers:['Quality Length Before Attack','4-Shot Window','2-Shot Window','Clean Winner'],
       antiGaming:'If a player hits short before any pressure is created, only the rally point is available.'
@@ -539,7 +539,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       format:'Rally Game',
       task:'Player must change the opponent’s movement route before the bonus opens. Examples: pull forward then send behind, send across body-line, or force recovery away from T before attacking.',
       rationale:'Develops tactical disruption rather than repetitive pattern hitting.',
-      coach:'Ask whether the opponent’s route was actually broken. If not, no bonus.',
+      coach:'Ask whether the opponent’s route was actually broken. If not, no bonus.',playerFocus:'Change the opponent’s movement route before selecting the winning shot.',
       scoring:'Win rally = 1 · Route broken before winning = +3 · Clean winner = +2',
       layers:['Opponent Off T','Weak Side','Clean Winner'],
       antiGaming:'Opponent cannot deliberately stop chasing to deny that their route was broken.'
@@ -622,7 +622,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       cbCode:'None',
       format:game.format||'Rally Game',
       duration:game.duration||8,
-      coach:`${game.coach} Anti-gaming: ${game.antiGaming}`,
+      coachFocus:game.coach,playerFocus:game.playerFocus||'Focus on the cue that unlocks the scoring condition.',coach:`${game.coach} Anti-gaming: ${game.antiGaming}`,
       rationale:game.rationale,
       task:game.task,
       layers:game.layers||[],
@@ -656,7 +656,7 @@ function ClassicConditionedBuilder({onAddToSession}){
           </div>
           <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
           <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-          <div className="infoBox"><strong>Coach Help</strong><p>{game.coach}</p></div>
+          <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring condition.'}</p></div>
           <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
           <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
           <div className="chips">{game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
@@ -667,20 +667,195 @@ function ClassicConditionedBuilder({onAddToSession}){
   </div>;
 }
 
+
+function normaliseGameCard(game){
+  return {
+    id: game.id || Date.now()+Math.random(),
+    title: game.title || '',
+    category: game.category || 'Custom Coach Game',
+    family: game.family || game.category || 'General',
+    level: game.level || 'All levels',
+    duration: game.duration || 8,
+    format: game.format || 'King of Court',
+    task: game.task || '',
+    rationale: game.rationale || '',
+    coachFocus: game.coachFocus || game.coach || '',
+    playerFocus: game.playerFocus || '',
+    scoring: game.scoring || 'Win rally = 1',
+    antiGaming: game.antiGaming || '',
+    layers: game.layers || [],
+    cbCode: game.cbCode || 'None',
+    saved: true,
+    favourite: game.favourite || false
+  };
+}
+
+function emptyUniversalGame(category='Custom Coach Game'){
+  return normaliseGameCard({
+    id:Date.now()+Math.random(),
+    title:'',
+    category,
+    family:'Coach Created',
+    level:'All levels',
+    duration:8,
+    format:'King of Court',
+    task:'',
+    rationale:'',
+    coachFocus:'',
+    playerFocus:'',
+    scoring:'Win rally = 1',
+    antiGaming:'',
+    layers:[],
+    cbCode:'None'
+  });
+}
+
+function UniversalGameEditor({game,onSave,onCancel}){
+  const [form,setForm]=useState(()=>normaliseGameCard(game||emptyUniversalGame()));
+
+  function update(field,value){
+    setForm(prev=>({...prev,[field]:value}));
+  }
+
+  function toggleLayer(layer){
+    setForm(prev=>{
+      const current=prev.layers||[];
+      return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
+    });
+  }
+
+  function save(){
+    if(!form.title.trim()){
+      alert('Game needs a title.');
+      return;
+    }
+    onSave({...form,title:form.title.trim()});
+  }
+
+  return <div className="universalEditor">
+    <h2>{form.id?'Edit Game Card':'New Game Card'}</h2>
+    <div className="editorGrid">
+      <label>Title<input value={form.title} onChange={e=>update('title',e.target.value)} placeholder="Game title"/></label>
+      <label>Category<select value={form.category} onChange={e=>update('category',e.target.value)}>
+        <option>ATL / BTL</option>
+        <option>Checkerboard</option>
+        <option>Classic Conditioned</option>
+        <option>Volley & Intercept</option>
+        <option>Pressure</option>
+        <option>Technical</option>
+        <option>Invasion</option>
+        <option>Matchplay</option>
+        <option>Custom Coach Game</option>
+      </select></label>
+      <label>Family<input value={form.family} onChange={e=>update('family',e.target.value)} placeholder="e.g. T-Zone Games"/></label>
+      <label>Level / Progression<input value={form.level} onChange={e=>update('level',e.target.value)} placeholder="e.g. Levels 3–5"/></label>
+      <label>Duration<input type="number" min="1" value={form.duration} onChange={e=>update('duration',Number(e.target.value))}/></label>
+      <label>Format<select value={form.format} onChange={e=>update('format',e.target.value)}>
+        <option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Feeding Rotation</option><option>Rally Game</option><option>Box League</option>
+      </select></label>
+      <label className="wide">Task / Rules<textarea value={form.task} onChange={e=>update('task',e.target.value)} placeholder="Clear binary game rules"/></label>
+      <label className="wide">Rationale<textarea value={form.rationale} onChange={e=>update('rationale',e.target.value)} placeholder="Why this game exists"/></label>
+      <label className="wide">Coach Focus<textarea value={form.coachFocus} onChange={e=>update('coachFocus',e.target.value)} placeholder="What the coach observes, rewards, or constrains"/></label>
+      <label className="wide">Player Focus<textarea value={form.playerFocus} onChange={e=>update('playerFocus',e.target.value)} placeholder="What the player should attend to"/></label>
+      <label className="wide">Scoring<textarea value={form.scoring} onChange={e=>update('scoring',e.target.value)} placeholder="Scoring protocol"/></label>
+      <label className="wide">Anti-gaming<textarea value={form.antiGaming} onChange={e=>update('antiGaming',e.target.value)} placeholder="How to prevent players gaming the condition"/></label>
+      <label>Checkerboard Code<select value={form.cbCode||'None'} onChange={e=>update('cbCode',e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></label>
+      <div className="wide overlayPanel">
+        <strong>Constraints / Overlays</strong>
+        <div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(form.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(form.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+      </div>
+    </div>
+    <div className="buttonRow">
+      <button className="primaryBtn" onClick={save}>Save Game Card</button>
+      <button className="secondaryBtn" onClick={onCancel}>Cancel</button>
+    </div>
+  </div>;
+}
+
+function UniversalGameCard({game,onAdd,onEdit,onDuplicate,onDelete}){
+  const card=normaliseGameCard(game);
+  return <div className="libraryCard universalCard">
+    <div className="libraryCardTop">
+      <div>
+        <span className="categoryTag">{card.category}</span>
+        <h3>{card.title}</h3>
+      </div>
+      <span className="levelPill">{card.level}</span>
+    </div>
+    <div className="infoBox"><strong>Task / Rules</strong><p>{card.task}</p></div>
+    <div className="infoBox"><strong>Rationale</strong><p>{card.rationale}</p></div>
+    <div className="infoBox"><strong>Coach Focus</strong><p>{card.coachFocus || 'Not set.'}</p></div>
+    <div className="infoBox"><strong>Player Focus</strong><p>{card.playerFocus || 'Not set.'}</p></div>
+    <div className="infoBox"><strong>Scoring</strong><p>{card.scoring}</p></div>
+    {card.antiGaming&&<div className="infoBox"><strong>Anti-gaming</strong><p>{card.antiGaming}</p></div>}
+    <div className="chips">{(card.layers||[]).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+    {card.cbCode&&card.cbCode!=='None'&&<div className="cbMini">CB: {card.cbCode}</div>}
+    <div className="actionRow">
+      <button onClick={()=>onAdd(card)}>Add To Session</button>
+      <button onClick={()=>onDuplicate(card)}>Duplicate Variant</button>
+      <button onClick={()=>onEdit(card)}>Edit</button>
+      <button onClick={()=>onDelete(card.id)}>Delete</button>
+    </div>
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
+  const [savedCards,setSavedCards]=useState(()=>{
+    try{
+      const saved=localStorage.getItem(GAME_LIBRARY_KEY);
+      return saved?JSON.parse(saved).map(normaliseGameCard):[];
+    }catch{return[];}
+  });
+  const [editingCard,setEditingCard]=useState(null);
+
+  useEffect(()=>{
+    localStorage.setItem(GAME_LIBRARY_KEY,JSON.stringify(savedCards));
+  },[savedCards]);
 
   function addAndGo(game){
-    setSession(prev=>[...prev,{...clone(game),id:Date.now()+Math.random()}]);
+    setSession(prev=>[...prev,{...normaliseGameCard(game),id:Date.now()+Math.random()}]);
     setMessage(`${game.title} added to Session Builder.`);
     setScreen('sessions');
   }
 
-  const gameClasses=['ATL / BTL','Checkerboard','Classic Conditioned','Volley & Intercept','Pressure','Technical','Invasion','Matchplay'];
+  function addStay(game){
+    setSession(prev=>[...prev,{...normaliseGameCard(game),id:Date.now()+Math.random()}]);
+    setMessage(`${game.title} added to current session.`);
+  }
+
+  function saveCard(card){
+    const clean=normaliseGameCard(card);
+    setSavedCards(prev=>{
+      const exists=prev.some(item=>item.id===clean.id);
+      return exists?prev.map(item=>item.id===clean.id?clean:item):[...prev,clean];
+    });
+    setEditingCard(null);
+    setMessage('Game card saved.');
+  }
+
+  function duplicateCard(card){
+    const copy={...normaliseGameCard(card),id:Date.now()+Math.random(),title:`${card.title} variant`};
+    setSavedCards(prev=>[...prev,copy]);
+    setEditingCard(copy);
+    setMessage('Variant created. Edit and save it.');
+  }
+
+  function deleteCard(id){
+    setSavedCards(prev=>prev.filter(card=>card.id!==id));
+    setMessage('Game card deleted.');
+  }
+
+  const gameClasses=['ATL / BTL','Checkerboard','Classic Conditioned','Volley & Intercept','Pressure','Technical','Invasion','Matchplay','Saved Cards'];
+  const visibleCards=activeClass==='Saved Cards'?savedCards:savedCards.filter(card=>card.category===activeClass);
 
   return <div className="page">
-    <div className="pageTop"><h1>Games Library</h1></div>
+    <div className="pageTop">
+      <h1>Games Library</h1>
+      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeClass||'Custom Coach Game'))}>+ New Game Card</button>
+    </div>
 
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -692,16 +867,24 @@ function Games({setSession,setScreen}){
 
     {!activeClass&&<div className="placeholder">Tap a game class above.</div>}
 
+    {editingCard&&<UniversalGameEditor game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
+
     {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
     {activeClass==='ATL / BTL'&&<ATLBTLDirectBuilder onAddToSession={addAndGo}/>}
+    {activeClass==='Classic Conditioned'&&<ClassicConditionedBuilder onAddToSession={addAndGo}/>}
 
-    {activeClass==='Classic Conditioned'&&<ClassicConditionedBuilder onAddToSession={addAndGo}/>} 
-
-    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&
-      <div className="placeholder">{activeClass} games will be restored as the next functional class.</div>
+    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&activeClass!=='Saved Cards'&&
+      <div className="placeholder">{activeClass} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
     {message&&<div className="statusBox">{message}</div>}
+
+    {activeClass&&visibleCards.length>0&&<div>
+      <h2>Saved Game Cards</h2>
+      <div className="libraryGrid">
+        {visibleCards.map(card=><UniversalGameCard key={card.id} game={card} onAdd={addStay} onEdit={setEditingCard} onDuplicate={duplicateCard} onDelete={deleteCard}/>)}
+      </div>
+    </div>}
   </div>;
 }
 
@@ -903,7 +1086,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v72</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v73</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

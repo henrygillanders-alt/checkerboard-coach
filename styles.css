@@ -341,3 +341,49 @@
 .conditionedCard h3{
   margin-top:10px;
 }
+
+.universalEditor{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.universalEditor h2{
+  margin-top:0;
+}
+.editorGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.editorGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+}
+.editorGrid input,
+.editorGrid select,
+.editorGrid textarea{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.editorGrid textarea{
+  min-height:90px;
+}
+.editorGrid .wide{
+  grid-column:1/-1;
+}
+.universalCard h3{
+  margin-top:10px;
+}
+@media(max-width:900px){
+  .editorGrid{
+    grid-template-columns:1fr;
+  }
+}
