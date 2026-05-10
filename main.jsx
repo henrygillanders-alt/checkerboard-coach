@@ -462,6 +462,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
 function ClassicConditionedBuilder({onAddToSession}){
   const [selectedFamily,setSelectedFamily]=useState('All');
+  const [selectedOverlays,setSelectedOverlays]=useState({});
 
   const scoringProtocol='Win rally = 1 · Complete challenge bonus by game · Win after completing challenge = +3 · Clean winner = +2 and sits on top of all scoring';
 
@@ -476,7 +477,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Teaches players to recognise the state of the opponent before choosing to attack.',
       coach:'Ask: “What did the opponent look like before you attacked?” Reward recognition more than shot choice.',playerFocus:'Notice opponent position, balance and recovery before choosing to attack.',
       scoring:'Win rally = 1 · Win after visible advantage = +3 · Clean winner = +2',
-      layers:['Opponent Off T','Clean Winner'],
+      suggestedOverlays:['Opponent Off T','Clean Winner'],
       antiGaming:'If a player deliberately kills the rally to avoid the opponent earning a bonus, normal rally point is awarded to the opponent.'
     },
     {
@@ -489,7 +490,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Connects tactical construction with opponent displacement and recovery prevention.',
       coach:'Use a marked T-zone. The opponent must clearly be outside it when the winning shot is played.',playerFocus:'Move the opponent away from the T before trying to finish.',
       scoring:'Win rally = 1 · Win while opponent outside T-zone = +3 · Clean winner = +2',
-      layers:['Opponent Off T','4-Shot Window','2-Shot Window','Clean Winner'],
+      suggestedOverlays:['Opponent Off T','4-Shot Window','2-Shot Window','Clean Winner'],
       antiGaming:'Opponent cannot intentionally stop movement or abandon recovery to distort the condition.'
     },
     {
@@ -502,7 +503,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Links central control, balance and tactical timing rather than only shot execution.',
       coach:'Use the foot-in-zone rule as a clear binary condition. Do not overcoach technique.',
       scoring:'Win rally = 1 · T-zone contact finish = +3 · Clean winner = +2',
-      layers:['Opponent Off T','Clean Winner'],
+      suggestedOverlays:['Opponent Off T','Clean Winner'],
       antiGaming:'If contact location is unclear, no bonus; rally point still stands.'
     },
     {
@@ -515,7 +516,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',
       coach:'The volley should be earned, not hunted recklessly.',
       scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',
-      layers:['Volley Finish','Opponent Off T','Clean Winner'],
+      suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner'],
       antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.'
     },
     {
@@ -528,7 +529,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Prevents rushed front-court attacks and encourages pressure construction first.',
       coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',
       scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',
-      layers:['Quality Length Before Attack','4-Shot Window','2-Shot Window','Clean Winner'],
+      suggestedOverlays:['Quality Length Before Attack','4-Shot Window','2-Shot Window','Clean Winner'],
       antiGaming:'If a player hits short before any pressure is created, only the rally point is available.'
     },
     {
@@ -541,7 +542,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Develops tactical disruption rather than repetitive pattern hitting.',
       coach:'Ask whether the opponent’s route was actually broken. If not, no bonus.',playerFocus:'Change the opponent’s movement route before selecting the winning shot.',
       scoring:'Win rally = 1 · Route broken before winning = +3 · Clean winner = +2',
-      layers:['Opponent Off T','Weak Side','Clean Winner'],
+      suggestedOverlays:['Opponent Off T','Weak Side','Clean Winner'],
       antiGaming:'Opponent cannot deliberately stop chasing to deny that their route was broken.'
     },
     {
@@ -554,7 +555,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',
       coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',
       scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',
-      layers:['Double Bounce'],
+      suggestedOverlays:['Double Bounce'],
       antiGaming:'Players may not intentionally wait for a second bounce if they could clearly play the first bounce safely, unless the learning purpose is movement timing.'
     },
     {
@@ -567,7 +568,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Prevents the strongest player over-dominating and keeps challenge high for everyone.',
       coach:'Use especially with uneven groups or mixed standards.',
       scoring:'Normal rally scoring · track bounce allowance per player',
-      layers:['Double Bounce'],
+      suggestedOverlays:['Double Bounce'],
       antiGaming:'If tracking becomes confusing, reset allowances every 3–5 rallies.'
     },
     {
@@ -580,7 +581,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Creates tactical intention while preserving live decision-making and secrecy.',
       coach:'The hidden condition should shape the player’s perception, not force a bad shot.',
       scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',
-      layers:['Blind Finish','Clean Winner','Volley Finish'],
+      suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish'],
       antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.'
     },
     {
@@ -593,7 +594,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Develops recognition of opponent momentum and recovery state.',
       coach:'Clarify: opponent must still be moving forward, braking, or unable to recover normally when the winning shot is played.',
       scoring:'Win rally = 1 · Win while opponent moving forward = +3 · Clean winner = +2',
-      layers:['Opponent Off T','Clean Winner'],
+      suggestedOverlays:['Opponent Off T','Clean Winner'],
       antiGaming:'Do not award bonus if opponent had clearly recovered and reset.'
     },
     {
@@ -606,13 +607,22 @@ function ClassicConditionedBuilder({onAddToSession}){
       rationale:'Links finishing choice to opponent orientation rather than a fixed target.',
       coach:'Use body-line as the reference, not simply left/right court side.',
       scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',
-      layers:['Weak Side','Clean Winner'],
+      suggestedOverlays:['Weak Side','Clean Winner'],
       antiGaming:'If body-line reference is unclear, no bonus.'
     }
   ];
 
   const families=['All',...Array.from(new Set(games.map(game=>game.family)))];
   const filtered=selectedFamily==='All'?games:games.filter(game=>game.family===selectedFamily);
+
+  function overlayKey(game){return game.title;}
+  function toggleGameOverlay(game,layer){
+    const key=overlayKey(game);
+    setSelectedOverlays(prev=>{
+      const current=prev[key]||[];
+      return {...prev,[key]:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
+    });
+  }
 
   function addGame(game){
     onAddToSession({
@@ -625,7 +635,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       coachFocus:game.coach,playerFocus:game.playerFocus||'Focus on the cue that unlocks the scoring condition.',coach:`${game.coach} Anti-gaming: ${game.antiGaming}`,
       rationale:game.rationale,
       task:game.task,
-      layers:game.layers||[],
+      layers:selectedOverlays[overlayKey(game)]||[],
       scoring:game.scoring
     });
   }
@@ -659,7 +669,16 @@ function ClassicConditionedBuilder({onAddToSession}){
           <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring condition.'}</p></div>
           <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
           <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
-          <div className="chips">{game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+          <div className="conditionedOverlayChooser">
+            <strong>Coach-selected overlays</strong>
+            <div className="quickLayers">
+              {(game.suggestedOverlays||[]).map(layer=>
+                <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
+                  {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
+                </button>
+              )}
+            </div>
+          </div>
           <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
         </div>
       )}
@@ -1086,7 +1105,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v73</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v74</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

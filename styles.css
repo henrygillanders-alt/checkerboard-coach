@@ -387,3 +387,16 @@
     grid-template-columns:1fr;
   }
 }
+
+.conditionedOverlayChooser{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+}
+.conditionedOverlayChooser strong{
+  display:block;
+  color:#ffd980;
+  margin-bottom:10px;
+}
