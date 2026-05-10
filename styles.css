@@ -269,3 +269,10 @@
 @media(max-width:900px){
   .gameClassGrid{grid-template-columns:1fr 1fr;}
 }
+
+.customSeqToggle{
+  margin:14px 0;
+}
+.customSeqBox .buttonRow{
+  margin-top:12px;
+}
