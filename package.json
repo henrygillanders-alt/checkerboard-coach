@@ -4,10 +4,9 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
     "react": "latest",
-    "react-dom": "latest"
-  },
-  "devDependencies": {}
+    "react-dom": "latest",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest"
+  }
 }
