@@ -400,3 +400,29 @@
   color:#ffd980;
   margin-bottom:10px;
 }
+
+.overlayExplain{
+  color:#9fb0c8;
+  margin-top:6px;
+}
+.overlayInfoGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.overlayInfoCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:12px;
+}
+.overlayInfoCard h4{
+  margin:0 0 10px 0;
+  color:#ffd980;
+}
+@media(max-width:900px){
+  .overlayInfoGrid{
+    grid-template-columns:1fr;
+  }
+}

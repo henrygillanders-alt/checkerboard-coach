@@ -670,13 +670,16 @@ function ClassicConditionedBuilder({onAddToSession}){
           <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
           <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
           <div className="conditionedOverlayChooser">
-            <strong>Coach-selected overlays</strong>
+            <strong>Suggested overlays</strong><p className="overlayExplain">Suggested overlays include rationale because overlays are behavioural design tools, not just scoring toggles.</p>
             <div className="quickLayers">
               {(game.suggestedOverlays||[]).map(layer=>
                 <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
                   {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
                 </button>
               )}
+            </div>
+            <div className="overlayInfoGrid">
+              {(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}
             </div>
           </div>
           <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
@@ -686,6 +689,86 @@ function ClassicConditionedBuilder({onAddToSession}){
   </div>;
 }
 
+
+
+const OVERLAY_INTELLIGENCE={
+  'Opponent Off T':{
+    rationale:'Reinforces recognition of opponent recovery position before attacking.',
+    amplifies:'Displacement recognition, timing of attack, recovery awareness.',
+    works:'T-Zone games, Route Breaker, pressure construction games.',
+    warning:'Too many additional blind constraints can overload perception.',
+    suitability:'Best from intermediate upward.'
+  },
+  'Clean Winner':{
+    rationale:'Rewards efficient exploitation of advantage rather than passive rally extension.',
+    amplifies:'Decisive finishing behaviour.',
+    works:'Conversion games, T-zone denial, checkerboard finishing.',
+    warning:'Can encourage over-forcing if used too early with beginners.',
+    suitability:'All levels when scoring is scaled appropriately.'
+  },
+  '4-Shot Window':{
+    rationale:'Encourages rapid conversion after advantage creation.',
+    amplifies:'Urgency, transition from pressure to attack.',
+    works:'T-zone games, checkerboard progression, route disruption.',
+    warning:'May reduce rally construction quality if overused.',
+    suitability:'Intermediate to advanced.'
+  },
+  '2-Shot Window':{
+    rationale:'Creates elite-level pressure to convert immediately.',
+    amplifies:'Fast recognition and decisive tactical execution.',
+    works:'Performance and professional conversion games.',
+    warning:'Too difficult for most developing players.',
+    suitability:'Advanced / professional.'
+  },
+  'Volley Finish':{
+    rationale:'Rewards early interception after pressure creation.',
+    amplifies:'Taking space early and intercepting affordances.',
+    works:'Central control games, route breaker, checkerboard.',
+    warning:'Can create reckless volley hunting if overemphasised.',
+    suitability:'Intermediate upward.'
+  },
+  'Weak Side':{
+    rationale:'Encourages finishing against opponent body-line and recovery direction.',
+    amplifies:'Perception of orientation and movement momentum.',
+    works:'Route breaker, opposite-side finish, checkerboard.',
+    warning:'Requires coach clarity on body-line definition.',
+    suitability:'Intermediate upward.'
+  },
+  'Blind Finish':{
+    rationale:'Shapes tactical intention without public disclosure.',
+    amplifies:'Perception-action adaptability and hidden tactical goals.',
+    works:'Checkerboard, finishing games, tactical progressions.',
+    warning:'Too many simultaneous hidden constraints can overload players.',
+    suitability:'Intermediate upward.'
+  },
+  'Double Bounce':{
+    rationale:'Balances mixed standards while preserving live rally information.',
+    amplifies:'Adaptation and inclusive competitive pressure.',
+    works:'Mixed-standard sessions and adapted competition.',
+    warning:'Too many additional overlays can reduce realism.',
+    suitability:'All levels.'
+  },
+  'Quality Length Before Attack':{
+    rationale:'Prevents premature attacking before pressure is created.',
+    amplifies:'Patience, pressure construction and tactical sequencing.',
+    works:'Length-based pressure games and ATL/BTL progressions.',
+    warning:'Can become passive if no attack trigger exists.',
+    suitability:'All levels.'
+  }
+};
+
+function OverlayInfoCard({overlay}){
+  const info=OVERLAY_INTELLIGENCE[overlay];
+  if(!info)return null;
+  return <div className="overlayInfoCard">
+    <h4>{overlay}</h4>
+    <div className="infoBox"><strong>Rationale</strong><p>{info.rationale}</p></div>
+    <div className="infoBox"><strong>Amplifies</strong><p>{info.amplifies}</p></div>
+    <div className="infoBox"><strong>Works well with</strong><p>{info.works}</p></div>
+    <div className="infoBox"><strong>Warning</strong><p>{info.warning}</p></div>
+    <div className="infoBox"><strong>Progression suitability</strong><p>{info.suitability}</p></div>
+  </div>;
+}
 
 function normaliseGameCard(game){
   return {
@@ -1105,7 +1188,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v74</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v75</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
