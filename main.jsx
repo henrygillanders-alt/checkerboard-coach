@@ -397,7 +397,7 @@ function Games({setSession,setScreen}){
     {!activeClass&&<div className="placeholder">Tap a game class above.</div>}
 
     {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
-    {activeClass==='ATL / BTL'&&<GameSelector onAddToSession={addAndGo} addButtonText="Add ATL / BTL To Session"/>}
+    {activeClass==='ATL / BTL'&&<div className="placeholder">ATL / BTL builder will be opened here next without the duplicate class menu. Use Session Builder → ATL / BTL for the current working builder.</div>}
 
     {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&
       <div className="placeholder">{activeClass} games will be restored as the next functional class.</div>
@@ -605,7 +605,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v68</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v69</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

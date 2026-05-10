@@ -296,3 +296,8 @@
 @media(max-width:900px){
   .blindDeckGrid{grid-template-columns:1fr;}
 }
+
+/* v69: Games Library uses the large class buttons only. */
+.page > .gameMenuGrid{
+  display:none;
+}
