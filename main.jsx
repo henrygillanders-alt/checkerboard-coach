@@ -89,7 +89,7 @@ function buildAtlFromOptions(options) {
 const starterGames = [
   {
     id:1,
-    title:'ATL / BTL Structure Builder',
+    title:'ATL / BTL Full Structure Builder',
     category:'ATL / BTL',
     isAtlBuilder:true,
     atlOptions:{
@@ -141,13 +141,14 @@ const starterGames = [
   }
 ];
 
-function GameCard({game, toggleFavourite, addToSession, updateAtlOption}){
+function GameCard({game, toggleFavourite, addToSession, updateAtlOption, duplicateGame, toggleEdit, updateGameField}){
   return (
     <div className="gameCard">
       <div className="cardTop">
         <div>
           <div className="categoryTag">{game.category}</div>
           <h2>{game.title}</h2>
+          {game.isAtlBuilder && <p className="builderNote">Fully editable ATL / BTL format builder</p>}
         </div>
 
         <button
@@ -205,10 +206,23 @@ function GameCard({game, toggleFavourite, addToSession, updateAtlOption}){
         <div><strong>Levels</strong><span>{game.level}</span></div>
       </div>
 
+      {game.editing && (
+        <div className="editGamePanel">
+          <label>Game Title<input value={game.title} onChange={e => updateGameField(game.id, 'title', e.target.value)} /></label>
+          <label>Duration<input value={game.duration} onChange={e => updateGameField(game.id, 'duration', e.target.value)} /></label>
+          <label>Levels<input value={game.level} onChange={e => updateGameField(game.id, 'level', e.target.value)} /></label>
+          <label className="wide">Tactical Problem<textarea value={game.tactical} onChange={e => updateGameField(game.id, 'tactical', e.target.value)} /></label>
+          <label className="wide">Task / Rules<textarea value={game.rules} onChange={e => updateGameField(game.id, 'rules', e.target.value)} /></label>
+          <label className="wide">Rationale<textarea value={game.rationale} onChange={e => updateGameField(game.id, 'rationale', e.target.value)} /></label>
+          <label className="wide">Coach Help<textarea value={game.coach} onChange={e => updateGameField(game.id, 'coach', e.target.value)} /></label>
+          <label className="wide">Overlays<input value={game.overlays} onChange={e => updateGameField(game.id, 'overlays', e.target.value)} /></label>
+        </div>
+      )}
+
       <div className="actionRow">
         <button onClick={() => addToSession(game)}>Add To Session</button>
-        <button>Duplicate</button>
-        <button>Edit</button>
+        <button onClick={() => duplicateGame(game.id)}>Duplicate</button>
+        <button onClick={() => toggleEdit(game.id)}>{game.editing ? 'Close Edit' : 'Edit'}</button>
       </div>
     </div>
   );
@@ -217,7 +231,7 @@ function GameCard({game, toggleFavourite, addToSession, updateAtlOption}){
 function Games(){
   const [games, setGames] = useState(() => {
     try{
-      const saved = localStorage.getItem('checkerboardGames');
+      const saved = localStorage.getItem('checkerboardGames_v49');
       return saved ? JSON.parse(saved) : starterGames;
     }catch{
       return starterGames;
@@ -229,7 +243,7 @@ function Games(){
   const [category, setCategory] = useState('All');
 
   useEffect(() => {
-    localStorage.setItem('checkerboardGames', JSON.stringify(games));
+    localStorage.setItem('checkerboardGames_v49', JSON.stringify(games));
   }, [games]);
 
   const categories = ['All', ...gameCategories];
@@ -251,6 +265,34 @@ function Games(){
     setSessionGames([...sessionGames, game]);
   }
 
+  function duplicateGame(id){
+    const original = games.find(g => g.id === id);
+    if(!original) return;
+    const copy = {
+      ...original,
+      id: Date.now(),
+      title: original.title + ' copy',
+      favourite:false,
+      editing:false,
+      atlOptions: original.atlOptions ? {...original.atlOptions} : undefined
+    };
+    setGames([...games, copy]);
+  }
+
+  function toggleEdit(id){
+    setGames(games.map(g => g.id === id ? {...g, editing: !g.editing} : g));
+  }
+
+  function updateGameField(id, field, value){
+    setGames(games.map(g => g.id === id ? {...g, [field]: value} : g));
+  }
+
+  function resetGamesLibrary(){
+    localStorage.removeItem('checkerboardGames_v49');
+    setGames(starterGames);
+  }
+
+
   function updateAtlOption(id, key, value){
     setGames(games.map(g => {
       if(g.id !== id) return g;
@@ -264,7 +306,10 @@ function Games(){
     <div className="page">
       <div className="pageTop">
         <h1>Games</h1>
-        <button className="primaryBtn">Session Games: {sessionGames.length}</button>
+        <div className="gamesTopButtons">
+          <button className="primaryBtn">Session Games: {sessionGames.length}</button>
+          <button className="secondaryBtn" onClick={resetGamesLibrary}>Reset Games Library</button>
+        </div>
       </div>
 
       <div className="topBar">
@@ -279,7 +324,16 @@ function Games(){
 
       <div className="gamesGrid">
         {filteredGames.map(game => (
-          <GameCard key={game.id} game={game} toggleFavourite={toggleFavourite} addToSession={addToSession} updateAtlOption={updateAtlOption} />
+          <GameCard
+            key={game.id}
+            game={game}
+            toggleFavourite={toggleFavourite}
+            addToSession={addToSession}
+            updateAtlOption={updateAtlOption}
+            duplicateGame={duplicateGame}
+            toggleEdit={toggleEdit}
+            updateGameField={updateGameField}
+          />
         ))}
       </div>
     </div>
@@ -875,7 +929,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Phase 48 · Integrated games library ATL</p>
+          <p>Phase 49 · Active ATL games library</p>
         </div>
       </header>
 
