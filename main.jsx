@@ -87,6 +87,7 @@ return <div className="homeGrid">
 <button className="tile purple" onClick={()=>setScreen('games')}><h2>Games</h2><p>ATL / BTL, conditioned games, checkerboard and pressure games.</p></button>
 <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Junior Programme Ranking, attendance and guests.</p></button>
 <button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
+<button className="tile navy" onClick={()=>setScreen('storage')}><h2>Storage</h2><p>Backup and restore players, attendance and sessions.</p></button>
 </div>;
 }
 
@@ -94,13 +95,17 @@ function GameSelector({onAddToSession,addButtonText='Add To Session'}){
 const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
-const[manualLayers,setManualLayers]=useState([]);
+const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);
 const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
-function setAtlOption(key,value){setAtl(prev=>({...prev,[key]:value}));}
-function toggleManualLayer(layer){setManualLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
+function saveAtlSnapshot(){setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);}
+function setAtlOption(key,value){saveAtlSnapshot();setAtl(prev=>({...prev,[key]:value}));}
+function toggleManualLayer(layer){saveAtlSnapshot();setManualLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
+function clearAtlOverlays(){saveAtlSnapshot();setManualLayers([]);}
+function resetAtlBuilder(){saveAtlSnapshot();setAtl(DEFAULT_ATL);setManualLayers([]);}
+function undoAtl(){const last=atlHistory[atlHistory.length-1];if(!last)return;setAtl(last.atl);setManualLayers(last.manualLayers);setAtlHistory(atlHistory.slice(0,-1));}
 function addGame(game){onAddToSession({...clone(game),id:Date.now()+Math.random()});}
 const filtered=games.filter(game=>game.category===category);
 return <div>
@@ -124,7 +129,7 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<div className="overlayPanel"><strong>Universal Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={composedAtl.layers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{composedAtl.layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+<div className="overlayPanel"><strong>Universal Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={manualLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{manualLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
 {category&&category!=='ATL / BTL'&&<div className="gameList">
@@ -142,15 +147,15 @@ return <div>
 </div>;
 }
 
-function Sessions({session,setSession}){
+function Sessions({session,setSession}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
-function addGame(game){setSession(prev=>[...prev,game]);}
-function remove(index){setSession(session.filter((_,i)=>i!==index));}
-function duplicate(index){const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
-function addLayer(index,layer){const updated=clone(session);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
-function updateCb(index,code){const updated=clone(session);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
+function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
+function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
+function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
+function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 return <div className="page">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={()=>setSession([])}>Clear Session</button></div></div>
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button></div></div>
 <GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Choose a game above and tap Add To Session.</div>}
@@ -212,7 +217,7 @@ return <div className="page">
 </div>;
 }
 
-function Competition({players}){
+function Competition({players}){const[compHistory,setCompHistory]=useState([]);function saveCompSnapshot(){setCompHistory(prev=>[...prev,{format,manual,generated,courts,boxes,lives,rounds,match,competitionLayers,competitionCbCode,doubleBounceRule,playerBounces}]);}function undoCompetition(){const last=compHistory[compHistory.length-1];if(!last)return;setFormat(last.format);setManual(last.manual);setGenerated(last.generated);setCourts(last.courts);setBoxes(last.boxes);setLives(last.lives);setRounds(last.rounds);setMatch(last.match);setCompetitionLayers(last.competitionLayers);setCompetitionCbCode(last.competitionCbCode);setDoubleBounceRule(last.doubleBounceRule);setPlayerBounces(last.playerBounces);setCompHistory(compHistory.slice(0,-1));}
 const[format,setFormat]=useState('Round Robin');
 const[manual,setManual]=useState('');
 const[generated,setGenerated]=useState([]);
@@ -223,14 +228,14 @@ const[rounds,setRounds]=useState(3);
 const[match,setMatch]=useState('First to 11');const[competitionLayers,setCompetitionLayers]=useState([]);const[competitionCbCode,setCompetitionCbCode]=useState('None');const[doubleBounceRule,setDoubleBounceRule]=useState('Incoming player always has double bounce. Winner loses one bounce after every rally they win.');const[playerBounces,setPlayerBounces]=useState({});
 const present=sortPlayers(players.filter(player=>player.present));
 const names=present.length?present.map(player=>player.name):manual.split('\n').map(name=>name.trim()).filter(Boolean);
-function bounceFor(name){return playerBounces[name]||'None';}function setBounceFor(name,value){setPlayerBounces(prev=>({...prev,[name]:value}));}function bounceSummary(){const entries=names.map(name=>({name,bounce:bounceFor(name)})).filter(item=>item.bounce!=='None');return entries.length?['Player double bounces:',...entries.map(item=>`${item.name}: ${item.bounce}`)]:[];}function toggleCompetitionLayer(layer){setCompetitionLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}function layerSummary(){const parts=[];if(competitionLayers.length)parts.push(`Overlays: ${competitionLayers.join(' · ')}`);if(competitionCbCode!=='None')parts.push(`Checkerboard Code: ${competitionCbCode}`);if(competitionLayers.includes('Double Bounce')){parts.push(`Double Bounce Rule: ${doubleBounceRule}`);parts.push(...bounceSummary());}return parts;}function generate(){
+function bounceFor(name){return playerBounces[name]||'None';}function setBounceFor(name,value){setPlayerBounces(prev=>({...prev,[name]:value}));}function bounceSummary(){const entries=names.map(name=>({name,bounce:bounceFor(name)})).filter(item=>item.bounce!=='None');return entries.length?['Player double bounces:',...entries.map(item=>`${item.name}: ${item.bounce}`)]:[];}function toggleCompetitionLayer(layer){saveCompSnapshot();setCompetitionLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}function layerSummary(){const parts=[];if(competitionLayers.length)parts.push(`Overlays: ${competitionLayers.join(' · ')}`);if(competitionCbCode!=='None')parts.push(`Checkerboard Code: ${competitionCbCode}`);if(competitionLayers.includes('Double Bounce')){parts.push(`Double Bounce Rule: ${doubleBounceRule}`);parts.push(...bounceSummary());}return parts;}function generate(){saveCompSnapshot();
 if(names.length<2){setGenerated(['Need at least 2 players.']);return;}
 if(format==='Round Robin'){const groupCount=Math.min(boxes,names.length);const groups=Array.from({length:groupCount},()=>[]);names.forEach((name,index)=>groups[index%groupCount].push(name));const output=[];groups.forEach((group,groupIndex)=>{output.push(`Box ${groupIndex+1}: ${group.join(', ')}`);for(let i=0;i<group.length;i++){for(let j=i+1;j<group.length;j++){output.push(`Box ${groupIndex+1}: ${group[i]} vs ${group[j]}`);}}});setGenerated([`Round Robin · ${boxes} box${boxes>1?'es':''} · ${courts} courts · ${match}`,...layerSummary(),'Standings: matches won → games difference → points difference → head-to-head.',...output]);return;}
 if(format==='Monrad'){const output=[];for(let i=0;i<Math.floor(names.length/2);i++)output.push(`Court ${(i%courts)+1}: ${names[i]} vs ${names[names.length-1-i]}`);if(names.length%2)output.push(`Bye: ${names[Math.floor(names.length/2)]}`);setGenerated([`Monrad · ${rounds} rounds · ${courts} courts · ${match}`,...layerSummary(),'Round 1 seeded pairings:',...output]);return;}
 if(format==='NSL'){const teamA=names.filter((_,index)=>index%2===0);const teamB=names.filter((_,index)=>index%2!==0);setGenerated([`NSL · ${courts} courts · ${match}`,...layerSummary(),`Team A: ${teamA.join(', ')}`,`Team B: ${teamB.join(', ')}`]);return;}
 if(format==='Invasion Game'){const groups=Array.from({length:courts},()=>[]);names.forEach((name,index)=>groups[index%courts].push(name));const output=groups.map((group,index)=>{if(!group.length)return`Court ${index+1}: no players`;const each=Math.floor(lives/group.length);const spare=lives%group.length;return`Court ${index+1}: ${group.join(', ')} — ${lives} total lives — ${each} lives each${spare?` + ${spare} spare lives`:''}`;});setGenerated([`Invasion · ${courts} courts · ${lives} lives per court`,...layerSummary(),...output]);}
 }
-return <div className="page"><div className="pageTop"><h1>Competition</h1></div><div className="competitionCard">
+return <div className="page"><div className="pageTop"><h1>Competition</h1><button className="secondaryBtn" onClick={undoCompetition} disabled={compHistory.length===0}>Undo</button></div><div className="competitionCard">
 <label>Competition Format</label><div className="formatGrid">{['Round Robin','Monrad','Invasion Game','NSL'].map(f=><button key={f} className={format===f?'formatBtn activeFormat':'formatBtn'} onClick={()=>setFormat(f)}>{f}</button>)}</div><select value={format} onChange={e=>setFormat(e.target.value)}><option>Round Robin</option><option>Monrad</option><option>Invasion Game</option><option>NSL</option></select>
 {format==='Round Robin'&&<div className="rrBoxSelector"><label>Round Robin Box Format</label><div className="boxGrid">{[1,2,3,4].map(number=><button key={number} className={boxes===number?'boxOption activeBox':'boxOption'} onClick={()=>setBoxes(number)}><strong>{number} {number===1?'Box':'Boxes'}</strong></button>)}</div></div>}
 <div className="competitionControls">
@@ -248,6 +253,111 @@ return <div className="page"><div className="pageTop"><h1>Competition</h1></div>
 </div>;
 }
 
+
+function Storage({players,setPlayers,session,setSession}){
+  const [backupText,setBackupText]=useState('');
+  const [restoreText,setRestoreText]=useState('');
+  const [status,setStatus]=useState('');
+
+  function buildBackup(){
+    const data={
+      app:'Checkerboard Coach',
+      version:'v58',
+      created:new Date().toISOString(),
+      players,
+      session
+    };
+    const text=JSON.stringify(data,null,2);
+    setBackupText(text);
+    setStatus('Backup created. Copy and save this text somewhere safe.');
+  }
+
+  function copyBackup(){
+    if(!backupText){setStatus('Create backup first.');return;}
+    navigator.clipboard?.writeText(backupText);
+    setStatus('Backup copied to clipboard.');
+  }
+
+  function downloadBackup(){
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v58',created:new Date().toISOString(),players,session},null,2);
+    const blob=new Blob([data],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='checkerboard-backup-v58.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setStatus('Backup download started.');
+  }
+
+  function restoreBackup(){
+    try{
+      const data=JSON.parse(restoreText);
+      if(!data || !Array.isArray(data.players) || !Array.isArray(data.session)){
+        setStatus('Restore failed: backup must contain players and session arrays.');
+        return;
+      }
+      setPlayers(data.players);
+      setSession(data.session);
+      localStorage.setItem(PLAYER_KEY,JSON.stringify(data.players));
+      localStorage.setItem(SESSION_KEY,JSON.stringify(data.session));
+      setStatus('Restore complete. Players and session have been reloaded.');
+    }catch(error){
+      setStatus('Restore failed: invalid backup text.');
+    }
+  }
+
+  function clearTodayAttendance(){
+    const cleared=players.map(player=>({...player,present:false}));
+    setPlayers(cleared);
+    localStorage.setItem(PLAYER_KEY,JSON.stringify(cleared));
+    setStatus('Attendance cleared. Player list remains saved.');
+  }
+
+  function clearSessionOnly(){
+    setSession([]);
+    localStorage.setItem(SESSION_KEY,JSON.stringify([]));
+    setStatus('Session cleared. Player list remains saved.');
+  }
+
+  return <div className="page">
+    <div className="pageTop"><h1>Storage & Retrieval</h1></div>
+
+    <div className="storageGrid">
+      <div className="storageCard">
+        <h2>Backup</h2>
+        <p>Save a copy of current players, attendance status and session rotations.</p>
+        <div className="buttonRow">
+          <button className="primaryBtn" onClick={buildBackup}>Create Backup Text</button>
+          <button className="secondaryBtn" onClick={copyBackup}>Copy Backup</button>
+          <button className="secondaryBtn" onClick={downloadBackup}>Download Backup File</button>
+        </div>
+        <textarea className="backupBox" value={backupText} onChange={e=>setBackupText(e.target.value)} placeholder="Backup text will appear here."/>
+      </div>
+
+      <div className="storageCard">
+        <h2>Restore</h2>
+        <p>Paste a previously saved backup here to restore the app data.</p>
+        <textarea className="backupBox" value={restoreText} onChange={e=>setRestoreText(e.target.value)} placeholder="Paste backup text here."/>
+        <button className="primaryBtn" onClick={restoreBackup}>Restore From Backup</button>
+      </div>
+    </div>
+
+    <div className="storageCard">
+      <h2>Safe Clear Options</h2>
+      <p>These do not delete your saved player list unless you restore a different backup.</p>
+      <div className="buttonRow">
+        <button className="secondaryBtn" onClick={clearTodayAttendance}>Clear Today’s Attendance</button>
+        <button className="secondaryBtn" onClick={clearSessionOnly}>Clear Session Only</button>
+      </div>
+    </div>
+
+    {status && <div className="statusBox">{status}</div>}
+  </div>;
+}
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -255,13 +365,13 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v57</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v59</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
 {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
 {screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}
-{screen==='competition'&&<Competition players={players}/>}
+{screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 </div>;
 }

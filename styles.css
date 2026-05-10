@@ -82,3 +82,66 @@
     grid-template-columns:1fr;
   }
 }
+
+.navy{
+  background:linear-gradient(135deg,#123b5c,#071f35);
+}
+
+.storageGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.storageCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+
+.storageCard h2{
+  margin-top:0;
+}
+
+.storageCard p{
+  color:#9fb0c8;
+}
+
+.backupBox{
+  width:100%;
+  min-height:220px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+  margin-top:12px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:12px;
+}
+
+.statusBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  color:#dce8ff;
+  font-weight:900;
+}
+
+@media(max-width:900px){
+  .storageGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.overlayPanel .buttonRow{
+  margin-top:12px;
+}
+.quickLayers button.activeLayer{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
