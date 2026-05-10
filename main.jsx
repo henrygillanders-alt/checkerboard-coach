@@ -601,7 +601,7 @@ function App(){
         <div>
           <div className="eyebrow">CHECKERBOARD COACH</div>
           <h1>Programme Platform</h1>
-          <p>Restored Working Version · Before Games Library</p>
+          <p>Phase 45 · Persistent players + RR standings</p>
         </div>
       </header>
 
