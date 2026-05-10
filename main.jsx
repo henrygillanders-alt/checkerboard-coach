@@ -11,7 +11,7 @@ const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack','CB Code'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -231,7 +231,7 @@ function buildCheckerboardGame(config){
   const sequence=config.customSequence&&config.customSequence.trim()!==''?config.customSequence:config.sequence;
   const completion=config.completionConstraints||[];
   const layers=[...new Set(config.layers||[])];
-  if(!layers.includes('CB Code')) layers.push('CB Code');
+  
   if(level.tZone&&!layers.includes('Opponent Off T')) layers.push('Opponent Off T');
   if(level.window==='4-shot window'&&!layers.includes('4-Shot Window')) layers.push('4-Shot Window');
   if(level.window==='2-shot window'&&!layers.includes('2-Shot Window')) layers.push('2-Shot Window');
@@ -242,7 +242,7 @@ function buildCheckerboardGame(config){
   const taskParts=[
     `${level.label}: ${level.description}`,
     `${challengeName}: ${sequence}.`,
-    config.deliveryMode==='Blind'?'Delivery: hidden card challenge. Player reveals, acknowledges, then the card closes ready for the next player.':'Delivery: open challenge.',
+    config.deliveryMode==='Blind'?'Delivery: blind mode. Use the checkerboard challenge deck and/or finish challenge deck. Player reveals, acknowledges, then the card closes ready for the next player.':'Delivery: open challenge.',
     completion.length?`Completion constraint: ${completion.join(' · ')}.`:'',
     level.tZone?'T-zone prevention applies automatically at this level.':'',
     level.window!=='No window'?`Conversion window: ${level.window}. Challenge resets if not converted inside the window.`:'Levels 1–3: challenge is banked once completed.'
@@ -253,7 +253,7 @@ function buildCheckerboardGame(config){
 }
 
 function CheckerboardEngine({onAddToSession}){
-  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindCard:'',cardFace:'closed',completionConstraints:['Clean winner'],format:'King of Court',duration:8,layers:['CB Code','Clean Winner']});
+  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
   const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
   const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
   const built=buildCheckerboardGame(config);
@@ -265,18 +265,56 @@ function CheckerboardEngine({onAddToSession}){
   }
   function toggleCompletion(item){setConfig(prev=>{const current=prev.completionConstraints||[];return {...prev,completionConstraints:current.includes(item)?current.filter(x=>x!==item):[...current,item]};});}
   function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
-  function generateBlindCard(){
+  
+  function generateBlindChallengeCard(){
     let card='';
     if(config.deliveryMode!=='Blind') card='Blind mode is off.';
-    else if(levelInfo.challenge==='single'){const singles=CB_CODES.filter(code=>code!=='None'&&!code.includes('+'));card=singles[Math.floor(Math.random()*singles.length)];}
-    else if(levelInfo.challenge==='pair') card=CHECKERBOARD_PAIR_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_PAIR_OPTIONS.length)];
-    else card=CHECKERBOARD_TRIPLE_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_TRIPLE_OPTIONS.length)];
-    setConfig(prev=>({...prev,blindCard:card,cardFace:'closed'}));
+    else if(levelInfo.challenge==='single'){
+      const singles=CB_CODES.filter(code=>code!=='None'&&!code.includes('+'));
+      card=singles[Math.floor(Math.random()*singles.length)];
+    }else if(levelInfo.challenge==='pair'){
+      card=CHECKERBOARD_PAIR_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_PAIR_OPTIONS.length)];
+    }else{
+      card=CHECKERBOARD_TRIPLE_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_TRIPLE_OPTIONS.length)];
+    }
+    setConfig(prev=>({...prev,blindChallengeCard:card,blindChallengeFace:'closed'}));
   }
-  function revealCard(){if(!config.blindCard){generateBlindCard();}setConfig(prev=>({...prev,cardFace:'revealed'}));}
-  function acknowledgeCard(){setConfig(prev=>({...prev,blindCard:'',cardFace:'closed'}));}
 
-  return <div className="checkerboardEngine">
+  function revealBlindChallengeCard(){
+    if(!config.blindChallengeCard){generateBlindChallengeCard();}
+    setConfig(prev=>({...prev,blindChallengeFace:'revealed'}));
+  }
+
+  function acknowledgeBlindChallengeCard(){
+    setConfig(prev=>({...prev,blindChallengeCard:'',blindChallengeFace:'closed'}));
+  }
+
+  function generateBlindFinishCard(){
+    const finishDeck=[
+      'Clean winner',
+      'Volley finish',
+      'Opposite side finish',
+      'Weak-side finish',
+      'Front wall finish',
+      'Floor finish',
+      'Opponent moving forward',
+      'Opponent off balance',
+      'Opponent off T'
+    ];
+    const card=finishDeck[Math.floor(Math.random()*finishDeck.length)];
+    setConfig(prev=>({...prev,blindFinishCard:card,blindFinishFace:'closed'}));
+  }
+
+  function revealBlindFinishCard(){
+    if(!config.blindFinishCard){generateBlindFinishCard();}
+    setConfig(prev=>({...prev,blindFinishFace:'revealed'}));
+  }
+
+  function acknowledgeBlindFinishCard(){
+    setConfig(prev=>({...prev,blindFinishCard:'',blindFinishFace:'closed'}));
+  }
+
+return <div className="checkerboardEngine">
     <h2>Checkerboard Level Builder</h2>
     <p className="engineIntro">Level controls challenge type, T-zone prevention and conversion window automatically.</p>
     <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
@@ -293,7 +331,42 @@ function CheckerboardEngine({onAddToSession}){
     </div>
     <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
     <div className="overlayPanel"><strong>Additional Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(config.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
-    {config.deliveryMode==='Blind'&&<div className="blindCardPanel"><strong>Blind Card Delivery</strong><p>Coach generates the card. Player reveals their challenge, acknowledges it, and the card closes ready for the next player.</p><div className="buttonRow"><button className="primaryBtn" onClick={generateBlindCard}>Generate Hidden Card</button><button className="secondaryBtn" onClick={revealCard}>Reveal My Challenge</button><button className="secondaryBtn" onClick={acknowledgeCard}>Acknowledge & Close</button></div><div className={config.cardFace==='revealed'?'blindCard revealedCard':'blindCard'}>{config.cardFace==='revealed'&&config.blindCard?<div><span>My Challenge</span><strong>{config.blindCard}</strong></div>:<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}</div></div>}
+    
+    {config.deliveryMode==='Blind'&&<div className="blindCardPanel">
+      <strong>Blind Card Delivery</strong>
+      <p>Two separate decks: one hidden checkerboard challenge deck and one hidden finish challenge deck.</p>
+
+      <div className="blindDeckGrid">
+        <div className="blindDeckBox">
+          <h3>Blind Checkerboard Challenge Deck</h3>
+          <div className="buttonRow">
+            <button className="primaryBtn" onClick={generateBlindChallengeCard}>Generate Challenge Card</button>
+            <button className="secondaryBtn" onClick={revealBlindChallengeCard}>Reveal My Challenge</button>
+            <button className="secondaryBtn" onClick={acknowledgeBlindChallengeCard}>Acknowledge & Close</button>
+          </div>
+          <div className={config.blindChallengeFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+            {config.blindChallengeFace==='revealed'&&config.blindChallengeCard
+              ? <div><span>My Checkerboard Challenge</span><strong>{config.blindChallengeCard}</strong></div>
+              : <div><span>Hidden Checkerboard Card</span><strong>Tap Reveal</strong></div>}
+          </div>
+        </div>
+
+        <div className="blindDeckBox">
+          <h3>Blind Finish Challenge Deck</h3>
+          <div className="buttonRow">
+            <button className="primaryBtn" onClick={generateBlindFinishCard}>Generate Finish Card</button>
+            <button className="secondaryBtn" onClick={revealBlindFinishCard}>Reveal My Finish</button>
+            <button className="secondaryBtn" onClick={acknowledgeBlindFinishCard}>Acknowledge & Close</button>
+          </div>
+          <div className={config.blindFinishFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+            {config.blindFinishFace==='revealed'&&config.blindFinishCard
+              ? <div><span>My Finish Challenge</span><strong>{config.blindFinishCard}</strong></div>
+              : <div><span>Hidden Finish Card</span><strong>Tap Reveal</strong></div>}
+          </div>
+        </div>
+      </div>
+    </div>}
+
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
   </div>;
 }
@@ -532,7 +605,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v67</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v68</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

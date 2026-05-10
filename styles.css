@@ -276,3 +276,23 @@
 .customSeqBox .buttonRow{
   margin-top:12px;
 }
+
+.blindDeckGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:12px;
+}
+.blindDeckBox{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+}
+.blindDeckBox h3{
+  margin:0 0 12px 0;
+  color:#ffd980;
+}
+@media(max-width:900px){
+  .blindDeckGrid{grid-template-columns:1fr;}
+}
