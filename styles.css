@@ -151,3 +151,46 @@ body{
     flex-direction:column;
   }
 }
+
+.atlBuilderBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+
+.atlBuilderBox > strong{
+  color:#ffd980;
+  display:block;
+  margin-bottom:12px;
+}
+
+.atlOptionsGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.atlOptionsGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#9bc1ff;
+  font-weight:900;
+  font-size:13px;
+}
+
+.atlOptionsGrid select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:10px;
+  padding:10px;
+  color:white;
+}
+
+@media(max-width:900px){
+  .atlOptionsGrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
