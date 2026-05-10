@@ -145,3 +145,11 @@
   background:#1f5dd0;
   border-color:#8ab6ff;
 }
+
+.libraryNotice{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:18px}.libraryNotice strong,.libraryNotice span{display:block}.libraryNotice strong{color:#ffd980}.libraryNotice span{color:#dce8ff;margin-top:4px}
+.libraryToolbar{display:grid;grid-template-columns:1fr 260px;gap:12px;margin:18px 0}.libraryToolbar input,.libraryToolbar select,.editGamePanel input,.editGamePanel select,.editGamePanel textarea{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}
+.libraryGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.libraryCard{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px}.libraryCardTop{display:flex;justify-content:space-between;gap:12px}
+.favBtn{background:#12253d;border:1px solid #486b9a;color:white;width:46px;height:46px;border-radius:12px;font-size:22px}.activeFav{background:#c99218}.cbMini{background:#081320;border:1px solid #35567e;border-radius:10px;padding:10px;margin-bottom:12px;font-weight:900}
+.editGamePanel{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}.editGamePanel h2{grid-column:1/-1;margin:0}.editGamePanel label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900}.editGamePanel textarea{min-height:90px}.editGamePanel .wide{grid-column:1/-1}
+.statusBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:18px;color:#dce8ff;font-weight:900}
+@media(max-width:900px){.libraryGrid,.libraryToolbar,.editGamePanel{grid-template-columns:1fr}}
