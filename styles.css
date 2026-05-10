@@ -153,3 +153,60 @@
 .editGamePanel{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}.editGamePanel h2{grid-column:1/-1;margin:0}.editGamePanel label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900}.editGamePanel textarea{min-height:90px}.editGamePanel .wide{grid-column:1/-1}
 .statusBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:18px;color:#dce8ff;font-weight:900}
 @media(max-width:900px){.libraryGrid,.libraryToolbar,.editGamePanel{grid-template-columns:1fr}}
+
+.checkerboardEngine{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.checkerboardEngine h2{
+  margin-top:0;
+}
+.engineIntro{
+  color:#9fb0c8;
+}
+.engineGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:12px;
+}
+.engineGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#9bc1ff;
+  font-weight:900;
+}
+.engineGrid select,
+.engineGrid input{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.toggleGrid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.toggleGrid button{
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:10px;
+  padding:10px;
+  font-weight:900;
+}
+.previewCard{
+  margin-top:14px;
+}
+@media(max-width:900px){
+  .engineGrid{
+    grid-template-columns:1fr 1fr;
+  }
+}

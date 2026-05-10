@@ -181,6 +181,160 @@ return <div className="page">
 }
 
 
+
+const CHECKERBOARD_CHALLENGES=[
+  {id:'single',label:'Single Zone',type:'Single',baseCode:'[6-3]',description:'Complete one selected checkerboard target before bonus scoring opens.'},
+  {id:'pair',label:'Pair Challenge',type:'Pair',baseCode:'[6-4] + [8-1]',description:'Complete a two-shot checkerboard pair before bonus scoring opens.'},
+  {id:'triple',label:'Triple Challenge',type:'Triple',baseCode:'[6-3] + [8-1] + [5-4]',description:'Complete a three-shot checkerboard sequence before bonus scoring opens.'},
+  {id:'blind-pair',label:'Blind Pair',type:'Blind',baseCode:'Hidden card pair',description:'Player receives a secret pair challenge; opponent plays normal rally.'},
+  {id:'blind-finish',label:'Blind Finish',type:'Blind',baseCode:'Hidden finish',description:'Player secretly receives front-wall or floor finish target.'},
+  {id:'clean-conversion',label:'Clean Conversion',type:'Conversion',baseCode:'[6-4] + [8-1]',description:'Complete challenge then win with clean winner bonus available.'}
+];
+
+const CHECKERBOARD_PAIR_OPTIONS=[
+  '[6-4] + [8-1]',
+  '[5-3] + [7-2]',
+  '[6-3] + [8-1]',
+  '[5-4] + [7-2]',
+  '[6-3] + [5-4]',
+  '[7-2] + [8-1]'
+];
+
+const CHECKERBOARD_TRIPLE_OPTIONS=[
+  '[6-4] + [8-1] + [5-3]',
+  '[5-3] + [7-2] + [8-1]',
+  '[6-3] + [8-1] + [5-4]',
+  '[7-2] + [5-4] + [6-3]'
+];
+
+const BLIND_OPTIONS=[
+  'None',
+  'Blind finish: front wall zone',
+  'Blind finish: floor zone',
+  'Blind pair from cards',
+  'Blind triple from cards',
+  'Secret winning score'
+];
+
+function buildCheckerboardGame(config){
+  const challenge=CHECKERBOARD_CHALLENGES.find(item=>item.id===config.challengeId)||CHECKERBOARD_CHALLENGES[1];
+  const code=config.sequence||challenge.baseCode;
+  const selectedLayers=[...new Set(config.layers||[])];
+  if(config.blindOption!=='None'&&!selectedLayers.includes('Blind Finish')) selectedLayers.push('Blind Finish');
+  if(config.window==='4-shot window'&&!selectedLayers.includes('4-Shot Window')) selectedLayers.push('4-Shot Window');
+  if(config.window==='2-shot window'&&!selectedLayers.includes('2-Shot Window')) selectedLayers.push('2-Shot Window');
+  if(config.cleanFinish&&!selectedLayers.includes('Clean Winner')) selectedLayers.push('Clean Winner');
+  if(config.volleyFinish&&!selectedLayers.includes('Volley Finish')) selectedLayers.push('Volley Finish');
+  if(!selectedLayers.includes('CB Code')) selectedLayers.push('CB Code');
+
+  const scoring=[
+    'Win rally = 1',
+    challenge.type==='Single'?'Complete single challenge = +1':challenge.type==='Pair'?'Complete pair challenge = +2':challenge.type==='Triple'?'Complete triple challenge = +3':'Complete hidden challenge = bonus set by coach',
+    'Win after completing challenge = +3 bonus'
+  ];
+  if(config.cleanFinish) scoring.push('Clean winner sits on top of all scoring = +2');
+  if(config.window==='4-shot window') scoring.push('Level 4: win within 4 shots after challenge or challenge resets');
+  if(config.window==='2-shot window') scoring.push('Level 5: win within 2 shots after challenge or challenge resets');
+
+  const taskParts=[
+    `${challenge.label}: ${challenge.description}`,
+    code&&code!=='None'?`Checkerboard code: ${code}.`:'',
+    config.blindOption!=='None'?`Blind option: ${config.blindOption}.`:'',
+    config.window!=='No window'?`Conversion window: ${config.window}.`:'',
+    config.volleyFinish?'Winning shot must be a volley finish if volley layer is selected.':'',
+    config.cleanFinish?'Clean finish bonus is available only after the challenge condition has been met.':''
+  ].filter(Boolean);
+
+  return {
+    id:Date.now()+Math.random(),
+    title:`Checkerboard · ${challenge.label}`,
+    category:'Checkerboard',
+    duration:Number(config.duration)||8,
+    format:config.format||'King of Court',
+    task:taskParts.join(' '),
+    rationale:'Uses checkerboard spatial references to make the tactical problem clear while preserving live rally perception, opponent information and decision-making.',
+    coach:'Keep the code as a tactical intention, not a forced pattern. Watch whether the player recognises the affordance before attempting the finish.',
+    layers:selectedLayers,
+    cbCode:code,
+    scoring:scoring.join(' · ')
+  };
+}
+
+
+function CheckerboardEngine({onAddToSession}){
+  const [config,setConfig]=useState({
+    challengeId:'pair',
+    sequence:'[6-4] + [8-1]',
+    blindOption:'None',
+    window:'No window',
+    cleanFinish:true,
+    volleyFinish:false,
+    format:'King of Court',
+    duration:8,
+    layers:['CB Code','Clean Winner']
+  });
+  const built=buildCheckerboardGame(config);
+
+  function update(field,value){
+    setConfig(prev=>({...prev,[field]:value}));
+  }
+
+  function toggleLayer(layer){
+    setConfig(prev=>{
+      const current=prev.layers||[];
+      return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
+    });
+  }
+
+  function setChallenge(id){
+    const challenge=CHECKERBOARD_CHALLENGES.find(item=>item.id===id);
+    let sequence=challenge?.baseCode||'None';
+    if(id==='pair') sequence=CHECKERBOARD_PAIR_OPTIONS[0];
+    if(id==='triple') sequence=CHECKERBOARD_TRIPLE_OPTIONS[0];
+    setConfig(prev=>({...prev,challengeId:id,sequence}));
+  }
+
+  return <div className="checkerboardEngine">
+    <h2>Checkerboard Challenge Builder</h2>
+    <p className="engineIntro">Select the challenge, spatial code, blind option and conversion layer. Then add it to the session.</p>
+
+    <div className="engineGrid">
+      <label>Challenge<select value={config.challengeId} onChange={e=>setChallenge(e.target.value)}>{CHECKERBOARD_CHALLENGES.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+      <label>Format<select value={config.format} onChange={e=>update('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Rally Game</option></select></label>
+      <label>Duration<input type="number" min="1" value={config.duration} onChange={e=>update('duration',e.target.value)}/></label>
+      <label>Conversion Window<select value={config.window} onChange={e=>update('window',e.target.value)}><option>No window</option><option>4-shot window</option><option>2-shot window</option></select></label>
+    </div>
+
+    <div className="engineGrid">
+      <label>Pair Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{CHECKERBOARD_PAIR_OPTIONS.map(code=><option key={code}>{code}</option>)}{CHECKERBOARD_TRIPLE_OPTIONS.map(code=><option key={code}>{code}</option>)}{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></label>
+      <label>Blind Option<select value={config.blindOption} onChange={e=>update('blindOption',e.target.value)}>{BLIND_OPTIONS.map(option=><option key={option}>{option}</option>)}</select></label>
+    </div>
+
+    <div className="toggleGrid">
+      <button className={config.cleanFinish?'activeLayer':''} onClick={()=>update('cleanFinish',!config.cleanFinish)}>{config.cleanFinish?'✓ ':'+ '}Clean Finish Bonus</button>
+      <button className={config.volleyFinish?'activeLayer':''} onClick={()=>update('volleyFinish',!config.volleyFinish)}>{config.volleyFinish?'✓ ':'+ '}Volley Finish</button>
+    </div>
+
+    <div className="overlayPanel">
+      <strong>Overlays</strong>
+      <div className="quickLayers">
+        {ALL_LAYERS.map(layer=><button key={layer} className={(config.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}
+      </div>
+    </div>
+
+    <div className="gameCard previewCard">
+      <div className="categoryTag">Checkerboard Preview</div>
+      <h2>{built.title}</h2>
+      <div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div>
+      <div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div>
+      <div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div>
+      <div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div>
+      <div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+      <button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button>
+    </div>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [games,setGames]=useState(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_KEY);return saved?JSON.parse(saved):libraryStarterGames();}catch{return libraryStarterGames();}});
   const [category,setCategory]=useState('All');
@@ -212,7 +366,8 @@ function Games({setSession,setScreen}){
 
   return <div className="page">
     <div className="pageTop"><h1>Games Library</h1><div className="buttonRow"><button className="primaryBtn" onClick={newGame}>+ New Coach Game</button><button className="secondaryBtn" onClick={resetLibrary}>Reset Starter Library</button></div></div>
-    <div className="libraryNotice"><strong>v60 Games Library Recovery</strong><span>Reusable game cards. Add to Session without changing Players or Competition.</span></div>
+    <div className="libraryNotice"><strong>v61 Checkerboard Engine + Storage Restore Fix</strong><span>One functional game class restored first: Checkerboard challenges with blind options and add-to-session.</span></div>
+    <CheckerboardEngine onAddToSession={addAndGo}/>
 
     {editing&&<div className="editGamePanel">
       <h2>{editing==='new'?'New Coach Game':'Edit Game'}</h2>
@@ -362,19 +517,29 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function restoreBackup(){
+    if(!restoreText.trim()){
+      setStatus('Paste backup text first, then press Restore From Backup.');
+      return;
+    }
     try{
       const data=JSON.parse(restoreText);
-      if(!data || !Array.isArray(data.players) || !Array.isArray(data.session)){
-        setStatus('Restore failed: backup must contain players and session arrays.');
+      const hasPlayers=Array.isArray(data.players);
+      const hasSession=Array.isArray(data.session);
+      if(!hasPlayers&&!hasSession){
+        setStatus('Restore failed: backup must contain players and/or session arrays.');
         return;
       }
-      setPlayers(data.players);
-      setSession(data.session);
-      localStorage.setItem(PLAYER_KEY,JSON.stringify(data.players));
-      localStorage.setItem(SESSION_KEY,JSON.stringify(data.session));
-      setStatus('Restore complete. Players and session have been reloaded.');
+      if(hasPlayers){
+        setPlayers(data.players);
+        localStorage.setItem(PLAYER_KEY,JSON.stringify(data.players));
+      }
+      if(hasSession){
+        setSession(data.session);
+        localStorage.setItem(SESSION_KEY,JSON.stringify(data.session));
+      }
+      setStatus(`Restore complete. ${hasPlayers?'Players restored. ':''}${hasSession?'Session restored.':''}`);
     }catch(error){
-      setStatus('Restore failed: invalid backup text.');
+      setStatus('Restore failed: invalid backup text. Check that you pasted the full JSON backup.');
     }
   }
 
@@ -434,7 +599,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v60</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v61</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
