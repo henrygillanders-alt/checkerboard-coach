@@ -212,8 +212,7 @@ const BLIND_OPTIONS=[
   'Blind finish: front wall zone',
   'Blind finish: floor zone',
   'Blind pair from cards',
-  'Blind triple from cards',
-  'Secret winning score'
+  'Blind triple from cards'
 ];
 
 function buildCheckerboardGame(config){
@@ -261,11 +260,14 @@ function buildCheckerboardGame(config){
 }
 
 
+
 function CheckerboardEngine({onAddToSession}){
   const [config,setConfig]=useState({
     challengeId:'pair',
     sequence:'[6-4] + [8-1]',
+    customSequence:'',
     blindOption:'None',
+    blindCard:'',
     window:'No window',
     cleanFinish:true,
     volleyFinish:false,
@@ -273,7 +275,20 @@ function CheckerboardEngine({onAddToSession}){
     duration:8,
     layers:['CB Code','Clean Winner']
   });
-  const built=buildCheckerboardGame(config);
+
+  const blindPairDeck=[...CHECKERBOARD_PAIR_OPTIONS];
+  const blindTripleDeck=[...CHECKERBOARD_TRIPLE_OPTIONS];
+
+  const built=buildCheckerboardGame({
+    ...config,
+    sequence:config.customSequence.trim()!==''?config.customSequence:config.sequence
+  });
+
+  const sequenceOptions = config.challengeId === 'triple'
+    ? CHECKERBOARD_TRIPLE_OPTIONS
+    : (config.challengeId === 'pair' || config.challengeId === 'blind-pair' || config.challengeId === 'clean-conversion')
+      ? CHECKERBOARD_PAIR_OPTIONS
+      : CB_CODES;
 
   function update(field,value){
     setConfig(prev=>({...prev,[field]:value}));
@@ -289,14 +304,32 @@ function CheckerboardEngine({onAddToSession}){
   function setChallenge(id){
     const challenge=CHECKERBOARD_CHALLENGES.find(item=>item.id===id);
     let sequence=challenge?.baseCode||'None';
-    if(id==='pair') sequence=CHECKERBOARD_PAIR_OPTIONS[0];
+    if(id==='pair'||id==='blind-pair'||id==='clean-conversion') sequence=CHECKERBOARD_PAIR_OPTIONS[0];
     if(id==='triple') sequence=CHECKERBOARD_TRIPLE_OPTIONS[0];
-    setConfig(prev=>({...prev,challengeId:id,sequence}));
+    setConfig(prev=>({...prev,challengeId:id,sequence,customSequence:''}));
+  }
+
+  function generateBlindCard(){
+    let card='';
+
+    if(config.blindOption==='Blind pair from cards'){
+      card=blindPairDeck[Math.floor(Math.random()*blindPairDeck.length)];
+    }else if(config.blindOption==='Blind triple from cards'){
+      card=blindTripleDeck[Math.floor(Math.random()*blindTripleDeck.length)];
+    }else if(config.blindOption==='Blind finish: front wall zone'){
+      const front=['5','6','7','8'];
+      card=`Finish on front wall zone ${front[Math.floor(Math.random()*front.length)]}`;
+    }else if(config.blindOption==='Blind finish: floor zone'){
+      const floor=['1','2','3','4'];
+      card=`Finish on floor zone ${floor[Math.floor(Math.random()*floor.length)]}`;
+    }
+
+    setConfig(prev=>({...prev,blindCard:card}));
   }
 
   return <div className="checkerboardEngine">
     <h2>Checkerboard Challenge Builder</h2>
-    <p className="engineIntro">Select the challenge, spatial code, blind option and conversion layer. Then add it to the session.</p>
+    <p className="engineIntro">Build checkerboard pair/triple challenges with blind card systems, overlays and conversion windows.</p>
 
     <div className="engineGrid">
       <label>Challenge<select value={config.challengeId} onChange={e=>setChallenge(e.target.value)}>{CHECKERBOARD_CHALLENGES.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
@@ -306,35 +339,74 @@ function CheckerboardEngine({onAddToSession}){
     </div>
 
     <div className="engineGrid">
-      <label>Pair Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{CHECKERBOARD_PAIR_OPTIONS.map(code=><option key={code}>{code}</option>)}{CHECKERBOARD_TRIPLE_OPTIONS.map(code=><option key={code}>{code}</option>)}{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></label>
-      <label>Blind Option<select value={config.blindOption} onChange={e=>update('blindOption',e.target.value)}>{BLIND_OPTIONS.map(option=><option key={option}>{option}</option>)}</select></label>
+      <label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>
+        {sequenceOptions.map(code=><option key={code}>{code}</option>)}
+      </select></label>
+
+      <label>Blind Option<select value={config.blindOption} onChange={e=>update('blindOption',e.target.value)}>
+        {BLIND_OPTIONS.map(option=><option key={option}>{option}</option>)}
+      </select></label>
+    </div>
+
+    <div className="customSeqBox">
+      <strong>Custom Checkerboard Sequence</strong>
+      <input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" />
     </div>
 
     <div className="toggleGrid">
-      <button className={config.cleanFinish?'activeLayer':''} onClick={()=>update('cleanFinish',!config.cleanFinish)}>{config.cleanFinish?'✓ ':'+ '}Clean Finish Bonus</button>
-      <button className={config.volleyFinish?'activeLayer':''} onClick={()=>update('volleyFinish',!config.volleyFinish)}>{config.volleyFinish?'✓ ':'+ '}Volley Finish</button>
+      <button className={config.cleanFinish?'activeLayer':''} onClick={()=>update('cleanFinish',!config.cleanFinish)}>
+        {config.cleanFinish?'✓ ':'+ '}Clean Finish Bonus
+      </button>
+
+      <button className={config.volleyFinish?'activeLayer':''} onClick={()=>update('volleyFinish',!config.volleyFinish)}>
+        {config.volleyFinish?'✓ ':'+ '}Volley Finish
+      </button>
     </div>
 
     <div className="overlayPanel">
-      <strong>Overlays</strong>
+      <strong>Overlays (tap again to remove)</strong>
       <div className="quickLayers">
-        {ALL_LAYERS.map(layer=><button key={layer} className={(config.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}
+        {ALL_LAYERS.map(layer=>
+          <button key={layer}
+            className={(config.layers||[]).includes(layer)?'activeLayer':''}
+            onClick={()=>toggleLayer(layer)}>
+            {(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}
+          </button>
+        )}
       </div>
+    </div>
+
+    <div className="blindCardPanel">
+      <strong>Blind Card System</strong>
+      <div className="buttonRow">
+        <button className="primaryBtn" onClick={generateBlindCard}>Generate Blind Card</button>
+      </div>
+
+      {config.blindCard && <div className="blindReveal">
+        <strong>Blind Card:</strong>
+        <div className="blindCardValue">{config.blindCard}</div>
+      </div>}
     </div>
 
     <div className="gameCard previewCard">
       <div className="categoryTag">Checkerboard Preview</div>
       <h2>{built.title}</h2>
+
       <div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div>
       <div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div>
       <div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div>
       <div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div>
-      <div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-      <button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button>
+
+      <div className="chips">
+        {built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}
+      </div>
+
+      <button className="primaryBtn" onClick={()=>onAddToSession(built)}>
+        Add Checkerboard To Session
+      </button>
     </div>
   </div>;
 }
-
 function Games({setSession,setScreen}){
   const [games,setGames]=useState(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_KEY);return saved?JSON.parse(saved):libraryStarterGames();}catch{return libraryStarterGames();}});
   const [category,setCategory]=useState('All');
@@ -599,7 +671,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v61</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v63</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

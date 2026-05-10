@@ -210,3 +210,36 @@
     grid-template-columns:1fr 1fr;
   }
 }
+
+.customSeqBox,.blindCardPanel{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+.customSeqBox strong,.blindCardPanel strong{
+  color:#ffd980;
+  display:block;
+  margin-bottom:10px;
+}
+.customSeqBox input{
+  width:100%;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.blindReveal{
+  margin-top:12px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+}
+.blindCardValue{
+  font-size:22px;
+  font-weight:900;
+  margin-top:8px;
+}
