@@ -243,3 +243,5 @@
   font-weight:900;
   margin-top:8px;
 }
+
+.levelSystemBox{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}.levelBtn{background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:12px;text-align:left}.levelBtn strong,.levelBtn span{display:block}.levelBtn span{color:#9fb0c8;margin-top:4px}.activeLevel{background:#1f5dd0;border-color:#8ab6ff}.completionBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.completionBox>strong{color:#ffd980;display:block;margin-bottom:10px}.blindCard{margin-top:14px;min-height:120px;border-radius:18px;background:linear-gradient(135deg,#102844,#07111f);border:2px solid #5e83be;display:flex;align-items:center;justify-content:center;text-align:center}.blindCard span,.blindCard strong{display:block}.blindCard span{color:#9fb0c8;margin-bottom:8px}.blindCard strong{font-size:26px}.revealedCard{background:linear-gradient(135deg,#1f5dd0,#0c1a2c)}

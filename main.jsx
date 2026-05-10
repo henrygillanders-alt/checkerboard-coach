@@ -215,196 +215,83 @@ const BLIND_OPTIONS=[
   'Blind triple from cards'
 ];
 
+
+const CHECKERBOARD_LEVELS=[
+  {level:1,label:'Level 1 — Single',challenge:'single',window:'No window',tZone:false,description:'Single challenge. Challenge is banked once completed.'},
+  {level:2,label:'Level 2 — Pair',challenge:'pair',window:'No window',tZone:false,description:'Pair challenge. Challenge is banked once completed.'},
+  {level:3,label:'Level 3 — Triple + T-zone prevention',challenge:'triple',window:'No window',tZone:true,description:'Triple challenge. T-zone prevention applies. Challenge is banked once completed.'},
+  {level:4,label:'Level 4 — Triple + 4-shot window',challenge:'triple',window:'4-shot window',tZone:true,description:'Triple challenge with T-zone prevention. Win within 4 shots after completing challenge or reset.'},
+  {level:5,label:'Level 5 — Triple + 2-shot window',challenge:'triple',window:'2-shot window',tZone:true,description:'Triple challenge with T-zone prevention. Win within 2 shots after completing challenge or reset.'}
+];
+const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish','Opponent moving forward','Opponent off balance','Opponent off T'];
+const DELIVERY_MODES=['Open','Blind'];
+
 function buildCheckerboardGame(config){
-  const challenge=CHECKERBOARD_CHALLENGES.find(item=>item.id===config.challengeId)||CHECKERBOARD_CHALLENGES[1];
-  const code=config.sequence||challenge.baseCode;
-  const selectedLayers=[...new Set(config.layers||[])];
-  if(config.blindOption!=='None'&&!selectedLayers.includes('Blind Finish')) selectedLayers.push('Blind Finish');
-  if(config.window==='4-shot window'&&!selectedLayers.includes('4-Shot Window')) selectedLayers.push('4-Shot Window');
-  if(config.window==='2-shot window'&&!selectedLayers.includes('2-Shot Window')) selectedLayers.push('2-Shot Window');
-  if(config.cleanFinish&&!selectedLayers.includes('Clean Winner')) selectedLayers.push('Clean Winner');
-  if(config.volleyFinish&&!selectedLayers.includes('Volley Finish')) selectedLayers.push('Volley Finish');
-  if(!selectedLayers.includes('CB Code')) selectedLayers.push('CB Code');
-
-  const scoring=[
-    'Win rally = 1',
-    challenge.type==='Single'?'Complete single challenge = +1':challenge.type==='Pair'?'Complete pair challenge = +2':challenge.type==='Triple'?'Complete triple challenge = +3':'Complete hidden challenge = bonus set by coach',
-    'Win after completing challenge = +3 bonus'
-  ];
-  if(config.cleanFinish) scoring.push('Clean winner sits on top of all scoring = +2');
-  if(config.window==='4-shot window') scoring.push('Level 4: win within 4 shots after challenge or challenge resets');
-  if(config.window==='2-shot window') scoring.push('Level 5: win within 2 shots after challenge or challenge resets');
-
+  const level=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
+  const sequence=config.customSequence&&config.customSequence.trim()!==''?config.customSequence:config.sequence;
+  const completion=config.completionConstraints||[];
+  const layers=[...new Set(config.layers||[])];
+  if(!layers.includes('CB Code')) layers.push('CB Code');
+  if(level.tZone&&!layers.includes('Opponent Off T')) layers.push('Opponent Off T');
+  if(level.window==='4-shot window'&&!layers.includes('4-Shot Window')) layers.push('4-Shot Window');
+  if(level.window==='2-shot window'&&!layers.includes('2-Shot Window')) layers.push('2-Shot Window');
+  if(completion.includes('Clean winner')&&!layers.includes('Clean Winner')) layers.push('Clean Winner');
+  if(completion.includes('Volley finish')&&!layers.includes('Volley Finish')) layers.push('Volley Finish');
+  if(config.deliveryMode==='Blind'&&!layers.includes('Blind Finish')) layers.push('Blind Finish');
+  const challengeName=level.challenge==='single'?'Single challenge':level.challenge==='pair'?'Pair challenge':'Triple challenge';
   const taskParts=[
-    `${challenge.label}: ${challenge.description}`,
-    code&&code!=='None'?`Checkerboard code: ${code}.`:'',
-    config.blindOption!=='None'?`Blind option: ${config.blindOption}.`:'',
-    config.window!=='No window'?`Conversion window: ${config.window}.`:'',
-    config.volleyFinish?'Winning shot must be a volley finish if volley layer is selected.':'',
-    config.cleanFinish?'Clean finish bonus is available only after the challenge condition has been met.':''
+    `${level.label}: ${level.description}`,
+    `${challengeName}: ${sequence}.`,
+    config.deliveryMode==='Blind'?'Delivery: hidden card challenge. Player reveals, acknowledges, then the card closes ready for the next player.':'Delivery: open challenge.',
+    completion.length?`Completion constraint: ${completion.join(' · ')}.`:'',
+    level.tZone?'T-zone prevention applies automatically at this level.':'',
+    level.window!=='No window'?`Conversion window: ${level.window}. Challenge resets if not converted inside the window.`:'Levels 1–3: challenge is banked once completed.'
   ].filter(Boolean);
-
-  return {
-    id:Date.now()+Math.random(),
-    title:`Checkerboard · ${challenge.label}`,
-    category:'Checkerboard',
-    duration:Number(config.duration)||8,
-    format:config.format||'King of Court',
-    task:taskParts.join(' '),
-    rationale:'Uses checkerboard spatial references to make the tactical problem clear while preserving live rally perception, opponent information and decision-making.',
-    coach:'Keep the code as a tactical intention, not a forced pattern. Watch whether the player recognises the affordance before attempting the finish.',
-    layers:selectedLayers,
-    cbCode:code,
-    scoring:scoring.join(' · ')
-  };
+  const scoring=['Win rally = 1',level.challenge==='single'?'Complete single = +1':level.challenge==='pair'?'Complete pair = +2':'Complete triple = +3','Win after completing challenge = +3'];
+  if(completion.includes('Clean winner')) scoring.push('Clean winner = +2 and sits on top of all scoring');
+  return {id:Date.now()+Math.random(),title:`Checkerboard · ${level.label}`,category:'Checkerboard',duration:Number(config.duration)||8,format:config.format||'King of Court',task:taskParts.join(' '),rationale:'Uses the agreed checkerboard level progression so the tactical complexity, T-zone prevention and conversion windows scale automatically.',coach:'Coach the recognition of the affordance, not just the code. At Levels 4–5, remind players that the challenge resets if they do not convert within the shot window.',layers,cbCode:sequence,scoring:scoring.join(' · ')};
 }
 
-
-
 function CheckerboardEngine({onAddToSession}){
-  const [config,setConfig]=useState({
-    challengeId:'pair',
-    sequence:'[6-4] + [8-1]',
-    customSequence:'',
-    blindOption:'None',
-    blindCard:'',
-    window:'No window',
-    cleanFinish:true,
-    volleyFinish:false,
-    format:'King of Court',
-    duration:8,
-    layers:['CB Code','Clean Winner']
-  });
-
-  const blindPairDeck=[...CHECKERBOARD_PAIR_OPTIONS];
-  const blindTripleDeck=[...CHECKERBOARD_TRIPLE_OPTIONS];
-
-  const built=buildCheckerboardGame({
-    ...config,
-    sequence:config.customSequence.trim()!==''?config.customSequence:config.sequence
-  });
-
-  const sequenceOptions = config.challengeId === 'triple'
-    ? CHECKERBOARD_TRIPLE_OPTIONS
-    : (config.challengeId === 'pair' || config.challengeId === 'blind-pair' || config.challengeId === 'clean-conversion')
-      ? CHECKERBOARD_PAIR_OPTIONS
-      : CB_CODES;
-
-  function update(field,value){
-    setConfig(prev=>({...prev,[field]:value}));
+  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',deliveryMode:'Open',blindCard:'',cardFace:'closed',completionConstraints:['Clean winner'],format:'King of Court',duration:8,layers:['CB Code','Clean Winner']});
+  const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
+  const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
+  const built=buildCheckerboardGame(config);
+  function update(field,value){setConfig(prev=>({...prev,[field]:value}));}
+  function setLevel(value){
+    const next=CHECKERBOARD_LEVELS.find(item=>item.level===Number(value));
+    const nextSeq=next.challenge==='single'?'[6-3]':next.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS[0]:CHECKERBOARD_TRIPLE_OPTIONS[0];
+    setConfig(prev=>({...prev,level:Number(value),sequence:nextSeq,customSequence:''}));
   }
-
-  function toggleLayer(layer){
-    setConfig(prev=>{
-      const current=prev.layers||[];
-      return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
-    });
-  }
-
-  function setChallenge(id){
-    const challenge=CHECKERBOARD_CHALLENGES.find(item=>item.id===id);
-    let sequence=challenge?.baseCode||'None';
-    if(id==='pair'||id==='blind-pair'||id==='clean-conversion') sequence=CHECKERBOARD_PAIR_OPTIONS[0];
-    if(id==='triple') sequence=CHECKERBOARD_TRIPLE_OPTIONS[0];
-    setConfig(prev=>({...prev,challengeId:id,sequence,customSequence:''}));
-  }
-
+  function toggleCompletion(item){setConfig(prev=>{const current=prev.completionConstraints||[];return {...prev,completionConstraints:current.includes(item)?current.filter(x=>x!==item):[...current,item]};});}
+  function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
   function generateBlindCard(){
     let card='';
-
-    if(config.blindOption==='Blind pair from cards'){
-      card=blindPairDeck[Math.floor(Math.random()*blindPairDeck.length)];
-    }else if(config.blindOption==='Blind triple from cards'){
-      card=blindTripleDeck[Math.floor(Math.random()*blindTripleDeck.length)];
-    }else if(config.blindOption==='Blind finish: front wall zone'){
-      const front=['5','6','7','8'];
-      card=`Finish on front wall zone ${front[Math.floor(Math.random()*front.length)]}`;
-    }else if(config.blindOption==='Blind finish: floor zone'){
-      const floor=['1','2','3','4'];
-      card=`Finish on floor zone ${floor[Math.floor(Math.random()*floor.length)]}`;
-    }
-
-    setConfig(prev=>({...prev,blindCard:card}));
+    if(config.deliveryMode!=='Blind') card='Blind mode is off.';
+    else if(levelInfo.challenge==='single'){const singles=CB_CODES.filter(code=>code!=='None'&&!code.includes('+'));card=singles[Math.floor(Math.random()*singles.length)];}
+    else if(levelInfo.challenge==='pair') card=CHECKERBOARD_PAIR_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_PAIR_OPTIONS.length)];
+    else card=CHECKERBOARD_TRIPLE_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_TRIPLE_OPTIONS.length)];
+    setConfig(prev=>({...prev,blindCard:card,cardFace:'closed'}));
   }
+  function revealCard(){if(!config.blindCard){generateBlindCard();}setConfig(prev=>({...prev,cardFace:'revealed'}));}
+  function acknowledgeCard(){setConfig(prev=>({...prev,blindCard:'',cardFace:'closed'}));}
 
   return <div className="checkerboardEngine">
-    <h2>Checkerboard Challenge Builder</h2>
-    <p className="engineIntro">Build checkerboard pair/triple challenges with blind card systems, overlays and conversion windows.</p>
-
+    <h2>Checkerboard Level Builder</h2>
+    <p className="engineIntro">Level controls challenge type, T-zone prevention and conversion window automatically.</p>
+    <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
     <div className="engineGrid">
-      <label>Challenge<select value={config.challengeId} onChange={e=>setChallenge(e.target.value)}>{CHECKERBOARD_CHALLENGES.map(item=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+      <label>Level<select value={config.level} onChange={e=>setLevel(e.target.value)}>{CHECKERBOARD_LEVELS.map(item=><option key={item.level} value={item.level}>{item.label}</option>)}</select></label>
+      <label>Delivery Mode<select value={config.deliveryMode} onChange={e=>update('deliveryMode',e.target.value)}>{DELIVERY_MODES.map(item=><option key={item}>{item}</option>)}</select></label>
       <label>Format<select value={config.format} onChange={e=>update('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Rally Game</option></select></label>
       <label>Duration<input type="number" min="1" value={config.duration} onChange={e=>update('duration',e.target.value)}/></label>
-      <label>Conversion Window<select value={config.window} onChange={e=>update('window',e.target.value)}><option>No window</option><option>4-shot window</option><option>2-shot window</option></select></label>
     </div>
-
-    <div className="engineGrid">
-      <label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>
-        {sequenceOptions.map(code=><option key={code}>{code}</option>)}
-      </select></label>
-
-      <label>Blind Option<select value={config.blindOption} onChange={e=>update('blindOption',e.target.value)}>
-        {BLIND_OPTIONS.map(option=><option key={option}>{option}</option>)}
-      </select></label>
-    </div>
-
-    <div className="customSeqBox">
-      <strong>Custom Checkerboard Sequence</strong>
-      <input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" />
-    </div>
-
-    <div className="toggleGrid">
-      <button className={config.cleanFinish?'activeLayer':''} onClick={()=>update('cleanFinish',!config.cleanFinish)}>
-        {config.cleanFinish?'✓ ':'+ '}Clean Finish Bonus
-      </button>
-
-      <button className={config.volleyFinish?'activeLayer':''} onClick={()=>update('volleyFinish',!config.volleyFinish)}>
-        {config.volleyFinish?'✓ ':'+ '}Volley Finish
-      </button>
-    </div>
-
-    <div className="overlayPanel">
-      <strong>Overlays (tap again to remove)</strong>
-      <div className="quickLayers">
-        {ALL_LAYERS.map(layer=>
-          <button key={layer}
-            className={(config.layers||[]).includes(layer)?'activeLayer':''}
-            onClick={()=>toggleLayer(layer)}>
-            {(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}
-          </button>
-        )}
-      </div>
-    </div>
-
-    <div className="blindCardPanel">
-      <strong>Blind Card System</strong>
-      <div className="buttonRow">
-        <button className="primaryBtn" onClick={generateBlindCard}>Generate Blind Card</button>
-      </div>
-
-      {config.blindCard && <div className="blindReveal">
-        <strong>Blind Card:</strong>
-        <div className="blindCardValue">{config.blindCard}</div>
-      </div>}
-    </div>
-
-    <div className="gameCard previewCard">
-      <div className="categoryTag">Checkerboard Preview</div>
-      <h2>{built.title}</h2>
-
-      <div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div>
-      <div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div>
-      <div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div>
-      <div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div>
-
-      <div className="chips">
-        {built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}
-      </div>
-
-      <button className="primaryBtn" onClick={()=>onAddToSession(built)}>
-        Add Checkerboard To Session
-      </button>
-    </div>
+    <div className="engineGrid"><label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{sequenceOptions.map(code=><option key={code}>{code}</option>)}</select></label></div>
+    <div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /></div>
+    <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
+    <div className="overlayPanel"><strong>Additional Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(config.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+    {config.deliveryMode==='Blind'&&<div className="blindCardPanel"><strong>Blind Card Delivery</strong><p>Coach generates the card. Player reveals their challenge, acknowledges it, and the card closes ready for the next player.</p><div className="buttonRow"><button className="primaryBtn" onClick={generateBlindCard}>Generate Hidden Card</button><button className="secondaryBtn" onClick={revealCard}>Reveal My Challenge</button><button className="secondaryBtn" onClick={acknowledgeCard}>Acknowledge & Close</button></div><div className={config.cardFace==='revealed'?'blindCard revealedCard':'blindCard'}>{config.cardFace==='revealed'&&config.blindCard?<div><span>My Challenge</span><strong>{config.blindCard}</strong></div>:<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}</div></div>}
+    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
   </div>;
 }
 function Games({setSession,setScreen}){
@@ -671,7 +558,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v63</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v64</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
