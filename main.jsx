@@ -458,6 +458,63 @@ function ATLBTLDirectBuilder({onAddToSession}){
   </div>;
 }
 
+
+function ClassicConditionedBuilder({onAddToSession}){
+  const starterGames=[
+    {
+      title:'Route Breaker',
+      category:'Classic Conditioned',
+      task:'Player must break through opponent structure before scoring becomes live.',
+      rationale:'Encourages recognition of advantage before attack.',
+      coach:'Look for players forcing movement before accelerating.',
+      layers:['Recognition','Pressure'],
+      scoring:'Win rally = 1 · Win after creating advantage = +3'
+    },
+    {
+      title:'Double Bounce Pressure',
+      category:'Classic Conditioned',
+      task:'Weaker player receives two bounces. Stronger player receives one bounce.',
+      rationale:'Balances challenge while preserving rally flow.',
+      coach:'Watch if stronger player adapts spacing and tempo.',
+      layers:['Adaptation','Pressure'],
+      scoring:'Normal rally scoring'
+    },
+    {
+      title:'T-Zone Denial',
+      category:'Classic Conditioned',
+      task:'Bonus points if winning shot played while opponent is outside marked T-zone.',
+      rationale:'Links positional advantage to tactical conversion.',
+      coach:'Reward recognition not just finishing.',
+      layers:['Opponent Off T','Pressure'],
+      scoring:'Win rally = 1 · Opponent off T finish = +3'
+    }
+  ];
+
+  return <div className="gameCard">
+    <div className="categoryTag">Classic Conditioned</div>
+    <h2>Classic Conditioned Games</h2>
+    <p>Select a conditioned game and add directly to Session Builder.</p>
+
+    <div className="libraryGrid">
+      {starterGames.map((game,index)=>
+        <div className="libraryCard" key={index}>
+          <h3>{game.title}</h3>
+          <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
+          <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
+          <div className="infoBox"><strong>Coach Help</strong><p>{game.coach}</p></div>
+          <div className="chips">
+            {game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}
+          </div>
+          <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
+          <button className="primaryBtn" onClick={()=>onAddToSession({...game,id:Date.now()+Math.random()})}>
+            Add To Session
+          </button>
+        </div>
+      )}
+    </div>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -486,7 +543,9 @@ function Games({setSession,setScreen}){
     {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
     {activeClass==='ATL / BTL'&&<ATLBTLDirectBuilder onAddToSession={addAndGo}/>}
 
-    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&
+    {activeClass==='Classic Conditioned'&&<ClassicConditionedBuilder onAddToSession={addAndGo}/>} 
+
+    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&
       <div className="placeholder">{activeClass} games will be restored as the next functional class.</div>
     }
 
@@ -692,7 +751,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v70</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v71</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
