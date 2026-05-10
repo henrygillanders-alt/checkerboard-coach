@@ -371,6 +371,93 @@ return <div className="checkerboardEngine">
   </div>;
 }
 
+
+function ATLBTLDirectBuilder({onAddToSession}){
+  const [atl,setAtl]=useState(DEFAULT_ATL);
+  const [manualLayers,setManualLayers]=useState([]);
+  const [atlHistory,setAtlHistory]=useState([]);
+
+  const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
+  const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
+
+  function saveAtlSnapshot(){
+    setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);
+  }
+
+  function setAtlOption(key,value){
+    saveAtlSnapshot();
+    setAtl(prev=>({...prev,[key]:value}));
+  }
+
+  function toggleManualLayer(layer){
+    saveAtlSnapshot();
+    setManualLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);
+  }
+
+  function clearAtlOverlays(){
+    saveAtlSnapshot();
+    setManualLayers([]);
+  }
+
+  function resetAtlBuilder(){
+    saveAtlSnapshot();
+    setAtl(DEFAULT_ATL);
+    setManualLayers([]);
+  }
+
+  function undoAtl(){
+    const last=atlHistory[atlHistory.length-1];
+    if(!last)return;
+    setAtl(last.atl);
+    setManualLayers(last.manualLayers);
+    setAtlHistory(atlHistory.slice(0,-1));
+  }
+
+  function addGame(game){
+    onAddToSession({...clone(game),id:Date.now()+Math.random()});
+  }
+
+  return <div className="gameCard">
+    <div className="categoryTag">ATL / BTL</div>
+    <h2>ATL / BTL Full Structure Builder</h2>
+
+    <div className="atlOptionsGrid">
+      <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
+      <label>Side<select value={atl.side} onChange={e=>setAtlOption('side',e.target.value)}>{ATL_LISTS.side.map(option=><option key={option}>{option}</option>)}</select></label>
+      <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
+      <label>CB Ref<select value={atl.cbRef} onChange={e=>setAtlOption('cbRef',e.target.value)}>{ATL_LISTS.cbRef.map(option=><option key={option}>{option}</option>)}</select></label>
+
+      {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+      {atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+
+      {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+      {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>Shot 2 Method<select value={atl.method2} onChange={e=>setAtlOption('method2',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+
+      {atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+      {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+    </div>
+
+    <div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
+    <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
+    <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
+    <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+
+    <div className="overlayPanel">
+      <strong>Universal Overlays</strong>
+      <div className="quickLayers">
+        {ALL_LAYERS.map(layer=><button key={layer} className={manualLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{manualLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}
+      </div>
+      <div className="buttonRow">
+        <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button>
+        <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
+        <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button>
+      </div>
+    </div>
+
+    <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>Add ATL / BTL To Session</button>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -397,7 +484,7 @@ function Games({setSession,setScreen}){
     {!activeClass&&<div className="placeholder">Tap a game class above.</div>}
 
     {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
-    {activeClass==='ATL / BTL'&&<div className="placeholder">ATL / BTL builder will be opened here next without the duplicate class menu. Use Session Builder → ATL / BTL for the current working builder.</div>}
+    {activeClass==='ATL / BTL'&&<ATLBTLDirectBuilder onAddToSession={addAndGo}/>}
 
     {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&
       <div className="placeholder">{activeClass} games will be restored as the next functional class.</div>
@@ -605,7 +692,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v69</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v70</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
