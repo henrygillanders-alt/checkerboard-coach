@@ -460,155 +460,66 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
 
 
+
 function ClassicConditionedBuilder({onAddToSession}){
   const [selectedFamily,setSelectedFamily]=useState('All');
+  const [expandedGame,setExpandedGame]=useState(null);
   const [selectedOverlays,setSelectedOverlays]=useState({});
 
   const scoringProtocol='Win rally = 1 · Complete challenge bonus by game · Win after completing challenge = +3 · Clean winner = +2 and sits on top of all scoring';
 
   const games=[
     {
-      title:'What Does Advantage Look Like?',
-      family:'Advantage Recognition',
-      level:'Levels 1–3',
-      duration:8,
-      format:'King of Court',
-      task:'Normal rally. A point is scored for winning the rally. Bonus is available when the winning shot is played after a visible advantage: opponent outside the T-zone, late, off balance, or still moving.',
-      rationale:'Teaches players to recognise the state of the opponent before choosing to attack.',
-      coach:'Ask: “What did the opponent look like before you attacked?” Reward recognition more than shot choice.',playerFocus:'Notice opponent position, balance and recovery before choosing to attack.',
-      scoring:'Win rally = 1 · Win after visible advantage = +3 · Clean winner = +2',
-      suggestedOverlays:['Opponent Off T','Clean Winner'],
-      antiGaming:'If a player deliberately kills the rally to avoid the opponent earning a bonus, normal rally point is awarded to the opponent.'
-    },
-    {
-      title:'T-Zone Denial Game',
-      family:'T-Zone Games',
+      title:'Return to Sender',
+      family:'Opponent Awareness',
+      shortRationale:'Discourages repeatedly hitting back to opponent position.',
       level:'Levels 2–5',
-      duration:8,
-      format:'King of Court',
-      task:'Bonus unlocks when the player wins the rally while the opponent is outside the marked T-zone. From higher levels, add 4-shot or 2-shot conversion windows.',
-      rationale:'Connects tactical construction with opponent displacement and recovery prevention.',
-      coach:'Use a marked T-zone. The opponent must clearly be outside it when the winning shot is played.',playerFocus:'Move the opponent away from the T before trying to finish.',
-      scoring:'Win rally = 1 · Win while opponent outside T-zone = +3 · Clean winner = +2',
-      suggestedOverlays:['Opponent Off T','4-Shot Window','2-Shot Window','Clean Winner'],
-      antiGaming:'Opponent cannot intentionally stop movement or abandon recovery to distort the condition.'
+      task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',
+      rationale:'Develops perception of opponent positioning before target selection.',
+      coach:'Reward recognition of opponent position rather than pure shot quality.',
+      playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',
+      scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',
+      antiGaming:'No bonus if the direction change is accidental or unclear.',
+      suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']
     },
     {
-      title:'Central Control: One Foot In T-Zone Finish',
-      family:'T-Zone Games',
-      level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Winning shot only receives bonus if the striker has at least one foot in the marked T-zone when striking the winning shot.',
-      rationale:'Links central control, balance and tactical timing rather than only shot execution.',
-      coach:'Use the foot-in-zone rule as a clear binary condition. Do not overcoach technique.',
-      scoring:'Win rally = 1 · T-zone contact finish = +3 · Clean winner = +2',
-      suggestedOverlays:['Opponent Off T','Clean Winner'],
-      antiGaming:'If contact location is unclear, no bonus; rally point still stands.'
-    },
-    {
-      title:'Central Control Volley Finish',
-      family:'T-Zone Games',
-      level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Bonus only applies when the winning shot is a volley played from central control.',
-      rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',
-      coach:'The volley should be earned, not hunted recklessly.',
-      scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',
-      suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner'],
-      antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.'
-    },
-    {
-      title:'Length Before Attack',
-      family:'Pressure Construction',
+      title:'Server Above The Line',
+      family:'Neutralise vs Attack',
+      shortRationale:'Develops recognition of neutralising versus attacking situations.',
       level:'Levels 2–5',
-      duration:8,
-      format:'King of Court',
-      task:'Player must first create length pressure before attacking short. The attack bonus opens after the opponent is delayed, displaced or unable to recover normally.',
-      rationale:'Prevents rushed front-court attacks and encourages pressure construction first.',
-      coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',
-      scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',
-      suggestedOverlays:['Quality Length Before Attack','4-Shot Window','2-Shot Window','Clean Winner'],
-      antiGaming:'If a player hits short before any pressure is created, only the rally point is available.'
+      task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',
+      rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',
+      coach:'Observe whether players attack from neutral positions or only after creating advantage.',
+      playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',
+      scoring:'Win rally = 1 · Correct attack recognition = +3',
+      antiGaming:'Do not reward random attacking from neutral or defensive positions.',
+      suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']
+    },
+    {
+      title:'T-Zone Denial',
+      family:'T-Zone Games',
+      shortRationale:'Rewards displacement before attack.',
+      level:'Levels 2–5',
+      task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',
+      rationale:'Connects tactical pressure with recovery denial.',
+      coach:'Use a clearly marked T-zone.',
+      playerFocus:'Move opponent away from central recovery before attacking.',
+      scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',
+      antiGaming:'Opponent cannot intentionally stop recovering to manipulate the condition.',
+      suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']
     },
     {
       title:'Route Breaker',
       family:'Pressure Construction',
+      shortRationale:'Develops route disruption before finishing.',
       level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Player must change the opponent’s movement route before the bonus opens. Examples: pull forward then send behind, send across body-line, or force recovery away from T before attacking.',
-      rationale:'Develops tactical disruption rather than repetitive pattern hitting.',
-      coach:'Ask whether the opponent’s route was actually broken. If not, no bonus.',playerFocus:'Change the opponent’s movement route before selecting the winning shot.',
-      scoring:'Win rally = 1 · Route broken before winning = +3 · Clean winner = +2',
-      suggestedOverlays:['Opponent Off T','Weak Side','Clean Winner'],
-      antiGaming:'Opponent cannot deliberately stop chasing to deny that their route was broken.'
-    },
-    {
-      title:'Double Bounce Pressure',
-      family:'Adapted Rules',
-      level:'Mixed Standard',
-      duration:8,
-      format:'Winner Stays On',
-      task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',
-      rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',
-      coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',
-      scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',
-      suggestedOverlays:['Double Bounce'],
-      antiGaming:'Players may not intentionally wait for a second bounce if they could clearly play the first bounce safely, unless the learning purpose is movement timing.'
-    },
-    {
-      title:'Winner Loses A Bounce',
-      family:'Adapted Rules',
-      level:'Mixed Standard',
-      duration:8,
-      format:'Winner Stays On',
-      task:'Incoming player starts with double bounce. After every rally won, the winner loses one available bounce advantage until back to normal one-bounce squash.',
-      rationale:'Prevents the strongest player over-dominating and keeps challenge high for everyone.',
-      coach:'Use especially with uneven groups or mixed standards.',
-      scoring:'Normal rally scoring · track bounce allowance per player',
-      suggestedOverlays:['Double Bounce'],
-      antiGaming:'If tracking becomes confusing, reset allowances every 3–5 rallies.'
-    },
-    {
-      title:'Blind Finish Progression',
-      family:'Blind / Hidden Conditions',
-      level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',
-      rationale:'Creates tactical intention while preserving live decision-making and secrecy.',
-      coach:'The hidden condition should shape the player’s perception, not force a bad shot.',
-      scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',
-      suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish'],
-      antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.'
-    },
-    {
-      title:'Opponent Moving Forward',
-      family:'Opponent-State Games',
-      level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Bonus applies if the player wins while the opponent is still moving forward or has not recovered from forward movement.',
-      rationale:'Develops recognition of opponent momentum and recovery state.',
-      coach:'Clarify: opponent must still be moving forward, braking, or unable to recover normally when the winning shot is played.',
-      scoring:'Win rally = 1 · Win while opponent moving forward = +3 · Clean winner = +2',
-      suggestedOverlays:['Opponent Off T','Clean Winner'],
-      antiGaming:'Do not award bonus if opponent had clearly recovered and reset.'
-    },
-    {
-      title:'Opposite Side Finish',
-      family:'Opponent-State Games',
-      level:'Levels 3–5',
-      duration:8,
-      format:'Rally Game',
-      task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',
-      rationale:'Links finishing choice to opponent orientation rather than a fixed target.',
-      coach:'Use body-line as the reference, not simply left/right court side.',
-      scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',
-      suggestedOverlays:['Weak Side','Clean Winner'],
-      antiGaming:'If body-line reference is unclear, no bonus.'
+      task:'Player must alter opponent movement route before the bonus is unlocked.',
+      rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',
+      coach:'Confirm that the opponent movement route was genuinely changed.',
+      playerFocus:'Create a movement problem before attempting to finish the rally.',
+      scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',
+      antiGaming:'No bonus if opponent movement route was unchanged.',
+      suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']
     }
   ];
 
@@ -616,6 +527,7 @@ function ClassicConditionedBuilder({onAddToSession}){
   const filtered=selectedFamily==='All'?games:games.filter(game=>game.family===selectedFamily);
 
   function overlayKey(game){return game.title;}
+
   function toggleGameOverlay(game,layer){
     const key=overlayKey(game);
     setSelectedOverlays(prev=>{
@@ -629,21 +541,16 @@ function ClassicConditionedBuilder({onAddToSession}){
       ...game,
       id:Date.now()+Math.random(),
       category:'Classic Conditioned',
-      cbCode:'None',
-      format:game.format||'Rally Game',
-      duration:game.duration||8,
-      coachFocus:game.coach,playerFocus:game.playerFocus||'Focus on the cue that unlocks the scoring condition.',coach:`${game.coach} Anti-gaming: ${game.antiGaming}`,
-      rationale:game.rationale,
-      task:game.task,
       layers:selectedOverlays[overlayKey(game)]||[],
-      scoring:game.scoring
+      coachFocus:game.coach,
+      cbCode:'None'
     });
   }
 
   return <div className="gameCard">
     <div className="categoryTag">Classic Conditioned</div>
     <h2>Classic Conditioned Games</h2>
-    <p className="engineIntro">Conditioned games built around advantage recognition, opponent state, pressure construction and adapted rules.</p>
+    <p className="engineIntro">Select a coaching problem/game first. Expand only the games you want to use.</p>
 
     <div className="conditionedProtocol">
       <strong>Default scoring protocol</strong>
@@ -651,256 +558,70 @@ function ClassicConditionedBuilder({onAddToSession}){
     </div>
 
     <div className="conditionedFamilyRow">
-      {families.map(family=><button key={family} className={selectedFamily===family?'activeLayer':''} onClick={()=>setSelectedFamily(family)}>{family}</button>)}
+      {families.map(family=>
+        <button key={family} className={selectedFamily===family?'activeLayer':''} onClick={()=>setSelectedFamily(family)}>
+          {family}
+        </button>
+      )}
     </div>
 
-    <div className="libraryGrid">
+    <div className="progressiveList">
       {filtered.map((game,index)=>
-        <div className="libraryCard conditionedCard" key={index}>
-          <div className="libraryCardTop">
+        <div className="progressiveGameCard" key={index}>
+          <div className="progressiveHeader" onClick={()=>setExpandedGame(expandedGame===game.title?null:game.title)}>
             <div>
               <span className="categoryTag">{game.family}</span>
               <h3>{game.title}</h3>
+              <p className="shortRationale">{game.shortRationale}</p>
             </div>
-            <span className="levelPill">{game.level}</span>
+            <button className="expandBtn">{expandedGame===game.title?'−':'+'}</button>
           </div>
-          <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
-          <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-          <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring condition.'}</p></div>
-          <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
-          <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
-          <div className="conditionedOverlayChooser">
-            <strong>Suggested overlays</strong><p className="overlayExplain">Suggested overlays include rationale because overlays are behavioural design tools, not just scoring toggles.</p>
-            <div className="quickLayers">
-              {(game.suggestedOverlays||[]).map(layer=>
-                <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
-                  {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
-                </button>
-              )}
+
+          {expandedGame===game.title&&
+            <div className="expandedGame">
+              <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
+              <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
+              <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
+              <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
+              <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
+              <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
+
+              <div className="conditionedOverlayChooser">
+                <strong>Suggested overlays</strong>
+                <p className="overlayExplain">Suggested overlays are guidance only. Coaches may select any overlay combination.</p>
+
+                <div className="quickLayers">
+                  {(game.suggestedOverlays||[]).map(layer=>
+                    <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
+                      {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
+                    </button>
+                  )}
+                </div>
+
+                <div className="overlayInfoGrid">
+                  {(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}
+                </div>
+
+                <div className="allOverlaySection">
+                  <strong>All overlays</strong>
+                  <div className="quickLayers">
+                    {ALL_LAYERS.map(layer=>
+                      <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
+                        {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
             </div>
-            <div className="overlayInfoGrid">
-              {(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}
-            </div>
-          </div>
-          <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+          }
         </div>
       )}
     </div>
   </div>;
 }
-
-
-
-const OVERLAY_INTELLIGENCE={
-  'Opponent Off T':{
-    rationale:'Reinforces recognition of opponent recovery position before attacking.',
-    amplifies:'Displacement recognition, timing of attack, recovery awareness.',
-    works:'T-Zone games, Route Breaker, pressure construction games.',
-    warning:'Too many additional blind constraints can overload perception.',
-    suitability:'Best from intermediate upward.'
-  },
-  'Clean Winner':{
-    rationale:'Rewards efficient exploitation of advantage rather than passive rally extension.',
-    amplifies:'Decisive finishing behaviour.',
-    works:'Conversion games, T-zone denial, checkerboard finishing.',
-    warning:'Can encourage over-forcing if used too early with beginners.',
-    suitability:'All levels when scoring is scaled appropriately.'
-  },
-  '4-Shot Window':{
-    rationale:'Encourages rapid conversion after advantage creation.',
-    amplifies:'Urgency, transition from pressure to attack.',
-    works:'T-zone games, checkerboard progression, route disruption.',
-    warning:'May reduce rally construction quality if overused.',
-    suitability:'Intermediate to advanced.'
-  },
-  '2-Shot Window':{
-    rationale:'Creates elite-level pressure to convert immediately.',
-    amplifies:'Fast recognition and decisive tactical execution.',
-    works:'Performance and professional conversion games.',
-    warning:'Too difficult for most developing players.',
-    suitability:'Advanced / professional.'
-  },
-  'Volley Finish':{
-    rationale:'Rewards early interception after pressure creation.',
-    amplifies:'Taking space early and intercepting affordances.',
-    works:'Central control games, route breaker, checkerboard.',
-    warning:'Can create reckless volley hunting if overemphasised.',
-    suitability:'Intermediate upward.'
-  },
-  'Weak Side':{
-    rationale:'Encourages finishing against opponent body-line and recovery direction.',
-    amplifies:'Perception of orientation and movement momentum.',
-    works:'Route breaker, opposite-side finish, checkerboard.',
-    warning:'Requires coach clarity on body-line definition.',
-    suitability:'Intermediate upward.'
-  },
-  'Blind Finish':{
-    rationale:'Shapes tactical intention without public disclosure.',
-    amplifies:'Perception-action adaptability and hidden tactical goals.',
-    works:'Checkerboard, finishing games, tactical progressions.',
-    warning:'Too many simultaneous hidden constraints can overload players.',
-    suitability:'Intermediate upward.'
-  },
-  'Double Bounce':{
-    rationale:'Balances mixed standards while preserving live rally information.',
-    amplifies:'Adaptation and inclusive competitive pressure.',
-    works:'Mixed-standard sessions and adapted competition.',
-    warning:'Too many additional overlays can reduce realism.',
-    suitability:'All levels.'
-  },
-  'Quality Length Before Attack':{
-    rationale:'Prevents premature attacking before pressure is created.',
-    amplifies:'Patience, pressure construction and tactical sequencing.',
-    works:'Length-based pressure games and ATL/BTL progressions.',
-    warning:'Can become passive if no attack trigger exists.',
-    suitability:'All levels.'
-  }
-};
-
-function OverlayInfoCard({overlay}){
-  const info=OVERLAY_INTELLIGENCE[overlay];
-  if(!info)return null;
-  return <div className="overlayInfoCard">
-    <h4>{overlay}</h4>
-    <div className="infoBox"><strong>Rationale</strong><p>{info.rationale}</p></div>
-    <div className="infoBox"><strong>Amplifies</strong><p>{info.amplifies}</p></div>
-    <div className="infoBox"><strong>Works well with</strong><p>{info.works}</p></div>
-    <div className="infoBox"><strong>Warning</strong><p>{info.warning}</p></div>
-    <div className="infoBox"><strong>Progression suitability</strong><p>{info.suitability}</p></div>
-  </div>;
-}
-
-function normaliseGameCard(game){
-  return {
-    id: game.id || Date.now()+Math.random(),
-    title: game.title || '',
-    category: game.category || 'Custom Coach Game',
-    family: game.family || game.category || 'General',
-    level: game.level || 'All levels',
-    duration: game.duration || 8,
-    format: game.format || 'King of Court',
-    task: game.task || '',
-    rationale: game.rationale || '',
-    coachFocus: game.coachFocus || game.coach || '',
-    playerFocus: game.playerFocus || '',
-    scoring: game.scoring || 'Win rally = 1',
-    antiGaming: game.antiGaming || '',
-    layers: game.layers || [],
-    cbCode: game.cbCode || 'None',
-    saved: true,
-    favourite: game.favourite || false
-  };
-}
-
-function emptyUniversalGame(category='Custom Coach Game'){
-  return normaliseGameCard({
-    id:Date.now()+Math.random(),
-    title:'',
-    category,
-    family:'Coach Created',
-    level:'All levels',
-    duration:8,
-    format:'King of Court',
-    task:'',
-    rationale:'',
-    coachFocus:'',
-    playerFocus:'',
-    scoring:'Win rally = 1',
-    antiGaming:'',
-    layers:[],
-    cbCode:'None'
-  });
-}
-
-function UniversalGameEditor({game,onSave,onCancel}){
-  const [form,setForm]=useState(()=>normaliseGameCard(game||emptyUniversalGame()));
-
-  function update(field,value){
-    setForm(prev=>({...prev,[field]:value}));
-  }
-
-  function toggleLayer(layer){
-    setForm(prev=>{
-      const current=prev.layers||[];
-      return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
-    });
-  }
-
-  function save(){
-    if(!form.title.trim()){
-      alert('Game needs a title.');
-      return;
-    }
-    onSave({...form,title:form.title.trim()});
-  }
-
-  return <div className="universalEditor">
-    <h2>{form.id?'Edit Game Card':'New Game Card'}</h2>
-    <div className="editorGrid">
-      <label>Title<input value={form.title} onChange={e=>update('title',e.target.value)} placeholder="Game title"/></label>
-      <label>Category<select value={form.category} onChange={e=>update('category',e.target.value)}>
-        <option>ATL / BTL</option>
-        <option>Checkerboard</option>
-        <option>Classic Conditioned</option>
-        <option>Volley & Intercept</option>
-        <option>Pressure</option>
-        <option>Technical</option>
-        <option>Invasion</option>
-        <option>Matchplay</option>
-        <option>Custom Coach Game</option>
-      </select></label>
-      <label>Family<input value={form.family} onChange={e=>update('family',e.target.value)} placeholder="e.g. T-Zone Games"/></label>
-      <label>Level / Progression<input value={form.level} onChange={e=>update('level',e.target.value)} placeholder="e.g. Levels 3–5"/></label>
-      <label>Duration<input type="number" min="1" value={form.duration} onChange={e=>update('duration',Number(e.target.value))}/></label>
-      <label>Format<select value={form.format} onChange={e=>update('format',e.target.value)}>
-        <option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Feeding Rotation</option><option>Rally Game</option><option>Box League</option>
-      </select></label>
-      <label className="wide">Task / Rules<textarea value={form.task} onChange={e=>update('task',e.target.value)} placeholder="Clear binary game rules"/></label>
-      <label className="wide">Rationale<textarea value={form.rationale} onChange={e=>update('rationale',e.target.value)} placeholder="Why this game exists"/></label>
-      <label className="wide">Coach Focus<textarea value={form.coachFocus} onChange={e=>update('coachFocus',e.target.value)} placeholder="What the coach observes, rewards, or constrains"/></label>
-      <label className="wide">Player Focus<textarea value={form.playerFocus} onChange={e=>update('playerFocus',e.target.value)} placeholder="What the player should attend to"/></label>
-      <label className="wide">Scoring<textarea value={form.scoring} onChange={e=>update('scoring',e.target.value)} placeholder="Scoring protocol"/></label>
-      <label className="wide">Anti-gaming<textarea value={form.antiGaming} onChange={e=>update('antiGaming',e.target.value)} placeholder="How to prevent players gaming the condition"/></label>
-      <label>Checkerboard Code<select value={form.cbCode||'None'} onChange={e=>update('cbCode',e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></label>
-      <div className="wide overlayPanel">
-        <strong>Constraints / Overlays</strong>
-        <div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(form.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(form.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
-      </div>
-    </div>
-    <div className="buttonRow">
-      <button className="primaryBtn" onClick={save}>Save Game Card</button>
-      <button className="secondaryBtn" onClick={onCancel}>Cancel</button>
-    </div>
-  </div>;
-}
-
-function UniversalGameCard({game,onAdd,onEdit,onDuplicate,onDelete}){
-  const card=normaliseGameCard(game);
-  return <div className="libraryCard universalCard">
-    <div className="libraryCardTop">
-      <div>
-        <span className="categoryTag">{card.category}</span>
-        <h3>{card.title}</h3>
-      </div>
-      <span className="levelPill">{card.level}</span>
-    </div>
-    <div className="infoBox"><strong>Task / Rules</strong><p>{card.task}</p></div>
-    <div className="infoBox"><strong>Rationale</strong><p>{card.rationale}</p></div>
-    <div className="infoBox"><strong>Coach Focus</strong><p>{card.coachFocus || 'Not set.'}</p></div>
-    <div className="infoBox"><strong>Player Focus</strong><p>{card.playerFocus || 'Not set.'}</p></div>
-    <div className="infoBox"><strong>Scoring</strong><p>{card.scoring}</p></div>
-    {card.antiGaming&&<div className="infoBox"><strong>Anti-gaming</strong><p>{card.antiGaming}</p></div>}
-    <div className="chips">{(card.layers||[]).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    {card.cbCode&&card.cbCode!=='None'&&<div className="cbMini">CB: {card.cbCode}</div>}
-    <div className="actionRow">
-      <button onClick={()=>onAdd(card)}>Add To Session</button>
-      <button onClick={()=>onDuplicate(card)}>Duplicate Variant</button>
-      <button onClick={()=>onEdit(card)}>Edit</button>
-      <button onClick={()=>onDelete(card.id)}>Delete</button>
-    </div>
-  </div>;
-}
-
 
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
@@ -1188,7 +909,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v75</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v76</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

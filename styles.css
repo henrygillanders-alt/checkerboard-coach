@@ -426,3 +426,52 @@
     grid-template-columns:1fr;
   }
 }
+
+.progressiveList{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.progressiveGameCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:18px;
+  overflow:hidden;
+}
+.progressiveHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:16px;
+  cursor:pointer;
+}
+.progressiveHeader h3{
+  margin:8px 0 6px 0;
+}
+.shortRationale{
+  color:#9fb0c8;
+  margin:0;
+}
+.expandBtn{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:999px;
+  width:42px;
+  height:42px;
+  font-size:26px;
+  font-weight:900;
+}
+.expandedGame{
+  padding:0 16px 16px 16px;
+  border-top:1px solid #35567e;
+}
+.allOverlaySection{
+  margin-top:16px;
+}
+.allOverlaySection strong{
+  display:block;
+  margin-bottom:10px;
+  color:#ffd980;
+}
