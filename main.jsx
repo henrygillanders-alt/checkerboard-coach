@@ -94,10 +94,13 @@ function GameSelector({onAddToSession,addButtonText='Add To Session'}){
 const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
+const[manualLayers,setManualLayers]=useState([]);
 const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
+const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
 function setAtlOption(key,value){setAtl(prev=>({...prev,[key]:value}));}
+function toggleManualLayer(layer){setManualLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
 function addGame(game){onAddToSession({...clone(game),id:Date.now()+Math.random()});}
 const filtered=games.filter(game=>game.category===category);
 return <div>
@@ -117,11 +120,12 @@ return <div>
 {atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
 {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
 </div>
-<div className="infoBox"><strong>Task / Rules</strong><p>{builtAtl.task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{builtAtl.rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{builtAtl.coach}</p></div>
-<div className="chips">{builtAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<button className="primaryBtn" onClick={()=>addGame(builtAtl)}>{addButtonText}</button>
+<div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
+<div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
+<div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
+<div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+<div className="overlayPanel"><strong>Universal Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={composedAtl.layers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{composedAtl.layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+<button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
 {category&&category!=='ATL / BTL'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
@@ -227,7 +231,7 @@ if(format==='NSL'){const teamA=names.filter((_,index)=>index%2===0);const teamB=
 if(format==='Invasion Game'){const groups=Array.from({length:courts},()=>[]);names.forEach((name,index)=>groups[index%courts].push(name));const output=groups.map((group,index)=>{if(!group.length)return`Court ${index+1}: no players`;const each=Math.floor(lives/group.length);const spare=lives%group.length;return`Court ${index+1}: ${group.join(', ')} — ${lives} total lives — ${each} lives each${spare?` + ${spare} spare lives`:''}`;});setGenerated([`Invasion · ${courts} courts · ${lives} lives per court`,...output]);}
 }
 return <div className="page"><div className="pageTop"><h1>Competition</h1></div><div className="competitionCard">
-<label>Competition Format</label><select value={format} onChange={e=>setFormat(e.target.value)}><option>Round Robin</option><option>Monrad</option><option>Invasion Game</option><option>NSL</option></select>
+<label>Competition Format</label><div className="formatGrid">{['Round Robin','Monrad','Invasion Game','NSL'].map(f=><button key={f} className={format===f?'formatBtn activeFormat':'formatBtn'} onClick={()=>setFormat(f)}>{f}</button>)}</div><select value={format} onChange={e=>setFormat(e.target.value)}><option>Round Robin</option><option>Monrad</option><option>Invasion Game</option><option>NSL</option></select>
 {format==='Round Robin'&&<div className="rrBoxSelector"><label>Round Robin Box Format</label><div className="boxGrid">{[1,2,3,4].map(number=><button key={number} className={boxes===number?'boxOption activeBox':'boxOption'} onClick={()=>setBoxes(number)}><strong>{number} {number===1?'Box':'Boxes'}</strong></button>)}</div></div>}
 <div className="competitionControls">
 <div><label>Courts</label><div className="stepper"><button onClick={()=>setCourts(Math.max(1,courts-1))}>−</button><strong>{courts}</strong><button onClick={()=>setCourts(Math.min(6,courts+1))}>+</button></div></div>
@@ -250,7 +254,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v54</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v55</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
