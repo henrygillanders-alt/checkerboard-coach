@@ -459,56 +459,208 @@ function ATLBTLDirectBuilder({onAddToSession}){
 }
 
 
+
 function ClassicConditionedBuilder({onAddToSession}){
-  const starterGames=[
+  const [selectedFamily,setSelectedFamily]=useState('All');
+
+  const scoringProtocol='Win rally = 1 · Complete challenge bonus by game · Win after completing challenge = +3 · Clean winner = +2 and sits on top of all scoring';
+
+  const games=[
+    {
+      title:'What Does Advantage Look Like?',
+      family:'Advantage Recognition',
+      level:'Levels 1–3',
+      duration:8,
+      format:'King of Court',
+      task:'Normal rally. A point is scored for winning the rally. Bonus is available when the winning shot is played after a visible advantage: opponent outside the T-zone, late, off balance, or still moving.',
+      rationale:'Teaches players to recognise the state of the opponent before choosing to attack.',
+      coach:'Ask: “What did the opponent look like before you attacked?” Reward recognition more than shot choice.',
+      scoring:'Win rally = 1 · Win after visible advantage = +3 · Clean winner = +2',
+      layers:['Opponent Off T','Clean Winner'],
+      antiGaming:'If a player deliberately kills the rally to avoid the opponent earning a bonus, normal rally point is awarded to the opponent.'
+    },
+    {
+      title:'T-Zone Denial Game',
+      family:'T-Zone Games',
+      level:'Levels 2–5',
+      duration:8,
+      format:'King of Court',
+      task:'Bonus unlocks when the player wins the rally while the opponent is outside the marked T-zone. From higher levels, add 4-shot or 2-shot conversion windows.',
+      rationale:'Connects tactical construction with opponent displacement and recovery prevention.',
+      coach:'Use a marked T-zone. The opponent must clearly be outside it when the winning shot is played.',
+      scoring:'Win rally = 1 · Win while opponent outside T-zone = +3 · Clean winner = +2',
+      layers:['Opponent Off T','4-Shot Window','2-Shot Window','Clean Winner'],
+      antiGaming:'Opponent cannot intentionally stop movement or abandon recovery to distort the condition.'
+    },
+    {
+      title:'Central Control: One Foot In T-Zone Finish',
+      family:'T-Zone Games',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Winning shot only receives bonus if the striker has at least one foot in the marked T-zone when striking the winning shot.',
+      rationale:'Links central control, balance and tactical timing rather than only shot execution.',
+      coach:'Use the foot-in-zone rule as a clear binary condition. Do not overcoach technique.',
+      scoring:'Win rally = 1 · T-zone contact finish = +3 · Clean winner = +2',
+      layers:['Opponent Off T','Clean Winner'],
+      antiGaming:'If contact location is unclear, no bonus; rally point still stands.'
+    },
+    {
+      title:'Central Control Volley Finish',
+      family:'T-Zone Games',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Bonus only applies when the winning shot is a volley played from central control.',
+      rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',
+      coach:'The volley should be earned, not hunted recklessly.',
+      scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',
+      layers:['Volley Finish','Opponent Off T','Clean Winner'],
+      antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.'
+    },
+    {
+      title:'Length Before Attack',
+      family:'Pressure Construction',
+      level:'Levels 2–5',
+      duration:8,
+      format:'King of Court',
+      task:'Player must first create length pressure before attacking short. The attack bonus opens after the opponent is delayed, displaced or unable to recover normally.',
+      rationale:'Prevents rushed front-court attacks and encourages pressure construction first.',
+      coach:'Watch whether the attack is invited by opponent state or forced without advantage.',
+      scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',
+      layers:['Quality Length Before Attack','4-Shot Window','2-Shot Window','Clean Winner'],
+      antiGaming:'If a player hits short before any pressure is created, only the rally point is available.'
+    },
     {
       title:'Route Breaker',
-      category:'Classic Conditioned',
-      task:'Player must break through opponent structure before scoring becomes live.',
-      rationale:'Encourages recognition of advantage before attack.',
-      coach:'Look for players forcing movement before accelerating.',
-      layers:['Recognition','Pressure'],
-      scoring:'Win rally = 1 · Win after creating advantage = +3'
+      family:'Pressure Construction',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Player must change the opponent’s movement route before the bonus opens. Examples: pull forward then send behind, send across body-line, or force recovery away from T before attacking.',
+      rationale:'Develops tactical disruption rather than repetitive pattern hitting.',
+      coach:'Ask whether the opponent’s route was actually broken. If not, no bonus.',
+      scoring:'Win rally = 1 · Route broken before winning = +3 · Clean winner = +2',
+      layers:['Opponent Off T','Weak Side','Clean Winner'],
+      antiGaming:'Opponent cannot deliberately stop chasing to deny that their route was broken.'
     },
     {
       title:'Double Bounce Pressure',
-      category:'Classic Conditioned',
-      task:'Weaker player receives two bounces. Stronger player receives one bounce.',
-      rationale:'Balances challenge while preserving rally flow.',
-      coach:'Watch if stronger player adapts spacing and tempo.',
-      layers:['Adaptation','Pressure'],
-      scoring:'Normal rally scoring'
+      family:'Adapted Rules',
+      level:'Mixed Standard',
+      duration:8,
+      format:'Winner Stays On',
+      task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',
+      rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',
+      coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',
+      scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',
+      layers:['Double Bounce'],
+      antiGaming:'Players may not intentionally wait for a second bounce if they could clearly play the first bounce safely, unless the learning purpose is movement timing.'
     },
     {
-      title:'T-Zone Denial',
-      category:'Classic Conditioned',
-      task:'Bonus points if winning shot played while opponent is outside marked T-zone.',
-      rationale:'Links positional advantage to tactical conversion.',
-      coach:'Reward recognition not just finishing.',
-      layers:['Opponent Off T','Pressure'],
-      scoring:'Win rally = 1 · Opponent off T finish = +3'
+      title:'Winner Loses A Bounce',
+      family:'Adapted Rules',
+      level:'Mixed Standard',
+      duration:8,
+      format:'Winner Stays On',
+      task:'Incoming player starts with double bounce. After every rally won, the winner loses one available bounce advantage until back to normal one-bounce squash.',
+      rationale:'Prevents the strongest player over-dominating and keeps challenge high for everyone.',
+      coach:'Use especially with uneven groups or mixed standards.',
+      scoring:'Normal rally scoring · track bounce allowance per player',
+      layers:['Double Bounce'],
+      antiGaming:'If tracking becomes confusing, reset allowances every 3–5 rallies.'
+    },
+    {
+      title:'Blind Finish Progression',
+      family:'Blind / Hidden Conditions',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',
+      rationale:'Creates tactical intention while preserving live decision-making and secrecy.',
+      coach:'The hidden condition should shape the player’s perception, not force a bad shot.',
+      scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',
+      layers:['Blind Finish','Clean Winner','Volley Finish'],
+      antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.'
+    },
+    {
+      title:'Opponent Moving Forward',
+      family:'Opponent-State Games',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Bonus applies if the player wins while the opponent is still moving forward or has not recovered from forward movement.',
+      rationale:'Develops recognition of opponent momentum and recovery state.',
+      coach:'Clarify: opponent must still be moving forward, braking, or unable to recover normally when the winning shot is played.',
+      scoring:'Win rally = 1 · Win while opponent moving forward = +3 · Clean winner = +2',
+      layers:['Opponent Off T','Clean Winner'],
+      antiGaming:'Do not award bonus if opponent had clearly recovered and reset.'
+    },
+    {
+      title:'Opposite Side Finish',
+      family:'Opponent-State Games',
+      level:'Levels 3–5',
+      duration:8,
+      format:'Rally Game',
+      task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',
+      rationale:'Links finishing choice to opponent orientation rather than a fixed target.',
+      coach:'Use body-line as the reference, not simply left/right court side.',
+      scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',
+      layers:['Weak Side','Clean Winner'],
+      antiGaming:'If body-line reference is unclear, no bonus.'
     }
   ];
+
+  const families=['All',...Array.from(new Set(games.map(game=>game.family)))];
+  const filtered=selectedFamily==='All'?games:games.filter(game=>game.family===selectedFamily);
+
+  function addGame(game){
+    onAddToSession({
+      ...game,
+      id:Date.now()+Math.random(),
+      category:'Classic Conditioned',
+      cbCode:'None',
+      format:game.format||'Rally Game',
+      duration:game.duration||8,
+      coach:`${game.coach} Anti-gaming: ${game.antiGaming}`,
+      rationale:game.rationale,
+      task:game.task,
+      layers:game.layers||[],
+      scoring:game.scoring
+    });
+  }
 
   return <div className="gameCard">
     <div className="categoryTag">Classic Conditioned</div>
     <h2>Classic Conditioned Games</h2>
-    <p>Select a conditioned game and add directly to Session Builder.</p>
+    <p className="engineIntro">Conditioned games built around advantage recognition, opponent state, pressure construction and adapted rules.</p>
+
+    <div className="conditionedProtocol">
+      <strong>Default scoring protocol</strong>
+      <p>{scoringProtocol}</p>
+    </div>
+
+    <div className="conditionedFamilyRow">
+      {families.map(family=><button key={family} className={selectedFamily===family?'activeLayer':''} onClick={()=>setSelectedFamily(family)}>{family}</button>)}
+    </div>
 
     <div className="libraryGrid">
-      {starterGames.map((game,index)=>
-        <div className="libraryCard" key={index}>
-          <h3>{game.title}</h3>
+      {filtered.map((game,index)=>
+        <div className="libraryCard conditionedCard" key={index}>
+          <div className="libraryCardTop">
+            <div>
+              <span className="categoryTag">{game.family}</span>
+              <h3>{game.title}</h3>
+            </div>
+            <span className="levelPill">{game.level}</span>
+          </div>
           <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
           <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
           <div className="infoBox"><strong>Coach Help</strong><p>{game.coach}</p></div>
-          <div className="chips">
-            {game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}
-          </div>
           <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
-          <button className="primaryBtn" onClick={()=>onAddToSession({...game,id:Date.now()+Math.random()})}>
-            Add To Session
-          </button>
+          <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
+          <div className="chips">{game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+          <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
         </div>
       )}
     </div>
@@ -751,7 +903,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v71</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v72</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

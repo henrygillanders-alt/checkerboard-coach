@@ -301,3 +301,43 @@
 .page > .gameMenuGrid{
   display:none;
 }
+
+.conditionedProtocol{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+.conditionedProtocol strong{
+  color:#ffd980;
+}
+.conditionedFamilyRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+.conditionedFamilyRow button{
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+}
+.conditionedFamilyRow button.activeLayer{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
+.levelPill{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:999px;
+  padding:8px 10px;
+  font-weight:900;
+  color:#9bc1ff;
+}
+.conditionedCard h3{
+  margin-top:10px;
+}
