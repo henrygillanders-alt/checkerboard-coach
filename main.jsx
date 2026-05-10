@@ -140,7 +140,7 @@ return <div>
 <div className="overlayPanel"><strong>Universal Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={manualLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{manualLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
-{category&&category!=='ATL / BTL'&&<div className="gameList">
+{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
 {filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Pressure, Invasion.</div>}
 </div>}
@@ -294,69 +294,40 @@ function CheckerboardEngine({onAddToSession}){
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
   </div>;
 }
+
 function Games({setSession,setScreen}){
-  const [games,setGames]=useState(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_KEY);return saved?JSON.parse(saved):libraryStarterGames();}catch{return libraryStarterGames();}});
-  const [category,setCategory]=useState('All');
-  const [search,setSearch]=useState('');
-  const [editing,setEditing]=useState(null);
-  const [form,setForm]=useState(emptyCustomGame());
+  const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
 
-  useEffect(()=>{localStorage.setItem(GAME_LIBRARY_KEY,JSON.stringify(games));},[games]);
+  function addAndGo(game){
+    setSession(prev=>[...prev,{...clone(game),id:Date.now()+Math.random()}]);
+    setMessage(`${game.title} added to Session Builder.`);
+    setScreen('sessions');
+  }
 
-  function addAndGo(game){setSession(prev=>[...prev,{...clone(game),id:Date.now()+Math.random()}]);setMessage(`${game.title} added to Session Builder.`);setScreen('sessions');}
-  function addStay(game){setSession(prev=>[...prev,{...clone(game),id:Date.now()+Math.random()}]);setMessage(`${game.title} added to current session.`);}
-  function duplicateGame(game){const copy={...clone(game),id:Date.now()+Math.random(),title:`${game.title} copy`,saved:true,favourite:false};setGames(prev=>[...prev,copy]);setMessage('Game duplicated.');}
-  function toggleFavourite(id){setGames(prev=>prev.map(game=>game.id===id?{...game,favourite:!game.favourite}:game));}
-  function deleteGame(id){setGames(prev=>prev.filter(game=>game.id!==id));setMessage('Game removed from library.');}
-  function startEdit(game){setEditing(game.id);setForm({...clone(game)});window.scrollTo(0,0);}
-  function newGame(){setEditing('new');setForm(emptyCustomGame());window.scrollTo(0,0);}
-  function updateForm(field,value){setForm(prev=>({...prev,[field]:value}));}
-  function toggleFormLayer(layer){setForm(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
-  function saveGame(){if(!form.title.trim()){setMessage('Game needs a title.');return;}const cleaned={...form,title:form.title.trim(),saved:true};if(editing==='new'){setGames(prev=>[...prev,cleaned]);}else{setGames(prev=>prev.map(game=>game.id===editing?cleaned:game));}setEditing(null);setForm(emptyCustomGame());setMessage('Game saved.');}
-  function resetLibrary(){setGames(libraryStarterGames());setMessage('Library reset to starter games.');}
-
-  const categories=['All','Favourites','ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Technical','Invasion','Matchplay','Custom Coach Game'];
-  const filtered=games.filter(game=>{
-    const catOk=category==='All'||(category==='Favourites'?game.favourite:game.category===category);
-    const text=`${game.title} ${game.category} ${game.task} ${game.rationale} ${game.coach} ${game.cbCode}`.toLowerCase();
-    return catOk&&text.includes(search.toLowerCase());
-  });
+  const gameClasses=['ATL / BTL','Checkerboard','Classic Conditioned','Volley & Intercept','Pressure','Technical','Invasion','Matchplay'];
 
   return <div className="page">
-    <div className="pageTop"><h1>Games Library</h1><div className="buttonRow"><button className="primaryBtn" onClick={newGame}>+ New Coach Game</button><button className="secondaryBtn" onClick={resetLibrary}>Reset Starter Library</button></div></div>
-    <div className="libraryNotice"><strong>v61 Checkerboard Engine + Storage Restore Fix</strong><span>One functional game class restored first: Checkerboard challenges with blind options and add-to-session.</span></div>
-    <CheckerboardEngine onAddToSession={addAndGo}/>
+    <div className="pageTop"><h1>Games Library</h1></div>
 
-    {editing&&<div className="editGamePanel">
-      <h2>{editing==='new'?'New Coach Game':'Edit Game'}</h2>
-      <label>Title<input value={form.title} onChange={e=>updateForm('title',e.target.value)} placeholder="Game title"/></label>
-      <label>Category<select value={form.category} onChange={e=>updateForm('category',e.target.value)}><option>Custom Coach Game</option><option>ATL / BTL</option><option>Classic Conditioned</option><option>Checkerboard</option><option>Volley & Intercept</option><option>Pressure</option><option>Technical</option><option>Invasion</option><option>Matchplay</option></select></label>
-      <label>Duration<input type="number" min="1" value={form.duration} onChange={e=>updateForm('duration',Number(e.target.value))}/></label>
-      <label>Format<select value={form.format} onChange={e=>updateForm('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Feeding Rotation</option><option>Rally Game</option></select></label>
-      <label className="wide">Task / Rules<textarea value={form.task} onChange={e=>updateForm('task',e.target.value)} placeholder="Clear binary rule or task"/></label>
-      <label className="wide">Rationale<textarea value={form.rationale} onChange={e=>updateForm('rationale',e.target.value)} placeholder="Why this game exists"/></label>
-      <label className="wide">Coach Help<textarea value={form.coach} onChange={e=>updateForm('coach',e.target.value)} placeholder="What to say / watch for"/></label>
-      <label>CB Code<select value={form.cbCode||'None'} onChange={e=>updateForm('cbCode',e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></label>
-      <div className="wide overlayPanel"><strong>Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(form.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleFormLayer(layer)}>{(form.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
-      <div className="wide buttonRow"><button className="primaryBtn" onClick={saveGame}>Save Game</button><button className="secondaryBtn" onClick={()=>{setEditing(null);setForm(emptyCustomGame());}}>Cancel</button></div>
-    </div>}
+    <div className="gameClassGrid">
+      {gameClasses.map(gameClass=>
+        <button key={gameClass} className={activeClass===gameClass?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setActiveClass(gameClass)}>
+          {gameClass}
+        </button>
+      )}
+    </div>
 
-    <GameSelector onAddToSession={addAndGo} addButtonText="Add Built Game To Session" />
+    {!activeClass&&<div className="placeholder">Tap a game class above.</div>}
 
-    <div className="libraryToolbar"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search games..."/><select value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(cat=><option key={cat}>{cat}</option>)}</select></div>
+    {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
+    {activeClass==='ATL / BTL'&&<GameSelector onAddToSession={addAndGo} addButtonText="Add ATL / BTL To Session"/>}
+
+    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&
+      <div className="placeholder">{activeClass} games will be restored as the next functional class.</div>
+    }
+
     {message&&<div className="statusBox">{message}</div>}
-
-    <div className="libraryGrid">{filtered.map(game=><div className="libraryCard" key={game.id}>
-      <div className="libraryCardTop"><div><span className="categoryTag">{game.category}</span><h2>{game.title}</h2></div><button className={game.favourite?'favBtn activeFav':'favBtn'} onClick={()=>toggleFavourite(game.id)}>★</button></div>
-      <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
-      <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-      <div className="infoBox"><strong>Coach Help</strong><p>{game.coach}</p></div>
-      <div className="chips">{(game.layers||[]).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-      {game.cbCode&&game.cbCode!=='None'&&<div className="cbMini">CB: {game.cbCode}</div>}
-      <div className="actionRow"><button onClick={()=>addStay(game)}>Add To Session</button><button onClick={()=>addAndGo(game)}>Add + Open Session</button><button onClick={()=>duplicateGame(game)}>Duplicate</button><button onClick={()=>startEdit(game)}>Edit</button><button onClick={()=>deleteGame(game.id)}>Delete</button></div>
-    </div>)}</div>
-    {filtered.length===0&&<div className="placeholder">No games found.</div>}
   </div>;
 }
 
@@ -558,7 +529,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v64</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v66</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
