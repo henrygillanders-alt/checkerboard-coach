@@ -461,73 +461,35 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
 
 
+
 function ClassicConditionedBuilder({onAddToSession}){
-  const [selectedFamily,setSelectedFamily]=useState('All');
-  const [expandedGame,setExpandedGame]=useState(null);
+  const [selectedProblem,setSelectedProblem]=useState(null);
+  const [selectedGame,setSelectedGame]=useState(null);
   const [selectedOverlays,setSelectedOverlays]=useState({});
 
-  const scoringProtocol='Win rally = 1 · Complete challenge bonus by game · Win after completing challenge = +3 · Clean winner = +2 and sits on top of all scoring';
-
   const games=[
-    {
-      title:'Return to Sender',
-      family:'Opponent Awareness',
-      shortRationale:'Discourages repeatedly hitting back to opponent position.',
-      level:'Levels 2–5',
-      task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',
-      rationale:'Develops perception of opponent positioning before target selection.',
-      coach:'Reward recognition of opponent position rather than pure shot quality.',
-      playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',
-      scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',
-      antiGaming:'No bonus if the direction change is accidental or unclear.',
-      suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']
-    },
-    {
-      title:'Server Above The Line',
-      family:'Neutralise vs Attack',
-      shortRationale:'Develops recognition of neutralising versus attacking situations.',
-      level:'Levels 2–5',
-      task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',
-      rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',
-      coach:'Observe whether players attack from neutral positions or only after creating advantage.',
-      playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',
-      scoring:'Win rally = 1 · Correct attack recognition = +3',
-      antiGaming:'Do not reward random attacking from neutral or defensive positions.',
-      suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']
-    },
-    {
-      title:'T-Zone Denial',
-      family:'T-Zone Games',
-      shortRationale:'Rewards displacement before attack.',
-      level:'Levels 2–5',
-      task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',
-      rationale:'Connects tactical pressure with recovery denial.',
-      coach:'Use a clearly marked T-zone.',
-      playerFocus:'Move opponent away from central recovery before attacking.',
-      scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',
-      antiGaming:'Opponent cannot intentionally stop recovering to manipulate the condition.',
-      suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']
-    },
-    {
-      title:'Route Breaker',
-      family:'Pressure Construction',
-      shortRationale:'Develops route disruption before finishing.',
-      level:'Levels 3–5',
-      task:'Player must alter opponent movement route before the bonus is unlocked.',
-      rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',
-      coach:'Confirm that the opponent movement route was genuinely changed.',
-      playerFocus:'Create a movement problem before attempting to finish the rally.',
-      scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',
-      antiGaming:'No bonus if opponent movement route was unchanged.',
-      suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']
-    }
+    {title:'Return to Sender',problem:'Opponent Awareness',shortRationale:'Discourages repeatedly hitting back to opponent position.',level:'Levels 2–5',task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',rationale:'Develops perception of opponent positioning before target selection.',coach:'Reward recognition of opponent position rather than pure shot quality.',playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',antiGaming:'No bonus if the direction change is accidental or unclear.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
+    {title:'Opposite Side Finish',problem:'Opponent Awareness',shortRationale:'Encourages players to finish away from opponent body-line and recovery direction.',level:'Levels 3–5',task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',rationale:'Links finishing choice to opponent orientation rather than a fixed target.',coach:'Use body-line and recovery direction as the reference, not simply left/right court side.',playerFocus:'Read the opponent’s recovery direction before choosing the finish.',scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',antiGaming:'If body-line reference is unclear, no bonus.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
+    {title:'Server Above The Line',problem:'Neutralise vs Attack',shortRationale:'Develops recognition of neutralising versus attacking situations.',level:'Levels 2–5',task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',coach:'Observe whether players attack from neutral positions or only after creating advantage.',playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',scoring:'Win rally = 1 · Correct attack recognition = +3',antiGaming:'Do not reward random attacking from neutral or defensive positions.',suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']},
+    {title:'Length Before Attack',problem:'Neutralise vs Attack',shortRationale:'Prevents rushed attacking before pressure has been created.',level:'Levels 2–5',task:'Player must create length pressure before attacking short. Attack bonus opens only after the opponent is delayed, displaced or unable to recover normally.',rationale:'Encourages patient pressure construction rather than premature front-court attacks.',coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',antiGaming:'If a player hits short before any pressure is created, only the rally point is available.',suggestedOverlays:['Quality Length Before Attack','Opponent Off T','4-Shot Window','Clean Winner']},
+    {title:'T-Zone Denial',problem:'T-Zone Games',shortRationale:'Rewards displacement before attack.',level:'Levels 2–5',task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',rationale:'Connects tactical pressure with recovery denial.',coach:'Use a clearly marked T-zone. Award only when the opponent is clearly outside it.',playerFocus:'Move opponent away from central recovery before attacking.',scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',antiGaming:'Opponent cannot intentionally stop recovering to manipulate the condition.',suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']},
+    {title:'Central Control Volley Finish',problem:'T-Zone Games',shortRationale:'Encourages earned volley interception from central control.',level:'Levels 3–5',task:'Bonus only applies when the winning shot is a volley played from central control.',rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',coach:'The volley should be earned, not hunted recklessly.',playerFocus:'Use central pressure to create an intercepting opportunity.',scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.',suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner']},
+    {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']},
+    {title:'Double Bounce Pressure',problem:'Adapted Rules',shortRationale:'Balances mixed standards while preserving live rally information.',level:'Mixed Standard',task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',playerFocus:'Use the extra bounce to organise better decisions, not simply to wait passively.',scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',antiGaming:'Players should not intentionally wait for a second bounce if they could safely play the first bounce unless that is the learning purpose.',suggestedOverlays:['Double Bounce']},
+    {title:'Blind Finish Progression',problem:'Blind / Hidden Conditions',shortRationale:'Creates hidden tactical intention while preserving live rally decision-making.',level:'Levels 3–5',task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',rationale:'Creates tactical intention while preserving live decision-making and secrecy.',coach:'The hidden condition should shape the player’s perception, not force a bad shot.',playerFocus:'Hold the hidden intention while still responding to the live rally.',scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.',suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish']}
   ];
 
-  const families=['All',...Array.from(new Set(games.map(game=>game.family)))];
-  const filtered=selectedFamily==='All'?games:games.filter(game=>game.family===selectedFamily);
+  const problems=[
+    {name:'Opponent Awareness',rationale:'Stop hitting back to opponent and improve body-line / recovery-line recognition.'},
+    {name:'Neutralise vs Attack',rationale:'Distinguish survival, neutralising and true attacking moments.'},
+    {name:'T-Zone Games',rationale:'Connect opponent displacement, recovery denial and central control.'},
+    {name:'Pressure Construction',rationale:'Require a pressure-building phase before attack is rewarded.'},
+    {name:'Adapted Rules',rationale:'Balance mixed ability groups while keeping rallies representative.'},
+    {name:'Blind / Hidden Conditions',rationale:'Create hidden tactical intention without removing live decisions.'}
+  ];
 
+  const visibleGames=selectedProblem?games.filter(game=>game.problem===selectedProblem):[];
   function overlayKey(game){return game.title;}
-
   function toggleGameOverlay(game,layer){
     const key=overlayKey(game);
     setSelectedOverlays(prev=>{
@@ -535,94 +497,51 @@ function ClassicConditionedBuilder({onAddToSession}){
       return {...prev,[key]:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
     });
   }
-
   function addGame(game){
-    onAddToSession({
-      ...game,
-      id:Date.now()+Math.random(),
-      category:'Classic Conditioned',
-      layers:selectedOverlays[overlayKey(game)]||[],
-      coachFocus:game.coach,
-      cbCode:'None'
-    });
+    onAddToSession({...game,id:Date.now()+Math.random(),category:'Classic Conditioned',family:game.problem,layers:selectedOverlays[overlayKey(game)]||[],coachFocus:game.coach,cbCode:'None'});
   }
 
   return <div className="gameCard">
     <div className="categoryTag">Classic Conditioned</div>
     <h2>Classic Conditioned Games</h2>
-    <p className="engineIntro">Select a coaching problem/game first. Expand only the games you want to use.</p>
+    <p className="engineIntro">Choose the coaching problem first, then choose a game, then expand and edit overlays.</p>
 
-    <div className="conditionedProtocol">
-      <strong>Default scoring protocol</strong>
-      <p>{scoringProtocol}</p>
+    <div className="hierarchyHelp"><strong>Workflow</strong><p>Game class → coaching problem → game options → expanded game card → overlay/adaptation choices → Add To Session.</p></div>
+
+    <div className="problemGrid">
+      {problems.map(problem=><button key={problem.name} className={selectedProblem===problem.name?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setSelectedProblem(problem.name);setSelectedGame(null);}}>
+        <strong>{problem.name}</strong><span>{problem.rationale}</span>
+      </button>)}
     </div>
 
-    <div className="conditionedFamilyRow">
-      {families.map(family=>
-        <button key={family} className={selectedFamily===family?'activeLayer':''} onClick={()=>setSelectedFamily(family)}>
-          {family}
-        </button>
-      )}
-    </div>
+    {!selectedProblem&&<div className="placeholder">Select a coaching problem area above to see matching conditioned games.</div>}
 
-    <div className="progressiveList">
-      {filtered.map((game,index)=>
-        <div className="progressiveGameCard" key={index}>
-          <div className="progressiveHeader" onClick={()=>setExpandedGame(expandedGame===game.title?null:game.title)}>
-            <div>
-              <span className="categoryTag">{game.family}</span>
-              <h3>{game.title}</h3>
-              <p className="shortRationale">{game.shortRationale}</p>
-            </div>
-            <button className="expandBtn">{expandedGame===game.title?'−':'+'}</button>
-          </div>
+    {selectedProblem&&<div className="gameOptionList">
+      <h3>{selectedProblem}: game options</h3>
+      {visibleGames.map(game=><button key={game.title} className={selectedGame===game.title?'gameOption activeGameOption':'gameOption'} onClick={()=>setSelectedGame(selectedGame===game.title?null:game.title)}>
+        <span>{game.title}</span><small>{game.shortRationale}</small>
+      </button>)}
+    </div>}
 
-          {expandedGame===game.title&&
-            <div className="expandedGame">
-              <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
-              <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-              <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
-              <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
-              <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
-              <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
+    {visibleGames.map(game=> selectedGame===game.title && <div className="expandedGame selectedExpandedGame" key={game.title}>
+      <span className="categoryTag">{game.problem}</span><h3>{game.title}</h3><span className="levelPill">{game.level}</span>
+      <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
+      <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
+      <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
+      <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
+      <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
+      <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
 
-              <div className="conditionedOverlayChooser">
-                <strong>Suggested overlays</strong>
-                <p className="overlayExplain">Suggested overlays are guidance only. Coaches may select any overlay combination.</p>
-
-                <div className="quickLayers">
-                  {(game.suggestedOverlays||[]).map(layer=>
-                    <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
-                      {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
-                    </button>
-                  )}
-                </div>
-
-                <div className="overlayInfoGrid">
-                  {(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}
-                </div>
-
-                <div className="allOverlaySection">
-                  <strong>All overlays</strong>
-                  <div className="quickLayers">
-                    {ALL_LAYERS.map(layer=>
-                      <button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>
-                        {(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
-            </div>
-          }
-        </div>
-      )}
-    </div>
+      <div className="conditionedOverlayChooser">
+        <strong>Suggested overlays</strong><p className="overlayExplain">Suggested overlays are guidance only. Select what fits the group and learning aim.</p>
+        <div className="quickLayers">{(game.suggestedOverlays||[]).map(layer=><button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>{(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+        <div className="overlayInfoGrid">{(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}</div>
+        <div className="allOverlaySection"><strong>All overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>{(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+      </div>
+      <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+    </div>)}
   </div>;
 }
-
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -909,7 +828,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v76</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v78</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

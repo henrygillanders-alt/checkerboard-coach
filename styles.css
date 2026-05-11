@@ -475,3 +475,9 @@
   margin-bottom:10px;
   color:#ffd980;
 }
+
+.hierarchyHelp{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.hierarchyHelp strong{color:#ffd980}.hierarchyHelp p{color:#dce8ff;margin-bottom:0}
+.problemGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.problemBtn{background:#12253d;border:1px solid #486b9a;color:white;border-radius:14px;padding:14px;text-align:left;cursor:pointer}.problemBtn strong,.problemBtn span{display:block}.problemBtn span{margin-top:6px;color:#9fb0c8}.activeProblem{background:#1f5dd0;border-color:#8ab6ff}
+.gameOptionList{display:flex;flex-direction:column;gap:10px;margin-top:16px}.gameOption{background:#081320;border:1px solid #35567e;color:white;border-radius:14px;padding:14px;text-align:left;cursor:pointer}.gameOption span,.gameOption small{display:block}.gameOption span{font-size:18px;font-weight:900}.gameOption small{margin-top:5px;color:#9fb0c8}.activeGameOption{background:#1f5dd0;border-color:#8ab6ff}
+.selectedExpandedGame{margin-top:16px;background:#101b2a;border:1px solid #35567e;border-radius:18px;padding:16px}
+@media(max-width:900px){.problemGrid{grid-template-columns:1fr}}
