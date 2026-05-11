@@ -465,6 +465,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
 function ClassicConditionedBuilder({onAddToSession}){
   const [selectedProblem,setSelectedProblem]=useState(null);
   const [selectedGame,setSelectedGame]=useState(null);
+  const [scoringChoices,setScoringChoices]=useState({});
   const [selectedOverlays,setSelectedOverlays]=useState({});
 
   const games=[
@@ -562,8 +563,97 @@ function TechnicalFocusBuilder({onAddToSession}){
   const focusAreas=['Preparation & Swing Organisation','Body Organisation','Visual Stability','Balance & Recovery','Environmental Tempo'];
   const visibleGames=selectedFocus?games.filter(game=>game.focus===selectedFocus):[];
 
+  const scoringProtocols=[
+    {
+      name:'Encouragement: bonus only',
+      text:'Win rally = 1 · Technical behaviour present = +2 bonus',
+      consequence:'If behaviour is absent, no technical bonus; rally result still stands.'
+    },
+    {
+      name:'Neutral: no bonus if absent',
+      text:'Win rally = 1 · Technical bonus only if behaviour is present',
+      consequence:'Transgression removes the bonus but does not punish the rally.'
+    },
+    {
+      name:'Penalty: opponent +1',
+      text:'Win rally = 1 · Each technical transgression = +1 to opponent',
+      consequence:'Rally continues, but the transgression has a scoring cost.'
+    },
+    {
+      name:'Strict: lose rally',
+      text:'Technical transgression = lose rally',
+      consequence:'Use only when behaviour is well understood and stable enough to demand.'
+    },
+    {
+      name:'Three-strike rule',
+      text:'Three technical transgressions = automatic rally loss',
+      consequence:'Allows exploration while still creating consequence.'
+    },
+    {
+      name:'Progressive pressure',
+      text:'First = warning · Second = no bonus · Third = opponent +1 · Fourth = lose rally',
+      consequence:'Best for building autonomy and gradually increasing pressure.'
+    },
+    {
+      name:'Coach custom',
+      text:'Coach-designed scoring protocol',
+      consequence:'Coach adapts the consequence to the player, group and session aim.'
+    }
+  ];
+
+  function scoringKey(game){return game.title;}
+
+  function chosenProtocol(game){
+    return scoringChoices[scoringKey(game)] || {
+      protocol:'Encouragement: bonus only',
+      customText:'',
+      customConsequence:''
+    };
+  }
+
+  function updateScoringChoice(game,field,value){
+    const key=scoringKey(game);
+    setScoringChoices(prev=>({
+      ...prev,
+      [key]:{
+        ...chosenProtocol(game),
+        [field]:value
+      }
+    }));
+  }
+
+  function resolvedScoring(game){
+    const choice=chosenProtocol(game);
+    const selected=scoringProtocols.find(item=>item.name===choice.protocol) || scoringProtocols[0];
+    if(choice.protocol==='Coach custom'){
+      return {
+        scoring: choice.customText || game.scoring,
+        consequence: choice.customConsequence || game.consequence,
+        protocol: choice.protocol
+      };
+    }
+    return {
+      scoring: selected.text,
+      consequence: selected.consequence,
+      protocol: choice.protocol
+    };
+  }
+
   function addGame(game){
-    onAddToSession({...game,id:Date.now()+Math.random(),category:'Technical',family:game.focus,layers:[],coachFocus:game.coach,antiGaming:game.consequence,cbCode:'None'});
+    const resolved=resolvedScoring(game);
+    onAddToSession({
+      ...game,
+      id:Date.now()+Math.random(),
+      category:'Technical',
+      family:game.focus,
+      layers:[],
+      coachFocus:game.coach,
+      scoring:resolved.scoring,
+      antiGaming:resolved.consequence,
+      consequence:resolved.consequence,
+      scoringProtocol:resolved.protocol,
+      cbCode:'None'
+    });
   }
 
   return <div className="gameCard">
@@ -592,7 +682,30 @@ function TechnicalFocusBuilder({onAddToSession}){
       <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
       <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
       <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
-      <div className="infoBox"><strong>Scoring / Consequence</strong><p>{game.scoring}</p><p>{game.consequence}</p></div>
+      <div className="technicalScoringBox">
+        <strong>Editable Scoring / Consequence</strong>
+        <p className="overlayExplain">Choose the consequence level. This is deliberately coach-editable to encourage experimentation and autonomy.</p>
+
+        <label>Scoring protocol
+          <select value={chosenProtocol(game).protocol} onChange={e=>updateScoringChoice(game,'protocol',e.target.value)}>
+            {scoringProtocols.map(protocol=><option key={protocol.name}>{protocol.name}</option>)}
+          </select>
+        </label>
+
+        {chosenProtocol(game).protocol==='Coach custom'&&<div className="customScoringGrid">
+          <label>Custom scoring
+            <textarea value={chosenProtocol(game).customText} onChange={e=>updateScoringChoice(game,'customText',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/>
+          </label>
+          <label>Custom consequence
+            <textarea value={chosenProtocol(game).customConsequence} onChange={e=>updateScoringChoice(game,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/>
+          </label>
+        </div>}
+
+        <div className="infoBox"><strong>Selected scoring</strong><p>{resolvedScoring(game).scoring}</p></div>
+        <div className="infoBox"><strong>Selected consequence</strong><p>{resolvedScoring(game).consequence}</p></div>
+        <div className="infoBox"><strong>Original suggestion</strong><p>{game.scoring}</p><p>{game.consequence}</p></div>
+      </div>
+
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -885,7 +998,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v79</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v80</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
