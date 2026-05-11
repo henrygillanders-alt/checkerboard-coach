@@ -536,3 +536,20 @@
 .problemBtn.activeProblem{
   cursor:default;
 }
+
+.level0HomeCard{
+  background:linear-gradient(135deg,#1f5dd0,#0c1a2c) !important;
+  border:2px solid #8ab6ff !important;
+}
+.level0HomeCard strong,
+.level0HomeCard span,
+.level0HomeCard small{
+  display:block;
+}
+.level0HomeCard small{
+  color:#dce8ff;
+  margin-top:6px;
+}
+.level0Page .problemBtn.activeProblem{
+  cursor:default;
+}

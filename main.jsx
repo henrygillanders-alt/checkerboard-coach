@@ -91,6 +91,11 @@ return aRank-bRank;
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
+        <strong>LEVEL 0</strong>
+        <span>Exploration Stage · Ages 5–9</span>
+        <small>Move · Track · Strike · Play · Mini Checkerboard</small>
+      </button>
 <button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
 <button className="tile purple" onClick={()=>setScreen('games')}><h2>Games</h2><p>ATL / BTL, conditioned games, checkerboard and pressure games.</p></button>
 <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Junior Programme Ranking, attendance and guests.</p></button>
@@ -1126,11 +1131,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v84</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v84a</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
-{screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
+{screen==='level0'&&<Level0Exploration/>}
+      {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
 {screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
