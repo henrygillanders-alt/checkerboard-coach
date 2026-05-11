@@ -796,6 +796,50 @@ function TechnicalFocusBuilder({onAddToSession}){
     </div>)}
   </div>;
 }
+
+function Level0Exploration(){
+  const pillars=[
+    {title:'MOVE',text:'Balance, rhythm, agility and movement confidence.'},
+    {title:'TRACK',text:'Ball pickup, timing and visual stability.'},
+    {title:'STRIKE',text:'Different swing shapes and striking adaptability.'},
+    {title:'SEND & RECEIVE',text:'Cooperative rallying and directional awareness.'},
+    {title:'PLAY',text:'Exploratory games and creativity.'},
+    {title:'MINI CHECKERBOARD',text:'Visual target awareness before formal notation.'}
+  ];
+
+  return <div className="gameCard">
+    <div className="categoryTag">Level 0</div>
+    <h2>Level 0 — Exploration Stage (5–9 yrs)</h2>
+
+    <div className="diagnosticPrinciple">
+      <strong>Level 0 Philosophy</strong>
+      <p>This is not mini adult squash. Level 0 focuses on exploration, movement literacy, adaptability, creativity and representative play.</p>
+    </div>
+
+    <div className="infoBox">
+      <strong>Core Principles</strong>
+      <ul>
+        <li>Exploration before optimisation</li>
+        <li>Variability before precision</li>
+        <li>Play before correction</li>
+        <li>Movement literacy before tactical systems</li>
+      </ul>
+    </div>
+
+    <div className="problemGrid">
+      {pillars.map(pillar=><div className="problemBtn activeProblem" key={pillar.title}>
+        <strong>{pillar.title}</strong>
+        <span>{pillar.text}</span>
+      </div>)}
+    </div>
+
+    <div className="technicalScoringBox alwaysVisibleScoring">
+      <strong>Level 0 Coach Card Structure</strong>
+      <p>Goal → Equipment → How to Play → Progress → Simplify → What to Observe</p>
+    </div>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -1082,7 +1126,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v83</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v84</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
@@ -1094,3 +1138,12 @@ return <div>
 }
 
 createRoot(document.getElementById('root')).render(<App/>);
+
+
+/* LEVEL 0 PLACEHOLDER ROUTE
+Add navigation tab:
+LEVEL 0
+
+Add route:
+tab==='LEVEL 0'&&<Level0Exploration/>
+*/
