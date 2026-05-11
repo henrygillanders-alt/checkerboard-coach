@@ -545,12 +545,124 @@ function ClassicConditionedBuilder({onAddToSession}){
 }
 
 
+
 function TechnicalFocusBuilder({onAddToSession}){
   const [family,setFamily]=useState(null);
   const [error,setError]=useState(null);
   const [origins,setOrigins]=useState({});
   const [types,setTypes]=useState({});
   const [scoring,setScoring]=useState({});
+
+  const originInfo={
+    'Isolated Technique Practice':{
+      title:'Isolated Technique Practice',
+      explanation:'The behaviour was repeated in stable, predictable conditions with little opponent pressure or time constraint.',
+      system:'A deep attractor forms for a low-pressure context. It may become dominant and context-insensitive when transferred into live rallies.',
+      approach:'Usually add alternative attractor states and increase meta-stability rather than simply deleting the existing solution.'
+    },
+    'Unguided Match Play':{
+      title:'Unguided Match Play',
+      explanation:'The player self-organised a good-enough solution under match pressure without coaching intervention.',
+      system:'The compensatory attractor stabilises because it wins enough points at the current level, even if it limits future development.',
+      approach:'Often requires destabilising and replacing the shortcut because it may never have been appropriate, only functional enough.'
+    },
+    'Underdeveloped Coordination':{
+      title:'Underdeveloped Coordination',
+      explanation:'The player has not yet developed a stable functional coordination solution for this context.',
+      system:'There may be no strong attractor yet, only inconsistent attempts or compensatory workarounds.',
+      approach:'Build coordination progressively: simplify first, then increase representative complexity.'
+    },
+    'Mixed Origin':{
+      title:'Mixed Origin',
+      explanation:'The behaviour may have elements of isolated repetition and match-play compensation.',
+      system:'The attractor may be stable in some contexts and maladaptive in others.',
+      approach:'Use exploration first: test whether the player needs added variability or genuine replacement.'
+    },
+    'Unknown / investigate':{
+      title:'Unknown / investigate',
+      explanation:'The origin is not clear yet.',
+      system:'Avoid over-prescribing until you know whether the player lacks a solution or is dominated by an inefficient one.',
+      approach:'Use diagnostic constraints and observation before deciding add vs replace.'
+    }
+  };
+
+  const typeInfo={
+    'Type 1 — Underdeveloped Coordination Solution':{
+      title:'Type 1 — Underdeveloped Coordination Solution',
+      explanation:'No stable functional coordination exists for this movement context.',
+      approach:'Build from scratch. Introduce the coordination in a simplified task, then progressively increase representativeness.',
+      warning:'Do not punish heavily too early; the player is still building the solution.'
+    },
+    'Type 2 — Dominant Inefficient Solution':{
+      title:'Type 2 — Dominant Inefficient Solution',
+      explanation:'A stable but limiting movement attractor has become deeply embedded.',
+      approach:'Origin determines the strategy: add alternatives if the attractor is useful in some contexts; destabilise and replace if it is a maladaptive shortcut.',
+      warning:'Instruction alone rarely changes a deep attractor. The task constraints must make the old solution less useful.'
+    },
+    'Mixed Type':{
+      title:'Mixed Type',
+      explanation:'The player has partial coordination but an inefficient solution dominates under pressure.',
+      approach:'Use representative constraints to reveal when the solution works and when it fails. Then decide whether to add or replace.',
+      warning:'Do not assume one intervention will work across all contexts.'
+    },
+    'Unknown / investigate':{
+      title:'Unknown / investigate',
+      explanation:'The error type is not yet clear.',
+      approach:'Use small diagnostic constraints and observe whether the player lacks a solution or repeatedly returns to an inefficient one.',
+      warning:'Avoid fixed correction before the attractor pattern is understood.'
+    }
+  };
+
+  const constraintGames={
+    'Early Preparation Trigger':{
+      task:'Technical bonus only counts when preparation is visible before the opponent’s ball reaches or hits the front wall.',
+      rationale:'Links preparation to earlier information pickup instead of rushed late correction.'
+    },
+    'Forward-Only Swing':{
+      task:'Once the forward swing begins, the racquet may not travel backwards again.',
+      rationale:'Discourages late re-preparation, double-loading and excessive backswing.'
+    },
+    'Environmental Tempo Compression':{
+      task:'Use movable front-wall tape as a height modifier. Lower tape gradually to increase tempo and compress available preparation time.',
+      rationale:'The environment shapes preparation and swing economy without constant verbal correction.'
+    },
+    'Racquet Above Wrist':{
+      task:'Racquet head must remain above wrist level during preparation and recovery for the bonus to count.',
+      rationale:'Maintains functional racquet readiness under movement and tempo pressure.'
+    },
+    'Volley Finish':{
+      task:'Bonus only applies when the player earns and finishes with a volley.',
+      rationale:'Rewards early interception and readiness.'
+    },
+    'Non-Racquet Hand Integrity':{
+      task:'Non-racquet hand must remain active and useful in preparation/swing organisation.',
+      rationale:'Supports spacing, balance and shoulder organisation.'
+    },
+    'Functional Finish Direction':{
+      task:'Forehand finish should organise toward side wall; backhand finish toward back wall. Bonus only counts if finish supports recovery.',
+      rationale:'Constrains follow-through organisation while keeping the rally representative.'
+    },
+    'Quiet Head Contact':{
+      task:'Head and eyes remain stable through contact.',
+      rationale:'Supports timing, spacing and cleaner interception under pressure.'
+    },
+    'No Spin-Out Recovery':{
+      task:'Player must finish without uncontrolled spin-out.',
+      rationale:'Keeps striking and recovery linked as one functional movement solution.'
+    },
+    'Continuous Recovery Organisation':{
+      task:'Recovery must emerge continuously from the end of follow-through.',
+      rationale:'Prevents hit–pause–recover separation.'
+    },
+    'Opponent Off T':{
+      task:'Bonus applies when the opponent is outside the T-zone at the moment of attack/finish.',
+      rationale:'Links technical behaviour to tactical pressure and recovery denial.'
+    },
+    '4-Shot Window':{
+      task:'After the target behaviour/advantage appears, the player must convert within four shots.',
+      rationale:'Adds conversion pressure without becoming too severe.'
+    }
+  };
 
   const cards=[
     {title:'Late Preparation',family:'Preparation & Swing Organisation',desc:'Preparation begins too late relative to ball-flight information.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'A late but functional shortcut can stabilise because it works at the player’s current challenge level.',constraints:['Early Preparation Trigger','Forward-Only Swing','Environmental Tempo Compression'],coach:'Look for when preparation begins relative to ball flight.',player:'Use earlier information to organise preparation before the situation becomes rushed.'},
@@ -585,11 +697,17 @@ function TechnicalFocusBuilder({onAddToSession}){
     if(ch.name==='Coach custom')return {score:ch.customScore||found[1],consequence:ch.customConsequence||found[2],name:ch.name};
     return {score:found[1],consequence:found[2],name:found[0]};
   }
-
   function setScore(card,field,value){
     setScoring(prev=>({...prev,[k(card)]:{...choice(card),[field]:value}}));
   }
-
+  function remedialApproach(card){
+    const o=origin(card);
+    const t=type(card);
+    if(t.includes('Type 1'))return 'Build from scratch: simplify the task first, then progressively increase representative pressure.';
+    if(t.includes('Type 2')&&o==='Isolated Technique Practice')return 'Add alternatives / meta-stability: keep useful contexts but reduce dominance by adding variable representative constraints.';
+    if(t.includes('Type 2')&&o==='Unguided Match Play')return 'Destabilise and replace: the shortcut was functional enough but not appropriate, so the task must make the old attractor less useful.';
+    return 'Investigate first: use diagnostic constraints to decide whether to add alternatives or replace the dominant solution.';
+  }
   function addDiagnostic(card){
     const p=protocol(card);
     onAddToSession({
@@ -599,7 +717,7 @@ function TechnicalFocusBuilder({onAddToSession}){
       family:card.family,
       level:type(card),
       task:`Diagnostic target: ${card.desc} Constraint suggestions: ${card.constraints.join(' · ')}.`,
-      rationale:`Origin: ${origin(card)}. Type: ${type(card)}. Why it stabilises: ${card.why}`,
+      rationale:`Origin: ${origin(card)}. Type: ${type(card)}. Remedial approach: ${remedialApproach(card)} Why it stabilises: ${card.why}`,
       coachFocus:card.coach,
       playerFocus:card.player,
       scoring:p.score,
@@ -613,10 +731,10 @@ function TechnicalFocusBuilder({onAddToSession}){
 
   return <div className="gameCard">
     <div className="categoryTag">Technical Diagnostic</div>
-    <h2>Technical Diagnostic Architecture</h2>
-    <p className="engineIntro">Diagnose first, constrain second, score third. Errors are stable movement solutions that may have become good enough for the current challenge level.</p>
+    <h2>Technical Diagnostic Full Pathway</h2>
+    <p className="engineIntro">Behaviour Family → Specific Error → Origin → Type → Remedial Approach → Constraint Games → Editable Scoring → Session.</p>
 
-    <div className="diagnosticPrinciple"><strong>Key principle</strong><p>Origin determines whether to add alternatives or replace a dominant attractor. Identify origin first, then choose the intervention.</p></div>
+    <div className="diagnosticPrinciple"><strong>Key principle</strong><p>Errors are stable movement solutions that became good enough for the player’s current challenge level. Origin determines whether to add alternatives or replace a dominant attractor.</p></div>
 
     <div className="problemGrid">{families.map(f=><button key={f} className={family===f?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setFamily(f);setError(null);}}><strong>{f}</strong></button>)}</div>
 
@@ -628,19 +746,30 @@ function TechnicalFocusBuilder({onAddToSession}){
       <span className="categoryTag">{card.family}</span><h3>{card.title}</h3>
       <div className="infoBox"><strong>Error / behaviour</strong><p>{card.desc}</p></div>
       <div className="infoBox"><strong>Why it becomes stable</strong><p>{card.why}</p></div>
+
       <div className="diagnosticControls">
         <label>Error origin<select value={origin(card)} onChange={e=>setOrigins(prev=>({...prev,[k(card)]:e.target.value}))}><option>Isolated Technique Practice</option><option>Unguided Match Play</option><option>Underdeveloped Coordination</option><option>Mixed Origin</option><option>Unknown / investigate</option></select></label>
         <label>Error type<select value={type(card)} onChange={e=>setTypes(prev=>({...prev,[k(card)]:e.target.value}))}><option>Type 1 — Underdeveloped Coordination Solution</option><option>Type 2 — Dominant Inefficient Solution</option><option>Mixed Type</option><option>Unknown / investigate</option></select></label>
       </div>
+
+      <div className="diagnosticTheoryGrid">
+        <div className="diagnosticTheoryCard"><h4>Origin explanation</h4><p>{originInfo[origin(card)]?.explanation}</p><p>{originInfo[origin(card)]?.system}</p><strong>Implication</strong><p>{originInfo[origin(card)]?.approach}</p></div>
+        <div className="diagnosticTheoryCard"><h4>Type explanation</h4><p>{typeInfo[type(card)]?.explanation}</p><strong>Approach</strong><p>{typeInfo[type(card)]?.approach}</p><strong>Warning</strong><p>{typeInfo[type(card)]?.warning}</p></div>
+      </div>
+
+      <div className="infoBox"><strong>Remedial Approach</strong><p>{remedialApproach(card)}</p></div>
       <div className="infoBox"><strong>Coach Focus</strong><p>{card.coach}</p></div>
       <div className="infoBox"><strong>Player Focus</strong><p>{card.player}</p></div>
-      <div className="constraintSuggestionBox"><strong>Constraint Suggestions</strong><div className="quickLayers">{card.constraints.map(c=><span className="badge" key={c}>{c}</span>)}</div></div>
+
+      <div className="constraintSuggestionBox"><strong>Constraint Game Suggestions</strong>{card.constraints.map(c=><div className="constraintGameCard" key={c}><h4>{c}</h4><p>{constraintGames[c]?.task||'Constraint game option.'}</p><p><strong>Rationale: </strong>{constraintGames[c]?.rationale||'Shapes the target behaviour through representative task design.'}</p></div>)}</div>
+
       <div className="technicalScoringBox"><strong>Editable Scoring / Consequence</strong><p className="overlayExplain">Choose the consequence level. This keeps coach autonomy rather than prescribing one correct solution.</p>
         <label>Scoring protocol<select value={choice(card).name} onChange={e=>setScore(card,'name',e.target.value)}>{protocols.map(p=><option key={p[0]}>{p[0]}</option>)}</select></label>
         {choice(card).name==='Coach custom'&&<div className="customScoringGrid"><label>Custom scoring<textarea value={choice(card).customScore} onChange={e=>setScore(card,'customScore',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/></label><label>Custom consequence<textarea value={choice(card).customConsequence} onChange={e=>setScore(card,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/></label></div>}
         <div className="infoBox"><strong>Selected scoring</strong><p>{protocol(card).score}</p></div>
         <div className="infoBox"><strong>Selected consequence</strong><p>{protocol(card).consequence}</p></div>
       </div>
+
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -931,7 +1060,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v81a</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v81b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
