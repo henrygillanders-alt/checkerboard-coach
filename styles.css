@@ -553,3 +553,37 @@
 .level0Page .problemBtn.activeProblem{
   cursor:default;
 }
+
+.level0HomeCard{
+  min-height:180px !important;
+  padding:28px !important;
+  border-radius:22px !important;
+  border:0 !important;
+  text-align:left !important;
+  background:linear-gradient(135deg,#1f5dd0,#14315a) !important;
+  color:white !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  box-shadow:none !important;
+}
+.level0HomeCard h2{
+  font-size:42px !important;
+  line-height:1.05 !important;
+  margin:0 0 22px 0 !important;
+  color:white !important;
+}
+.level0HomeCard p{
+  font-size:22px !important;
+  line-height:1.25 !important;
+  margin:0 !important;
+  color:white !important;
+  font-weight:700 !important;
+}
+.level0HomeCard .homeCardSub{
+  font-size:18px !important;
+  margin-top:10px !important;
+  color:#dce8ff !important;
+  font-weight:700 !important;
+}

@@ -92,12 +92,12 @@ return aRank-bRank;
 function Home({setScreen}){
 return <div className="homeGrid">
       <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
-        <strong>LEVEL 0</strong>
-        <span>Exploration Stage · Ages 5–9</span>
-        <small>Move · Track · Strike · Play · Mini Checkerboard</small>
+        <h2>LEVEL 0</h2>
+        <p>Exploration Stage · Ages 5–9</p>
+        <p className="homeCardSub">Move · Track · Strike · Play · Mini Checkerboard</p>
       </button>
 <button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
-<button className="tile purple" onClick={()=>setScreen('games')}><h2>Games</h2><p>ATL / BTL, conditioned games, checkerboard and pressure games.</p></button>
+<button className="tile purple" onClick={()=>setScreen('games')}><h2>Level 1–5</h2><p>ATL / BTL, conditioned games, checkerboard, technical and pressure games.</p></button>
 <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Junior Programme Ranking, attendance and guests.</p></button>
 <button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
 <button className="tile navy" onClick={()=>setScreen('storage')}><h2>Storage</h2><p>Backup and restore players, attendance and sessions.</p></button>
@@ -1131,7 +1131,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v84a</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v85</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
