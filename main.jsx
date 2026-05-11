@@ -476,14 +476,6 @@ function ClassicConditionedBuilder({onAddToSession}){
     {title:'Central Control Volley Finish',problem:'T-Zone Games',shortRationale:'Encourages earned volley interception from central control.',level:'Levels 3–5',task:'Bonus only applies when the winning shot is a volley played from central control.',rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',coach:'The volley should be earned, not hunted recklessly.',playerFocus:'Use central pressure to create an intercepting opportunity.',scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.',suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner']},
     {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']},
     {title:'Double Bounce Pressure',problem:'Adapted Rules',shortRationale:'Balances mixed standards while preserving live rally information.',level:'Mixed Standard',task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',playerFocus:'Use the extra bounce to organise better decisions, not simply to wait passively.',scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',antiGaming:'Players should not intentionally wait for a second bounce if they could safely play the first bounce unless that is the learning purpose.',suggestedOverlays:['Double Bounce']},
-    
-    ,
-    {title:'Forward Only Swing',problem:'Technical Focus',shortRationale:'Discourages late and excessive racquet preparation.',level:'All levels',task:'Once the forward swing begins, the racquet may not travel backwards again.',rationale:'Encourages earlier preparation and compact swing organisation under pressure.',coach:'Look for panic re-preparation and late looped take-backs.',playerFocus:'Prepare earlier so the racquet can move smoothly forward into contact.',scoring:'Win rally = 1 · Bonus only if swing remains forward-organised throughout the rally',antiGaming:'Do not reward artificial frozen preparation that destroys rally flow.',suggestedOverlays:['Quality Length Before Attack','Clean Winner']},
-    {title:'Racquet Above Wrist',problem:'Technical Focus',shortRationale:'Maintains functional racquet readiness during rally pressure.',level:'All levels',task:'Racquet head must remain above the wrist during preparation and recovery.',rationale:'Supports interception readiness and efficient preparation organisation.',coach:'Watch whether racquet position collapses as rally tempo rises.',playerFocus:'Keep the racquet functionally alive throughout movement and recovery.',scoring:'Win rally = 1 · Technical integrity bonus = +2',antiGaming:'Natural movement still allowed — avoid rigid posing.',suggestedOverlays:['Volley Finish','Opponent Off T']},
-    {title:'Quiet Head Contact',problem:'Technical Focus',shortRationale:'Improves visual stability through contact.',level:'All levels',task:'Head and eyes remain stable through contact rather than turning away early.',rationale:'Improves tracking, spacing and timing under pace pressure.',coach:'Observe whether visual stability collapses as tempo increases.',playerFocus:'Stay visually connected to contact through the strike.',scoring:'Win rally = 1 · Stable visual contact = +2',antiGaming:'Do not reward exaggerated stillness that damages movement flow.',suggestedOverlays:['Clean Winner']},
-    {title:'Continuous Recovery',problem:'Technical Focus',shortRationale:'Recovery emerges continuously from the follow-through.',level:'All levels',task:'Recovery movement must flow continuously from the end of the follow-through without pause or admiration.',rationale:'Integrates striking and recovery into one continuous coordination solution.',coach:'Watch for stopping, spinning out or delayed reorganisation after striking.',playerFocus:'Allow the follow-through to flow naturally into recovery movement.',scoring:'Win rally = 1 · Continuous recovery organisation = +2',antiGaming:'Recovery must remain functional and representative.',suggestedOverlays:['Opponent Off T','Volley Finish']},
-    {title:'Environmental Tempo Compression',problem:'Technical Focus',shortRationale:'Use movable front-wall tape to compress preparation and decision time.',level:'Progressive',task:'Tape height progressively lowers from service-line height toward tin height to increase rally tempo and reduce preparation time.',rationale:'Environmental tempo compression shapes more efficient preparation, spacing and movement organisation.',coach:'Lower tape only when players maintain functional movement organisation.',playerFocus:'Adapt preparation and movement organisation as available time compresses.',scoring:'Normal rally scoring with optional technical-behaviour bonuses.',antiGaming:'Do not lower tape so far that representative rally quality disappears.',suggestedOverlays:['Quality Length Before Attack','Volley Finish','Clean Winner']}
-    
     {title:'Blind Finish Progression',problem:'Blind / Hidden Conditions',shortRationale:'Creates hidden tactical intention while preserving live rally decision-making.',level:'Levels 3–5',task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',rationale:'Creates tactical intention while preserving live decision-making and secrecy.',coach:'The hidden condition should shape the player’s perception, not force a bad shot.',playerFocus:'Hold the hidden intention while still responding to the live rally.',scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.',suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish']}
   ];
 
@@ -493,8 +485,7 @@ function ClassicConditionedBuilder({onAddToSession}){
     {name:'T-Zone Games',rationale:'Connect opponent displacement, recovery denial and central control.'},
     {name:'Pressure Construction',rationale:'Require a pressure-building phase before attack is rewarded.'},
     {name:'Adapted Rules',rationale:'Balance mixed ability groups while keeping rallies representative.'},
-    {name:'Blind / Hidden Conditions',rationale:'Create hidden tactical intention without removing live decisions.'},
-    {name:'Technical Focus',rationale:'Use representative constraints to shape functional technical behaviours under rally pressure.'}
+    {name:'Blind / Hidden Conditions',rationale:'Create hidden tactical intention without removing live decisions.'}
   ];
 
   const visibleGames=selectedProblem?games.filter(game=>game.problem===selectedProblem):[];
@@ -513,9 +504,9 @@ function ClassicConditionedBuilder({onAddToSession}){
   return <div className="gameCard">
     <div className="categoryTag">Classic Conditioned</div>
     <h2>Classic Conditioned Games</h2>
-    <p className="engineIntro">Choose the focus area first, then choose a game, then expand and edit overlays.</p>
+    <p className="engineIntro">Choose the coaching problem first, then choose a game, then expand and edit overlays.</p>
 
-    <div className="hierarchyHelp"><strong>Workflow</strong><p>Game class → focus area → game options → expanded game card → overlay/adaptation choices → Add To Session.</p></div>
+    <div className="hierarchyHelp"><strong>Workflow</strong><p>Game class → coaching problem → game options → expanded game card → overlay/adaptation choices → Add To Session.</p></div>
 
     <div className="problemGrid">
       {problems.map(problem=><button key={problem.name} className={selectedProblem===problem.name?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setSelectedProblem(problem.name);setSelectedGame(null);}}>
@@ -523,10 +514,10 @@ function ClassicConditionedBuilder({onAddToSession}){
       </button>)}
     </div>
 
-    {!selectedProblem&&<div className="placeholder">Select a focus area area above to see matching conditioned games.</div>}
+    {!selectedProblem&&<div className="placeholder">Select a coaching problem area above to see matching conditioned games.</div>}
 
     {selectedProblem&&<div className="gameOptionList">
-      <h3>{selectedProblem}: focus games</h3>
+      <h3>{selectedProblem}: game options</h3>
       {visibleGames.map(game=><button key={game.title} className={selectedGame===game.title?'gameOption activeGameOption':'gameOption'} onClick={()=>setSelectedGame(selectedGame===game.title?null:game.title)}>
         <span>{game.title}</span><small>{game.shortRationale}</small>
       </button>)}
@@ -551,6 +542,63 @@ function ClassicConditionedBuilder({onAddToSession}){
     </div>)}
   </div>;
 }
+
+function TechnicalFocusBuilder({onAddToSession}){
+  const [selectedFocus,setSelectedFocus]=useState(null);
+  const [selectedGame,setSelectedGame]=useState(null);
+
+  const games=[
+    {title:'Forward-Only Swing',focus:'Preparation & Swing Organisation',shortRationale:'Discourages late and excessive racquet preparation.',task:'Once the forward swing begins, the racquet may not travel backwards again.',rationale:'Encourages earlier preparation and compact swing organisation under pressure.',coach:'Look for panic re-preparation, late looped take-backs and double-loading.',playerFocus:'Prepare early enough so the racquet can move smoothly forward into contact.',scoring:'Win rally = 1 · Forward-only swing integrity = +2',consequence:'If racquet travels backwards after forward swing starts, no technical bonus.',level:'All levels'},
+    {title:'Racquet Above Wrist',focus:'Preparation & Swing Organisation',shortRationale:'Keeps racquet functionally alive during preparation and recovery.',task:'Racquet head must remain above wrist level during preparation and recovery phases for the technical bonus to count.',rationale:'Supports interception readiness and reduces collapsed preparation under tempo pressure.',coach:'Watch whether racquet height collapses as rally speed increases.',playerFocus:'Keep the racquet ready while moving, not only at the moment of striking.',scoring:'Win rally = 1 · Racquet above wrist behaviour = +2',consequence:'If racquet drops below wrist during preparation/recovery, no technical bonus.',level:'All levels'},
+    {title:'Early Preparation Trigger',focus:'Preparation & Swing Organisation',shortRationale:'Preparation must happen early enough to support perception-action coupling.',task:'Player receives technical bonus only when racquet preparation is visible before the opponent’s ball reaches or hits the front wall.',rationale:'Encourages preparation timing linked to ball-flight information rather than rushed late preparation.',coach:'Use this as a timing cue, not a rigid technical pose.',playerFocus:'Use the opponent’s shot and ball flight to organise preparation earlier.',scoring:'Win rally = 1 · Early preparation present = +2',consequence:'Late preparation removes the technical bonus for that rally.',level:'All levels'},
+    {title:'Non-Racquet Hand Integrity',focus:'Body Organisation',shortRationale:'Encourages balance, spacing and swing organisation.',task:'Non-racquet hand must be active and visible during preparation/swing organisation for technical bonus to count.',rationale:'Supports spacing, shoulder organisation and balance without prescribing one exact swing model.',coach:'Look for the non-racquet hand disappearing, collapsing or being unused under pressure.',playerFocus:'Use the non-racquet hand to organise space and balance.',scoring:'Win rally = 1 · Non-racquet hand integrity = +2',consequence:'If non-racquet hand is inactive, no technical bonus.',level:'All levels'},
+    {title:'Functional Finish Direction',focus:'Body Organisation',shortRationale:'Forehand finish to side wall and backhand finish to back wall.',task:'Forehand finish should direct toward side wall; backhand finish should direct toward back wall. Bonus counts only if finish direction supports recovery.',rationale:'Constrains follow-through organisation while keeping the rally representative.',coach:'Reward finish that supports the next movement, not exaggerated posing.',playerFocus:'Finish in a direction that keeps you organised for recovery.',scoring:'Win rally = 1 · Functional finish direction = +2',consequence:'Wrap-around or collapsing finish removes technical bonus.',level:'All levels'},
+    {title:'Quiet Head Contact',focus:'Visual Stability',shortRationale:'Improves visual stability through contact.',task:'Head and eyes remain stable through contact. Bonus is lost if player turns away or pulls head forward with the ball.',rationale:'Supports timing, spacing and cleaner interception under pace pressure.',coach:'Watch whether head stability collapses as speed increases.',playerFocus:'Stay visually connected to contact through the strike.',scoring:'Win rally = 1 · Quiet head through contact = +2',consequence:'Turning head away early removes technical bonus.',level:'All levels'},
+    {title:'No Spin-Out Recovery',focus:'Balance & Recovery',shortRationale:'Prevents uncontrolled rotation that delays recovery.',task:'Player must recover without uncontrolled spin-out after striking. Technical bonus only counts if the finish remains recoverable.',rationale:'Keeps striking and recovery linked as one functional movement solution.',coach:'Look for over-rotation, admiration or loss of next-shot readiness.',playerFocus:'Finish in a way that lets you move again immediately.',scoring:'Win rally = 1 · No spin-out recovery = +2',consequence:'Spin-out means no technical bonus.',level:'All levels'},
+    {title:'Continuous Recovery Organisation',focus:'Balance & Recovery',shortRationale:'Follow-through transitions smoothly into recovery movement.',task:'Recovery must emerge continuously from the end of follow-through, without stopping to admire or reset.',rationale:'Treats swing, finish and recovery as one integrated coordination sequence.',coach:'Watch for pause-after-shot, static finish or delayed reorientation.',playerFocus:'Let the follow-through flow into the next recovery movement.',scoring:'Win rally = 1 · Continuous recovery = +2',consequence:'Stopping after the shot removes technical bonus.',level:'All levels'},
+    {title:'Environmental Tempo Compression',focus:'Environmental Tempo',shortRationale:'Movable front-wall tape compresses preparation and decision time.',task:'Use front-wall tape as a height modifier. Start higher for more time; progressively lower the tape to increase pace and reduce available preparation time.',rationale:'The environment shapes preparation, swing economy, tracking and recovery without constant verbal correction.',coach:'Lower the tape only when players maintain functional organisation. Raise it if behaviour collapses.',playerFocus:'Adapt preparation and movement organisation as time becomes more compressed.',scoring:'Normal rally scoring · optional technical behaviour bonus chosen by coach',consequence:'If rally quality disappears, tape height is too low.',level:'Progressive'}
+  ];
+
+  const focusAreas=['Preparation & Swing Organisation','Body Organisation','Visual Stability','Balance & Recovery','Environmental Tempo'];
+  const visibleGames=selectedFocus?games.filter(game=>game.focus===selectedFocus):[];
+
+  function addGame(game){
+    onAddToSession({...game,id:Date.now()+Math.random(),category:'Technical',family:game.focus,layers:[],coachFocus:game.coach,antiGaming:game.consequence,cbCode:'None'});
+  }
+
+  return <div className="gameCard">
+    <div className="categoryTag">Technical Focus</div>
+    <h2>Technical Behaviour Constraint Games</h2>
+    <p className="engineIntro">Representative games where technical behaviours are shaped by constraints, consequences and environmental modifiers.</p>
+
+    <div className="problemGrid">
+      {focusAreas.map(focus=><button key={focus} className={selectedFocus===focus?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setSelectedFocus(focus);setSelectedGame(null);}}>
+        <strong>{focus}</strong>
+      </button>)}
+    </div>
+
+    {!selectedFocus&&<div className="placeholder">Select a technical focus area above.</div>}
+
+    {selectedFocus&&<div className="gameOptionList">
+      <h3>{selectedFocus}: game options</h3>
+      {visibleGames.map(game=><button key={game.title} className={selectedGame===game.title?'gameOption activeGameOption':'gameOption'} onClick={()=>setSelectedGame(selectedGame===game.title?null:game.title)}>
+        <span>{game.title}</span><small>{game.shortRationale}</small>
+      </button>)}
+    </div>}
+
+    {visibleGames.map(game=> selectedGame===game.title && <div className="expandedGame selectedExpandedGame" key={game.title}>
+      <span className="categoryTag">{game.focus}</span><h3>{game.title}</h3><span className="levelPill">{game.level}</span>
+      <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
+      <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
+      <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
+      <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
+      <div className="infoBox"><strong>Scoring / Consequence</strong><p>{game.scoring}</p><p>{game.consequence}</p></div>
+      <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+    </div>)}
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -624,7 +672,7 @@ function Games({setSession,setScreen}){
     {activeClass==='ATL / BTL'&&<ATLBTLDirectBuilder onAddToSession={addAndGo}/>}
     {activeClass==='Classic Conditioned'&&<ClassicConditionedBuilder onAddToSession={addAndGo}/>}
 
-    {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&activeClass!=='Saved Cards'&&
+    {activeClass==='Technical'&&<TechnicalFocusBuilder onAddToSession={addAndGo}/>} {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&activeClass!=='Technical'&&activeClass!=='Saved Cards'&&
       <div className="placeholder">{activeClass} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
