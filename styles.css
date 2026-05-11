@@ -527,3 +527,6 @@
 .diagnosticPrinciple,.constraintSuggestionBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.diagnosticPrinciple strong,.constraintSuggestionBox strong{color:#ffd980;display:block;margin-bottom:8px}.diagnosticControls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.diagnosticControls label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900}.diagnosticControls select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}@media(max-width:900px){.diagnosticControls{grid-template-columns:1fr}}
 
 .diagnosticTheoryGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.diagnosticTheoryCard,.constraintGameCard{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}.diagnosticTheoryCard h4,.constraintGameCard h4{margin:0 0 8px 0;color:#ffd980}.constraintGameCard{margin-top:10px}@media(max-width:900px){.diagnosticTheoryGrid{grid-template-columns:1fr}}
+
+.alwaysVisibleScoring{display:block !important;border:2px solid #8ab6ff;}
+.atlOptionsGrid input{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;}
