@@ -544,174 +544,107 @@ function ClassicConditionedBuilder({onAddToSession}){
   </div>;
 }
 
+
 function TechnicalFocusBuilder({onAddToSession}){
-  const [selectedFocus,setSelectedFocus]=useState(null);
-  const [selectedGame,setSelectedGame]=useState(null);
+  const [family,setFamily]=useState(null);
+  const [error,setError]=useState(null);
+  const [origins,setOrigins]=useState({});
+  const [types,setTypes]=useState({});
+  const [scoring,setScoring]=useState({});
 
-  const games=[
-    {title:'Forward-Only Swing',focus:'Preparation & Swing Organisation',shortRationale:'Discourages late and excessive racquet preparation.',task:'Once the forward swing begins, the racquet may not travel backwards again.',rationale:'Encourages earlier preparation and compact swing organisation under pressure.',coach:'Look for panic re-preparation, late looped take-backs and double-loading.',playerFocus:'Prepare early enough so the racquet can move smoothly forward into contact.',scoring:'Win rally = 1 · Forward-only swing integrity = +2',consequence:'If racquet travels backwards after forward swing starts, no technical bonus.',level:'All levels'},
-    {title:'Racquet Above Wrist',focus:'Preparation & Swing Organisation',shortRationale:'Keeps racquet functionally alive during preparation and recovery.',task:'Racquet head must remain above wrist level during preparation and recovery phases for the technical bonus to count.',rationale:'Supports interception readiness and reduces collapsed preparation under tempo pressure.',coach:'Watch whether racquet height collapses as rally speed increases.',playerFocus:'Keep the racquet ready while moving, not only at the moment of striking.',scoring:'Win rally = 1 · Racquet above wrist behaviour = +2',consequence:'If racquet drops below wrist during preparation/recovery, no technical bonus.',level:'All levels'},
-    {title:'Early Preparation Trigger',focus:'Preparation & Swing Organisation',shortRationale:'Preparation must happen early enough to support perception-action coupling.',task:'Player receives technical bonus only when racquet preparation is visible before the opponent’s ball reaches or hits the front wall.',rationale:'Encourages preparation timing linked to ball-flight information rather than rushed late preparation.',coach:'Use this as a timing cue, not a rigid technical pose.',playerFocus:'Use the opponent’s shot and ball flight to organise preparation earlier.',scoring:'Win rally = 1 · Early preparation present = +2',consequence:'Late preparation removes the technical bonus for that rally.',level:'All levels'},
-    {title:'Non-Racquet Hand Integrity',focus:'Body Organisation',shortRationale:'Encourages balance, spacing and swing organisation.',task:'Non-racquet hand must be active and visible during preparation/swing organisation for technical bonus to count.',rationale:'Supports spacing, shoulder organisation and balance without prescribing one exact swing model.',coach:'Look for the non-racquet hand disappearing, collapsing or being unused under pressure.',playerFocus:'Use the non-racquet hand to organise space and balance.',scoring:'Win rally = 1 · Non-racquet hand integrity = +2',consequence:'If non-racquet hand is inactive, no technical bonus.',level:'All levels'},
-    {title:'Functional Finish Direction',focus:'Body Organisation',shortRationale:'Forehand finish to side wall and backhand finish to back wall.',task:'Forehand finish should direct toward side wall; backhand finish should direct toward back wall. Bonus counts only if finish direction supports recovery.',rationale:'Constrains follow-through organisation while keeping the rally representative.',coach:'Reward finish that supports the next movement, not exaggerated posing.',playerFocus:'Finish in a direction that keeps you organised for recovery.',scoring:'Win rally = 1 · Functional finish direction = +2',consequence:'Wrap-around or collapsing finish removes technical bonus.',level:'All levels'},
-    {title:'Quiet Head Contact',focus:'Visual Stability',shortRationale:'Improves visual stability through contact.',task:'Head and eyes remain stable through contact. Bonus is lost if player turns away or pulls head forward with the ball.',rationale:'Supports timing, spacing and cleaner interception under pace pressure.',coach:'Watch whether head stability collapses as speed increases.',playerFocus:'Stay visually connected to contact through the strike.',scoring:'Win rally = 1 · Quiet head through contact = +2',consequence:'Turning head away early removes technical bonus.',level:'All levels'},
-    {title:'No Spin-Out Recovery',focus:'Balance & Recovery',shortRationale:'Prevents uncontrolled rotation that delays recovery.',task:'Player must recover without uncontrolled spin-out after striking. Technical bonus only counts if the finish remains recoverable.',rationale:'Keeps striking and recovery linked as one functional movement solution.',coach:'Look for over-rotation, admiration or loss of next-shot readiness.',playerFocus:'Finish in a way that lets you move again immediately.',scoring:'Win rally = 1 · No spin-out recovery = +2',consequence:'Spin-out means no technical bonus.',level:'All levels'},
-    {title:'Continuous Recovery Organisation',focus:'Balance & Recovery',shortRationale:'Follow-through transitions smoothly into recovery movement.',task:'Recovery must emerge continuously from the end of follow-through, without stopping to admire or reset.',rationale:'Treats swing, finish and recovery as one integrated coordination sequence.',coach:'Watch for pause-after-shot, static finish or delayed reorientation.',playerFocus:'Let the follow-through flow into the next recovery movement.',scoring:'Win rally = 1 · Continuous recovery = +2',consequence:'Stopping after the shot removes technical bonus.',level:'All levels'},
-    {title:'Environmental Tempo Compression',focus:'Environmental Tempo',shortRationale:'Movable front-wall tape compresses preparation and decision time.',task:'Use front-wall tape as a height modifier. Start higher for more time; progressively lower the tape to increase pace and reduce available preparation time.',rationale:'The environment shapes preparation, swing economy, tracking and recovery without constant verbal correction.',coach:'Lower the tape only when players maintain functional organisation. Raise it if behaviour collapses.',playerFocus:'Adapt preparation and movement organisation as time becomes more compressed.',scoring:'Normal rally scoring · optional technical behaviour bonus chosen by coach',consequence:'If rally quality disappears, tape height is too low.',level:'Progressive'}
+  const cards=[
+    {title:'Late Preparation',family:'Preparation & Swing Organisation',desc:'Preparation begins too late relative to ball-flight information.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'A late but functional shortcut can stabilise because it works at the player’s current challenge level.',constraints:['Early Preparation Trigger','Forward-Only Swing','Environmental Tempo Compression'],coach:'Look for when preparation begins relative to ball flight.',player:'Use earlier information to organise preparation before the situation becomes rushed.'},
+    {title:'Excessive Backswing',family:'Preparation & Swing Organisation',desc:'Large preparation, often with racquet travelling too far back.',origin:'Isolated Technique Practice',type:'Type 2 — Dominant Inefficient Solution',why:'A large stable swing can become dominant in low-pressure practice but fail under rally time pressure.',constraints:['Forward-Only Swing','Environmental Tempo Compression','Racquet Above Wrist'],coach:'Reduce available time/space rather than only saying “shorten the swing”.',player:'Find a swing size that survives pressure and still allows recovery.'},
+    {title:'Racquet Below Wrist',family:'Preparation & Swing Organisation',desc:'Racquet collapses below wrist level during preparation or recovery.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'A low resting position can be good enough until pace and interception demands rise.',constraints:['Racquet Above Wrist','Early Preparation Trigger','Volley Finish'],coach:'Observe racquet readiness during movement, not just at contact.',player:'Keep the racquet functionally alive while moving.'},
+    {title:'Non-Racquet Hand Absent',family:'Body Organisation',desc:'Non-racquet hand does not support balance, spacing or swing organisation.',origin:'Underdeveloped Coordination',type:'Type 1 — Underdeveloped Coordination Solution',why:'The coordination role of the non-racquet hand may never have developed.',constraints:['Non-Racquet Hand Integrity','Functional Finish Direction'],coach:'Build a functional counterbalance role, not a cosmetic arm position.',player:'Use the non-racquet hand to organise balance and spacing.'},
+    {title:'Wrist Break',family:'Body Organisation',desc:'Racquet face collapses at contact.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'A compensatory contact solution may work at low pace but break down under pressure.',constraints:['Racquet Above Wrist','Forward-Only Swing'],coach:'Use constraints that make stable face organisation functional.',player:'Feel racquet-face stability through contact.'},
+    {title:'Early Head Movement',family:'Visual Stability',desc:'Eyes/head leave the contact area too early.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'Looking early can survive at low levels but collapses as pace and disguise increase.',constraints:['Quiet Head Contact','Environmental Tempo Compression'],coach:'Watch visual stability through contact, especially under tempo.',player:'Stay visually connected through contact before reorienting.'},
+    {title:'Visual Tracking Error',family:'Visual Stability',desc:'Player watches front wall/opponent too long and loses ball-flight information.',origin:'Underdeveloped Coordination',type:'Type 1 — Underdeveloped Coordination Solution',why:'The specifying information may never have been learned in live rally contexts.',constraints:['Quiet Head Contact','Early Preparation Trigger'],coach:'Clarify what information should be picked up from ball flight.',player:'Track the ball early enough to organise spacing and preparation.'},
+    {title:'Spin-Out Recovery',family:'Balance & Recovery',desc:'Player over-rotates out of the shot and cannot recover efficiently.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'A powerful rotational solution can win points while damaging next-shot readiness.',constraints:['No Spin-Out Recovery','Continuous Recovery Organisation','Functional Finish Direction'],coach:'Reward recoverable finishes rather than impressive-looking rotation.',player:'Finish in a way that lets you move again immediately.'},
+    {title:'Delayed Recovery',family:'Balance & Recovery',desc:'Player hits, pauses, then recovers as a separate action.',origin:'Unguided Match Play',type:'Type 2 — Dominant Inefficient Solution',why:'The player has separated strike and recovery rather than integrating them.',constraints:['Continuous Recovery Organisation','Opponent Off T','4-Shot Window'],coach:'Look for follow-through flowing into recovery without a stop.',player:'Let the end of the swing become the start of the next movement.'},
+    {title:'Preparation Collapse Under Tempo',family:'Environmental Tempo',desc:'Organisation looks fine slowly but collapses when time and space compress.',origin:'Isolated Technique Practice',type:'Type 2 — Dominant Inefficient Solution',why:'A low-pressure attractor dominates because it was not tested against representative time pressure.',constraints:['Environmental Tempo Compression','Early Preparation Trigger','Forward-Only Swing'],coach:'Use tape/pace compression gradually; maintain representative rally quality.',player:'Adapt preparation and movement as time compresses.'}
   ];
 
-  const focusAreas=['Preparation & Swing Organisation','Body Organisation','Visual Stability','Balance & Recovery','Environmental Tempo'];
-  const visibleGames=selectedFocus?games.filter(game=>game.focus===selectedFocus):[];
-
-  const scoringProtocols=[
-    {
-      name:'Encouragement: bonus only',
-      text:'Win rally = 1 · Technical behaviour present = +2 bonus',
-      consequence:'If behaviour is absent, no technical bonus; rally result still stands.'
-    },
-    {
-      name:'Neutral: no bonus if absent',
-      text:'Win rally = 1 · Technical bonus only if behaviour is present',
-      consequence:'Transgression removes the bonus but does not punish the rally.'
-    },
-    {
-      name:'Penalty: opponent +1',
-      text:'Win rally = 1 · Each technical transgression = +1 to opponent',
-      consequence:'Rally continues, but the transgression has a scoring cost.'
-    },
-    {
-      name:'Strict: lose rally',
-      text:'Technical transgression = lose rally',
-      consequence:'Use only when behaviour is well understood and stable enough to demand.'
-    },
-    {
-      name:'Three-strike rule',
-      text:'Three technical transgressions = automatic rally loss',
-      consequence:'Allows exploration while still creating consequence.'
-    },
-    {
-      name:'Progressive pressure',
-      text:'First = warning · Second = no bonus · Third = opponent +1 · Fourth = lose rally',
-      consequence:'Best for building autonomy and gradually increasing pressure.'
-    },
-    {
-      name:'Coach custom',
-      text:'Coach-designed scoring protocol',
-      consequence:'Coach adapts the consequence to the player, group and session aim.'
-    }
+  const families=['Preparation & Swing Organisation','Body Organisation','Visual Stability','Balance & Recovery','Environmental Tempo'];
+  const shown=family?cards.filter(c=>c.family===family):[];
+  const protocols=[
+    ['Encouragement: bonus only','Win rally = 1 · Technical behaviour present = +2','If absent, no bonus; rally result stands.'],
+    ['Penalty: opponent +1','Win rally = 1 · Each transgression = +1 to opponent','Rally continues with scoring consequence.'],
+    ['Strict: lose rally','Technical transgression = lose rally','Use only when behaviour is stable enough to demand.'],
+    ['Progressive pressure','First = warning · Second = no bonus · Third = opponent +1 · Fourth = lose rally','Builds pressure gradually.'],
+    ['Coach custom','Coach-designed scoring protocol','Coach adapts to player and session aim.']
   ];
 
-  function scoringKey(game){return game.title;}
-
-  function chosenProtocol(game){
-    return scoringChoices[scoringKey(game)] || {
-      protocol:'Encouragement: bonus only',
-      customText:'',
-      customConsequence:''
-    };
+  function k(card){return card.title;}
+  function origin(card){return origins[k(card)]||card.origin;}
+  function type(card){return types[k(card)]||card.type;}
+  function choice(card){return scoring[k(card)]||{name:'Encouragement: bonus only',customScore:'',customConsequence:''};}
+  function protocol(card){
+    const ch=choice(card);
+    const found=protocols.find(p=>p[0]===ch.name)||protocols[0];
+    if(ch.name==='Coach custom')return {score:ch.customScore||found[1],consequence:ch.customConsequence||found[2],name:ch.name};
+    return {score:found[1],consequence:found[2],name:found[0]};
   }
 
-  function updateScoringChoice(game,field,value){
-    const key=scoringKey(game);
-    setScoringChoices(prev=>({
-      ...prev,
-      [key]:{
-        ...chosenProtocol(game),
-        [field]:value
-      }
-    }));
+  function setScore(card,field,value){
+    setScoring(prev=>({...prev,[k(card)]:{...choice(card),[field]:value}}));
   }
 
-  function resolvedScoring(game){
-    const choice=chosenProtocol(game);
-    const selected=scoringProtocols.find(item=>item.name===choice.protocol) || scoringProtocols[0];
-    if(choice.protocol==='Coach custom'){
-      return {
-        scoring: choice.customText || game.scoring,
-        consequence: choice.customConsequence || game.consequence,
-        protocol: choice.protocol
-      };
-    }
-    return {
-      scoring: selected.text,
-      consequence: selected.consequence,
-      protocol: choice.protocol
-    };
-  }
-
-  function addGame(game){
-    const resolved=resolvedScoring(game);
+  function addDiagnostic(card){
+    const p=protocol(card);
     onAddToSession({
-      ...game,
       id:Date.now()+Math.random(),
+      title:`Technical Diagnostic · ${card.title}`,
       category:'Technical',
-      family:game.focus,
+      family:card.family,
+      level:type(card),
+      task:`Diagnostic target: ${card.desc} Constraint suggestions: ${card.constraints.join(' · ')}.`,
+      rationale:`Origin: ${origin(card)}. Type: ${type(card)}. Why it stabilises: ${card.why}`,
+      coachFocus:card.coach,
+      playerFocus:card.player,
+      scoring:p.score,
+      antiGaming:p.consequence,
+      consequence:p.consequence,
+      scoringProtocol:p.name,
       layers:[],
-      coachFocus:game.coach,
-      scoring:resolved.scoring,
-      antiGaming:resolved.consequence,
-      consequence:resolved.consequence,
-      scoringProtocol:resolved.protocol,
       cbCode:'None'
     });
   }
 
   return <div className="gameCard">
-    <div className="categoryTag">Technical Focus</div>
-    <h2>Technical Behaviour Constraint Games</h2>
-    <p className="engineIntro">Representative games where technical behaviours are shaped by constraints, consequences and environmental modifiers.</p>
+    <div className="categoryTag">Technical Diagnostic</div>
+    <h2>Technical Diagnostic Architecture</h2>
+    <p className="engineIntro">Diagnose first, constrain second, score third. Errors are stable movement solutions that may have become good enough for the current challenge level.</p>
 
-    <div className="problemGrid">
-      {focusAreas.map(focus=><button key={focus} className={selectedFocus===focus?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setSelectedFocus(focus);setSelectedGame(null);}}>
-        <strong>{focus}</strong>
-      </button>)}
-    </div>
+    <div className="diagnosticPrinciple"><strong>Key principle</strong><p>Origin determines whether to add alternatives or replace a dominant attractor. Identify origin first, then choose the intervention.</p></div>
 
-    {!selectedFocus&&<div className="placeholder">Select a technical focus area above.</div>}
+    <div className="problemGrid">{families.map(f=><button key={f} className={family===f?'problemBtn activeProblem':'problemBtn'} onClick={()=>{setFamily(f);setError(null);}}><strong>{f}</strong></button>)}</div>
 
-    {selectedFocus&&<div className="gameOptionList">
-      <h3>{selectedFocus}: game options</h3>
-      {visibleGames.map(game=><button key={game.title} className={selectedGame===game.title?'gameOption activeGameOption':'gameOption'} onClick={()=>setSelectedGame(selectedGame===game.title?null:game.title)}>
-        <span>{game.title}</span><small>{game.shortRationale}</small>
-      </button>)}
-    </div>}
+    {!family&&<div className="placeholder">Select a behaviour family to see specific technical errors.</div>}
 
-    {visibleGames.map(game=> selectedGame===game.title && <div className="expandedGame selectedExpandedGame" key={game.title}>
-      <span className="categoryTag">{game.focus}</span><h3>{game.title}</h3><span className="levelPill">{game.level}</span>
-      <div className="infoBox"><strong>Task / Rules</strong><p>{game.task}</p></div>
-      <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-      <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
-      <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
-      <div className="technicalScoringBox">
-        <strong>Editable Scoring / Consequence</strong>
-        <p className="overlayExplain">Choose the consequence level. This is deliberately coach-editable to encourage experimentation and autonomy.</p>
+    {family&&<div className="gameOptionList"><h3>{family}: specific errors / behaviours</h3>{shown.map(card=><button key={card.title} className={error===card.title?'gameOption activeGameOption':'gameOption'} onClick={()=>setError(error===card.title?null:card.title)}><span>{card.title}</span><small>{card.desc}</small></button>)}</div>}
 
-        <label>Scoring protocol
-          <select value={chosenProtocol(game).protocol} onChange={e=>updateScoringChoice(game,'protocol',e.target.value)}>
-            {scoringProtocols.map(protocol=><option key={protocol.name}>{protocol.name}</option>)}
-          </select>
-        </label>
-
-        {chosenProtocol(game).protocol==='Coach custom'&&<div className="customScoringGrid">
-          <label>Custom scoring
-            <textarea value={chosenProtocol(game).customText} onChange={e=>updateScoringChoice(game,'customText',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/>
-          </label>
-          <label>Custom consequence
-            <textarea value={chosenProtocol(game).customConsequence} onChange={e=>updateScoringChoice(game,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/>
-          </label>
-        </div>}
-
-        <div className="infoBox"><strong>Selected scoring</strong><p>{resolvedScoring(game).scoring}</p></div>
-        <div className="infoBox"><strong>Selected consequence</strong><p>{resolvedScoring(game).consequence}</p></div>
-        <div className="infoBox"><strong>Original suggestion</strong><p>{game.scoring}</p><p>{game.consequence}</p></div>
+    {shown.map(card=>error===card.title&&<div className="expandedGame selectedExpandedGame" key={card.title}>
+      <span className="categoryTag">{card.family}</span><h3>{card.title}</h3>
+      <div className="infoBox"><strong>Error / behaviour</strong><p>{card.desc}</p></div>
+      <div className="infoBox"><strong>Why it becomes stable</strong><p>{card.why}</p></div>
+      <div className="diagnosticControls">
+        <label>Error origin<select value={origin(card)} onChange={e=>setOrigins(prev=>({...prev,[k(card)]:e.target.value}))}><option>Isolated Technique Practice</option><option>Unguided Match Play</option><option>Underdeveloped Coordination</option><option>Mixed Origin</option><option>Unknown / investigate</option></select></label>
+        <label>Error type<select value={type(card)} onChange={e=>setTypes(prev=>({...prev,[k(card)]:e.target.value}))}><option>Type 1 — Underdeveloped Coordination Solution</option><option>Type 2 — Dominant Inefficient Solution</option><option>Mixed Type</option><option>Unknown / investigate</option></select></label>
       </div>
-
-      <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+      <div className="infoBox"><strong>Coach Focus</strong><p>{card.coach}</p></div>
+      <div className="infoBox"><strong>Player Focus</strong><p>{card.player}</p></div>
+      <div className="constraintSuggestionBox"><strong>Constraint Suggestions</strong><div className="quickLayers">{card.constraints.map(c=><span className="badge" key={c}>{c}</span>)}</div></div>
+      <div className="technicalScoringBox"><strong>Editable Scoring / Consequence</strong><p className="overlayExplain">Choose the consequence level. This keeps coach autonomy rather than prescribing one correct solution.</p>
+        <label>Scoring protocol<select value={choice(card).name} onChange={e=>setScore(card,'name',e.target.value)}>{protocols.map(p=><option key={p[0]}>{p[0]}</option>)}</select></label>
+        {choice(card).name==='Coach custom'&&<div className="customScoringGrid"><label>Custom scoring<textarea value={choice(card).customScore} onChange={e=>setScore(card,'customScore',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/></label><label>Custom consequence<textarea value={choice(card).customConsequence} onChange={e=>setScore(card,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/></label></div>}
+        <div className="infoBox"><strong>Selected scoring</strong><p>{protocol(card).score}</p></div>
+        <div className="infoBox"><strong>Selected consequence</strong><p>{protocol(card).consequence}</p></div>
+      </div>
+      <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
 }
-
-
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -998,7 +931,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v80</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v81a</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
