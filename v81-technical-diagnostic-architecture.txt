@@ -1,0 +1,68 @@
+v81 — Technical Diagnostic Architecture
+
+CORE WORKFLOW
+Technical
+→ Behaviour Family
+→ Specific Error / Behaviour
+→ Error Origin
+→ Type 1 / Type 2
+→ Constraint Suggestions
+→ Editable Scoring / Consequence
+→ Add To Session
+
+KEY PRINCIPLE
+Errors are not simply “bad technique”.
+They are stable movement solutions that became functional enough for the player's current challenge level.
+
+BEHAVIOUR FAMILIES
+- Preparation & Swing Organisation
+- Body Organisation
+- Visual Stability
+- Balance & Recovery
+- Environmental Tempo
+
+ERROR ORIGINS
+
+1. Isolated Technique Practice
+- stable low-pressure attractor
+- often needs meta-stability and variability
+
+2. Unguided Match Play
+- compensatory “good enough” solution
+- often needs destabilisation and replacement
+
+ERROR TYPES
+
+Type 1 — Underdeveloped Coordination Solution
+Build coordination progressively toward representative pressure.
+
+Type 2 — Dominant Inefficient Solution
+Origin determines whether to:
+- add alternatives
+- or destabilise and replace
+
+EXAMPLE FLOW
+Preparation & Swing Organisation
+→ Late Preparation
+→ Unguided Match Play
+→ Type 2
+→ Constraint Suggestions:
+   - Early Preparation Trigger
+   - Forward-Only Swing
+   - Environmental Tempo Compression
+
+EDITABLE SCORING
+- no bonus if absent
+- opponent +1
+- lose rally
+- progressive pressure
+- coach custom
+
+UI STRUCTURE
+Technical
+→ Behaviour Family cards
+→ Specific Error cards
+→ Expandable Origin / Type / Constraint panel
+→ Suggested constraints
+→ Editable scoring
+→ Add To Session
