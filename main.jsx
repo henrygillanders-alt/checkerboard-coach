@@ -384,12 +384,20 @@ const ATL_CB_ZONE_OPTIONS=[
 ];
 
 function ATLBTLDirectBuilder({onAddToSession}){
-  const [atl,setAtl]=useState(DEFAULT_ATL); const [cbZone,setCbZone]=useState('[6-3] + [6-2]'); const [customCbZone,setCustomCbZone]=useState('');
+  const [atl,setAtl]=useState(DEFAULT_ATL); const [side,setSide]=useState('Right side'); const [useCustomCb,setUseCustomCb]=useState(false); const [customCbZone,setCustomCbZone]=useState('');
   const [manualLayers,setManualLayers]=useState([]);
   const [atlHistory,setAtlHistory]=useState([]);
 
   const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
-  const composedAtl=useMemo(()=>{const chosen=cbZone==='Custom'?(customCbZone||'Custom'):cbZone;return {...builtAtl,cbCode:chosen,task:`${builtAtl.task} Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,cbZone,customCbZone]);
+  function sideToCbZone(value){
+    if(value==='Right side') return '[6-3] + [6-2]';
+    if(value==='Left side') return '[5-4] + [5-1]';
+    if(value==='Both sides') return '[5-4] + [5-1] / [6-3] + [6-2]';
+    if(value==='Player choice') return 'Player choice: [5-4] + [5-1] or [6-3] + [6-2]';
+    return '[6-3] + [6-2]';
+  }
+  const autoCbZone=sideToCbZone(side);
+  const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
 
   function saveAtlSnapshot(){
     setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);
@@ -435,7 +443,10 @@ function ATLBTLDirectBuilder({onAddToSession}){
     <div className="atlOptionsGrid">
       <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
       
-      <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label><label>CB Zone / Sequence<select value={cbZone} onChange={e=>setCbZone(e.target.value)}>{ATL_CB_ZONE_OPTIONS.map(option=><option key={option}>{option}</option>)}</select></label>{cbZone==='Custom'&&<label>Custom CB Sequence<input value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="[6-3] + [6-2]"/></label>}
+      <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label><label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
+      <label>Auto CB Zone / Sequence<input value={autoCbZone} readOnly /></label>
+      <label>Custom Override<select value={useCustomCb?'Yes':'No'} onChange={e=>setUseCustomCb(e.target.value==='Yes')}><option>No</option><option>Yes</option></select></label>
+      {useCustomCb&&<label>Custom CB Sequence<input value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="[6-3] + [6-2]"/></label>}
       
 
       {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
@@ -448,7 +459,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
       {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
     </div>
 
-    <div className="infoBox"><strong>CB Zone / Sequence</strong><p>{composedAtl.cbCode}</p></div><div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
+    <div className="infoBox"><strong>Side</strong><p>{side}</p></div><div className="infoBox"><strong>Effective CB Zone / Sequence</strong><p>{composedAtl.cbCode}</p></div><div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
     <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
     <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
     <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
@@ -1071,7 +1082,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v82</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v83</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

@@ -530,3 +530,5 @@
 
 .alwaysVisibleScoring{display:block !important;border:2px solid #8ab6ff;}
 .atlOptionsGrid input{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;}
+
+.atlOptionsGrid input[readonly]{opacity:.8;color:#dce8ff;}
