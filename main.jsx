@@ -96,7 +96,7 @@ function ProjectionView({session,setScreen}){
   const current=hasSession?session[Math.min(selectedIndex,session.length-1)]:null;
 
   const title=current?.title||'PLAYER VIEW';
-  const task=current?.task||'Choose a game or session item to show players.';
+  const task=current?.task||'Choose or add a game to Session Builder, then project this screen for simple player instructions.';
   const scoring=current?.scoring||'Scoring will appear here.';
   const focus=current?.playerFocus||current?.focus||current?.coachFocus||'Keep it simple. Read the task and play.';
 
@@ -104,7 +104,7 @@ function ProjectionView({session,setScreen}){
     <div className="projectionTop">
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
       <div>
-        <span className="projectionKicker">PLAYER / PROJECTION VIEW</span>
+        <span className="projectionKicker">PLAYER DISPLAY / PROJECTION VIEW</span>
         <h1>{title}</h1>
       </div>
     </div>
@@ -583,6 +583,15 @@ function ClassicConditionedBuilder({onAddToSession}){
     <div className="categoryTag">Classic Conditioned</div>
     <h2>Classic Conditioned Games</h2>
     <p className="engineIntro">Choose the coaching problem first, then choose a game, then expand and edit overlays.</p>
+    <div className="gameCard serverConditionPlaceholder">
+      <div className="categoryTag">Server Condition Games</div>
+      <h2>Server Condition Games — Placeholder</h2>
+      <p className="engineIntro">Games where the server carries the condition. These are useful when the coach wants one player to train a specific tactical or technical behaviour while the receiver plays more freely.</p>
+      <div className="infoBox"><strong>Example 1</strong><p>Server can only play straight.</p></div>
+      <div className="infoBox"><strong>Example 2</strong><p>Server can only win with a volley.</p></div>
+      <div className="infoBox"><strong>Future Build</strong><p>This subsection will become a selectable library with editable scoring, overlays, checkerboard codes and player-facing projection text.</p></div>
+    </div>
+
 
     <div className="hierarchyHelp"><strong>Workflow</strong><p>Game class → coaching problem → game options → expanded game card → overlay/adaptation choices → Add To Session.</p></div>
 
@@ -863,7 +872,7 @@ function Level0Exploration(){
   ];
 
   return <div className="gameCard">
-    <div className="categoryTag">Level 0</div>
+    <div className="categoryTag">Level 0</div>Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.
     <h2>Level 0 — Exploration Stage (5–9 yrs)</h2>
 
     <div className="diagnosticPrinciple">
@@ -898,6 +907,39 @@ function Level0Exploration(){
 
 function ToolsArchitecture(){
   const toolGroups=[
+
+    {
+      title:'Counterbalance Tools',
+      tools:[
+        {
+          name:'Side-Wall Ball Return Tool',
+          type:'Environmental Feedback / Counterbalance Tool',
+          purpose:'Prevent non-playing arm crossing the body on forehand and promote side-wall orientation. Player releases a squash ball from the non-playing hand at the end of follow-through so it hits the side wall behind them and rolls straight back to their feet.',
+          levels:'Level 0–3',
+          progression:'Static feed → hand feed → live rally feed → faded use'
+        },
+        {
+          name:'Second Racquet Counterbalance Tool',
+          type:'Spatial Constraint / External Focus',
+          purpose:'Player holds a second racquet or object in the non-playing hand so it must stay away from the swing path, encouraging the arm to remain behind/outside the body line.',
+          levels:'Level 0–3',
+          progression:'Static swing → fed ball → rally constraint'
+        }
+      ]
+    },
+    {
+      title:'Rhythm & Tempo Tools',
+      tools:[
+        {
+          name:'Waltz Rhythm Tool',
+          type:'Auditory Constraint / Tempo Regulation',
+          purpose:'Use 3/4 waltz rhythm, such as Blue Danube-style timing, to encourage relaxed movement rhythm, smoother striking and reduced rushing.',
+          levels:'Level 0–5',
+          progression:'Coach sings/counts 1-2-3 → metronome pulse → faster/slower tempo → faded rhythm cue'
+        }
+      ]
+    },
+
     {
       title:'Visual Perception Tools',
       tools:[
@@ -1011,7 +1053,7 @@ function ToolsArchitecture(){
 
     <div className="infoBox">
       <strong>Framework</strong>
-      <p>Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.</p>
+      <p>Tools and interventions underpinned by a Constraints-Led Approach framework. Tools are designed to shape movement behaviour through environmental, informational, task and coordination constraints rather than isolated technical instruction.</p>
     </div>
 
     {toolGroups.map(group=><div className="expandedGame selectedExpandedGame" key={group.title}>
@@ -1318,21 +1360,24 @@ function Competition({players=[]}){
         :'Points team format. Teams accumulate points across rotations.',
       rules:invasionFormat==='lives'
         ?[
-          'Choose Lives format.',
+          
           'Invader always serves.',
           'Defenders track remaining lives.',
           'Same penalty applies to invader and defenders.',
-          'If a player hits out / into balcony, they lose the agreed life or penalty.',
-          'Double-bounce handicaps can be assigned to individual players.'
+          'If invader hits out of the court area then -1 life penalty against invader.',
+          'If invader hits out of court area and into the balcony then -3 lives penalty against invader.',
+          'Double-bounce handicaps can be assigned to individual players.',
+          'Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations unused lives are carried forward to next invader.'
         ]
         :[
           'Choose Points Format format.',
           'Invader always serves.',
           'Timed rotations.',
-          '+1 if defending team hits the ball out.',
-          '+3 if defending team hits the ball into the balcony.',
+          'If a defender hits the ball out of the court area then +1 to invader.',
+          'If a defender hits the ball out of the court area and into balcony then +3 points to invader.',
           'Total team score calculated at the end of all rotations.',
-          'Double-bounce handicaps can be assigned to individual players.'
+          'Double-bounce handicaps can be assigned to individual players.',
+          'Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations unused lives are carried forward to next invader.'
         ]
     },
     roundRobin:{
@@ -1567,7 +1612,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89f</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v90b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

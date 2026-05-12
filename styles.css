@@ -642,3 +642,10 @@
 
 /* v89f helper */
 .infoBox p strong{color:#ffd980;}
+
+.serverConditionPlaceholder{
+  border:2px dashed #5e83be;
+}
+.projectionPage .projectionPanel{
+  min-height:180px;
+}
