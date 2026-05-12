@@ -1610,6 +1610,77 @@ function Storage({players,setPlayers,session,setSession}){
   </div>;
 }
 
+
+function ProjectionPlayerDisplay({session=[],players=[]}){
+  const active=session&&session.length?session[session.length-1]:null;
+
+  const presentPlayers=Array.isArray(players)
+    ?players.filter(player=>player.present)
+    :[];
+
+  return <div className="projectionPage">
+    <div className="projectionPanel">
+      <div className="projectionHeader">PLAYER DISPLAY / PROJECTION VIEW</div>
+
+      {!active&&<div className="projectionEmpty">
+        Add a game to Session Builder and project this screen for players.
+      </div>}
+
+      {active&&<>
+        <div className="projectionTitle">
+          {active.title||'Session Item'}
+        </div>
+
+        <div className="projectionSection">
+          <div className="projectionLabel">WHAT TO DO</div>
+          <div className="projectionText">
+            {active.task||active.description||'Play the activity as instructed by the coach.'}
+          </div>
+        </div>
+
+        {active.scoring&&<div className="projectionSection">
+          <div className="projectionLabel">SCORING / RULES</div>
+          <div className="projectionText">
+            {active.scoring}
+          </div>
+        </div>}
+
+        {active.playerFocus&&<div className="projectionSection">
+          <div className="projectionLabel">PLAYER FOCUS</div>
+          <div className="projectionText">
+            {active.playerFocus}
+          </div>
+        </div>}
+
+        {active.layers&&active.layers.length>0&&<div className="projectionSection">
+          <div className="projectionLabel">ACTIVE OVERLAYS</div>
+          <div className="projectionText">
+            {active.layers.join(' · ')}
+          </div>
+        </div>}
+
+        {active.cbCode&&active.cbCode!=='None'&&<div className="projectionSection">
+          <div className="projectionLabel">CHECKERBOARD TARGET</div>
+          <div className="projectionText cbProjection">
+            {active.cbCode}
+          </div>
+        </div>}
+
+        <div className="projectionSection">
+          <div className="projectionLabel">DOUBLE-BOUNCE HANDICAPS</div>
+          <div className="projectionText">
+            {presentPlayers.length
+              ?presentPlayers.map(player=>{
+                  const db=player.doubleBounce||'None';
+                  return `${player.name}: ${db}`;
+                }).join(' · ')
+              :'Use Competition section to assign DB handicaps.'}
+          </div>
+        </div>
+      </>}
+    </div>
+  </div>;
+}
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -1617,7 +1688,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v90d</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v91</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
