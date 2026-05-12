@@ -639,3 +639,6 @@
   padding:12px;
   color:white;
 }
+
+/* v89f helper */
+.infoBox p strong{color:#ffd980;}

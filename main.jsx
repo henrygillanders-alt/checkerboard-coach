@@ -1052,17 +1052,17 @@ function InvasionGamesBuilder({onAddToSession}){
       id:'lives',
       title:'Invasion Game — Lives Format',
       tactical:'Survival · discipline · pressure management',
-      task:'Invader always serves. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps can be assigned in Competition.',
+      task:'Invader always serves. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps are assigned in Competition: choose each player and set None, 1 DB, 2 DBs or Unlimited DBs.',
       rationale:'Lives format creates a consequence ecology: players protect lives, manage pressure and make disciplined decisions.',
       scoring:'Players lose lives for agreed errors. Same penalty applies to invader and defenders. Lives are self-tallied to reduce coach admin.',
       playerFocus:'Stay disciplined. Protect your lives. Attack only when the opportunity is clear.'
     },
     {
       id:'timed',
-      title:'Invasion Game — Timed Rotation',
+      title:'Invasion Game — Points Format',
       tactical:'Initiative · aggression · opportunity recognition',
-      task:'Invader always serves. Play timed rotations and total team points at the end of all rotations.',
-      rationale:'Timed format creates an opportunity ecology: players can be more aggressive because points can be won back across rotations.',
+      task:'Invader always serves. Play points-format rotations and total team points at the end of all rotations.',
+      rationale:'Points format creates an opportunity ecology: players can be more aggressive because points can be won back across rotations.',
       scoring:'+1 if defending team hits out. +3 if defending team hits the ball into the balcony. Total points calculated after rotations.',
       playerFocus:'Take initiative. Look for high-value opportunities and build team momentum.'
     }
@@ -1071,26 +1071,32 @@ function InvasionGamesBuilder({onAddToSession}){
   const selected=games.find(game=>game.id===format)||games[0];
 
   function addToSession(){
-    onAddToSession({
-      ...selected,
+    const card={
       id:Date.now()+Math.random(),
+      title:selected.title,
       category:'Invasion',
       family:'Competition / Invasion',
+      level:'Level 1–5',
+      task:selected.task,
+      rationale:selected.rationale,
       coachFocus:selected.tactical,
+      playerFocus:selected.playerFocus,
+      scoring:selected.scoring,
+      antiGaming:'Apply the same agreed penalty consistently. Do not allow players to avoid conditions by stopping the rally deliberately.',
       layers,
-      cbCode,
-      antiGaming:'Apply the same agreed penalty consistently. Do not allow players to avoid conditions by stopping the rally deliberately.'
-    });
+      cbCode
+    };
+    onAddToSession(card);
   }
 
   return <div className="gameCard">
     <div className="categoryTag">Invasion</div>
     <h2>Invasion Games Library</h2>
-    <p className="engineIntro">Choose the invasion format first. Lives and Timed Rotation create different tactical behaviours.</p>
+    <p className="engineIntro">Choose the invasion format first. Lives and Points formats create different tactical behaviours.</p>
 
     <div className="gameClassGrid">
       {games.map(game=><button key={game.id} type="button" className={format===game.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setFormat(game.id)}>
-        {game.id==='lives'?'Lives Format':'Timed Rotation'}
+        {game.id==='lives'?'Lives Format':'Points Format'}
       </button>)}
     </div>
 
@@ -1150,14 +1156,20 @@ function Games({setSession,setScreen}){
   const visibleCards=activeClassId==='saved'?savedCards:savedCards.filter(card=>card.category===activeCategory);
 
   function addAndGo(game){
-    setSession(prev=>[...prev,{...normaliseGameCard(game),id:Date.now()+Math.random()}]);
-    setMessage(`${game.title} added to Session Builder.`);
+    const safeGame={...game,id:game.id||Date.now()+Math.random()};
+    let finalGame=safeGame;
+    try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
+    setSession(prev=>[...prev,finalGame]);
+    setMessage(`${game.title||'Game'} added to Session Builder.`);
     setScreen('sessions');
   }
 
   function addStay(game){
-    setSession(prev=>[...prev,{...normaliseGameCard(game),id:Date.now()+Math.random()}]);
-    setMessage(`${game.title} added to current session.`);
+    const safeGame={...game,id:game.id||Date.now()+Math.random()};
+    let finalGame=safeGame;
+    try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
+    setSession(prev=>[...prev,finalGame]);
+    setMessage(`${game.title||'Game'} added to current session.`);
   }
 
   function saveCard(card){
@@ -1303,7 +1315,7 @@ function Competition({players=[]}){
         :'Initiative · aggression · opportunity recognition',
       purpose:invasionFormat==='lives'
         ?'Preferred low-admin format. Players keep their own lives tally.'
-        :'Timed team format. Teams accumulate points across rotations.',
+        :'Points team format. Teams accumulate points across rotations.',
       rules:invasionFormat==='lives'
         ?[
           'Choose Lives format.',
@@ -1314,7 +1326,7 @@ function Competition({players=[]}){
           'Double-bounce handicaps can be assigned to individual players.'
         ]
         :[
-          'Choose Timed Rotation format.',
+          'Choose Points Format format.',
           'Invader always serves.',
           'Timed rotations.',
           '+1 if defending team hits the ball out.',
@@ -1363,7 +1375,7 @@ function Competition({players=[]}){
         <label>Invasion Format
           <select value={invasionFormat} onChange={e=>setInvasionFormat(e.target.value)}>
             <option value="lives">Lives Format</option>
-            <option value="timed">Timed Rotation Format</option>
+            <option value="timed">Points Format</option>
           </select>
         </label>
       </div>}
@@ -1403,7 +1415,7 @@ function Competition({players=[]}){
 
       <div className="technicalScoringBox">
         <strong>Double-Bounce Handicaps</strong>
-        <p className="overlayExplain">Assign double-bounce allowances to particular players. This applies in all competition modes.</p>
+        <p className="overlayExplain">Assign double-bounce allowances to particular players. This applies in all competition modes: choose each player’s DB allowance from the dropdown.</p>
 
         {!automaticNames.length&&<label>Manual Players
           <textarea value={manualPlayers} onChange={e=>setManualPlayers(e.target.value)} placeholder="One player per line"/>
@@ -1426,7 +1438,7 @@ function Competition({players=[]}){
       <div className="infoBox">
         <strong>Active Competition Setup</strong>
         <p><strong>Mode:</strong> {current.title}</p>
-        {mode==='invasion'&&<p><strong>Invasion format:</strong> {invasionFormat==='lives'?'Lives Format':'Timed Rotation Format'}</p>}
+        {mode==='invasion'&&<p><strong>Invasion format:</strong> {invasionFormat==='lives'?'Lives Format':'Points Format'}</p>}
         <p><strong>Overlays:</strong> {competitionLayers.length?competitionLayers.join(' · '):'None selected'}</p>
         <p><strong>Checkerboard:</strong> {competitionCbCode}</p>
       </div>
@@ -1555,7 +1567,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89e</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89f</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
