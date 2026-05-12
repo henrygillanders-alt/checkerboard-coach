@@ -1183,78 +1183,86 @@ return <div className="page">
 }
 
 
+
 function Competition({players=[]}){
-  const [mode,setMode]=useState('invasionLives');
+  const [mode,setMode]=useState('invasion');
+  const [invasionFormat,setInvasionFormat]=useState('lives');
+  const [competitionLayers,setCompetitionLayers]=useState([]);
+  const [competitionCbCode,setCompetitionCbCode]=useState('None');
+  const [playerBounces,setPlayerBounces]=useState({});
+  const [manualPlayers,setManualPlayers]=useState('');
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
-  const playerNames=present.length?present.map(player=>player.name):[];
+  const automaticNames=present.length?present.map(player=>player.name):[];
+  const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
+  const playerNames=automaticNames.length?automaticNames:manualNames;
 
-  const modes={
-    invasionLives:{
-      title:'Invasion — Lives Mode',
-      tactical:'Survival · discipline · pressure management',
-      purpose:'Preferred operational format. Low admin and self-officiating because players keep their own lives tally.',
-      rules:[
-        'Invader always serves.',
-        'Defenders track remaining lives.',
-        'Double bounce handicaps may be applied to weaker players.',
-        'Players self-manage lives, so coach admin stays low.'
-      ]
-    },
-    invasionTimed:{
-      title:'Invasion — Timed Rotation',
-      tactical:'Initiative · aggression · opportunity recognition',
-      purpose:'Continuous team competition with timed rotations and cumulative team score.',
-      rules:[
-        'Invader always serves.',
-        'Timed rotations.',
-        '+1 point if defending team hits the ball out.',
-        '+3 points for a successful invasion into balance.',
-        'Double bounce handicaps may be applied to weaker players.'
-      ]
+  const overlayOptions=['Clean Winner','Opponent Off T','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
+  const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
+
+  function toggleLayer(layer){
+    setCompetitionLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);
+  }
+
+  function setBounceFor(name,value){
+    setPlayerBounces(prev=>({...prev,[name]:value}));
+  }
+
+  const modeInfo={
+    invasion:{
+      title:'Invasion Game',
+      tactical:invasionFormat==='lives'
+        ?'Survival · discipline · pressure management'
+        :'Initiative · aggression · opportunity recognition',
+      purpose:invasionFormat==='lives'
+        ?'Preferred low-admin format. Players keep their own lives tally.'
+        :'Timed team format. Teams accumulate points across rotations.',
+      rules:invasionFormat==='lives'
+        ?[
+          'Choose Lives format.',
+          'Invader always serves.',
+          'Defenders track remaining lives.',
+          'Same penalty applies to invader and defenders.',
+          'If a player hits out / into balcony, they lose the agreed life or penalty.',
+          'Double-bounce handicaps can be assigned to individual players.'
+        ]
+        :[
+          'Choose Timed Rotation format.',
+          'Invader always serves.',
+          'Timed rotations.',
+          '+1 if defending team hits the ball out.',
+          '+3 if defending team hits the ball into the balcony.',
+          'Total team score calculated at the end of all rotations.',
+          'Double-bounce handicaps can be assigned to individual players.'
+        ]
     },
     roundRobin:{
       title:'Round Robin',
       tactical:'Consistency across multiple opponents',
       purpose:'Every player/team competes against all others.',
-      rules:[
-        'Draw grid and score-entry engine planned.',
-        'Standings and ranking calculation planned.',
-        'Projection mode integration planned.'
-      ]
+      rules:['Draw grid and score-entry engine planned.','Standings and ranking calculation planned.','Shared overlays and double-bounce handicaps apply.']
     },
     monrad:{
       title:'Monrad',
       tactical:'Adaptation across progressive rounds',
       purpose:'Players face opponents with similar records after each round.',
-      rules:[
-        'Winner/loser progression planned.',
-        'Automatic redraw planned.',
-        'Live advancement planned.'
-      ]
+      rules:['Winner/loser progression planned.','Automatic redraw planned.','Shared overlays and double-bounce handicaps apply.']
     },
     nsl:{
       title:'NSL',
       tactical:'Sustained pressure and fatigue adaptation',
       purpose:'Continuous ladder pressure environment.',
-      rules:[
-        'Lives tracking planned.',
-        'Court rotation planned.',
-        'Projection support planned.'
-      ]
+      rules:['Lives tracking planned.','Court rotation planned.','Shared overlays and double-bounce handicaps apply.']
     }
   };
 
-  const current=modes[mode];
+  const current=modeInfo[mode];
 
   return <div className="page">
-    <div className="pageTop">
-      <h1>Competition</h1>
-    </div>
+    <div className="pageTop"><h1>Competition</h1></div>
 
     <div className="gameClassGrid">
-      <button type="button" className={mode==='invasionLives'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionLives')}>Invasion Lives</button>
-      <button type="button" className={mode==='invasionTimed'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionTimed')}>Timed Rotation</button>
+      <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
       <button type="button" className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
       <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
       <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
@@ -1263,6 +1271,15 @@ function Competition({players=[]}){
     <div className="gameCard">
       <div className="categoryTag">Competition Mode</div>
       <h2>{current.title}</h2>
+
+      {mode==='invasion'&&<div className="atlOptionsGrid">
+        <label>Invasion Format
+          <select value={invasionFormat} onChange={e=>setInvasionFormat(e.target.value)}>
+            <option value="lives">Lives Format</option>
+            <option value="timed">Timed Rotation Format</option>
+          </select>
+        </label>
+      </div>}
 
       <div className="diagnosticPrinciple">
         <strong>Tactical Behaviour Focus</strong>
@@ -1276,14 +1293,55 @@ function Competition({players=[]}){
 
       <div className="constraintSuggestionBox">
         <strong>Rules / Structure</strong>
-        <ul>
-          {current.rules.map(rule=><li key={rule}>{rule}</li>)}
-        </ul>
+        <ul>{current.rules.map(rule=><li key={rule}>{rule}</li>)}</ul>
+      </div>
+
+      <div className="technicalScoringBox alwaysVisibleScoring">
+        <strong>Competition Overlays</strong>
+        <p className="overlayExplain">Applies to all competition modes. Coach chooses only the overlays needed for the format.</p>
+        <div className="quickLayers">
+          {overlayOptions.map(layer=>
+            <button type="button" key={layer} className={competitionLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>
+              {competitionLayers.includes(layer)?'✓ ':'+ '}{layer}
+            </button>
+          )}
+        </div>
+
+        <label>Checkerboard Code / Sequence
+          <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
+            {cbOptions.map(option=><option key={option}>{option}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className="technicalScoringBox">
+        <strong>Double-Bounce Handicaps</strong>
+        <p className="overlayExplain">Assign double-bounce allowances to particular players. This applies in all competition modes.</p>
+
+        {!automaticNames.length&&<label>Manual Players
+          <textarea value={manualPlayers} onChange={e=>setManualPlayers(e.target.value)} placeholder="One player per line"/>
+        </label>}
+
+        {playerNames.length>0&&<div className="playerBounceGrid">
+          {playerNames.map(name=><label key={name}>{name}
+            <select value={playerBounces[name]||'None'} onChange={e=>setBounceFor(name,e.target.value)}>
+              <option>None</option>
+              <option>1 double bounce</option>
+              <option>2 double bounces</option>
+              <option>Unlimited double bounces</option>
+            </select>
+          </label>)}
+        </div>}
+
+        {!playerNames.length&&<div className="placeholder">Mark players present or enter manual players to assign double-bounce handicaps.</div>}
       </div>
 
       <div className="infoBox">
-        <strong>Available Players</strong>
-        <p>{playerNames.length?playerNames.join(', '):'Mark players present in Players section or use manual entries in future competition engine updates.'}</p>
+        <strong>Active Competition Setup</strong>
+        <p><strong>Mode:</strong> {current.title}</p>
+        {mode==='invasion'&&<p><strong>Invasion format:</strong> {invasionFormat==='lives'?'Lives Format':'Timed Rotation Format'}</p>}
+        <p><strong>Overlays:</strong> {competitionLayers.length?competitionLayers.join(' · '):'None selected'}</p>
+        <p><strong>Checkerboard:</strong> {competitionCbCode}</p>
       </div>
     </div>
   </div>;
@@ -1410,7 +1468,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89b</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89c</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}

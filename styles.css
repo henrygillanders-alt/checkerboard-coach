@@ -618,3 +618,24 @@
 .projectionPicker{background:#0c1a2c;border:2px solid #5e83be;border-radius:18px;padding:16px;margin-bottom:24px}.projectionPicker strong{color:#ffd980;margin-right:12px}.projectionPicker select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:20px}
 .projectionGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.projectionPanel{background:#0c1a2c;border:2px solid #5e83be;border-radius:24px;padding:30px}.projectionPanel h2,.projectionBonus h2{color:#ffd980;font-size:32px;margin:0 0 18px 0}.projectionPanel p{font-size:34px;line-height:1.25;margin:0;font-weight:800}.projectionFocus{grid-column:1/-1}.projectionBonus{margin-top:24px;background:#101b2a;border:2px solid #5e83be;border-radius:24px;padding:28px}.projectionChips{display:flex;gap:14px;flex-wrap:wrap}.projectionChips span{background:#1f5dd0;padding:14px 20px;border-radius:999px;font-size:24px;font-weight:900}
 @media(max-width:900px){.projectionGrid{grid-template-columns:1fr}.projectionTop h1{font-size:42px}.projectionPanel p{font-size:26px}}
+
+.playerBounceGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+.playerBounceGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+}
+.playerBounceGrid select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
