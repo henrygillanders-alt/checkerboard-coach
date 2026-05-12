@@ -872,12 +872,12 @@ function Level0Exploration(){
   ];
 
   return <div className="gameCard">
-    <div className="categoryTag">Level 0</div>Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.
+    <div className="categoryTag">Level 0</div>
     <h2>Level 0 — Exploration Stage (5–9 yrs)</h2>
 
     <div className="diagnosticPrinciple">
       <strong>Level 0 Philosophy</strong>
-      <p>This is not mini adult squash. Level 0 focuses on exploration, movement literacy, adaptability, creativity and representative play.</p>
+      <p>This is not mini adult squash. Level 0 focuses on exploration, movement literacy, adaptability, creativity and representative play. Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.</p>
     </div>
 
     <div className="infoBox">
@@ -1053,7 +1053,15 @@ function ToolsArchitecture(){
 
     <div className="infoBox">
       <strong>Framework</strong>
-      <p>Tools and interventions underpinned by a Constraints-Led Approach framework. Tools are designed to shape movement behaviour through environmental, informational, task and coordination constraints rather than isolated technical instruction.</p>
+      <p>Tools and interventions underpinned by a Constraints-Led Approach framework.</p>
+    </div>
+    <div className="infoBox">
+      <strong>Newly Added Tools</strong>
+      <ul>
+        <li>Side-Wall Ball Return Tool</li>
+        <li>Second Racquet Counterbalance Tool</li>
+        <li>Waltz Rhythm Tool</li>
+      </ul>
     </div>
 
     {toolGroups.map(group=><div className="expandedGame selectedExpandedGame" key={group.title}>
@@ -1094,9 +1102,9 @@ function InvasionGamesBuilder({onAddToSession}){
       id:'lives',
       title:'Invasion Game — Lives Format',
       tactical:'Survival · discipline · pressure management',
-      task:'Invader always serves. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps are assigned in Competition: choose each player and set None, 1 DB, 2 DBs or Unlimited DBs.',
-      rationale:'Lives format creates a consequence ecology: players protect lives, manage pressure and make disciplined decisions.',
-      scoring:'Players lose lives for agreed errors. Same penalty applies to invader and defenders. Lives are self-tallied to reduce coach admin.',
+      task:'Defenders always serve. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps are assigned in Competition: choose each player and set None, 1 DB, 2 DBs or Unlimited DBs.',
+      rationale:'Lives format creates a consequence ecology: players protect lives, manage pressure and make disciplined decisions. Defenders serve to prevent gaming the system.',
+      scoring:'If invader hits out of the court area then -1 life penalty against invader. If invader hits out of court area and into the balcony then -3 lives penalty against invader. Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations and unused lives are carried forward to next invader',
       playerFocus:'Stay disciplined. Protect your lives. Attack only when the opportunity is clear.'
     },
     {
@@ -1104,8 +1112,8 @@ function InvasionGamesBuilder({onAddToSession}){
       title:'Invasion Game — Points Format',
       tactical:'Initiative · aggression · opportunity recognition',
       task:'Invader always serves. Play points-format rotations and total team points at the end of all rotations.',
-      rationale:'Points format creates an opportunity ecology: players can be more aggressive because points can be won back across rotations.',
-      scoring:'+1 if defending team hits out. +3 if defending team hits the ball into the balcony. Total points calculated after rotations.',
+      rationale:'Points format creates an opportunity ecology: players can be more aggressive because points can be won back across rotations. Invader serves to keep attacking initiative with the invader.',
+      scoring:'If a defender hits the ball out of the court area then + 1 to invader. If a defender hits the ball out of court area and into balcony then + 3 points to invader.',
       playerFocus:'Take initiative. Look for high-value opportunities and build team momentum.'
     }
   ];
@@ -1360,24 +1368,21 @@ function Competition({players=[]}){
         :'Points team format. Teams accumulate points across rotations.',
       rules:invasionFormat==='lives'
         ?[
-          
+          'Choose Lives format.',
           'Invader always serves.',
           'Defenders track remaining lives.',
           'Same penalty applies to invader and defenders.',
-          'If invader hits out of the court area then -1 life penalty against invader.',
-          'If invader hits out of court area and into the balcony then -3 lives penalty against invader.',
-          'Double-bounce handicaps can be assigned to individual players.',
-          'Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations unused lives are carried forward to next invader.'
+          'If a player hits out / into balcony, they lose the agreed life or penalty.',
+          'Double-bounce handicaps can be assigned to individual players.'
         ]
         :[
           'Choose Points Format format.',
           'Invader always serves.',
           'Timed rotations.',
-          'If a defender hits the ball out of the court area then +1 to invader.',
-          'If a defender hits the ball out of the court area and into balcony then +3 points to invader.',
+          '+1 if defending team hits the ball out.',
+          '+3 if defending team hits the ball into the balcony.',
           'Total team score calculated at the end of all rotations.',
-          'Double-bounce handicaps can be assigned to individual players.',
-          'Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations unused lives are carried forward to next invader.'
+          'Double-bounce handicaps can be assigned to individual players.'
         ]
     },
     roundRobin:{
@@ -1396,7 +1401,7 @@ function Competition({players=[]}){
       title:'NSL',
       tactical:'Sustained pressure and fatigue adaptation',
       purpose:'Continuous ladder pressure environment.',
-      rules:['Lives tracking planned.','Court rotation planned.','Shared overlays and double-bounce handicaps apply.']
+      rules:['Shared overlays and double-bounce handicaps apply.']
     }
   };
 
@@ -1612,7 +1617,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v90b</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v90d</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
