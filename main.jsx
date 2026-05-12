@@ -1033,8 +1033,9 @@ function ToolsArchitecture(){
   </div>;
 }
 
+
 function Games({setSession,setScreen}){
-  const [activeClass,setActiveClass]=useState(null);
+  const [activeClassId,setActiveClassId]=useState(null);
   const [message,setMessage]=useState('');
   const [savedCards,setSavedCards]=useState(()=>{
     try{
@@ -1047,6 +1048,22 @@ function Games({setSession,setScreen}){
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_KEY,JSON.stringify(savedCards));
   },[savedCards]);
+
+  const gameClasses=[
+    {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
+    {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
+    {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
+    {id:'technical',label:'Technical',category:'Technical'},
+    {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
+    {id:'pressure',label:'Pressure',category:'Pressure'},
+    {id:'invasion',label:'Invasion',category:'Invasion'},
+    {id:'matchplay',label:'Matchplay',category:'Matchplay'},
+    {id:'saved',label:'Saved Cards',category:'Saved Cards'}
+  ];
+
+  const activeClass=gameClasses.find(item=>item.id===activeClassId);
+  const activeCategory=activeClass?.category||null;
+  const visibleCards=activeClassId==='saved'?savedCards:savedCards.filter(card=>card.category===activeCategory);
 
   function addAndGo(game){
     setSession(prev=>[...prev,{...normaliseGameCard(game),id:Date.now()+Math.random()}]);
@@ -1081,38 +1098,42 @@ function Games({setSession,setScreen}){
     setMessage('Game card deleted.');
   }
 
-  const gameClasses=['ATL / BTL','Checkerboard','Classic Conditioned','Volley & Intercept','Pressure','Technical','Invasion','Matchplay','Saved Cards'];
-  const visibleCards=activeClass==='Saved Cards'?savedCards:savedCards.filter(card=>card.category===activeClass);
+  function selectClass(id){
+    setActiveClassId(id);
+    setEditingCard(null);
+    setMessage('');
+  }
 
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeClass||'Custom Coach Game'))}>+ New Game Card</button>
+      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
 
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
-        <button key={gameClass} className={activeClass===gameClass?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setActiveClass(gameClass)}>
-          {gameClass}
+        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>selectClass(gameClass.id)}>
+          {gameClass.label}
         </button>
       )}
     </div>
 
-    {!activeClass&&<div className="placeholder">Tap a game class above.</div>}
+    {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
 
-    {editingCard&&<UniversalGameEditor game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
+    {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
-    {activeClass==='Checkerboard'&&<CheckerboardEngine onAddToSession={addAndGo}/>}
-    {activeClass==='ATL / BTL'&&<ATLBTLDirectBuilder onAddToSession={addAndGo}/>}
-    {activeClass==='Classic Conditioned'&&<ClassicConditionedBuilder onAddToSession={addAndGo}/>}
+    {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
 
-    {activeClass==='Technical'&&<TechnicalFocusBuilder onAddToSession={addAndGo}/>} {activeClass&&activeClass!=='Checkerboard'&&activeClass!=='ATL / BTL'&&activeClass!=='Classic Conditioned'&&activeClass!=='Technical'&&activeClass!=='Saved Cards'&&
-      <div className="placeholder">{activeClass} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
+    {activeClassId&& !['checkerboard','atl','classic','technical','saved'].includes(activeClassId)&&
+      <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
     {message&&<div className="statusBox">{message}</div>}
 
-    {activeClass&&visibleCards.length>0&&<div>
+    {activeClassId&&visibleCards.length>0&&<div>
       <h2>Saved Game Cards</h2>
       <div className="libraryGrid">
         {visibleCards.map(card=><UniversalGameCard key={card.id} game={card} onAdd={addStay} onEdit={setEditingCard} onDuplicate={duplicateCard} onDelete={deleteCard}/>)}
@@ -1319,7 +1340,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v87</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v88</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
