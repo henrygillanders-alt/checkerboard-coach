@@ -1,0 +1,1 @@
+Before committing this update, delete package-lock.json from GitHub if it exists from a previous failed upload. This package includes clean source files and a public .npmrc registry override.
