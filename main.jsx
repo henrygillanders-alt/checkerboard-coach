@@ -1183,30 +1183,34 @@ return <div className="page">
 }
 
 
-function Competition(){
+function Competition({players=[]}){
   const [mode,setMode]=useState('invasionLives');
+
+  const present=Array.isArray(players)?players.filter(player=>player.present):[];
+  const playerNames=present.length?present.map(player=>player.name):[];
 
   const modes={
     invasionLives:{
       title:'Invasion — Lives Mode',
       tactical:'Survival · discipline · pressure management',
-      purpose:'Preferred operational format. Low admin and self-officiating.',
+      purpose:'Preferred operational format. Low admin and self-officiating because players keep their own lives tally.',
       rules:[
-        'Invader always serves',
-        'Defenders track remaining lives',
-        'Double bounce handicaps allowed',
-        'Players self-manage lives'
+        'Invader always serves.',
+        'Defenders track remaining lives.',
+        'Double bounce handicaps may be applied to weaker players.',
+        'Players self-manage lives, so coach admin stays low.'
       ]
     },
     invasionTimed:{
       title:'Invasion — Timed Rotation',
       tactical:'Initiative · aggression · opportunity recognition',
-      purpose:'Continuous team competition with timed rotations.',
+      purpose:'Continuous team competition with timed rotations and cumulative team score.',
       rules:[
-        '+1 if defending team hits out',
-        '+3 successful invasion into balance',
-        'Timed rotations',
-        'Cumulative team score'
+        'Invader always serves.',
+        'Timed rotations.',
+        '+1 point if defending team hits the ball out.',
+        '+3 points for a successful invasion into balance.',
+        'Double bounce handicaps may be applied to weaker players.'
       ]
     },
     roundRobin:{
@@ -1214,8 +1218,9 @@ function Competition(){
       tactical:'Consistency across multiple opponents',
       purpose:'Every player/team competes against all others.',
       rules:[
-        'Score entry system coming next update',
-        'Standings and rankings planned'
+        'Draw grid and score-entry engine planned.',
+        'Standings and ranking calculation planned.',
+        'Projection mode integration planned.'
       ]
     },
     monrad:{
@@ -1223,8 +1228,9 @@ function Competition(){
       tactical:'Adaptation across progressive rounds',
       purpose:'Players face opponents with similar records after each round.',
       rules:[
-        'Winner/loser progression planned',
-        'Automatic redraw planned'
+        'Winner/loser progression planned.',
+        'Automatic redraw planned.',
+        'Live advancement planned.'
       ]
     },
     nsl:{
@@ -1232,8 +1238,9 @@ function Competition(){
       tactical:'Sustained pressure and fatigue adaptation',
       purpose:'Continuous ladder pressure environment.',
       rules:[
-        'Lives tracking planned',
-        'Court rotation planned'
+        'Lives tracking planned.',
+        'Court rotation planned.',
+        'Projection support planned.'
       ]
     }
   };
@@ -1241,14 +1248,16 @@ function Competition(){
   const current=modes[mode];
 
   return <div className="page">
-    <div className="pageTop"><h1>Competition</h1></div>
+    <div className="pageTop">
+      <h1>Competition</h1>
+    </div>
 
     <div className="gameClassGrid">
-      <button className={mode==='invasionLives'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionLives')}>Invasion Lives</button>
-      <button className={mode==='invasionTimed'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionTimed')}>Timed Rotation</button>
-      <button className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
-      <button className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
-      <button className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
+      <button type="button" className={mode==='invasionLives'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionLives')}>Invasion Lives</button>
+      <button type="button" className={mode==='invasionTimed'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionTimed')}>Timed Rotation</button>
+      <button type="button" className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
+      <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
+      <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
     </div>
 
     <div className="gameCard">
@@ -1271,45 +1280,14 @@ function Competition(){
           {current.rules.map(rule=><li key={rule}>{rule}</li>)}
         </ul>
       </div>
+
+      <div className="infoBox">
+        <strong>Available Players</strong>
+        <p>{playerNames.length?playerNames.join(', '):'Mark players present in Players section or use manual entries in future competition engine updates.'}</p>
+      </div>
     </div>
   </div>;
 }
-function saveCompSnapshot(){setCompHistory(prev=>[...prev,{format,manual,generated,courts,boxes,lives,rounds,match,competitionLayers,competitionCbCode,doubleBounceRule,playerBounces}]);}function undoCompetition(){const last=compHistory[compHistory.length-1];if(!last)return;setFormat(last.format);setManual(last.manual);setGenerated(last.generated);setCourts(last.courts);setBoxes(last.boxes);setLives(last.lives);setRounds(last.rounds);setMatch(last.match);setCompetitionLayers(last.competitionLayers);setCompetitionCbCode(last.competitionCbCode);setDoubleBounceRule(last.doubleBounceRule);setPlayerBounces(last.playerBounces);setCompHistory(compHistory.slice(0,-1));}
-const[format,setFormat]=useState('Round Robin');
-const[manual,setManual]=useState('');
-const[generated,setGenerated]=useState([]);
-const[courts,setCourts]=useState(3);
-const[boxes,setBoxes]=useState(1);
-const[lives,setLives]=useState(20);
-const[rounds,setRounds]=useState(3);
-const[match,setMatch]=useState('First to 11');const[competitionLayers,setCompetitionLayers]=useState([]);const[competitionCbCode,setCompetitionCbCode]=useState('None');const[doubleBounceRule,setDoubleBounceRule]=useState('Incoming player always has double bounce. Winner loses one bounce after every rally they win.');const[playerBounces,setPlayerBounces]=useState({});
-const present=sortPlayers(players.filter(player=>player.present));
-const names=present.length?present.map(player=>player.name):manual.split('\n').map(name=>name.trim()).filter(Boolean);
-function bounceFor(name){return playerBounces[name]||'None';}function setBounceFor(name,value){setPlayerBounces(prev=>({...prev,[name]:value}));}function bounceSummary(){const entries=names.map(name=>({name,bounce:bounceFor(name)})).filter(item=>item.bounce!=='None');return entries.length?['Player double bounces:',...entries.map(item=>`${item.name}: ${item.bounce}`)]:[];}function toggleCompetitionLayer(layer){saveCompSnapshot();setCompetitionLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}function layerSummary(){const parts=[];if(competitionLayers.length)parts.push(`Overlays: ${competitionLayers.join(' · ')}`);if(competitionCbCode!=='None')parts.push(`Checkerboard Code: ${competitionCbCode}`);if(competitionLayers.includes('Double Bounce')){parts.push(`Double Bounce Rule: ${doubleBounceRule}`);parts.push(...bounceSummary());}return parts;}function generate(){saveCompSnapshot();
-if(names.length<2){setGenerated(['Need at least 2 players.']);return;}
-if(format==='Round Robin'){const groupCount=Math.min(boxes,names.length);const groups=Array.from({length:groupCount},()=>[]);names.forEach((name,index)=>groups[index%groupCount].push(name));const output=[];groups.forEach((group,groupIndex)=>{output.push(`Box ${groupIndex+1}: ${group.join(', ')}`);for(let i=0;i<group.length;i++){for(let j=i+1;j<group.length;j++){output.push(`Box ${groupIndex+1}: ${group[i]} vs ${group[j]}`);}}});setGenerated([`Round Robin · ${boxes} box${boxes>1?'es':''} · ${courts} courts · ${match}`,...layerSummary(),'Standings: matches won → games difference → points difference → head-to-head.',...output]);return;}
-if(format==='Monrad'){const output=[];for(let i=0;i<Math.floor(names.length/2);i++)output.push(`Court ${(i%courts)+1}: ${names[i]} vs ${names[names.length-1-i]}`);if(names.length%2)output.push(`Bye: ${names[Math.floor(names.length/2)]}`);setGenerated([`Monrad · ${rounds} rounds · ${courts} courts · ${match}`,...layerSummary(),'Round 1 seeded pairings:',...output]);return;}
-if(format==='NSL'){const teamA=names.filter((_,index)=>index%2===0);const teamB=names.filter((_,index)=>index%2!==0);setGenerated([`NSL · ${courts} courts · ${match}`,...layerSummary(),`Team A: ${teamA.join(', ')}`,`Team B: ${teamB.join(', ')}`]);return;}
-if(format==='Invasion Game'){const groups=Array.from({length:courts},()=>[]);names.forEach((name,index)=>groups[index%courts].push(name));const output=groups.map((group,index)=>{if(!group.length)return`Court ${index+1}: no players`;const each=Math.floor(lives/group.length);const spare=lives%group.length;return`Court ${index+1}: ${group.join(', ')} — ${lives} total lives — ${each} lives each${spare?` + ${spare} spare lives`:''}`;});setGenerated([`Invasion · ${courts} courts · ${lives} lives per court`,...layerSummary(),...output]);}
-}
-return <div className="page"><div className="pageTop"><h1>Competition</h1><button className="secondaryBtn" onClick={undoCompetition} disabled={compHistory.length===0}>Undo</button></div><div className="competitionCard">
-<label>Competition Format</label><div className="formatGrid">{['Round Robin','Monrad','Invasion Game','NSL'].map(f=><button key={f} className={format===f?'formatBtn activeFormat':'formatBtn'} onClick={()=>setFormat(f)}>{f}</button>)}</div><select value={format} onChange={e=>setFormat(e.target.value)}><option>Round Robin</option><option>Monrad</option><option>Invasion Game</option><option>NSL</option></select>
-{format==='Round Robin'&&<div className="rrBoxSelector"><label>Round Robin Box Format</label><div className="boxGrid">{[1,2,3,4].map(number=><button key={number} className={boxes===number?'boxOption activeBox':'boxOption'} onClick={()=>setBoxes(number)}><strong>{number} {number===1?'Box':'Boxes'}</strong></button>)}</div></div>}
-<div className="competitionControls">
-<div><label>Courts</label><div className="stepper"><button onClick={()=>setCourts(Math.max(1,courts-1))}>−</button><strong>{courts}</strong><button onClick={()=>setCourts(Math.min(6,courts+1))}>+</button></div></div>
-{format==='Invasion Game'&&<div><label>Total Lives Per Court</label><div className="stepper"><button onClick={()=>setLives(Math.max(1,lives-1))}>−</button><strong>{lives}</strong><button onClick={()=>setLives(lives+1)}>+</button></div></div>}
-{format==='Monrad'&&<div><label>Rounds</label><div className="stepper"><button onClick={()=>setRounds(Math.max(1,rounds-1))}>−</button><strong>{rounds}</strong><button onClick={()=>setRounds(rounds+1)}>+</button></div></div>}
-{format!=='Invasion Game'&&<div><label>Match Format</label><select value={match} onChange={e=>setMatch(e.target.value)}><option>First to 11</option><option>Timed</option><option>Best of 3</option><option>Best of 5</option><option>Timed periods</option></select></div>}
-</div>
-<div className="competitionOverlayBox"><strong>Competition Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={competitionLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleCompetitionLayer(layer)}>{competitionLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div><div className="cbBox"><strong>Checkerboard Code</strong><select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>{competitionLayers.includes('Double Bounce')&&<div className="doubleBounceEdit"><strong>Editable Double Bounce Rule</strong><textarea value={doubleBounceRule} onChange={e=>setDoubleBounceRule(e.target.value)}/><div className="playerBounceGrid"><strong>Player Double Bounce Allocation</strong>{names.length===0&&<p>Add/mark players present first, or enter manual players.</p>}{names.map(name=><div className="playerBounceRow" key={name}><span>{name}</span><select value={bounceFor(name)} onChange={e=>setBounceFor(name,e.target.value)}><option>None</option><option>Unlimited double bounces</option><option>5 double bounces</option><option>4 double bounces</option><option>3 double bounces</option><option>2 double bounces</option><option>1 double bounce</option></select></div>)}</div></div>}</div>
-<div className="presentCompetitionBox"><strong>Auto-entry from attendance</strong><p>{present.length} players marked present.</p>{present.length>0&&<ol>{present.map(player=><li key={player.name}>{player.name} {player.playerType==='Programme Player'?`(JPR #${player.juniorRanking||'not set'})`:`(${player.guestEstimate||'Guest'})`}</li>)}</ol>}</div>
-<label>Manual Players</label><textarea rows="5" value={manual} onChange={e=>setManual(e.target.value)} placeholder="Fallback only: one player per line if no attendance marked"/>
-<button className="primaryBtn" onClick={generate}>Generate {format}</button>
-</div>
-{generated.length>0&&<div className="competitionOutput"><h2>{format}</h2>{generated.map((item,index)=><div className="fixtureCard" key={index}>{item}</div>)}</div>}
-</div>;
-}
-
 
 function Storage({players,setPlayers,session,setSession}){
   const [backupText,setBackupText]=useState('');
@@ -1432,7 +1410,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89a</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
