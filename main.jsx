@@ -91,6 +91,11 @@ return aRank-bRank;
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
+        <h2>TOOLS</h2>
+        <p>Constraint & Coaching Tools</p>
+        <p className="homeCardSub">Visual · Haptic · Spatial · Analogy · Scaling</p>
+      </button>
       <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
         <h2>LEVEL 0</h2>
         <p>Exploration Stage · Ages 5–9</p>
@@ -845,6 +850,144 @@ function Level0Exploration(){
   </div>;
 }
 
+
+function ToolsArchitecture(){
+  const toolGroups=[
+    {
+      title:'Visual Perception Tools',
+      tools:[
+        {
+          name:'2 Coloured Racquet',
+          type:'Informational Constraint',
+          purpose:'Improve visual attention to the information source at contact.',
+          levels:'Level 0–3',
+          progression:'Continuous call → intermittent call → random call → fade out'
+        }
+      ]
+    },
+    {
+      title:'Coordination Feedback Tools',
+      tools:[
+        {
+          name:'Happy Smiley Face',
+          type:'External Focus / Haptic Feedback',
+          purpose:'Reduce wrist collapse through playful external focus.',
+          levels:'Level 0–2',
+          progression:'Visible feedback → faded awareness'
+        },
+        {
+          name:'Hand to Forearm Tape',
+          type:'Haptic Informational Feedback',
+          purpose:'Immediate feedback when wrist collapses.',
+          levels:'Level 0–3',
+          progression:'Reduce reliance gradually'
+        },
+        {
+          name:'Dog Buzzer',
+          type:'Feedback Tool',
+          purpose:'Awareness cue for inefficient movement behaviours.',
+          levels:'Level 1–5',
+          progression:'Intermittent cueing → fade out'
+        }
+      ]
+    },
+    {
+      title:'Body Alignment Tools',
+      tools:[
+        {
+          name:'Shoulder Alignment Tape',
+          type:'Environmental Constraint',
+          purpose:'Promote side-wall or front-wall orientation using external focus.',
+          levels:'Level 0–3',
+          progression:'Large visual references → subtle references'
+        }
+      ]
+    },
+    {
+      title:'Spatial Constraint Tools',
+      tools:[
+        {
+          name:'Wall Swing Constraint',
+          type:'Environmental / Spatial Constraint',
+          purpose:'Reduce excessive rotating swing patterns.',
+          levels:'Level 0–5',
+          progression:'Against wall → floor line → live feeds'
+        }
+      ]
+    },
+    {
+      title:'Scaling Tools',
+      tools:[
+        {
+          name:'Challenge Point Overlay',
+          type:'Progression / Regression System',
+          purpose:'Adjust difficulty based on success rate.',
+          levels:'All Levels',
+          progression:'<50% simplify · ~70% optimal · >85% increase challenge'
+        }
+      ]
+    },
+    {
+      title:'Analogy Tools',
+      tools:[
+        {
+          name:'Elastic Band to T',
+          type:'Movement Analogy',
+          purpose:'Encourage explosive recovery and return to T.',
+          levels:'Level 0–5',
+          progression:'Simple awareness → integrated movement behaviour'
+        },
+        {
+          name:'Skimming Stones',
+          type:'Forehand Swing Analogy',
+          purpose:'Encourage elbow-leading forehand swing shape.',
+          levels:'Level 0–3',
+          progression:'Throwing action → racquet integration'
+        },
+        {
+          name:'Eagle Spreading Wings',
+          type:'Balance / Coordination Analogy',
+          purpose:'Promote non-playing arm usage for balance.',
+          levels:'Level 0–2',
+          progression:'Large movements → subtle balance behaviour'
+        }
+      ]
+    }
+  ];
+
+  return <div className="gameCard toolsPage">
+    <div className="categoryTag">TOOLS</div>
+    <h2>Constraints & Coaching Tools</h2>
+
+    <div className="diagnosticPrinciple">
+      <strong>Constraints-Led Coaching Tools</strong>
+      <p>Tools shape behaviour through informational, spatial, environmental, haptic and task constraints rather than excessive verbal instruction.</p>
+    </div>
+
+    <div className="infoBox">
+      <strong>Framework</strong>
+      <p>Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.</p>
+    </div>
+
+    {toolGroups.map(group=><div className="expandedGame selectedExpandedGame" key={group.title}>
+      <span className="categoryTag">{group.title}</span>
+      <h3>{group.title}</h3>
+
+      {group.tools.map(tool=><div className="constraintSuggestionBox" key={tool.name}>
+        <strong>{tool.name}</strong>
+
+        <div className="quickLayers">
+          <span className="badge">{tool.type}</span>
+          <span className="badge">{tool.levels}</span>
+        </div>
+
+        <p><strong>Purpose:</strong> {tool.purpose}</p>
+        <p><strong>Progression:</strong> {tool.progression}</p>
+      </div>)}
+    </div>)}
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClass,setActiveClass]=useState(null);
   const [message,setMessage]=useState('');
@@ -1131,11 +1274,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v85</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v86</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
-{screen==='level0'&&<Level0Exploration/>}
+{screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
 {screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}

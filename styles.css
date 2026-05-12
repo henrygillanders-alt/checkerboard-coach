@@ -587,3 +587,27 @@
   color:#dce8ff !important;
   font-weight:700 !important;
 }
+
+.toolsHomeCard{
+  min-height:180px !important;
+  padding:28px !important;
+  border-radius:22px !important;
+  border:0 !important;
+  text-align:left !important;
+  background:linear-gradient(135deg,#1f7a5a,#0d2c22) !important;
+  color:white !important;
+}
+.toolsHomeCard h2{
+  font-size:42px !important;
+  margin:0 0 22px 0 !important;
+}
+.toolsHomeCard p{
+  font-size:22px !important;
+  margin:0 !important;
+  font-weight:700 !important;
+}
+.toolsHomeCard .homeCardSub{
+  font-size:18px !important;
+  margin-top:10px !important;
+  color:#d7fff2 !important;
+}
