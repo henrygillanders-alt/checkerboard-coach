@@ -89,8 +89,53 @@ return aRank-bRank;
 });
 }
 
+
+function ProjectionView({session,setScreen}){
+  const [selectedIndex,setSelectedIndex]=useState(0);
+  const hasSession=session&&session.length>0;
+  const current=hasSession?session[Math.min(selectedIndex,session.length-1)]:null;
+
+  const title=current?.title||'PLAYER VIEW';
+  const task=current?.task||'Choose a game or session item to show players.';
+  const scoring=current?.scoring||'Scoring will appear here.';
+  const focus=current?.playerFocus||current?.focus||current?.coachFocus||'Keep it simple. Read the task and play.';
+
+  return <div className="projectionPage">
+    <div className="projectionTop">
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
+      <div>
+        <span className="projectionKicker">PLAYER / PROJECTION VIEW</span>
+        <h1>{title}</h1>
+      </div>
+    </div>
+
+    {hasSession&&<div className="projectionPicker">
+      <strong>Session item</strong>
+      <select value={selectedIndex} onChange={e=>setSelectedIndex(Number(e.target.value))}>
+        {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
+      </select>
+    </div>}
+
+    <div className="projectionGrid">
+      <div className="projectionPanel"><h2>WHAT TO DO</h2><p>{task}</p></div>
+      <div className="projectionPanel"><h2>HOW TO SCORE</h2><p>{scoring}</p></div>
+      <div className="projectionPanel projectionFocus"><h2>KEY FOCUS</h2><p>{focus}</p></div>
+    </div>
+
+    {current?.layers?.length>0&&<div className="projectionBonus">
+      <h2>ACTIVE BONUS RULES</h2>
+      <div className="projectionChips">{current.layers.map(layer=><span key={layer}>{layer}</span>)}</div>
+    </div>}
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
+        <h2>PROJECT</h2>
+        <p>Player / Projection View</p>
+        <p className="homeCardSub">Simple rules · big text · less repetition</p>
+      </button>
       <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
         <h2>TOOLS</h2>
         <p>Constraint & Coaching Tools</p>
@@ -1274,11 +1319,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v86</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v87</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
 {screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}

@@ -611,3 +611,10 @@
   margin-top:10px !important;
   color:#d7fff2 !important;
 }
+
+.projectionHomeCard{min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important;background:linear-gradient(135deg,#f59e0b,#7c2d12)!important;color:white!important}
+.projectionHomeCard h2{font-size:42px!important;margin:0 0 22px 0!important}.projectionHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}.projectionHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#fff7ed!important}
+.projectionPage{min-height:100vh;background:#020817;color:white;padding:34px}.projectionTop{display:flex;align-items:flex-start;gap:24px;margin-bottom:26px}.projectionKicker{display:block;color:#ffd980;font-weight:900;letter-spacing:.12em;margin-bottom:10px}.projectionTop h1{font-size:64px;line-height:1;margin:0}
+.projectionPicker{background:#0c1a2c;border:2px solid #5e83be;border-radius:18px;padding:16px;margin-bottom:24px}.projectionPicker strong{color:#ffd980;margin-right:12px}.projectionPicker select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:20px}
+.projectionGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.projectionPanel{background:#0c1a2c;border:2px solid #5e83be;border-radius:24px;padding:30px}.projectionPanel h2,.projectionBonus h2{color:#ffd980;font-size:32px;margin:0 0 18px 0}.projectionPanel p{font-size:34px;line-height:1.25;margin:0;font-weight:800}.projectionFocus{grid-column:1/-1}.projectionBonus{margin-top:24px;background:#101b2a;border:2px solid #5e83be;border-radius:24px;padding:28px}.projectionChips{display:flex;gap:14px;flex-wrap:wrap}.projectionChips span{background:#1f5dd0;padding:14px 20px;border-radius:999px;font-size:24px;font-weight:900}
+@media(max-width:900px){.projectionGrid{grid-template-columns:1fr}.projectionTop h1{font-size:42px}.projectionPanel p{font-size:26px}}
