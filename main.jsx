@@ -1182,7 +1182,99 @@ return <div className="page">
 </div>;
 }
 
-function Competition({players}){const[compHistory,setCompHistory]=useState([]);function saveCompSnapshot(){setCompHistory(prev=>[...prev,{format,manual,generated,courts,boxes,lives,rounds,match,competitionLayers,competitionCbCode,doubleBounceRule,playerBounces}]);}function undoCompetition(){const last=compHistory[compHistory.length-1];if(!last)return;setFormat(last.format);setManual(last.manual);setGenerated(last.generated);setCourts(last.courts);setBoxes(last.boxes);setLives(last.lives);setRounds(last.rounds);setMatch(last.match);setCompetitionLayers(last.competitionLayers);setCompetitionCbCode(last.competitionCbCode);setDoubleBounceRule(last.doubleBounceRule);setPlayerBounces(last.playerBounces);setCompHistory(compHistory.slice(0,-1));}
+
+function Competition(){
+  const [mode,setMode]=useState('invasionLives');
+
+  const modes={
+    invasionLives:{
+      title:'Invasion — Lives Mode',
+      tactical:'Survival · discipline · pressure management',
+      purpose:'Preferred operational format. Low admin and self-officiating.',
+      rules:[
+        'Invader always serves',
+        'Defenders track remaining lives',
+        'Double bounce handicaps allowed',
+        'Players self-manage lives'
+      ]
+    },
+    invasionTimed:{
+      title:'Invasion — Timed Rotation',
+      tactical:'Initiative · aggression · opportunity recognition',
+      purpose:'Continuous team competition with timed rotations.',
+      rules:[
+        '+1 if defending team hits out',
+        '+3 successful invasion into balance',
+        'Timed rotations',
+        'Cumulative team score'
+      ]
+    },
+    roundRobin:{
+      title:'Round Robin',
+      tactical:'Consistency across multiple opponents',
+      purpose:'Every player/team competes against all others.',
+      rules:[
+        'Score entry system coming next update',
+        'Standings and rankings planned'
+      ]
+    },
+    monrad:{
+      title:'Monrad',
+      tactical:'Adaptation across progressive rounds',
+      purpose:'Players face opponents with similar records after each round.',
+      rules:[
+        'Winner/loser progression planned',
+        'Automatic redraw planned'
+      ]
+    },
+    nsl:{
+      title:'NSL',
+      tactical:'Sustained pressure and fatigue adaptation',
+      purpose:'Continuous ladder pressure environment.',
+      rules:[
+        'Lives tracking planned',
+        'Court rotation planned'
+      ]
+    }
+  };
+
+  const current=modes[mode];
+
+  return <div className="page">
+    <div className="pageTop"><h1>Competition</h1></div>
+
+    <div className="gameClassGrid">
+      <button className={mode==='invasionLives'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionLives')}>Invasion Lives</button>
+      <button className={mode==='invasionTimed'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasionTimed')}>Timed Rotation</button>
+      <button className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
+      <button className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
+      <button className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
+    </div>
+
+    <div className="gameCard">
+      <div className="categoryTag">Competition Mode</div>
+      <h2>{current.title}</h2>
+
+      <div className="diagnosticPrinciple">
+        <strong>Tactical Behaviour Focus</strong>
+        <p>{current.tactical}</p>
+      </div>
+
+      <div className="infoBox">
+        <strong>Purpose</strong>
+        <p>{current.purpose}</p>
+      </div>
+
+      <div className="constraintSuggestionBox">
+        <strong>Rules / Structure</strong>
+        <ul>
+          {current.rules.map(rule=><li key={rule}>{rule}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>;
+}
+function saveCompSnapshot(){setCompHistory(prev=>[...prev,{format,manual,generated,courts,boxes,lives,rounds,match,competitionLayers,competitionCbCode,doubleBounceRule,playerBounces}]);}function undoCompetition(){const last=compHistory[compHistory.length-1];if(!last)return;setFormat(last.format);setManual(last.manual);setGenerated(last.generated);setCourts(last.courts);setBoxes(last.boxes);setLives(last.lives);setRounds(last.rounds);setMatch(last.match);setCompetitionLayers(last.competitionLayers);setCompetitionCbCode(last.competitionCbCode);setDoubleBounceRule(last.doubleBounceRule);setPlayerBounces(last.playerBounces);setCompHistory(compHistory.slice(0,-1));}
 const[format,setFormat]=useState('Round Robin');
 const[manual,setManual]=useState('');
 const[generated,setGenerated]=useState([]);
@@ -1340,7 +1432,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v88c</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89a</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
