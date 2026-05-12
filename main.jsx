@@ -1034,6 +1034,90 @@ function ToolsArchitecture(){
 }
 
 
+
+function InvasionGamesBuilder({onAddToSession}){
+  const [format,setFormat]=useState('lives');
+  const [layers,setLayers]=useState([]);
+  const [cbCode,setCbCode]=useState('None');
+
+  const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
+  const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
+
+  function toggleLayer(layer){
+    setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);
+  }
+
+  const games=[
+    {
+      id:'lives',
+      title:'Invasion Game — Lives Format',
+      tactical:'Survival · discipline · pressure management',
+      task:'Invader always serves. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps can be assigned in Competition.',
+      rationale:'Lives format creates a consequence ecology: players protect lives, manage pressure and make disciplined decisions.',
+      scoring:'Players lose lives for agreed errors. Same penalty applies to invader and defenders. Lives are self-tallied to reduce coach admin.',
+      playerFocus:'Stay disciplined. Protect your lives. Attack only when the opportunity is clear.'
+    },
+    {
+      id:'timed',
+      title:'Invasion Game — Timed Rotation',
+      tactical:'Initiative · aggression · opportunity recognition',
+      task:'Invader always serves. Play timed rotations and total team points at the end of all rotations.',
+      rationale:'Timed format creates an opportunity ecology: players can be more aggressive because points can be won back across rotations.',
+      scoring:'+1 if defending team hits out. +3 if defending team hits the ball into the balcony. Total points calculated after rotations.',
+      playerFocus:'Take initiative. Look for high-value opportunities and build team momentum.'
+    }
+  ];
+
+  const selected=games.find(game=>game.id===format)||games[0];
+
+  function addToSession(){
+    onAddToSession({
+      ...selected,
+      id:Date.now()+Math.random(),
+      category:'Invasion',
+      family:'Competition / Invasion',
+      coachFocus:selected.tactical,
+      layers,
+      cbCode,
+      antiGaming:'Apply the same agreed penalty consistently. Do not allow players to avoid conditions by stopping the rally deliberately.'
+    });
+  }
+
+  return <div className="gameCard">
+    <div className="categoryTag">Invasion</div>
+    <h2>Invasion Games Library</h2>
+    <p className="engineIntro">Choose the invasion format first. Lives and Timed Rotation create different tactical behaviours.</p>
+
+    <div className="gameClassGrid">
+      {games.map(game=><button key={game.id} type="button" className={format===game.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setFormat(game.id)}>
+        {game.id==='lives'?'Lives Format':'Timed Rotation'}
+      </button>)}
+    </div>
+
+    <div className="diagnosticPrinciple"><strong>Tactical Behaviour Focus</strong><p>{selected.tactical}</p></div>
+    <div className="infoBox"><strong>Task / Rules</strong><p>{selected.task}</p></div>
+    <div className="infoBox"><strong>Rationale</strong><p>{selected.rationale}</p></div>
+    <div className="infoBox"><strong>Scoring</strong><p>{selected.scoring}</p></div>
+    <div className="infoBox"><strong>Player Focus</strong><p>{selected.playerFocus}</p></div>
+
+    <div className="technicalScoringBox alwaysVisibleScoring">
+      <strong>Optional Overlays</strong>
+      <p className="overlayExplain">No overlays are selected by default. Coach chooses what applies.</p>
+      <div className="quickLayers">
+        {overlayOptions.map(layer=><button key={layer} type="button" className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>
+          {layers.includes(layer)?'✓ ':'+ '}{layer}
+        </button>)}
+      </div>
+      <label>Checkerboard Code / Sequence
+        <select value={cbCode} onChange={e=>setCbCode(e.target.value)}>
+          {cbOptions.map(option=><option key={option}>{option}</option>)}
+        </select>
+      </label>
+    </div>
+
+    <button className="primaryBtn" onClick={addToSession}>Add Invasion Game To Session</button>
+  </div>;
+}
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(null);
   const [message,setMessage]=useState('');
@@ -1127,7 +1211,10 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
 
-    {activeClassId&& !['checkerboard','atl','classic','technical','saved'].includes(activeClassId)&&
+    
+    {activeClassId==='invasion'&&<InvasionGamesBuilder key="invasion-engine" onAddToSession={addAndGo}/>}
+
+    {activeClassId&& !['checkerboard','atl','classic','technical','invasion','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -1468,7 +1555,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89d</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v89e</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
