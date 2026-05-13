@@ -131,6 +131,11 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}>
+        <h2>LIVE</h2>
+        <p>Session Delivery Mode</p>
+        <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
+      </button>
       <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
         <h2>PROJECT</h2>
         <p>Player / Projection View</p>
@@ -1681,6 +1686,79 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
     </div>
   </div>;
 }
+
+function LiveSessionDelivery({session=[],setScreen}){
+  const [activeIndex,setActiveIndex]=useState(0);
+  const [timerSeconds,setTimerSeconds]=useState(0);
+  const [isRunning,setIsRunning]=useState(false);
+  const [quickLayer,setQuickLayer]=useState('');
+  const [intervention,setIntervention]=useState('');
+
+  useEffect(()=>{
+    if(!isRunning)return;
+    const id=setInterval(()=>setTimerSeconds(prev=>prev+1),1000);
+    return ()=>clearInterval(id);
+  },[isRunning]);
+
+  const active=session&&session.length?session[Math.min(activeIndex,session.length-1)]:null;
+  const minutes=String(Math.floor(timerSeconds/60)).padStart(2,'0');
+  const seconds=String(timerSeconds%60).padStart(2,'0');
+  const interventions=[
+    ['Late Preparation','Look for when preparation starts.','Prepare earlier from the ball flight.'],
+    ['Wrist Collapse','Use Happy Face / tape feedback.','Keep the racquet face stable through contact.'],
+    ['Not Returning To T','Use Elastic Band to T analogy.','Let the shot finish pull you back to the T.'],
+    ['Excessive Swing','Use wall or floor-line swing constraint.','Find a swing that fits the time and space.'],
+    ['Visual Tracking','Use two-coloured racquet tool.','Pick up the contact information early.']
+  ];
+  const chosen=interventions.find(item=>item[0]===intervention);
+
+  function nextItem(){setActiveIndex(prev=>Math.min(prev+1,(session?.length||1)-1));setTimerSeconds(0);}
+  function prevItem(){setActiveIndex(prev=>Math.max(prev-1,0));setTimerSeconds(0);}
+
+  return <div className="page liveSessionPage">
+    <div className="pageTop">
+      <h1>Live Session Delivery</h1>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
+    </div>
+
+    {!active&&<div className="gameCard"><div className="categoryTag">Live Mode</div><h2>No session item selected</h2><p>Add games or activities to Session Builder, then return here to run the session live.</p></div>}
+
+    {active&&<div className="gameCard liveActiveCard">
+      <div className="categoryTag">Current Activity {activeIndex+1} / {session.length}</div>
+      <h2>{active.title||'Session Activity'}</h2>
+      <div className="liveTimer">{minutes}:{seconds}</div>
+      <div className="liveButtonRow">
+        <button className="secondaryBtn" onClick={prevItem}>Previous</button>
+        <button className="primaryBtn" onClick={()=>setIsRunning(!isRunning)}>{isRunning?'Pause':'Start'}</button>
+        <button className="secondaryBtn" onClick={()=>setTimerSeconds(0)}>Reset Timer</button>
+        <button className="primaryBtn" onClick={nextItem}>Next</button>
+        <button className="secondaryBtn" onClick={()=>setScreen('projection')}>Project</button>
+      </div>
+      <div className="infoBox"><strong>What To Run</strong><p>{active.task||active.description||'Run the selected activity.'}</p></div>
+      {active.scoring&&<div className="infoBox"><strong>Scoring</strong><p>{active.scoring}</p></div>}
+      {active.playerFocus&&<div className="infoBox"><strong>Player Focus</strong><p>{active.playerFocus}</p></div>}
+      {active.cbCode&&active.cbCode!=='None'&&<div className="infoBox"><strong>Checkerboard Code</strong><p>{active.cbCode}</p></div>}
+      {active.layers&&active.layers.length>0&&<div className="infoBox"><strong>Active Overlays</strong><p>{active.layers.join(' · ')}</p></div>}
+    </div>}
+
+    <div className="gameCard">
+      <div className="categoryTag">Quick Layer</div><h2>Quick Constraint / Overlay</h2>
+      <div className="quickLayers">
+        {['Clean Winner','Opponent Off T','Volley Finish','Double Bounce','4-Shot Window','2-Shot Window','Quality Length Before Attack'].map(layer=><button key={layer} className={quickLayer===layer?'activeLayer':''} onClick={()=>setQuickLayer(quickLayer===layer?'':layer)}>{quickLayer===layer?'✓ ':'+ '}{layer}</button>)}
+      </div>
+      {quickLayer&&<div className="infoBox"><strong>Temporary Layer</strong><p>{quickLayer}</p></div>}
+    </div>
+
+    <div className="gameCard">
+      <div className="categoryTag">Quick Intervention</div><h2>Coach Quick Fix</h2>
+      <div className="quickLayers">
+        {interventions.map(item=><button key={item[0]} className={intervention===item[0]?'activeLayer':''} onClick={()=>setIntervention(intervention===item[0]?'':item[0])}>{item[0]}</button>)}
+      </div>
+      {chosen&&<div className="diagnosticTheoryGrid"><div className="infoBox"><strong>Coach Cue</strong><p>{chosen[1]}</p></div><div className="infoBox"><strong>Player Cue</strong><p>{chosen[2]}</p></div></div>}
+    </div>
+  </div>;
+}
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -1688,11 +1766,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v91</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v92a</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
