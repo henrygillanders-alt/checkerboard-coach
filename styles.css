@@ -854,3 +854,41 @@
 .secondaryTool{
   opacity:.88;
 }
+
+/* v96 Rotational Affordance Games */
+.rotationalHomeCard{
+  min-height:180px!important;
+  padding:28px!important;
+  border-radius:22px!important;
+  border:0!important;
+  text-align:left!important;
+  background:linear-gradient(135deg,#f97316,#431407)!important;
+  color:white!important;
+}
+.rotationalHomeCard h2{font-size:40px!important;margin:0 0 20px 0!important}
+.rotationalHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}
+.rotationalHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#ffedd5!important}
+.rotationAffordanceCard{
+  display:flex;
+  gap:18px;
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:22px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.repCircle{
+  width:28px;
+  min-width:28px;
+  height:28px;
+  border-radius:999px;
+  margin-top:6px;
+}
+.redRep{background:#dc2626}
+.orangeRep{background:#f97316}
+.yellowRep{background:#eab308}
+.lightGreenRep{background:#84cc16}
+.darkGreenRep{background:#166534}
+.rotationCardContent{
+  flex:1;
+}

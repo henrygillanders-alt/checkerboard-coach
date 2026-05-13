@@ -131,6 +131,11 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
+        <h2>ROTATIONAL</h2>
+        <p>Affordance Games</p>
+        <p className="homeCardSub">Traditional Drills → CLA RLD</p>
+      </button>
       <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
         <h2>DIAGNOSTIC</h2>
         <p>Observe · Diagnose · Select Tool</p>
@@ -1693,6 +1698,163 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 }
 
 
+
+function RotationalAffordanceGames({setScreen}){
+  const [playerGroup,setPlayerGroup]=useState('2 Player');
+  const [levelFilter,setLevelFilter]=useState('All');
+
+  const games=[
+    {
+      title:'Basic Boast Rotation',
+      players:'2 Player',
+      level:'Level 0',
+      colour:'redRep',
+      court:'Front half court · Big ball preferred',
+      sequence:'P1 Drive → P2 Drive → P1 Boast → P2 Drive → repeat.',
+      focus:'Orientation, movement flow and boast recognition.',
+      purpose:'Turning traditional drills into CLA Representative Learning Design environments.',
+      constraints:'No scoring · fixed/simple two-shot rotations.',
+      progression:'Move to full court and standard ball.'
+    },
+    {
+      title:'Alternating Boast',
+      players:'2 Player',
+      level:'Level 1',
+      colour:'orangeRep',
+      court:'Full court · Standard ball',
+      sequence:'P1 Drive → P2 Boast → P1 Drive → P2 Drive → repeat.',
+      focus:'Recovery awareness and early affordance perception.',
+      purpose:'Simplified representative environment developing tactical emergence.',
+      constraints:'Guided affordance recognition with increased movement demands.',
+      progression:'Introduce live affordance release.'
+    },
+    {
+      title:'Rotational Boast Chain',
+      players:'3 Player',
+      level:'Level 0',
+      colour:'redRep',
+      court:'Front half court · Big ball preferred',
+      sequence:'P1 Boast → P2 Drive → P3 Drive → P1 Drive → repeat.',
+      focus:'Orientation and recognition of rotational movement relationships.',
+      purpose:'Turning traditional drills into CLA Representative Learning Design environments.',
+      constraints:'No scoring · fixed rotational structure.',
+      progression:'Move to full court with standard ball.'
+    },
+    {
+      title:'Front Recovery Recognition',
+      players:'3 Player',
+      level:'Level 1',
+      colour:'orangeRep',
+      court:'Full court · Standard ball',
+      sequence:'P1 Drive → P2 Drive → P3 Boast → P1 Drive → repeat.',
+      focus:'Recognition of unstable recovery affordances.',
+      purpose:'Developing tactical emergence from simplified rotational frameworks.',
+      constraints:'Boast only if recovery is unstable.',
+      progression:'Increase tactical freedom and release conditions.'
+    },
+    {
+      title:'Continuous Rotational Drives',
+      players:'4 Player',
+      level:'Level 0',
+      colour:'redRep',
+      court:'Front half court preferred · Big ball preferred',
+      sequence:'P1 Drive → P2 Drive → P3 Boast → P4 Drive → repeat.',
+      focus:'Movement organisation and shot recognition.',
+      purpose:'Turning traditional drills into CLA Representative Learning Design environments.',
+      constraints:'No scoring · orientation dominant.',
+      progression:'Increase movement and timing demands.'
+    },
+    {
+      title:'Guided Boast Recognition',
+      players:'4 Player',
+      level:'Level 1',
+      colour:'orangeRep',
+      court:'Full court · Standard ball',
+      sequence:'Rotational drives continue. Boast only if recovery is delayed or opponent is still moving.',
+      focus:'Guided affordance recognition.',
+      purpose:'Developing tactical emergence within representative movement-information environments.',
+      constraints:'Guided affordance release rather than fixed execution.',
+      progression:'Move toward open rotational recognition.'
+    }
+  ];
+
+  const filtered=games.filter(game=>
+    (playerGroup==='All'||game.players===playerGroup) &&
+    (levelFilter==='All'||game.level===levelFilter)
+  );
+
+  return <div className="page rotationalPage">
+    <div className="pageTop">
+      <h1>Rotational Affordance Games</h1>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
+    </div>
+
+    <div className="gameCard">
+      <div className="categoryTag">Developing Tactical Emergence</div>
+      <h2>Turning Traditional Drills into CLA Representative Learning Design</h2>
+      <p>Rotational Recognition Frameworks are simplified movement-information environments. They expose players to repeated boast/drive relationships while developing movement organisation, shot recognition, recovery awareness and early affordance perception.</p>
+      <p>These are not block drills; they are simplified representative environments that prepare players for tactical emergence.</p>
+    </div>
+
+    <div className="buttonRow">
+      {['All','2 Player','3 Player','4 Player'].map(item=>
+        <button key={item} className={playerGroup===item?'primaryBtn':'secondaryBtn'} onClick={()=>setPlayerGroup(item)}>
+          {item}
+        </button>
+      )}
+    </div>
+
+    <div className="buttonRow">
+      {['All','Level 0','Level 1'].map(item=>
+        <button key={item} className={levelFilter===item?'primaryBtn':'secondaryBtn'} onClick={()=>setLevelFilter(item)}>
+          {item}
+        </button>
+      )}
+    </div>
+
+    {filtered.map((game,index)=>
+      <div className="rotationAffordanceCard" key={index}>
+        <div className={`repCircle ${game.colour}`}></div>
+
+        <div className="rotationCardContent">
+          <div className="categoryTag">{game.level} · {game.players}</div>
+          <h2>{game.title}</h2>
+
+          <div className="infoBox">
+            <strong>Court / Ball</strong>
+            <p>{game.court}</p>
+          </div>
+
+          <div className="infoBox">
+            <strong>Rotation Sequence</strong>
+            <p>{game.sequence}</p>
+          </div>
+
+          <div className="infoBox">
+            <strong>Recognition Focus</strong>
+            <p>{game.focus}</p>
+          </div>
+
+          <div className="infoBox">
+            <strong>Purpose</strong>
+            <p>{game.purpose}</p>
+          </div>
+
+          <div className="infoBox">
+            <strong>Constraints</strong>
+            <p>{game.constraints}</p>
+          </div>
+
+          <div className="infoBox">
+            <strong>Progression</strong>
+            <p>{game.progression}</p>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>;
+}
+
 function DiagnosticTemplate({setScreen}){
   const [active,setActive]=useState('visual');
   const [quickFix,setQuickFix]=useState([]);
@@ -1981,12 +2143,13 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v95</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v96</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={setScreen}/>} 
+      {screen==='rotational'&&<RotationalAffordanceGames setScreen={setScreen}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
