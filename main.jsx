@@ -131,6 +131,11 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
+        <h2>DIAGNOSTIC</h2>
+        <p>Observe · Diagnose · Select Tool</p>
+        <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
+      </button>
       <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}>
         <h2>LIVE</h2>
         <p>Session Delivery Mode</p>
@@ -1687,6 +1692,143 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
   </div>;
 }
 
+
+function DiagnosticTemplate({setScreen}){
+  const [active,setActive]=useState('visual');
+  const [quickFix,setQuickFix]=useState([]);
+
+  const areas={
+    visual:{
+      clock:'12',
+      title:'Visual / Information Pickup',
+      colour:'blue',
+      observe:'Player loses the ball early, looks at the front wall, or does not pick up useful opponent/ball cues.',
+      tools:['2 Coloured Racquet Tool','Quiet Eye Cue','Ball Tracking Constraint'],
+      playerCue:'See the ball and the information source earlier.',
+      constraint:'Add a call-out or visual information task before contact.'
+    },
+    prep:{
+      clock:'2',
+      title:'Preparation Timing',
+      colour:'green',
+      observe:'Preparation starts late, player rushes, or there is no time to adapt.',
+      tools:['Waltz Rhythm Tool','Early Prep Trigger','Time Pressure Feed'],
+      playerCue:'Prepare from the ball flight, not after arriving.',
+      constraint:'Change the time available or add a rhythm cue.'
+    },
+    swing:{
+      clock:'4',
+      title:'Swing / Contact Organisation',
+      colour:'orange',
+      observe:'Wrist collapses, swing is too large, contact is inconsistent, or racquet path breaks down.',
+      tools:['Happy Face Wrist Tool','Hand-to-Forearm Tape Tool','Side-Wall Ball Return Tool','Second Racquet Counterbalance Tool','Wall Swing Constraint'],
+      playerCue:'Find a swing that fits the time, space and shot.',
+      constraint:'Use haptic, spatial or environmental feedback.'
+    },
+    movement:{
+      clock:'6',
+      title:'Movement / Recovery',
+      colour:'purple',
+      observe:'Slow recovery, poor movement rhythm, flat-footedness or poor return to T.',
+      tools:['Elastic Band to T','Waltz Rhythm Tool','Recovery Gate','T Touch Constraint'],
+      playerCue:'Move out, hit balanced, recover early.',
+      constraint:'Add a recovery rule, rhythm constraint or target return point.'
+    },
+    balance:{
+      clock:'8',
+      title:'Balance / Spacing',
+      colour:'teal',
+      observe:'Player is too close/far from the ball, off balance, or has poor court position.',
+      tools:['Court Zones Target Tool','Spacing Gate','Balance Beam Tool','Shoulder Alignment Tape'],
+      playerCue:'Create the right distance to strike and recover.',
+      constraint:'Change the space, target or body-orientation information.'
+    },
+    decision:{
+      clock:'10',
+      title:'Decision / Tactical Choice',
+      colour:'red',
+      observe:'Poor shot choice, predictable patterns, unclear plan or wrong risk/reward choice.',
+      tools:['T Challenge Constraint','4-Shot Window','2-Shot Window','Checkerboard Pair / Triple Challenge','Opponent Off T Overlay'],
+      playerCue:'Read the opponent before choosing the shot.',
+      constraint:'Add a tactical condition or scoring consequence.'
+    }
+  };
+
+  const current=areas[active];
+
+  function addTool(tool){
+    setQuickFix(prev=>prev.includes(tool)?prev:[...prev,tool]);
+  }
+
+  return <div className="page diagnosticPage">
+    <div className="pageTop">
+      <h1>Diagnostic Template</h1>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
+    </div>
+
+    <div className="diagnosticProcessStrip">
+      <span>Observe</span>
+      <span>Diagnose</span>
+      <span>Select Tool</span>
+      <span>Apply Constraint</span>
+      <span>Recheck</span>
+    </div>
+
+    <div className="diagnosticLayout">
+      <div className="diagnosticClockPanel">
+        <div className="categoryTag">Diagnostic Clock</div>
+        <h2>Where is the main issue?</h2>
+        <div className="diagnosticClockGrid">
+          {Object.entries(areas).map(([key,item])=>
+            <button key={key} className={`clockSlice ${active===key?'activeClockSlice':''} ${item.colour}`} onClick={()=>setActive(key)}>
+              <span className="clockNumber">{item.clock}</span>
+              <strong>{item.title}</strong>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="diagnosticDetailPanel">
+        <div className="categoryTag">Selected Area</div>
+        <h2>{current.title}</h2>
+
+        <div className="infoBox">
+          <strong>Observe</strong>
+          <p>{current.observe}</p>
+        </div>
+
+        <div className="infoBox">
+          <strong>Player Cue</strong>
+          <p>{current.playerCue}</p>
+        </div>
+
+        <div className="infoBox">
+          <strong>Constraint Direction</strong>
+          <p>{current.constraint}</p>
+        </div>
+
+        <div className="diagnosticTools">
+          <strong>Linked Tools</strong>
+          {current.tools.map(tool=>
+            <button key={tool} className="toolLinkBtn" onClick={()=>addTool(tool)}>
+              + Add {tool} to Live Quick Fix
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <div className="gameCard">
+      <div className="categoryTag">Live Quick Fix</div>
+      <h2>Selected Tools</h2>
+      {quickFix.length===0
+        ?<p>No tools selected yet. Tap a diagnostic area and add a tool.</p>
+        :<div className="quickLayers">{quickFix.map(tool=><button key={tool} className="activeLayer">✓ {tool}</button>)}</div>}
+      <p className="engineIntro">Use these during Live Session Delivery as quick intervention options. Recheck after applying one constraint.</p>
+    </div>
+  </div>;
+}
+
 function LiveSessionDelivery({session=[],setScreen}){
   const [activeIndex,setActiveIndex]=useState(0);
   const [timerSeconds,setTimerSeconds]=useState(0);
@@ -1767,11 +1909,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v92c</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v93</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='diagnostic'&&<DiagnosticTemplate setScreen={setScreen}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
