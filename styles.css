@@ -717,3 +717,6 @@
 .liveHomeCard{min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important;background:linear-gradient(135deg,#7c3aed,#1e1b4b)!important;color:white!important}
 .liveHomeCard h2{font-size:42px!important;margin:0 0 22px 0!important}.liveHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}.liveHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#ede9fe!important}
 .liveSessionPage .liveActiveCard{border:2px solid #8b5cf6}.liveTimer{font-size:58px;font-weight:900;color:#ffd980;margin:10px 0 20px 0}.liveButtonRow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+
+/* v92c */
+.liveSessionPage .gameCard{scroll-margin-top:20px;}
