@@ -1696,6 +1696,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 function DiagnosticTemplate({setScreen}){
   const [active,setActive]=useState('visual');
   const [quickFix,setQuickFix]=useState([]);
+  const [phase,setPhase]=useState('diagnose');
 
   const areas={
     visual:{
@@ -1758,6 +1759,7 @@ function DiagnosticTemplate({setScreen}){
 
   function addTool(tool){
     setQuickFix(prev=>prev.includes(tool)?prev:[...prev,tool]);
+    setPhase('apply');
   }
 
   return <div className="page diagnosticPage">
@@ -1767,11 +1769,59 @@ function DiagnosticTemplate({setScreen}){
     </div>
 
     <div className="diagnosticProcessStrip">
-      <span>Observe</span>
-      <span>Diagnose</span>
-      <span>Select Tool</span>
-      <span>Apply Constraint</span>
-      <span>Recheck</span>
+      {[
+        ['observe','Observe'],
+        ['diagnose','Diagnose'],
+        ['select','Select Tool'],
+        ['apply','Apply Constraint'],
+        ['recheck','Recheck']
+      ].map(item=>
+        <button key={item[0]} className={phase===item[0]?'activeProcessStep':''} onClick={()=>setPhase(item[0])}>
+          {item[1]}
+        </button>
+      )}
+    </div>
+
+    <div className="gameCard diagnosticWorkflowPanel">
+      {phase==='observe'&&<>
+        <div className="categoryTag">Observe</div>
+        <h2>What do you see?</h2>
+        <p>Watch carefully before choosing a fix. Identify the clearest repeatable behaviour, not a one-off mistake.</p>
+        <ul>
+          <li>Where does the issue appear?</li>
+          <li>When does it appear?</li>
+          <li>Is it visual, timing, movement, contact, balance or decision-based?</li>
+        </ul>
+      </>}
+
+      {phase==='diagnose'&&<>
+        <div className="categoryTag">Diagnose</div>
+        <h2>Use the Diagnostic Clock</h2>
+        <p>Tap the most likely diagnostic area below. The selected area will show linked tools.</p>
+      </>}
+
+      {phase==='select'&&<>
+        <div className="categoryTag">Select Tool</div>
+        <h2>Choose the simplest effective tool</h2>
+        <p>Select one linked tool. Avoid stacking too many interventions at once.</p>
+      </>}
+
+      {phase==='apply'&&<>
+        <div className="categoryTag">Apply Constraint</div>
+        <h2>Apply one constraint</h2>
+        <p>Use the selected tool in the live session. Change the task, space, time, equipment, rule or scoring condition.</p>
+        {quickFix.length>0&&<div className="quickLayers">{quickFix.map(tool=><button key={tool} className="activeLayer">✓ {tool}</button>)}</div>}
+      </>}
+
+      {phase==='recheck'&&<>
+        <div className="categoryTag">Recheck</div>
+        <h2>Has it improved?</h2>
+        <ul>
+          <li>Keep the constraint if behaviour improves.</li>
+          <li>Adapt the constraint if improvement is partial.</li>
+          <li>Choose another diagnostic area if the issue remains.</li>
+        </ul>
+      </>}
     </div>
 
     <div className="diagnosticLayout">
@@ -1909,7 +1959,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v93</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v94</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
