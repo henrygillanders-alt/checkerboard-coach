@@ -1696,6 +1696,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 function DiagnosticTemplate({setScreen}){
   const [active,setActive]=useState('visual');
   const [quickFix,setQuickFix]=useState([]);
+  const [activeTool,setActiveTool]=useState('');
   const [phase,setPhase]=useState('diagnose');
 
   const areas={
@@ -1758,7 +1759,19 @@ function DiagnosticTemplate({setScreen}){
   const current=areas[active];
 
   function addTool(tool){
-    setQuickFix(prev=>prev.includes(tool)?prev:[...prev,tool]);
+    setQuickFix(prev=>{
+      if(prev.includes(tool)){
+        const updated=prev.filter(item=>item!==tool);
+        if(activeTool===tool){
+          setActiveTool(updated[0]||'');
+        }
+        return updated;
+      }
+      return [...prev,tool];
+    });
+    if(!quickFix.includes(tool)){
+      setActiveTool(tool);
+    }
     setPhase('apply');
   }
 
@@ -1873,8 +1886,17 @@ function DiagnosticTemplate({setScreen}){
       <h2>Selected Tools</h2>
       {quickFix.length===0
         ?<p>No tools selected yet. Tap a diagnostic area and add a tool.</p>
-        :<div className="quickLayers">{quickFix.map(tool=><button key={tool} className="activeLayer">✓ {tool}</button>)}</div>}
-      <p className="engineIntro">Use these during Live Session Delivery as quick intervention options. Recheck after applying one constraint.</p>
+        :<div className="quickLayers">{quickFix.map(tool=>
+          <button 
+            key={tool} 
+            className={activeTool===tool?'activeLayer primaryTool':'activeLayer secondaryTool'}
+            onClick={()=>addTool(tool)}
+            onDoubleClick={()=>setActiveTool(tool)}
+          >
+            {activeTool===tool?'★':'✓'} {tool}
+          </button>)}
+          </div>}
+      <p className="engineIntro">Tap a selected tool again to remove it. Double tap a tool to make it the primary active intervention. Recheck after applying one constraint.</p>
     </div>
   </div>;
 }
@@ -1959,7 +1981,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v94</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v95</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

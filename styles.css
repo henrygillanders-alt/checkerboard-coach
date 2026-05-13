@@ -843,3 +843,14 @@
 .diagnosticWorkflowPanel li{
   margin-bottom:8px;
 }
+
+/* v95 tool workflow */
+.primaryTool{
+  background:#ffd980!important;
+  color:#0f172a!important;
+  border:2px solid white!important;
+  font-weight:900!important;
+}
+.secondaryTool{
+  opacity:.88;
+}
