@@ -892,3 +892,46 @@
 .rotationCardContent{
   flex:1;
 }
+
+/* v97 Copyright Footer */
+.checkerboardFooter{
+  margin-top:40px;
+  padding:24px 20px 40px 20px;
+  border-top:1px solid #35567e;
+  text-align:center;
+  color:#cbd5e1;
+  font-size:14px;
+  line-height:1.7;
+  opacity:.92;
+}
+
+/* v97b visible home branding */
+.homeBrandCard{
+  grid-column:1 / -1;
+  background:linear-gradient(135deg,#0c1a2c,#12345a);
+  border:2px solid #5e83be;
+  border-radius:24px;
+  padding:26px 28px;
+  color:white;
+  text-align:center;
+  margin-bottom:6px;
+}
+.homeBrandCard h1{
+  font-size:42px;
+  line-height:1.05;
+  margin:0 0 10px 0;
+  color:#ffd980;
+}
+.homeBrandCard p{
+  font-size:20px;
+  line-height:1.25;
+  margin:4px 0;
+  font-weight:800;
+}
+.homeBrandCard small{
+  display:block;
+  margin-top:10px;
+  color:#cbd5e1;
+  font-size:15px;
+  font-weight:800;
+}

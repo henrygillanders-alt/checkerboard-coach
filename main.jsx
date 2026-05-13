@@ -131,6 +131,12 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
+      <div className="homeBrandCard">
+        <h1>Checkerboard Squash™</h1>
+        <p>Henry Gillanders</p>
+        <p>MA Psychology · MSc Sport Psychology · WSF Level 3</p>
+        <small>© 2026 · All Rights Reserved</small>
+      </div>
       <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
         <h2>ROTATIONAL</h2>
         <p>Affordance Games</p>
@@ -2143,7 +2149,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v96</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v97b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -2157,6 +2163,12 @@ return <div>
 {screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
+
+<footer className="checkerboardFooter">
+  <div>© Henry Gillanders 2026 · Checkerboard Squash™</div>
+  <div>MA Psychology · MSc Sport Psychology · WSF Level 3</div>
+</footer>
+
 </div>;
 }
 
