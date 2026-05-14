@@ -940,3 +940,10 @@
 .customGameBuilder label{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#ffd980;font-weight:900}
 .customGameBuilder input,.customGameBuilder textarea,.customGameBuilder select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
 .customGameBuilder textarea{min-height:88px}
+
+/* v99c Competition rebuild pass 1 */
+.matchplayPanel input,.matchplayPanel select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}
+.matchScoreBoard{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.matchScoreBoard>div{background:#081320;border:1px solid #35567e;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.matchScoreBoard strong{color:#ffd980}
+.matchScoreBoard span{font-size:42px;font-weight:900;color:white}
