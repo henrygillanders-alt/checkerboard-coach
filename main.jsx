@@ -1309,8 +1309,6 @@ function Games({setSession,setScreen}){
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'pressure',label:'Pressure',category:'Pressure'},
-    {id:'invasion',label:'Invasion',category:'Invasion'},
-    {id:'matchplay',label:'Matchplay',category:'Matchplay'},
     {id:'custom',label:'Custom',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -1389,9 +1387,8 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
 
     
-    {activeClassId==='invasion'&&<InvasionGamesBuilder key="invasion-engine" onAddToSession={addAndGo}/>}
 
-    {activeClassId&& !['checkerboard','atl','classic','technical','invasion','custom','saved'].includes(activeClassId)&&
+    {activeClassId&& !['checkerboard','atl','classic','technical','custom','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -1512,6 +1509,16 @@ function Competition({players=[]}){
       purpose:'Players face opponents with similar records after each round.',
       rules:['Winner/loser progression planned.','Automatic redraw planned.','Shared overlays and double-bounce handicaps apply.']
     },
+    matchplay:{
+      title:'Matchplay',
+      tactical:'Opponent adaptation · score pressure · tactical clarity',
+      purpose:'Run match-based formats with overlays, checkerboard codes and player-specific handicaps.',
+      rules:[
+        'Use matchplay when the goal is tactical adaptation under normal scoring pressure.',
+        'Shared overlays and double-bounce handicaps apply.',
+        'Coach can add checkerboard or tactical overlays as required.'
+      ]
+    },
     nsl:{
       title:'NSL',
       tactical:'Sustained pressure and fatigue adaptation',
@@ -1529,6 +1536,7 @@ function Competition({players=[]}){
       <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
       <button type="button" className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
       <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
+      <button type="button" className={mode==='matchplay'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('matchplay')}>Matchplay</button>
       <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
     </div>
 
@@ -2243,7 +2251,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99a</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
