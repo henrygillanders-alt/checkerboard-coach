@@ -972,3 +972,25 @@
   font-weight:900;
   color:white;
 }
+
+/* v99d1 Round Robin fixture generator */
+.competitionEnginePanel{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:16px;
+  padding:16px;
+  margin:16px 0;
+}
+.fixtureRound{
+  background:#0b1828;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:12px 14px;
+  margin-top:12px;
+}
+.fixtureRound strong{
+  color:#ffd980;
+}
+.fixtureRound p{
+  margin:6px 0;
+}

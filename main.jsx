@@ -1456,6 +1456,7 @@ function Competition({players=[]}){
   const [matchScore,setMatchScore]=useState({a:0,b:0});
   const [matchPlayers,setMatchPlayers]=useState({a:'Player A',b:'Player B'});
   const [matchScoring,setMatchScoring]=useState('PAR 11');
+  const [rrFixtures,setRrFixtures]=useState([]);
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
   const automaticNames=present.length?present.map(player=>player.name):[];
@@ -1475,6 +1476,29 @@ function Competition({players=[]}){
 
   function resetMatch(){
     setMatchScore({a:0,b:0});
+  }
+
+  function generateRoundRobin(){
+    const names=[...playerNames];
+    if(names.length<2){
+      setRrFixtures([]);
+      return;
+    }
+    const list=names.length%2===1?[...names,'BYE']:[...names];
+    const rounds=[];
+    const n=list.length;
+    let rotating=[...list];
+    for(let r=0;r<n-1;r++){
+      const matches=[];
+      for(let i=0;i<n/2;i++){
+        const a=rotating[i];
+        const b=rotating[n-1-i];
+        if(a!=='BYE'&&b!=='BYE') matches.push({a,b});
+      }
+      rounds.push(matches);
+      rotating=[rotating[0],rotating[n-1],...rotating.slice(1,n-1)];
+    }
+    setRrFixtures(rounds);
   }
 
   const modeInfo={
@@ -1512,7 +1536,7 @@ function Competition({players=[]}){
       tactical:'Consistency across multiple opponents',
       purpose:'Every player/team competes against all others.',
       rules:[
-        'Fixture grid and standings engine planned for next competition build.',
+        'Generate fixtures automatically from players marked present in Attendance.',
         'Use this section for round-robin competition setup.',
         'Shared overlays and double-bounce handicaps apply.'
       ]
@@ -1605,6 +1629,19 @@ function Competition({players=[]}){
             </div>
 
             <button className="secondaryBtn" onClick={resetMatch}>Reset Match Score</button>
+          </div>
+        )}
+
+        {mode==='roundRobin'&&(
+          <div className="competitionEnginePanel">
+            <button className="primaryBtn" onClick={generateRoundRobin}>Generate Round Robin Fixtures</button>
+            {rrFixtures.length===0&&<p className="overlayExplain">Uses players marked present in Attendance. Enter manual players if none are present.</p>}
+            {rrFixtures.length>0&&rrFixtures.map((round,idx)=>(
+              <div className="fixtureRound" key={idx}>
+                <strong>Round {idx+1}</strong>
+                {round.map((match,midx)=><p key={midx}>{match.a} v {match.b}</p>)}
+              </div>
+            ))}
           </div>
         )}
 
@@ -2316,7 +2353,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99c-fixed</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99d1</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
