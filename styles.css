@@ -940,3 +940,16 @@
 .customGameBuilder label{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#ffd980;font-weight:900}
 .customGameBuilder input,.customGameBuilder textarea,.customGameBuilder select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
 .customGameBuilder textarea{min-height:82px}
+
+/* v98c custom structured controls */
+.customGameBuilder .atlOptionsGrid{margin-top:12px}
+.competitionEngineNotice{
+  background:#3b2606;
+  border:1px solid #ffd980;
+  color:#ffd980;
+  padding:10px 12px;
+  border-radius:12px;
+  margin:10px 0 14px 0;
+  font-weight:800;
+}
+.customGameBuilder .secondaryBtn + .secondaryBtn{margin-left:8px}

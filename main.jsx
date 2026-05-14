@@ -1109,6 +1109,8 @@ function ToolsArchitecture(){
 function InvasionGamesBuilder({onAddToSession}){
   const [format,setFormat]=useState('lives');
   const [layers,setLayers]=useState([]);
+  const [crosscourtLimit,setCrosscourtLimit]=useState('None');
+  const [dbAllowance,setDbAllowance]=useState('None');
   const [cbCode,setCbCode]=useState('None');
 
   const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
@@ -1207,10 +1209,12 @@ function CustomGameBuilder({onAddToSession}){
   const [randomMode,setRandomMode]=useState('Open');
   const [randomCard,setRandomCard]=useState('');
   const [layers,setLayers]=useState([]);
+  const [crosscourtLimit,setCrosscourtLimit]=useState('None');
+  const [dbAllowance,setDbAllowance]=useState('None');
   const [cbCode,setCbCode]=useState('None');
   const [scoring,setScoring]=useState('Win rally = 1. Bonus scoring set by coach.');
   const [playerFocus,setPlayerFocus]=useState('Read the condition, play the rally, and adapt.');
-  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Straight Only','Crosscourt Limit','Zone Finish','No Condition'];
+  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Zone Finish'];
   const conditionBank=['Must play straight','Has 2 crosscourts per rally','Must play [5], [6], [3], [4]','Can only score in zone [1]','Can only score in zone [2]','Receiver has 2 double bounces','Server normal','Must win with a volley','Must complete a pair challenge','No condition'];
   const cbOptions=['None','[5]','[6]','[1]','[2]','[3]','[4]','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
   function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}
@@ -1228,8 +1232,8 @@ function CustomGameBuilder({onAddToSession}){
     {assignment==='Named Player'&&<label>Named Player Condition<textarea value={namedCondition} onChange={e=>setNamedCondition(e.target.value)} placeholder="e.g. John must play straight / Jack has 2 crosscourts per rally" /></label>}
     <div className="technicalScoringBox alwaysVisibleScoring"><strong>Overlays</strong><p className="overlayExplain">No overlays are selected by default.</p><div className="quickLayers">{overlayOptions.map(layer=><button key={layer} type="button" className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div><label>Checkerboard Code / Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label></div>
     <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} /></label><label>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)} /></label>
-    <div className="technicalScoringBox"><strong>Random Condition Generator</strong><label>Random Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label><button className="secondaryBtn" type="button" onClick={randomise}>Generate Random Conditions</button>{randomCard&&<div className="infoBox"><strong>Random Result</strong><p>{randomCard}</p></div>}</div>
-    <div className="infoBox"><strong>Active Condition</strong><p>{activeCondition}</p><p><strong>CB:</strong> {cbCode}</p><p><strong>Overlays:</strong> {layers.length?layers.join(' · '):'None selected'}</p></div><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button>
+    <div className="technicalScoringBox"><strong>Random Condition Generator</strong><label>Random Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label><button className="secondaryBtn" type="button" onClick={randomise}>Generate Random Conditions</button><button className="secondaryBtn" type="button" onClick={()=>{setServerCondition('');setReceiverCondition('');setBothCondition('');setNamedCondition('');setLayers([]);setCrosscourtLimit('None');setDbAllowance('None');setCbCode('None');setRandomCard('');}}>Reset Custom Game</button>{randomCard&&<div className="infoBox"><strong>Random Result</strong><p>{randomCard}</p></div>}</div>
+    <div className="infoBox"><strong>Active Condition</strong><p>{activeCondition}</p><p><strong>CB:</strong> {cbCode}</p><p><strong>Overlays:</strong> {layers.length?layers.join(' · '):'None selected'}</p><p><strong>Crosscourts:</strong> {crosscourtLimit}</p><p><strong>Double Bounce:</strong> {dbAllowance}</p></div><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button>
   </div>;
 }
 
@@ -1482,7 +1486,7 @@ function Competition({players=[]}){
     </div>
 
     <div className="gameCard">
-      <div className="categoryTag">Competition Mode</div>
+      <div className="categoryTag">Competition Mode</div><div className="competitionEngineNotice">Competition setup is active. Round Robin, Monrad and NSL draw/score engines are still staged for completion; overlays and player handicaps remain editable.</div>
       <h2>{current.title}</h2>
 
       {mode==='invasion'&&<div className="atlOptionsGrid">
@@ -2192,7 +2196,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v98b</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v98c</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
