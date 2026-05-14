@@ -935,3 +935,8 @@
   font-size:15px;
   font-weight:800;
 }
+
+/* v99a Custom Game Builder */
+.customGameBuilder label{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#ffd980;font-weight:900}
+.customGameBuilder input,.customGameBuilder textarea,.customGameBuilder select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
+.customGameBuilder textarea{min-height:88px}

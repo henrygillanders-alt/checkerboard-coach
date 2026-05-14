@@ -1195,6 +1195,98 @@ function InvasionGamesBuilder({onAddToSession}){
     <button className="primaryBtn" onClick={addToSession}>Add Invasion Game To Session</button>
   </div>;
 }
+
+function CustomGameBuilder({onAddToSession}){
+  const [title,setTitle]=useState('Custom Conditioned Game');
+  const [assignment,setAssignment]=useState('Server');
+  const [namedPlayer,setNamedPlayer]=useState('');
+  const [conditionText,setConditionText]=useState('');
+  const [straightOnly,setStraightOnly]=useState('None');
+  const [crosscourtLimit,setCrosscourtLimit]=useState('None');
+  const [doubleBounce,setDoubleBounce]=useState('None');
+  const [cbCode,setCbCode]=useState('None');
+  const [scoring,setScoring]=useState('Win rally = 1. Bonus scoring set by coach.');
+  const [playerFocus,setPlayerFocus]=useState('Read the condition, play the rally, and adapt.');
+  const [layers,setLayers]=useState([]);
+  const [randomMode,setRandomMode]=useState('Open');
+  const [randomResult,setRandomResult]=useState('');
+
+  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
+  const cbOptions=['None','[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
+  const randomBank=['Must play straight','Can only score in zone [1]','Can only score in zone [2]','Has 1 crosscourt per rally','Has 2 crosscourts per rally','Has 1 double bounce','Has 2 double bounces','Must win with a volley','Must complete a checkerboard pair before scoring','No condition'];
+
+  function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}
+  function resetCustom(){
+    setTitle('Custom Conditioned Game');setAssignment('Server');setNamedPlayer('');setConditionText('');
+    setStraightOnly('None');setCrosscourtLimit('None');setDoubleBounce('None');setCbCode('None');
+    setScoring('Win rally = 1. Bonus scoring set by coach.');setPlayerFocus('Read the condition, play the rally, and adapt.');
+    setLayers([]);setRandomMode('Open');setRandomResult('');
+  }
+  function generateRandom(){
+    const a=randomBank[Math.floor(Math.random()*randomBank.length)];
+    const b=randomBank[Math.floor(Math.random()*randomBank.length)];
+    setRandomResult(randomMode==='Blind'?'Blind random conditions generated. Coach reveals conditions when appropriate.':`Player A: ${a} · Player B: ${b}`);
+  }
+
+  const assignedTo=assignment==='Named Player'?(namedPlayer||'Named Player'):assignment;
+  const structured=[conditionText||null,straightOnly!=='None'?straightOnly:null,crosscourtLimit!=='None'?crosscourtLimit:null,doubleBounce!=='None'?doubleBounce:null,cbCode!=='None'?`Checkerboard / Zone: ${cbCode}`:null,layers.length?`Overlays: ${layers.join(' · ')}`:null].filter(Boolean);
+  const activeCondition=structured.length?`${assignedTo}: ${structured.join(' · ')}`:`${assignedTo}: No condition set`;
+
+  function addGame(){
+    onAddToSession({
+      id:Date.now()+Math.random(),title,duration:8,format:'Custom',category:'Custom',family:'Custom Conditioned Game',
+      level:'Coach Designed',task:activeCondition,
+      rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific conditions.',
+      coach:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
+      coachFocus:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
+      player:playerFocus,playerFocus,scoring,layers,cbCode,crosscourtLimit,doubleBounce
+    });
+  }
+
+  return <div className="gameCard customGameBuilder">
+    <div className="categoryTag">Custom</div>
+    <h2>Custom Game Builder</h2>
+    <p className="engineIntro">Design a game by assigning conditions to the server, receiver, both players or a named player. Nothing is selected by default.</p>
+
+    <label>Game Title<input value={title} onChange={e=>setTitle(e.target.value)} /></label>
+
+    <div className="atlOptionsGrid">
+      <label>Assign Condition To<select value={assignment} onChange={e=>setAssignment(e.target.value)}><option>Server</option><option>Receiver</option><option>Both</option><option>Named Player</option></select></label>
+      {assignment==='Named Player'&&<label>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John" /></label>}
+    </div>
+
+    <label>Condition Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="e.g. John must play straight / Jack has 2 crosscourts per rally / Server can only score in zone [1]" /></label>
+
+    <div className="technicalScoringBox alwaysVisibleScoring">
+      <strong>Structured Conditions</strong>
+      <div className="atlOptionsGrid">
+        <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
+        <label>Crosscourt Allowance<select value={crosscourtLimit} onChange={e=>setCrosscourtLimit(e.target.value)}><option>None</option><option>0 crosscourts</option><option>1 crosscourt per rally</option><option>2 crosscourts per rally</option><option>3 crosscourts per rally</option><option>Unlimited</option></select></label>
+        <label>Double Bounce<select value={doubleBounce} onChange={e=>setDoubleBounce(e.target.value)}><option>None</option><option>1 double bounce</option><option>2 double bounces</option><option>Unlimited double bounces</option></select></label>
+        <label>Checkerboard / Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
+      </div>
+    </div>
+
+    <div className="technicalScoringBox alwaysVisibleScoring">
+      <strong>Overlays</strong><p className="overlayExplain">No overlays are selected by default.</p>
+      <div className="quickLayers">{overlayOptions.map(layer=><button key={layer} type="button" className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+    </div>
+
+    <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} /></label>
+    <label>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)} /></label>
+
+    <div className="technicalScoringBox">
+      <strong>Random Condition Generator</strong>
+      <label>Random Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label>
+      <button className="secondaryBtn" type="button" onClick={generateRandom}>Generate Random Conditions</button>
+      {randomResult&&<div className="infoBox"><strong>Random Result</strong><p>{randomResult}</p></div>}
+    </div>
+
+    <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
+    <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset Custom Game</button></div>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(null);
   const [message,setMessage]=useState('');
@@ -1219,6 +1311,7 @@ function Games({setSession,setScreen}){
     {id:'pressure',label:'Pressure',category:'Pressure'},
     {id:'invasion',label:'Invasion',category:'Invasion'},
     {id:'matchplay',label:'Matchplay',category:'Matchplay'},
+    {id:'custom',label:'Custom',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
 
@@ -1293,11 +1386,12 @@ function Games({setSession,setScreen}){
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
 
     
     {activeClassId==='invasion'&&<InvasionGamesBuilder key="invasion-engine" onAddToSession={addAndGo}/>}
 
-    {activeClassId&& !['checkerboard','atl','classic','technical','invasion','saved'].includes(activeClassId)&&
+    {activeClassId&& !['checkerboard','atl','classic','technical','invasion','custom','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -2149,7 +2243,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v97b</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99a</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
