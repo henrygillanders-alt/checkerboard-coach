@@ -1457,6 +1457,13 @@ function Competition({players=[]}){
   const [matchPlayers,setMatchPlayers]=useState({a:'Player A',b:'Player B'});
   const [matchScoring,setMatchScoring]=useState('PAR 11');
   const [rrFixtures,setRrFixtures]=useState([]);
+  const [nslOrgTab,setNslOrgTab]=useState('config');
+  const [nslTeams,setNslTeams]=useState(4);
+  const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(3);
+  const [nslPeriod1,setNslPeriod1]=useState(20);
+  const [nslPeriod2,setNslPeriod2]=useState(20);
+  const [nslPeriod3,setNslPeriod3]=useState(30);
+  const [nslOvertime,setNslOvertime]=useState(5);
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
   const automaticNames=present.length?present.map(player=>player.name):[];
@@ -1642,6 +1649,62 @@ function Competition({players=[]}){
                 {round.map((match,midx)=><p key={midx}>{match.a} v {match.b}</p>)}
               </div>
             ))}
+          </div>
+        )}
+
+
+        {mode==='nsl'&&(
+          <div className="nslOrganiser">
+            <div className="nslHero">
+              <span>NSL ORGANISER</span>
+              <h2>National Squash League</h2>
+              <p>Configure periods · Add players · Auto-allocate teams by ranking</p>
+            </div>
+            <div className="nslTabs">
+              {[['config','Config'],['players',`Players (${playerNames.length})`],['teams',`Teams (${nslTeams})`],['sheet','Sheet']].map(tab=>
+                <button type="button" key={tab[0]} className={nslOrgTab===tab[0]?'activeNslTab':''} onClick={()=>setNslOrgTab(tab[0])}>{tab[1]}</button>
+              )}
+            </div>
+            {nslOrgTab==='config'&&(
+              <div className="nslPanel">
+                <h3>Teams & Roster</h3>
+                <div className="nslConfigGrid">
+                  <div className="nslStepper"><label>No. of Teams</label><div><button type="button" onClick={()=>setNslTeams(Math.max(2,nslTeams-1))}>−</button><strong>{nslTeams}</strong><button type="button" onClick={()=>setNslTeams(Math.min(12,nslTeams+1))}>+</button></div></div>
+                  <div className="nslStepper"><label>Players / Team</label><div><button type="button" onClick={()=>setNslPlayersPerTeam(Math.max(1,nslPlayersPerTeam-1))}>−</button><strong>{nslPlayersPerTeam}</strong><button type="button" onClick={()=>setNslPlayersPerTeam(Math.min(8,nslPlayersPerTeam+1))}>+</button></div></div>
+                </div>
+                <h3>Period Durations</h3>
+                <div className="nslConfigGrid">
+                  <div className="nslStepper"><label>Period 1</label><div><button type="button" onClick={()=>setNslPeriod1(Math.max(5,nslPeriod1-5))}>−</button><strong>{nslPeriod1}<small> min</small></strong><button type="button" onClick={()=>setNslPeriod1(nslPeriod1+5)}>+</button></div></div>
+                  <div className="nslStepper"><label>Period 2</label><div><button type="button" onClick={()=>setNslPeriod2(Math.max(5,nslPeriod2-5))}>−</button><strong>{nslPeriod2}<small> min</small></strong><button type="button" onClick={()=>setNslPeriod2(nslPeriod2+5)}>+</button></div></div>
+                  <div className="nslStepper"><label>Period 3</label><div><button type="button" onClick={()=>setNslPeriod3(Math.max(5,nslPeriod3-5))}>−</button><strong>{nslPeriod3}<small> min</small></strong><button type="button" onClick={()=>setNslPeriod3(nslPeriod3+5)}>+</button></div></div>
+                  <div className="nslStepper"><label>Overtime</label><div><button type="button" onClick={()=>setNslOvertime(Math.max(0,nslOvertime-1))}>−</button><strong>{nslOvertime}<small> min</small></strong><button type="button" onClick={()=>setNslOvertime(nslOvertime+1)}>+</button></div></div>
+                </div>
+                <h3>Match Scoring</h3>
+                <div className="nslScoringList">
+                  <div><span></span><strong>Period 1</strong><em>{nslPeriod1} min · PAR scoring</em><b>1 match pt</b></div>
+                  <div><span></span><strong>Period 2</strong><em>{nslPeriod2} min · PAR scoring</em><b>1 match pt</b></div>
+                  <div><span className="danger"></span><strong>Period 3</strong><em>{nslPeriod3} min · pressure period</em><b>2 match pts</b></div>
+                </div>
+              </div>
+            )}
+            {nslOrgTab==='players'&&(
+              <div className="nslPanel">
+                <h3>Players from Attendance</h3>
+                {playerNames.length>0?<div className="nslPlayerGrid">{playerNames.map((name,idx)=><div key={name} className="nslPlayerCard"><strong>{idx+1}</strong><span>{name}</span><em>{playerBounces[name]||'No DB handicap'}</em></div>)}</div>:<p className="overlayExplain">Mark players present in Attendance or enter manual players above.</p>}
+              </div>
+            )}
+            {nslOrgTab==='teams'&&(
+              <div className="nslPanel">
+                <h3>Auto Team Allocation Preview</h3>
+                <div className="nslTeamGrid">{Array.from({length:nslTeams}).map((_,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>Team {teamIdx+1}</strong>{playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).map(name=><p key={name}>{name}</p>)}{!playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).length&&<p>Waiting for players</p>}</div>)}</div>
+              </div>
+            )}
+            {nslOrgTab==='sheet'&&(
+              <div className="nslPanel">
+                <h3>Sheet / Draw</h3>
+                <div className="nslSheet"><div>Period 1</div><div>Team 1 v Team 2</div><div>{nslPeriod1} min</div><div>Period 2</div><div>Team 3 v Team 4</div><div>{nslPeriod2} min</div><div>Period 3</div><div>Winners / ranked rotation</div><div>{nslPeriod3} min</div><div>Overtime</div><div>If required</div><div>{nslOvertime} min</div></div>
+              </div>
+            )}
           </div>
         )}
 
@@ -2353,7 +2416,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99d1</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99e</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
