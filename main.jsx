@@ -1453,6 +1453,9 @@ function Competition({players=[]}){
   const [invasionStartingLives,setInvasionStartingLives]=useState(5);
   const [invasionRotation,setInvasionRotation]=useState('Rotate courts when one invader loses all lives.');
   const [invasionChallenge,setInvasionChallenge]=useState('Invader tries to win points / survive pressure while defenders control risk.');
+  const [invasionTeams,setInvasionTeams]=useState([]);
+  const [invasionTeamPoints,setInvasionTeamPoints]=useState({});
+  const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
   const [playerBounces,setPlayerBounces]=useState({});
@@ -1488,6 +1491,44 @@ function Competition({players=[]}){
 
   function resetMatch(){
     setMatchScore({a:0,b:0});
+  }
+
+  function generateInvasionTeams(){
+    const names=[...playerNames];
+    const courts=Math.max(1,Math.min(6,Number(invasionCourts)||3));
+    const teams=Array.from({length:courts},(_,idx)=>({
+      id:`court-${idx+1}`,
+      name:`Team ${idx+1}`,
+      court:idx+1,
+      players:[]
+    }));
+    names.forEach((name,idx)=>{
+      teams[idx%courts].players.push(name);
+    });
+    setInvasionTeams(teams);
+    setInvasionTeamPoints(prev=>{
+      const next={};
+      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
+      return next;
+    });
+    setInvasionPlayerPoints(prev=>{
+      const next={};
+      names.forEach(name=>{next[name]=prev[name]||0;});
+      return next;
+    });
+  }
+
+  function addInvasionTeamPoints(teamId,amount){
+    setInvasionTeamPoints(prev=>({...prev,[teamId]:(prev[teamId]||0)+amount}));
+  }
+
+  function addInvasionPlayerPoints(playerName,amount){
+    setInvasionPlayerPoints(prev=>({...prev,[playerName]:(prev[playerName]||0)+amount}));
+  }
+
+  function resetInvasionPoints(){
+    setInvasionTeamPoints({});
+    setInvasionPlayerPoints({});
   }
 
   function generateRoundRobin(){
@@ -1754,6 +1795,51 @@ function Competition({players=[]}){
             <label className="invasionTextLabel">Challenge / Tactical Focus
               <textarea value={invasionChallenge} onChange={e=>setInvasionChallenge(e.target.value)} />
             </label>
+
+            <div className="invasionSetupBox">
+              <strong>Teams / Courts Setup</strong>
+              <p>Players are pulled from Attendance. Choose number of courts above, then generate teams.</p>
+              <button type="button" className="primaryBtn" onClick={generateInvasionTeams}>Generate Teams From Attendance</button>
+
+              {invasionTeams.length>0&&(
+                <div className="invasionTeamGrid">
+                  {invasionTeams.map(team=>(
+                    <div className="invasionTeamCard" key={team.id}>
+                      <h3>{team.name}</h3>
+                      <p><strong>Court:</strong> {team.court}</p>
+                      <p><strong>Players:</strong> {team.players.length?team.players.join(' · '):'Waiting for players'}</p>
+
+                      {invasionFormat==='points'&&(
+                        <div className="invasionPointControls">
+                          <strong>Team Points: {invasionTeamPoints[team.id]||0}</strong>
+                          <div className="buttonRow">
+                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,1)}>+1</button>
+                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,3)}>+3</button>
+                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,-1)}>-1</button>
+                          </div>
+                        </div>
+                      )}
+
+                      {invasionFormat==='points'&&team.players.length>0&&(
+                        <div className="invasionPlayerPointList">
+                          {team.players.map(player=>(
+                            <div key={player}>
+                              <span>{player}: {invasionPlayerPoints[player]||0}</span>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,1)}>+1</button>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,3)}>+3</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {invasionFormat==='points'&&invasionTeams.length>0&&(
+                <button type="button" className="secondaryBtn" onClick={resetInvasionPoints}>Reset Invasion Points</button>
+              )}
+            </div>
 
             <div className="invasionRulesGrid">
               <div className="invasionRuleCard">
@@ -2218,6 +2304,20 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             <div className="projectionLabel">NSL SHEET</div>
             <div className="projectionText">
               Period 1: {competitionProjection.nslPeriod1} min · Period 2: {competitionProjection.nslPeriod2} min · Period 3: {competitionProjection.nslPeriod3} min · Overtime: {competitionProjection.nslOvertime} min
+            </div>
+          </div>}
+
+          {competitionProjection.mode==='invasion'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&<div className="projectionSection">
+            <div className="projectionLabel">INVASION TEAMS / COURTS</div>
+            <div className="projectionText">
+              {competitionProjection.invasionTeams.map(team=>`Court ${team.court} · ${team.name}: ${team.players&&team.players.length?team.players.join(', '):'Waiting'} · Points: ${competitionProjection.invasionTeamPoints?.[team.id]||0}`).join(' · ')}
+            </div>
+          </div>}
+
+          {competitionProjection.mode==='invasion'&&competitionProjection.invasionPlayerPoints&&Object.keys(competitionProjection.invasionPlayerPoints).length>0&&<div className="projectionSection">
+            <div className="projectionLabel">PLAYER POINTS</div>
+            <div className="projectionText">
+              {Object.entries(competitionProjection.invasionPlayerPoints).map(([name,pts])=>`${name}: ${pts}`).join(' · ')}
             </div>
           </div>}
 
@@ -2696,7 +2796,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h2</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h4</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
