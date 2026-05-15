@@ -1004,3 +1004,83 @@
 .nslScoringList{border:1px solid #303548;border-radius:16px;overflow:hidden}.nslScoringList div{display:grid;grid-template-columns:10px 1fr 2fr 1fr;gap:14px;align-items:center;padding:18px;border-bottom:1px solid #303548}.nslScoringList span{width:6px;height:48px;border-radius:4px;background:#64a8ff}.nslScoringList span.danger{background:#ef6f8f}.nslScoringList strong{color:white;font-size:22px}.nslScoringList em{color:#8f92aa;font-style:normal}.nslScoringList b{color:#64a8ff;text-align:right}
 .nslPlayerGrid,.nslTeamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.nslPlayerCard,.nslTeamCard{background:#0f121c;border:1px solid #303548;border-radius:14px;padding:16px}.nslPlayerCard strong{color:#e7c15f;margin-right:10px}.nslPlayerCard span,.nslTeamCard strong{color:white;font-weight:900}.nslPlayerCard em,.nslTeamCard p{display:block;color:#8f92aa;margin-top:6px}
 .nslSheet{display:grid;grid-template-columns:1fr 2fr 1fr;border:1px solid #303548;border-radius:14px;overflow:hidden}.nslSheet div{padding:14px;border-bottom:1px solid #303548;color:white}.nslSheet div:nth-child(3n+1){color:#e7c15f;font-weight:900}@media(max-width:800px){.nslConfigGrid,.nslTabs,.nslSheet{grid-template-columns:1fr}}
+
+/* v99f Competition Projection View */
+.competitionProjectionToggle{
+  margin:18px 0;
+  display:flex;
+  justify-content:flex-end;
+}
+.competitionProjectionView{
+  background:#050914;
+  border:2px solid #ffd980;
+  border-radius:28px;
+  padding:28px;
+  margin:20px 0;
+  color:white;
+}
+.projectionHeaderBar{
+  text-align:center;
+  border-bottom:1px solid #334155;
+  padding-bottom:22px;
+  margin-bottom:22px;
+}
+.projectionHeaderBar span{
+  display:inline-block;
+  background:#ffd980;
+  color:#0f172a;
+  padding:8px 18px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:3px;
+}
+.projectionHeaderBar h1{
+  font-size:54px;
+  margin:16px 0 8px;
+  color:white;
+}
+.projectionHeaderBar p{
+  font-size:28px;
+  color:#ffd980;
+  font-weight:900;
+}
+.projectionInfoGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+.projectionInfoCard{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:18px;
+  padding:20px;
+}
+.projectionInfoCard strong{
+  color:#ffd980;
+  font-size:20px;
+}
+.projectionInfoCard p{
+  font-size:20px;
+  line-height:1.35;
+}
+.wideProjectionCard{
+  margin-top:18px;
+}
+.projectionPlayerList{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+}
+.projectionPlayerList span{
+  background:#1e293b;
+  border:1px solid #475569;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:800;
+}
+@media(max-width:800px){
+  .projectionInfoGrid{grid-template-columns:1fr}
+  .projectionHeaderBar h1{font-size:36px}
+  .projectionHeaderBar p{font-size:22px}
+}

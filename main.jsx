@@ -1464,6 +1464,7 @@ function Competition({players=[]}){
   const [nslPeriod2,setNslPeriod2]=useState(20);
   const [nslPeriod3,setNslPeriod3]=useState(30);
   const [nslOvertime,setNslOvertime]=useState(5);
+  const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
   const automaticNames=present.length?present.map(player=>player.name):[];
@@ -1587,6 +1588,82 @@ function Competition({players=[]}){
         <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
         <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
       </div>
+
+      <div className="competitionProjectionToggle">
+        <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>setShowCompetitionProjection(!showCompetitionProjection)}>
+          {showCompetitionProjection?'Hide Player Projection':'Show Player Projection'}
+        </button>
+      </div>
+
+      {showCompetitionProjection&&(
+        <div className="competitionProjectionView">
+          <div className="projectionHeaderBar">
+            <span>PLAYER PROJECTION</span>
+            <h1>{current.title}</h1>
+            <p>{mode==='matchplay'
+              ?`${matchPlayers.a||'Player A'} ${matchScore.a} - ${matchScore.b} ${matchPlayers.b||'Player B'}`
+              :mode==='invasion'
+                ?`Invasion · ${invasionFormat==='lives'?'Lives Format':'Points Format'}`
+                :mode==='roundRobin'
+                  ?'Round Robin · Fixtures / next opponent'
+                  :mode==='nsl'
+                    ?`NSL · ${nslTeams||'—'} teams · ${nslPlayersPerTeam||'—'} players / team`
+                    :'Competition information'}
+            </p>
+          </div>
+
+          <div className="projectionInfoGrid">
+            <div className="projectionInfoCard">
+              <strong>Current Focus</strong>
+              <p>{current.tactical}</p>
+            </div>
+            <div className="projectionInfoCard">
+              <strong>Rules</strong>
+              <p>{current.rules?.[0]||'Follow the competition format.'}</p>
+            </div>
+            <div className="projectionInfoCard">
+              <strong>Checkerboard</strong>
+              <p>{competitionCbCode}</p>
+            </div>
+            <div className="projectionInfoCard">
+              <strong>Active Overlays</strong>
+              <p>{competitionLayers.length?competitionLayers.join(' · '):'None selected'}</p>
+            </div>
+          </div>
+
+          <div className="projectionInfoCard wideProjectionCard">
+            <strong>Players / DB Handicaps</strong>
+            {playerNames.length>0
+              ?<div className="projectionPlayerList">{playerNames.map(name=><span key={name}>{name}: {playerBounces[name]||'No DB'}</span>)}</div>
+              :<p>No players selected yet.</p>}
+          </div>
+
+          {mode==='roundRobin'&&rrFixtures&&rrFixtures.length>0&&(
+            <div className="projectionInfoCard wideProjectionCard">
+              <strong>Round Robin Fixtures</strong>
+              {rrFixtures.slice(0,3).map((round,idx)=><p key={idx}>Round {idx+1}: {round.map(match=>`${match.a} v ${match.b}`).join(' · ')}</p>)}
+            </div>
+          )}
+
+          {mode==='nsl'&&(
+            <div className="projectionInfoCard wideProjectionCard">
+              <strong>NSL Sheet</strong>
+              <p>Period 1: {nslPeriod1} min · Period 2: {nslPeriod2} min · Period 3: {nslPeriod3} min · Overtime: {nslOvertime} min</p>
+              <p>Teams: {nslTeams} · Players per team: {nslPlayersPerTeam}</p>
+            </div>
+          )}
+
+          {mode==='invasion'&&(
+            <div className="projectionInfoCard wideProjectionCard">
+              <strong>Invasion Format</strong>
+              <p>{invasionFormat==='lives'
+                ?'Defenders serve. Track lives. Winner is the team with the most lives at the end of play.'
+                :'Invader serves. Track points. Winner is the team with the most points at the end of play.'}</p>
+            </div>
+          )}
+        </div>
+      )}
+
 
       <div className="gameCard">
         <div className="categoryTag">Competition Mode</div>
@@ -2416,7 +2493,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99e</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99f</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
