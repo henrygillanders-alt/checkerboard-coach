@@ -1084,3 +1084,27 @@
   .projectionHeaderBar h1{font-size:36px}
   .projectionHeaderBar p{font-size:22px}
 }
+
+/* v99g Project / Projection competition tab */
+.projectionTabRow{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin:18px 0 26px;
+}
+.projectionTabRow button{
+  background:#10233b;
+  border:1px solid #5e83be;
+  color:#ffd980;
+  padding:14px 24px;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+.projectionTabRow button.activeProjectionTab{
+  background:#ffd980;
+  color:#0f172a;
+  border-color:white;
+}

@@ -1575,6 +1575,36 @@ function Competition({players=[]}){
 
   const current=modeInfo[mode];
 
+  useEffect(()=>{
+    const projectionState={
+      mode,
+      title:current.title,
+      tactical:current.tactical,
+      purpose:current.purpose,
+      rules:current.rules,
+      invasionFormat,
+      competitionLayers,
+      competitionCbCode,
+      playerBounces,
+      playerNames,
+      matchScore,
+      matchPlayers,
+      matchScoring,
+      rrFixtures,
+      nslTeams,
+      nslPlayersPerTeam,
+      nslPeriod1,
+      nslPeriod2,
+      nslPeriod3,
+      nslOvertime,
+      updatedAt:new Date().toISOString()
+    };
+    try{
+      localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(projectionState));
+    }catch{}
+  },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,rrFixtures,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,current.title,current.tactical,current.purpose]);
+
+
   return (
     <div className="page">
       <div className="pageTop">
@@ -1976,77 +2006,182 @@ function Storage({players,setPlayers,session,setSession}){
 }
 
 
+
 function ProjectionPlayerDisplay({session=[],players=[]}){
+  const [projectionTab,setProjectionTab]=useState('session');
+  const [competitionProjection,setCompetitionProjection]=useState(null);
   const active=session&&session.length?session[session.length-1]:null;
 
   const presentPlayers=Array.isArray(players)
     ?players.filter(player=>player.present)
     :[];
 
+  useEffect(()=>{
+    function loadCompetitionProjection(){
+      try{
+        const saved=localStorage.getItem('checkerboardCompetitionProjection');
+        setCompetitionProjection(saved?JSON.parse(saved):null);
+      }catch{
+        setCompetitionProjection(null);
+      }
+    }
+    loadCompetitionProjection();
+    const timer=setInterval(loadCompetitionProjection,1500);
+    return ()=>clearInterval(timer);
+  },[]);
+
   return <div className="projectionPage">
     <div className="projectionPanel">
       <div className="projectionHeader">PLAYER DISPLAY / PROJECTION VIEW</div>
 
-      {!active&&<div className="projectionEmpty">
-        Add a game to Session Builder and project this screen for players.
-      </div>}
+      <div className="projectionTabRow">
+        <button className={projectionTab==='session'?'activeProjectionTab':''} onClick={()=>setProjectionTab('session')}>Session</button>
+        <button className={projectionTab==='competition'?'activeProjectionTab':''} onClick={()=>setProjectionTab('competition')}>Competition</button>
+      </div>
 
-      {active&&<>
-        <div className="projectionTitle">
-          {active.title||'Session Item'}
-        </div>
-
-        <div className="projectionSection">
-          <div className="projectionLabel">WHAT TO DO</div>
-          <div className="projectionText">
-            {active.task||active.description||'Play the activity as instructed by the coach.'}
-          </div>
-        </div>
-
-        {active.scoring&&<div className="projectionSection">
-          <div className="projectionLabel">SCORING / RULES</div>
-          <div className="projectionText">
-            {active.scoring}
-          </div>
+      {projectionTab==='session'&&<>
+        {!active&&<div className="projectionEmpty">
+          Add a game to Session Builder and project this screen for players.
         </div>}
 
-        {active.playerFocus&&<div className="projectionSection">
-          <div className="projectionLabel">PLAYER FOCUS</div>
-          <div className="projectionText">
-            {active.playerFocus}
+        {active&&<>
+          <div className="projectionTitle">
+            {active.title||'Session Item'}
           </div>
+
+          <div className="projectionSection">
+            <div className="projectionLabel">WHAT TO DO</div>
+            <div className="projectionText">
+              {active.task||active.description||'Play the activity as instructed by the coach.'}
+            </div>
+          </div>
+
+          {active.scoring&&<div className="projectionSection">
+            <div className="projectionLabel">SCORING / RULES</div>
+            <div className="projectionText">
+              {active.scoring}
+            </div>
+          </div>}
+
+          {active.playerFocus&&<div className="projectionSection">
+            <div className="projectionLabel">PLAYER FOCUS</div>
+            <div className="projectionText">
+              {active.playerFocus}
+            </div>
+          </div>}
+
+          {active.layers&&active.layers.length>0&&<div className="projectionSection">
+            <div className="projectionLabel">ACTIVE OVERLAYS</div>
+            <div className="projectionText">
+              {active.layers.join(' · ')}
+            </div>
+          </div>}
+
+          {active.cbCode&&active.cbCode!=='None'&&<div className="projectionSection">
+            <div className="projectionLabel">CHECKERBOARD TARGET</div>
+            <div className="projectionText cbProjection">
+              {active.cbCode}
+            </div>
+          </div>}
+
+          <div className="projectionSection">
+            <div className="projectionLabel">DOUBLE-BOUNCE HANDICAPS</div>
+            <div className="projectionText">
+              {presentPlayers.length
+                ?presentPlayers.map(player=>{
+                    const db=player.doubleBounce||'None';
+                    return `${player.name}: ${db}`;
+                  }).join(' · ')
+                :'Use Competition section to assign DB handicaps.'}
+            </div>
+          </div>
+        </>}
+      </>}
+
+      {projectionTab==='competition'&&<>
+        {!competitionProjection&&<div className="projectionEmpty">
+          Open Competition, choose a format, then return here to project competition information.
         </div>}
 
-        {active.layers&&active.layers.length>0&&<div className="projectionSection">
-          <div className="projectionLabel">ACTIVE OVERLAYS</div>
-          <div className="projectionText">
-            {active.layers.join(' · ')}
+        {competitionProjection&&<>
+          <div className="projectionTitle">
+            {competitionProjection.title||'Competition'}
           </div>
-        </div>}
 
-        {active.cbCode&&active.cbCode!=='None'&&<div className="projectionSection">
-          <div className="projectionLabel">CHECKERBOARD TARGET</div>
-          <div className="projectionText cbProjection">
-            {active.cbCode}
+          <div className="projectionSection">
+            <div className="projectionLabel">CURRENT STATUS</div>
+            <div className="projectionText">
+              {competitionProjection.mode==='matchplay'
+                ?`${competitionProjection.matchPlayers?.a||'Player A'} ${competitionProjection.matchScore?.a||0} - ${competitionProjection.matchScore?.b||0} ${competitionProjection.matchPlayers?.b||'Player B'} · ${competitionProjection.matchScoring||''}`
+                :competitionProjection.mode==='invasion'
+                  ?`Invasion · ${competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'}`
+                  :competitionProjection.mode==='roundRobin'
+                    ?'Round Robin · Fixtures / next opponent'
+                    :competitionProjection.mode==='nsl'
+                      ?`NSL · ${competitionProjection.nslTeams||'—'} teams · ${competitionProjection.nslPlayersPerTeam||'—'} players per team`
+                      :'Competition active'}
+            </div>
           </div>
-        </div>}
 
-        <div className="projectionSection">
-          <div className="projectionLabel">DOUBLE-BOUNCE HANDICAPS</div>
-          <div className="projectionText">
-            {presentPlayers.length
-              ?presentPlayers.map(player=>{
-                  const db=player.doubleBounce||'None';
-                  return `${player.name}: ${db}`;
-                }).join(' · ')
-              :'Use Competition section to assign DB handicaps.'}
+          <div className="projectionSection">
+            <div className="projectionLabel">TACTICAL FOCUS</div>
+            <div className="projectionText">
+              {competitionProjection.tactical||'Compete clearly and adapt.'}
+            </div>
           </div>
-        </div>
+
+          <div className="projectionSection">
+            <div className="projectionLabel">RULES / STRUCTURE</div>
+            <div className="projectionText">
+              {competitionProjection.rules&&competitionProjection.rules.length
+                ?competitionProjection.rules.slice(0,3).join(' · ')
+                :'Follow the competition format.'}
+            </div>
+          </div>
+
+          {competitionProjection.mode==='roundRobin'&&competitionProjection.rrFixtures&&competitionProjection.rrFixtures.length>0&&<div className="projectionSection">
+            <div className="projectionLabel">ROUND ROBIN FIXTURES</div>
+            <div className="projectionText">
+              {competitionProjection.rrFixtures.slice(0,3).map((round,idx)=>`Round ${idx+1}: ${round.map(match=>`${match.a} v ${match.b}`).join(' / ')}`).join(' · ')}
+            </div>
+          </div>}
+
+          {competitionProjection.mode==='nsl'&&<div className="projectionSection">
+            <div className="projectionLabel">NSL SHEET</div>
+            <div className="projectionText">
+              Period 1: {competitionProjection.nslPeriod1} min · Period 2: {competitionProjection.nslPeriod2} min · Period 3: {competitionProjection.nslPeriod3} min · Overtime: {competitionProjection.nslOvertime} min
+            </div>
+          </div>}
+
+          <div className="projectionSection">
+            <div className="projectionLabel">ACTIVE OVERLAYS</div>
+            <div className="projectionText">
+              {competitionProjection.competitionLayers&&competitionProjection.competitionLayers.length
+                ?competitionProjection.competitionLayers.join(' · ')
+                :'None selected'}
+            </div>
+          </div>
+
+          <div className="projectionSection">
+            <div className="projectionLabel">CHECKERBOARD</div>
+            <div className="projectionText cbProjection">
+              {competitionProjection.competitionCbCode||'None'}
+            </div>
+          </div>
+
+          <div className="projectionSection">
+            <div className="projectionLabel">PLAYERS / DB HANDICAPS</div>
+            <div className="projectionText">
+              {competitionProjection.playerNames&&competitionProjection.playerNames.length
+                ?competitionProjection.playerNames.map(name=>`${name}: ${competitionProjection.playerBounces?.[name]||'No DB'}`).join(' · ')
+                :'No players selected'}
+            </div>
+          </div>
+        </>}
       </>}
     </div>
   </div>;
 }
-
 
 
 function RotationalAffordanceGames({setScreen}){
