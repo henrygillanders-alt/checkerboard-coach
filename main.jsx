@@ -1449,6 +1449,10 @@ return <div className="page">
 function Competition({players=[]}){
   const [mode,setMode]=useState('invasion');
   const [invasionFormat,setInvasionFormat]=useState('lives');
+  const [invasionCourts,setInvasionCourts]=useState(3);
+  const [invasionStartingLives,setInvasionStartingLives]=useState(5);
+  const [invasionRotation,setInvasionRotation]=useState('Rotate courts when one invader loses all lives.');
+  const [invasionChallenge,setInvasionChallenge]=useState('Invader tries to win points / survive pressure while defenders control risk.');
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
   const [playerBounces,setPlayerBounces]=useState({});
@@ -1512,19 +1516,25 @@ function Competition({players=[]}){
   const modeInfo={
     invasion:{
       title:'Invasion Game',
-      tactical:invasionFormat==='lives'?'Survival · discipline · pressure management':'Initiative · aggression · opportunity recognition',
-      purpose:invasionFormat==='lives'?'Lives format. Defenders always serve. Players self-manage lives.':'Points format. Invader always serves. Teams accumulate points.',
+      tactical:invasionFormat==='lives'
+        ?'Survival · discipline · pressure management · defensive control'
+        :'Initiative · attacking pressure · opportunity recognition · defender discipline',
+      purpose:invasionFormat==='lives'
+        ?'Lives Format. Defenders always serve. Invaders protect lives while rotating courts.'
+        :'Points Format. Invader always serves. Invader scores from defender errors and balcony penalties.',
       rules:invasionFormat==='lives'?[
-        'Defenders always serve.',
-        'Players track lives.',
+        'Lives Format: defenders always serve.',
+        `Each invader starts with ${invasionStartingLives} lives.`,
         'If invader hits out of the court area then -1 life penalty against invader.',
         'If invader hits out of court area and into the balcony then -3 lives penalty against invader.',
-        'Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations unused lives are carried forward to next invader.',
+        'Once one invader loses all lives play is stopped and invaders rotate courts.',
+        'Unused lives are carried forward to the next court and when invader finishes all court rotations unused lives are carried forward to next invader.',
         'Winner is the team with the most lives at the end of play.'
       ]:[
-        'Invader always serves.',
-        'If a defender hits the ball out of the court area then + 1 to invader.',
-        'If a defender hits the ball out of the court area and into balcony then + 3 points to invader.',
+        'Points Format: invader always serves.',
+        'If a defender hits the ball out of the court area then +1 to invader.',
+        'If a defender hits the ball out of the court area and into balcony then +3 points to invader.',
+        'Double-bounce handicaps may apply to selected weaker players.',
         'Winner is the team with the most points at the end of play.'
       ]
     },
@@ -1700,13 +1710,71 @@ function Competition({players=[]}){
         <h2>{current.title}</h2>
 
         {mode==='invasion'&&(
-          <div className="atlOptionsGrid">
-            <label>Invasion Format
-              <select value={invasionFormat} onChange={e=>setInvasionFormat(e.target.value)}>
-                <option value="lives">Lives Format</option>
-                <option value="points">Points Format</option>
-              </select>
+          <div className="invasionRebuildPanel">
+            <div className="invasionFormatToggle">
+              <button type="button" className={invasionFormat==='lives'?'activeInvasionFormat':''} onClick={()=>setInvasionFormat('lives')}>Lives Format</button>
+              <button type="button" className={invasionFormat==='points'?'activeInvasionFormat':''} onClick={()=>setInvasionFormat('points')}>Points Format</button>
+            </div>
+
+            <div className="invasionRuleHero">
+              <strong>{invasionFormat==='lives'?'Defenders always serve':'Invader always serves'}</strong>
+              <p>{invasionFormat==='lives'
+                ?'Best when you want survival pressure, discipline and risk control.'
+                :'Best when you want attacking initiative, pressure creation and defender consequence.'}</p>
+            </div>
+
+            <div className="invasionConfigGrid">
+              <label>Courts
+                <select value={invasionCourts} onChange={e=>setInvasionCourts(Number(e.target.value))}>
+                  <option value={1}>1 court</option>
+                  <option value={2}>2 courts</option>
+                  <option value={3}>3 courts</option>
+                  <option value={4}>4 courts</option>
+                  <option value={5}>5 courts</option>
+                  <option value={6}>6 courts</option>
+                </select>
+              </label>
+
+              {invasionFormat==='lives'&&<label>Starting Lives
+                <select value={invasionStartingLives} onChange={e=>setInvasionStartingLives(Number(e.target.value))}>
+                  <option value={3}>3 lives</option>
+                  <option value={4}>4 lives</option>
+                  <option value={5}>5 lives</option>
+                  <option value={6}>6 lives</option>
+                  <option value={8}>8 lives</option>
+                  <option value={10}>10 lives</option>
+                </select>
+              </label>}
+            </div>
+
+            <label className="invasionTextLabel">Rotation / Organisation Notes
+              <textarea value={invasionRotation} onChange={e=>setInvasionRotation(e.target.value)} />
             </label>
+
+            <label className="invasionTextLabel">Challenge / Tactical Focus
+              <textarea value={invasionChallenge} onChange={e=>setInvasionChallenge(e.target.value)} />
+            </label>
+
+            <div className="invasionRulesGrid">
+              <div className="invasionRuleCard">
+                <strong>Out of Court</strong>
+                <p>{invasionFormat==='lives'
+                  ?'Invader out = -1 life.'
+                  :'Defender out = +1 point to invader.'}</p>
+              </div>
+              <div className="invasionRuleCard danger">
+                <strong>Balcony</strong>
+                <p>{invasionFormat==='lives'
+                  ?'Invader into balcony = -3 lives.'
+                  :'Defender into balcony = +3 points to invader.'}</p>
+              </div>
+              <div className="invasionRuleCard">
+                <strong>Rotation</strong>
+                <p>{invasionFormat==='lives'
+                  ?'Stop when one invader loses all lives. Rotate courts. Carry unused lives forward.'
+                  :'Timed rotations. Invader total points counted after rotations.'}</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -2628,7 +2696,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99f</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h2</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

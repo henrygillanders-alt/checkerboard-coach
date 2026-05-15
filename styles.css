@@ -1108,3 +1108,22 @@
   color:#0f172a;
   border-color:white;
 }
+
+/* v99h2 Invasion rebuild — direct patch from v99g */
+.invasionRebuildPanel{background:#081320;border:1px solid #35567e;border-radius:18px;padding:18px;margin:16px 0}
+.invasionFormatToggle{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.invasionFormatToggle button{background:#10233b;border:1px solid #5e83be;color:#ffd980;border-radius:14px;padding:16px;font-size:20px;font-weight:900}
+.invasionFormatToggle button.activeInvasionFormat{background:#ffd980;color:#0f172a;border-color:white}
+.invasionRuleHero{background:#0b1828;border:1px solid #ffd980;border-radius:16px;padding:18px;margin-bottom:16px}
+.invasionRuleHero strong{color:#ffd980;font-size:24px}
+.invasionRuleHero p{color:white;font-size:18px}
+.invasionConfigGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.invasionConfigGrid label,.invasionTextLabel{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900;margin:10px 0}
+.invasionConfigGrid select,.invasionTextLabel textarea{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
+.invasionTextLabel textarea{min-height:78px}
+.invasionRulesGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.invasionRuleCard{background:#0b1828;border:1px solid #35567e;border-radius:14px;padding:14px}
+.invasionRuleCard strong{color:#ffd980;font-size:18px}
+.invasionRuleCard p{color:white;line-height:1.35}
+.invasionRuleCard.danger{border-color:#ef4444}
+@media(max-width:800px){.invasionFormatToggle,.invasionConfigGrid,.invasionRulesGrid{grid-template-columns:1fr}}
