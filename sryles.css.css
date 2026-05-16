@@ -1283,13 +1283,40 @@
 .rotationButtonRow{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
 .rotationNoteBox{background:#0b1828;border:1px solid #35567e;border-radius:12px;padding:12px;color:#cbd5e1;font-weight:800}
 
-/* v99h7b surgical unified invasion scoring */
-.calculatedTeamTotal{
+/* v99h8 Invasion Team Life Bank */
+.invasionLifeBankControls{
   background:#071827;
   border:1px solid #ffd980;
+  border-radius:14px;
+  padding:12px;
+  margin-top:12px;
 }
-.calculatedTeamTotal p{
-  color:#cbd5e1;
-  margin:6px 0 0;
-  font-size:14px;
+.invasionLifeBankControls strong{
+  color:#ffd980;
+  display:block;
+  font-size:20px;
+  margin-bottom:6px;
+}
+.invasionLifeBankControls p{color:#cbd5e1;margin:4px 0 10px}
+.invasionLifeBankControls label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+  margin-top:10px;
+}
+.invasionLifeBankControls input{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:10px;
+  color:white;
+  padding:10px;
+}
+.invasionLifeBankControls em{
+  display:block;
+  color:#ef4444;
+  font-style:normal;
+  font-weight:900;
+  margin-top:10px;
 }
