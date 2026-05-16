@@ -2445,6 +2445,18 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
     ?players.filter(player=>player.present)
     :[];
 
+  function projectorTeamBaseLives(team,competitionProjection){
+    const playerCount=(team.players||[]).length||1;
+    const baseTotal=competitionProjection?.invasionFairBaseTotal||playerCount;
+    return Math.max(1,Math.floor(baseTotal/playerCount));
+  }
+  function projectorTeamCarry(team,competitionProjection){
+    return competitionProjection?.invasionCarryLives?.[team.id]||0;
+  }
+  function projectorTeamStartLives(team,competitionProjection){
+    return projectorTeamBaseLives(team,competitionProjection)+projectorTeamCarry(team,competitionProjection);
+  }
+
   useEffect(()=>{
     function loadCompetitionProjection(){
       try{
@@ -2533,6 +2545,69 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
         </div>}
 
         {competitionProjection&&<>
+          {competitionProjection.mode==='invasion'&&(
+            <div className="invasionProjectorBoard">
+              <div className="invasionProjectorHeader">
+                <span>LIVE COMPETITION BOARD</span>
+                <h1>Invasion Game</h1>
+                <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Rotation {competitionProjection.invasionRotationStep||0}</p>
+              </div>
+
+              <div className="invasionProjectorRules">
+                <strong>Essential Rules</strong>
+                <div className="rulePillGrid">
+                  <span>{competitionProjection.invasionFormat==='lives'?'Defenders serve':'Invader serves'}</span>
+                  <span>{competitionProjection.invasionFormat==='lives'?'Carry-over lives active':'Player points build team total'}</span>
+                  <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
+                  <span>Double-bounce handicaps shown below</span>
+                </div>
+                <div className="projectorBaseLivesGrid">
+                  {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=>(
+                    <div key={team.id}>
+                      <b>{team.name}</b>
+                      <p>Base lives/player: {projectorTeamBaseLives(team,competitionProjection)}</p>
+                      <p>Carry-over: {projectorTeamCarry(team,competitionProjection)}</p>
+                      <p>Next start: {projectorTeamStartLives(team,competitionProjection)}</p>
+                    </div>
+                  )):<p>No teams generated yet.</p>}
+                </div>
+                <div className="projectorDbStrip">
+                  <b>Double-bounce:</b>
+                  {competitionProjection.playerNames&&competitionProjection.playerNames.length?competitionProjection.playerNames.map(name=><span key={name}>{name}: {competitionProjection.playerBounces?.[name]||'No DB'}</span>):<span>No players selected</span>}
+                </div>
+              </div>
+
+              <div className="invasionProjectorCourts">
+                <strong>Live Courts</strong>
+                <div className="projectorCourtGrid">
+                  {competitionProjection.invasionCourtAssignments&&competitionProjection.invasionCourtAssignments.length?competitionProjection.invasionCourtAssignments.map(assign=>{
+                    const invadingTeam=(competitionProjection.invasionTeams||[]).find(team=>team.id===assign.invadingTeamId);
+                    const startLives=invadingTeam?projectorTeamStartLives(invadingTeam,competitionProjection):competitionProjection.invasionStartingLives||0;
+                    const posted=competitionProjection.invasionFinishLives?.[assign.invadingTeamId];
+                    return <div className="projectorCourtLiveCard" key={`${assign.court}-${assign.invadingTeamId}`}>
+                      <h3>Court {assign.court}</h3>
+                      <p><b>Invader:</b> {assign.invader} · {assign.invadingTeamName}</p>
+                      <p><b>Defending team:</b> {assign.defendingTeamName}</p>
+                      <p><b>Defenders:</b> {assign.defenders&&assign.defenders.length?assign.defenders.join(' · '):'Waiting'}</p>
+                      {competitionProjection.invasionFormat==='lives'
+                        ?<div className="courtLivesLine"><span>Start</span><strong>{startLives}</strong><span>Remaining</span><strong>{posted!==undefined?posted:'—'}</strong></div>
+                        :<div className="courtLivesLine"><span>Team points</span><strong>{competitionProjection.invasionTeamPoints?.[assign.invadingTeamId]||0}</strong></div>}
+                    </div>;
+                  }):<p>Generate teams and rotate courts to show live court assignments.</p>}
+                </div>
+              </div>
+
+              {competitionProjection.invasionFormat==='lives'&&(
+                <div className="nextInvasionStarts">
+                  <strong>Next Invasion Start Lives</strong>
+                  <div>
+                    {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>):<span>No teams yet</span>}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="projectionTitle">
             {competitionProjection.title||'Competition'}
           </div>
@@ -3162,7 +3237,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h11</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h12</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
