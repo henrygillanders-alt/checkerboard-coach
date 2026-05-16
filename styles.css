@@ -1320,3 +1320,45 @@
   font-weight:900;
   margin-top:10px;
 }
+
+/* v99h9 Invasion Current State Projection */
+.invasionCurrentStateProjection{border:2px solid #ffd980;background:#050914}
+.currentStateHero{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071827;border:1px solid #35567e;border-radius:18px;padding:18px;margin:14px 0}
+.currentStateHero strong{color:#ffd980;font-size:30px}.currentStateHero span{color:white;font-size:22px;font-weight:900}
+.projectorTeamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:18px 0}
+.projectorTeamCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:18px}
+.projectorTeamCard h3{color:#ffd980;margin:0 0 8px;font-size:22px}.projectorTeamCard p{color:white;font-size:18px}
+.projectorTeamCard strong{display:block;color:white;font-size:38px;margin:12px 0 4px}.projectorTeamCard em{color:#cbd5e1;font-style:normal;font-weight:800}
+.projectorPlayerScores{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.projectorPlayerScores span{background:#10233b;border:1px solid #5e83be;color:#ffd980;border-radius:999px;padding:12px 16px;font-weight:900}
+.nextActionStrip{background:#ffd980;color:#0f172a;border-radius:14px;padding:16px;font-weight:900;font-size:20px;margin-top:16px}
+@media(max-width:800px){.currentStateHero{flex-direction:column;align-items:flex-start}}
+
+/* v99h10 Simultaneous Invasion Court Model */
+.projectorCourtAssignments{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+  margin:18px 0;
+}
+.projectorCourtCard{
+  background:#071827;
+  border:1px solid #ffd980;
+  border-radius:16px;
+  padding:16px;
+}
+.projectorCourtCard h3{
+  color:#ffd980;
+  font-size:24px;
+  margin:0 0 10px;
+}
+.projectorCourtCard p{
+  color:white;
+  font-size:17px;
+  margin:7px 0;
+}
+.courtCardPlayers b{
+  color:#ffd980;
+}
+.invasionCourtCard.activeCourtCard{
+  border:2px solid #ffd980;
+}
