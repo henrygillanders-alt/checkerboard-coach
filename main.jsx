@@ -1456,6 +1456,10 @@ function Competition({players=[]}){
   const [invasionTeams,setInvasionTeams]=useState([]);
   const [invasionTeamPoints,setInvasionTeamPoints]=useState({});
   const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
+  const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
+  const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
+  const [invasionRotationStep,setInvasionRotationStep]=useState(0);
+  const [invasionEliminated,setInvasionEliminated]=useState('');
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
   const [playerBounces,setPlayerBounces]=useState({});
@@ -1526,9 +1530,31 @@ function Competition({players=[]}){
     setInvasionPlayerPoints(prev=>({...prev,[playerName]:(prev[playerName]||0)+amount}));
   }
 
+  function getInvasionTeamTotal(team){
+    return (team.players||[]).reduce((total,player)=>total+(invasionPlayerPoints[player]||0),0);
+  }
+
   function resetInvasionPoints(){
     setInvasionTeamPoints({});
     setInvasionPlayerPoints({});
+  }
+
+  function rotateInvasionCourts(){
+    if(!invasionTeams.length) return;
+    setInvasionRotationStep(prev=>prev+1);
+    setActiveInvasionCourt(prev=>prev>=invasionTeams.length?1:prev+1);
+    setInvasionTeams(prev=>{
+      if(prev.length<2) return prev;
+      const playersByTeam=prev.map(team=>team.players||[]);
+      const rotatedPlayers=[playersByTeam[playersByTeam.length-1],...playersByTeam.slice(0,playersByTeam.length-1)];
+      return prev.map((team,idx)=>({...team,players:rotatedPlayers[idx]||[]}));
+    });
+  }
+
+  function resetInvasionRotation(){
+    setInvasionRotationStep(0);
+    setActiveInvasionCourt(1);
+    setInvasionEliminated('');
   }
 
   function generateRoundRobin(){
@@ -1562,7 +1588,7 @@ function Competition({players=[]}){
         :'Initiative · attacking pressure · opportunity recognition · defender discipline',
       purpose:invasionFormat==='lives'
         ?'Lives Format. Defenders always serve. Invaders protect lives while rotating courts.'
-        :'Points Format. Invader always serves. Invader scores from defender errors and balcony penalties.',
+        :'Points Format. Invader always serves. Player points are carried forward. Team total is the sum of player points.',
       rules:invasionFormat==='lives'?[
         'Lives Format: defenders always serve.',
         `Each invader starts with ${invasionStartingLives} lives.`,
@@ -1575,7 +1601,9 @@ function Competition({players=[]}){
         'Points Format: invader always serves.',
         'If a defender hits the ball out of the court area then +1 to invader.',
         'If a defender hits the ball out of the court area and into balcony then +3 points to invader.',
-        'Double-bounce handicaps may apply to selected weaker players.',
+        'Player score +1 for defender out-of-court penalty.',
+        'Player score +3 for balcony penalty.',
+        'Team total = sum of player scores.',
         'Winner is the team with the most points at the end of play.'
       ]
     },
@@ -1810,13 +1838,9 @@ function Competition({players=[]}){
                       <p><strong>Players:</strong> {team.players.length?team.players.join(' · '):'Waiting for players'}</p>
 
                       {invasionFormat==='points'&&(
-                        <div className="invasionPointControls">
-                          <strong>Team Points: {invasionTeamPoints[team.id]||0}</strong>
-                          <div className="buttonRow">
-                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,1)}>+1</button>
-                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,3)}>+3</button>
-                            <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,-1)}>-1</button>
-                          </div>
+                        <div className="invasionPointControls calculatedTeamTotal">
+                          <strong>Team Total: {getInvasionTeamTotal(team)}</strong>
+                          <p>Calculated automatically from player points.</p>
                         </div>
                       )}
 
@@ -1827,6 +1851,7 @@ function Competition({players=[]}){
                               <span>{player}: {invasionPlayerPoints[player]||0}</span>
                               <button type="button" onClick={()=>addInvasionPlayerPoints(player,1)}>+1</button>
                               <button type="button" onClick={()=>addInvasionPlayerPoints(player,3)}>+3</button>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,-1)}>-1</button>
                             </div>
                           ))}
                         </div>
@@ -1840,6 +1865,79 @@ function Competition({players=[]}){
                 <button type="button" className="secondaryBtn" onClick={resetInvasionPoints}>Reset Invasion Points</button>
               )}
             </div>
+
+            {invasionTeams.length>0&&(
+              <div className="invasionRotationEngine">
+                <div className="rotationEngineTop">
+                  <strong>Rotation Engine</strong>
+                  <span>Rotation {invasionRotationStep}</span>
+                </div>
+
+                <div className="invasionConfigGrid">
+                  <label>Eliminated / Trigger Player
+                    <select value={invasionEliminated} onChange={e=>setInvasionEliminated(e.target.value)}>
+                      <option value="">None selected</option>
+                      {playerNames.map(name=><option key={name}>{name}</option>)}
+                    </select>
+                  </label>
+
+                  <label>Active Court
+                    <select value={activeInvasionCourt} onChange={e=>setActiveInvasionCourt(Number(e.target.value))}>
+                      {invasionTeams.map(team=><option key={team.id} value={team.court}>Court {team.court}</option>)}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="rotationButtonRow">
+                  <button type="button" className="primaryBtn" onClick={rotateInvasionCourts}>Rotate Courts</button>
+                  <button type="button" className="secondaryBtn" onClick={resetInvasionRotation}>Reset Rotation</button>
+                </div>
+
+                <div className="rotationNoteBox">
+                  {invasionFormat==='lives'
+                    ?'Use when one invader loses all lives. Unused lives are carried forward to the next court.'
+                    :'Rotate courts after the agreed time or number of rallies. Player points are carried forward. Team total is the sum of player points.'}
+                </div>
+              </div>
+            )}
+
+            {invasionTeams.length>0&&(
+              <div className="invasionDashboardBlock">
+                <div className="invasionDashboardTop">
+                  <strong>Live Court Dashboard</strong>
+                  <button type="button" className={showInvasionDashboard?'primaryBtn':'secondaryBtn'} onClick={()=>setShowInvasionDashboard(!showInvasionDashboard)}>
+                    {showInvasionDashboard?'Hide Dashboard':'Show Dashboard'}
+                  </button>
+                </div>
+
+                {showInvasionDashboard&&(
+                  <div className="invasionCourtDashboard">
+                    {invasionTeams.map(team=>(
+                      <div className={activeInvasionCourt===team.court?'invasionCourtCard activeCourtCard':'invasionCourtCard'} key={team.id} onClick={()=>setActiveInvasionCourt(team.court)}>
+                        <div className="courtCardHeader">
+                          <span>Court {team.court}</span>
+                          <strong>{team.name}</strong>
+                        </div>
+
+                        <div className="courtCardPlayers">
+                          {team.players.length?team.players.map(player=><p key={player}>{player} <em>{invasionFormat==='points'?`${invasionPlayerPoints[player]||0} pts`:''}</em></p>):<p>Waiting for players</p>}
+                        </div>
+
+                        <div className="courtCardScore">
+                          {invasionFormat==='points'
+                            ?<strong>{getInvasionTeamTotal(team)} pts</strong>
+                            :<strong>{invasionStartingLives} starting lives</strong>}
+                        </div>
+
+                        <div className="courtCardChallenge">
+                          {invasionChallenge}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="invasionRulesGrid">
               <div className="invasionRuleCard">
@@ -1858,7 +1956,7 @@ function Competition({players=[]}){
                 <strong>Rotation</strong>
                 <p>{invasionFormat==='lives'
                   ?'Stop when one invader loses all lives. Rotate courts. Carry unused lives forward.'
-                  :'Timed rotations. Invader total points counted after rotations.'}</p>
+                  :'Timed rotations. Player points carry forward. Team total is the sum of player scores.'}</p>
               </div>
             </div>
           </div>
@@ -2307,10 +2405,24 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             </div>
           </div>}
 
+          {competitionProjection.mode==='invasion'&&<div className="projectionSection">
+            <div className="projectionLabel">ROTATION STATUS</div>
+            <div className="projectionText">
+              Rotation {competitionProjection.invasionRotationStep||0} · Active Court {competitionProjection.activeInvasionCourt||1}{competitionProjection.invasionEliminated?` · Trigger: ${competitionProjection.invasionEliminated}`:''}
+            </div>
+          </div>}
+
+          {competitionProjection.mode==='invasion'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&<div className="projectionSection">
+            <div className="projectionLabel">ACTIVE COURT DASHBOARD</div>
+            <div className="projectionText">
+              {competitionProjection.invasionTeams.map(team=>`Court ${team.court}${competitionProjection.activeInvasionCourt===team.court?' ★':''}: ${team.name} · ${team.players&&team.players.length?team.players.join(', '):'Waiting'} · ${competitionProjection.invasionFormat==='points'?'Points: '+(competitionProjection.invasionCalculatedTeamTotals?.[team.id]||0):'Lives format'}`).join(' · ')}
+            </div>
+          </div>}
+
           {competitionProjection.mode==='invasion'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&<div className="projectionSection">
             <div className="projectionLabel">INVASION TEAMS / COURTS</div>
             <div className="projectionText">
-              {competitionProjection.invasionTeams.map(team=>`Court ${team.court} · ${team.name}: ${team.players&&team.players.length?team.players.join(', '):'Waiting'} · Points: ${competitionProjection.invasionTeamPoints?.[team.id]||0}`).join(' · ')}
+              {competitionProjection.invasionTeams.map(team=>`Court ${team.court} · ${team.name}: ${team.players&&team.players.length?team.players.join(', '):'Waiting'} · Points: ${competitionProjection.invasionCalculatedTeamTotals?.[team.id]||0}`).join(' · ')}
             </div>
           </div>}
 
@@ -2796,7 +2908,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h4</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h7b</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
