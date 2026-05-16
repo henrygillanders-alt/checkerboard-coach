@@ -1,0 +1,1334 @@
+
+*{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
+.hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
+.homeGrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.tile{border:none;border-radius:24px;padding:28px;text-align:left;color:white;min-height:180px;cursor:pointer}.tile h2{font-size:42px;margin:0 0 14px}.tile p{font-size:22px;line-height:1.4}.blue{background:linear-gradient(135deg,#1f67c8,#19478b)}.purple{background:linear-gradient(135deg,#7a2cc8,#51208d)}.green{background:linear-gradient(135deg,#16934d,#0d6b38)}.red{background:linear-gradient(135deg,#b32836,#7e1621)}
+.pageTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.buttonRow,.actionRow,.badgeRow,.chips,.quickLayers{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.formCard,.playerCard,.placeholder,.competitionCard,.competitionOutput,.gameCard,.rotationCard{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px;margin-bottom:18px}.formCard{display:grid;gap:12px}.formCard h3{margin:0;color:#ffd980}.formCard input,.formCard select,.formCard textarea,.competitionCard textarea,.competitionCard select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}.playerGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.badge{background:#1f5dd0;padding:8px 12px;border-radius:999px;font-weight:800}.infoBox,.cbBox{background:#091625;border:1px solid #2f4d72;border-radius:12px;padding:12px;margin-bottom:12px}.infoBox strong,.cbBox strong{color:#ffd980}.actionRow button,.quickLayers button,.gameMenu,.gameRow{background:#12253d;border:1px solid #486b9a;color:white;border-radius:10px;padding:10px;font-weight:800;cursor:pointer}.activePresent{background:#159947!important}
+.attendanceSummary,.quickGuestBox,.rankingNote,.presentCompetitionBox,.hintBox,.standingsNote,.rrBoxSelector{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:16px;color:#dce8ff}.attendanceSummary span{display:block;color:#9fb0c8;margin-top:5px}.quickGuestRow{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;margin-top:12px}.quickGuestRow input,.quickGuestRow select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}
+.gameMenuGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.activeGameMenu{background:#1f5dd0}.gameList{display:grid;gap:10px}.gameRow{text-align:left}.gameRow span{display:block;color:#9fb0c8;margin-top:5px}.categoryTag{background:#1f5dd0;display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}.atlOptionsGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.atlOptionsGrid label{display:flex;flex-direction:column;gap:6px;color:#9bc1ff;font-weight:900;font-size:13px}.atlOptionsGrid select,.cbBox select{background:#081320;border:1px solid #35567e;border-radius:10px;padding:10px;color:white}
+.totalBox{background:#1f5dd0;border-radius:12px;padding:12px 16px;font-weight:900}.rotationTop{display:flex;justify-content:space-between;gap:10px}.competitionControls{display:grid;grid-template-columns:1fr 1fr;gap:14px}.stepper{display:flex;align-items:center;justify-content:space-between;background:#081320;border:1px solid #35567e;border-radius:12px;padding:8px}.stepper button{background:#1f5dd0;border:none;color:white;border-radius:10px;width:44px;height:38px;font-weight:900;font-size:20px}.stepper strong{font-size:26px;color:#ffd980}.fixtureCard{background:#091625;border:1px solid #2f4d72;border-radius:12px;padding:14px;margin-bottom:10px}.boxGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.boxOption{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}.activeBox{background:#1f5dd0}
+@media(max-width:900px){.homeGrid,.playerGrid,.quickGuestRow,.competitionControls{grid-template-columns:1fr}.tile h2{font-size:32px}.tile p{font-size:18px}.gameMenuGrid,.atlOptionsGrid,.boxGrid{grid-template-columns:1fr 1fr}.pageTop,.rotationTop{flex-direction:column;align-items:flex-start}}
+
+.overlayPanel{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0;color:#dce8ff}
+.overlayPanel strong{color:#ffd980;display:block;margin-bottom:10px}.quickLayers .activeLayer{background:#1f5dd0;border-color:#8ab6ff}.formatGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.formatBtn{background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:14px;font-weight:900}.activeFormat{background:#1f5dd0;border-color:#8ab6ff}@media(max-width:900px){.formatGrid{grid-template-columns:1fr 1fr}}
+
+.competitionOverlayBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:16px;
+}
+.competitionOverlayBox > strong,
+.doubleBounceEdit strong{
+  color:#ffd980;
+  display:block;
+  margin-bottom:10px;
+}
+.quickLayers button.activeLayer{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
+.doubleBounceEdit{
+  background:#091625;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:12px;
+  margin-top:12px;
+}
+.doubleBounceEdit textarea{
+  width:100%;
+  min-height:90px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+
+.playerBounceGrid{
+  margin-top:14px;
+  display:grid;
+  gap:10px;
+}
+.playerBounceGrid > strong{
+  color:#ffd980;
+}
+.playerBounceGrid p{
+  margin:0;
+  color:#9fb0c8;
+}
+.playerBounceRow{
+  display:grid;
+  grid-template-columns:1fr 220px;
+  gap:10px;
+  align-items:center;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:10px;
+}
+.playerBounceRow span{
+  font-weight:900;
+}
+.playerBounceRow select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:10px;
+  padding:10px;
+  color:white;
+}
+@media(max-width:900px){
+  .playerBounceRow{
+    grid-template-columns:1fr;
+  }
+}
+
+.navy{
+  background:linear-gradient(135deg,#123b5c,#071f35);
+}
+
+.storageGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.storageCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+
+.storageCard h2{
+  margin-top:0;
+}
+
+.storageCard p{
+  color:#9fb0c8;
+}
+
+.backupBox{
+  width:100%;
+  min-height:220px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+  margin-top:12px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size:12px;
+}
+
+.statusBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  color:#dce8ff;
+  font-weight:900;
+}
+
+@media(max-width:900px){
+  .storageGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.overlayPanel .buttonRow{
+  margin-top:12px;
+}
+.quickLayers button.activeLayer{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
+
+.libraryNotice{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:18px}.libraryNotice strong,.libraryNotice span{display:block}.libraryNotice strong{color:#ffd980}.libraryNotice span{color:#dce8ff;margin-top:4px}
+.libraryToolbar{display:grid;grid-template-columns:1fr 260px;gap:12px;margin:18px 0}.libraryToolbar input,.libraryToolbar select,.editGamePanel input,.editGamePanel select,.editGamePanel textarea{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}
+.libraryGrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.libraryCard{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px}.libraryCardTop{display:flex;justify-content:space-between;gap:12px}
+.favBtn{background:#12253d;border:1px solid #486b9a;color:white;width:46px;height:46px;border-radius:12px;font-size:22px}.activeFav{background:#c99218}.cbMini{background:#081320;border:1px solid #35567e;border-radius:10px;padding:10px;margin-bottom:12px;font-weight:900}
+.editGamePanel{background:#101b2a;border:1px solid #35567e;border-radius:20px;padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}.editGamePanel h2{grid-column:1/-1;margin:0}.editGamePanel label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900}.editGamePanel textarea{min-height:90px}.editGamePanel .wide{grid-column:1/-1}
+.statusBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:18px;color:#dce8ff;font-weight:900}
+@media(max-width:900px){.libraryGrid,.libraryToolbar,.editGamePanel{grid-template-columns:1fr}}
+
+.checkerboardEngine{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.checkerboardEngine h2{
+  margin-top:0;
+}
+.engineIntro{
+  color:#9fb0c8;
+}
+.engineGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:12px;
+}
+.engineGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#9bc1ff;
+  font-weight:900;
+}
+.engineGrid select,
+.engineGrid input{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.toggleGrid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.toggleGrid button{
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:10px;
+  padding:10px;
+  font-weight:900;
+}
+.previewCard{
+  margin-top:14px;
+}
+@media(max-width:900px){
+  .engineGrid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+.customSeqBox,.blindCardPanel{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+.customSeqBox strong,.blindCardPanel strong{
+  color:#ffd980;
+  display:block;
+  margin-bottom:10px;
+}
+.customSeqBox input{
+  width:100%;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.blindReveal{
+  margin-top:12px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+}
+.blindCardValue{
+  font-size:22px;
+  font-weight:900;
+  margin-top:8px;
+}
+
+.levelSystemBox{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}.levelBtn{background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:12px;text-align:left}.levelBtn strong,.levelBtn span{display:block}.levelBtn span{color:#9fb0c8;margin-top:4px}.activeLevel{background:#1f5dd0;border-color:#8ab6ff}.completionBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.completionBox>strong{color:#ffd980;display:block;margin-bottom:10px}.blindCard{margin-top:14px;min-height:120px;border-radius:18px;background:linear-gradient(135deg,#102844,#07111f);border:2px solid #5e83be;display:flex;align-items:center;justify-content:center;text-align:center}.blindCard span,.blindCard strong{display:block}.blindCard span{color:#9fb0c8;margin-bottom:8px}.blindCard strong{font-size:26px}.revealedCard{background:linear-gradient(135deg,#1f5dd0,#0c1a2c)}
+
+.gameClassGrid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin:18px 0;
+}
+.gameClassBtn{
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:12px;
+  padding:14px;
+  font-weight:900;
+  cursor:pointer;
+  min-height:70px;
+}
+.activeGameClass{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
+@media(max-width:900px){
+  .gameClassGrid{grid-template-columns:1fr 1fr;}
+}
+
+.customSeqToggle{
+  margin:14px 0;
+}
+.customSeqBox .buttonRow{
+  margin-top:12px;
+}
+
+.blindDeckGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:12px;
+}
+.blindDeckBox{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+}
+.blindDeckBox h3{
+  margin:0 0 12px 0;
+  color:#ffd980;
+}
+@media(max-width:900px){
+  .blindDeckGrid{grid-template-columns:1fr;}
+}
+
+/* v69: Games Library uses the large class buttons only. */
+.page > .gameMenuGrid{
+  display:none;
+}
+
+.conditionedProtocol{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+.conditionedProtocol strong{
+  color:#ffd980;
+}
+.conditionedFamilyRow{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0;
+}
+.conditionedFamilyRow button{
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:white;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:900;
+}
+.conditionedFamilyRow button.activeLayer{
+  background:#1f5dd0;
+  border-color:#8ab6ff;
+}
+.levelPill{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:999px;
+  padding:8px 10px;
+  font-weight:900;
+  color:#9bc1ff;
+}
+.conditionedCard h3{
+  margin-top:10px;
+}
+
+.universalEditor{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.universalEditor h2{
+  margin-top:0;
+}
+.editorGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.editorGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+}
+.editorGrid input,
+.editorGrid select,
+.editorGrid textarea{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.editorGrid textarea{
+  min-height:90px;
+}
+.editorGrid .wide{
+  grid-column:1/-1;
+}
+.universalCard h3{
+  margin-top:10px;
+}
+@media(max-width:900px){
+  .editorGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.conditionedOverlayChooser{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+}
+.conditionedOverlayChooser strong{
+  display:block;
+  color:#ffd980;
+  margin-bottom:10px;
+}
+
+.overlayExplain{
+  color:#9fb0c8;
+  margin-top:6px;
+}
+.overlayInfoGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.overlayInfoCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:12px;
+}
+.overlayInfoCard h4{
+  margin:0 0 10px 0;
+  color:#ffd980;
+}
+@media(max-width:900px){
+  .overlayInfoGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.progressiveList{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.progressiveGameCard{
+  background:#101b2a;
+  border:1px solid #35567e;
+  border-radius:18px;
+  overflow:hidden;
+}
+.progressiveHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:16px;
+  cursor:pointer;
+}
+.progressiveHeader h3{
+  margin:8px 0 6px 0;
+}
+.shortRationale{
+  color:#9fb0c8;
+  margin:0;
+}
+.expandBtn{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:999px;
+  width:42px;
+  height:42px;
+  font-size:26px;
+  font-weight:900;
+}
+.expandedGame{
+  padding:0 16px 16px 16px;
+  border-top:1px solid #35567e;
+}
+.allOverlaySection{
+  margin-top:16px;
+}
+.allOverlaySection strong{
+  display:block;
+  margin-bottom:10px;
+  color:#ffd980;
+}
+
+.hierarchyHelp{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.hierarchyHelp strong{color:#ffd980}.hierarchyHelp p{color:#dce8ff;margin-bottom:0}
+.problemGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.problemBtn{background:#12253d;border:1px solid #486b9a;color:white;border-radius:14px;padding:14px;text-align:left;cursor:pointer}.problemBtn strong,.problemBtn span{display:block}.problemBtn span{margin-top:6px;color:#9fb0c8}.activeProblem{background:#1f5dd0;border-color:#8ab6ff}
+.gameOptionList{display:flex;flex-direction:column;gap:10px;margin-top:16px}.gameOption{background:#081320;border:1px solid #35567e;color:white;border-radius:14px;padding:14px;text-align:left;cursor:pointer}.gameOption span,.gameOption small{display:block}.gameOption span{font-size:18px;font-weight:900}.gameOption small{margin-top:5px;color:#9fb0c8}.activeGameOption{background:#1f5dd0;border-color:#8ab6ff}
+.selectedExpandedGame{margin-top:16px;background:#101b2a;border:1px solid #35567e;border-radius:18px;padding:16px}
+@media(max-width:900px){.problemGrid{grid-template-columns:1fr}}
+
+.technicalScoringBox{
+  background:#0c1a2c;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:14px;
+  margin:14px 0;
+}
+.technicalScoringBox > strong{
+  display:block;
+  color:#ffd980;
+  margin-bottom:8px;
+}
+.technicalScoringBox label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+  margin:12px 0;
+}
+.technicalScoringBox select,
+.technicalScoringBox textarea{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.customScoringGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.customScoringGrid textarea{
+  min-height:90px;
+}
+@media(max-width:900px){
+  .customScoringGrid{
+    grid-template-columns:1fr;
+  }
+}
+
+.diagnosticPrinciple,.constraintSuggestionBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0}.diagnosticPrinciple strong,.constraintSuggestionBox strong{color:#ffd980;display:block;margin-bottom:8px}.diagnosticControls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.diagnosticControls label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900}.diagnosticControls select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}@media(max-width:900px){.diagnosticControls{grid-template-columns:1fr}}
+
+.diagnosticTheoryGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.diagnosticTheoryCard,.constraintGameCard{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}.diagnosticTheoryCard h4,.constraintGameCard h4{margin:0 0 8px 0;color:#ffd980}.constraintGameCard{margin-top:10px}@media(max-width:900px){.diagnosticTheoryGrid{grid-template-columns:1fr}}
+
+.alwaysVisibleScoring{display:block !important;border:2px solid #8ab6ff;}
+.atlOptionsGrid input{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;}
+
+.atlOptionsGrid input[readonly]{opacity:.8;color:#dce8ff;}
+
+.problemBtn.activeProblem{
+  cursor:default;
+}
+
+.level0HomeCard{
+  background:linear-gradient(135deg,#1f5dd0,#0c1a2c) !important;
+  border:2px solid #8ab6ff !important;
+}
+.level0HomeCard strong,
+.level0HomeCard span,
+.level0HomeCard small{
+  display:block;
+}
+.level0HomeCard small{
+  color:#dce8ff;
+  margin-top:6px;
+}
+.level0Page .problemBtn.activeProblem{
+  cursor:default;
+}
+
+.level0HomeCard{
+  min-height:180px !important;
+  padding:28px !important;
+  border-radius:22px !important;
+  border:0 !important;
+  text-align:left !important;
+  background:linear-gradient(135deg,#1f5dd0,#14315a) !important;
+  color:white !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  box-shadow:none !important;
+}
+.level0HomeCard h2{
+  font-size:42px !important;
+  line-height:1.05 !important;
+  margin:0 0 22px 0 !important;
+  color:white !important;
+}
+.level0HomeCard p{
+  font-size:22px !important;
+  line-height:1.25 !important;
+  margin:0 !important;
+  color:white !important;
+  font-weight:700 !important;
+}
+.level0HomeCard .homeCardSub{
+  font-size:18px !important;
+  margin-top:10px !important;
+  color:#dce8ff !important;
+  font-weight:700 !important;
+}
+
+.toolsHomeCard{
+  min-height:180px !important;
+  padding:28px !important;
+  border-radius:22px !important;
+  border:0 !important;
+  text-align:left !important;
+  background:linear-gradient(135deg,#1f7a5a,#0d2c22) !important;
+  color:white !important;
+}
+.toolsHomeCard h2{
+  font-size:42px !important;
+  margin:0 0 22px 0 !important;
+}
+.toolsHomeCard p{
+  font-size:22px !important;
+  margin:0 !important;
+  font-weight:700 !important;
+}
+.toolsHomeCard .homeCardSub{
+  font-size:18px !important;
+  margin-top:10px !important;
+  color:#d7fff2 !important;
+}
+
+.projectionHomeCard{min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important;background:linear-gradient(135deg,#f59e0b,#7c2d12)!important;color:white!important}
+.projectionHomeCard h2{font-size:42px!important;margin:0 0 22px 0!important}.projectionHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}.projectionHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#fff7ed!important}
+.projectionPage{min-height:100vh;background:#020817;color:white;padding:34px}.projectionTop{display:flex;align-items:flex-start;gap:24px;margin-bottom:26px}.projectionKicker{display:block;color:#ffd980;font-weight:900;letter-spacing:.12em;margin-bottom:10px}.projectionTop h1{font-size:64px;line-height:1;margin:0}
+.projectionPicker{background:#0c1a2c;border:2px solid #5e83be;border-radius:18px;padding:16px;margin-bottom:24px}.projectionPicker strong{color:#ffd980;margin-right:12px}.projectionPicker select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:20px}
+.projectionGrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.projectionPanel{background:#0c1a2c;border:2px solid #5e83be;border-radius:24px;padding:30px}.projectionPanel h2,.projectionBonus h2{color:#ffd980;font-size:32px;margin:0 0 18px 0}.projectionPanel p{font-size:34px;line-height:1.25;margin:0;font-weight:800}.projectionFocus{grid-column:1/-1}.projectionBonus{margin-top:24px;background:#101b2a;border:2px solid #5e83be;border-radius:24px;padding:28px}.projectionChips{display:flex;gap:14px;flex-wrap:wrap}.projectionChips span{background:#1f5dd0;padding:14px 20px;border-radius:999px;font-size:24px;font-weight:900}
+@media(max-width:900px){.projectionGrid{grid-template-columns:1fr}.projectionTop h1{font-size:42px}.projectionPanel p{font-size:26px}}
+
+.playerBounceGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+.playerBounceGrid label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+}
+.playerBounceGrid select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+
+/* v89f helper */
+.infoBox p strong{color:#ffd980;}
+
+.serverConditionPlaceholder{
+  border:2px dashed #5e83be;
+}
+.projectionPage .projectionPanel{
+  min-height:180px;
+}
+
+/* v91 Projection Display */
+.projectionPage{
+  background:#020814;
+  min-height:100vh;
+  padding:20px;
+}
+
+.projectionPanel{
+  background:#071524;
+  border:2px solid #2e5f96;
+  border-radius:24px;
+  padding:28px;
+  color:white;
+}
+
+.projectionHeader{
+  color:#ffd980;
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:24px;
+  text-align:center;
+  letter-spacing:1px;
+}
+
+.projectionTitle{
+  font-size:42px;
+  font-weight:900;
+  color:white;
+  margin-bottom:24px;
+  line-height:1.1;
+}
+
+.projectionSection{
+  margin-bottom:24px;
+  padding:18px;
+  background:#0c1f34;
+  border-radius:18px;
+}
+
+.projectionLabel{
+  color:#ffd980;
+  font-size:18px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.projectionText{
+  font-size:26px;
+  line-height:1.35;
+  font-weight:700;
+}
+
+.cbProjection{
+  font-size:34px;
+  letter-spacing:2px;
+}
+
+.projectionEmpty{
+  color:white;
+  font-size:28px;
+  text-align:center;
+  padding:60px 20px;
+}
+
+.liveHomeCard{min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important;background:linear-gradient(135deg,#7c3aed,#1e1b4b)!important;color:white!important}
+.liveHomeCard h2{font-size:42px!important;margin:0 0 22px 0!important}.liveHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}.liveHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#ede9fe!important}
+.liveSessionPage .liveActiveCard{border:2px solid #8b5cf6}.liveTimer{font-size:58px;font-weight:900;color:#ffd980;margin:10px 0 20px 0}.liveButtonRow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+
+/* v92c */
+.liveSessionPage .gameCard{scroll-margin-top:20px;}
+
+/* v93 Interactive Diagnostic Template */
+.diagnosticHomeCard{
+  min-height:180px!important;
+  padding:28px!important;
+  border-radius:22px!important;
+  border:0!important;
+  text-align:left!important;
+  background:linear-gradient(135deg,#0ea5e9,#0f172a)!important;
+  color:white!important;
+}
+.diagnosticHomeCard h2{font-size:42px!important;margin:0 0 22px 0!important}
+.diagnosticHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}
+.diagnosticHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#e0f2fe!important}
+.diagnosticProcessStrip{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:20px 0;
+}
+.diagnosticProcessStrip span{
+  background:#10233b;
+  border:1px solid #5e83be;
+  color:#ffd980;
+  padding:12px 16px;
+  border-radius:999px;
+  font-weight:900;
+}
+.diagnosticLayout{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+.diagnosticClockPanel,.diagnosticDetailPanel{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:22px;
+  padding:20px;
+}
+.diagnosticClockGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.clockSlice{
+  min-height:120px;
+  border-radius:18px;
+  border:2px solid #365f92;
+  background:#12233a;
+  color:white;
+  padding:16px;
+  text-align:left;
+  font-size:16px;
+}
+.clockSlice strong{display:block;margin-top:8px;font-size:18px}
+.clockNumber{
+  display:inline-flex;
+  width:38px;
+  height:38px;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:#ffffff;
+  color:#0f172a;
+  font-weight:900;
+}
+.activeClockSlice{
+  outline:4px solid #ffd980;
+}
+.clockSlice.blue{background:#0b4ea2}
+.clockSlice.green{background:#237a2a}
+.clockSlice.orange{background:#c75c00}
+.clockSlice.purple{background:#5b21b6}
+.clockSlice.teal{background:#0f766e}
+.clockSlice.red{background:#b91c1c}
+.diagnosticTools{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:14px;
+}
+.diagnosticTools strong{
+  color:#ffd980;
+}
+.toolLinkBtn{
+  background:#1f5dd0;
+  border:1px solid #7ba2e8;
+  color:white;
+  padding:12px 14px;
+  border-radius:12px;
+  font-weight:900;
+  text-align:left;
+}
+@media(max-width:900px){
+  .diagnosticLayout{grid-template-columns:1fr}
+  .diagnosticClockGrid{grid-template-columns:1fr}
+}
+
+/* v94 Diagnostic workflow buttons */
+.diagnosticProcessStrip button{
+  background:#10233b;
+  border:1px solid #5e83be;
+  color:#ffd980;
+  padding:12px 16px;
+  border-radius:999px;
+  font-weight:900;
+  cursor:pointer;
+}
+.diagnosticProcessStrip button.activeProcessStep{
+  background:#1f5dd0;
+  color:white;
+  border-color:#ffd980;
+  box-shadow:0 0 0 3px rgba(255,217,128,.35);
+}
+.diagnosticWorkflowPanel{
+  margin:16px 0 20px 0;
+}
+.diagnosticWorkflowPanel ul{
+  margin:10px 0 0 20px;
+}
+.diagnosticWorkflowPanel li{
+  margin-bottom:8px;
+}
+
+/* v95 tool workflow */
+.primaryTool{
+  background:#ffd980!important;
+  color:#0f172a!important;
+  border:2px solid white!important;
+  font-weight:900!important;
+}
+.secondaryTool{
+  opacity:.88;
+}
+
+/* v96 Rotational Affordance Games */
+.rotationalHomeCard{
+  min-height:180px!important;
+  padding:28px!important;
+  border-radius:22px!important;
+  border:0!important;
+  text-align:left!important;
+  background:linear-gradient(135deg,#f97316,#431407)!important;
+  color:white!important;
+}
+.rotationalHomeCard h2{font-size:40px!important;margin:0 0 20px 0!important}
+.rotationalHomeCard p{font-size:22px!important;margin:0!important;font-weight:700!important}
+.rotationalHomeCard .homeCardSub{font-size:18px!important;margin-top:10px!important;color:#ffedd5!important}
+.rotationAffordanceCard{
+  display:flex;
+  gap:18px;
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:22px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.repCircle{
+  width:28px;
+  min-width:28px;
+  height:28px;
+  border-radius:999px;
+  margin-top:6px;
+}
+.redRep{background:#dc2626}
+.orangeRep{background:#f97316}
+.yellowRep{background:#eab308}
+.lightGreenRep{background:#84cc16}
+.darkGreenRep{background:#166534}
+.rotationCardContent{
+  flex:1;
+}
+
+/* v97 Copyright Footer */
+.checkerboardFooter{
+  margin-top:40px;
+  padding:24px 20px 40px 20px;
+  border-top:1px solid #35567e;
+  text-align:center;
+  color:#cbd5e1;
+  font-size:14px;
+  line-height:1.7;
+  opacity:.92;
+}
+
+/* v97b visible home branding */
+.homeBrandCard{
+  grid-column:1 / -1;
+  background:linear-gradient(135deg,#0c1a2c,#12345a);
+  border:2px solid #5e83be;
+  border-radius:24px;
+  padding:26px 28px;
+  color:white;
+  text-align:center;
+  margin-bottom:6px;
+}
+.homeBrandCard h1{
+  font-size:42px;
+  line-height:1.05;
+  margin:0 0 10px 0;
+  color:#ffd980;
+}
+.homeBrandCard p{
+  font-size:20px;
+  line-height:1.25;
+  margin:4px 0;
+  font-weight:800;
+}
+.homeBrandCard small{
+  display:block;
+  margin-top:10px;
+  color:#cbd5e1;
+  font-size:15px;
+  font-weight:800;
+}
+
+/* v99a Custom Game Builder */
+.customGameBuilder label{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#ffd980;font-weight:900}
+.customGameBuilder input,.customGameBuilder textarea,.customGameBuilder select{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
+.customGameBuilder textarea{min-height:88px}
+
+/* v99c-fixed Competition rebuild pass 1 */
+.matchplayPanel input,
+.matchplayPanel select{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:12px;
+  color:white;
+}
+.matchScoreBoard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:16px 0;
+}
+.matchScoreBoard>div{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:16px;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+}
+.matchScoreBoard strong{color:#ffd980}
+.matchScoreBoard span{
+  font-size:42px;
+  font-weight:900;
+  color:white;
+}
+
+/* v99d1 Round Robin fixture generator */
+.competitionEnginePanel{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:16px;
+  padding:16px;
+  margin:16px 0;
+}
+.fixtureRound{
+  background:#0b1828;
+  border:1px solid #5e83be;
+  border-radius:14px;
+  padding:12px 14px;
+  margin-top:12px;
+}
+.fixtureRound strong{
+  color:#ffd980;
+}
+.fixtureRound p{
+  margin:6px 0;
+}
+
+/* v99e NSL organiser shell */
+.nslOrganiser{background:#070b14;border:1px solid #293247;border-radius:22px;padding:22px;margin:20px 0}
+.nslHero{text-align:center;padding:8px 0 24px}.nslHero span{display:inline-block;background:#e7c15f;color:#111827;padding:8px 20px;border-radius:6px;font-weight:900;letter-spacing:6px;text-transform:uppercase}.nslHero h2{font-size:42px;text-transform:uppercase;letter-spacing:4px;margin:16px 0 8px}.nslHero p{color:#8f92aa;font-weight:800}
+.nslTabs{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #293247;margin-bottom:22px}.nslTabs button{background:transparent;border:0;color:#8f92aa;padding:18px 10px;text-transform:uppercase;letter-spacing:4px;font-weight:900}.nslTabs button.activeNslTab{color:white;background:#1b2032;border-bottom:4px solid #e7c15f}
+.nslPanel h3{color:#e7c15f;text-transform:uppercase;letter-spacing:5px;font-size:18px;border-bottom:1px solid #293247;padding-bottom:10px;margin-top:18px}.nslConfigGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.nslStepper{background:#0f121c;border:1px solid #303548;border-radius:16px;padding:20px;text-align:center}.nslStepper label{color:#8f92aa;text-transform:uppercase;letter-spacing:4px;font-weight:900}.nslStepper>div{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:12px}.nslStepper button{width:48px;height:48px;border-radius:10px;border:1px solid #303548;background:#202638;color:white;font-size:28px;font-weight:900}.nslStepper strong{font-size:46px;color:#e7c15f}.nslStepper small{font-size:18px;color:#8f92aa}
+.nslScoringList{border:1px solid #303548;border-radius:16px;overflow:hidden}.nslScoringList div{display:grid;grid-template-columns:10px 1fr 2fr 1fr;gap:14px;align-items:center;padding:18px;border-bottom:1px solid #303548}.nslScoringList span{width:6px;height:48px;border-radius:4px;background:#64a8ff}.nslScoringList span.danger{background:#ef6f8f}.nslScoringList strong{color:white;font-size:22px}.nslScoringList em{color:#8f92aa;font-style:normal}.nslScoringList b{color:#64a8ff;text-align:right}
+.nslPlayerGrid,.nslTeamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}.nslPlayerCard,.nslTeamCard{background:#0f121c;border:1px solid #303548;border-radius:14px;padding:16px}.nslPlayerCard strong{color:#e7c15f;margin-right:10px}.nslPlayerCard span,.nslTeamCard strong{color:white;font-weight:900}.nslPlayerCard em,.nslTeamCard p{display:block;color:#8f92aa;margin-top:6px}
+.nslSheet{display:grid;grid-template-columns:1fr 2fr 1fr;border:1px solid #303548;border-radius:14px;overflow:hidden}.nslSheet div{padding:14px;border-bottom:1px solid #303548;color:white}.nslSheet div:nth-child(3n+1){color:#e7c15f;font-weight:900}@media(max-width:800px){.nslConfigGrid,.nslTabs,.nslSheet{grid-template-columns:1fr}}
+
+/* v99f Competition Projection View */
+.competitionProjectionToggle{
+  margin:18px 0;
+  display:flex;
+  justify-content:flex-end;
+}
+.competitionProjectionView{
+  background:#050914;
+  border:2px solid #ffd980;
+  border-radius:28px;
+  padding:28px;
+  margin:20px 0;
+  color:white;
+}
+.projectionHeaderBar{
+  text-align:center;
+  border-bottom:1px solid #334155;
+  padding-bottom:22px;
+  margin-bottom:22px;
+}
+.projectionHeaderBar span{
+  display:inline-block;
+  background:#ffd980;
+  color:#0f172a;
+  padding:8px 18px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:3px;
+}
+.projectionHeaderBar h1{
+  font-size:54px;
+  margin:16px 0 8px;
+  color:white;
+}
+.projectionHeaderBar p{
+  font-size:28px;
+  color:#ffd980;
+  font-weight:900;
+}
+.projectionInfoGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:18px;
+}
+.projectionInfoCard{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:18px;
+  padding:20px;
+}
+.projectionInfoCard strong{
+  color:#ffd980;
+  font-size:20px;
+}
+.projectionInfoCard p{
+  font-size:20px;
+  line-height:1.35;
+}
+.wideProjectionCard{
+  margin-top:18px;
+}
+.projectionPlayerList{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+}
+.projectionPlayerList span{
+  background:#1e293b;
+  border:1px solid #475569;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:800;
+}
+@media(max-width:800px){
+  .projectionInfoGrid{grid-template-columns:1fr}
+  .projectionHeaderBar h1{font-size:36px}
+  .projectionHeaderBar p{font-size:22px}
+}
+
+/* v99g Project / Projection competition tab */
+.projectionTabRow{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin:18px 0 26px;
+}
+.projectionTabRow button{
+  background:#10233b;
+  border:1px solid #5e83be;
+  color:#ffd980;
+  padding:14px 24px;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:2px;
+}
+.projectionTabRow button.activeProjectionTab{
+  background:#ffd980;
+  color:#0f172a;
+  border-color:white;
+}
+
+/* v99h2 Invasion rebuild — direct patch from v99g */
+.invasionRebuildPanel{background:#081320;border:1px solid #35567e;border-radius:18px;padding:18px;margin:16px 0}
+.invasionFormatToggle{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.invasionFormatToggle button{background:#10233b;border:1px solid #5e83be;color:#ffd980;border-radius:14px;padding:16px;font-size:20px;font-weight:900}
+.invasionFormatToggle button.activeInvasionFormat{background:#ffd980;color:#0f172a;border-color:white}
+.invasionRuleHero{background:#0b1828;border:1px solid #ffd980;border-radius:16px;padding:18px;margin-bottom:16px}
+.invasionRuleHero strong{color:#ffd980;font-size:24px}
+.invasionRuleHero p{color:white;font-size:18px}
+.invasionConfigGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.invasionConfigGrid label,.invasionTextLabel{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900;margin:10px 0}
+.invasionConfigGrid select,.invasionTextLabel textarea{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:16px}
+.invasionTextLabel textarea{min-height:78px}
+.invasionRulesGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.invasionRuleCard{background:#0b1828;border:1px solid #35567e;border-radius:14px;padding:14px}
+.invasionRuleCard strong{color:#ffd980;font-size:18px}
+.invasionRuleCard p{color:white;line-height:1.35}
+.invasionRuleCard.danger{border-color:#ef4444}
+@media(max-width:800px){.invasionFormatToggle,.invasionConfigGrid,.invasionRulesGrid{grid-template-columns:1fr}}
+
+/* v99h4 Invasion setup direct from v99h2 */
+.invasionSetupBox{
+  background:#06111f;
+  border:1px solid #5e83be;
+  border-radius:16px;
+  padding:16px;
+  margin:16px 0;
+}
+.invasionSetupBox>strong{
+  color:#ffd980;
+  font-size:20px;
+}
+.invasionSetupBox p{color:white}
+.invasionTeamGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+  margin-top:14px;
+}
+.invasionTeamCard{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+}
+.invasionTeamCard h3{
+  color:#ffd980;
+  margin:0 0 8px 0;
+}
+.invasionPointControls{
+  border-top:1px solid #35567e;
+  padding-top:10px;
+  margin-top:10px;
+}
+.invasionPointControls>strong{
+  color:white;
+  display:block;
+  margin-bottom:8px;
+}
+.invasionPlayerPointList{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.invasionPlayerPointList div{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  justify-content:space-between;
+  border-top:1px solid #1e3a5f;
+  padding-top:8px;
+}
+.invasionPlayerPointList span{
+  color:white;
+  font-weight:800;
+}
+.invasionPlayerPointList button{
+  background:#10233b;
+  color:#ffd980;
+  border:1px solid #5e83be;
+  border-radius:8px;
+  padding:6px 10px;
+  font-weight:900;
+}
+
+/* v99h5 Invasion Live Court Dashboard */
+.invasionDashboardBlock{
+  background:#050914;
+  border:1px solid #ffd980;
+  border-radius:18px;
+  padding:16px;
+  margin:18px 0;
+}
+.invasionDashboardTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+.invasionDashboardTop strong{
+  color:#ffd980;
+  font-size:22px;
+}
+.invasionCourtDashboard{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+}
+.invasionCourtCard{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:18px;
+  padding:16px;
+  cursor:pointer;
+}
+.invasionCourtCard.activeCourtCard{
+  border:3px solid #ffd980;
+  box-shadow:0 0 0 3px rgba(255,217,128,.2);
+}
+.courtCardHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #35567e;
+  padding-bottom:10px;
+  margin-bottom:10px;
+}
+.courtCardHeader span{
+  background:#ffd980;
+  color:#0f172a;
+  border-radius:999px;
+  padding:6px 10px;
+  font-weight:900;
+}
+.courtCardHeader strong{
+  color:white;
+  font-size:20px;
+}
+.courtCardPlayers p{
+  color:white;
+  font-weight:800;
+  margin:6px 0;
+}
+.courtCardPlayers em{
+  color:#ffd980;
+  font-style:normal;
+}
+.courtCardScore{
+  background:#10233b;
+  border:1px solid #5e83be;
+  border-radius:12px;
+  padding:12px;
+  margin:12px 0;
+  text-align:center;
+}
+.courtCardScore strong{
+  color:#ffd980;
+  font-size:24px;
+}
+.courtCardChallenge{
+  color:#cbd5e1;
+  font-size:15px;
+  line-height:1.35;
+}
+
+/* v99h6 Invasion Rotation Engine */
+.invasionRotationEngine{background:#071827;border:1px solid #ffd980;border-radius:16px;padding:16px;margin:16px 0}
+.rotationEngineTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.rotationEngineTop strong{color:#ffd980;font-size:22px}
+.rotationEngineTop span{background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 14px;font-weight:900}
+.rotationButtonRow{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.rotationNoteBox{background:#0b1828;border:1px solid #35567e;border-radius:12px;padding:12px;color:#cbd5e1;font-weight:800}
+
+/* v99h8 Invasion Team Life Bank */
+.invasionLifeBankControls{
+  background:#071827;
+  border:1px solid #ffd980;
+  border-radius:14px;
+  padding:12px;
+  margin-top:12px;
+}
+.invasionLifeBankControls strong{
+  color:#ffd980;
+  display:block;
+  font-size:20px;
+  margin-bottom:6px;
+}
+.invasionLifeBankControls p{color:#cbd5e1;margin:4px 0 10px}
+.invasionLifeBankControls label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+  margin-top:10px;
+}
+.invasionLifeBankControls input{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:10px;
+  color:white;
+  padding:10px;
+}
+.invasionLifeBankControls em{
+  display:block;
+  color:#ef4444;
+  font-style:normal;
+  font-weight:900;
+  margin-top:10px;
+}
+
+/* v99h9 Invasion Current State Projection */
+.invasionCurrentStateProjection{border:2px solid #ffd980;background:#050914}
+.currentStateHero{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071827;border:1px solid #35567e;border-radius:18px;padding:18px;margin:14px 0}
+.currentStateHero strong{color:#ffd980;font-size:30px}.currentStateHero span{color:white;font-size:22px;font-weight:900}
+.projectorTeamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:18px 0}
+.projectorTeamCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:18px}
+.projectorTeamCard h3{color:#ffd980;margin:0 0 8px;font-size:22px}.projectorTeamCard p{color:white;font-size:18px}
+.projectorTeamCard strong{display:block;color:white;font-size:38px;margin:12px 0 4px}.projectorTeamCard em{color:#cbd5e1;font-style:normal;font-weight:800}
+.projectorPlayerScores{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.projectorPlayerScores span{background:#10233b;border:1px solid #5e83be;color:#ffd980;border-radius:999px;padding:12px 16px;font-weight:900}
+.nextActionStrip{background:#ffd980;color:#0f172a;border-radius:14px;padding:16px;font-weight:900;font-size:20px;margin-top:16px}
+@media(max-width:800px){.currentStateHero{flex-direction:column;align-items:flex-start}}
