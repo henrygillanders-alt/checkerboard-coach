@@ -1457,6 +1457,8 @@ function Competition({players=[]}){
   const [invasionTeamPoints,setInvasionTeamPoints]=useState({});
   const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
   const [invasionTeamLives,setInvasionTeamLives]=useState({});
+  const [invasionCarryLives,setInvasionCarryLives]=useState({});
+  const [invasionFinishLives,setInvasionFinishLives]=useState({});
   const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
@@ -1500,6 +1502,51 @@ function Competition({players=[]}){
     setMatchScore({a:0,b:0});
   }
 
+  function invasionGcd(a,b){
+    return b===0?Math.abs(a):invasionGcd(b,a%b);
+  }
+
+  function invasionLcm(a,b){
+    if(!a||!b) return 0;
+    return Math.abs(a*b)/invasionGcd(a,b);
+  }
+
+  function getInvasionFairBaseTotal(){
+    const sizes=(invasionTeams||[]).map(team=>(team.players||[]).length).filter(size=>size>0);
+    if(!sizes.length) return invasionStartingLives;
+    return sizes.reduce((acc,size)=>invasionLcm(acc,size),sizes[0]);
+  }
+
+  function getInvasionBaseLives(team){
+    const players=(team&&team.players)||[];
+    if(!players.length) return invasionStartingLives;
+    return Math.max(1,Math.floor(getInvasionFairBaseTotal()/players.length));
+  }
+
+  function getInvasionCarry(teamId){
+    return invasionCarryLives[teamId]||0;
+  }
+
+  function getInvasionStartLives(team){
+    return getInvasionBaseLives(team)+getInvasionCarry(team.id);
+  }
+
+  function setInvasionFinish(teamId,value){
+    const v=Math.max(0,Number(value)||0);
+    setInvasionFinishLives(prev=>({...prev,[teamId]:v}));
+  }
+
+  function postInvasionRotationLives(){
+    const nextCarry={};
+    invasionTeams.forEach(team=>{
+      const finish=invasionFinishLives[team.id];
+      nextCarry[team.id]=Math.max(0,Number(finish)||0);
+    });
+    setInvasionCarryLives(nextCarry);
+    setInvasionTeamLives(nextCarry);
+    setInvasionFinishLives({});
+  }
+
   function generateInvasionTeams(){
     const names=[...playerNames];
     const courts=Math.max(1,Math.min(6,Number(invasionCourts)||3));
@@ -1523,6 +1570,12 @@ function Competition({players=[]}){
       names.forEach(name=>{next[name]=prev[name]||0;});
       return next;
     });
+    setInvasionCarryLives(prev=>{
+      const next={};
+      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
+      return next;
+    });
+    setInvasionFinishLives({});
     setInvasionTeamLives(prev=>{
       const next={};
       teams.forEach(team=>{next[team.id]=prev[team.id] ?? invasionStartingLives;});
@@ -1660,7 +1713,7 @@ function Competition({players=[]}){
         :'Points Format. Invader always serves. Invader scores from defender errors and balcony penalties.',
       rules:invasionFormat==='lives'?[
         'Lives Format: defenders always serve.',
-        `Each team starts with ${invasionStartingLives} lives in the team life bank.`,
+        `Lives are calculated fairly by team size and carry over after each court rotation.`,
         'If invader hits out of the court area then -1 life event against that team bank.',
         'If invader hits out of court area and into the balcony then -3 lives event against that team bank.',
         'If a penalty would take the team bank below 0, the event still counts but the displayed bank clamps at 0.',
@@ -1906,8 +1959,8 @@ function Competition({players=[]}){
 
                       {invasionFormat==='lives'&&(
                         <div className="invasionLifeBankControls">
-                          <strong>Team Life Bank: {invasionTeamLives[team.id] ?? invasionStartingLives}</strong>
-                          <p>Next invader starts with this number.</p>
+                          <strong>Carry-Over Lives: {invasionTeamLives[team.id] ?? invasionStartingLives}</strong>
+                          <p>This carry-over is added to the next invader's fair base lives.</p>
                           <div className="buttonRow">
                             <button type="button" className="secondaryBtn" onClick={()=>adjustInvasionTeamLives(team.id,1)}>+1</button>
                             <button type="button" className="secondaryBtn" onClick={()=>adjustInvasionTeamLives(team.id,-1)}>-1</button>
@@ -2018,7 +2071,10 @@ function Competition({players=[]}){
                         <div className="courtCardScore">
                           {invasionFormat==='points'
                             ?<strong>{invasionTeamPoints[assign.invadingTeamId]||0} team pts</strong>
-                            :<strong>{invasionTeamLives[assign.invadingTeamId] ?? invasionStartingLives} invader lives</strong>}
+                            :<strong>{(() => {
+                              const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
+                              return invTeam?getInvasionStartLives(invTeam):invasionStartingLives;
+                            })()} start lives</strong>}
                         </div>
 
                         <div className="courtCardChallenge">
@@ -2030,6 +2086,33 @@ function Competition({players=[]}){
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {invasionFormat==='lives'&&invasionTeams.length>0&&(
+              <div className="fairLivesEngineBox">
+                <div className="fairLivesHeader">
+                  <strong>Fair Lives Carry-Over Engine</strong>
+                  <span>LCM team base: {getInvasionFairBaseTotal()}</span>
+                </div>
+                <p>Each invader starts with their fair base lives plus the carry-over lives from the previous invasion.</p>
+
+                <div className="fairLivesGrid">
+                  {invasionTeams.map(team=>(
+                    <div className="fairLivesTeamCard" key={team.id}>
+                      <h3>{team.name}</h3>
+                      <p><strong>Players:</strong> {team.players.length}</p>
+                      <p><strong>Base lives:</strong> {getInvasionBaseLives(team)}</p>
+                      <p><strong>Carry-over:</strong> {getInvasionCarry(team.id)}</p>
+                      <p><strong>Start this invasion:</strong> {getInvasionStartLives(team)}</p>
+                      <label>Finish lives after this court rotation
+                        <input type="number" min="0" value={invasionFinishLives[team.id] ?? ''} onChange={e=>setInvasionFinish(team.id,e.target.value)} placeholder="0" />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" className="primaryBtn" onClick={postInvasionRotationLives}>Post Lives Score After Court Rotation</button>
               </div>
             )}
 
@@ -2583,6 +2666,20 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
               </div>
             )}
 
+            {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
+              <div className="projectorFairLivesTable">
+                <strong>Fair Lives / Carry-Over</strong>
+                {competitionProjection.invasionTeams.map(team=>{
+                  const players=(team.players||[]).length||1;
+                  const baseTotal=competitionProjection.invasionFairBaseTotal||players;
+                  const base=Math.max(1,Math.floor(baseTotal/players));
+                  const carry=competitionProjection.invasionCarryLives?.[team.id]||0;
+                  const finish=competitionProjection.invasionFinishLives?.[team.id];
+                  return <p key={team.id}>{team.name}: base {base} + carry {carry} = start {base+carry}{finish!==undefined?` · finish posted: ${finish}`:''}</p>;
+                })}
+              </div>
+            )}
+
             <div className="nextActionStrip">
               {competitionProjection.invasionFormat==='lives'
                 ?`Next action: update team life banks, then rotate all courts together. ${competitionProjection.invasionEliminated?`Trigger: ${competitionProjection.invasionEliminated}`:''}`
@@ -3065,7 +3162,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h10</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h11</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

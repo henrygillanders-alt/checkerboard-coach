@@ -1362,3 +1362,85 @@
 .invasionCourtCard.activeCourtCard{
   border:2px solid #ffd980;
 }
+
+/* v99h11 Fair Lives Carry-Over Engine */
+.fairLivesEngineBox{
+  background:#06111f;
+  border:2px solid #ffd980;
+  border-radius:18px;
+  padding:18px;
+  margin:18px 0;
+}
+.fairLivesHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+.fairLivesHeader strong{
+  color:#ffd980;
+  font-size:22px;
+}
+.fairLivesHeader span{
+  background:#ffd980;
+  color:#0f172a;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:900;
+}
+.fairLivesEngineBox>p{
+  color:#cbd5e1;
+  font-weight:800;
+}
+.fairLivesGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+  margin:16px 0;
+}
+.fairLivesTeamCard{
+  background:#0b1828;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+}
+.fairLivesTeamCard h3{
+  color:#ffd980;
+  margin:0 0 8px;
+}
+.fairLivesTeamCard p{
+  color:white;
+  margin:6px 0;
+}
+.fairLivesTeamCard label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:#ffd980;
+  font-weight:900;
+  margin-top:10px;
+}
+.fairLivesTeamCard input{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:10px;
+  color:white;
+  padding:10px;
+}
+.projectorFairLivesTable{
+  background:#071827;
+  border:1px solid #ffd980;
+  border-radius:16px;
+  padding:16px;
+  margin:16px 0;
+}
+.projectorFairLivesTable strong{
+  color:#ffd980;
+  font-size:22px;
+}
+.projectorFairLivesTable p{
+  color:white;
+  font-size:18px;
+  margin:8px 0;
+}
