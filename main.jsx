@@ -130,14 +130,18 @@ function ProjectionView({session,setScreen}){
         <div className="finalProjectorSummary">
           <div><b>Format</b><strong>{competitionProjection.invasionFormat==='lives'?'LIVES':'POINTS'}</strong></div>
           <div><b>Courts</b><strong>{n}</strong></div>
-          <div><b>Mode</b><strong>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random':'Fixed'}</strong></div>
+          <div><b>Status</b><strong>{competitionProjection.invasionGameStarted?'LIVE':'WAITING'}</strong></div>
         </div>
+
+        {!competitionProjection.invasionGameStarted&&(
+          <div className="projectorWaitingBanner">START GAME on coach screen to begin live court display.</div>
+        )}
 
         <div className="invasionProjectorRules">
           <strong>Essential Rules</strong>
           <div className="rulePillGrid">
             <span>{competitionProjection.invasionFormat==='lives'?'Defenders serve':'Invader serves'}</span>
-            <span>{competitionProjection.invasionFormat==='lives'?'Base lives + carry-over':'Player points build team total'}</span>
+            <span>{competitionProjection.invasionFormat==='lives'?'Base lives + carry-over':'Team points only'}</span>
             <span>All courts active</span>
             <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
           </div>
@@ -1573,6 +1577,7 @@ function Competition({players=[]}){
   const [invasionFinishLives,setInvasionFinishLives]=useState({});
   const [invasionPlayerRound,setInvasionPlayerRound]=useState(0);
   const [invasionCourtRound,setInvasionCourtRound]=useState(0);
+  const [invasionGameStarted,setInvasionGameStarted]=useState(false);
   const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
@@ -1704,6 +1709,23 @@ function Competition({players=[]}){
     setInvasionCourtRound(0);
     setInvasionCarryLives({});
     setInvasionFinishLives({});
+    setInvasionGameStarted(false);
+  }
+
+  function startInvasionGame(){
+    if(!invasionTeams.length){
+      generateInvasionTeams();
+    }
+    setInvasionGameStarted(true);
+    setShowInvasionDashboard(true);
+  }
+
+  function startInvasionProjector(){
+    startInvasionGame();
+    try{
+      localStorage.setItem('checkerboardProjectionTab','competition');
+    }catch{}
+    setShowProjection(true);
   }
 
   function generateInvasionTeams(){
@@ -1879,7 +1901,7 @@ function Competition({players=[]}){
         'Unused lives are carried forward to the next court and when invader finishes all court rotations unused lives are carried forward to next invader.',
         'Winner is the team with the highest team life bank at the end of play.'
       ]:[
-        'Points Format: invader always serves.',
+        'Points Format: invader always serves. Track team points only.',
         'If a defender hits the ball out of the court area then +1 to invader.',
         'If a defender hits the ball out of the court area and into balcony then +3 points to invader.',
         'Double-bounce handicaps may apply to selected weaker players.',
@@ -2046,7 +2068,7 @@ function Competition({players=[]}){
               <strong>Invasion Format</strong>
               <p>{invasionFormat==='lives'
                 ?'Defenders serve. Track lives. Winner is the team with the most lives at the end of play.'
-                :'Invader serves. Track points. Winner is the team with the most points at the end of play.'}</p>
+                :'Invader serves. Add player points to the team total. No lives are used in Points Format.'}</p>
             </div>
           )}
         </div>
@@ -2102,6 +2124,19 @@ function Competition({players=[]}){
             <label className="invasionTextLabel">Challenge / Tactical Focus
               <textarea value={invasionChallenge} onChange={e=>setInvasionChallenge(e.target.value)} />
             </label>
+
+            <div className="invasionStartPanel">
+              <div>
+                <strong>{invasionGameStarted?'Game live':'Ready to start'}</strong>
+                <p>{invasionFormat==='lives'
+                  ?'Starts the live carry-over lives competition and updates the projector.'
+                  :'Starts the live points competition and updates the projector.'}</p>
+              </div>
+              <div className="invasionStartButtons">
+                <button type="button" className="primaryBtn" onClick={startInvasionGame}>START GAME</button>
+                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START PROJECTOR</button>
+              </div>
+            </div>
 
             <div className="invasionSetupBox">
               <strong>Teams / Courts Setup</strong>
@@ -2821,7 +2856,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                 <strong>Essential Rules</strong>
                 <div className="rulePillGrid">
                   <span>{competitionProjection.invasionFormat==='lives'?'Defenders serve':'Invader serves'}</span>
-                  <span>{competitionProjection.invasionFormat==='lives'?'Carry-over lives active':'Player points build team total'}</span>
+                  <span>{competitionProjection.invasionFormat==='lives'?'Carry-over lives active':'Team points only'}</span>
                   <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
                   <span>Double-bounce handicaps shown below</span>
                 </div>
@@ -2979,7 +3014,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                       <h3>{team.name} · Court {team.court}</h3>
                       <p>{team.players&&team.players.length?team.players.join(' · '):'Waiting for players'}</p>
                       <strong>{competitionProjection.invasionTeamPoints?.[team.id]||0} points</strong>
-                      <em>Player points build team total</em>
+                      <em>Team points only</em>
                     </div>
                   ))
                   :<p>No teams generated yet.</p>}
@@ -3501,7 +3536,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h14</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h15</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
