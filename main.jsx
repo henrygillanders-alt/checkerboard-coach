@@ -1599,12 +1599,19 @@ function Competition({players=[]}){
   const [invasionFinishLives,setInvasionFinishLives]=useState({});
   const [invasionPlayerRound,setInvasionPlayerRound]=useState(0);
   const [invasionCourtRound,setInvasionCourtRound]=useState(0);
-  const [invasionGameStarted,setInvasionGameStarted]=useState(false);
+  const [invasionGameStarted,setInvasionGameStarted]=useState(()=>{
+    try{
+      return localStorage.getItem('checkerboardInvasionLive')==='true';
+    }catch{
+      return false;
+    }
+  });
   const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
   const [invasionEliminated,setInvasionEliminated]=useState('');
-  const [invasionCourtAssignmentMode,setInvasionCourtAssignmentMode]=useState('fixed');
+  const [invasionCourtAssignmentMode,
+          invasionLives,setInvasionCourtAssignmentMode]=useState('fixed');
   const [invasionCourtAssignments,setInvasionCourtAssignments]=useState([]);
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
@@ -1732,6 +1739,9 @@ function Competition({players=[]}){
     setInvasionCarryLives({});
     setInvasionFinishLives({});
     setInvasionGameStarted(false);
+    try{
+      localStorage.setItem('checkerboardInvasionLive','false');
+    }catch{}
   }
 
   function startInvasionGame(){
@@ -1739,6 +1749,9 @@ function Competition({players=[]}){
       generateInvasionTeams();
     }
     setInvasionGameStarted(true);
+    try{
+      localStorage.setItem('checkerboardInvasionLive','true');
+    }catch{}
     setShowInvasionDashboard(true);
     setTimeout(()=>{
       try{
@@ -3581,7 +3594,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h16</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h17</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
