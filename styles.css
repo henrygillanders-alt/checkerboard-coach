@@ -1546,3 +1546,8 @@
 .invasionOnlyProjector .finalLifeNumbers strong{
   font-size:64px;
 }
+
+/* v99h18 Start Lives + Persist Fix */
+.invasionOnlyProjector .projectorWaitingBanner{
+  font-size:30px;
+}
