@@ -1529,3 +1529,20 @@
   text-align:center;
 }
 @media(max-width:800px){.invasionStartPanel{flex-direction:column;align-items:flex-start}}
+
+/* v99h16 Live Projector Binding Fix */
+.finalProjectorSummary strong{
+  text-transform:uppercase;
+}
+.invasionOnlyProjector .finalProjectorCourtCard{
+  min-height:260px;
+}
+.invasionOnlyProjector .finalProjectorCourtCard h2{
+  font-size:48px;
+}
+.invasionOnlyProjector .finalProjectorCourtCard p{
+  font-size:28px;
+}
+.invasionOnlyProjector .finalLifeNumbers strong{
+  font-size:64px;
+}
