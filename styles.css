@@ -1581,3 +1581,28 @@
   color:#fff!important;
   font-weight:1000;
 }
+
+/* v99h23 three issue fix */
+.singleLifeNumber{
+  grid-template-columns:1fr auto!important;
+}
+.singleLifeNumber span{
+  font-size:22px!important;
+}
+.singleLifeNumber strong{
+  font-size:64px!important;
+  max-width:none!important;
+}
+.finalLifeNumbers strong:last-child{
+  position:static!important;
+}
+.actionRow .primaryBtn,
+.actionRow .dangerBtn{
+  margin-left:8px;
+}
+.dangerBtn{
+  background:#7f1d1d!important;
+  border-color:#ef4444!important;
+  color:#fff!important;
+  font-weight:1000;
+}
