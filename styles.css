@@ -1559,3 +1559,25 @@
   color:#fff!important;
   font-weight:1000;
 }
+
+/* v99h21 TRUE Universal Start / Stop Projection Control */
+.finalProjectorNextStarts,
+.projectorInstructionBanner{
+  display:none!important;
+}
+.invasionStartButtons{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.invasionStartButtons .primaryBtn,
+.invasionStartButtons .dangerBtn{
+  font-size:20px;
+  padding:16px 24px;
+}
+.dangerBtn{
+  background:#7f1d1d!important;
+  border-color:#ef4444!important;
+  color:#fff!important;
+  font-weight:1000;
+}

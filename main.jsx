@@ -194,7 +194,7 @@ function ProjectionView({session,setScreen}){
                 <p><b>Invader:</b> {invader} · {invading?.name||''}</p>
                 <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
                 <div className="finalLifeNumbers">
-                  <span>Starting lives</span><strong>{startLives}</strong>
+                  <span>Lives</span><strong>{startLives}</strong>
                   <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
                 </div>
               </div>;
@@ -213,20 +213,6 @@ function ProjectionView({session,setScreen}){
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {competitionProjection.invasionFormat==='lives'&&n>0&&(
-          <div className="finalProjectorNextStarts">
-            <b>Next starting lives</b>
-            {teams.map(team=>{
-              const players=team.players||[];
-              const playerCount=players.length||1;
-              const baseTotal=competitionProjection.invasionFairBaseTotal||playerCount;
-              const base=Math.max(1,Math.floor(baseTotal/playerCount));
-              const carry=competitionProjection.invasionCarryLives?.[team.id]||0;
-              return <span key={team.id}>{team.name}: {base+carry}</span>;
-            })}
           </div>
         )}
       </div>
@@ -1777,11 +1763,37 @@ function Competition({players=[]}){
   }
 
   function startInvasionProjector(){
-    startInvasionGame();
+    if(!invasionTeams.length){
+      generateInvasionTeams();
+    }
+    setInvasionGameStarted(true);
+    setShowInvasionDashboard(true);
+    setShowProjection(false);
     try{
+      localStorage.setItem('checkerboardInvasionGameStarted','true');
+      localStorage.setItem('checkerboardInvasionLive','true');
       localStorage.setItem('checkerboardProjectionTab','competition');
+      const saved=localStorage.getItem('checkerboardCompetitionProjection');
+      const current=saved?JSON.parse(saved):{};
+      localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
+        ...current,
+        mode:'invasion',
+        invasionFormat,
+        invasionStartingLives,
+        invasionTeams,
+        playerNames,
+        playerBounces,
+        invasionTeamPoints,
+        invasionCarryLives,
+        invasionFinishLives,
+        invasionFairBaseTotal:getInvasionFairBaseTotal(),
+        invasionPlayerRound,
+        invasionCourtRound,
+        invasionGameStarted:true,
+        invasionCourtAssignmentMode,
+        showInvasionDashboard:true
+      }));
     }catch{}
-    setShowProjection(true);
   }
 
   function stopInvasionProjector(){
@@ -2233,9 +2245,8 @@ function Competition({players=[]}){
                   :'Starts the live points competition and updates the projector.'}</p>
               </div>
               <div className="invasionStartButtons">
-                <button type="button" className="primaryBtn" onClick={startInvasionGame}>START GAME</button>
-                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START PROJECTOR</button>
-                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionProjector}>STOP / END PROJECTION</button>
+                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START GAME / PROJECTOR</button>
+                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionProjector}>STOP / END GAME</button>
               </div>
             </div>
 
@@ -2369,7 +2380,7 @@ function Competition({players=[]}){
                             :<strong>{(() => {
                               const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
                               return invTeam?getInvasionStartLives(invTeam):invasionStartingLives;
-                            })()} starting lives</strong>}
+                            })()} lives</strong>}
                         </div>
 
                         <div className="courtCardChallenge">
@@ -2399,7 +2410,7 @@ function Competition({players=[]}){
                       <p><strong>Players:</strong> {team.players.length}</p>
                       <p><strong>Base lives:</strong> {getInvasionBaseLives(team)}</p>
                       <p><strong>Carry-over:</strong> {getInvasionCarry(team.id)}</p>
-                      <p><strong>Start this invasion:</strong> {getInvasionStartLives(team)}</p>
+                      <p><strong>Lives this invasion:</strong> {getInvasionStartLives(team)}</p>
                       <label>Finish lives after this court rotation
                         <input type="number" min="0" value={invasionFinishLives[team.id] ?? ''} onChange={e=>setInvasionFinish(team.id,e.target.value)} placeholder="0" />
                       </label>
@@ -2950,7 +2961,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 
               {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
                 <div className="finalProjectorNextStarts">
-                  <b>Next starting lives</b>
+                  <b>Next lives</b>
                   {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>)}
                 </div>
               )}
@@ -3639,7 +3650,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h20</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h21</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
