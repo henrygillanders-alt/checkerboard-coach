@@ -90,6 +90,33 @@ return aRank-bRank;
 }
 
 
+function startCoachProjectionSession(sessionList,index=0){
+  try{
+    const safeSession=Array.isArray(sessionList)?sessionList:[sessionList].filter(Boolean);
+    localStorage.setItem(SESSION_KEY,JSON.stringify(safeSession));
+    localStorage.setItem('checkerboardProjectionTab','session');
+    localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
+      mode:'session',
+      sessionProjectionActive:true,
+      selectedIndex:index,
+      invasionGameStarted:false
+    }));
+  }catch{}
+}
+
+function stopCoachProjectionSession(){
+  try{
+    const saved=localStorage.getItem('checkerboardCompetitionProjection');
+    const current=saved?JSON.parse(saved):{};
+    localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
+      ...current,
+      mode:'session',
+      sessionProjectionActive:false,
+      invasionGameStarted:false
+    }));
+  }catch{}
+}
+
 function ProjectionView({session,setScreen}){
   const [selectedIndex,setSelectedIndex]=useState(0);
   const [competitionProjection,setCompetitionProjection]=useState(null);
@@ -98,7 +125,11 @@ function ProjectionView({session,setScreen}){
     function loadCompetitionProjection(){
       try{
         const saved=localStorage.getItem('checkerboardCompetitionProjection');
-        setCompetitionProjection(saved?JSON.parse(saved):null);
+        const parsed=saved?JSON.parse(saved):null;
+        setCompetitionProjection(parsed);
+        if(parsed?.mode==='session'&&typeof parsed.selectedIndex==='number'){
+          setSelectedIndex(parsed.selectedIndex);
+        }
       }catch{
         setCompetitionProjection(null);
       }
@@ -362,6 +393,13 @@ const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
 function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
+function startRotationProjection(index){
+  startCoachProjectionSession(session,index);
+}
+function stopRotationProjection(){
+  stopCoachProjectionSession();
+}
+
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 return <div className="page">
@@ -377,7 +415,11 @@ return <div className="page">
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{game.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!game.layers.includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
-<div className="actionRow"><button onClick={()=>duplicate(index)}>Duplicate + Progress</button></div>
+<div className="actionRow">
+<button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
+<button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
+<button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
+</div>
 </div>)}
 </div>;
 }
@@ -1482,6 +1524,17 @@ function Games({setSession,setScreen}){
     setMessage('Game card deleted.');
   }
 
+  function startGameCardProjection(card){
+    const clean=normaliseGameCard(card);
+    startCoachProjectionSession([clean],0);
+    setMessage(`${clean.title||'Game'} sent to projector.`);
+  }
+
+  function stopGameCardProjection(){
+    stopCoachProjectionSession();
+    setMessage('Projector stopped.');
+  }
+
   function selectClass(id){
     setActiveClassId(id);
     setEditingCard(null);
@@ -1523,7 +1576,20 @@ function Games({setSession,setScreen}){
     {activeClassId&&visibleCards.length>0&&<div>
       <h2>Saved Game Cards</h2>
       <div className="libraryGrid">
-        {visibleCards.map(card=><UniversalGameCard key={card.id} game={card} onAdd={addStay} onEdit={setEditingCard} onDuplicate={duplicateCard} onDelete={deleteCard}/>)}
+        {visibleCards.map(card=><div className="universalGameCard gameCard" key={card.id}>
+          <div className="categoryTag">{card.category||'Game'}</div>
+          <h3>{card.title}</h3>
+          <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
+          {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
+          <div className="actionRow">
+            <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
+            <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
+            <button onClick={()=>addStay(card)}>Add To Session</button>
+            <button onClick={()=>setEditingCard(card)}>Edit</button>
+            <button onClick={()=>duplicateCard(card)}>Duplicate</button>
+            <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
+          </div>
+        </div>)}
       </div>
     </div>}
   </div>;
@@ -1576,20 +1642,35 @@ function Competition({players=[]}){
   const [mode,setMode]=useState('invasion');
   const [invasionFormat,setInvasionFormat]=useState('lives');
   const [invasionCourts,setInvasionCourts]=useState(3);
-  const [invasionStartingLives,setInvasionStartingLives]=useState(5);
+  const [invasionStartingLives,setInvasionStartingLives]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
+  });
   const [invasionRotation,setInvasionRotation]=useState('Rotate courts when one invader loses all lives.');
   const [invasionChallenge,setInvasionChallenge]=useState('Invader tries to win points / survive pressure while defenders control risk.');
-  const [invasionTeams,setInvasionTeams]=useState([]);
-  const [invasionTeamPoints,setInvasionTeamPoints]=useState({});
+  const [invasionTeams,setInvasionTeams]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeams||[]}catch{return[]}
+  });
+  const [invasionTeamPoints,setInvasionTeamPoints]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeamPoints||{}}catch{return{}}
+  });
   const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
   const [invasionTeamLives,setInvasionTeamLives]=useState({});
-  const [invasionCarryLives,setInvasionCarryLives]=useState({});
-  const [invasionFinishLives,setInvasionFinishLives]=useState({});
-  const [invasionPlayerRound,setInvasionPlayerRound]=useState(0);
-  const [invasionCourtRound,setInvasionCourtRound]=useState(0);
+  const [invasionCarryLives,setInvasionCarryLives]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionCarryLives||{}}catch{return{}}
+  });
+  const [invasionFinishLives,setInvasionFinishLives]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionFinishLives||{}}catch{return{}}
+  });
+  const [invasionPlayerRound,setInvasionPlayerRound]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionPlayerRound||0}catch{return 0}
+  });
+  const [invasionCourtRound,setInvasionCourtRound]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionCourtRound||0}catch{return 0}
+  });
   const [invasionGameStarted,setInvasionGameStarted]=useState(()=>{
     try{
-      return localStorage.getItem('checkerboardInvasionGameStarted')==='true';
+      const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
+      return localStorage.getItem('checkerboardInvasionGameStarted')==='true'||saved.invasionGameStarted===true;
     }catch{
       return false;
     }
@@ -1653,9 +1734,7 @@ function Competition({players=[]}){
   }
 
   function getInvasionBaseLives(team){
-    const players=(team&&team.players)||[];
-    if(!players.length) return invasionStartingLives;
-    return Math.max(1,Math.floor(getInvasionFairBaseTotal()/players.length));
+    return Number(invasionStartingLives)||1;
   }
 
   function getInvasionCarry(teamId){
@@ -3616,7 +3695,8 @@ function LiveSessionDelivery({session=[],setScreen}){
         <button className="primaryBtn" onClick={()=>setIsRunning(!isRunning)}>{isRunning?'Pause':'Start'}</button>
         <button className="secondaryBtn" onClick={()=>setTimerSeconds(0)}>Reset Timer</button>
         <button className="primaryBtn" onClick={nextItem}>Next</button>
-        <button className="secondaryBtn" onClick={()=>setScreen('projection')}>Project</button>
+        <button className="primaryBtn" onClick={()=>startCoachProjectionSession(session,activeIndex)}>START PROJECTOR</button>
+        <button className="secondaryBtn dangerBtn" onClick={stopCoachProjectionSession}>STOP PROJECTOR</button>
       </div>
       <div className="infoBox"><strong>What To Run</strong><p>{active.task||active.description||'Run the selected activity.'}</p></div>
       {active.scoring&&<div className="infoBox"><strong>Scoring</strong><p>{active.scoring}</p></div>}
@@ -3650,7 +3730,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h21</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h23</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
