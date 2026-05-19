@@ -1607,13 +1607,73 @@
   font-weight:1000;
 }
 
-/* v99h25 final invasion cleanup */
-.fairLivesEngineBox{display:none!important;}
-.finalProjectorNextStarts,.projectorInstructionBanner{display:none!important;}
-.finalLifeNumbers{overflow:hidden!important;}
-.finalLifeNumbers.singleLifeNumber{display:flex!important;align-items:center!important;justify-content:center!important;gap:18px!important;white-space:nowrap!important;}
-.finalLifeNumbers.singleLifeNumber span{font-size:24px!important;line-height:1!important;max-width:190px!important;}
-.finalLifeNumbers.singleLifeNumber strong{font-size:72px!important;line-height:1!important;max-width:130px!important;overflow:hidden!important;display:block!important;}
-.finalLifeNumbers:not(.singleLifeNumber) span:nth-of-type(2),.finalLifeNumbers:not(.singleLifeNumber) strong:nth-of-type(2),.finalLifeNumbers:not(.singleLifeNumber) strong:last-child{display:none!important;}
-.finalProjectorCourtCard,.projectorCourtCleanCard{overflow:hidden!important;}
-.dangerBtn{background:#7f1d1d!important;border-color:#ef4444!important;color:#fff!important;font-weight:1000;}
+/* v99h26 Fair Lives Engine restored */
+.fairLivesEngineRestored{
+  border:2px solid var(--gold,#f7d979);
+  border-radius:24px;
+  padding:22px;
+  margin:22px 0;
+  background:rgba(8,14,27,.72);
+}
+.fairLivesEngineRestored .sectionHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.fairLivesEngineRestored h2{
+  margin:0;
+  color:var(--gold,#f7d979);
+  font-size:28px;
+}
+.fairLivesGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+  margin-top:14px;
+}
+.fairLivesCard{
+  border:1px solid rgba(130,160,210,.55);
+  border-radius:16px;
+  padding:16px;
+  background:rgba(18,31,52,.75);
+}
+.fairLivesCard h3{
+  margin:0 0 8px;
+  color:var(--gold,#f7d979);
+}
+.fairLivesCard p{margin:6px 0;}
+.miniPill{
+  display:inline-flex;
+  border-radius:999px;
+  padding:8px 12px;
+  background:var(--gold,#f7d979);
+  color:#08111f;
+  font-weight:900;
+}
+.mutedText{opacity:.9;}
+
+/* v99h27 compact home brand + fair LCM correction */
+.homeBrandCard.compactHomeBrand,
+.homeBrandCard{
+  padding:18px 24px!important;
+  min-height:0!important;
+  margin-bottom:6px!important;
+}
+.homeBrandCard h1{
+  font-size:clamp(34px,5vw,50px)!important;
+  line-height:1!important;
+  margin:0!important;
+}
+.homeBrandCard p,
+.homeBrandCard small{
+  display:none!important;
+}
+.fairLivesEngineRestored,
+.fairLivesEngineBox{
+  border:2px solid var(--gold,#f7d979);
+}
+
+/* v99h28 Snake seeding + fair lives */
+.fairLivesEngineRestored .miniPill{font-weight:900}

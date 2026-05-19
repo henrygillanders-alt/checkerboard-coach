@@ -28,6 +28,64 @@ const DEFAULT_ATL={btlCount:'0 BTL shots',side:'Both sides',consecutive:'No',sho
 const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false};
 
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
+function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
+function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
+function getFairLivesRows(teams,multiplier=2){
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const base=lcmList(list.map(t=>(t.players||[]).length));
+  return {lcmBase:base,multiplier,rows:list.map((team,index)=>{
+    const players=(team.players||[]).length||1;
+    const livesPerPlayer=(base/players)*multiplier;
+    return {team:team.name||`Team ${index+1}`,players,livesPerPlayer,totalCapacity:livesPerPlayer*players};
+  })};
+}
+function playerSeedValue(player){
+  if(typeof player==='string') return 9999;
+  const ranking=Number(player.juniorRanking ?? player.ranking ?? player.rank);
+  if(!Number.isNaN(ranking)&&ranking>0) return ranking;
+  const level=Number(player.level ?? player.rating ?? 0);
+  return 9000-level;
+}
+function playerDisplayName(player){
+  if(typeof player==='string') return player;
+  return player.name||player.fullName||player.playerName||'Player';
+}
+function snakeSeedPlayers(players,teamCount){
+  const list=[...(players||[])].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b));
+  const teams=Array.from({length:teamCount},()=>[]);
+  list.forEach((player,index)=>{
+    const round=Math.floor(index/teamCount);
+    const pos=index%teamCount;
+    const teamIndex=round%2===0?pos:(teamCount-1-pos);
+    teams[teamIndex].push(playerDisplayName(player));
+  });
+  return teams;
+}
+
+function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
+function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
+function getFairLivesRows(teams,multiplier=2){
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const base=lcmList(list.map(t=>(t.players||[]).length));
+  return {
+    lcmBase:base,
+    multiplier,
+    rows:list.map((team,index)=>{
+      const players=(team.players||[]).length||1;
+      const livesPerPlayer=(base/players)*multiplier;
+      return {
+        team:team.name||`Team ${index+1}`,
+        teamId:team.id,
+        players,
+        livesPerPlayer,
+        totalCapacity:livesPerPlayer*players
+      };
+    })
+  };
+}
+
 
 function buildAtl(options){
 const count=options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
@@ -224,8 +282,9 @@ function ProjectionView({session,setScreen}){
                 <h2>Court {idx+1}</h2>
                 <p><b>Invader:</b> {invader} · {invading?.name||''}</p>
                 <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                <div className="finalLifeNumbers singleLifeNumber">
-                  <span>Lives remaining</span><strong>{finish!==undefined?finish:startLives}</strong>
+                <div className="finalLifeNumbers">
+                  <span>Lives</span><strong>{startLives}</strong>
+                  <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
                 </div>
               </div>;
             })}
@@ -287,11 +346,8 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
-      <div className="homeBrandCard">
+      <div className="homeBrandCard compactHomeBrand">
         <h1>Checkerboard Squash™</h1>
-        <p>Henry Gillanders</p>
-        <p>MA Psychology · MSc Sport Psychology · WSF Level 3</p>
-        <small>© 2026 · All Rights Reserved</small>
       </div>
       <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
         <h2>ROTATIONAL</h2>
@@ -1727,13 +1783,16 @@ function Competition({players=[]}){
   }
 
   function getInvasionFairBaseTotal(){
-    const sizes=(invasionTeams||[]).map(team=>(team.players||[]).length).filter(size=>size>0);
-    if(!sizes.length) return invasionStartingLives;
-    return sizes.reduce((acc,size)=>invasionLcm(acc,size),sizes[0]);
+    const fair=getFairLivesRows(invasionTeams,2);
+    return fair.rows.length?fair.rows[0].totalCapacity:(Number(invasionStartingLives)||5);
   }
 
   function getInvasionBaseLives(team){
-    return Number(invasionStartingLives)||1;
+    const teams=(invasionTeams||[]).filter(t=>(t.players||[]).length>0);
+    const fair=getFairLivesRows(teams,2);
+    const row=fair.rows.find(r=>r.team===(team&&team.name));
+    if(row) return row.livesPerPlayer;
+    return Number(invasionStartingLives)||5;
   }
 
   function getInvasionCarry(teamId){
@@ -1741,7 +1800,9 @@ function Competition({players=[]}){
   }
 
   function getInvasionStartLives(team){
-    return getInvasionBaseLives(team)+getInvasionCarry(team.id);
+    const base=getInvasionBaseLives(team);
+    const carry=Number(invasionCarryLives[(team&&team.id)||'']||invasionCarryLives[(team&&team.name)||'']||0);
+    return base+carry;
   }
 
   function setInvasionFinish(teamId,value){
@@ -1844,14 +1905,6 @@ function Competition({players=[]}){
     if(!invasionTeams.length){
       generateInvasionTeams();
     }
-    const cleanCarry={};
-    const cleanFinish={};
-    const cleanPoints={};
-    setInvasionCarryLives(cleanCarry);
-    setInvasionFinishLives(cleanFinish);
-    setInvasionTeamPoints(cleanPoints);
-    setInvasionPlayerRound(0);
-    setInvasionCourtRound(0);
     setInvasionGameStarted(true);
     setShowInvasionDashboard(true);
     setShowProjection(false);
@@ -1869,12 +1922,12 @@ function Competition({players=[]}){
         invasionTeams,
         playerNames,
         playerBounces,
-        invasionTeamPoints:cleanPoints,
-        invasionCarryLives:cleanCarry,
-        invasionFinishLives:cleanFinish,
+        invasionTeamPoints,
+        invasionCarryLives,
+        invasionFinishLives,
         invasionFairBaseTotal:getInvasionFairBaseTotal(),
-        invasionPlayerRound:0,
-        invasionCourtRound:0,
+        invasionPlayerRound,
+        invasionCourtRound,
         invasionGameStarted:true,
         invasionCourtAssignmentMode,
         showInvasionDashboard:true
@@ -1886,11 +1939,6 @@ function Competition({players=[]}){
     setInvasionGameStarted(false);
     setShowInvasionDashboard(false);
     setShowProjection(false);
-    setInvasionCarryLives({});
-    setInvasionFinishLives({});
-    setInvasionTeamPoints({});
-    setInvasionPlayerRound(0);
-    setInvasionCourtRound(0);
     try{
       localStorage.setItem('checkerboardInvasionGameStarted','false');
       localStorage.setItem('checkerboardInvasionLive','false');
@@ -1900,12 +1948,7 @@ function Competition({players=[]}){
         ...current,
         mode:'session',
         invasionGameStarted:false,
-        showInvasionDashboard:false,
-        invasionCarryLives:{},
-        invasionFinishLives:{},
-        invasionTeamPoints:{},
-        invasionPlayerRound:0,
-        invasionCourtRound:0
+        showInvasionDashboard:false
       }));
     }catch{}
   }
@@ -1937,55 +1980,23 @@ function Competition({players=[]}){
   },[invasionGameStarted,invasionFormat,invasionStartingLives,invasionTeams,invasionCarryLives,invasionFinishLives,invasionPlayerRound,invasionCourtRound,invasionCourtAssignmentMode,showInvasionDashboard]);
 
   function generateInvasionTeams(){
-    const names=[...playerNames];
-    const courts=Math.max(1,Math.min(6,Number(invasionCourts)||3));
-    const teams=Array.from({length:courts},(_,idx)=>({
-      id:`court-${idx+1}`,
-      name:`Team ${idx+1}`,
-      court:idx+1,
-      players:[]
+    const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
+    const source=present.length?present:[...playerNames];
+    const count=Math.max(1,Number(invasionCourts)||2);
+    const seeded=snakeSeedPlayers(source,count);
+    const nextTeams=seeded.map((teamPlayers,index)=>({
+      id:`team-${index+1}`,
+      name:`Team ${index+1}`,
+      court:`Court ${index+1}`,
+      players:teamPlayers
     }));
-    names.forEach((name,idx)=>{
-      teams[idx%courts].players.push(name);
-    });
-    setInvasionTeams(teams);
-    setInvasionTeamPoints(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
-      return next;
-    });
-    setInvasionPlayerPoints(prev=>{
-      const next={};
-      names.forEach(name=>{next[name]=prev[name]||0;});
-      return next;
-    });
-    setInvasionCarryLives(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
-      return next;
-    });
+    setInvasionTeams(nextTeams);
+    setInvasionTeamPoints({});
+    setInvasionTeamLives({});
+    setInvasionCarryLives({});
     setInvasionFinishLives({});
-    setInvasionTeamLives(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id] ?? invasionStartingLives;});
-      return next;
-    });
-    const useRandom=invasionCourtAssignmentMode==='random';
-    const assignedTeams=useRandom?shuffleInvasionArray(teams):[...teams];
-    const n=assignedTeams.length;
-    setInvasionCourtAssignments(assignedTeams.map((defendingTeam,idx)=>{
-      const invadingTeam=assignedTeams[(idx-1+n)%n];
-      const invaderList=invadingTeam.players||[];
-      return {
-        court:idx+1,
-        defendingTeamId:defendingTeam.id,
-        defendingTeamName:defendingTeam.name,
-        defenders:defendingTeam.players||[],
-        invadingTeamId:invadingTeam.id,
-        invadingTeamName:invadingTeam.name,
-        invader:invaderList.length?invaderList[0]:'Waiting for invader'
-      };
-    }));
+    setInvasionPlayerRound(0);
+    setInvasionCourtRound(0);
   }
 
   function addInvasionTeamPoints(teamId,amount){
@@ -2475,7 +2486,7 @@ function Competition({players=[]}){
                             ?<strong>{invasionTeamPoints[assign.invadingTeamId]||0} team pts</strong>
                             :<strong>{(() => {
                               const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
-                              return invTeam?getInvasionStartLives(invTeam):invasionStartingLives;
+                              return invTeam?getInvasionStartLives(invTeam):(Number(invasionStartingLives)||5);
                             })()} lives</strong>}
                         </div>
 
@@ -2488,6 +2499,33 @@ function Competition({players=[]}){
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {invasionFormat==='lives'&&invasionTeams.length>0&&(
+              <div className="fairLivesEngineBox">
+                <div className="fairLivesHeader">
+                  <strong>Fair Lives Carry-Over Engine</strong>
+                  <span>Equal team capacity: {getInvasionFairBaseTotal()}</span>
+                </div>
+                <p>LCM fair lives: smaller teams get more lives per player so each team has equal total capacity. Carry-over then adds to the next invasion.</p>
+
+                <div className="fairLivesGrid">
+                  {invasionTeams.map(team=>(
+                    <div className="fairLivesTeamCard" key={team.id}>
+                      <h3>{team.name}</h3>
+                      <p><strong>Players:</strong> {team.players.length}</p>
+                      <p><strong>Base lives:</strong> {getInvasionBaseLives(team)}</p>
+                      <p><strong>Carry-over:</strong> {getInvasionCarry(team.id)}</p>
+                      <p><strong>Lives this invasion:</strong> {getInvasionStartLives(team)}</p>
+                      <label>Finish lives after this court rotation
+                        <input type="number" min="0" value={invasionFinishLives[team.id] ?? ''} onChange={e=>setInvasionFinish(team.id,e.target.value)} placeholder="0" />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" className="primaryBtn" onClick={postInvasionRotationLives}>Post Lives Score After Court Rotation</button>
               </div>
             )}
 
@@ -3019,11 +3057,19 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                       <h2>Court {idx+1}</h2>
                       <p><b>Invader:</b> {invading?projectorCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
                       <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                      <div className="finalLifeNumbers singleLifeNumber">
-                        <span>Lives remaining</span><strong>{finish!==undefined?finish:start}</strong>
+                      <div className="finalLifeNumbers">
+                        <span>Starts with</span><strong>{start}</strong>
+                        <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
                       </div>
                     </div>;
                   })}
+                </div>
+              )}
+
+              {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
+                <div className="finalProjectorNextStarts">
+                  <b>Next lives</b>
+                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>)}
                 </div>
               )}
 
@@ -3712,7 +3758,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h25</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h28</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
