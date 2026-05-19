@@ -28,6 +28,29 @@ const DEFAULT_ATL={btlCount:'0 BTL shots',side:'Both sides',consecutive:'No',sho
 const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false};
 
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
+function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
+function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
+function getFairLivesRows(teams,multiplier=2){
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const base=lcmList(list.map(t=>(t.players||[]).length));
+  return {
+    lcmBase:base,
+    multiplier,
+    rows:list.map((team,index)=>{
+      const players=(team.players||[]).length||1;
+      const livesPerPlayer=(base/players)*multiplier;
+      return {
+        team:team.name||`Team ${index+1}`,
+        teamId:team.id,
+        players,
+        livesPerPlayer,
+        totalCapacity:livesPerPlayer*players
+      };
+    })
+  };
+}
+
 
 function buildAtl(options){
 const count=options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
@@ -224,8 +247,9 @@ function ProjectionView({session,setScreen}){
                 <h2>Court {idx+1}</h2>
                 <p><b>Invader:</b> {invader} · {invading?.name||''}</p>
                 <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                <div className="finalLifeNumbers singleLifeNumber">
-                  <span>Lives remaining</span><strong>{finish!==undefined?finish:startLives}</strong>
+                <div className="finalLifeNumbers">
+                  <span>Lives</span><strong>{startLives}</strong>
+                  <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
                 </div>
               </div>;
             })}
@@ -287,11 +311,8 @@ function ProjectionView({session,setScreen}){
 
 function Home({setScreen}){
 return <div className="homeGrid">
-      <div className="homeBrandCard">
+      <div className="homeBrandCard compactHomeBrand">
         <h1>Checkerboard Squash™</h1>
-        <p>Henry Gillanders</p>
-        <p>MA Psychology · MSc Sport Psychology · WSF Level 3</p>
-        <small>© 2026 · All Rights Reserved</small>
       </div>
       <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
         <h2>ROTATIONAL</h2>
@@ -1727,13 +1748,16 @@ function Competition({players=[]}){
   }
 
   function getInvasionFairBaseTotal(){
-    const sizes=(invasionTeams||[]).map(team=>(team.players||[]).length).filter(size=>size>0);
-    if(!sizes.length) return invasionStartingLives;
-    return sizes.reduce((acc,size)=>invasionLcm(acc,size),sizes[0]);
+    const fair=getFairLivesRows(invasionTeams,2);
+    return fair.rows.length?fair.rows[0].totalCapacity:(Number(invasionStartingLives)||5);
   }
 
   function getInvasionBaseLives(team){
-    return Number(invasionStartingLives)||1;
+    const teams=(invasionTeams||[]).filter(t=>(t.players||[]).length>0);
+    const fair=getFairLivesRows(teams,2);
+    const row=fair.rows.find(r=>r.teamId===(team&&team.id)||r.team===(team&&team.name));
+    if(row) return row.livesPerPlayer;
+    return Number(invasionStartingLives)||5;
   }
 
   function getInvasionCarry(teamId){
@@ -1844,14 +1868,6 @@ function Competition({players=[]}){
     if(!invasionTeams.length){
       generateInvasionTeams();
     }
-    const cleanCarry={};
-    const cleanFinish={};
-    const cleanPoints={};
-    setInvasionCarryLives(cleanCarry);
-    setInvasionFinishLives(cleanFinish);
-    setInvasionTeamPoints(cleanPoints);
-    setInvasionPlayerRound(0);
-    setInvasionCourtRound(0);
     setInvasionGameStarted(true);
     setShowInvasionDashboard(true);
     setShowProjection(false);
@@ -1869,12 +1885,12 @@ function Competition({players=[]}){
         invasionTeams,
         playerNames,
         playerBounces,
-        invasionTeamPoints:cleanPoints,
-        invasionCarryLives:cleanCarry,
-        invasionFinishLives:cleanFinish,
+        invasionTeamPoints,
+        invasionCarryLives,
+        invasionFinishLives,
         invasionFairBaseTotal:getInvasionFairBaseTotal(),
-        invasionPlayerRound:0,
-        invasionCourtRound:0,
+        invasionPlayerRound,
+        invasionCourtRound,
         invasionGameStarted:true,
         invasionCourtAssignmentMode,
         showInvasionDashboard:true
@@ -1886,11 +1902,6 @@ function Competition({players=[]}){
     setInvasionGameStarted(false);
     setShowInvasionDashboard(false);
     setShowProjection(false);
-    setInvasionCarryLives({});
-    setInvasionFinishLives({});
-    setInvasionTeamPoints({});
-    setInvasionPlayerRound(0);
-    setInvasionCourtRound(0);
     try{
       localStorage.setItem('checkerboardInvasionGameStarted','false');
       localStorage.setItem('checkerboardInvasionLive','false');
@@ -1900,12 +1911,7 @@ function Competition({players=[]}){
         ...current,
         mode:'session',
         invasionGameStarted:false,
-        showInvasionDashboard:false,
-        invasionCarryLives:{},
-        invasionFinishLives:{},
-        invasionTeamPoints:{},
-        invasionPlayerRound:0,
-        invasionCourtRound:0
+        showInvasionDashboard:false
       }));
     }catch{}
   }
@@ -2475,7 +2481,7 @@ function Competition({players=[]}){
                             ?<strong>{invasionTeamPoints[assign.invadingTeamId]||0} team pts</strong>
                             :<strong>{(() => {
                               const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
-                              return invTeam?getInvasionStartLives(invTeam):invasionStartingLives;
+                              return invTeam?getInvasionStartLives(invTeam):(Number(invasionStartingLives)||5);
                             })()} lives</strong>}
                         </div>
 
@@ -2488,6 +2494,33 @@ function Competition({players=[]}){
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {invasionFormat==='lives'&&invasionTeams.length>0&&(
+              <div className="fairLivesEngineBox">
+                <div className="fairLivesHeader">
+                  <strong>Fair Lives Carry-Over Engine</strong>
+                  <span>Equal team capacity: {getInvasionFairBaseTotal()}</span>
+                </div>
+                <p>LCM fair lives: smaller teams get more lives per player so each team has equal total capacity. Carry-over then adds to the next invasion.</p>
+
+                <div className="fairLivesGrid">
+                  {invasionTeams.map(team=>(
+                    <div className="fairLivesTeamCard" key={team.id}>
+                      <h3>{team.name}</h3>
+                      <p><strong>Players:</strong> {team.players.length}</p>
+                      <p><strong>Base lives:</strong> {getInvasionBaseLives(team)}</p>
+                      <p><strong>Carry-over:</strong> {getInvasionCarry(team.id)}</p>
+                      <p><strong>Lives this invasion:</strong> {getInvasionStartLives(team)}</p>
+                      <label>Finish lives after this court rotation
+                        <input type="number" min="0" value={invasionFinishLives[team.id] ?? ''} onChange={e=>setInvasionFinish(team.id,e.target.value)} placeholder="0" />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" className="primaryBtn" onClick={postInvasionRotationLives}>Post Lives Score After Court Rotation</button>
               </div>
             )}
 
@@ -3019,11 +3052,19 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                       <h2>Court {idx+1}</h2>
                       <p><b>Invader:</b> {invading?projectorCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
                       <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                      <div className="finalLifeNumbers singleLifeNumber">
-                        <span>Lives remaining</span><strong>{finish!==undefined?finish:start}</strong>
+                      <div className="finalLifeNumbers">
+                        <span>Starts with</span><strong>{start}</strong>
+                        <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
                       </div>
                     </div>;
                   })}
+                </div>
+              )}
+
+              {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
+                <div className="finalProjectorNextStarts">
+                  <b>Next lives</b>
+                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>)}
                 </div>
               )}
 
@@ -3712,7 +3753,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h25</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h27</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
