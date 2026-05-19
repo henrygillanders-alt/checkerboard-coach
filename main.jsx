@@ -65,25 +65,7 @@ function snakeSeedPlayers(players,teamCount){
 
 
 
-  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
-  const base=lcmList(list.map(t=>(t.players||[]).length));
-  return {
-    lcmBase:base,
-    multiplier,
-    rows:list.map((team,index)=>{
-      const players=(team.players||[]).length||1;
-      const livesPerPlayer=(base/players)*multiplier;
-      return {
-        team:team.name||`Team ${index+1}`,
-        teamId:team.id,
-        players,
-        livesPerPlayer,
-        totalCapacity:livesPerPlayer*players
-      };
-    })
-  };
-}
-
+  
 
 function buildAtl(options){
 const count=options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
