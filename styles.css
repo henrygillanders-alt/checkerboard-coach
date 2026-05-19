@@ -1674,3 +1674,6 @@
 .fairLivesEngineBox{
   border:2px solid var(--gold,#f7d979);
 }
+
+/* v99h28 Snake seeding + fair lives */
+.fairLivesEngineRestored .miniPill{font-weight:900}

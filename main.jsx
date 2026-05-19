@@ -34,6 +34,41 @@ function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0
 function getFairLivesRows(teams,multiplier=2){
   const list=(teams||[]).filter(t=>(t.players||[]).length>0);
   const base=lcmList(list.map(t=>(t.players||[]).length));
+  return {lcmBase:base,multiplier,rows:list.map((team,index)=>{
+    const players=(team.players||[]).length||1;
+    const livesPerPlayer=(base/players)*multiplier;
+    return {team:team.name||`Team ${index+1}`,players,livesPerPlayer,totalCapacity:livesPerPlayer*players};
+  })};
+}
+function playerSeedValue(player){
+  if(typeof player==='string') return 9999;
+  const ranking=Number(player.juniorRanking ?? player.ranking ?? player.rank);
+  if(!Number.isNaN(ranking)&&ranking>0) return ranking;
+  const level=Number(player.level ?? player.rating ?? 0);
+  return 9000-level;
+}
+function playerDisplayName(player){
+  if(typeof player==='string') return player;
+  return player.name||player.fullName||player.playerName||'Player';
+}
+function snakeSeedPlayers(players,teamCount){
+  const list=[...(players||[])].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b));
+  const teams=Array.from({length:teamCount},()=>[]);
+  list.forEach((player,index)=>{
+    const round=Math.floor(index/teamCount);
+    const pos=index%teamCount;
+    const teamIndex=round%2===0?pos:(teamCount-1-pos);
+    teams[teamIndex].push(playerDisplayName(player));
+  });
+  return teams;
+}
+
+function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
+function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
+function getFairLivesRows(teams,multiplier=2){
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const base=lcmList(list.map(t=>(t.players||[]).length));
   return {
     lcmBase:base,
     multiplier,
@@ -1755,7 +1790,7 @@ function Competition({players=[]}){
   function getInvasionBaseLives(team){
     const teams=(invasionTeams||[]).filter(t=>(t.players||[]).length>0);
     const fair=getFairLivesRows(teams,2);
-    const row=fair.rows.find(r=>r.teamId===(team&&team.id)||r.team===(team&&team.name));
+    const row=fair.rows.find(r=>r.team===(team&&team.name));
     if(row) return row.livesPerPlayer;
     return Number(invasionStartingLives)||5;
   }
@@ -1765,7 +1800,9 @@ function Competition({players=[]}){
   }
 
   function getInvasionStartLives(team){
-    return getInvasionBaseLives(team)+getInvasionCarry(team.id);
+    const base=getInvasionBaseLives(team);
+    const carry=Number(invasionCarryLives[(team&&team.id)||'']||invasionCarryLives[(team&&team.name)||'']||0);
+    return base+carry;
   }
 
   function setInvasionFinish(teamId,value){
@@ -1943,55 +1980,23 @@ function Competition({players=[]}){
   },[invasionGameStarted,invasionFormat,invasionStartingLives,invasionTeams,invasionCarryLives,invasionFinishLives,invasionPlayerRound,invasionCourtRound,invasionCourtAssignmentMode,showInvasionDashboard]);
 
   function generateInvasionTeams(){
-    const names=[...playerNames];
-    const courts=Math.max(1,Math.min(6,Number(invasionCourts)||3));
-    const teams=Array.from({length:courts},(_,idx)=>({
-      id:`court-${idx+1}`,
-      name:`Team ${idx+1}`,
-      court:idx+1,
-      players:[]
+    const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
+    const source=present.length?present:[...playerNames];
+    const count=Math.max(1,Number(invasionCourts)||2);
+    const seeded=snakeSeedPlayers(source,count);
+    const nextTeams=seeded.map((teamPlayers,index)=>({
+      id:`team-${index+1}`,
+      name:`Team ${index+1}`,
+      court:`Court ${index+1}`,
+      players:teamPlayers
     }));
-    names.forEach((name,idx)=>{
-      teams[idx%courts].players.push(name);
-    });
-    setInvasionTeams(teams);
-    setInvasionTeamPoints(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
-      return next;
-    });
-    setInvasionPlayerPoints(prev=>{
-      const next={};
-      names.forEach(name=>{next[name]=prev[name]||0;});
-      return next;
-    });
-    setInvasionCarryLives(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id]||0;});
-      return next;
-    });
+    setInvasionTeams(nextTeams);
+    setInvasionTeamPoints({});
+    setInvasionTeamLives({});
+    setInvasionCarryLives({});
     setInvasionFinishLives({});
-    setInvasionTeamLives(prev=>{
-      const next={};
-      teams.forEach(team=>{next[team.id]=prev[team.id] ?? invasionStartingLives;});
-      return next;
-    });
-    const useRandom=invasionCourtAssignmentMode==='random';
-    const assignedTeams=useRandom?shuffleInvasionArray(teams):[...teams];
-    const n=assignedTeams.length;
-    setInvasionCourtAssignments(assignedTeams.map((defendingTeam,idx)=>{
-      const invadingTeam=assignedTeams[(idx-1+n)%n];
-      const invaderList=invadingTeam.players||[];
-      return {
-        court:idx+1,
-        defendingTeamId:defendingTeam.id,
-        defendingTeamName:defendingTeam.name,
-        defenders:defendingTeam.players||[],
-        invadingTeamId:invadingTeam.id,
-        invadingTeamName:invadingTeam.name,
-        invader:invaderList.length?invaderList[0]:'Waiting for invader'
-      };
-    }));
+    setInvasionPlayerRound(0);
+    setInvasionCourtRound(0);
   }
 
   function addInvasionTeamPoints(teamId,amount){
@@ -3753,7 +3758,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h27</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h28</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
