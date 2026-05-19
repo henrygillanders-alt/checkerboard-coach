@@ -63,10 +63,8 @@ function snakeSeedPlayers(players,teamCount){
   return teams;
 }
 
-function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
-function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
-function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
-function getFairLivesRows(teams,multiplier=2){
+
+
   const list=(teams||[]).filter(t=>(t.players||[]).length>0);
   const base=lcmList(list.map(t=>(t.players||[]).length));
   return {
