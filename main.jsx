@@ -410,6 +410,31 @@ function DoubleBounceTool({setScreen}){
 }
 
 
+
+function MentalSkillsPlaceholder({setScreen}){
+  return <div className="page mentalSkillsPage">
+    <div className="pageTop">
+      <div>
+        <h1>Mental Skills</h1>
+        <p className="mutedText">Coach resource placeholder for the six-session programme.</p>
+      </div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <section className="placeholderPanel">
+      <h2>Mental Skills Programme</h2>
+      <p>This section will hold the six-session coach resource once the programme is reviewed and converted into app protocols.</p>
+      <div className="chipRow">
+        <span>Attention</span>
+        <span>Reset routines</span>
+        <span>Pressure behaviour</span>
+        <span>Confidence</span>
+        <span>Competition routines</span>
+      </div>
+    </section>
+  </div>;
+}
+
+
 function Home({setScreen}){
 return <div className="homeGrid">
       <div className="homeBrandCard compactHomeBrand">
@@ -454,8 +479,11 @@ return <div className="homeGrid">
   <h2>Double Bounce</h2>
   <p>Move Mindset · Tactical Patience · Rally Quality</p>
 </button><button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}>
-  <h2>TECHNICAL OVERLAYS</h2>
+  <h2>Technical Overlays</h2>
   <p>Perception–Action Constraints · Live Overlay Engine</p>
+</button><button className="homeTile mentalSkillsTile" onClick={()=>setScreen('mentalSkills')}>
+  <h2>Mental Skills</h2>
+  <p>Attention · Reset Routines · Pressure Behaviour</p>
 </button></div>;
 }
 
@@ -3896,7 +3924,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h37</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h38</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -3907,7 +3935,7 @@ return <div>
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
-{screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}{screen==='technical'&&<TechnicalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} 
+{screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}{screen==='technical'&&<TechnicalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 
