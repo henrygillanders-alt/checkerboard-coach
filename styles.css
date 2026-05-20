@@ -1760,3 +1760,42 @@
   transform:translateY(-1px);
   outline:2px solid rgba(247,217,121,.55);
 }
+
+/* v99h34 Home Typography Standardisation */
+
+.homeTile h1,
+.homeTile h2,
+.homeTile h3,
+.tileTitle{
+  font-size:clamp(24px,3vw,40px) !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  margin:0 0 14px 0 !important;
+}
+
+.homeTile p,
+.tileSubtitle{
+  font-size:clamp(15px,1.5vw,22px) !important;
+  line-height:1.3 !important;
+  font-weight:700 !important;
+  opacity:.95;
+}
+
+.homeTile,
+.technicalOverlayTile{
+  min-height:170px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+}
+
+.homeTile{
+  padding:28px !important;
+}
+
+.homeTile p + p{
+  margin-top:4px;
+}
