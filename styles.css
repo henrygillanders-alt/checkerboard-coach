@@ -1696,3 +1696,22 @@
   opacity:0;
   cursor:pointer;
 }
+
+/* v99h30 Technical Overlays */
+.technicalOverlaysPage .pageTop p{margin:6px 0 0}
+.overlayCategoryTabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.overlayCategoryTabs button{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;background:rgba(15,23,42,.7);color:#fff;font-weight:800}
+.overlayCategoryTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.overlayLayout{display:grid;grid-template-columns:minmax(240px,330px) 1fr;gap:18px;align-items:start}
+.overlayList{display:flex;flex-direction:column;gap:10px}
+.overlayListCard{text-align:left;border:1px solid rgba(130,160,210,.5);border-radius:16px;background:rgba(18,31,52,.75);color:#fff;padding:14px}
+.overlayListCard strong{display:block;font-size:16px}
+.overlayListCard span{display:inline-block;margin-top:6px;opacity:.8;font-size:13px}
+.overlayListCard.active{border-color:var(--gold,#f7d979);box-shadow:0 0 0 2px rgba(247,217,121,.15)}
+.overlayDetail{border:2px solid var(--gold,#f7d979);border-radius:24px;padding:22px;background:rgba(8,14,27,.72)}
+.overlayDetail h2{margin:8px 0 18px;color:var(--gold,#f7d979);font-size:34px}
+.overlayDetail section{border-top:1px solid rgba(255,255,255,.12);padding-top:14px;margin-top:14px}
+.overlayDetail h3{margin:0 0 8px;color:var(--gold,#f7d979)}
+.chipRow{display:flex;gap:8px;flex-wrap:wrap}
+.chipRow span{border-radius:999px;padding:8px 11px;background:rgba(247,217,121,.14);border:1px solid rgba(247,217,121,.35)}
+@media(max-width:850px){.overlayLayout{grid-template-columns:1fr}}
