@@ -1715,3 +1715,12 @@
 .chipRow{display:flex;gap:8px;flex-wrap:wrap}
 .chipRow span{border-radius:999px;padding:8px 11px;background:rgba(247,217,121,.14);border:1px solid rgba(247,217,121,.35)}
 @media(max-width:850px){.overlayLayout{grid-template-columns:1fr}}
+
+/* v99h31 Technical Overlays home access */
+.technicalHomeAccess{
+  border:2px solid var(--gold,#f7d979);
+  border-radius:22px;
+  padding:18px;
+  margin:18px 0;
+  background:rgba(8,14,27,.72);
+}
