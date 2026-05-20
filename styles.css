@@ -1677,3 +1677,22 @@
 
 /* v99h28 Snake seeding + fair lives */
 .fairLivesEngineRestored .miniPill{font-weight:900}
+
+/* v99h29 Player Import / Export */
+.playerBackupControls{
+  align-items:center;
+}
+.importPlayersLabel{
+  position:relative;
+  overflow:hidden;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.importPlayersLabel input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
