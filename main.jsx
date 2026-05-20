@@ -65,7 +65,9 @@ function snakeSeedPlayers(players,teamCount){
 
 
 
-  
+
+
+
 
 function buildAtl(options){
 const count=options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
@@ -1645,9 +1647,75 @@ function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
 function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:'',guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');}
+function exportPlayers(){
+  const backup={
+    type:'checkerboard-players-backup',
+    version:'v99h29',
+    exportedAt:new Date().toISOString(),
+    players
+  };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`checkerboard-players-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importPlayersFile(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(String(reader.result||'{}'));
+      const incoming=Array.isArray(parsed)?parsed:(Array.isArray(parsed.players)?parsed.players:[]);
+      if(!incoming.length){
+        alert('No players found in this file.');
+        return;
+      }
+      const cleaned=incoming.map(player=>({
+        ...EMPTY_PLAYER,
+        ...player,
+        name:String(player.name||player.fullName||player.playerName||'').trim()
+      })).filter(player=>player.name);
+      if(!cleaned.length){
+        alert('No valid player names found.');
+        return;
+      }
+      const existingNames=new Set(players.map(player=>String(player.name||'').trim().toLowerCase()));
+      const merged=[...players];
+      cleaned.forEach(player=>{
+        const key=player.name.toLowerCase();
+        const idx=merged.findIndex(existing=>String(existing.name||'').trim().toLowerCase()===key);
+        if(idx>=0){
+          merged[idx]={...merged[idx],...player};
+        }else{
+          merged.push(player);
+        }
+      });
+      saveSnapshot();
+      setPlayers(merged);
+      alert(`Imported ${cleaned.length} players. Existing matching names were updated.`);
+    }catch(error){
+      alert('Import failed. Please use a Checkerboard JSON player backup file.');
+    }finally{
+      event.target.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
 const sorted=sortPlayers(players);
 return <div className="page">
-<div className="pageTop"><h1>Players</h1><div className="buttonRow"><button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button><button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button></div></div>
+<div className="pageTop"><h1>Players</h1><div className="buttonRow playerBackupControls">
+<button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
+<button className="secondaryBtn" onClick={exportPlayers}>Export Players</button>
+<label className="secondaryBtn importPlayersLabel">Import Players<input type="file" accept=".json,application/json" onChange={importPlayersFile}/></label>
+<button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button>
+</div></div>
 {showForm&&<div className="formCard"><h3>{editing!==null?'Edit Player':'Add Player'}</h3>
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
@@ -3738,7 +3806,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h28</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h29</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
