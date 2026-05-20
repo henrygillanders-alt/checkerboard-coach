@@ -1978,3 +1978,85 @@ button.technicalOverlayTile{
   color:var(--gold,#f7d979);
   margin-top:0;
 }
+
+/* v99h39 Force equal Home tile dimensions */
+.homeGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:24px !important;
+  align-items:stretch !important;
+}
+
+.homeGrid > button,
+.homeGrid > .homeTile,
+.homeGrid > .doubleBounceTile,
+.homeGrid > .technicalOverlayTile,
+.homeGrid > .mentalSkillsTile,
+button.homeTile,
+button.doubleBounceTile,
+button.technicalOverlayTile,
+button.mentalSkillsTile{
+  height:190px !important;
+  min-height:190px !important;
+  max-height:190px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  border-radius:28px !important;
+  padding:28px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  overflow:hidden !important;
+}
+
+.homeGrid > button h2,
+.homeGrid > .homeTile h2,
+.homeGrid > .doubleBounceTile h2,
+.homeGrid > .technicalOverlayTile h2,
+.homeGrid > .mentalSkillsTile h2,
+button.homeTile h2,
+button.doubleBounceTile h2,
+button.technicalOverlayTile h2,
+button.mentalSkillsTile h2{
+  font-size:40px !important;
+  line-height:1.05 !important;
+  margin:0 0 14px 0 !important;
+  font-weight:900 !important;
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+
+.homeGrid > button p,
+.homeGrid > .homeTile p,
+.homeGrid > .doubleBounceTile p,
+.homeGrid > .technicalOverlayTile p,
+.homeGrid > .mentalSkillsTile p,
+button.homeTile p,
+button.doubleBounceTile p,
+button.technicalOverlayTile p,
+button.mentalSkillsTile p{
+  font-size:20px !important;
+  line-height:1.3 !important;
+  margin:0 !important;
+  font-weight:750 !important;
+}
+
+@media(max-width:850px){
+  .homeGrid{
+    grid-template-columns:1fr !important;
+  }
+  .homeGrid > button,
+  .homeGrid > .homeTile,
+  .homeGrid > .doubleBounceTile,
+  .homeGrid > .technicalOverlayTile,
+  .homeGrid > .mentalSkillsTile,
+  button.homeTile,
+  button.doubleBounceTile,
+  button.technicalOverlayTile,
+  button.mentalSkillsTile{
+    height:auto !important;
+    min-height:170px !important;
+    max-height:none !important;
+  }
+}
