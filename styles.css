@@ -1890,3 +1890,25 @@ button.technicalOverlayTile{
     font-size:36px !important;
   }
 }
+
+/* v99h37 Double Bounce Tool */
+.doubleBounceTile{background:linear-gradient(135deg,#0f766e 0%,#0ea5e9 48%,#1d4ed8 100%) !important}
+.doubleBounceToolPage .pageTop p{margin:6px 0 0}
+.doubleBounceHero{border:2px solid var(--gold,#f7d979);border-radius:28px;padding:26px;background:linear-gradient(135deg,rgba(15,118,110,.35),rgba(30,64,175,.28));margin-bottom:22px}
+.doubleBounceHero h2{color:var(--gold,#f7d979);font-size:clamp(34px,5vw,54px);margin:10px 0 12px}
+.doubleBounceHero p{font-size:20px;line-height:1.35;max-width:980px}
+.protocolGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:18px 0}
+.protocolCard{border:1px solid rgba(130,160,210,.5);border-radius:20px;padding:18px;background:rgba(18,31,52,.75)}
+.protocolCard h3{margin:0 0 10px;color:var(--gold,#f7d979)}
+.protocolCard p,.protocolCard li{line-height:1.38}
+.warningCard{border-color:rgba(247,217,121,.65)}
+.dbSection{margin:24px 0}
+.dbSection h2,.claPanel h2{color:var(--gold,#f7d979);font-size:30px}
+.rationaleGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.rationaleCard{border:1px solid rgba(130,160,210,.45);border-radius:20px;padding:18px;background:rgba(8,14,27,.7)}
+.rationaleCard span{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:999px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000;margin-bottom:8px}
+.rationaleCard h3{margin:4px 0 8px;color:#fff}
+.rationaleCard p{line-height:1.38}
+.dbTwoCol{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.claPanel{border:2px solid rgba(247,217,121,.75);border-radius:24px;padding:22px;background:rgba(247,217,121,.08);margin-top:24px}
+.claPanel p{font-size:18px;line-height:1.4}
