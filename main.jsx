@@ -376,32 +376,32 @@ return <div className="homeGrid">
         <h1>Checkerboard Squash™</h1>
       </div>
       <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
-        <h2>ROTATIONAL</h2>
+        <h2>Rotational</h2>
         <p>Affordance Games</p>
         <p className="homeCardSub">Traditional Drills → CLA RLD</p>
       </button>
       <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
-        <h2>DIAGNOSTIC</h2>
+        <h2>Diagnostic</h2>
         <p>Observe · Diagnose · Select Tool</p>
         <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
       </button>
       <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}>
-        <h2>LIVE</h2>
+        <h2>Live</h2>
         <p>Session Delivery Mode</p>
         <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
       </button>
       <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
-        <h2>PROJECT</h2>
+        <h2>Project</h2>
         <p>Player / Projection View</p>
         <p className="homeCardSub">Simple rules · big text · less repetition</p>
       </button>
       <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
-        <h2>TOOLS</h2>
+        <h2>Tools</h2>
         <p>Constraint & Coaching Tools</p>
         <p className="homeCardSub">Visual · Haptic · Spatial · Analogy · Scaling</p>
       </button>
       <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
-        <h2>LEVEL 0</h2>
+        <h2>Level 0</h2>
         <p>Exploration Stage · Ages 5–9</p>
         <p className="homeCardSub">Move · Track · Strike · Play · Mini Checkerboard</p>
       </button>
@@ -1316,7 +1316,7 @@ function ToolsArchitecture(){
   ];
 
   return <div className="gameCard toolsPage">
-    <div className="categoryTag">TOOLS</div>
+    <div className="categoryTag">Tools</div>
     <h2>Constraints & Coaching Tools</h2>
 
     <div className="diagnosticPrinciple">
@@ -3853,7 +3853,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h34</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h35</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
