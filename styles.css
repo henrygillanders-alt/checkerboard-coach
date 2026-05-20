@@ -1799,3 +1799,94 @@
 .homeTile p + p{
   margin-top:4px;
 }
+
+/* v99h36 Home title size uniformity */
+.page .homeGrid h1,
+.page .homeGrid h2,
+.page .homeGrid h3,
+.page .homeTile h1,
+.page .homeTile h2,
+.page .homeTile h3,
+.page .menuCard h1,
+.page .menuCard h2,
+.page .menuCard h3,
+.page .quickCard h1,
+.page .quickCard h2,
+.page .quickCard h3,
+.page .featureCard h1,
+.page .featureCard h2,
+.page .featureCard h3,
+.page .technicalOverlayTile h1,
+.page .technicalOverlayTile h2,
+.page .technicalOverlayTile h3,
+button.homeTile h1,
+button.homeTile h2,
+button.homeTile h3,
+button.technicalOverlayTile h1,
+button.technicalOverlayTile h2,
+button.technicalOverlayTile h3{
+  font-size:40px !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  margin:0 0 14px 0 !important;
+}
+
+.page .homeGrid p,
+.page .homeTile p,
+.page .menuCard p,
+.page .quickCard p,
+.page .featureCard p,
+.page .technicalOverlayTile p,
+button.homeTile p,
+button.technicalOverlayTile p{
+  font-size:20px !important;
+  line-height:1.3 !important;
+  font-weight:750 !important;
+  margin:0 !important;
+}
+
+.page .homeGrid,
+.homeGrid{
+  align-items:stretch !important;
+}
+
+.page .homeGrid > *,
+.page .homeTile,
+.page .menuCard,
+.page .quickCard,
+.page .featureCard,
+.page .technicalOverlayTile,
+button.homeTile,
+button.technicalOverlayTile{
+  min-height:170px !important;
+}
+@media(max-width:900px){
+  .page .homeGrid h1,
+  .page .homeGrid h2,
+  .page .homeGrid h3,
+  .page .homeTile h1,
+  .page .homeTile h2,
+  .page .homeTile h3,
+  .page .menuCard h1,
+  .page .menuCard h2,
+  .page .menuCard h3,
+  .page .quickCard h1,
+  .page .quickCard h2,
+  .page .quickCard h3,
+  .page .featureCard h1,
+  .page .featureCard h2,
+  .page .featureCard h3,
+  .page .technicalOverlayTile h1,
+  .page .technicalOverlayTile h2,
+  .page .technicalOverlayTile h3,
+  button.homeTile h1,
+  button.homeTile h2,
+  button.homeTile h3,
+  button.technicalOverlayTile h1,
+  button.technicalOverlayTile h2,
+  button.technicalOverlayTile h3{
+    font-size:36px !important;
+  }
+}
