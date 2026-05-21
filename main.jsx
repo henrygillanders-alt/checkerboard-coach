@@ -185,11 +185,11 @@ function ProjectionView({session,setScreen}){
     const liveCourts=n;
     const isLive=!!competitionProjection.invasionGameStarted;
     function projBaseLives(team){
-      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
-      if(selected>0) return selected;
       const playerCount=(team?.players||[]).length||1;
-      const baseTotal=competitionProjection.invasionFairBaseTotal||playerCount;
-      return Math.max(1,Math.floor(baseTotal/playerCount));
+      const baseTotal=Number(competitionProjection.invasionFairBaseTotal||0);
+      if(baseTotal>0) return Math.max(1,Math.floor(baseTotal/playerCount));
+      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
+      return selected>0 ? selected : 5;
     }
     function projCarry(team){
       return competitionProjection.invasionCarryLives?.[team?.id]||0;
@@ -198,7 +198,7 @@ function ProjectionView({session,setScreen}){
       return projBaseLives(team)+projCarry(team);
     }
     function projCurrentInvader(team){
-      const list=team?.players||[];
+      const list=[...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
       if(!list.length) return 'Waiting';
       return list[(competitionProjection.invasionPlayerRound||0)%list.length];
     }
@@ -2060,11 +2060,27 @@ function Competition({players=[]}){
   const [nslPeriod3,setNslPeriod3]=useState(30);
   const [nslOvertime,setNslOvertime]=useState(5);
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
+  const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
   const automaticNames=present.length?present.map(player=>player.name):[];
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
+
+  function invasionRankForName(name){
+    const p=(players||[]).find(player=>player.name===name || player.fullName===name || player.playerName===name);
+    if(!p) return 9999;
+    const ranking=Number(p.juniorRanking ?? p.ranking ?? p.rank);
+    if(!Number.isNaN(ranking)&&ranking>0) return ranking;
+    const level=Number(p.level ?? p.rating ?? 0);
+    return 9000-level;
+  }
+
+  function sortInvasionPlayersLowestFirst(list){
+    return [...(list||[])].sort((a,b)=>invasionRankForName(b)-invasionRankForName(a));
+  }
+
+
 
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
@@ -2130,9 +2146,9 @@ function Competition({players=[]}){
   }
 
   function getFinalInvader(team){
-    const players=(team&&team.players)||[];
+    const players=sortInvasionPlayersLowestFirst((team&&team.players)||[]);
     if(!players.length) return 'Waiting';
-    return players[invasionPlayerRound % players.length];
+    return invasionInvaderOverrides[team.id]||invasionInvaderOverrides[team.name]||players[invasionPlayerRound % players.length];
   }
 
   function getFinalStartLives(team){
@@ -2177,9 +2193,8 @@ function Competition({players=[]}){
   }
 
   function startInvasionGame(){
-    if(!invasionTeams.length){
-      generateInvasionTeams();
-    }
+    const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
+    buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
     try{localStorage.setItem('checkerboardInvasionGameStarted','true');}catch{}
     setShowInvasionDashboard(true);
@@ -2187,18 +2202,20 @@ function Competition({players=[]}){
       try{
         const saved=localStorage.getItem('checkerboardCompetitionProjection');
         const current=saved?JSON.parse(saved):{};
+        const fair=getFairLivesRows(activeTeams,2);
         localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
           ...current,
           mode:'invasion',
           invasionFormat,
-          invasionTeams:invasionTeams.length?invasionTeams:current.invasionTeams||[],
+          invasionTeams:activeTeams,
           playerNames,
           playerBounces,
+          invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
           invasionTeamPoints,
           invasionCarryLives,
           invasionFinishLives,
-          invasionFairBaseTotal:getInvasionFairBaseTotal(),
-      invasionStartingLives,
+          invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
+          invasionStartingLives,
           invasionPlayerRound,
           invasionCourtRound,
           invasionGameStarted:true,
@@ -2210,9 +2227,8 @@ function Competition({players=[]}){
   }
 
   function startInvasionProjector(){
-    if(!invasionTeams.length){
-      generateInvasionTeams();
-    }
+    const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
+    buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
     setShowInvasionDashboard(true);
     setShowProjection(false);
@@ -2222,18 +2238,20 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardProjectionTab','competition');
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
+      const fair=getFairLivesRows(activeTeams,2);
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
         ...current,
         mode:'invasion',
         invasionFormat,
         invasionStartingLives,
-        invasionTeams,
+        invasionTeams:activeTeams,
         playerNames,
         playerBounces,
+        invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
         invasionCarryLives,
         invasionFinishLives,
-        invasionFairBaseTotal:getInvasionFairBaseTotal(),
+        invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted:true,
@@ -2274,6 +2292,7 @@ function Competition({players=[]}){
         invasionTeams,
         playerNames,
         playerBounces,
+        invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
         invasionCarryLives,
         invasionFinishLives,
@@ -2300,11 +2319,21 @@ function Competition({players=[]}){
     }));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
-    setInvasionTeamLives({});
+    const fair=getFairLivesRows(nextTeams,2);
+    const lifeBanks={};
+    nextTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      lifeBanks[team.id]=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
+    });
+    setInvasionTeamLives(lifeBanks);
     setInvasionCarryLives({});
     setInvasionFinishLives({});
     setInvasionPlayerRound(0);
     setInvasionCourtRound(0);
+    setInvasionRotationStep(0);
+    setInvasionInvaderOverrides({});
+    buildSimultaneousInvasionCourts(0,false,nextTeams);
+    return nextTeams;
   }
 
   function addInvasionTeamPoints(teamId,amount){
@@ -2327,11 +2356,13 @@ function Competition({players=[]}){
   }
 
   function resetInvasionLifeBanks(){
-    setInvasionTeamLives(prev=>{
-      const next={};
-      invasionTeams.forEach(team=>{next[team.id]=invasionStartingLives;});
-      return next;
+    const fair=getFairLivesRows(invasionTeams,2);
+    const next={};
+    invasionTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      next[team.id]=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
     });
+    setInvasionTeamLives(next);
   }
 
   function resetInvasionPoints(){
@@ -2363,17 +2394,18 @@ function Competition({players=[]}){
     return array;
   }
 
-  function buildSimultaneousInvasionCourts(step=invasionRotationStep,useRandom=invasionCourtAssignmentMode==='random'){
-    if(!invasionTeams.length){
+  function buildSimultaneousInvasionCourts(step=invasionRotationStep,useRandom=invasionCourtAssignmentMode==='random',sourceTeams=invasionTeams){
+    if(!sourceTeams.length){
       setInvasionCourtAssignments([]);
       return;
     }
-    const teams=useRandom?shuffleInvasionArray(invasionTeams):[...invasionTeams];
+    const teams=useRandom?shuffleInvasionArray(sourceTeams):[...sourceTeams];
     const n=teams.length;
     const assignments=teams.map((defendingTeam,idx)=>{
       const invadingTeam=teams[(idx-1+n)%n];
-      const invaderList=invadingTeam.players||[];
-      const invader=invaderList.length?invaderList[step%invaderList.length]:'Waiting for invader';
+      const invaderList=sortInvasionPlayersLowestFirst(invadingTeam.players||[]);
+      const override=invasionInvaderOverrides[invadingTeam.id]||invasionInvaderOverrides[invadingTeam.name];
+      const invader=override || (invaderList.length?invaderList[step%invaderList.length]:'Waiting for invader');
       return {
         court:idx+1,
         defendingTeamId:defendingTeam.id,
@@ -2729,6 +2761,28 @@ function Competition({players=[]}){
 
               {invasionFormat==='lives'&&invasionTeams.length>0&&(
                 <button type="button" className="secondaryBtn" onClick={resetInvasionLifeBanks}>Reset Team Life Banks</button>
+              )}
+
+              {invasionTeams.length>0&&(
+                <div className="coachInvaderSelector">
+                  <h2>Coach Invader Selection</h2>
+                  <p>Default order is lowest-ranked player first. Override here if a team chooses a tactical invader.</p>
+                  <div className="coachInvaderGrid">
+                    {invasionTeams.map(team=>{
+                      const ordered=sortInvasionPlayersLowestFirst(team.players||[]);
+                      const current=invasionInvaderOverrides[team.id]||ordered[invasionPlayerRound%Math.max(1,ordered.length)]||'';
+                      return <div className="coachInvaderCard" key={team.id}>
+                        <h3>{team.name}</h3>
+                        <label>Current invader
+                          <select value={current} onChange={e=>setInvasionInvaderOverrides(prev=>({...prev,[team.id]:e.target.value}))}>
+                            {ordered.map(player=><option key={player} value={player}>{player}</option>)}
+                          </select>
+                        </label>
+                        <p>Default order: {ordered.join(' → ')}</p>
+                      </div>;
+                    })}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -4068,7 +4122,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h43</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h44</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

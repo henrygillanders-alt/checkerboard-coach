@@ -2208,3 +2208,21 @@ button.mentalSkillsTile p{
   gap:8px !important;
   align-items:center !important;
 }
+
+/* v99h44 Invasion state repair */
+.coachInvaderSelector{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:24px;
+  padding:18px;
+  margin:18px 0;
+  background:rgba(8,14,27,.72);
+}
+.coachInvaderSelector h2{color:var(--gold,#f7d979);margin:0 0 6px}
+.coachInvaderGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.coachInvaderCard{border:1px solid rgba(130,160,210,.5);border-radius:18px;padding:14px;background:rgba(18,31,52,.75)}
+.coachInvaderCard h3{margin:0 0 8px;color:var(--gold,#f7d979)}
+.coachInvaderCard label{display:block;font-weight:900}
+.coachInvaderCard select{width:100%;margin-top:6px;border-radius:12px;border:1px solid rgba(130,160,210,.55);background:rgba(7,12,22,.95);color:#fff;padding:10px;font-weight:800}
+.finalLifeNumbers{overflow:hidden}
+.finalLifeNumbers strong{font-size:clamp(34px,5vw,58px)!important;line-height:1!important}
+.finalLifeNumbers span{font-size:clamp(14px,1.5vw,20px)!important}
