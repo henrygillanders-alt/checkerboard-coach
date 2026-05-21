@@ -411,26 +411,85 @@ function DoubleBounceTool({setScreen}){
 
 
 
+
 function MentalSkillsPlaceholder({setScreen}){
+  const [tab,setTab]=useState('principles');
+  const [cue,setCue]=useState(()=>localStorage.getItem('checkerboard_mental_cue')||'Calm. Focused. In control.');
+  const [goals,setGoals]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboard_mental_goals')||'["Recover fully after every shot","Reset after errors","Play one rally at a time"]')}
+    catch(e){return ['Recover fully after every shot','Reset after errors','Play one rally at a time']}
+  });
+  const [ratings,setRatings]=useState({focus:3,composure:3,distraction:3});
+  function saveMental(){
+    localStorage.setItem('checkerboard_mental_cue',cue);
+    localStorage.setItem('checkerboard_mental_goals',JSON.stringify(goals));
+    alert('Mental skills routine saved.');
+  }
+  const overlays=[
+    {cat:'Focus',name:'External Target Focus',rule:'Use an external cue such as target, space, ball or opponent information rather than internal technical chatter.',game:'ATL, checkerboard targets and pressure rallies.'},
+    {cat:'Focus',name:'Second Eye To Opponent',rule:'Preserve outside-eye access to opponent information space during recovery and preparation.',game:'[6-3], [5-4], [7-2] and back-court recovery.'},
+    {cat:'Reset',name:'Reset Within 3 Seconds',rule:'After error or lost rally, show visible reset within 3 seconds: breathe, cue word, eyes up, ready posture.',game:'Matchplay, invasion and pressure scoring games.'},
+    {cat:'Reset',name:'Breath Before Serve',rule:'Before serving, take one deliberate centering breath and then play immediately.',game:'Pressure games, matchplay and serve-start rallies.'},
+    {cat:'Composure',name:'Neutral Error Response',rule:'No visible frustration after errors. Recover body language and prepare for the next rally.',game:'Players who spiral after mistakes or referee decisions.'},
+    {cat:'Competitive Behaviour',name:'No Admiring Shots',rule:'After every shot, recover or reposition immediately. Watching the ball after striking is an infraction.',game:'Double bounce, ATL, checkerboard pairs and invasion.'},
+    {cat:'Competitive Behaviour',name:'Full Recovery Effort',rule:'Attempt to recover after every shot, even after poor contact or apparent winner.',game:'Slower movers, juniors and pressure endurance games.'},
+    {cat:'Tactical Awareness',name:'Recognise Opponent Vulnerability',rule:'Attack only when opponent is off-balance, late, unrecovered or outside useful court position.',game:'Checkerboard attack patterns and progressive ATL.'},
+    {cat:'Pressure',name:'One-Rally Reset',rule:'Score, error, opponent behaviour and referee decisions are treated as noise. Return to the next rally task.',game:'8-all, bonus games and finish-in-2 pressure windows.'}
+  ];
+  const principles=[
+    ['Train Behaviour, Not Theory','Mental skills transfer best when practised inside representative games, not only explained in a classroom.'],
+    ['Use Observable Overlays','A mental skill should become visible: reset posture, breath before serve, full recovery, neutral error response.'],
+    ['Shift From Control To Re-Engagement','The aim is not to eliminate thoughts or nerves. The aim is to notice disruption and return attention to the next useful action.'],
+    ['Make It Repeatable','The same cue, breath and reset routine should appear before sessions, between rallies and during competition.'],
+    ['Connect To Squash Information','Focus should be linked to ball, target, opponent, space, recovery and tactical affordances.']
+  ];
+  const routines=[
+    ['Pre-Session Routine','Cue statement → 3 centering breaths → confirm 1–3 process goals → start session.'],
+    ['Between-Rally Reset','Turn away briefly → slow exhale → cue word → eyes up → prepare.'],
+    ['Between-Game Refocus','Check breathing → repeat cue statement → choose one process goal for the next game.'],
+    ['Post-Session Reflection','Rate focus, composure and distraction control from 1–5. Note one behaviour to keep and one to improve.']
+  ];
   return <div className="page mentalSkillsPage">
     <div className="pageTop">
-      <div>
-        <h1>Mental Skills</h1>
-        <p className="mutedText">Coach resource placeholder for the six-session programme.</p>
-      </div>
+      <div><h1>Mental Skills</h1><p className="mutedText">Integrated game-based mental performance system for squash coaches.</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
-    <section className="placeholderPanel">
-      <h2>Mental Skills Programme</h2>
-      <p>This section will hold the six-session coach resource once the programme is reviewed and converted into app protocols.</p>
-      <div className="chipRow">
-        <span>Attention</span>
-        <span>Reset routines</span>
-        <span>Pressure behaviour</span>
-        <span>Confidence</span>
-        <span>Competition routines</span>
+    <div className="mentalTabs">
+      <button className={tab==='principles'?'activeTab':''} onClick={()=>setTab('principles')}>Principles</button>
+      <button className={tab==='routine'?'activeTab':''} onClick={()=>setTab('routine')}>Pre-Session Routine</button>
+      <button className={tab==='overlays'?'activeTab':''} onClick={()=>setTab('overlays')}>Mental Overlays</button>
+      <button className={tab==='goals'?'activeTab':''} onClick={()=>setTab('goals')}>Goals & Ratings</button>
+    </div>
+    {tab==='principles'&&<section className="mentalPanel">
+      <h2>From Mental Skills Lessons To Live Performance Behaviours</h2>
+      <p>The original programme remains valuable, but the app version turns the ideas into repeatable habits inside games: reset, refocus, recover, compete.</p>
+      <div className="mentalGrid">{principles.map(item=><div className="mentalCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p></div>)}</div>
+      <div className="claPanel"><h2>Key Design Rule</h2><p>Mental skills should be available as overlays inside every game, not isolated as classroom content. The Mental Skills tab explains the principles; the overlay engine trains the behaviours.</p></div>
+    </section>}
+    {tab==='routine'&&<section className="mentalPanel">
+      <h2>Pre-Session Routine</h2>
+      <p>A short repeatable routine to connect cue statement, breath and process goals before practice or matchplay.</p>
+      <div className="routineBox">
+        <label>Cue Statement</label>
+        <input value={cue} onChange={e=>setCue(e.target.value)} />
+        <div className="chipRow">{['Calm. Focused. In control.','Strong. Focused. In the game.','One rally at a time.','Move first. Reset fast.','See space. Play simple.'].map(x=><button key={x} onClick={()=>setCue(x)}>{x}</button>)}</div>
       </div>
-    </section>
+      <div className="breathCard"><h3>Centering Breath</h3><p>Inhale 3 seconds → hold 3 seconds → exhale 3 seconds. Repeat for 3 cycles.</p><div className="breathSteps"><span>Inhale 3</span><span>Hold 3</span><span>Exhale 3</span></div></div>
+      <div className="mentalGrid">{routines.map(item=><div className="mentalCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p></div>)}</div>
+      <button className="primaryBtn" onClick={saveMental}>Save Routine</button>
+    </section>}
+    {tab==='overlays'&&<section className="mentalPanel">
+      <h2>Universal Mental Overlays</h2>
+      <p>These overlays should be available inside every game: checkerboard, ATL/BTL, double bounce, invasion, pressure games and live projection.</p>
+      <div className="overlayMentalGrid">{overlays.map(o=><div className="mentalOverlayCard" key={o.name}><span>{o.cat}</span><h3>{o.name}</h3><p><strong>Rule:</strong> {o.rule}</p><p><strong>Best use:</strong> {o.game}</p></div>)}</div>
+    </section>}
+    {tab==='goals'&&<section className="mentalPanel">
+      <h2>Goals & Session Rating</h2>
+      <p>Use process goals that can be trained and observed during live practice.</p>
+      <div className="goalList">{goals.map((g,i)=><input key={i} value={g} onChange={e=>setGoals(goals.map((x,idx)=>idx===i?e.target.value:x))}/>)}</div>
+      <div className="ratingGrid">{Object.entries(ratings).map(([key,value])=><div className="ratingCard" key={key}><h3>{key[0].toUpperCase()+key.slice(1)}</h3><input type="range" min="1" max="5" value={value} onChange={e=>setRatings({...ratings,[key]:e.target.value})}/><strong>{value}/5</strong></div>)}</div>
+      <button className="primaryBtn" onClick={saveMental}>Save Goals</button>
+    </section>}
   </div>;
 }
 
@@ -3924,7 +3983,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h39</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h40</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
