@@ -371,6 +371,26 @@ function TechnicalOverlays({setScreen}){
 
 
 
+
+function CoachInvaderSelectorReadOnly({teams}){
+  if(!teams||teams.length===0) return null;
+  return <section className="coachInvaderSelector">
+    <h2>Coach Invader Selection</h2>
+    <p>Default order is lowest-ranked player first. Use this order unless the coach/team chooses a tactical invader order.</p>
+    <div className="coachInvaderGrid">
+      {teams.map((team,index)=>{
+        const players=cbSortLowestRankFirst(team.players||[]);
+        return <div className="coachInvaderCard" key={team.id||team.name||index}>
+          <h3>{team.name||`Team ${index+1}`}</h3>
+          <p><strong>Default first invader:</strong> {cbPlayerLabel(players[0])}</p>
+          <p>{players.map(cbPlayerLabel).join(' → ')}</p>
+        </div>
+      })}
+    </div>
+  </section>;
+}
+
+
 function DoubleBounceTool({setScreen}){
   const rationale=[
     ['Encourages a Move Mindset','Because players know they still have a realistic chance of retrieval after the first bounce, they continue moving, chase more balls and develop persistence behaviours. The athlete shifts from “I can’t get there” toward “I still have a chance.”'],
@@ -434,6 +454,46 @@ const UNIVERSAL_MENTAL_OVERLAYS = [
   {cat:'Tactical Awareness', name:'Recognise Opponent Vulnerability', rule:'Attack only when opponent is off-balance, late, unrecovered or out of position.'},
   {cat:'Tactical Awareness', name:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue or positional advantage.'}
 ];
+
+
+function cbPlayerRankValue(player){
+  if(!player || typeof player==='string') return 9999;
+  const raw=player.juniorRanking ?? player.ranking ?? player.rank ?? player.seed ?? player.level ?? player.rating;
+  const n=Number(raw);
+  return (!Number.isNaN(n) && n>0) ? n : 9999;
+}
+function cbPlayerLabel(player){
+  if(!player) return 'Player';
+  if(typeof player==='string') return player;
+  return player.name || player.fullName || player.playerName || 'Player';
+}
+function cbSortLowestRankFirst(players){
+  return [...(players||[])].sort((a,b)=>cbPlayerRankValue(b)-cbPlayerRankValue(a));
+}
+function cbFairLivesRows(teams,multiplier=2){
+  try{
+    if(typeof getFairLivesRows==='function') return getFairLivesRows(teams,multiplier);
+  }catch(e){}
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const counts=list.map(t=>(t.players||[]).length).filter(Boolean);
+  const gcd=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;};
+  const lcm=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b,1);return Math.abs(a*b)/gcd(a,b);};
+  const base=counts.reduce((acc,n)=>lcm(acc,n),counts[0]||1);
+  return {lcmBase:base,multiplier,rows:list.map((team,index)=>{
+    const players=(team.players||[]).length||1;
+    const livesPerPlayer=(base/players)*multiplier;
+    return {team:team.name||`Team ${index+1}`,teamId:team.id,players,livesPerPlayer,totalCapacity:livesPerPlayer*players};
+  })};
+}
+function cbFairLivesForTeam(team,teams,startingLives=5,multiplier=2){
+  const fair=cbFairLivesRows(teams,multiplier);
+  const row=(fair.rows||[]).find(r=>r.teamId===team?.id || r.team===team?.name);
+  return row ? row.livesPerPlayer : Number(startingLives||5);
+}
+function cbDefaultInvader(team){
+  return cbSortLowestRankFirst(team?.players||[])[0];
+}
+
 
 function MentalOverlaySelector({context='Game'}){
   const [mode,setMode]=useState('single');
@@ -4008,7 +4068,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h42</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h43</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
