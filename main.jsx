@@ -384,6 +384,8 @@ function DoubleBounceTool({setScreen}){
   return <div className="page doubleBounceToolPage">
     <div className="pageTop">
       <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
+    <MentalOverlaySelector context="Double Bounce"/>
+
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
     <section className="doubleBounceHero">
@@ -411,6 +413,67 @@ function DoubleBounceTool({setScreen}){
 
 
 
+
+
+
+const UNIVERSAL_MENTAL_OVERLAYS = [
+  {cat:'Attention', name:'Quiet Eye Before Serve', rule:'Target → Ball → Strike. Fixate front-wall target for 1–2 seconds, eyes to ball, serve immediately.'},
+  {cat:'Attention', name:'Quiet Eye Before Attack', rule:'Stabilise gaze on target/space before attacking.'},
+  {cat:'Attention', name:'Second Eye To Opponent', rule:'Maintain outside-eye access to opponent information space.'},
+  {cat:'Attention', name:'External Target Focus', rule:'Use ball, target, space or opponent information rather than internal technical chatter.'},
+  {cat:'Breathing', name:'Long Exhale Before Serve', rule:'Visible long controlled exhale before serve or pressure point.'},
+  {cat:'Breathing', name:'Breath Before Serve', rule:'One visible centering breath before every serve.'},
+  {cat:'Breathing', name:'Attack Breath', rule:'Sharp energising breath and attack cue before serve or attack phase.'},
+  {cat:'Reset', name:'Reset Within 3 Seconds', rule:'After error/lost rally: breathe, cue word, eyes up, ready posture within 3 seconds.'},
+  {cat:'Reset', name:'Cue Word After Error', rule:'Short cue word after error before next rally.'},
+  {cat:'Competitive Behaviour', name:'No Admiring Shots', rule:'After every shot, recover or reposition immediately.'},
+  {cat:'Competitive Behaviour', name:'Full Recovery After Every Shot', rule:'Attempt recovery even after poor shots or apparent winners.'},
+  {cat:'Competitive Behaviour', name:'Compete To Last Ball', rule:'Continue effort until rally is definitely over.'},
+  {cat:'Emotional Regulation', name:'Neutral Error Response', rule:'After error, show neutral body language and immediate readiness.'},
+  {cat:'Emotional Regulation', name:'Accept And Continue', rule:'After bad call, bad bounce or disruption, reset and continue.'},
+  {cat:'Tactical Awareness', name:'Recognise Opponent Vulnerability', rule:'Attack only when opponent is off-balance, late, unrecovered or out of position.'},
+  {cat:'Tactical Awareness', name:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue or positional advantage.'}
+];
+
+function MentalOverlaySelector({context='Game'}){
+  const [mode,setMode]=useState('single');
+  const [selected,setSelected]=useState([]);
+  const limit=mode==='single'?1:mode==='pair'?2:3;
+  function toggleOverlay(name){
+    if(selected.includes(name)){
+      setSelected(selected.filter(x=>x!==name));
+      return;
+    }
+    if(selected.length>=limit){
+      setSelected([...selected.slice(1),name]);
+    }else{
+      setSelected([...selected,name]);
+    }
+  }
+  const active=UNIVERSAL_MENTAL_OVERLAYS.filter(o=>selected.includes(o.name));
+  return <section className="mentalOverlaySelector">
+    <div className="sectionHead">
+      <div>
+        <h2>Mental Overlays</h2>
+        <p>Observable performance behaviours for {context}. Select single, pair or triple.</p>
+      </div>
+      <div className="overlayModeButtons">
+        <button className={mode==='single'?'activeMode':''} onClick={()=>{setMode('single');setSelected(selected.slice(0,1));}}>Single</button>
+        <button className={mode==='pair'?'activeMode':''} onClick={()=>{setMode('pair');setSelected(selected.slice(0,2));}}>Pair</button>
+        <button className={mode==='triple'?'activeMode':''} onClick={()=>setMode('triple')}>Triple</button>
+      </div>
+    </div>
+    <div className="mentalOverlayChips">
+      {UNIVERSAL_MENTAL_OVERLAYS.map(o=><button key={o.name} className={selected.includes(o.name)?'selectedOverlay':''} onClick={()=>toggleOverlay(o.name)}>
+        <strong>{o.name}</strong><span>{o.cat}</span>
+      </button>)}
+    </div>
+    <div className="activeOverlayPanel">
+      <h3>Active Overlay Rules</h3>
+      {active.length===0?<p>No mental overlays selected.</p>:active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
+    </div>
+  </section>;
+}
 
 
 function MentalSkillsPlaceholder({setScreen}){
@@ -1718,6 +1781,8 @@ function Games({setSession,setScreen}){
       <h1>Games Library</h1>
       <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
+    <MentalOverlaySelector context="Conditioned Games"/>
+
 
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -2392,6 +2457,8 @@ function Competition({players=[]}){
       <div className="pageTop">
         <h1>Competition</h1>
       </div>
+    <MentalOverlaySelector context="Competition Games"/>
+
 
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
@@ -3941,7 +4008,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h41</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h42</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

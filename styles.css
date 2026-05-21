@@ -2087,3 +2087,95 @@ button.mentalSkillsTile p{
 .coachCue{display:inline-flex;border-radius:999px;padding:10px 14px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000}
 .breathSystemCard h3{color:var(--gold,#f7d979)}
 .mentalOverlayCard p{line-height:1.36}
+
+/* v99h42 Universal Mental Overlay Selector */
+.mentalOverlaySelector{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:24px;
+  padding:20px;
+  margin:18px 0 24px;
+  background:rgba(8,14,27,.72);
+}
+.mentalOverlaySelector .sectionHead{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.mentalOverlaySelector h2{
+  color:var(--gold,#f7d979);
+  margin:0 0 6px;
+  font-size:28px;
+}
+.mentalOverlaySelector p{
+  margin:0;
+  line-height:1.35;
+}
+.overlayModeButtons{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.overlayModeButtons button{
+  border:1px solid rgba(247,217,121,.35);
+  border-radius:999px;
+  padding:8px 12px;
+  background:rgba(15,23,42,.8);
+  color:#fff;
+  font-weight:900;
+}
+.overlayModeButtons .activeMode{
+  background:var(--gold,#f7d979);
+  color:#08111f;
+}
+.mentalOverlayChips{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+  margin:16px 0;
+}
+.mentalOverlayChips button{
+  text-align:left;
+  border:1px solid rgba(130,160,210,.45);
+  border-radius:16px;
+  padding:12px;
+  background:rgba(18,31,52,.75);
+  color:#fff;
+}
+.mentalOverlayChips button strong{
+  display:block;
+  font-size:15px;
+}
+.mentalOverlayChips button span{
+  display:inline-block;
+  margin-top:5px;
+  opacity:.8;
+  font-size:12px;
+}
+.mentalOverlayChips .selectedOverlay{
+  border-color:var(--gold,#f7d979);
+  box-shadow:0 0 0 2px rgba(247,217,121,.15);
+  background:rgba(247,217,121,.12);
+}
+.activeOverlayPanel{
+  border-top:1px solid rgba(255,255,255,.12);
+  padding-top:14px;
+}
+.activeOverlayPanel h3{
+  color:var(--gold,#f7d979);
+  margin:0 0 10px;
+}
+.activeOverlayRule{
+  border:1px solid rgba(247,217,121,.25);
+  border-radius:14px;
+  padding:12px;
+  margin:8px 0;
+  background:rgba(247,217,121,.08);
+}
+.activeOverlayRule strong{
+  color:#fff;
+}
+.activeOverlayRule p{
+  margin:6px 0 0;
+}
