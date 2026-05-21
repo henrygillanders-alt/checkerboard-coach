@@ -185,9 +185,16 @@ function ProjectionView({session,setScreen}){
     const liveCourts=n;
     const isLive=!!competitionProjection.invasionGameStarted;
     function projBaseLives(team){
+      if(!team) return Number(competitionProjection?.invasionStartingLives||5);
+      const exact=Number(competitionProjection.invasionFairLivesByTeam?.[team.id] ?? competitionProjection.invasionFairLivesByTeam?.[team.name]);
+      if(exact>0) return exact;
+      const allTeams=competitionProjection.invasionTeams||[];
+      const counts=allTeams.map(t=>(t.players||[]).length).filter(n=>n>0);
+      const gcd=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;};
+      const lcm=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b,1);return Math.abs(a*b)/gcd(a,b);};
+      const base=counts.length?counts.reduce((acc,n)=>lcm(acc,n),1):0;
       const playerCount=(team?.players||[]).length||1;
-      const baseTotal=Number(competitionProjection.invasionFairBaseTotal||0);
-      if(baseTotal>0) return Math.max(1,Math.floor(baseTotal/playerCount));
+      if(base>0) return Math.max(1,(base/playerCount)*2);
       const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
       return selected>0 ? selected : 5;
     }
@@ -1899,6 +1906,7 @@ const[editing,setEditing]=useState(null);
 const[form,setForm]=useState(EMPTY_PLAYER);
 const[guestName,setGuestName]=useState('');
 const[guestEstimate,setGuestEstimate]=useState('Level 3 guest');
+const[guestRanking,setGuestRanking]=useState('');
 function saveSnapshot(){setHistory([...history,players]);}
 function undo(){if(history.length===0)return;setPlayers(history[history.length-1]);setHistory(history.slice(0,-1));}
 function updateCategory(category){const found=LEVELS.find(level=>level.label===category);setForm({...form,category,level:found?found.level:1});}
@@ -1906,7 +1914,7 @@ function savePlayer(){if(!form.name.trim())return;saveSnapshot();if(editing!==nu
 function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({...EMPTY_PLAYER,...clean});setEditing(index);setShowForm(true);window.scrollTo(0,0);}
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
-function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:'',guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');}
+function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;const guestRank=String(guestRanking||'').trim();saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:guestRank,ranking:guestRank,guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');setGuestRanking('');}
 function exportPlayers(){
   const backup={
     type:'checkerboard-players-backup',
@@ -1988,10 +1996,11 @@ return <div className="page">
 <div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow">
 <input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/>
 <select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select>
-<button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div></div>
+<input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/>
+<button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in snake teams and competitions. Lower number = stronger seed.</p></div>
 {players.length===0&&<div className="placeholder">No players added yet. Add players or guests above.</div>}
 <div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><h3>{player.name}</h3>
-<div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:'Guest'}</span></div>
+<div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div>
 <div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div>
 <div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Mark Present'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div>
 </div>)}</div>
@@ -2129,6 +2138,25 @@ function Competition({players=[]}){
     return base+carry;
   }
 
+  function getInvasionFairLivesMap(sourceTeams=invasionTeams){
+    const fair=getFairLivesRows(sourceTeams,2);
+    const map={};
+    sourceTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      const value=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
+      map[team.id]=value;
+      map[team.name]=value;
+    });
+    return map;
+  }
+
+  function getInvasionStartLivesFromMap(team,map){
+    if(!team) return Number(invasionStartingLives)||5;
+    const base=Number(map?.[team.id] ?? map?.[team.name] ?? getInvasionBaseLives(team));
+    const carry=Number(invasionCarryLives[(team&&team.id)||'']||invasionCarryLives[(team&&team.name)||'']||0);
+    return base+carry;
+  }
+
   function setInvasionFinish(teamId,value){
     const v=Math.max(0,Number(value)||0);
     setInvasionFinishLives(prev=>({...prev,[teamId]:v}));
@@ -2215,6 +2243,7 @@ function Competition({players=[]}){
           invasionCarryLives,
           invasionFinishLives,
           invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
+          invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
           invasionStartingLives,
           invasionPlayerRound,
           invasionCourtRound,
@@ -2252,6 +2281,7 @@ function Competition({players=[]}){
         invasionCarryLives,
         invasionFinishLives,
         invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
+        invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted:true,
@@ -2297,6 +2327,7 @@ function Competition({players=[]}){
         invasionCarryLives,
         invasionFinishLives,
         invasionFairBaseTotal:getInvasionFairBaseTotal(),
+        invasionFairLivesByTeam:getInvasionFairLivesMap(invasionTeams),
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted,
@@ -2850,7 +2881,7 @@ function Competition({players=[]}){
                             ?<strong>{invasionTeamPoints[assign.invadingTeamId]||0} team pts</strong>
                             :<strong>{(() => {
                               const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
-                              return invTeam?getInvasionStartLives(invTeam):(Number(invasionStartingLives)||5);
+                              return invTeam?getInvasionStartLivesFromMap(invTeam,getInvasionFairLivesMap(invasionTeams)):(Number(invasionStartingLives)||5);
                             })()} lives</strong>}
                         </div>
 
@@ -4122,7 +4153,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h44</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h45</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
