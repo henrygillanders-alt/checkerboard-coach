@@ -461,8 +461,8 @@ function MentalSkillsPlaceholder({setScreen}){
       <button className={tab==='goals'?'activeTab':''} onClick={()=>setTab('goals')}>Goals & Ratings</button>
     </div>
     {tab==='principles'&&<section className="mentalPanel">
-      <h2>From Mental Skills Lessons To Live Performance Behaviours</h2>
-      <p>The original programme remains valuable, but the app version turns the ideas into repeatable habits inside games: reset, refocus, recover, compete.</p>
+      <h2>From Mental Skills Theory To Live Performance Behavioural Constraints</h2>
+      <p>Turning mental skills concepts into repeatable habits inside games: reset, refocus, recover, compete.</p>
       <div className="mentalGrid">{principles.map(item=><div className="mentalCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p></div>)}</div>
       <div className="claPanel"><h2>Key Design Rule</h2><p>Mental skills should be available as overlays inside every game, not isolated as classroom content. The Mental Skills tab explains the principles; the overlay engine trains the behaviours.</p></div>
     </section>}
