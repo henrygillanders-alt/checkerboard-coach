@@ -190,13 +190,12 @@ function ProjectionView({session,setScreen}){
       if(exact>0) return exact;
       const allTeams=competitionProjection.invasionTeams||[];
       const counts=allTeams.map(t=>(t.players||[]).length).filter(n=>n>0);
-      const gcd=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;};
-      const lcm=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b,1);return Math.abs(a*b)/gcd(a,b);};
-      const base=counts.length?counts.reduce((acc,n)=>lcm(acc,n),1):0;
+      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives)||5;
+      const maxPlayers=counts.length?Math.max(...counts):1;
+      const baseCapacity=maxPlayers*selected;
       const playerCount=(team?.players||[]).length||1;
-      if(base>0) return Math.max(1,(base/playerCount)*2);
-      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
-      return selected>0 ? selected : 5;
+      if(baseCapacity>0) return Math.max(1,Math.ceil(baseCapacity/playerCount));
+      return selected;
     }
     function projCarry(team){
       return competitionProjection.invasionCarryLives?.[team?.id]||0;
@@ -2115,14 +2114,36 @@ function Competition({players=[]}){
     return Math.abs(a*b)/invasionGcd(a,b);
   }
 
+  function getInvasionFairRows(sourceTeams=invasionTeams){
+    const list=(sourceTeams||[]).filter(t=>(t.players||[]).length>0);
+    const selected=Number(invasionStartingLives)||5;
+    if(!list.length) return {baseCapacity:selected,rows:[]};
+    const maxPlayers=Math.max(...list.map(t=>(t.players||[]).length||1));
+    const baseCapacity=maxPlayers*selected;
+    return {
+      baseCapacity,
+      rows:list.map((team,index)=>{
+        const players=(team.players||[]).length||1;
+        const livesPerPlayer=Math.ceil(baseCapacity/players);
+        return {
+          team:team.name||`Team ${index+1}`,
+          teamId:team.id,
+          players,
+          livesPerPlayer,
+          totalCapacity:livesPerPlayer*players
+        };
+      })
+    };
+  }
+
   function getInvasionFairBaseTotal(){
-    const fair=getFairLivesRows(invasionTeams,2);
-    return fair.rows.length?fair.rows[0].totalCapacity:(Number(invasionStartingLives)||5);
+    const fair=getInvasionFairRows(invasionTeams);
+    return fair.rows.length?fair.baseCapacity:(Number(invasionStartingLives)||5);
   }
 
   function getInvasionBaseLives(team){
     const teams=(invasionTeams||[]).filter(t=>(t.players||[]).length>0);
-    const fair=getFairLivesRows(teams,2);
+    const fair=getInvasionFairRows(teams);
     const row=fair.rows.find(r=>r.team===(team&&team.name));
     if(row) return row.livesPerPlayer;
     return Number(invasionStartingLives)||5;
@@ -2139,7 +2160,7 @@ function Competition({players=[]}){
   }
 
   function getInvasionFairLivesMap(sourceTeams=invasionTeams){
-    const fair=getFairLivesRows(sourceTeams,2);
+    const fair=getInvasionFairRows(sourceTeams);
     const map={};
     sourceTeams.forEach(team=>{
       const row=fair.rows.find(r=>r.team===team.name);
@@ -2230,7 +2251,7 @@ function Competition({players=[]}){
       try{
         const saved=localStorage.getItem('checkerboardCompetitionProjection');
         const current=saved?JSON.parse(saved):{};
-        const fair=getFairLivesRows(activeTeams,2);
+        const fair=getInvasionFairRows(activeTeams);
         localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
           ...current,
           mode:'invasion',
@@ -2242,7 +2263,7 @@ function Competition({players=[]}){
           invasionTeamPoints,
           invasionCarryLives,
           invasionFinishLives,
-          invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
+          invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
           invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
           invasionStartingLives,
           invasionPlayerRound,
@@ -2267,7 +2288,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardProjectionTab','competition');
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
-      const fair=getFairLivesRows(activeTeams,2);
+      const fair=getInvasionFairRows(activeTeams);
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
         ...current,
         mode:'invasion',
@@ -2280,7 +2301,7 @@ function Competition({players=[]}){
         invasionTeamPoints,
         invasionCarryLives,
         invasionFinishLives,
-        invasionFairBaseTotal:fair.rows.length?fair.rows[0].totalCapacity:getInvasionFairBaseTotal(),
+        invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
         invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
         invasionPlayerRound,
         invasionCourtRound,
@@ -2350,7 +2371,7 @@ function Competition({players=[]}){
     }));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
-    const fair=getFairLivesRows(nextTeams,2);
+    const fair=getInvasionFairRows(nextTeams);
     const lifeBanks={};
     nextTeams.forEach(team=>{
       const row=fair.rows.find(r=>r.team===team.name);
@@ -2387,7 +2408,7 @@ function Competition({players=[]}){
   }
 
   function resetInvasionLifeBanks(){
-    const fair=getFairLivesRows(invasionTeams,2);
+    const fair=getInvasionFairRows(invasionTeams);
     const next={};
     invasionTeams.forEach(team=>{
       const row=fair.rows.find(r=>r.team===team.name);
@@ -2903,7 +2924,7 @@ function Competition({players=[]}){
                   <strong>Fair Lives Carry-Over Engine</strong>
                   <span>Equal team capacity: {getInvasionFairBaseTotal()}</span>
                 </div>
-                <p>LCM fair lives: smaller teams get more lives per player so each team has equal total capacity. Carry-over then adds to the next invasion.</p>
+                <p>Fair lives: Starting Lives applies to the largest/equal-sized team. Smaller teams receive extra lives per player so team capacity stays fair. Carry-over then adds to the next invasion.</p>
 
                 <div className="fairLivesGrid">
                   {invasionTeams.map(team=>(
@@ -4153,7 +4174,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h45</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h46</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
