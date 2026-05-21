@@ -2077,3 +2077,13 @@ button.mentalSkillsTile p{
 .breathSteps span{display:inline-flex;padding:10px 14px;border-radius:999px;background:rgba(14,165,233,.18);border:1px solid rgba(14,165,233,.4);font-weight:900}
 .goalList{display:grid;gap:10px;margin:16px 0}
 .ratingCard input{width:100%}
+
+/* v99h41 Mental Performance v2 */
+.mentalPerformancePage .pageTop h1{color:var(--gold,#f7d979)}
+.quietEyeBox{border:2px solid rgba(247,217,121,.75);border-radius:24px;padding:22px;background:linear-gradient(135deg,rgba(247,217,121,.12),rgba(14,165,233,.10));margin-top:20px}
+.quietEyeBox h2{color:var(--gold,#f7d979);margin-top:0}
+.quietEyeBox ol{padding-left:22px}
+.quietEyeBox li{margin:8px 0;line-height:1.35}
+.coachCue{display:inline-flex;border-radius:999px;padding:10px 14px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000}
+.breathSystemCard h3{color:var(--gold,#f7d979)}
+.mentalOverlayCard p{line-height:1.36}
