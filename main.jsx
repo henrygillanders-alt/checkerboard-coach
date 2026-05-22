@@ -421,6 +421,11 @@ function UniversalOverlays({setScreen}){
       </button>)}
     </div>
 
+    {family==='Mental Performance'&&<div className="universalInfoNote">
+      <strong>Mental Performance lives here.</strong>
+      <span>Use these overlays to apply animal identity, visual performance, regulation and competitive behaviours inside games.</span>
+    </div>}
+
     <div className="overlayCategoryTabs">{categories.map(cat=><button key={cat} className={category===cat?'activeTab':''} onClick={()=>{setCategory(cat);setSelected(null);}}>{cat}</button>)}</div>
 
     <div className="overlayLayout">
@@ -793,9 +798,6 @@ return <div className="homeGrid">
 </button><button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}>
   <h2>Universal Overlays</h2>
   <p>Tactical · Technical · Mental Performance</p>
-</button><button className="homeTile mentalSkillsTile" onClick={()=>setScreen('mentalSkills')}>
-  <h2>Mental Performance</h2>
-  <p>Attention · Regulation · Competitive Behaviours</p>
 </button></div>;
 }
 
@@ -4354,7 +4356,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h48b</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h48c</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
