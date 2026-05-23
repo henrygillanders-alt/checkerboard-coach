@@ -2507,3 +2507,18 @@ button.mentalSkillsTile p{
 .diagnosticTabs{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 20px}.diagnosticTabs button{border:1px solid rgba(130,160,210,.5);border-radius:999px;padding:10px 14px;background:rgba(18,31,52,.78);color:#fff;font-weight:900}.diagnosticTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
 .diagnosticStagePanel{border:1px solid rgba(130,160,210,.45);border-radius:24px;padding:20px;background:rgba(8,14,27,.72)}.diagnosticStagePanel h2{color:var(--gold,#f7d979);margin-top:0}
 .diagnosticClockGrid,.interventionToolGrid,.errorComparisonGrid,.stageHintGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:16px}.diagnosticClockCard,.interventionToolCard,.errorMiniCard,.claComparisonCard,.stageHintGrid div{border:1px solid rgba(130,160,210,.45);border-radius:18px;padding:14px;background:rgba(18,31,52,.78)}.diagnosticClockCard strong,.stageHintGrid strong{display:block;color:var(--gold,#f7d979);margin-bottom:6px}.diagnosticClockCard span,.stageHintGrid span{opacity:.86}.interventionToolCard h3,.errorMiniCard h3,.claComparisonCard h3{color:var(--gold,#f7d979);margin-top:0}.bernsteinBox{border:2px solid rgba(247,217,121,.58);border-radius:24px;padding:20px;margin-bottom:18px;background:linear-gradient(135deg,rgba(247,217,121,.13),rgba(14,165,233,.07))}.bernsteinBox h2{color:var(--gold,#f7d979);margin-top:0}.claComparisonCard section{border-top:1px solid rgba(130,160,210,.22);padding-top:10px;margin-top:10px}.claComparisonCard section strong{color:var(--gold,#f7d979)}
+
+/* v99h52 cleanup: titles-only home, diagnostic clock, projector teams */
+.homeGridV99h52 .compactHomeBrand{grid-column:1 / -1}
+.homeGridV99h52 .homeTitleOnly{min-height:150px;display:flex;align-items:center;justify-content:flex-start}
+.homeGridV99h52 .homeTitleOnly h2{margin:0;color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.homeGridV99h52 .homeTitleOnly p,.homeGridV99h52 .homeTitleOnly .homeCardSub{display:none!important}
+.homeGridV99h52 .gamesLibraryHomeCard{background:linear-gradient(135deg,#7c2d12,#6d28d9 70%);border:1px solid rgba(247,217,121,.65)}
+.homeGridV99h52 .diagnosticHomeCard h2{font-size:38px;line-height:1.05}
+.clockFace{position:relative;min-height:390px;max-width:620px;margin:22px auto;border:2px solid rgba(247,217,121,.52);border-radius:50%;background:radial-gradient(circle at center,rgba(247,217,121,.12),rgba(14,165,233,.06),rgba(8,14,27,.8))}
+.clockCentre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;display:grid;place-items:center;text-align:center;background:rgba(247,217,121,.16);border:2px solid rgba(247,217,121,.58)}
+.clockCentre strong{color:var(--gold,#f7d979);font-size:22px}.clockCentre span{font-size:14px;opacity:.85}
+.clockNode{position:absolute;width:130px;min-height:52px;border:1px solid rgba(130,160,210,.55);border-radius:16px;display:grid;place-items:center;text-align:center;background:rgba(18,31,52,.9);color:#fff;font-weight:900}.clockNode strong{color:var(--gold,#f7d979)}
+.clockNode1{left:50%;top:16px;transform:translateX(-50%)}.clockNode2{right:70px;top:65px}.clockNode3{right:18px;top:50%;transform:translateY(-50%)}.clockNode4{right:70px;bottom:65px}.clockNode5{left:50%;bottom:16px;transform:translateX(-50%)}.clockNode6{left:70px;bottom:65px}.clockNode7{left:18px;top:50%;transform:translateY(-50%)}.clockNode8{left:70px;top:65px}
+.compactProjectorTeamList{margin:8px 0 12px;gap:5px}.compactProjectorTeamList .projectorPlayerLine{font-size:18px;padding:7px 10px}.defendingProjectorTeamList .projectorPlayerLine{opacity:.88}.projectorLivesTeamCard p{margin:8px 0}
+@media (max-width:780px){.clockFace{min-height:330px}.clockNode{width:112px;font-size:13px}}

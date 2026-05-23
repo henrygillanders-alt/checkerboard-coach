@@ -233,6 +233,12 @@ function ProjectionView({session,setScreen}){
       if(name===next) return 'next invader';
       return '';
     }
+    function projTeamPlayerLine(team,name){
+      const role=projPlayerRole(team,name);
+      return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+        <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
+      </div>;
+    }
     function projDefending(idx){
       if(!n) return null;
       return teams[idx%n];
@@ -286,10 +292,16 @@ function ProjectionView({session,setScreen}){
               const invader=projCurrentInvader(invading);
               const startLives=projStartLives(invading);
               const finish=competitionProjection.invasionFinishLives?.[invading?.id];
-              return <div className="finalProjectorCourtCard" key={`project-screen-invasion-${idx}`}>
+              return <div className="finalProjectorCourtCard projectorLivesTeamCard" key={`project-screen-invasion-${idx}`}>
                 <h2>Court {idx+1}</h2>
-                <p><b>Invader:</b> {invader} · {invading?.name||''}</p>
+                <p><b>Invading team:</b> {invading?.name||'Waiting'} · <b>Current:</b> {invader}</p>
+                <div className="projectorTeamList compactProjectorTeamList">
+                  {(invading?.players&&invading.players.length?invading.players:[]).map(name=>projTeamPlayerLine(invading,name))}
+                </div>
                 <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
+                <div className="projectorTeamList compactProjectorTeamList defendingProjectorTeamList">
+                  {(defending?.players&&defending.players.length?defending.players:[]).map(name=><div key={name} className="projectorPlayerLine"><span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span></div>)}
+                </div>
                 <div className="finalLifeNumbers">
                   <span>Lives</span><strong>{startLives}</strong>
                   <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
@@ -783,21 +795,25 @@ function MentalSkillsPlaceholder({setScreen}){
 }
 
 function Home({setScreen}){
-return <div className="homeGrid homeGridV99h51">
+return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
-      <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Ranking, attendance, guests and storage.</p></button>
-      <button className="homeCard gamesLibraryHomeCard" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2><p>Explore · Stabilise · Compete</p><p className="homeCardSub">Constraint-led game library for progressive development.</p></button>
-      <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}><h2>Rotations</h2><p>Affordance Games</p><p className="homeCardSub">Traditional Drills → CLA RLD</p></button>
-      <button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
-      <button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
-      <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}><h2>Project</h2><p>Player / Projection View</p><p className="homeCardSub">Simple rules · big text · less repetition</p></button>
-      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2><p>Observe · Diagnose · Intervene</p><p className="homeCardSub">Clock · Errors · Tools · Traditional vs CLA · Quick Fix</p></button>
-      <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}><h2>Live</h2><p>Session Delivery Mode</p><p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p></button>
-      <button className="homeTile doubleBounceTile" onClick={()=>setScreen('doubleBounce')}><h2>Double Bounce</h2><p>Move Mindset · Tactical Patience · Rally Quality</p></button>
-      <button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2><p>Tactical · Technical · Mental Performance</p></button>
+
+      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
+      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+
+      <button className="homeCard rotationalHomeCard homeTitleOnly" onClick={()=>setScreen('rotational')}><h2>Rotations</h2></button>
+      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+
+      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
+      <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
+
+      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
+      <button className="homeCard liveHomeCard homeTitleOnly" onClick={()=>setScreen('live')}><h2>Live</h2></button>
+
+      <button className="homeTile doubleBounceTile homeTitleOnly" onClick={()=>setScreen('doubleBounce')}><h2>Double Bounce</h2></button>
+      <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
     </div>;
 }
-
 
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('explore');
@@ -4412,7 +4428,7 @@ function DiagnosticIntervention({setScreen}){
   const tools=[['Visual Constraints','Quiet Eye, tracking, second eye, external target focus, opponent-reading cues.'],['Haptic Constraints','Tape, touch cues, physical reference points, racket/hand feedback.'],['Spatial Constraints','Court zones, cones, target windows, checkerboard zones, restricted lanes.'],['Task Constraints','Scoring rules, time pressure, shot windows, bonus systems, live consequences.'],['Equipment Constraints','Ball type, racket/task modification, target aids, scaling tools.'],['Analogy Constraints','Animals, images, external metaphors, movement stories.'],['Scaling','Change court size, bounce rules, target size, speed, pressure and opponent level.']];
   return <div className="page diagnosticInterventionPage"><div className="pageTop"><div><h1>Diagnostic & Intervention</h1><p className="mutedText">Observe · Diagnose · Intervene</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="diagnosticTabs"><button className={tab==='clock'?'activeTab':''} onClick={()=>setTab('clock')}>🔍 Diagnostic Clock</button><button className={tab==='errors'?'activeTab':''} onClick={()=>setTab('errors')}>❌ Common Errors</button><button className={tab==='tools'?'activeTab':''} onClick={()=>setTab('tools')}>🛠 Intervention Tools</button><button className={tab==='cla'?'activeTab':''} onClick={()=>setTab('cla')}>📚 Traditional vs CLA</button><button className={tab==='quick'?'activeTab':''} onClick={()=>setTab('quick')}>⚡ Quick Fix</button></div>
-    {tab==='clock'&&<div className="diagnosticStagePanel"><h2>🔍 Diagnostic Clock</h2><p>Use the clock to decide where the problem is most likely coming from before choosing an intervention.</p><div className="diagnosticClockGrid">{['Technical','Tactical','Visual','Mental Performance','Movement','Physical','Environmental','Equipment'].map(item=><div key={item} className="diagnosticClockCard"><strong>{item}</strong><span>Observe → diagnose → select constraint</span></div>)}</div></div>}
+    {tab==='clock'&&<div className="diagnosticStagePanel diagnosticClockActual"><h2>🔍 Diagnostic Clock</h2><p>Observe the visible behaviour, identify the likely source, then select a constraint-based intervention.</p><div className="clockFace"><div className="clockCentre"><strong>Observe</strong><span>What changed?</span></div>{['Technical','Tactical','Visual','Mental','Movement','Physical','Environment','Equipment'].map((item,index)=><div key={item} className={`clockNode clockNode${index+1}`}><strong>{item}</strong></div>)}</div><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What is the player actually doing?</span></div><div><strong>2. Diagnose</strong><span>What constraint is shaping the behaviour?</span></div><div><strong>3. Intervene</strong><span>Change the task, information or environment.</span></div></div></div>}
     {tab==='errors'&&<div className="diagnosticStagePanel"><h2>❌ Common Errors</h2><div className="errorComparisonGrid">{errors.map(error=><div className="errorMiniCard" key={error.title}><h3>{error.title}</h3><p>{error.obs}</p></div>)}</div></div>}
     {tab==='tools'&&<div className="diagnosticStagePanel"><h2>🛠 Intervention Tools</h2><div className="interventionToolGrid">{tools.map(tool=><div className="interventionToolCard" key={tool[0]}><h3>{tool[0]}</h3><p>{tool[1]}</p></div>)}</div></div>}
     {tab==='cla'&&<div className="diagnosticStagePanel"><div className="bernsteinBox"><h2>📚 Bernstein: Repetition Without Repetition</h2><p>Nikolai Bernstein argued that skilled movement is never the exact repetition of a fixed template. No two movements are ever exactly the same. Skilled performers solve movement problems under changing conditions.</p><p><strong>Traditional view:</strong> repeat the correct movement until it becomes automatic.</p><p><strong>CLA view:</strong> design representative constraints so adaptable solutions emerge.</p></div><div className="errorComparisonGrid">{errors.map(error=><div className="claComparisonCard" key={error.title}><h3>{error.title}</h3><section><strong>Observation</strong><p>{error.obs}</p></section><section><strong>Traditional Response</strong><p>{error.traditional}</p></section><section><strong>CLA Response</strong><p>{error.cla}</p></section><section><strong>Bernstein Connection</strong><p>{error.bernstein}</p></section></div>)}</div></div>}
@@ -4428,7 +4444,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h51</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h52</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
