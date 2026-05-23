@@ -275,12 +275,7 @@ function ProjectionView({session,setScreen}){
             <span>All courts active</span>
             <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
           </div>
-          <div className="projectorDbStrip">
-            <b>Double-bounce:</b>
-            {competitionProjection.playerNames&&competitionProjection.playerNames.length
-              ?competitionProjection.playerNames.map(name=><span key={name}>{name}: {competitionProjection.playerBounces?.[name]||'No DB'}</span>)
-              :<span>No players selected</span>}
-          </div>
+
         </div>
 
         {competitionProjection.invasionFormat==='lives'&&n>0&&(
@@ -313,7 +308,7 @@ function ProjectionView({session,setScreen}){
                   {(team.players&&team.players.length?team.players:[]).map(name=>{
                     const role=projPlayerRole(team,name);
                     return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
-                      <span>{name}</span>{role&&<strong>{role}</strong>}
+                      <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
                     </div>;
                   })}
                   {(!team.players||!team.players.length)&&<div className="projectorPlayerLine"><span>Waiting</span></div>}
@@ -342,6 +337,7 @@ function ProjectionView({session,setScreen}){
       <div>
         <span className="projectionKicker">PLAYER DISPLAY / PROJECTION VIEW</span>
         <h1>{title}</h1>
+        <p className="projectionMonitorNote">Use this page on the monitor / second device for player-only display.</p>
       </div>
     </div>
 
@@ -787,52 +783,76 @@ function MentalSkillsPlaceholder({setScreen}){
 }
 
 function Home({setScreen}){
-return <div className="homeGrid">
+return <div className="homeGrid homeGridV99h50">
       <div className="homeBrandCard compactHomeBrand">
         <h1>Checkerboard Squash™</h1>
       </div>
+
+      <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Ranking, attendance, guests and storage.</p></button>
+      <button className="homeCard gamesLibraryHomeCard" onClick={()=>setScreen('gamesLibrary')}>
+        <h2>Games Library</h2>
+        <p>Level 0 · Level 1–5</p>
+        <p className="homeCardSub">Exploration, ATL / BTL, conditioned games and checkerboard.</p>
+      </button>
+
       <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
-        <h2>Rotational</h2>
+        <h2>Rotations</h2>
         <p>Affordance Games</p>
         <p className="homeCardSub">Traditional Drills → CLA RLD</p>
       </button>
-      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
-        <h2>Diagnostic</h2>
-        <p>Observe · Diagnose · Select Tool</p>
-        <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
-      </button>
-      <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}>
-        <h2>Live</h2>
-        <p>Session Delivery Mode</p>
-        <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
-      </button>
+      <button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
+
+      <button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
       <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
         <h2>Project</h2>
         <p>Player / Projection View</p>
         <p className="homeCardSub">Simple rules · big text · less repetition</p>
+      </button>
+
+      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
+        <h2>Diagnostic</h2>
+        <p>Observe · Diagnose · Select Tool</p>
+        <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
       </button>
       <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
         <h2>Tools</h2>
         <p>Constraint & Coaching Tools</p>
         <p className="homeCardSub">Visual · Haptic · Spatial · Analogy · Scaling</p>
       </button>
-      <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
-        <h2>Level 0</h2>
-        <p>Exploration Stage · Ages 5–9</p>
-        <p className="homeCardSub">Move · Track · Strike · Play · Mini Checkerboard</p>
+
+      <button className="homeCard liveHomeCard liveSingleTile" onClick={()=>setScreen('live')}>
+        <h2>Live</h2>
+        <p>Session Delivery Mode</p>
+        <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
       </button>
-<button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
-<button className="tile purple" onClick={()=>setScreen('games')}><h2>Level 1–5</h2><p>ATL / BTL, conditioned games, checkerboard, technical and pressure games.</p></button>
-<button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Junior Programme Ranking, attendance and guests.</p></button>
-<button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
-<button className="homeTile doubleBounceTile" onClick={()=>setScreen('doubleBounce')}>
-  <h2>Double Bounce</h2>
-  <p>Move Mindset · Tactical Patience · Rally Quality</p>
-</button><button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}>
-  <h2>Universal Overlays</h2>
-  <p>Tactical · Technical · Mental Performance</p>
-</button></div>;
+
+      <button className="homeTile doubleBounceTile" onClick={()=>setScreen('doubleBounce')}>
+        <h2>Double Bounce</h2>
+        <p>Move Mindset · Tactical Patience · Rally Quality</p>
+      </button>
+      <button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}>
+        <h2>Universal Overlays</h2>
+        <p>Tactical · Technical · Mental Performance</p>
+      </button>
+    </div>;
 }
+
+function GamesLibrary({setScreen,setSession}){
+  const [tab,setTab]=useState('level0');
+  return <div className="page gamesLibraryPage">
+    <div className="pageTop">
+      <div><h1>Games Library</h1><p className="mutedText">One library with Level 0 and Level 1–5 games.</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <div className="universalFamilyTabs gamesLibraryTabs">
+      <button className={tab==='level0'?'activeFamilyTab':''} onClick={()=>setTab('level0')}>Level 0</button>
+      <button className={tab==='level15'?'activeFamilyTab':''} onClick={()=>setTab('level15')}>Level 1–5</button>
+    </div>
+    {tab==='level0'&&<Level0Exploration/>}
+    {tab==='level15'&&<Games setSession={setSession} setScreen={setScreen}/>}
+  </div>;
+}
+
 
 function GameSelector({onAddToSession,addButtonText='Add To Session'}){
 const[category,setCategory]=useState(null);
@@ -2277,6 +2297,17 @@ function Competition({players=[]}){
   const automaticNames=present.length?present.map(player=>player.name):[];
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
+
+  function invasionDbLabel(name){
+    const status=playerBounces?.[invasionName(name)]||'No DB';
+    return status==='No DB'?'No DB':status;
+  }
+
+  function invasionPlayerWithDb(name){
+    const playerName=invasionName(name);
+    const status=invasionDbLabel(playerName);
+    return `${playerName} (${status})`;
+  }
 
   function invasionName(player){
     if(!player) return '';
@@ -4414,7 +4445,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h49</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h50</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -4424,7 +4455,8 @@ return <div>
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
-      {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
+      {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>} 
+      {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={setScreen}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>

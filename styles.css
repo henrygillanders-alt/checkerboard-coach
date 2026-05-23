@@ -2463,3 +2463,40 @@ button.mentalSkillsTile p{
 .invasionPointsProjectorCard .finalLifeNumbers{
   margin-top:12px;
 }
+
+/* v99h50 Home / Games Library / Invasion DB tidy */
+.homeGridV99h50 .compactHomeBrand{
+  grid-column:1 / -1;
+}
+.gamesLibraryHomeCard{
+  background:linear-gradient(135deg,#2958b8,#4b1aa8);
+}
+.liveSingleTile{
+  grid-column:1 / span 1;
+}
+.gamesLibraryPage .page{
+  padding:0;
+}
+.gamesLibraryTabs{
+  margin-bottom:18px;
+}
+.playerDbInline{
+  display:inline-block;
+  margin-left:8px;
+  opacity:.75;
+  font-size:.75em;
+  font-style:normal;
+  color:var(--gold,#f7d979);
+}
+.projectorDbStrip{
+  display:none!important;
+}
+.projectionMonitorNote{
+  opacity:.82;
+  margin:.25rem 0 0;
+}
+@media (max-width:780px){
+  .liveSingleTile{
+    grid-column:auto;
+  }
+}
