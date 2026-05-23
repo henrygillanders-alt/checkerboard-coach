@@ -2500,3 +2500,10 @@ button.mentalSkillsTile p{
     grid-column:auto;
   }
 }
+
+/* v99h51 Navigation + Diagnostic & Intervention */
+.homeGridV99h51 .compactHomeBrand{grid-column:1 / -1}.homeGridV99h51 .gamesLibraryHomeCard{background:linear-gradient(135deg,#2958b8,#4b1aa8)}
+.libraryStageIntro{border:1px solid rgba(247,217,121,.45);border-radius:22px;padding:18px;margin:14px 0 18px;background:rgba(247,217,121,.08)}.libraryStageIntro h2{color:var(--gold,#f7d979);margin-top:0}
+.diagnosticTabs{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 20px}.diagnosticTabs button{border:1px solid rgba(130,160,210,.5);border-radius:999px;padding:10px 14px;background:rgba(18,31,52,.78);color:#fff;font-weight:900}.diagnosticTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.diagnosticStagePanel{border:1px solid rgba(130,160,210,.45);border-radius:24px;padding:20px;background:rgba(8,14,27,.72)}.diagnosticStagePanel h2{color:var(--gold,#f7d979);margin-top:0}
+.diagnosticClockGrid,.interventionToolGrid,.errorComparisonGrid,.stageHintGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:16px}.diagnosticClockCard,.interventionToolCard,.errorMiniCard,.claComparisonCard,.stageHintGrid div{border:1px solid rgba(130,160,210,.45);border-radius:18px;padding:14px;background:rgba(18,31,52,.78)}.diagnosticClockCard strong,.stageHintGrid strong{display:block;color:var(--gold,#f7d979);margin-bottom:6px}.diagnosticClockCard span,.stageHintGrid span{opacity:.86}.interventionToolCard h3,.errorMiniCard h3,.claComparisonCard h3{color:var(--gold,#f7d979);margin-top:0}.bernsteinBox{border:2px solid rgba(247,217,121,.58);border-radius:24px;padding:20px;margin-bottom:18px;background:linear-gradient(135deg,rgba(247,217,121,.13),rgba(14,165,233,.07))}.bernsteinBox h2{color:var(--gold,#f7d979);margin-top:0}.claComparisonCard section{border-top:1px solid rgba(130,160,210,.22);padding-top:10px;margin-top:10px}.claComparisonCard section strong{color:var(--gold,#f7d979)}

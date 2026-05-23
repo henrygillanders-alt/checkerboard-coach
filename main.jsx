@@ -783,73 +783,34 @@ function MentalSkillsPlaceholder({setScreen}){
 }
 
 function Home({setScreen}){
-return <div className="homeGrid homeGridV99h50">
-      <div className="homeBrandCard compactHomeBrand">
-        <h1>Checkerboard Squash™</h1>
-      </div>
-
+return <div className="homeGrid homeGridV99h51">
+      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
       <button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Ranking, attendance, guests and storage.</p></button>
-      <button className="homeCard gamesLibraryHomeCard" onClick={()=>setScreen('gamesLibrary')}>
-        <h2>Games Library</h2>
-        <p>Level 0 · Level 1–5</p>
-        <p className="homeCardSub">Exploration, ATL / BTL, conditioned games and checkerboard.</p>
-      </button>
-
-      <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
-        <h2>Rotations</h2>
-        <p>Affordance Games</p>
-        <p className="homeCardSub">Traditional Drills → CLA RLD</p>
-      </button>
+      <button className="homeCard gamesLibraryHomeCard" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2><p>Explore · Stabilise · Compete</p><p className="homeCardSub">Constraint-led game library for progressive development.</p></button>
+      <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}><h2>Rotations</h2><p>Affordance Games</p><p className="homeCardSub">Traditional Drills → CLA RLD</p></button>
       <button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
-
       <button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
-      <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
-        <h2>Project</h2>
-        <p>Player / Projection View</p>
-        <p className="homeCardSub">Simple rules · big text · less repetition</p>
-      </button>
-
-      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
-        <h2>Diagnostic</h2>
-        <p>Observe · Diagnose · Select Tool</p>
-        <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
-      </button>
-      <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
-        <h2>Tools</h2>
-        <p>Constraint & Coaching Tools</p>
-        <p className="homeCardSub">Visual · Haptic · Spatial · Analogy · Scaling</p>
-      </button>
-
-      <button className="homeCard liveHomeCard liveSingleTile" onClick={()=>setScreen('live')}>
-        <h2>Live</h2>
-        <p>Session Delivery Mode</p>
-        <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
-      </button>
-
-      <button className="homeTile doubleBounceTile" onClick={()=>setScreen('doubleBounce')}>
-        <h2>Double Bounce</h2>
-        <p>Move Mindset · Tactical Patience · Rally Quality</p>
-      </button>
-      <button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}>
-        <h2>Universal Overlays</h2>
-        <p>Tactical · Technical · Mental Performance</p>
-      </button>
+      <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}><h2>Project</h2><p>Player / Projection View</p><p className="homeCardSub">Simple rules · big text · less repetition</p></button>
+      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2><p>Observe · Diagnose · Intervene</p><p className="homeCardSub">Clock · Errors · Tools · Traditional vs CLA · Quick Fix</p></button>
+      <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}><h2>Live</h2><p>Session Delivery Mode</p><p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p></button>
+      <button className="homeTile doubleBounceTile" onClick={()=>setScreen('doubleBounce')}><h2>Double Bounce</h2><p>Move Mindset · Tactical Patience · Rally Quality</p></button>
+      <button className="homeTile technicalOverlayTile" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2><p>Tactical · Technical · Mental Performance</p></button>
     </div>;
 }
 
+
 function GamesLibrary({setScreen,setSession}){
-  const [tab,setTab]=useState('level0');
+  const [tab,setTab]=useState('explore');
   return <div className="page gamesLibraryPage">
-    <div className="pageTop">
-      <div><h1>Games Library</h1><p className="mutedText">One library with Level 0 and Level 1–5 games.</p></div>
-      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
-    </div>
+    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="universalFamilyTabs gamesLibraryTabs">
-      <button className={tab==='level0'?'activeFamilyTab':''} onClick={()=>setTab('level0')}>Level 0</button>
-      <button className={tab==='level15'?'activeFamilyTab':''} onClick={()=>setTab('level15')}>Level 1–5</button>
+      <button className={tab==='explore'?'activeFamilyTab':''} onClick={()=>setTab('explore')}>🔍 Explore</button>
+      <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
+      <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
     </div>
-    {tab==='level0'&&<Level0Exploration/>}
-    {tab==='level15'&&<Games setSession={setSession} setScreen={setScreen}/>}
+    {tab==='explore'&&<div><div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks.</p></div><Level0Exploration/></div>}
+    {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+    {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
   </div>;
 }
 
@@ -4438,6 +4399,28 @@ function PlayerHub({players,setPlayers,session,setSession}){
 }
 
 
+
+function DiagnosticIntervention({setScreen}){
+  const [tab,setTab]=useState('clock');
+  const errors=[
+    {title:'Late Racket Preparation',obs:'Racket preparation begins too late, often after bounce or when time pressure is already high.',traditional:'Demonstrate earlier preparation, repeat shadow swings or straight drives, remind player to “get the racket back”.',cla:'Manipulate time and information: volley priority games, reduced-time tasks, early-information constraints, obstacle behind player, scoring for preparation before bounce.',bernstein:'The player is not trying to reproduce one ideal preparation pattern; they are learning to organise preparation under changing information.'},
+    {title:'Wrap-Around Follow Through',obs:'Racket finishes around the waist/body instead of organising through the target line.',traditional:'Stop play, demonstrate correct finish, rehearse finish position, repeat isolated swings.',cla:'Create target and affordance constraints: front-wall target games, checkerboard routes, contact-point challenges and accuracy tasks where a more functional finish emerges.',bernstein:'The nervous system solves movement problems rather than copying a stored template.'},
+    {title:'Poor Recovery To T',obs:'Player admires the shot, remains in corner or recovers without useful opponent information.',traditional:'Command “recover”, prescribe ghosting pattern, repeat movement routes.',cla:'Use T-reward scoring, recovery bonus points, opponent exploitation games and constraints where poor recovery is immediately punished.',bernstein:'Recovery becomes functional because it solves a tactical problem, not because the player memorised a pattern.'},
+    {title:'Wrist Collapse',obs:'Wrist breaks excessively, racket face becomes unstable and control is reduced.',traditional:'Tell player to keep wrist firm, rehearse fixed wrist swings.',cla:'Use haptic constraints such as tape from back of hand to forearm, smiley-face external focus, and checkerboard target tasks that reward stable racket-face outcomes.',bernstein:'Variability is not simply error; constraints can guide the search toward more useful coordination.'},
+    {title:'Visual Tracking Loss',obs:'Player looks away early, watches outcome or loses ball/opponent information during movement.',traditional:'Tell player to watch the ball and repeat feeds.',cla:'Use tracking constraints, Quiet Eye overlays, Second Eye tasks, opponent-reading games and coach feed-and-strike progressions.',bernstein:'Skilled action depends on coupling perception and movement in changing conditions.'}
+  ];
+  const tools=[['Visual Constraints','Quiet Eye, tracking, second eye, external target focus, opponent-reading cues.'],['Haptic Constraints','Tape, touch cues, physical reference points, racket/hand feedback.'],['Spatial Constraints','Court zones, cones, target windows, checkerboard zones, restricted lanes.'],['Task Constraints','Scoring rules, time pressure, shot windows, bonus systems, live consequences.'],['Equipment Constraints','Ball type, racket/task modification, target aids, scaling tools.'],['Analogy Constraints','Animals, images, external metaphors, movement stories.'],['Scaling','Change court size, bounce rules, target size, speed, pressure and opponent level.']];
+  return <div className="page diagnosticInterventionPage"><div className="pageTop"><div><h1>Diagnostic & Intervention</h1><p className="mutedText">Observe · Diagnose · Intervene</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="diagnosticTabs"><button className={tab==='clock'?'activeTab':''} onClick={()=>setTab('clock')}>🔍 Diagnostic Clock</button><button className={tab==='errors'?'activeTab':''} onClick={()=>setTab('errors')}>❌ Common Errors</button><button className={tab==='tools'?'activeTab':''} onClick={()=>setTab('tools')}>🛠 Intervention Tools</button><button className={tab==='cla'?'activeTab':''} onClick={()=>setTab('cla')}>📚 Traditional vs CLA</button><button className={tab==='quick'?'activeTab':''} onClick={()=>setTab('quick')}>⚡ Quick Fix</button></div>
+    {tab==='clock'&&<div className="diagnosticStagePanel"><h2>🔍 Diagnostic Clock</h2><p>Use the clock to decide where the problem is most likely coming from before choosing an intervention.</p><div className="diagnosticClockGrid">{['Technical','Tactical','Visual','Mental Performance','Movement','Physical','Environmental','Equipment'].map(item=><div key={item} className="diagnosticClockCard"><strong>{item}</strong><span>Observe → diagnose → select constraint</span></div>)}</div></div>}
+    {tab==='errors'&&<div className="diagnosticStagePanel"><h2>❌ Common Errors</h2><div className="errorComparisonGrid">{errors.map(error=><div className="errorMiniCard" key={error.title}><h3>{error.title}</h3><p>{error.obs}</p></div>)}</div></div>}
+    {tab==='tools'&&<div className="diagnosticStagePanel"><h2>🛠 Intervention Tools</h2><div className="interventionToolGrid">{tools.map(tool=><div className="interventionToolCard" key={tool[0]}><h3>{tool[0]}</h3><p>{tool[1]}</p></div>)}</div></div>}
+    {tab==='cla'&&<div className="diagnosticStagePanel"><div className="bernsteinBox"><h2>📚 Bernstein: Repetition Without Repetition</h2><p>Nikolai Bernstein argued that skilled movement is never the exact repetition of a fixed template. No two movements are ever exactly the same. Skilled performers solve movement problems under changing conditions.</p><p><strong>Traditional view:</strong> repeat the correct movement until it becomes automatic.</p><p><strong>CLA view:</strong> design representative constraints so adaptable solutions emerge.</p></div><div className="errorComparisonGrid">{errors.map(error=><div className="claComparisonCard" key={error.title}><h3>{error.title}</h3><section><strong>Observation</strong><p>{error.obs}</p></section><section><strong>Traditional Response</strong><p>{error.traditional}</p></section><section><strong>CLA Response</strong><p>{error.cla}</p></section><section><strong>Bernstein Connection</strong><p>{error.bernstein}</p></section></div>)}</div></div>}
+    {tab==='quick'&&<div className="diagnosticStagePanel"><h2>⚡ Quick Fix</h2><p>Courtside rule: identify the problem, choose one constraint, observe the next behaviour. Three taps maximum.</p><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What behaviour is visible?</span></div><div><strong>2. Constraint</strong><span>What task change makes the desired behaviour useful?</span></div><div><strong>3. Review</strong><span>Did the behaviour change inside the game?</span></div></div></div>}
+  </div>;
+}
+
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -4445,11 +4428,12 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h50</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h51</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={setScreen}/>}
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={setScreen}/>} 
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={setScreen}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
