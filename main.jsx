@@ -203,10 +203,35 @@ function ProjectionView({session,setScreen}){
     function projStartLives(team){
       return projBaseLives(team)+projCarry(team);
     }
+    function projOrderedPlayers(team){
+      return [...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
+    }
     function projCurrentInvader(team){
-      const list=[...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
+      const list=projOrderedPlayers(team);
       if(!list.length) return 'Waiting';
+      const override=competitionProjection.invasionInvaderOverrides?.[team?.id]||competitionProjection.invasionInvaderOverrides?.[team?.name];
+      if(override) return override;
       return list[(competitionProjection.invasionPlayerRound||0)%list.length];
+    }
+    function projNextInvader(team){
+      const list=projOrderedPlayers(team);
+      if(!list.length) return 'Waiting';
+      const current=projCurrentInvader(team);
+      const idx=list.findIndex(name=>name===current);
+      const baseIndex=idx>=0?idx:(competitionProjection.invasionPlayerRound||0)%list.length;
+      return list[(baseIndex+1)%list.length];
+    }
+    function projTeamPoints(team){
+      const manual=Number(competitionProjection.invasionTeamPoints?.[team?.id]||0);
+      const playerTotal=(team?.players||[]).reduce((total,name)=>total+Number(competitionProjection.invasionPlayerPoints?.[name]||0),0);
+      return manual+playerTotal;
+    }
+    function projPlayerRole(team,name){
+      const current=projCurrentInvader(team);
+      const next=projNextInvader(team);
+      if(name===current) return 'invading';
+      if(name===next) return 'next invader';
+      return '';
     }
     function projDefending(idx){
       if(!n) return null;
@@ -282,11 +307,19 @@ function ProjectionView({session,setScreen}){
         {competitionProjection.invasionFormat==='points'&&n>0&&(
           <div className="finalProjectorCourts">
             {teams.map(team=>(
-              <div className="finalProjectorCourtCard" key={team.id}>
+              <div className="finalProjectorCourtCard invasionPointsProjectorCard" key={team.id}>
                 <h2>{team.name}</h2>
-                <p><b>Players:</b> {team.players&&team.players.length?team.players.join(' · '):'Waiting'}</p>
+                <div className="projectorTeamList">
+                  {(team.players&&team.players.length?team.players:[]).map(name=>{
+                    const role=projPlayerRole(team,name);
+                    return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+                      <span>{name}</span>{role&&<strong>{role}</strong>}
+                    </div>;
+                  })}
+                  {(!team.players||!team.players.length)&&<div className="projectorPlayerLine"><span>Waiting</span></div>}
+                </div>
                 <div className="finalLifeNumbers">
-                  <span>Team points</span><strong>{competitionProjection.invasionTeamPoints?.[team.id]||0}</strong>
+                  <span>Team points</span><strong>{projTeamPoints(team)}</strong>
                 </div>
               </div>
             ))}
@@ -2192,7 +2225,9 @@ function Competition({players=[]}){
   const [invasionTeamPoints,setInvasionTeamPoints]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeamPoints||{}}catch{return{}}
   });
-  const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
+  const [invasionPlayerPoints,setInvasionPlayerPoints]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionPlayerPoints||{}}catch{return{}}
+  });
   const [invasionTeamLives,setInvasionTeamLives]=useState({});
   const [invasionCarryLives,setInvasionCarryLives]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionCarryLives||{}}catch{return{}}
@@ -2242,6 +2277,23 @@ function Competition({players=[]}){
   const automaticNames=present.length?present.map(player=>player.name):[];
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
+
+  function invasionName(player){
+    if(!player) return '';
+    if(typeof player==='string') return player;
+    return player.name||player.fullName||player.playerName||'Player';
+  }
+
+  function findInvasionTeamForPlayer(playerName,sourceTeams=invasionTeams){
+    const name=invasionName(playerName);
+    return (sourceTeams||[]).find(team=>(team.players||[]).some(p=>invasionName(p)===name));
+  }
+
+  function calculateTeamPointsFromPlayers(team,playerPoints=invasionPlayerPoints,manualTeamPoints=invasionTeamPoints){
+    const playerTotal=(team?.players||[]).reduce((total,p)=>total+(Number(playerPoints[invasionName(p)]||0)),0);
+    const manual=Number(manualTeamPoints?.[team?.id]||0);
+    return playerTotal+manual;
+  }
 
   function invasionRankForName(name){
     const p=(players||[]).find(player=>player.name===name || player.fullName===name || player.playerName===name);
@@ -2429,6 +2481,8 @@ function Competition({players=[]}){
           playerBounces,
           invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
           invasionTeamPoints,
+          invasionPlayerPoints,
+          invasionInvaderOverrides,
           invasionCarryLives,
           invasionFinishLives,
           invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
@@ -2467,6 +2521,8 @@ function Competition({players=[]}){
         playerBounces,
         invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
+        invasionPlayerPoints,
+        invasionInvaderOverrides,
         invasionCarryLives,
         invasionFinishLives,
         invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
@@ -2499,7 +2555,6 @@ function Competition({players=[]}){
   }
 
   useEffect(()=>{
-    if(!invasionGameStarted) return;
     try{
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
@@ -2513,6 +2568,8 @@ function Competition({players=[]}){
         playerBounces,
         invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
+        invasionPlayerPoints,
+        invasionInvaderOverrides,
         invasionCarryLives,
         invasionFinishLives,
         invasionFairBaseTotal:getInvasionFairBaseTotal(),
@@ -2561,7 +2618,8 @@ function Competition({players=[]}){
   }
 
   function addInvasionPlayerPoints(playerName,amount){
-    setInvasionPlayerPoints(prev=>({...prev,[playerName]:(prev[playerName]||0)+amount}));
+    const name=invasionName(playerName);
+    setInvasionPlayerPoints(prev=>({...prev,[name]:(prev[name]||0)+amount}));
   }
 
   function adjustInvasionTeamLives(teamId,amount){
@@ -2950,7 +3008,7 @@ function Competition({players=[]}){
 
                       {invasionFormat==='points'&&(
                         <div className="invasionPointControls">
-                          <strong>Team Points: {invasionTeamPoints[team.id]||0}</strong>
+                          <strong>Team Points: {calculateTeamPointsFromPlayers(team)}</strong>
                           <div className="buttonRow">
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,1)}>+1</button>
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,3)}>+3</button>
@@ -2963,9 +3021,9 @@ function Competition({players=[]}){
                         <div className="invasionPlayerPointList">
                           {team.players.map(player=>(
                             <div key={player}>
-                              <span>{player}: {invasionPlayerPoints[player]||0}</span>
-                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,1)}>+1</button>
-                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,3)}>+3</button>
+                              <span>{invasionName(player)}: {invasionPlayerPoints[invasionName(player)]||0}</span>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(invasionName(player),1)}>+1</button>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(invasionName(player),3)}>+3</button>
                             </div>
                           ))}
                         </div>
@@ -4356,7 +4414,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h48c</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h49</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

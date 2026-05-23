@@ -2427,3 +2427,39 @@ button.mentalSkillsTile p{
 .universalInfoNote span{
   opacity:.9;
 }
+
+/* v99h49 Invasion points persistence + projector invader display */
+.projectorTeamList{
+  display:grid;
+  gap:8px;
+  margin:14px 0 18px;
+}
+.projectorPlayerLine{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border:1px solid rgba(130,160,210,.28);
+  border-radius:14px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.035);
+  font-size:22px;
+  font-weight:900;
+}
+.projectorPlayerLine strong{
+  color:var(--gold,#f7d979);
+  font-size:17px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.projectorPlayerLine.activeInvader{
+  border-color:rgba(247,217,121,.95);
+  background:rgba(247,217,121,.13);
+}
+.projectorPlayerLine.nextInvader{
+  border-color:rgba(96,165,250,.75);
+  background:rgba(96,165,250,.10);
+}
+.invasionPointsProjectorCard .finalLifeNumbers{
+  margin-top:12px;
+}
