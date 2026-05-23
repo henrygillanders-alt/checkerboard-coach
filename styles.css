@@ -2522,3 +2522,31 @@ button.mentalSkillsTile p{
 .clockNode1{left:50%;top:16px;transform:translateX(-50%)}.clockNode2{right:70px;top:65px}.clockNode3{right:18px;top:50%;transform:translateY(-50%)}.clockNode4{right:70px;bottom:65px}.clockNode5{left:50%;bottom:16px;transform:translateX(-50%)}.clockNode6{left:70px;bottom:65px}.clockNode7{left:18px;top:50%;transform:translateY(-50%)}.clockNode8{left:70px;top:65px}
 .compactProjectorTeamList{margin:8px 0 12px;gap:5px}.compactProjectorTeamList .projectorPlayerLine{font-size:18px;padding:7px 10px}.defendingProjectorTeamList .projectorPlayerLine{opacity:.88}.projectorLivesTeamCard p{margin:8px 0}
 @media (max-width:780px){.clockFace{min-height:330px}.clockNode{width:112px;font-size:13px}}
+
+/* v99h53 bottom overlay tabs */
+.bottomOverlayPad{padding-bottom:108px!important}
+.bottomOverlayTabs{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  width:min(720px,calc(100vw - 24px));padding:10px;
+  border:1px solid rgba(247,217,121,.42);border-radius:24px;
+  background:rgba(5,10,20,.94);backdrop-filter:blur(14px);
+  box-shadow:0 14px 34px rgba(0,0,0,.38)
+}
+.bottomOverlayTabs button{
+  border:1px solid rgba(130,160,210,.34);border-radius:18px;
+  background:rgba(18,31,52,.84);color:#fff;min-height:62px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:1000;font-size:20px
+}
+.bottomOverlayTabs button span{font-size:17px}
+.bottomOverlayTabs .activeBottomOverlayTab{
+  background:linear-gradient(135deg,rgba(247,217,121,.95),rgba(244,114,182,.78));
+  color:#08111f;border-color:rgba(247,217,121,.95)
+}
+.universalOverlaysPage .pageTop .mutedText{color:var(--gold,#f7d979);font-weight:900}
+@media (max-width:720px){
+  .bottomOverlayTabs{bottom:8px;width:calc(100vw - 12px);border-radius:18px}
+  .bottomOverlayTabs button{min-height:56px;font-size:18px;flex-direction:column;gap:2px}
+  .bottomOverlayTabs button span{font-size:13px}
+}

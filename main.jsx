@@ -447,25 +447,18 @@ function UniversalOverlays({setScreen}){
   const shown=category==='All'?data:data.filter(o=>o.category===category);
   const active=selected||shown[0];
 
-  return <div className="page universalOverlaysPage">
+  return <div className="page universalOverlaysPage bottomOverlayPad">
     <div className="pageTop">
       <div>
         <h1>Universal Overlays</h1>
-        <p className="mutedText">One overlay hub for tactical, technical and mental performance constraints.</p>
+        <p className="mutedText">{family} overlays</p>
       </div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
-    <div className="universalFamilyTabs">
-      {['Tactical','Technical','Mental Performance'].map(tab=><button key={tab} className={family===tab?'activeFamilyTab':''} onClick={()=>setFamily(tab)}>
-        {tab==='Tactical'?'🎯 ':tab==='Technical'?'🔧 ':'🧠 '}{tab}
-      </button>)}
-    </div>
-
-    {family==='Mental Performance'&&<div className="universalInfoNote">
-      <strong>Mental Performance lives here.</strong>
-      <span>Use these overlays to apply animal identity, visual performance, regulation and competitive behaviours inside games.</span>
-    </div>}
+    {family==='Tactical'&&<div className="universalInfoNote"><strong>Tactical Overlays</strong><span>Use these to shape decisions, advantage recognition and tactical behaviours inside games.</span></div>}
+    {family==='Technical'&&<div className="universalInfoNote"><strong>Technical Overlays</strong><span>Use these as observable perception–action constraints, not isolated technique commands.</span></div>}
+    {family==='Mental Performance'&&<div className="universalInfoNote"><strong>Mental Performance Overlays</strong><span>Apply animal identity, visual performance, regulation and competitive behaviours inside games.</span></div>}
 
     <div className="overlayCategoryTabs">{categories.map(cat=><button key={cat} className={category===cat?'activeTab':''} onClick={()=>{setCategory(cat);setSelected(null);}}>{cat}</button>)}</div>
 
@@ -486,9 +479,14 @@ function UniversalOverlays({setScreen}){
         <section><h3>Recommended Pairings</h3><div className="chipRow">{(active.pairings||[]).map(x=><span key={x}>{x}</span>)}</div></section>
       </div>}
     </div>
+
+    <div className="bottomOverlayTabs" role="navigation" aria-label="Universal overlay families">
+      <button className={family==='Technical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Technical')}>🔧<span>Technical</span></button>
+      <button className={family==='Tactical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Tactical')}>♟<span>Tactical</span></button>
+      <button className={family==='Mental Performance'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Mental Performance')}>🧠<span>Mental</span></button>
+    </div>
   </div>;
 }
-
 
 function TechnicalOverlays({setScreen}){
   const [category,setCategory]=useState('All');
@@ -4444,7 +4442,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h52</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h53</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
