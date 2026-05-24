@@ -1677,3 +1677,915 @@
 
 /* v99h28 Snake seeding + fair lives */
 .fairLivesEngineRestored .miniPill{font-weight:900}
+
+/* v99h29 Player Import / Export */
+.playerBackupControls{
+  align-items:center;
+}
+.importPlayersLabel{
+  position:relative;
+  overflow:hidden;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.importPlayersLabel input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
+/* v99h30 Technical Overlays */
+.technicalOverlaysPage .pageTop p{margin:6px 0 0}
+.overlayCategoryTabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.overlayCategoryTabs button{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;background:rgba(15,23,42,.7);color:#fff;font-weight:800}
+.overlayCategoryTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.overlayLayout{display:grid;grid-template-columns:minmax(240px,330px) 1fr;gap:18px;align-items:start}
+.overlayList{display:flex;flex-direction:column;gap:10px}
+.overlayListCard{text-align:left;border:1px solid rgba(130,160,210,.5);border-radius:16px;background:rgba(18,31,52,.75);color:#fff;padding:14px}
+.overlayListCard strong{display:block;font-size:16px}
+.overlayListCard span{display:inline-block;margin-top:6px;opacity:.8;font-size:13px}
+.overlayListCard.active{border-color:var(--gold,#f7d979);box-shadow:0 0 0 2px rgba(247,217,121,.15)}
+.overlayDetail{border:2px solid var(--gold,#f7d979);border-radius:24px;padding:22px;background:rgba(8,14,27,.72)}
+.overlayDetail h2{margin:8px 0 18px;color:var(--gold,#f7d979);font-size:34px}
+.overlayDetail section{border-top:1px solid rgba(255,255,255,.12);padding-top:14px;margin-top:14px}
+.overlayDetail h3{margin:0 0 8px;color:var(--gold,#f7d979)}
+.chipRow{display:flex;gap:8px;flex-wrap:wrap}
+.chipRow span{border-radius:999px;padding:8px 11px;background:rgba(247,217,121,.14);border:1px solid rgba(247,217,121,.35)}
+@media(max-width:850px){.overlayLayout{grid-template-columns:1fr}}
+
+/* v99h31 Technical Overlays home access */
+.technicalHomeAccess{
+  border:2px solid var(--gold,#f7d979);
+  border-radius:22px;
+  padding:18px;
+  margin:18px 0;
+  background:rgba(8,14,27,.72);
+}
+
+/* v99h32 Technical Overlays home tile */
+.technicalOverlayTile{
+  width:100%;
+  min-height:170px;
+  border:0;
+  border-radius:28px;
+  padding:32px;
+  text-align:left;
+  color:#fff;
+  cursor:pointer;
+  background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 45%,#b45309 100%);
+  box-shadow:0 18px 40px rgba(0,0,0,.22);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+}
+.technicalOverlayTile h2{
+  margin:0 0 14px;
+  font-size:clamp(24px,3.2vw,40px);
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:0;
+}
+.technicalOverlayTile p{
+  margin:0;
+  font-size:clamp(15px,1.5vw,22px);
+  line-height:1.25;
+  font-weight:700;
+}
+.technicalOverlayTile:hover,
+.technicalOverlayTile:focus{
+  transform:translateY(-1px);
+  outline:2px solid rgba(247,217,121,.55);
+}
+
+/* v99h34 Home Typography Standardisation */
+
+.homeTile h1,
+.homeTile h2,
+.homeTile h3,
+.tileTitle{
+  font-size:clamp(24px,3vw,40px) !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  margin:0 0 14px 0 !important;
+}
+
+.homeTile p,
+.tileSubtitle{
+  font-size:clamp(15px,1.5vw,22px) !important;
+  line-height:1.3 !important;
+  font-weight:700 !important;
+  opacity:.95;
+}
+
+.homeTile,
+.technicalOverlayTile{
+  min-height:170px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+}
+
+.homeTile{
+  padding:28px !important;
+}
+
+.homeTile p + p{
+  margin-top:4px;
+}
+
+/* v99h36 Home title size uniformity */
+.page .homeGrid h1,
+.page .homeGrid h2,
+.page .homeGrid h3,
+.page .homeTile h1,
+.page .homeTile h2,
+.page .homeTile h3,
+.page .menuCard h1,
+.page .menuCard h2,
+.page .menuCard h3,
+.page .quickCard h1,
+.page .quickCard h2,
+.page .quickCard h3,
+.page .featureCard h1,
+.page .featureCard h2,
+.page .featureCard h3,
+.page .technicalOverlayTile h1,
+.page .technicalOverlayTile h2,
+.page .technicalOverlayTile h3,
+button.homeTile h1,
+button.homeTile h2,
+button.homeTile h3,
+button.technicalOverlayTile h1,
+button.technicalOverlayTile h2,
+button.technicalOverlayTile h3{
+  font-size:40px !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  margin:0 0 14px 0 !important;
+}
+
+.page .homeGrid p,
+.page .homeTile p,
+.page .menuCard p,
+.page .quickCard p,
+.page .featureCard p,
+.page .technicalOverlayTile p,
+button.homeTile p,
+button.technicalOverlayTile p{
+  font-size:20px !important;
+  line-height:1.3 !important;
+  font-weight:750 !important;
+  margin:0 !important;
+}
+
+.page .homeGrid,
+.homeGrid{
+  align-items:stretch !important;
+}
+
+.page .homeGrid > *,
+.page .homeTile,
+.page .menuCard,
+.page .quickCard,
+.page .featureCard,
+.page .technicalOverlayTile,
+button.homeTile,
+button.technicalOverlayTile{
+  min-height:170px !important;
+}
+@media(max-width:900px){
+  .page .homeGrid h1,
+  .page .homeGrid h2,
+  .page .homeGrid h3,
+  .page .homeTile h1,
+  .page .homeTile h2,
+  .page .homeTile h3,
+  .page .menuCard h1,
+  .page .menuCard h2,
+  .page .menuCard h3,
+  .page .quickCard h1,
+  .page .quickCard h2,
+  .page .quickCard h3,
+  .page .featureCard h1,
+  .page .featureCard h2,
+  .page .featureCard h3,
+  .page .technicalOverlayTile h1,
+  .page .technicalOverlayTile h2,
+  .page .technicalOverlayTile h3,
+  button.homeTile h1,
+  button.homeTile h2,
+  button.homeTile h3,
+  button.technicalOverlayTile h1,
+  button.technicalOverlayTile h2,
+  button.technicalOverlayTile h3{
+    font-size:36px !important;
+  }
+}
+
+/* v99h37 Double Bounce Tool */
+.doubleBounceTile{background:linear-gradient(135deg,#0f766e 0%,#0ea5e9 48%,#1d4ed8 100%) !important}
+.doubleBounceToolPage .pageTop p{margin:6px 0 0}
+.doubleBounceHero{border:2px solid var(--gold,#f7d979);border-radius:28px;padding:26px;background:linear-gradient(135deg,rgba(15,118,110,.35),rgba(30,64,175,.28));margin-bottom:22px}
+.doubleBounceHero h2{color:var(--gold,#f7d979);font-size:clamp(34px,5vw,54px);margin:10px 0 12px}
+.doubleBounceHero p{font-size:20px;line-height:1.35;max-width:980px}
+.protocolGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:18px 0}
+.protocolCard{border:1px solid rgba(130,160,210,.5);border-radius:20px;padding:18px;background:rgba(18,31,52,.75)}
+.protocolCard h3{margin:0 0 10px;color:var(--gold,#f7d979)}
+.protocolCard p,.protocolCard li{line-height:1.38}
+.warningCard{border-color:rgba(247,217,121,.65)}
+.dbSection{margin:24px 0}
+.dbSection h2,.claPanel h2{color:var(--gold,#f7d979);font-size:30px}
+.rationaleGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.rationaleCard{border:1px solid rgba(130,160,210,.45);border-radius:20px;padding:18px;background:rgba(8,14,27,.7)}
+.rationaleCard span{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:999px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000;margin-bottom:8px}
+.rationaleCard h3{margin:4px 0 8px;color:#fff}
+.rationaleCard p{line-height:1.38}
+.dbTwoCol{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.claPanel{border:2px solid rgba(247,217,121,.75);border-radius:24px;padding:22px;background:rgba(247,217,121,.08);margin-top:24px}
+.claPanel p{font-size:18px;line-height:1.4}
+
+/* v99h38 Home tile polish + Mental Skills placeholder */
+.doubleBounceTile,
+.technicalOverlayTile,
+.mentalSkillsTile{
+  border-radius:28px !important;
+  border:0 !important;
+  min-height:170px !important;
+  width:100% !important;
+  padding:28px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  box-shadow:0 18px 40px rgba(0,0,0,.22) !important;
+  color:#fff !important;
+  text-align:left !important;
+  overflow:hidden !important;
+}
+
+.doubleBounceTile{
+  background:linear-gradient(135deg,#0f766e 0%,#2563eb 100%) !important;
+}
+
+.technicalOverlayTile{
+  background:linear-gradient(135deg,#6d28d9 0%,#7c3aed 48%,#c2410c 100%) !important;
+}
+
+.mentalSkillsTile{
+  background:linear-gradient(135deg,#7f1d1d 0%,#be123c 48%,#6d28d9 100%) !important;
+}
+
+.doubleBounceTile h2,
+.technicalOverlayTile h2,
+.mentalSkillsTile h2{
+  color:#fff !important;
+  font-size:40px !important;
+  line-height:1.05 !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  text-transform:none !important;
+  margin:0 0 14px 0 !important;
+  opacity:1 !important;
+}
+
+.doubleBounceTile p,
+.technicalOverlayTile p,
+.mentalSkillsTile p{
+  color:#fff !important;
+  font-size:20px !important;
+  line-height:1.3 !important;
+  font-weight:750 !important;
+  opacity:.96 !important;
+  margin:0 !important;
+}
+
+.placeholderPanel{
+  border:2px solid var(--gold,#f7d979);
+  border-radius:24px;
+  padding:24px;
+  background:rgba(8,14,27,.72);
+}
+.placeholderPanel h2{
+  color:var(--gold,#f7d979);
+  margin-top:0;
+}
+
+/* v99h39 Force equal Home tile dimensions */
+.homeGrid{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:24px !important;
+  align-items:stretch !important;
+}
+
+.homeGrid > button,
+.homeGrid > .homeTile,
+.homeGrid > .doubleBounceTile,
+.homeGrid > .technicalOverlayTile,
+.homeGrid > .mentalSkillsTile,
+button.homeTile,
+button.doubleBounceTile,
+button.technicalOverlayTile,
+button.mentalSkillsTile{
+  height:190px !important;
+  min-height:190px !important;
+  max-height:190px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  border-radius:28px !important;
+  padding:28px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  overflow:hidden !important;
+}
+
+.homeGrid > button h2,
+.homeGrid > .homeTile h2,
+.homeGrid > .doubleBounceTile h2,
+.homeGrid > .technicalOverlayTile h2,
+.homeGrid > .mentalSkillsTile h2,
+button.homeTile h2,
+button.doubleBounceTile h2,
+button.technicalOverlayTile h2,
+button.mentalSkillsTile h2{
+  font-size:40px !important;
+  line-height:1.05 !important;
+  margin:0 0 14px 0 !important;
+  font-weight:900 !important;
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+
+.homeGrid > button p,
+.homeGrid > .homeTile p,
+.homeGrid > .doubleBounceTile p,
+.homeGrid > .technicalOverlayTile p,
+.homeGrid > .mentalSkillsTile p,
+button.homeTile p,
+button.doubleBounceTile p,
+button.technicalOverlayTile p,
+button.mentalSkillsTile p{
+  font-size:20px !important;
+  line-height:1.3 !important;
+  margin:0 !important;
+  font-weight:750 !important;
+}
+
+@media(max-width:850px){
+  .homeGrid{
+    grid-template-columns:1fr !important;
+  }
+  .homeGrid > button,
+  .homeGrid > .homeTile,
+  .homeGrid > .doubleBounceTile,
+  .homeGrid > .technicalOverlayTile,
+  .homeGrid > .mentalSkillsTile,
+  button.homeTile,
+  button.doubleBounceTile,
+  button.technicalOverlayTile,
+  button.mentalSkillsTile{
+    height:auto !important;
+    min-height:170px !important;
+    max-height:none !important;
+  }
+}
+
+/* v99h40 Mental Skills Integration */
+.mentalTabs{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.mentalTabs button{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;background:rgba(15,23,42,.7);color:#fff;font-weight:800}
+.mentalTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.mentalPanel{border:2px solid rgba(247,217,121,.65);border-radius:26px;padding:24px;background:rgba(8,14,27,.72)}
+.mentalPanel h2{color:var(--gold,#f7d979);margin-top:0;font-size:32px}
+.mentalGrid,.overlayMentalGrid,.ratingGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0}
+.mentalCard,.mentalOverlayCard,.ratingCard,.routineBox,.breathCard{border:1px solid rgba(130,160,210,.5);border-radius:20px;padding:18px;background:rgba(18,31,52,.75)}
+.mentalCard h3,.mentalOverlayCard h3,.ratingCard h3,.breathCard h3{color:#fff;margin:0 0 8px}
+.mentalOverlayCard span{display:inline-flex;border-radius:999px;padding:6px 10px;background:rgba(247,217,121,.16);border:1px solid rgba(247,217,121,.35);color:var(--gold,#f7d979);font-weight:900;margin-bottom:8px}
+.routineBox label{display:block;color:var(--gold,#f7d979);font-weight:900;margin-bottom:8px}
+.routineBox input,.goalList input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(130,160,210,.55);background:rgba(7,12,22,.85);color:#fff;padding:12px;font-size:17px;margin-bottom:10px}
+.breathSteps{display:flex;gap:10px;flex-wrap:wrap}
+.breathSteps span{display:inline-flex;padding:10px 14px;border-radius:999px;background:rgba(14,165,233,.18);border:1px solid rgba(14,165,233,.4);font-weight:900}
+.goalList{display:grid;gap:10px;margin:16px 0}
+.ratingCard input{width:100%}
+
+/* v99h41 Mental Performance v2 */
+.mentalPerformancePage .pageTop h1{color:var(--gold,#f7d979)}
+.quietEyeBox{border:2px solid rgba(247,217,121,.75);border-radius:24px;padding:22px;background:linear-gradient(135deg,rgba(247,217,121,.12),rgba(14,165,233,.10));margin-top:20px}
+.quietEyeBox h2{color:var(--gold,#f7d979);margin-top:0}
+.quietEyeBox ol{padding-left:22px}
+.quietEyeBox li{margin:8px 0;line-height:1.35}
+.coachCue{display:inline-flex;border-radius:999px;padding:10px 14px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000}
+.breathSystemCard h3{color:var(--gold,#f7d979)}
+.mentalOverlayCard p{line-height:1.36}
+
+/* v99h42 Universal Mental Overlay Selector */
+.mentalOverlaySelector{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:24px;
+  padding:20px;
+  margin:18px 0 24px;
+  background:rgba(8,14,27,.72);
+}
+.mentalOverlaySelector .sectionHead{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.mentalOverlaySelector h2{
+  color:var(--gold,#f7d979);
+  margin:0 0 6px;
+  font-size:28px;
+}
+.mentalOverlaySelector p{
+  margin:0;
+  line-height:1.35;
+}
+.overlayModeButtons{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.overlayModeButtons button{
+  border:1px solid rgba(247,217,121,.35);
+  border-radius:999px;
+  padding:8px 12px;
+  background:rgba(15,23,42,.8);
+  color:#fff;
+  font-weight:900;
+}
+.overlayModeButtons .activeMode{
+  background:var(--gold,#f7d979);
+  color:#08111f;
+}
+.mentalOverlayChips{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+  margin:16px 0;
+}
+.mentalOverlayChips button{
+  text-align:left;
+  border:1px solid rgba(130,160,210,.45);
+  border-radius:16px;
+  padding:12px;
+  background:rgba(18,31,52,.75);
+  color:#fff;
+}
+.mentalOverlayChips button strong{
+  display:block;
+  font-size:15px;
+}
+.mentalOverlayChips button span{
+  display:inline-block;
+  margin-top:5px;
+  opacity:.8;
+  font-size:12px;
+}
+.mentalOverlayChips .selectedOverlay{
+  border-color:var(--gold,#f7d979);
+  box-shadow:0 0 0 2px rgba(247,217,121,.15);
+  background:rgba(247,217,121,.12);
+}
+.activeOverlayPanel{
+  border-top:1px solid rgba(255,255,255,.12);
+  padding-top:14px;
+}
+.activeOverlayPanel h3{
+  color:var(--gold,#f7d979);
+  margin:0 0 10px;
+}
+.activeOverlayRule{
+  border:1px solid rgba(247,217,121,.25);
+  border-radius:14px;
+  padding:12px;
+  margin:8px 0;
+  background:rgba(247,217,121,.08);
+}
+.activeOverlayRule strong{
+  color:#fff;
+}
+.activeOverlayRule p{
+  margin:6px 0 0;
+}
+
+/* v99h43 Invasion projector polish + fair lives helper */
+.coachInvaderSelector{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:24px;
+  padding:20px;
+  margin:18px 0;
+  background:rgba(8,14,27,.72);
+}
+.coachInvaderSelector h2{color:var(--gold,#f7d979);margin:0 0 6px}
+.coachInvaderSelector p{margin:6px 0 0;line-height:1.35}
+.coachInvaderGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:14px}
+.coachInvaderCard{border:1px solid rgba(130,160,210,.5);border-radius:18px;padding:14px;background:rgba(18,31,52,.75)}
+.coachInvaderCard h3{color:var(--gold,#f7d979);margin:0 0 10px}
+.liveBadge,.statusBadge,.projectorLiveBadge{
+  font-size:clamp(22px,3vw,34px) !important;
+  line-height:1 !important;
+  max-width:100% !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.courtCard,.projectorCourtCard,.liveCourtCard{overflow:hidden !important}
+.courtCard .livesBox,.projectorCourtCard .livesBox,.liveCourtCard .livesBox{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+  align-items:center !important;
+}
+
+/* v99h44 Invasion state repair */
+.coachInvaderSelector{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:24px;
+  padding:18px;
+  margin:18px 0;
+  background:rgba(8,14,27,.72);
+}
+.coachInvaderSelector h2{color:var(--gold,#f7d979);margin:0 0 6px}
+.coachInvaderGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.coachInvaderCard{border:1px solid rgba(130,160,210,.5);border-radius:18px;padding:14px;background:rgba(18,31,52,.75)}
+.coachInvaderCard h3{margin:0 0 8px;color:var(--gold,#f7d979)}
+.coachInvaderCard label{display:block;font-weight:900}
+.coachInvaderCard select{width:100%;margin-top:6px;border-radius:12px;border:1px solid rgba(130,160,210,.55);background:rgba(7,12,22,.95);color:#fff;padding:10px;font-weight:800}
+.finalLifeNumbers{overflow:hidden}
+.finalLifeNumbers strong{font-size:clamp(34px,5vw,58px)!important;line-height:1!important}
+.finalLifeNumbers span{font-size:clamp(14px,1.5vw,20px)!important}
+
+/* v99h45 Invasion lives exact map + guest ranking */
+.quickGuestRow .guestRankInput{
+  min-width:180px;
+}
+.smallHelpText{
+  margin:8px 0 0;
+  opacity:.82;
+  font-size:14px;
+  line-height:1.3;
+}
+
+/* v99h46 Starting Lives respected in Invasion Fair Lives */
+
+/* v99h47 M1 Universal Overlays + Mental Performance Navigation */
+.universalFamilyTabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:18px 0;
+}
+.universalFamilyTabs button{
+  border:2px solid rgba(130,160,210,.45);
+  border-radius:20px;
+  padding:18px;
+  background:rgba(18,31,52,.78);
+  color:#fff;
+  font-weight:1000;
+  font-size:20px;
+}
+.universalFamilyTabs .activeFamilyTab{
+  border-color:var(--gold,#f7d979);
+  background:linear-gradient(135deg,rgba(247,217,121,.24),rgba(14,165,233,.12));
+  color:var(--gold,#f7d979);
+}
+.playerHubTabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.playerHubTabs button{
+  border:1px solid rgba(130,160,210,.45);
+  border-radius:999px;
+  padding:10px 16px;
+  background:rgba(18,31,52,.78);
+  color:#fff;
+  font-weight:900;
+}
+.playerHubTabs .activeTab{
+  background:var(--gold,#f7d979);
+  color:#08111f;
+}
+.mentalPhilosophyBox{
+  border:2px solid rgba(247,217,121,.65);
+  border-radius:26px;
+  padding:22px;
+  margin:18px 0;
+  background:linear-gradient(135deg,rgba(247,217,121,.14),rgba(14,165,233,.08));
+}
+.mentalPhilosophyBox h2{
+  color:var(--gold,#f7d979);
+  margin-top:0;
+}
+.mentalMenuGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+}
+.mentalMenuCard{
+  text-align:left;
+  border:1px solid rgba(130,160,210,.45);
+  border-radius:24px;
+  padding:20px;
+  background:rgba(18,31,52,.78);
+  color:#fff;
+}
+.mentalMenuCard h2{
+  margin:0 0 8px;
+  color:var(--gold,#f7d979);
+  font-size:25px;
+}
+.mentalMenuCard p{margin:0;line-height:1.35}
+.sectionTitle{color:var(--gold,#f7d979)}
+.animalGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+  gap:16px;
+  margin:18px 0;
+}
+.animalCard{
+  border:1px solid rgba(130,160,210,.5);
+  border-radius:24px;
+  padding:20px;
+  background:rgba(18,31,52,.78);
+}
+.animalEmoji{
+  font-size:46px;
+  line-height:1;
+}
+.animalCard h2{
+  margin:8px 0 0;
+  color:#fff;
+}
+.animalCard h3{
+  margin:4px 0 10px;
+  color:var(--gold,#f7d979);
+}
+.animalBehaviours{
+  display:grid;
+  gap:6px;
+  margin:12px 0;
+}
+.animalBehaviours span{
+  border-radius:12px;
+  padding:8px 10px;
+  background:rgba(247,217,121,.08);
+  border:1px solid rgba(247,217,121,.18);
+}
+.customAnimalBox,.mentalContentPanel{
+  border:2px solid rgba(247,217,121,.55);
+  border-radius:26px;
+  padding:22px;
+  margin:22px 0;
+  background:rgba(8,14,27,.72);
+}
+.customAnimalGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:12px;
+  margin:14px 0;
+}
+.customAnimalGrid input,.customAnimalGrid textarea{
+  width:100%;
+  box-sizing:border-box;
+  border-radius:14px;
+  border:1px solid rgba(130,160,210,.55);
+  background:rgba(7,12,22,.95);
+  color:#fff;
+  padding:12px;
+  font-size:16px;
+}
+.customAnimalGrid textarea{min-height:90px}
+.mentalGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:14px;
+  margin:16px 0;
+}
+.mentalCard{
+  border:1px solid rgba(130,160,210,.5);
+  border-radius:20px;
+  padding:18px;
+  background:rgba(18,31,52,.78);
+}
+.mentalCard h3{color:var(--gold,#f7d979);margin-top:0}
+
+/* v99h48b Visual Performance M2 Fixed */
+.visualTopicTabs{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 20px}
+.visualTopicTabs button{border:1px solid rgba(130,160,210,.5);border-radius:999px;padding:10px 14px;background:rgba(18,31,52,.78);color:#fff;font-weight:900}
+.visualTopicTabs .activeVisualTab{background:var(--gold,#f7d979);color:#08111f}
+.squashBallGraphic{position:relative;min-height:260px;border:2px solid rgba(247,217,121,.55);border-radius:28px;background:radial-gradient(circle at center,rgba(247,217,121,.12),rgba(14,165,233,.07),rgba(8,14,27,.82));overflow:hidden;margin:18px 0}
+.squashBallCore{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:999px;display:grid;place-items:center;font-size:42px;color:#101827;background:radial-gradient(circle at 35% 30%,#fff4a9,#f7d979 48%,#a77f10);box-shadow:0 0 28px rgba(247,217,121,.42)}
+.trajectoryArc{position:absolute;width:56%;height:52%;left:18%;top:18%;border-top:5px dashed rgba(247,217,121,.72);border-right:5px dashed rgba(247,217,121,.28);border-radius:50%;transform:rotate(-12deg)}
+.bounceDot,.interceptDot{position:absolute;width:22px;height:22px;border-radius:999px;background:var(--gold,#f7d979)}
+.bounceDot{left:30%;bottom:20%}
+.interceptDot{right:22%;top:32%}
+.trackLabel{position:absolute;border-radius:999px;padding:8px 12px;background:rgba(7,12,22,.88);border:1px solid rgba(247,217,121,.45);color:#fff;font-weight:900}
+.labelTrajectory{left:10%;top:12%}
+.labelBounce{left:22%;bottom:10%}
+.labelSpeed{right:12%;bottom:18%}
+.labelIntercept{right:8%;top:22%}
+.animalButtonCard{text-align:left;color:#fff;cursor:pointer}
+.animalButtonCard:hover{border-color:var(--gold,#f7d979);transform:translateY(-1px)}
+.animalFullPage .animalHero{display:flex;gap:18px;align-items:center;border:2px solid rgba(247,217,121,.55);border-radius:28px;padding:22px;background:linear-gradient(135deg,rgba(247,217,121,.14),rgba(14,165,233,.08));margin-bottom:18px}
+.animalHero .animalEmoji{font-size:74px}
+.animalHero h2{margin:0;color:#fff;font-size:38px}
+.animalHero h3{margin:4px 0 8px;color:var(--gold,#f7d979)}
+.largeCue{font-size:26px;font-weight:1000;color:var(--gold,#f7d979)}
+.overlaySuggestionBox{border:1px solid rgba(247,217,121,.35);border-radius:22px;padding:18px;background:rgba(247,217,121,.08)}
+.prepFlow{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.prepFlow span{border-radius:999px;padding:12px 16px;background:rgba(247,217,121,.12);border:1px solid rgba(247,217,121,.35);font-weight:900}
+
+/* v99h48c: Mental Performance moved under Universal Overlays */
+.universalInfoNote{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  border:1px solid rgba(247,217,121,.45);
+  border-radius:18px;
+  padding:12px 14px;
+  margin:10px 0 14px;
+  background:rgba(247,217,121,.08);
+}
+.universalInfoNote strong{
+  color:var(--gold,#f7d979);
+}
+.universalInfoNote span{
+  opacity:.9;
+}
+
+/* v99h49 Invasion points persistence + projector invader display */
+.projectorTeamList{
+  display:grid;
+  gap:8px;
+  margin:14px 0 18px;
+}
+.projectorPlayerLine{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border:1px solid rgba(130,160,210,.28);
+  border-radius:14px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.035);
+  font-size:22px;
+  font-weight:900;
+}
+.projectorPlayerLine strong{
+  color:var(--gold,#f7d979);
+  font-size:17px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.projectorPlayerLine.activeInvader{
+  border-color:rgba(247,217,121,.95);
+  background:rgba(247,217,121,.13);
+}
+.projectorPlayerLine.nextInvader{
+  border-color:rgba(96,165,250,.75);
+  background:rgba(96,165,250,.10);
+}
+.invasionPointsProjectorCard .finalLifeNumbers{
+  margin-top:12px;
+}
+
+/* v99h50 Home / Games Library / Invasion DB tidy */
+.homeGridV99h50 .compactHomeBrand{
+  grid-column:1 / -1;
+}
+.gamesLibraryHomeCard{
+  background:linear-gradient(135deg,#2958b8,#4b1aa8);
+}
+.liveSingleTile{
+  grid-column:1 / span 1;
+}
+.gamesLibraryPage .page{
+  padding:0;
+}
+.gamesLibraryTabs{
+  margin-bottom:18px;
+}
+.playerDbInline{
+  display:inline-block;
+  margin-left:8px;
+  opacity:.75;
+  font-size:.75em;
+  font-style:normal;
+  color:var(--gold,#f7d979);
+}
+.projectorDbStrip{
+  display:none!important;
+}
+.projectionMonitorNote{
+  opacity:.82;
+  margin:.25rem 0 0;
+}
+@media (max-width:780px){
+  .liveSingleTile{
+    grid-column:auto;
+  }
+}
+
+/* v99h51 Navigation + Diagnostic & Intervention */
+.homeGridV99h51 .compactHomeBrand{grid-column:1 / -1}.homeGridV99h51 .gamesLibraryHomeCard{background:linear-gradient(135deg,#2958b8,#4b1aa8)}
+.libraryStageIntro{border:1px solid rgba(247,217,121,.45);border-radius:22px;padding:18px;margin:14px 0 18px;background:rgba(247,217,121,.08)}.libraryStageIntro h2{color:var(--gold,#f7d979);margin-top:0}
+.diagnosticTabs{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 20px}.diagnosticTabs button{border:1px solid rgba(130,160,210,.5);border-radius:999px;padding:10px 14px;background:rgba(18,31,52,.78);color:#fff;font-weight:900}.diagnosticTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.diagnosticStagePanel{border:1px solid rgba(130,160,210,.45);border-radius:24px;padding:20px;background:rgba(8,14,27,.72)}.diagnosticStagePanel h2{color:var(--gold,#f7d979);margin-top:0}
+.diagnosticClockGrid,.interventionToolGrid,.errorComparisonGrid,.stageHintGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:16px}.diagnosticClockCard,.interventionToolCard,.errorMiniCard,.claComparisonCard,.stageHintGrid div{border:1px solid rgba(130,160,210,.45);border-radius:18px;padding:14px;background:rgba(18,31,52,.78)}.diagnosticClockCard strong,.stageHintGrid strong{display:block;color:var(--gold,#f7d979);margin-bottom:6px}.diagnosticClockCard span,.stageHintGrid span{opacity:.86}.interventionToolCard h3,.errorMiniCard h3,.claComparisonCard h3{color:var(--gold,#f7d979);margin-top:0}.bernsteinBox{border:2px solid rgba(247,217,121,.58);border-radius:24px;padding:20px;margin-bottom:18px;background:linear-gradient(135deg,rgba(247,217,121,.13),rgba(14,165,233,.07))}.bernsteinBox h2{color:var(--gold,#f7d979);margin-top:0}.claComparisonCard section{border-top:1px solid rgba(130,160,210,.22);padding-top:10px;margin-top:10px}.claComparisonCard section strong{color:var(--gold,#f7d979)}
+
+/* v99h52 cleanup: titles-only home, diagnostic clock, projector teams */
+.homeGridV99h52 .compactHomeBrand{grid-column:1 / -1}
+.homeGridV99h52 .homeTitleOnly{min-height:150px;display:flex;align-items:center;justify-content:flex-start}
+.homeGridV99h52 .homeTitleOnly h2{margin:0;color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+.homeGridV99h52 .homeTitleOnly p,.homeGridV99h52 .homeTitleOnly .homeCardSub{display:none!important}
+.homeGridV99h52 .gamesLibraryHomeCard{background:linear-gradient(135deg,#7c2d12,#6d28d9 70%);border:1px solid rgba(247,217,121,.65)}
+.homeGridV99h52 .diagnosticHomeCard h2{font-size:38px;line-height:1.05}
+.clockFace{position:relative;min-height:390px;max-width:620px;margin:22px auto;border:2px solid rgba(247,217,121,.52);border-radius:50%;background:radial-gradient(circle at center,rgba(247,217,121,.12),rgba(14,165,233,.06),rgba(8,14,27,.8))}
+.clockCentre{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;border-radius:50%;display:grid;place-items:center;text-align:center;background:rgba(247,217,121,.16);border:2px solid rgba(247,217,121,.58)}
+.clockCentre strong{color:var(--gold,#f7d979);font-size:22px}.clockCentre span{font-size:14px;opacity:.85}
+.clockNode{position:absolute;width:130px;min-height:52px;border:1px solid rgba(130,160,210,.55);border-radius:16px;display:grid;place-items:center;text-align:center;background:rgba(18,31,52,.9);color:#fff;font-weight:900}.clockNode strong{color:var(--gold,#f7d979)}
+.clockNode1{left:50%;top:16px;transform:translateX(-50%)}.clockNode2{right:70px;top:65px}.clockNode3{right:18px;top:50%;transform:translateY(-50%)}.clockNode4{right:70px;bottom:65px}.clockNode5{left:50%;bottom:16px;transform:translateX(-50%)}.clockNode6{left:70px;bottom:65px}.clockNode7{left:18px;top:50%;transform:translateY(-50%)}.clockNode8{left:70px;top:65px}
+.compactProjectorTeamList{margin:8px 0 12px;gap:5px}.compactProjectorTeamList .projectorPlayerLine{font-size:18px;padding:7px 10px}.defendingProjectorTeamList .projectorPlayerLine{opacity:.88}.projectorLivesTeamCard p{margin:8px 0}
+@media (max-width:780px){.clockFace{min-height:330px}.clockNode{width:112px;font-size:13px}}
+
+/* v99h53 bottom overlay tabs */
+.bottomOverlayPad{padding-bottom:108px!important}
+.bottomOverlayTabs{
+  position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  width:min(720px,calc(100vw - 24px));padding:10px;
+  border:1px solid rgba(247,217,121,.42);border-radius:24px;
+  background:rgba(5,10,20,.94);backdrop-filter:blur(14px);
+  box-shadow:0 14px 34px rgba(0,0,0,.38)
+}
+.bottomOverlayTabs button{
+  border:1px solid rgba(130,160,210,.34);border-radius:18px;
+  background:rgba(18,31,52,.84);color:#fff;min-height:62px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:1000;font-size:20px
+}
+.bottomOverlayTabs button span{font-size:17px}
+.bottomOverlayTabs .activeBottomOverlayTab{
+  background:linear-gradient(135deg,rgba(247,217,121,.95),rgba(244,114,182,.78));
+  color:#08111f;border-color:rgba(247,217,121,.95)
+}
+.universalOverlaysPage .pageTop .mutedText{color:var(--gold,#f7d979);font-weight:900}
+@media (max-width:720px){
+  .bottomOverlayTabs{bottom:8px;width:calc(100vw - 12px);border-radius:18px}
+  .bottomOverlayTabs button{min-height:56px;font-size:18px;flex-direction:column;gap:2px}
+  .bottomOverlayTabs button span{font-size:13px}
+}
+
+/* v99h54 Competition tabbed overlay engine */
+.overlayFamilyEngine{
+  margin-top:10px;
+}
+.overlayFamilyTabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:12px 0 14px;
+}
+.overlayFamilyTabs button{
+  border:2px solid rgba(130,160,210,.45);
+  border-radius:18px;
+  padding:14px 12px;
+  background:rgba(18,31,52,.78);
+  color:#fff;
+  font-weight:1000;
+  cursor:pointer;
+}
+.overlayFamilyTabs .activeFamilyTab{
+  border-color:var(--gold,#f7d979);
+  background:linear-gradient(135deg,rgba(247,217,121,.24),rgba(14,165,233,.12));
+  color:var(--gold,#f7d979);
+}
+.overlayFamilyChips{
+  margin-top:14px;
+}
+.bottomOverlayTabs button span{
+  white-space:nowrap;
+}
+@media(max-width:720px){
+  .overlayFamilyTabs{
+    grid-template-columns:1fr;
+  }
+  .bottomOverlayTabs button span{
+    font-size:12px;
+  }
+}

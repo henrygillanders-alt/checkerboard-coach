@@ -63,28 +63,10 @@ function snakeSeedPlayers(players,teamCount){
   return teams;
 }
 
-function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
-function lcm(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b)||1;return Math.abs(a*b)/gcd(a,b);}
-function lcmList(nums){const clean=(nums||[]).map(n=>Number(n)||0).filter(n=>n>0);return clean.length?clean.reduce((acc,n)=>lcm(acc,n),1):1;}
-function getFairLivesRows(teams,multiplier=2){
-  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
-  const base=lcmList(list.map(t=>(t.players||[]).length));
-  return {
-    lcmBase:base,
-    multiplier,
-    rows:list.map((team,index)=>{
-      const players=(team.players||[]).length||1;
-      const livesPerPlayer=(base/players)*multiplier;
-      return {
-        team:team.name||`Team ${index+1}`,
-        teamId:team.id,
-        players,
-        livesPerPlayer,
-        totalCapacity:livesPerPlayer*players
-      };
-    })
-  };
-}
+
+
+
+
 
 
 function buildAtl(options){
@@ -203,11 +185,17 @@ function ProjectionView({session,setScreen}){
     const liveCourts=n;
     const isLive=!!competitionProjection.invasionGameStarted;
     function projBaseLives(team){
-      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
-      if(selected>0) return selected;
+      if(!team) return Number(competitionProjection?.invasionStartingLives||5);
+      const exact=Number(competitionProjection.invasionFairLivesByTeam?.[team.id] ?? competitionProjection.invasionFairLivesByTeam?.[team.name]);
+      if(exact>0) return exact;
+      const allTeams=competitionProjection.invasionTeams||[];
+      const counts=allTeams.map(t=>(t.players||[]).length).filter(n=>n>0);
+      const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives)||5;
+      const maxPlayers=counts.length?Math.max(...counts):1;
+      const baseCapacity=maxPlayers*selected;
       const playerCount=(team?.players||[]).length||1;
-      const baseTotal=competitionProjection.invasionFairBaseTotal||playerCount;
-      return Math.max(1,Math.floor(baseTotal/playerCount));
+      if(baseCapacity>0) return Math.max(1,Math.ceil(baseCapacity/playerCount));
+      return selected;
     }
     function projCarry(team){
       return competitionProjection.invasionCarryLives?.[team?.id]||0;
@@ -215,10 +203,41 @@ function ProjectionView({session,setScreen}){
     function projStartLives(team){
       return projBaseLives(team)+projCarry(team);
     }
+    function projOrderedPlayers(team){
+      return [...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
+    }
     function projCurrentInvader(team){
-      const list=team?.players||[];
+      const list=projOrderedPlayers(team);
       if(!list.length) return 'Waiting';
+      const override=competitionProjection.invasionInvaderOverrides?.[team?.id]||competitionProjection.invasionInvaderOverrides?.[team?.name];
+      if(override) return override;
       return list[(competitionProjection.invasionPlayerRound||0)%list.length];
+    }
+    function projNextInvader(team){
+      const list=projOrderedPlayers(team);
+      if(!list.length) return 'Waiting';
+      const current=projCurrentInvader(team);
+      const idx=list.findIndex(name=>name===current);
+      const baseIndex=idx>=0?idx:(competitionProjection.invasionPlayerRound||0)%list.length;
+      return list[(baseIndex+1)%list.length];
+    }
+    function projTeamPoints(team){
+      const manual=Number(competitionProjection.invasionTeamPoints?.[team?.id]||0);
+      const playerTotal=(team?.players||[]).reduce((total,name)=>total+Number(competitionProjection.invasionPlayerPoints?.[name]||0),0);
+      return manual+playerTotal;
+    }
+    function projPlayerRole(team,name){
+      const current=projCurrentInvader(team);
+      const next=projNextInvader(team);
+      if(name===current) return 'invading';
+      if(name===next) return 'next invader';
+      return '';
+    }
+    function projTeamPlayerLine(team,name){
+      const role=projPlayerRole(team,name);
+      return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+        <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
+      </div>;
     }
     function projDefending(idx){
       if(!n) return null;
@@ -262,12 +281,7 @@ function ProjectionView({session,setScreen}){
             <span>All courts active</span>
             <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
           </div>
-          <div className="projectorDbStrip">
-            <b>Double-bounce:</b>
-            {competitionProjection.playerNames&&competitionProjection.playerNames.length
-              ?competitionProjection.playerNames.map(name=><span key={name}>{name}: {competitionProjection.playerBounces?.[name]||'No DB'}</span>)
-              :<span>No players selected</span>}
-          </div>
+
         </div>
 
         {competitionProjection.invasionFormat==='lives'&&n>0&&(
@@ -278,10 +292,16 @@ function ProjectionView({session,setScreen}){
               const invader=projCurrentInvader(invading);
               const startLives=projStartLives(invading);
               const finish=competitionProjection.invasionFinishLives?.[invading?.id];
-              return <div className="finalProjectorCourtCard" key={`project-screen-invasion-${idx}`}>
+              return <div className="finalProjectorCourtCard projectorLivesTeamCard" key={`project-screen-invasion-${idx}`}>
                 <h2>Court {idx+1}</h2>
-                <p><b>Invader:</b> {invader} · {invading?.name||''}</p>
+                <p><b>Invading team:</b> {invading?.name||'Waiting'} · <b>Current:</b> {invader}</p>
+                <div className="projectorTeamList compactProjectorTeamList">
+                  {(invading?.players&&invading.players.length?invading.players:[]).map(name=>projTeamPlayerLine(invading,name))}
+                </div>
                 <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
+                <div className="projectorTeamList compactProjectorTeamList defendingProjectorTeamList">
+                  {(defending?.players&&defending.players.length?defending.players:[]).map(name=><div key={name} className="projectorPlayerLine"><span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span></div>)}
+                </div>
                 <div className="finalLifeNumbers">
                   <span>Lives</span><strong>{startLives}</strong>
                   <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
@@ -294,11 +314,19 @@ function ProjectionView({session,setScreen}){
         {competitionProjection.invasionFormat==='points'&&n>0&&(
           <div className="finalProjectorCourts">
             {teams.map(team=>(
-              <div className="finalProjectorCourtCard" key={team.id}>
+              <div className="finalProjectorCourtCard invasionPointsProjectorCard" key={team.id}>
                 <h2>{team.name}</h2>
-                <p><b>Players:</b> {team.players&&team.players.length?team.players.join(' · '):'Waiting'}</p>
+                <div className="projectorTeamList">
+                  {(team.players&&team.players.length?team.players:[]).map(name=>{
+                    const role=projPlayerRole(team,name);
+                    return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+                      <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
+                    </div>;
+                  })}
+                  {(!team.players||!team.players.length)&&<div className="projectorPlayerLine"><span>Waiting</span></div>}
+                </div>
                 <div className="finalLifeNumbers">
-                  <span>Team points</span><strong>{competitionProjection.invasionTeamPoints?.[team.id]||0}</strong>
+                  <span>Team points</span><strong>{projTeamPoints(team)}</strong>
                 </div>
               </div>
             ))}
@@ -321,6 +349,7 @@ function ProjectionView({session,setScreen}){
       <div>
         <span className="projectionKicker">PLAYER DISPLAY / PROJECTION VIEW</span>
         <h1>{title}</h1>
+        <p className="projectionMonitorNote">Use this page on the monitor / second device for player-only display.</p>
       </div>
     </div>
 
@@ -344,48 +373,498 @@ function ProjectionView({session,setScreen}){
   </div>;
 }
 
-function Home({setScreen}){
-return <div className="homeGrid">
-      <div className="homeBrandCard compactHomeBrand">
-        <h1>Checkerboard Squash™</h1>
+
+const TECHNICAL_OVERLAYS = [
+ {id:'eyes-contact',category:'Visual',title:'Eyes on Contact Point',rule:'Player keeps visual attention on the ball/contact space through strike.',process:'This stabilises visual calibration before impact. The player preserves ball-spacing information long enough to organise contact timing rather than lifting the head early.',breakdown:'Head pulls early; eyes leave contact space; contact timing becomes rushed.',constraint:'Clear look-away before contact = loss of rally or bonus removed.',checkerboard:'Useful on [8-1], [7-2], pressure drops from [5] or [6].',pairings:['Stable head through contact','Finish balanced','Non-playing arm active'],games:['Double Bounce','Progressive ATL','Checkerboard pairs']},
+ {id:'second-eye',category:'Visual',title:'Second Eye Overlay',rule:'Player organises head/body shape so the eye furthest from the opponent has access to opponent information space.',process:'Maintaining outside-eye access preserves pickup of opponent posture, racquet preparation and movement direction. It reduces informational blindness caused by excessive body closure and teaches movement organisation around continuous opponent information.',breakdown:'Player turns too far away, closes body line and reacts late to the next shot.',constraint:'If completely blind to opponent information space, coach calls “blind”.',checkerboard:'Excellent in [6-3], [5-4], [7-2] and recovery after [8-1].',pairings:['Move before bounce','Prepared before leaving T','Split before opponent contact'],games:['Progressive ATL','Double Bounce','Checkerboard pairs']},
+ {id:'quiet-eye',category:'Visual',title:'Quiet Eye',rule:'Player briefly stabilises gaze on the relevant information source before action.',process:'A quiet visual hold supports timing and decision calibration under pressure, especially when the player normally rushes or guesses.',breakdown:'Player rushes attention or swings before information is stable.',constraint:'Coach calls “rushed” if action begins before visual information stabilises.',checkerboard:'Useful before attacking choices from [5]/[6] into [1]/[2].',pairings:['Second Eye Overlay','Same prep different shot','Stable head through contact'],games:['Checkerboard choice games','Double Bounce']},
+ {id:'opponent-pickup',category:'Visual',title:'Early Opponent Pickup',rule:'Player recovers in a way that allows early pickup of opponent shape before opponent contact.',process:'Recovery becomes information-seeking movement. The player recovers to a position and orientation that allow earlier reading of opponent intention.',breakdown:'Player reaches a place but faces the wrong way or reads late.',constraint:'Visually late to opponent preparation = “late pickup”.',checkerboard:'Strong after [3] and [4] where opponent may volley or counter-short.',pairings:['Second Eye Overlay','Split before opponent contact','Recover through central lane'],games:['Progressive ATL','Invasion','Rotational pressure']},
+ {id:'racquet-above-wrist',category:'Preparation',title:'Racquet Above Wrist',rule:'Racquet head is organised above wrist before the striking action.',process:'Improves readiness and reduces late compensatory wrist action. The racquet is available earlier as part of the movement solution.',breakdown:'Racquet drops; wrist collapses; player flicks late.',constraint:'Racquet below wrist in preparation = warning or loss.',checkerboard:'Useful for volleys to [5]/[6] and attacks [8-1], [7-2].',pairings:['Prepared before leaving T','Non-playing arm active','Stable head through contact'],games:['Volley games','Double Bounce','Checkerboard front-wall targets']},
+ {id:'prepared-before-t',category:'Preparation',title:'Prepared Before Leaving T',rule:'Racquet preparation must be visible before first movement away from the T zone.',process:'Preparation and movement couple earlier. The player is not using travel time to organise the racquet, freeing perception and movement resources for spacing and decision adaptation.',breakdown:'Player leaves T empty-handed and arrives rushed.',constraint:'No visible preparation before movement = “late prep”.',checkerboard:'Strong with [6-3], [5-4], [8-1].',pairings:['Second Eye Overlay','Move before bounce','Split before opponent contact'],games:['Progressive ATL','Boast-drive rotations','Double Bounce']},
+ {id:'split-contact',category:'Preparation',title:'Split Before Opponent Contact',rule:'Player shows a split/readiness action before opponent strikes.',process:'The split creates a perceptual-motor readiness point linking opponent contact information to first movement.',breakdown:'Player waits flat-footed and starts late.',constraint:'No split before opponent contact = loss or bonus removed.',checkerboard:'Useful in rapid exchanges through [3]/[4] and volley pressure from [5]/[6].',pairings:['Early opponent pickup','Prepared before leaving T','Move before bounce'],games:['Rotational pressure','Invasion','Progressive ATL']},
+ {id:'non-playing-arm',category:'Balance',title:'Non-Playing Arm Active',rule:'Non-playing arm supports spacing, balance and body organisation before contact.',process:'The non-playing arm regulates trunk orientation and spacing, giving a more stable movement platform under pressure.',breakdown:'Free arm disappears and body collapses into the ball.',constraint:'Passive/trapped arm during key contact = “arm”.',checkerboard:'Useful on [8-1], [7-2], [6-3], [5-4].',pairings:['Finish balanced','Stable head through contact','Racquet above wrist'],games:['Double Bounce','Checkerboard pairs']},
+ {id:'stable-head',category:'Balance',title:'Stable Head Through Contact',rule:'Head remains stable through striking phase.',process:'Head stability protects visual calibration and contact timing. Excessive movement disrupts perception of spacing and destabilises action.',breakdown:'Head lifts/dives through contact.',constraint:'Clear head pull = loss or reset.',checkerboard:'Strong on [8-1], [7-2], [6-3], [5-4].',pairings:['Eyes on contact point','Finish balanced','Non-playing arm active'],games:['Double Bounce','Front-court pressure games']},
+ {id:'finish-balanced',category:'Balance',title:'Finish Balanced',rule:'Player finishes the shot without falling or collapsing out of shape.',process:'Balanced finishing shows the movement solution accounts for current shot and next action. It supports faster reorientation and recovery pickup.',breakdown:'Player over-commits and cannot recover/read next ball.',constraint:'Unnecessary fall-through = loss or bonus removed.',checkerboard:'Useful after [8-1], [7-2], [6-3].',pairings:['Stable head through contact','Non-playing arm active','Recover through central lane'],games:['Double Bounce','Progressive ATL','Invasion']},
+ {id:'move-before-bounce',category:'Movement',title:'Move Before Bounce',rule:'Player initiates movement before the ball bounces when information allows.',process:'Encourages earlier coupling between visual information and movement, acting on emerging affordances rather than waiting for certainty.',breakdown:'Player waits until bounce and loses options.',constraint:'Unnecessary wait until after bounce = “late move”.',checkerboard:'Strong in [6-3], [5-4], [7-2].',pairings:['Second Eye Overlay','Early opponent pickup','Prepared before leaving T'],games:['Double Bounce','Progressive ATL','Rotational pressure']},
+ {id:'recover-lane',category:'Movement',title:'Recover Through Central Lane',rule:'Player recovers through a useful central lane rather than drifting wide or standing still.',process:'Recovery becomes information-seeking movement, regaining court access and opponent visual access together.',breakdown:'Player drifts, over-recovers or blocks their next movement path.',constraint:'Recovery path removes access to likely next ball = “lane”.',checkerboard:'Useful after [3]/[4] or front finish [1]/[2].',pairings:['Second Eye Overlay','Finish balanced','Early opponent pickup'],games:['Progressive ATL','Invasion']},
+ {id:'no-drifting',category:'Movement',title:'No Drifting',rule:'Player stops unnecessary movement drift after striking or recovering.',process:'Stopping drift improves readiness and stabilises perception while reading the opponent.',breakdown:'Player keeps floating and cannot split.',constraint:'Obvious drift during opponent strike = warning/loss.',checkerboard:'Useful after [6-3], [5-4] and cross-court recovery patterns.',pairings:['Split before opponent contact','Stable head through contact','Recover through central lane'],games:['ATL','Rotational pressure','Double Bounce']},
+ {id:'same-prep',category:'Swing Shape',title:'Same Prep Different Shot',rule:'Player keeps preparation similar while preserving at least two shot options.',process:'Maintains informational uncertainty for the opponent and keeps multiple affordances open through preparation.',breakdown:'Shot intention is shown early.',constraint:'If preparation clearly gives away the shot, coach calls “shown”.',checkerboard:'Excellent with [6-3] or [6-1], [5-4] or [5-2].',pairings:['Quiet Eye','Second Eye Overlay','Prepared before leaving T'],games:['Checkerboard choice games','Double Bounce']},
+ {id:'finish-front-wall',category:'Swing Shape',title:'Finish To Front Wall',rule:'Follow-through finishes toward the front wall/target line rather than wrapping around the body.',process:'Directs swing organisation toward intended affordance and helps players who over-rotate or pull away from target shape.',breakdown:'Swing wraps around waist/body.',constraint:'Wrap away from target line = “finish”.',checkerboard:'Useful for drives [6-3], [5-4].',pairings:['Stable head through contact','Non-playing arm active','Hit through the ball'],games:['Drive games','Progressive ATL']},
+ {id:'hit-through',category:'Swing Shape',title:'Hit Through The Ball',rule:'Player sends energy through intended line/space rather than poking or steering.',process:'Strengthens coupling between target affordance, swing path and ball outcome, especially when depth/penetration is required.',breakdown:'Player pokes, decelerates or steers.',constraint:'Poked/held without tactical purpose = “through”.',checkerboard:'Useful on [6-3], [5-4], [6-4], [5-3].',pairings:['Finish to front wall','Racquet above wrist','Stable head through contact'],games:['Progressive ATL','Length games','Double Bounce']}
+];
+
+
+const TACTICAL_OVERLAYS = [
+  {category:'Advantage', title:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue: opponent late, off-balance, unrecovered or outside useful court position.', coach:'Ask: what did you see before attacking?', pairings:['Quiet Eye Before Attack','Recognise Opponent Vulnerability']},
+  {category:'Volley', title:'Volley Opportunity', rule:'Player must look to volley when the opponent gives time/height through the middle or loose width.', coach:'Coach observes early split, racquet readiness and decision timing.', pairings:['Eagle','Second Eye']},
+  {category:'Width', title:'Width Before Attack', rule:'Point/bonus only counts if player first creates width or body-line separation before attacking short.', coach:'Prevents reckless front-court attacks.', pairings:['Cat','Attack Only On Advantage']},
+  {category:'Checkerboard', title:'Checkerboard Pair Challenge', rule:'Complete a chosen checkerboard pair such as [6-3] or [5-4] before scoring bonus opens.', coach:'Use as tactical intention layer over live rallies.', pairings:['Quiet Eye','External Target Focus']},
+  {category:'Tempo', title:'Route Breaker', rule:'Player must change route or rhythm when opponent begins to predict the pattern.', coach:'Look for perception, not pre-planned variety.', pairings:['Wolf','See Space Before Strike']},
+  {category:'Pressure', title:'Opponent Not Recovered To T', rule:'Attack is encouraged only when opponent has not reorganised around the T.', coach:'Helps players recognise genuine vulnerability.', pairings:['Eagle','Tiger']}
+];
+
+const MENTAL_PERFORMANCE_OVERLAYS = [
+  {category:'🐾 Identity', title:'🐈 Cat', rule:'Patient opportunist: observe, stay balanced, wait, then strike efficiently.', coach:'Useful for rushed attackers. Cue: See before you strike.', pairings:['Width Before Attack','Quiet Eye Before Attack']},
+  {category:'🐾 Identity', title:'🐅 Tiger', rule:'Powerful hunter: commit to attacking opportunities and act decisively.', coach:'Useful for passive or hesitant players. Cue: Hunt the ball.', pairings:['Activation Breath','Volley Opportunity']},
+  {category:'🐾 Identity', title:'🐕 Retriever', rule:'Attention control and resilience: ignore hecklers, bad calls and opponent behaviour; stay focused on what matters.', coach:'Coach observes no complaining, immediate recovery and next-ball focus. Cue: Eyes on the prize.', pairings:['Refocus After Error','Centering Breath']},
+  {category:'🐾 Identity', title:'🐺 Wolf', rule:'Disciplined tactical hunter: follow the plan, build pressure and make intelligent decisions.', coach:'Useful for emotional or impulsive players. Cue: Hunt with purpose.', pairings:['Route Breaker','Attack Only On Advantage']},
+  {category:'🐾 Identity', title:'🦅 Eagle', rule:'Awareness and anticipation: scan early, see opportunities and remain calm.', coach:'Links strongly with Second Eye and opponent reading. Cue: Rise above. See everything.', pairings:['Second Eye','Opponent Reading']},
+  {category:'🐾 Identity', title:'🦁 Lion', rule:'Confidence and responsibility: own the court and step forward under pressure.', coach:'Watch posture, court presence and decision commitment. Cue: Own the court.', pairings:['Positive Body Language','Attack On Advantage']},
+  {category:'🐾 Identity', title:'🐘 Elephant', rule:'Protect what matters: routines, process goals, effort and composure.', coach:'Useful when players chase score, rankings or distractions. Cue: Protect what matters.', pairings:['Process Goal Focus','Accept And Continue']},
+
+  {category:'👁 Visual Performance', title:'Quiet Eye Serve', rule:'Front wall target → ball → strike. Stable target fixation before serve, then immediate action.', coach:'Quiet Eye is not just targeting: it is directing attention to task-relevant information.', pairings:['Centering Breath','Eagle']},
+  {category:'👁 Visual Performance', title:'Quiet Eye Return', rule:'Opponent information → ball flight → movement. Player anchors attention to useful cues before return.', coach:'Use with return of serve and pressure starts.', pairings:['Second Eye','Opponent Reading']},
+  {category:'👁 Visual Performance', title:'Tracking', rule:'Track ball flight to predict trajectory, bounce, speed and interception point.', coach:'Coach observes whether the player keeps visual connection during movement.', pairings:['Coach Feed & Strike','External Focus']},
+  {category:'👁 Visual Performance', title:'Opponent Reading', rule:'Player watches opponent racquet preparation, body orientation, balance, movement and recovery state.', coach:'Useful in knock-up and tactical games.', pairings:['Eagle','Second Eye']},
+  {category:'👁 Visual Performance', title:'Second Eye', rule:'Maintain access to opponent information while interacting with the ball.', coach:'Prevents opponent blindness and ball-only attention.', pairings:['Eagle','Tracking']},
+  {category:'👁 Visual Performance', title:'External Focus', rule:'Attention goes to ball, target, space or opponent rather than internal body mechanics.', coach:'Use when player is over-thinking technique.', pairings:['Quiet Eye Serve','Cue Statement']},
+
+  {category:'🫁 Regulation', title:'Calming Breath', rule:'Longer exhale breathing to down-regulate anxiety, rushing or over-arousal.', coach:'Use when player is panicking, tense or emotionally reactive.', pairings:['Elephant','Quiet Eye Serve']},
+  {category:'🫁 Regulation', title:'Centering Breath', rule:'3 in / 3 hold / 3 out to return attention to the next task.', coach:'Default between-rally refocus breath.', pairings:['Cue Statement','One-Rally Reset']},
+  {category:'🫁 Regulation', title:'Activation Breath', rule:'Sharp energising breath to increase readiness for flat or passive players.', coach:'Use with action cue: Hunt, Go, Attack.', pairings:['Tiger','Attack Opportunity']},
+
+  {category:'🏆 Competitive Behaviours', title:'Refocus After Error', rule:'After an error: breath, cue, eyes up, ready posture.', coach:'Observable reset within 3 seconds.', pairings:['Retriever','Elephant']},
+  {category:'🏆 Competitive Behaviours', title:'Process Goal Focus', rule:'Player protects today’s one process goal regardless of score.', coach:'Ask: what matters right now?', pairings:['Elephant','Retriever']},
+  {category:'🏆 Competitive Behaviours', title:'Positive Body Language', rule:'Player shows ready posture and no visible collapse after errors or bad calls.', coach:'Useful with Lion and Retriever identities.', pairings:['Lion','Refocus After Error']},
+  {category:'🏆 Competitive Behaviours', title:'Compete To The End', rule:'Player continues full effort until the rally is definitely over.', coach:'No early surrender, no admiring shots.', pairings:['Retriever','Tiger']}
+];
+
+function UniversalOverlays({setScreen}){
+  const [family,setFamily]=useState('Tactical');
+  const [selected,setSelected]=useState(null);
+
+  const data = family==='Tactical'
+    ? TACTICAL_OVERLAYS
+    : family==='Technical'
+      ? TECHNICAL_OVERLAYS.map(o=>({
+          category:o.category,title:o.title,rule:o.rule,coach:o.process,pairings:o.pairings||[], technical:o
+        }))
+      : MENTAL_PERFORMANCE_OVERLAYS;
+
+  const categories=['All',...Array.from(new Set(data.map(o=>o.category)))];
+  const [category,setCategory]=useState('All');
+  useEffect(()=>{setCategory('All');setSelected(null);},[family]);
+  const shown=category==='All'?data:data.filter(o=>o.category===category);
+  const active=selected||shown[0];
+
+  return <div className="page universalOverlaysPage bottomOverlayPad">
+    <div className="pageTop">
+      <div>
+        <h1>Universal Overlays</h1>
+        <p className="mutedText">{family} overlays</p>
       </div>
-      <button className="homeCard rotationalHomeCard" onClick={()=>setScreen('rotational')}>
-        <h2>ROTATIONAL</h2>
-        <p>Affordance Games</p>
-        <p className="homeCardSub">Traditional Drills → CLA RLD</p>
-      </button>
-      <button className="homeCard diagnosticHomeCard" onClick={()=>setScreen('diagnostic')}>
-        <h2>DIAGNOSTIC</h2>
-        <p>Observe · Diagnose · Select Tool</p>
-        <p className="homeCardSub">Diagnostic Clock → Tools → Live Quick Fix</p>
-      </button>
-      <button className="homeCard liveHomeCard" onClick={()=>setScreen('live')}>
-        <h2>LIVE</h2>
-        <p>Session Delivery Mode</p>
-        <p className="homeCardSub">Timer · Current Game · Quick Fix · Project</p>
-      </button>
-      <button className="homeCard projectionHomeCard" onClick={()=>setScreen('projection')}>
-        <h2>PROJECT</h2>
-        <p>Player / Projection View</p>
-        <p className="homeCardSub">Simple rules · big text · less repetition</p>
-      </button>
-      <button className="homeCard toolsHomeCard" onClick={()=>setScreen('tools')}>
-        <h2>TOOLS</h2>
-        <p>Constraint & Coaching Tools</p>
-        <p className="homeCardSub">Visual · Haptic · Spatial · Analogy · Scaling</p>
-      </button>
-      <button className="homeCard level0HomeCard" onClick={()=>setScreen('level0')}>
-        <h2>LEVEL 0</h2>
-        <p>Exploration Stage · Ages 5–9</p>
-        <p className="homeCardSub">Move · Track · Strike · Play · Mini Checkerboard</p>
-      </button>
-<button className="tile blue" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><p>Build flexible rotation-based sessions.</p></button>
-<button className="tile purple" onClick={()=>setScreen('games')}><h2>Level 1–5</h2><p>ATL / BTL, conditioned games, checkerboard, technical and pressure games.</p></button>
-<button className="tile green" onClick={()=>setScreen('players')}><h2>Players</h2><p>Junior Programme Ranking, attendance and guests.</p></button>
-<button className="tile red" onClick={()=>setScreen('competition')}><h2>Competition</h2><p>Round Robin, Monrad, Invasion and NSL.</p></button>
-<button className="tile navy" onClick={()=>setScreen('storage')}><h2>Storage</h2><p>Backup and restore players, attendance and sessions.</p></button>
-</div>;
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+
+    {family==='Tactical'&&<div className="universalInfoNote"><strong>Tactical Overlays</strong><span>Use these to shape decisions, advantage recognition and tactical behaviours inside games.</span></div>}
+    {family==='Technical'&&<div className="universalInfoNote"><strong>Technical Overlays</strong><span>Use these as observable perception–action constraints, not isolated technique commands.</span></div>}
+    {family==='Mental Performance'&&<div className="universalInfoNote"><strong>Mental Performance Overlays</strong><span>Apply animal identity, visual performance, regulation and competitive behaviours inside games.</span></div>}
+
+    <div className="overlayCategoryTabs">{categories.map(cat=><button key={cat} className={category===cat?'activeTab':''} onClick={()=>{setCategory(cat);setSelected(null);}}>{cat}</button>)}</div>
+
+    <div className="overlayLayout">
+      <div className="overlayList">{shown.map((overlay,index)=><button key={`${overlay.title}-${index}`} className={active?.title===overlay.title?'overlayListCard active':'overlayListCard'} onClick={()=>setSelected(overlay)}>
+        <strong>{overlay.title}</strong><span>{overlay.category}</span>
+      </button>)}</div>
+
+      {active&&<div className="overlayDetail">
+        <span className="categoryTag">{active.category}</span>
+        <h2>{active.title}</h2>
+        <section><h3>Observable Rule</h3><p>{active.rule}</p></section>
+        {active.technical&&<><section><h3>Perception–Action Process</h3><p>{active.technical.process}</p></section>
+        <section><h3>Common Coordination Breakdown</h3><p>{active.technical.breakdown}</p></section>
+        <section><h3>Constraint / Refereeing Rule</h3><p>{active.technical.constraint}</p></section>
+        <section><h3>Checkerboard Applications</h3><p>{active.technical.checkerboard}</p></section></>}
+        {!active.technical&&<section><h3>Coach Observation</h3><p>{active.coach}</p></section>}
+        <section><h3>Recommended Pairings</h3><div className="chipRow">{(active.pairings||[]).map(x=><span key={x}>{x}</span>)}</div></section>
+      </div>}
+    </div>
+
+    <div className="bottomOverlayTabs" role="navigation" aria-label="Universal overlay families">
+      <button className={family==='Technical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Technical')}>🔧<span>Technical</span></button>
+      <button className={family==='Tactical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Tactical')}>♟<span>Tactical</span></button>
+      <button className={family==='Mental Performance'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Mental Performance')}>🧠<span>Mental Performance</span></button>
+    </div>
+  </div>;
 }
+
+function TechnicalOverlays({setScreen}){
+  const [category,setCategory]=useState('All');
+  const [selected,setSelected]=useState(TECHNICAL_OVERLAYS[0]);
+  const categories=['All',...Array.from(new Set(TECHNICAL_OVERLAYS.map(o=>o.category)))];
+  const shown=category==='All'?TECHNICAL_OVERLAYS:TECHNICAL_OVERLAYS.filter(o=>o.category===category);
+  return <div className="page technicalOverlaysPage">
+    <div className="pageTop"><div><h1>Technical Overlays</h1><p className="mutedText">Perception–action constraints layered onto live games, checkerboard codes and conditioned rallies.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="overlayCategoryTabs">{categories.map(cat=><button key={cat} className={category===cat?'activeTab':''} onClick={()=>setCategory(cat)}>{cat}</button>)}</div>
+    <div className="overlayLayout">
+      <div className="overlayList">{shown.map(overlay=><button key={overlay.id} className={selected.id===overlay.id?'overlayListCard active':'overlayListCard'} onClick={()=>setSelected(overlay)}><strong>{overlay.title}</strong><span>{overlay.category}</span></button>)}</div>
+      <div className="overlayDetail"><span className="categoryTag">{selected.category}</span><h2>{selected.title}</h2>
+        <section><h3>Observable Rule</h3><p>{selected.rule}</p></section>
+        <section><h3>Perception–Action Process</h3><p>{selected.process}</p></section>
+        <section><h3>Common Coordination Breakdown</h3><p>{selected.breakdown}</p></section>
+        <section><h3>Constraint / Refereeing Rule</h3><p>{selected.constraint}</p></section>
+        <section><h3>Checkerboard Applications</h3><p>{selected.checkerboard}</p></section>
+        <section><h3>Recommended Overlay Pairings</h3><div className="chipRow">{selected.pairings.map(x=><span key={x}>{x}</span>)}</div></section>
+        <section><h3>Best Game Environments</h3><div className="chipRow">{selected.games.map(x=><span key={x}>{x}</span>)}</div></section>
+      </div>
+    </div>
+  </div>;
+}
+
+
+
+
+function CoachInvaderSelectorReadOnly({teams}){
+  if(!teams||teams.length===0) return null;
+  return <section className="coachInvaderSelector">
+    <h2>Coach Invader Selection</h2>
+    <p>Default order is lowest-ranked player first. Use this order unless the coach/team chooses a tactical invader order.</p>
+    <div className="coachInvaderGrid">
+      {teams.map((team,index)=>{
+        const players=cbSortLowestRankFirst(team.players||[]);
+        return <div className="coachInvaderCard" key={team.id||team.name||index}>
+          <h3>{team.name||`Team ${index+1}`}</h3>
+          <p><strong>Default first invader:</strong> {cbPlayerLabel(players[0])}</p>
+          <p>{players.map(cbPlayerLabel).join(' → ')}</p>
+        </div>
+      })}
+    </div>
+  </section>;
+}
+
+
+function DoubleBounceTool({setScreen}){
+  const rationale=[
+    ['Encourages a Move Mindset','Because players know they still have a realistic chance of retrieval after the first bounce, they continue moving, chase more balls and develop persistence behaviours. The athlete shifts from “I can’t get there” toward “I still have a chance.”'],
+    ['Improves Short-Ball Judgement','Weak opponents may fail to retrieve poor short balls in normal one-bounce play, creating false success. Double bounce exposes whether a short ball is genuinely effective and encourages better selection, disguise and timing of attack.'],
+    ['Makes the Ball Die Quickly','Because opponents may still retrieve after the first bounce, attackers are encouraged to produce softer dying length, tighter front-court control, better height and angle, and improved touch.'],
+    ['Extends Rallies for Physical Development','Double bounce naturally increases rally duration, movement volume, recovery demands and repeated acceleration/deceleration while preserving decision-making under fatigue.'],
+    ['Supports Hold and Deception Development','Used deliberately, the extra time can support delayed striking, disguise, hold mechanics, opponent manipulation and late racket acceleration. This should be intentional rather than accidental passive play.'],
+    ['Improves Recovery Behaviour','Players learn that rallies continue longer and retrieval remains possible, encouraging continued recovery effort, reorganisation after poor shots and persistence under pressure.'],
+    ['More Representative Than Feeding','Double bounce keeps live opposition, uncertainty, tactical interaction, movement adaptation and perception-action coupling while reducing time pressure.']
+  ];
+  return <div className="page doubleBounceToolPage">
+    <div className="pageTop">
+      <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
+    <MentalOverlaySelector context="Double Bounce"/>
+
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <section className="doubleBounceHero">
+      <span className="categoryTag">Major Tool</span>
+      <h2>Double Bounce Conditioned Games</h2>
+      <p>Selected players may use two bounces before returning the ball. The second bounce is a developmental constraint rather than simply a way of making the game easier.</p>
+    </section>
+    <section className="protocolGrid">
+      <div className="protocolCard"><h3>Core Protocol</h3><p>Allow selected players to use two bounces before returning. The coach can apply this to one player, both players, a team, a rotation role or a specific game phase.</p></div>
+      <div className="protocolCard warningCard"><h3>Important Principle</h3><p>Double bounce should not encourage passive holding unless the objective is deception, disguise, late contact manipulation or hold development.</p></div>
+      <div className="protocolCard"><h3>Player Intention</h3><p>Players should still move dynamically, intercept early where appropriate, maintain rally flow and apply tactical pressure. The objective is not delayed play.</p></div>
+    </section>
+    <section className="dbSection">
+      <h2>Development Rationale</h2>
+      <div className="rationaleGrid">{rationale.map((item,index)=><div className="rationaleCard" key={item[0]}><span>{index+1}</span><h3>{item[0]}</h3><p>{item[1]}</p></div>)}</div>
+    </section>
+    <section className="dbTwoCol">
+      <div className="protocolCard"><h3>Encourage</h3><ul><li>active movement</li><li>persistence and recovery effort</li><li>tactical patience</li><li>quality short-ball construction</li><li>rally flow and pressure</li></ul></div>
+      <div className="protocolCard warningCard"><h3>Discourage</h3><ul><li>standing and waiting</li><li>passive holding</li><li>artificially slowing rallies</li><li>non-competitive movement</li><li>delay behaviours unless deception is the aim</li></ul></div>
+    </section>
+    <section className="dbSection"><h2>Best Uses</h2><div className="chipRow">{['Junior development','Mixed-level groups','Movement confidence','Front-court development','Tactical patience','Conditioning phases','Deception progressions','Extending rally quality','Reducing panic behaviours'].map(x=><span key={x}>{x}</span>)}</div></section>
+    <section className="claPanel"><h2>CLA Perspective</h2><p>Double bounce changes the temporal constraint, retrieval affordances, tactical possibilities and pressure landscape without removing opponent interaction, uncertainty, movement adaptation or tactical decision-making.</p><p>This allows players to develop functional movement and tactical behaviours inside representative play.</p></section>
+  </div>;
+}
+
+
+
+
+
+
+const UNIVERSAL_MENTAL_OVERLAYS = [
+  {cat:'Attention', name:'Quiet Eye Before Serve', rule:'Target → Ball → Strike. Fixate front-wall target for 1–2 seconds, eyes to ball, serve immediately.'},
+  {cat:'Attention', name:'Quiet Eye Before Attack', rule:'Stabilise gaze on target/space before attacking.'},
+  {cat:'Attention', name:'Second Eye To Opponent', rule:'Maintain outside-eye access to opponent information space.'},
+  {cat:'Attention', name:'External Target Focus', rule:'Use ball, target, space or opponent information rather than internal technical chatter.'},
+  {cat:'Breathing', name:'Long Exhale Before Serve', rule:'Visible long controlled exhale before serve or pressure point.'},
+  {cat:'Breathing', name:'Breath Before Serve', rule:'One visible centering breath before every serve.'},
+  {cat:'Breathing', name:'Attack Breath', rule:'Sharp energising breath and attack cue before serve or attack phase.'},
+  {cat:'Reset', name:'Reset Within 3 Seconds', rule:'After error/lost rally: breathe, cue word, eyes up, ready posture within 3 seconds.'},
+  {cat:'Reset', name:'Cue Word After Error', rule:'Short cue word after error before next rally.'},
+  {cat:'Competitive Behaviour', name:'No Admiring Shots', rule:'After every shot, recover or reposition immediately.'},
+  {cat:'Competitive Behaviour', name:'Full Recovery After Every Shot', rule:'Attempt recovery even after poor shots or apparent winners.'},
+  {cat:'Competitive Behaviour', name:'Compete To Last Ball', rule:'Continue effort until rally is definitely over.'},
+  {cat:'Emotional Regulation', name:'Neutral Error Response', rule:'After error, show neutral body language and immediate readiness.'},
+  {cat:'Emotional Regulation', name:'Accept And Continue', rule:'After bad call, bad bounce or disruption, reset and continue.'},
+  {cat:'Tactical Awareness', name:'Recognise Opponent Vulnerability', rule:'Attack only when opponent is off-balance, late, unrecovered or out of position.'},
+  {cat:'Tactical Awareness', name:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue or positional advantage.'}
+];
+
+
+function cbPlayerRankValue(player){
+  if(!player || typeof player==='string') return 9999;
+  const raw=player.juniorRanking ?? player.ranking ?? player.rank ?? player.seed ?? player.level ?? player.rating;
+  const n=Number(raw);
+  return (!Number.isNaN(n) && n>0) ? n : 9999;
+}
+function cbPlayerLabel(player){
+  if(!player) return 'Player';
+  if(typeof player==='string') return player;
+  return player.name || player.fullName || player.playerName || 'Player';
+}
+function cbSortLowestRankFirst(players){
+  return [...(players||[])].sort((a,b)=>cbPlayerRankValue(b)-cbPlayerRankValue(a));
+}
+function cbFairLivesRows(teams,multiplier=2){
+  try{
+    if(typeof getFairLivesRows==='function') return getFairLivesRows(teams,multiplier);
+  }catch(e){}
+  const list=(teams||[]).filter(t=>(t.players||[]).length>0);
+  const counts=list.map(t=>(t.players||[]).length).filter(Boolean);
+  const gcd=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;};
+  const lcm=(a,b)=>{a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);if(!a||!b)return Math.max(a,b,1);return Math.abs(a*b)/gcd(a,b);};
+  const base=counts.reduce((acc,n)=>lcm(acc,n),counts[0]||1);
+  return {lcmBase:base,multiplier,rows:list.map((team,index)=>{
+    const players=(team.players||[]).length||1;
+    const livesPerPlayer=(base/players)*multiplier;
+    return {team:team.name||`Team ${index+1}`,teamId:team.id,players,livesPerPlayer,totalCapacity:livesPerPlayer*players};
+  })};
+}
+function cbFairLivesForTeam(team,teams,startingLives=5,multiplier=2){
+  const fair=cbFairLivesRows(teams,multiplier);
+  const row=(fair.rows||[]).find(r=>r.teamId===team?.id || r.team===team?.name);
+  return row ? row.livesPerPlayer : Number(startingLives||5);
+}
+function cbDefaultInvader(team){
+  return cbSortLowestRankFirst(team?.players||[])[0];
+}
+
+
+function MentalOverlaySelector({context='Game'}){
+  const [mode,setMode]=useState('single');
+  const [selected,setSelected]=useState([]);
+  const limit=mode==='single'?1:mode==='pair'?2:3;
+  function toggleOverlay(name){
+    if(selected.includes(name)){
+      setSelected(selected.filter(x=>x!==name));
+      return;
+    }
+    if(selected.length>=limit){
+      setSelected([...selected.slice(1),name]);
+    }else{
+      setSelected([...selected,name]);
+    }
+  }
+  const active=UNIVERSAL_MENTAL_OVERLAYS.filter(o=>selected.includes(o.name));
+  return <section className="mentalOverlaySelector">
+    <div className="sectionHead">
+      <div>
+        <h2>Mental Overlays</h2>
+        <p>Observable performance behaviours for {context}. Select single, pair or triple.</p>
+      </div>
+      <div className="overlayModeButtons">
+        <button className={mode==='single'?'activeMode':''} onClick={()=>{setMode('single');setSelected(selected.slice(0,1));}}>Single</button>
+        <button className={mode==='pair'?'activeMode':''} onClick={()=>{setMode('pair');setSelected(selected.slice(0,2));}}>Pair</button>
+        <button className={mode==='triple'?'activeMode':''} onClick={()=>setMode('triple')}>Triple</button>
+      </div>
+    </div>
+    <div className="mentalOverlayChips">
+      {UNIVERSAL_MENTAL_OVERLAYS.map(o=><button key={o.name} className={selected.includes(o.name)?'selectedOverlay':''} onClick={()=>toggleOverlay(o.name)}>
+        <strong>{o.name}</strong><span>{o.cat}</span>
+      </button>)}
+    </div>
+    <div className="activeOverlayPanel">
+      <h3>Active Overlay Rules</h3>
+      {active.length===0?<p>No mental overlays selected.</p>:active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
+    </div>
+  </section>;
+}
+
+
+
+
+
+
+function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
+  const [family,setFamily]=useState('Tactical');
+
+  const source = family==='Technical'
+    ? TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}))
+    : family==='Tactical'
+      ? TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}))
+      : UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
+
+  const active = source.filter(o=>selectedOverlays.includes(o.name));
+
+  return <div className="overlayFamilyEngine">
+    <div className="overlayFamilyTabs">
+      <button type="button" className={family==='Technical'?'activeFamilyTab':''} onClick={()=>setFamily('Technical')}>🔧 Technical</button>
+      <button type="button" className={family==='Tactical'?'activeFamilyTab':''} onClick={()=>setFamily('Tactical')}>♟ Tactical</button>
+      <button type="button" className={family==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setFamily('Mental Performance')}>🧠 Mental Performance</button>
+    </div>
+
+    <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Selected overlays continue to feed the Active Overlay Rules section and projection text.</p>
+
+    <div className="mentalOverlayChips overlayFamilyChips">
+      {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
+        <strong>{o.name}</strong><span>{o.category}</span>
+      </button>)}
+    </div>
+
+    <div className="activeOverlayPanel">
+      <h3>Active Overlay Rules</h3>
+      {active.length===0
+        ? <p>No overlays selected.</p>
+        : active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
+    </div>
+  </div>;
+}
+
+function MentalSkillsPlaceholder({setScreen}){
+  const [section,setSection]=useState('menu');
+  const [selectedAnimal,setSelectedAnimal]=useState(null);
+  const [visualTopic,setVisualTopic]=useState('overview');
+  const [custom,setCustom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_custom_animal')||'{}')}catch(e){return {}}});
+
+  const animals=[
+    {emoji:'🐈',name:'Cat',core:'Patience & Timing',strategy:'Survives by observing carefully, staying balanced and striking only when the moment is right.',behaviours:['Observe before acting','Stay balanced','Wait for real opportunity','Strike efficiently'],activation:['Smooth ghosting','Pause-scan-accelerate','Controlled feed and strike'],breakdown:['Rushes attacks','Forces low-percentage shots','Moves before seeing'],cue:'See before you strike.',overlays:['Width Before Attack','Quiet Eye Before Attack','External Focus']},
+    {emoji:'🐅',name:'Tiger',core:'Commitment & Action',strategy:'Survives by committing fully when opportunity appears.',behaviours:['Attack decisively','Commit to decisions','Dominate space','No hesitation'],activation:['Explosive ghosting','Fast first step','Decisive feed-and-strike'],breakdown:['Hesitates','Plays safe when opportunity appears','Attacks without conviction'],cue:'Hunt the ball.',overlays:['Activation Breath','Volley Opportunity','Attack Only On Advantage']},
+    {emoji:'🐕',name:'Retriever',core:'Attention Control & Resilience',strategy:'Survives by ignoring distractions and staying focused on what matters.',behaviours:['Ignore hecklers, bad calls and opponent behaviour','Chase every ball','Recover immediately','Next-ball focus'],activation:['Recover after every ghost','Chase every feed','Reset without complaint'],breakdown:['Complains','Dwells on errors','Stops chasing','Reacts to opponent'],cue:'Eyes on the prize.',overlays:['Refocus After Error','Centering Breath','Compete To The End']},
+    {emoji:'🐺',name:'Wolf',core:'Discipline & Tactical Intelligence',strategy:'Survives through patience, planning and intelligent hunting.',behaviours:['Follow the plan','Build pressure','Make intelligent decisions','Stay disciplined'],activation:['Ghost tactical patterns','Vary pace with purpose','Feed and strike into planned targets'],breakdown:['Over-attacks','Forgets plan','Gets emotional'],cue:'Hunt with purpose.',overlays:['Route Breaker','Attack Only On Advantage','Process Goal Focus']},
+    {emoji:'🦅',name:'Eagle',core:'Awareness & Anticipation',strategy:'Survives by rising above chaos, seeing early and choosing the right moment.',behaviours:['Scan early','Read opponent cues','Recognise opportunities','Stay calm under pressure'],activation:['Head-up ghosting','Scan before moving','Opponent-reading knock-up'],breakdown:['Ball-only attention','Late recognition','Gets drawn into chaos'],cue:'Rise above. See everything.',overlays:['Second Eye','Opponent Reading','Quiet Eye Return']},
+    {emoji:'🦁',name:'Lion',core:'Confidence & Responsibility',strategy:'Survives by owning the space and stepping forward when pressure rises.',behaviours:['Positive body language','Take responsibility','Step forward under pressure','Lead by example'],activation:['Strong posture','Assertive first movement','Controlled breathing'],breakdown:['Shrinks','Waits for opponent mistakes','Negative posture'],cue:'Own the court.',overlays:['Positive Body Language','Activation Breath','Attack Only On Advantage']},
+    {emoji:'🐘',name:'Elephant',core:'Protect What Matters',strategy:'Survives by protecting priorities and not wasting energy on irrelevant noise.',behaviours:['Protect routines','Protect process goals','Stay composed','Ignore score noise'],activation:['Stable ghosting','Deliberate reset','Controlled feed and strike'],breakdown:['Chases score','Panics after errors','Abandons routine'],cue:'Protect what matters.',overlays:['Process Goal Focus','Calming Breath','Accept And Continue']}
+  ];
+
+  const menu=[
+    ['🐾 Performance Identity','Animals, custom identity, survival strategy and observable behaviours','identity'],
+    ['👁 Visual Performance','Quiet Eye, tracking, opponent reading, second eye and external focus','visual'],
+    ['🚀 Pre-Performance Preparation','Identity, cue statement, breathing, process goal and greatest hits video','ppp'],
+    ['🏃 Activation & Calibration','Ghosting, animal ghosting, coach feed & strike and court-available options','activation'],
+    ['👁 Court Calibration','Official knock-up, opponent observation, Quiet Eye and information gathering','court'],
+    ['🎯 Cue Statements','Animal-linked cues and custom performance cues','cues'],
+    ['🫁 Breathing & Regulation','Calming, centering and activation breathing','breathing'],
+    ['🎬 Greatest Hits Videos','Performance identity reinforcement for players, parents and coaches','greatest'],
+    ['🎮 Mental Overlays','Use Universal Overlays to apply mental performance behaviours inside games','overlays']
+  ];
+
+  const visualTopics=[
+    ['overview','👁 Overview','Visual performance is directing attention to information that supports successful action: ball, opponent, target, space and time.'],
+    ['quiet','👁 Quiet Eye','Quiet Eye is the final fixation or tracking gaze directed toward task-relevant information before movement execution. It is not just targeting.'],
+    ['tracking','🎾 Tracking','Tracking is continuous visual monitoring of the ball to predict trajectory, bounce, speed, available time and interception point.'],
+    ['opponent','👤 Opponent Information Pickup','Read racquet preparation, shoulder orientation, balance, movement direction, recovery state and court position.'],
+    ['second','👀 Second Eye','Maintain access to opponent information while interacting with the ball. Avoid ball-only attention.'],
+    ['external','🎯 External Focus','Focus on ball, target, space or opponent rather than wrist, elbow or swing mechanics unless used temporarily as a correction.']
+  ];
+
+  function saveCustom(){
+    localStorage.setItem('checkerboard_custom_animal',JSON.stringify(custom));
+    alert('Custom animal saved.');
+  }
+
+  function SquashBallGraphic(){
+    return <div className="squashBallGraphic">
+      <div className="trajectoryArc"></div>
+      <div className="squashBallCore">●</div>
+      <span className="trackLabel labelTrajectory">Trajectory</span>
+      <span className="trackLabel labelBounce">Bounce</span>
+      <span className="trackLabel labelSpeed">Speed</span>
+      <span className="trackLabel labelIntercept">Interception</span>
+      <div className="bounceDot"></div>
+      <div className="interceptDot"></div>
+    </div>;
+  }
+
+  const activeAnimal=selectedAnimal?animals.find(a=>a.name===selectedAnimal):null;
+
+  return <div className="page mentalPerformancePage">
+    <div className="pageTop">
+      <div><h1>Mental Performance</h1><p className="mutedText">Survive • Prosper • Perform</p></div>
+      <button className="secondaryBtn" onClick={()=>activeAnimal?setSelectedAnimal(null):section==='menu'?setScreen('home'):setSection('menu')}>{activeAnimal?'Animals':section==='menu'?'Home':'Back'}</button>
+    </div>
+
+    {activeAnimal&&<div className="animalFullPage">
+      <div className="animalHero"><div className="animalEmoji">{activeAnimal.emoji}</div><div><h2>{activeAnimal.name}</h2><h3>{activeAnimal.core}</h3><p>{activeAnimal.strategy}</p></div></div>
+      <div className="mentalGrid">
+        <div className="mentalCard"><h3>Observable Behaviours</h3>{activeAnimal.behaviours.map(x=><p key={x}>✓ {x}</p>)}</div>
+        <div className="mentalCard"><h3>Activation Exercises</h3>{activeAnimal.activation.map(x=><p key={x}>• {x}</p>)}</div>
+        <div className="mentalCard"><h3>Breakdown Behaviours</h3>{activeAnimal.breakdown.map(x=><p key={x}>✗ {x}</p>)}</div>
+        <div className="mentalCard"><h3>Recovery Cue</h3><p className="largeCue">“{activeAnimal.cue}”</p></div>
+      </div>
+      <div className="overlaySuggestionBox"><h3>Suggested Overlays</h3><div className="chipRow">{activeAnimal.overlays.map(x=><span key={x}>{x}</span>)}</div></div>
+    </div>}
+
+    {!activeAnimal&&section==='menu'&&<div>
+      <div className="mentalPhilosophyBox"><h2>Survive and Prosper</h2><p>Mental performance is the ability to focus on what matters, regulate emotion, recover after setbacks and behave in ways that help the player adapt to the competitive environment.</p></div>
+      <div className="mentalMenuGrid">{menu.map(item=><button key={item[2]} className="mentalMenuCard" onClick={()=>setSection(item[2])}><h2>{item[0]}</h2><p>{item[1]}</p></button>)}</div>
+    </div>}
+
+    {!activeAnimal&&section==='identity'&&<div>
+      <h2 className="sectionTitle">🐾 Performance Identity</h2>
+      <p className="mutedText">The animal is not the intervention. It is a memorable way to connect identity to observable performance behaviours.</p>
+      <div className="animalGrid">{animals.map(a=><button className="animalCard animalButtonCard" key={a.name} onClick={()=>setSelectedAnimal(a.name)}>
+        <div className="animalEmoji">{a.emoji}</div><h2>{a.name}</h2><h3>{a.core}</h3><p>{a.strategy}</p><p><strong>Cue:</strong> “{a.cue}”</p>
+      </button>)}</div>
+      <div className="customAnimalBox"><h2>➕ Create Your Own Animal</h2><p>Choose an animal that fits the player. The key question is: why did you choose it?</p>
+        <div className="customAnimalGrid"><input placeholder="Animal" value={custom.animal||''} onChange={e=>setCustom({...custom,animal:e.target.value})}/><input placeholder="Cue phrase" value={custom.cue||''} onChange={e=>setCustom({...custom,cue:e.target.value})}/><textarea placeholder="Why did you choose this animal?" value={custom.why||''} onChange={e=>setCustom({...custom,why:e.target.value})}/><textarea placeholder="What behaviours should a coach see?" value={custom.behaviours||''} onChange={e=>setCustom({...custom,behaviours:e.target.value})}/></div>
+        <button className="primaryBtn" onClick={saveCustom}>Save Custom Animal</button>
+      </div>
+    </div>}
+
+    {!activeAnimal&&section==='visual'&&<div className="mentalContentPanel visualPerformancePanel">
+      <h2>👁 Visual Performance</h2><p>Visual performance is the coachable system that helps players perceive the information that matters.</p>
+      <div className="visualTopicTabs">{visualTopics.map(t=><button key={t[0]} className={visualTopic===t[0]?'activeVisualTab':''} onClick={()=>setVisualTopic(t[0])}>{t[1]}</button>)}</div>
+      {visualTopic==='overview'&&<div className="mentalGrid"><div className="mentalCard"><h3>Information Sources</h3><p>🎾 Ball</p><p>👤 Opponent</p><p>🎯 Target</p><p>📍 Space</p><p>⏱ Time</p></div><div className="mentalCard"><h3>Coaching Question</h3><p>What information is the player attending to?</p></div><div className="mentalCard"><h3>Visual Pillars</h3><p>Quiet Eye, Tracking, Opponent Reading, Second Eye and External Focus.</p></div></div>}
+      {visualTopic==='quiet'&&<div className="mentalGrid"><div className="mentalCard"><h3>Definition</h3><p>Final fixation or tracking gaze directed toward task-relevant information before movement execution.</p></div><div className="mentalCard"><h3>Serve</h3><p>Target → Ball → Strike</p></div><div className="mentalCard"><h3>Return</h3><p>Opponent → Ball → Movement</p></div><div className="mentalCard"><h3>Attack / Volley</h3><p>Space or ball flight → Interception point → Strike</p></div><div className="mentalCard"><h3>Common Errors</h3><p>Excessive scanning, outcome watching, changing targets, internal technical focus.</p></div></div>}
+      {visualTopic==='tracking'&&<div><SquashBallGraphic/><div className="mentalGrid"><div className="mentalCard"><h3>Purpose</h3><p>Predict trajectory, bounce, speed, interception point and available time.</p></div><div className="mentalCard"><h3>Progression</h3><p>1. Track → Move → Strike</p><p>2. Variable height feed</p><p>3. Variable depth feed</p><p>4. Variable pace feed</p><p>5. Opponent cue → Ball flight → Strike</p></div><div className="mentalCard"><h3>Common Errors</h3><p>Looking away early, looking at target before contact, losing ball during movement, outcome watching.</p></div></div></div>}
+      {visualTopic==='opponent'&&<div className="mentalGrid"><div className="mentalCard"><h3>Information To Read</h3><p>Racquet preparation, shoulder orientation, balance, movement direction, recovery state and court position.</p></div><div className="mentalCard"><h3>Knock-Up Intelligence</h3><p>Use the 4-minute warm-up to assess pace tolerance, height tolerance, volley confidence, preparation quality and movement confidence.</p></div><div className="mentalCard"><h3>Coach Cue</h3><p>Watch the player, not just the ball.</p></div></div>}
+      {visualTopic==='second'&&<div className="mentalGrid"><div className="mentalCard"><h3>Definition</h3><p>Maintain visual access to opponent information while interacting with the ball.</p></div><div className="mentalCard"><h3>Benefits</h3><p>Anticipation, tactical awareness, earlier recognition and better adaptation.</p></div><div className="mentalCard"><h3>Common Error</h3><p>Opponent blindness: ball, ball, ball — with no opponent information.</p></div></div>}
+      {visualTopic==='external'&&<div className="mentalGrid"><div className="mentalCard"><h3>Attend To</h3><p>🎾 Ball</p><p>🎯 Target</p><p>📍 Space</p><p>👤 Opponent</p></div><div className="mentalCard"><h3>Avoid</h3><p>Wrist, elbow, swing mechanics, foot position — unless temporarily used as a correction.</p></div><div className="mentalCard"><h3>Example</h3><p>Instead of “keep your wrist firm”, use “send the ball through the back corner.”</p></div></div>}
+    </div>}
+
+    {!activeAnimal&&section==='greatest'&&<div className="mentalContentPanel"><h2>🎬 Greatest Hits Video</h2><p>A short video of the player’s best moments can reinforce performance identity before competition.</p><div className="mentalGrid"><div className="mentalCard"><h3>Purpose</h3><p>Remind the player: “This is what I do when I perform well.”</p></div><div className="mentalCard"><h3>Length</h3><p>60–180 seconds with the player’s chosen music.</p></div><div className="mentalCard"><h3>Include</h3><p>Movement, retrievals, resilience, good decisions, pressure moments, rallies and winners.</p></div><div className="mentalCard"><h3>Avoid</h3><p>Only trick shots, only winners, unrealistic editing or clips that promote low-percentage play.</p></div></div></div>}
+    {!activeAnimal&&section==='ppp'&&<div className="mentalContentPanel"><h2>🚀 Pre-Performance Preparation</h2><p>Usually done in a corridor, badminton hall, car park or waiting area. It does not depend on having a court.</p><div className="prepFlow"><span>Identity</span><span>Cue</span><span>Breathing</span><span>Process Goal</span><span>Greatest Hits</span><span>Activation & Calibration</span><span>Court Calibration</span><span>Compete</span></div></div>}
+    {!activeAnimal&&section==='activation'&&<div className="mentalContentPanel"><h2>🏃 Activation & Calibration</h2><p>This is the physical bridge from preparation to performance.</p><div className="mentalGrid"><div className="mentalCard"><h3>Ghosting</h3><p>Used for movement readiness and court-orientation imagery, not just fitness.</p></div><div className="mentalCard"><h3>Animal Ghosting</h3><p>Show the animal: Eagle scans, Retriever recovers, Tiger commits, Elephant controls tempo.</p></div><div className="mentalCard"><h3>Coach Feed & Strike</h3><p>Small-space squash-ball feed: player lunges and strikes controlled ball back to coach to catch.</p></div><div className="mentalCard"><h3>If Court Available</h3><p>Use representative rally prep: lengths, volley activation, boast-drive or tactical imagery.</p></div></div></div>}
+    {!activeAnimal&&section==='court'&&<div className="mentalContentPanel"><h2>👁 Court Calibration</h2><p>The official 4-minute knock-up is information gathering, not just warming up.</p><div className="mentalGrid"><div className="mentalCard"><h3>Self Calibration</h3><p>Check timing, length, movement, racket preparation and touch.</p></div><div className="mentalCard"><h3>Opponent Observation</h3><p>Notice whether opponent handles height, pace, volleys, late preparation or rotational swing paths.</p></div><div className="mentalCard"><h3>Quiet Eye</h3><p>Now the ball, court and opponent exist. Use target → ball → strike to launch into performance.</p></div></div></div>}
+    {!activeAnimal&&section==='cues'&&<div className="mentalContentPanel"><h2>🎯 Cue Statements</h2><div className="mentalGrid">{animals.map(a=><div className="mentalCard" key={a.name}><h3>{a.emoji} {a.name}</h3><p>“{a.cue}”</p></div>)}</div></div>}
+    {!activeAnimal&&section==='breathing'&&<div className="mentalContentPanel"><h2>🫁 Breathing & Regulation</h2><div className="mentalGrid"><div className="mentalCard"><h3>😌 Calming</h3><p><strong>Use:</strong> anxiety, rushing, panic, over-arousal.</p><p><strong>Protocol:</strong> longer exhale breathing.</p><p><strong>Coach observes:</strong> slower tempo, reduced rushing, calmer reset.</p></div><div className="mentalCard"><h3>🎯 Centering</h3><p><strong>Use:</strong> refocus, between rallies, after errors.</p><p><strong>Protocol:</strong> 3 in / 3 hold / 3 out.</p><p><strong>Coach observes:</strong> breath, cue, eyes up, ready posture.</p></div><div className="mentalCard"><h3>⚡ Activation</h3><p><strong>Use:</strong> flat, passive or under-aroused players.</p><p><strong>Protocol:</strong> sharp energising breath and action cue.</p><p><strong>Coach observes:</strong> stronger posture, faster first movement, commitment.</p></div></div></div>}
+    {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Overlays</button></div>}
+  </div>;
+}
+
+function Home({setScreen}){
+return <div className="homeGrid homeGridV99h52">
+      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
+
+      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
+      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+
+      <button className="homeCard rotationalHomeCard homeTitleOnly" onClick={()=>setScreen('rotational')}><h2>Rotations</h2></button>
+      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+
+      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
+      <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
+
+      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
+      <button className="homeCard liveHomeCard homeTitleOnly" onClick={()=>setScreen('live')}><h2>Live</h2></button>
+
+      <button className="homeTile doubleBounceTile homeTitleOnly" onClick={()=>setScreen('doubleBounce')}><h2>Double Bounce</h2></button>
+      <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
+    </div>;
+}
+
+function GamesLibrary({setScreen,setSession}){
+  const [tab,setTab]=useState('explore');
+  return <div className="page gamesLibraryPage">
+    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="universalFamilyTabs gamesLibraryTabs">
+      <button className={tab==='explore'?'activeFamilyTab':''} onClick={()=>setTab('explore')}>🔍 Explore</button>
+      <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
+      <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
+    </div>
+    {tab==='explore'&&<div><div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks.</p></div><Level0Exploration/></div>}
+    {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+    {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+  </div>;
+}
+
 
 function GameSelector({onAddToSession,addButtonText='Add To Session'}){
 const[category,setCategory]=useState(null);
@@ -1287,7 +1766,7 @@ function ToolsArchitecture(){
   ];
 
   return <div className="gameCard toolsPage">
-    <div className="categoryTag">TOOLS</div>
+    <div className="categoryTag">Tools</div>
     <h2>Constraints & Coaching Tools</h2>
 
     <div className="diagnosticPrinciple">
@@ -1601,6 +2080,8 @@ function Games({setSession,setScreen}){
       <h1>Games Library</h1>
       <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
+    <MentalOverlaySelector context="Conditioned Games"/>
+
 
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -1657,6 +2138,7 @@ const[editing,setEditing]=useState(null);
 const[form,setForm]=useState(EMPTY_PLAYER);
 const[guestName,setGuestName]=useState('');
 const[guestEstimate,setGuestEstimate]=useState('Level 3 guest');
+const[guestRanking,setGuestRanking]=useState('');
 function saveSnapshot(){setHistory([...history,players]);}
 function undo(){if(history.length===0)return;setPlayers(history[history.length-1]);setHistory(history.slice(0,-1));}
 function updateCategory(category){const found=LEVELS.find(level=>level.label===category);setForm({...form,category,level:found?found.level:1});}
@@ -1664,10 +2146,76 @@ function savePlayer(){if(!form.name.trim())return;saveSnapshot();if(editing!==nu
 function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({...EMPTY_PLAYER,...clean});setEditing(index);setShowForm(true);window.scrollTo(0,0);}
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
-function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:'',guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');}
+function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;const guestRank=String(guestRanking||'').trim();saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:guestRank,ranking:guestRank,guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');setGuestRanking('');}
+function exportPlayers(){
+  const backup={
+    type:'checkerboard-players-backup',
+    version:'v99h29',
+    exportedAt:new Date().toISOString(),
+    players
+  };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`checkerboard-players-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importPlayersFile(event){
+  const file=event.target.files&&event.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(String(reader.result||'{}'));
+      const incoming=Array.isArray(parsed)?parsed:(Array.isArray(parsed.players)?parsed.players:[]);
+      if(!incoming.length){
+        alert('No players found in this file.');
+        return;
+      }
+      const cleaned=incoming.map(player=>({
+        ...EMPTY_PLAYER,
+        ...player,
+        name:String(player.name||player.fullName||player.playerName||'').trim()
+      })).filter(player=>player.name);
+      if(!cleaned.length){
+        alert('No valid player names found.');
+        return;
+      }
+      const existingNames=new Set(players.map(player=>String(player.name||'').trim().toLowerCase()));
+      const merged=[...players];
+      cleaned.forEach(player=>{
+        const key=player.name.toLowerCase();
+        const idx=merged.findIndex(existing=>String(existing.name||'').trim().toLowerCase()===key);
+        if(idx>=0){
+          merged[idx]={...merged[idx],...player};
+        }else{
+          merged.push(player);
+        }
+      });
+      saveSnapshot();
+      setPlayers(merged);
+      alert(`Imported ${cleaned.length} players. Existing matching names were updated.`);
+    }catch(error){
+      alert('Import failed. Please use a Checkerboard JSON player backup file.');
+    }finally{
+      event.target.value='';
+    }
+  };
+  reader.readAsText(file);
+}
+
 const sorted=sortPlayers(players);
 return <div className="page">
-<div className="pageTop"><h1>Players</h1><div className="buttonRow"><button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button><button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button></div></div>
+<div className="pageTop"><h1>Players</h1><div className="buttonRow playerBackupControls">
+<button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
+<button className="secondaryBtn" onClick={exportPlayers}>Export Players</button>
+<label className="secondaryBtn importPlayersLabel">Import Players<input type="file" accept=".json,application/json" onChange={importPlayersFile}/></label>
+<button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button>
+</div></div>
 {showForm&&<div className="formCard"><h3>{editing!==null?'Edit Player':'Add Player'}</h3>
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
@@ -1680,10 +2228,11 @@ return <div className="page">
 <div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow">
 <input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/>
 <select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select>
-<button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div></div>
+<input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/>
+<button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in snake teams and competitions. Lower number = stronger seed.</p></div>
 {players.length===0&&<div className="placeholder">No players added yet. Add players or guests above.</div>}
 <div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><h3>{player.name}</h3>
-<div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:'Guest'}</span></div>
+<div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div>
 <div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div>
 <div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Mark Present'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div>
 </div>)}</div>
@@ -1708,7 +2257,9 @@ function Competition({players=[]}){
   const [invasionTeamPoints,setInvasionTeamPoints]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeamPoints||{}}catch{return{}}
   });
-  const [invasionPlayerPoints,setInvasionPlayerPoints]=useState({});
+  const [invasionPlayerPoints,setInvasionPlayerPoints]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionPlayerPoints||{}}catch{return{}}
+  });
   const [invasionTeamLives,setInvasionTeamLives]=useState({});
   const [invasionCarryLives,setInvasionCarryLives]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionCarryLives||{}}catch{return{}}
@@ -1752,11 +2303,55 @@ function Competition({players=[]}){
   const [nslPeriod3,setNslPeriod3]=useState(30);
   const [nslOvertime,setNslOvertime]=useState(5);
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
+  const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
   const automaticNames=present.length?present.map(player=>player.name):[];
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
+
+  function invasionDbLabel(name){
+    const status=playerBounces?.[invasionName(name)]||'No DB';
+    return status==='No DB'?'No DB':status;
+  }
+
+  function invasionPlayerWithDb(name){
+    const playerName=invasionName(name);
+    const status=invasionDbLabel(playerName);
+    return `${playerName} (${status})`;
+  }
+
+  function invasionName(player){
+    if(!player) return '';
+    if(typeof player==='string') return player;
+    return player.name||player.fullName||player.playerName||'Player';
+  }
+
+  function findInvasionTeamForPlayer(playerName,sourceTeams=invasionTeams){
+    const name=invasionName(playerName);
+    return (sourceTeams||[]).find(team=>(team.players||[]).some(p=>invasionName(p)===name));
+  }
+
+  function calculateTeamPointsFromPlayers(team,playerPoints=invasionPlayerPoints,manualTeamPoints=invasionTeamPoints){
+    const playerTotal=(team?.players||[]).reduce((total,p)=>total+(Number(playerPoints[invasionName(p)]||0)),0);
+    const manual=Number(manualTeamPoints?.[team?.id]||0);
+    return playerTotal+manual;
+  }
+
+  function invasionRankForName(name){
+    const p=(players||[]).find(player=>player.name===name || player.fullName===name || player.playerName===name);
+    if(!p) return 9999;
+    const ranking=Number(p.juniorRanking ?? p.ranking ?? p.rank);
+    if(!Number.isNaN(ranking)&&ranking>0) return ranking;
+    const level=Number(p.level ?? p.rating ?? 0);
+    return 9000-level;
+  }
+
+  function sortInvasionPlayersLowestFirst(list){
+    return [...(list||[])].sort((a,b)=>invasionRankForName(b)-invasionRankForName(a));
+  }
+
+
 
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
@@ -1782,14 +2377,36 @@ function Competition({players=[]}){
     return Math.abs(a*b)/invasionGcd(a,b);
   }
 
+  function getInvasionFairRows(sourceTeams=invasionTeams){
+    const list=(sourceTeams||[]).filter(t=>(t.players||[]).length>0);
+    const selected=Number(invasionStartingLives)||5;
+    if(!list.length) return {baseCapacity:selected,rows:[]};
+    const maxPlayers=Math.max(...list.map(t=>(t.players||[]).length||1));
+    const baseCapacity=maxPlayers*selected;
+    return {
+      baseCapacity,
+      rows:list.map((team,index)=>{
+        const players=(team.players||[]).length||1;
+        const livesPerPlayer=Math.ceil(baseCapacity/players);
+        return {
+          team:team.name||`Team ${index+1}`,
+          teamId:team.id,
+          players,
+          livesPerPlayer,
+          totalCapacity:livesPerPlayer*players
+        };
+      })
+    };
+  }
+
   function getInvasionFairBaseTotal(){
-    const fair=getFairLivesRows(invasionTeams,2);
-    return fair.rows.length?fair.rows[0].totalCapacity:(Number(invasionStartingLives)||5);
+    const fair=getInvasionFairRows(invasionTeams);
+    return fair.rows.length?fair.baseCapacity:(Number(invasionStartingLives)||5);
   }
 
   function getInvasionBaseLives(team){
     const teams=(invasionTeams||[]).filter(t=>(t.players||[]).length>0);
-    const fair=getFairLivesRows(teams,2);
+    const fair=getInvasionFairRows(teams);
     const row=fair.rows.find(r=>r.team===(team&&team.name));
     if(row) return row.livesPerPlayer;
     return Number(invasionStartingLives)||5;
@@ -1801,6 +2418,25 @@ function Competition({players=[]}){
 
   function getInvasionStartLives(team){
     const base=getInvasionBaseLives(team);
+    const carry=Number(invasionCarryLives[(team&&team.id)||'']||invasionCarryLives[(team&&team.name)||'']||0);
+    return base+carry;
+  }
+
+  function getInvasionFairLivesMap(sourceTeams=invasionTeams){
+    const fair=getInvasionFairRows(sourceTeams);
+    const map={};
+    sourceTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      const value=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
+      map[team.id]=value;
+      map[team.name]=value;
+    });
+    return map;
+  }
+
+  function getInvasionStartLivesFromMap(team,map){
+    if(!team) return Number(invasionStartingLives)||5;
+    const base=Number(map?.[team.id] ?? map?.[team.name] ?? getInvasionBaseLives(team));
     const carry=Number(invasionCarryLives[(team&&team.id)||'']||invasionCarryLives[(team&&team.name)||'']||0);
     return base+carry;
   }
@@ -1822,9 +2458,9 @@ function Competition({players=[]}){
   }
 
   function getFinalInvader(team){
-    const players=(team&&team.players)||[];
+    const players=sortInvasionPlayersLowestFirst((team&&team.players)||[]);
     if(!players.length) return 'Waiting';
-    return players[invasionPlayerRound % players.length];
+    return invasionInvaderOverrides[team.id]||invasionInvaderOverrides[team.name]||players[invasionPlayerRound % players.length];
   }
 
   function getFinalStartLives(team){
@@ -1869,9 +2505,8 @@ function Competition({players=[]}){
   }
 
   function startInvasionGame(){
-    if(!invasionTeams.length){
-      generateInvasionTeams();
-    }
+    const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
+    buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
     try{localStorage.setItem('checkerboardInvasionGameStarted','true');}catch{}
     setShowInvasionDashboard(true);
@@ -1879,18 +2514,23 @@ function Competition({players=[]}){
       try{
         const saved=localStorage.getItem('checkerboardCompetitionProjection');
         const current=saved?JSON.parse(saved):{};
+        const fair=getInvasionFairRows(activeTeams);
         localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
           ...current,
           mode:'invasion',
           invasionFormat,
-          invasionTeams:invasionTeams.length?invasionTeams:current.invasionTeams||[],
+          invasionTeams:activeTeams,
           playerNames,
           playerBounces,
+          invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
           invasionTeamPoints,
+          invasionPlayerPoints,
+          invasionInvaderOverrides,
           invasionCarryLives,
           invasionFinishLives,
-          invasionFairBaseTotal:getInvasionFairBaseTotal(),
-      invasionStartingLives,
+          invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
+          invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
+          invasionStartingLives,
           invasionPlayerRound,
           invasionCourtRound,
           invasionGameStarted:true,
@@ -1902,9 +2542,8 @@ function Competition({players=[]}){
   }
 
   function startInvasionProjector(){
-    if(!invasionTeams.length){
-      generateInvasionTeams();
-    }
+    const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
+    buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
     setShowInvasionDashboard(true);
     setShowProjection(false);
@@ -1914,18 +2553,23 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardProjectionTab','competition');
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
+      const fair=getInvasionFairRows(activeTeams);
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
         ...current,
         mode:'invasion',
         invasionFormat,
         invasionStartingLives,
-        invasionTeams,
+        invasionTeams:activeTeams,
         playerNames,
         playerBounces,
+        invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
+        invasionPlayerPoints,
+        invasionInvaderOverrides,
         invasionCarryLives,
         invasionFinishLives,
-        invasionFairBaseTotal:getInvasionFairBaseTotal(),
+        invasionFairBaseTotal:fair.rows.length?fair.baseCapacity:getInvasionFairBaseTotal(),
+        invasionFairLivesByTeam:getInvasionFairLivesMap(activeTeams),
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted:true,
@@ -1954,7 +2598,6 @@ function Competition({players=[]}){
   }
 
   useEffect(()=>{
-    if(!invasionGameStarted) return;
     try{
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
@@ -1966,10 +2609,14 @@ function Competition({players=[]}){
         invasionTeams,
         playerNames,
         playerBounces,
+        invasionRankMap:Object.fromEntries(playerNames.map(name=>[name,invasionRankForName(name)])),
         invasionTeamPoints,
+        invasionPlayerPoints,
+        invasionInvaderOverrides,
         invasionCarryLives,
         invasionFinishLives,
         invasionFairBaseTotal:getInvasionFairBaseTotal(),
+        invasionFairLivesByTeam:getInvasionFairLivesMap(invasionTeams),
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted,
@@ -1992,11 +2639,21 @@ function Competition({players=[]}){
     }));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
-    setInvasionTeamLives({});
+    const fair=getInvasionFairRows(nextTeams);
+    const lifeBanks={};
+    nextTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      lifeBanks[team.id]=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
+    });
+    setInvasionTeamLives(lifeBanks);
     setInvasionCarryLives({});
     setInvasionFinishLives({});
     setInvasionPlayerRound(0);
     setInvasionCourtRound(0);
+    setInvasionRotationStep(0);
+    setInvasionInvaderOverrides({});
+    buildSimultaneousInvasionCourts(0,false,nextTeams);
+    return nextTeams;
   }
 
   function addInvasionTeamPoints(teamId,amount){
@@ -2004,7 +2661,8 @@ function Competition({players=[]}){
   }
 
   function addInvasionPlayerPoints(playerName,amount){
-    setInvasionPlayerPoints(prev=>({...prev,[playerName]:(prev[playerName]||0)+amount}));
+    const name=invasionName(playerName);
+    setInvasionPlayerPoints(prev=>({...prev,[name]:(prev[name]||0)+amount}));
   }
 
   function adjustInvasionTeamLives(teamId,amount){
@@ -2019,11 +2677,13 @@ function Competition({players=[]}){
   }
 
   function resetInvasionLifeBanks(){
-    setInvasionTeamLives(prev=>{
-      const next={};
-      invasionTeams.forEach(team=>{next[team.id]=invasionStartingLives;});
-      return next;
+    const fair=getInvasionFairRows(invasionTeams);
+    const next={};
+    invasionTeams.forEach(team=>{
+      const row=fair.rows.find(r=>r.team===team.name);
+      next[team.id]=row?row.livesPerPlayer:(Number(invasionStartingLives)||5);
     });
+    setInvasionTeamLives(next);
   }
 
   function resetInvasionPoints(){
@@ -2055,17 +2715,18 @@ function Competition({players=[]}){
     return array;
   }
 
-  function buildSimultaneousInvasionCourts(step=invasionRotationStep,useRandom=invasionCourtAssignmentMode==='random'){
-    if(!invasionTeams.length){
+  function buildSimultaneousInvasionCourts(step=invasionRotationStep,useRandom=invasionCourtAssignmentMode==='random',sourceTeams=invasionTeams){
+    if(!sourceTeams.length){
       setInvasionCourtAssignments([]);
       return;
     }
-    const teams=useRandom?shuffleInvasionArray(invasionTeams):[...invasionTeams];
+    const teams=useRandom?shuffleInvasionArray(sourceTeams):[...sourceTeams];
     const n=teams.length;
     const assignments=teams.map((defendingTeam,idx)=>{
       const invadingTeam=teams[(idx-1+n)%n];
-      const invaderList=invadingTeam.players||[];
-      const invader=invaderList.length?invaderList[step%invaderList.length]:'Waiting for invader';
+      const invaderList=sortInvasionPlayersLowestFirst(invadingTeam.players||[]);
+      const override=invasionInvaderOverrides[invadingTeam.id]||invasionInvaderOverrides[invadingTeam.name];
+      const invader=override || (invaderList.length?invaderList[step%invaderList.length]:'Waiting for invader');
       return {
         court:idx+1,
         defendingTeamId:defendingTeam.id,
@@ -2209,7 +2870,6 @@ function Competition({players=[]}){
       <div className="pageTop">
         <h1>Competition</h1>
       </div>
-
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
         <button type="button" className={mode==='matchplay'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('matchplay')}>Matchplay</button>
@@ -2388,7 +3048,7 @@ function Competition({players=[]}){
 
                       {invasionFormat==='points'&&(
                         <div className="invasionPointControls">
-                          <strong>Team Points: {invasionTeamPoints[team.id]||0}</strong>
+                          <strong>Team Points: {calculateTeamPointsFromPlayers(team)}</strong>
                           <div className="buttonRow">
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,1)}>+1</button>
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,3)}>+3</button>
@@ -2401,9 +3061,9 @@ function Competition({players=[]}){
                         <div className="invasionPlayerPointList">
                           {team.players.map(player=>(
                             <div key={player}>
-                              <span>{player}: {invasionPlayerPoints[player]||0}</span>
-                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,1)}>+1</button>
-                              <button type="button" onClick={()=>addInvasionPlayerPoints(player,3)}>+3</button>
+                              <span>{invasionName(player)}: {invasionPlayerPoints[invasionName(player)]||0}</span>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(invasionName(player),1)}>+1</button>
+                              <button type="button" onClick={()=>addInvasionPlayerPoints(invasionName(player),3)}>+3</button>
                             </div>
                           ))}
                         </div>
@@ -2419,6 +3079,28 @@ function Competition({players=[]}){
 
               {invasionFormat==='lives'&&invasionTeams.length>0&&(
                 <button type="button" className="secondaryBtn" onClick={resetInvasionLifeBanks}>Reset Team Life Banks</button>
+              )}
+
+              {invasionTeams.length>0&&(
+                <div className="coachInvaderSelector">
+                  <h2>Coach Invader Selection</h2>
+                  <p>Default order is lowest-ranked player first. Override here if a team chooses a tactical invader.</p>
+                  <div className="coachInvaderGrid">
+                    {invasionTeams.map(team=>{
+                      const ordered=sortInvasionPlayersLowestFirst(team.players||[]);
+                      const current=invasionInvaderOverrides[team.id]||ordered[invasionPlayerRound%Math.max(1,ordered.length)]||'';
+                      return <div className="coachInvaderCard" key={team.id}>
+                        <h3>{team.name}</h3>
+                        <label>Current invader
+                          <select value={current} onChange={e=>setInvasionInvaderOverrides(prev=>({...prev,[team.id]:e.target.value}))}>
+                            {ordered.map(player=><option key={player} value={player}>{player}</option>)}
+                          </select>
+                        </label>
+                        <p>Default order: {ordered.join(' → ')}</p>
+                      </div>;
+                    })}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -2486,7 +3168,7 @@ function Competition({players=[]}){
                             ?<strong>{invasionTeamPoints[assign.invadingTeamId]||0} team pts</strong>
                             :<strong>{(() => {
                               const invTeam=invasionTeams.find(team=>team.id===assign.invadingTeamId);
-                              return invTeam?getInvasionStartLives(invTeam):(Number(invasionStartingLives)||5);
+                              return invTeam?getInvasionStartLivesFromMap(invTeam,getInvasionFairLivesMap(invasionTeams)):(Number(invasionStartingLives)||5);
                             })()} lives</strong>}
                         </div>
 
@@ -2508,7 +3190,7 @@ function Competition({players=[]}){
                   <strong>Fair Lives Carry-Over Engine</strong>
                   <span>Equal team capacity: {getInvasionFairBaseTotal()}</span>
                 </div>
-                <p>LCM fair lives: smaller teams get more lives per player so each team has equal total capacity. Carry-over then adds to the next invasion.</p>
+                <p>Fair lives: Starting Lives applies to the largest/equal-sized team. Smaller teams receive extra lives per player so team capacity stays fair. Carry-over then adds to the next invasion.</p>
 
                 <div className="fairLivesGrid">
                   {invasionTeams.map(team=>(
@@ -2727,14 +3409,7 @@ function Competition({players=[]}){
 
         <div className="technicalScoringBox alwaysVisibleScoring">
           <strong>Competition Overlays</strong>
-          <p className="overlayExplain">Applies to all competition modes. Coach chooses only the overlays needed for the format.</p>
-          <div className="quickLayers">
-            {overlayOptions.map(layer=>(
-              <button type="button" key={layer} className={competitionLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>
-                {competitionLayers.includes(layer)?'✓ ':'+ '}{layer}
-              </button>
-            ))}
-          </div>
+          <OverlayFamilyTabs selectedOverlays={competitionLayers} onToggle={toggleLayer} context="Competition" />
 
           <label>Checkerboard Code / Sequence
             <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
@@ -3751,6 +4426,42 @@ function LiveSessionDelivery({session=[],setScreen}){
   </div>;
 }
 
+
+function PlayerHub({players,setPlayers,session,setSession}){
+  const [tab,setTab]=useState('players');
+  return <div className="page playerHubPage">
+    <div className="playerHubTabs">
+      <button className={tab==='players'?'activeTab':''} onClick={()=>setTab('players')}>Players</button>
+      <button className={tab==='storage'?'activeTab':''} onClick={()=>setTab('storage')}>Storage & Backup</button>
+    </div>
+    {tab==='players'&&<Players players={players} setPlayers={setPlayers}/>}
+    {tab==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
+  </div>;
+}
+
+
+
+function DiagnosticIntervention({setScreen}){
+  const [tab,setTab]=useState('clock');
+  const errors=[
+    {title:'Late Racket Preparation',obs:'Racket preparation begins too late, often after bounce or when time pressure is already high.',traditional:'Demonstrate earlier preparation, repeat shadow swings or straight drives, remind player to “get the racket back”.',cla:'Manipulate time and information: volley priority games, reduced-time tasks, early-information constraints, obstacle behind player, scoring for preparation before bounce.',bernstein:'The player is not trying to reproduce one ideal preparation pattern; they are learning to organise preparation under changing information.'},
+    {title:'Wrap-Around Follow Through',obs:'Racket finishes around the waist/body instead of organising through the target line.',traditional:'Stop play, demonstrate correct finish, rehearse finish position, repeat isolated swings.',cla:'Create target and affordance constraints: front-wall target games, checkerboard routes, contact-point challenges and accuracy tasks where a more functional finish emerges.',bernstein:'The nervous system solves movement problems rather than copying a stored template.'},
+    {title:'Poor Recovery To T',obs:'Player admires the shot, remains in corner or recovers without useful opponent information.',traditional:'Command “recover”, prescribe ghosting pattern, repeat movement routes.',cla:'Use T-reward scoring, recovery bonus points, opponent exploitation games and constraints where poor recovery is immediately punished.',bernstein:'Recovery becomes functional because it solves a tactical problem, not because the player memorised a pattern.'},
+    {title:'Wrist Collapse',obs:'Wrist breaks excessively, racket face becomes unstable and control is reduced.',traditional:'Tell player to keep wrist firm, rehearse fixed wrist swings.',cla:'Use haptic constraints such as tape from back of hand to forearm, smiley-face external focus, and checkerboard target tasks that reward stable racket-face outcomes.',bernstein:'Variability is not simply error; constraints can guide the search toward more useful coordination.'},
+    {title:'Visual Tracking Loss',obs:'Player looks away early, watches outcome or loses ball/opponent information during movement.',traditional:'Tell player to watch the ball and repeat feeds.',cla:'Use tracking constraints, Quiet Eye overlays, Second Eye tasks, opponent-reading games and coach feed-and-strike progressions.',bernstein:'Skilled action depends on coupling perception and movement in changing conditions.'}
+  ];
+  const tools=[['Visual Constraints','Quiet Eye, tracking, second eye, external target focus, opponent-reading cues.'],['Haptic Constraints','Tape, touch cues, physical reference points, racket/hand feedback.'],['Spatial Constraints','Court zones, cones, target windows, checkerboard zones, restricted lanes.'],['Task Constraints','Scoring rules, time pressure, shot windows, bonus systems, live consequences.'],['Equipment Constraints','Ball type, racket/task modification, target aids, scaling tools.'],['Analogy Constraints','Animals, images, external metaphors, movement stories.'],['Scaling','Change court size, bounce rules, target size, speed, pressure and opponent level.']];
+  return <div className="page diagnosticInterventionPage"><div className="pageTop"><div><h1>Diagnostic & Intervention</h1><p className="mutedText">Observe · Diagnose · Intervene</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="diagnosticTabs"><button className={tab==='clock'?'activeTab':''} onClick={()=>setTab('clock')}>🔍 Diagnostic Clock</button><button className={tab==='errors'?'activeTab':''} onClick={()=>setTab('errors')}>❌ Common Errors</button><button className={tab==='tools'?'activeTab':''} onClick={()=>setTab('tools')}>🛠 Intervention Tools</button><button className={tab==='cla'?'activeTab':''} onClick={()=>setTab('cla')}>📚 Traditional vs CLA</button><button className={tab==='quick'?'activeTab':''} onClick={()=>setTab('quick')}>⚡ Quick Fix</button></div>
+    {tab==='clock'&&<div className="diagnosticStagePanel diagnosticClockActual"><h2>🔍 Diagnostic Clock</h2><p>Observe the visible behaviour, identify the likely source, then select a constraint-based intervention.</p><div className="clockFace"><div className="clockCentre"><strong>Observe</strong><span>What changed?</span></div>{['Technical','Tactical','Visual','Mental','Movement','Physical','Environment','Equipment'].map((item,index)=><div key={item} className={`clockNode clockNode${index+1}`}><strong>{item}</strong></div>)}</div><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What is the player actually doing?</span></div><div><strong>2. Diagnose</strong><span>What constraint is shaping the behaviour?</span></div><div><strong>3. Intervene</strong><span>Change the task, information or environment.</span></div></div></div>}
+    {tab==='errors'&&<div className="diagnosticStagePanel"><h2>❌ Common Errors</h2><div className="errorComparisonGrid">{errors.map(error=><div className="errorMiniCard" key={error.title}><h3>{error.title}</h3><p>{error.obs}</p></div>)}</div></div>}
+    {tab==='tools'&&<div className="diagnosticStagePanel"><h2>🛠 Intervention Tools</h2><div className="interventionToolGrid">{tools.map(tool=><div className="interventionToolCard" key={tool[0]}><h3>{tool[0]}</h3><p>{tool[1]}</p></div>)}</div></div>}
+    {tab==='cla'&&<div className="diagnosticStagePanel"><div className="bernsteinBox"><h2>📚 Bernstein: Repetition Without Repetition</h2><p>Nikolai Bernstein argued that skilled movement is never the exact repetition of a fixed template. No two movements are ever exactly the same. Skilled performers solve movement problems under changing conditions.</p><p><strong>Traditional view:</strong> repeat the correct movement until it becomes automatic.</p><p><strong>CLA view:</strong> design representative constraints so adaptable solutions emerge.</p></div><div className="errorComparisonGrid">{errors.map(error=><div className="claComparisonCard" key={error.title}><h3>{error.title}</h3><section><strong>Observation</strong><p>{error.obs}</p></section><section><strong>Traditional Response</strong><p>{error.traditional}</p></section><section><strong>CLA Response</strong><p>{error.cla}</p></section><section><strong>Bernstein Connection</strong><p>{error.bernstein}</p></section></div>)}</div></div>}
+    {tab==='quick'&&<div className="diagnosticStagePanel"><h2>⚡ Quick Fix</h2><p>Courtside rule: identify the problem, choose one constraint, observe the next behaviour. Three taps maximum.</p><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What behaviour is visible?</span></div><div><strong>2. Constraint</strong><span>What task change makes the desired behaviour useful?</span></div><div><strong>3. Review</strong><span>Did the behaviour change inside the game?</span></div></div></div>}
+  </div>;
+}
+
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -3758,18 +4469,20 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h28</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h54</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
+      {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={setScreen}/>}
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={setScreen}/>} 
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={setScreen}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={setScreen}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={setScreen}/>}
       {screen==='level0'&&<Level0Exploration/>}
-      {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>}
-{screen==='players'&&<Players players={players} setPlayers={setPlayers}/>}
+      {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>} 
+      {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={setScreen}/>}
+{screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 
