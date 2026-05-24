@@ -2551,38 +2551,40 @@ button.mentalSkillsTile p{
   .bottomOverlayTabs button span{font-size:13px}
 }
 
-
-/* v99h54 Competition tabbed overlay system */
-.competitionTabbedOverlayBox .competitionOverlayTabButtons{
-  margin:14px 0;
+/* v99h54 Competition tabbed overlay engine */
+.overlayFamilyEngine{
+  margin-top:10px;
 }
-.competitionTabbedOverlayBox .competitionOverlayOptions{
-  margin:12px 0 16px;
+.overlayFamilyTabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:12px 0 14px;
 }
-.competitionActiveOverlayPanel{
-  margin:16px 0;
-  border-top:1px solid rgba(255,255,255,.12);
-  padding-top:14px;
+.overlayFamilyTabs button{
+  border:2px solid rgba(130,160,210,.45);
+  border-radius:18px;
+  padding:14px 12px;
+  background:rgba(18,31,52,.78);
+  color:#fff;
+  font-weight:1000;
+  cursor:pointer;
 }
-.competitionActiveOverlayPanel h3{
+.overlayFamilyTabs .activeFamilyTab{
+  border-color:var(--gold,#f7d979);
+  background:linear-gradient(135deg,rgba(247,217,121,.24),rgba(14,165,233,.12));
   color:var(--gold,#f7d979);
-  margin:0 0 10px;
 }
-.competitionActiveOverlayPanel .activeOverlayRule span{
-  display:inline-block;
-  margin-top:4px;
-  opacity:.78;
-  font-size:12px;
-  font-weight:900;
-}
-.competitionActiveOverlayPanel .activeOverlayRule em{
-  color:#cbd5e1;
-  font-style:normal;
+.overlayFamilyChips{
+  margin-top:14px;
 }
 .bottomOverlayTabs button span{
   white-space:nowrap;
 }
-@media (max-width:720px){
+@media(max-width:720px){
+  .overlayFamilyTabs{
+    grid-template-columns:1fr;
+  }
   .bottomOverlayTabs button span{
     font-size:12px;
   }

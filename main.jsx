@@ -680,6 +680,42 @@ function MentalOverlaySelector({context='Game'}){
 
 
 
+
+
+function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
+  const [family,setFamily]=useState('Tactical');
+
+  const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
+  const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
+  const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
+  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : mentalOptions;
+  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions];
+  const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
+
+  return <div className="overlayFamilyEngine">
+    <div className="overlayFamilyTabs">
+      <button type="button" className={family==='Technical'?'activeFamilyTab':''} onClick={()=>setFamily('Technical')}>🔧 Technical</button>
+      <button type="button" className={family==='Tactical'?'activeFamilyTab':''} onClick={()=>setFamily('Tactical')}>♟ Tactical</button>
+      <button type="button" className={family==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setFamily('Mental Performance')}>🧠 Mental Performance</button>
+    </div>
+
+    <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Selected overlays continue to feed the Active Overlay Rules section and projection text.</p>
+
+    <div className="mentalOverlayChips overlayFamilyChips">
+      {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
+        <strong>{o.name}</strong><span>{o.category}</span>
+      </button>)}
+    </div>
+
+    <div className="activeOverlayPanel">
+      <h3>Active Overlay Rules</h3>
+      {active.length===0
+        ? <p>No overlays selected.</p>
+        : active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
+    </div>
+  </div>;
+}
+
 function MentalSkillsPlaceholder({setScreen}){
   const [section,setSection]=useState('menu');
   const [selectedAnimal,setSelectedAnimal]=useState(null);
@@ -1205,16 +1241,12 @@ function ATLBTLDirectBuilder({onAddToSession}){
     <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
     <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 
-    <div className="overlayPanel">
-      <strong>Universal Overlays</strong>
-      <div className="quickLayers">
-        {ALL_LAYERS.map(layer=><button key={layer} className={manualLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{manualLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}
-      </div>
-      <div className="buttonRow">
-        <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button>
-        <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
-        <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button>
-      </div>
+    <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL" />
+
+    <div className="buttonRow">
+      <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button>
+      <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
+      <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button>
     </div>
 
     <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>Add ATL / BTL To Session</button>
@@ -2043,9 +2075,6 @@ function Games({setSession,setScreen}){
       <h1>Games Library</h1>
       <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
-    <MentalOverlaySelector context="Conditioned Games"/>
-
-
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
         <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>selectClass(gameClass.id)}>
@@ -2204,53 +2233,6 @@ return <div className="page">
 
 
 
-
-
-
-function CompetitionOverlayTabs({selectedLayers,onToggle,competitionCbCode,setCompetitionCbCode,cbOptions}){
-  const [tab,setTab]=useState('Technical');
-  const competitionMentalNames=[
-    'Quiet Eye Before Serve','Quiet Eye Before Attack','Second Eye To Opponent','Long Exhale Before Serve','Breath Before Serve','Attack Breath','Reset Within 3 Seconds','Cue Word After Error','No Admiring Shots','Full Recovery After Every Shot','Compete To Last Ball','Neutral Error Response','Accept And Continue','Recognise Opponent Vulnerability','Attack Only On Advantage'
-  ];
-  const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
-  const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
-  const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.filter(o=>competitionMentalNames.includes(o.name)).map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:''}));
-  const options=tab==='Technical'?technicalOptions:tab==='Tactical'?tacticalOptions:mentalOptions;
-  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions];
-  const selectedRules=(selectedLayers||[]).map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
-  return <div className="technicalScoringBox alwaysVisibleScoring competitionTabbedOverlayBox">
-    <strong>Competition Overlays</strong>
-    <p className="overlayExplain">Choose Technical, Tactical or Mental Performance overlays. Selected overlays populate Active Overlay Rules below.</p>
-
-    <div className="universalFamilyTabs competitionOverlayTabButtons">
-      <button type="button" className={tab==='Technical'?'activeFamilyTab':''} onClick={()=>setTab('Technical')}>Technical</button>
-      <button type="button" className={tab==='Tactical'?'activeFamilyTab':''} onClick={()=>setTab('Tactical')}>Tactical</button>
-      <button type="button" className={tab==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setTab('Mental Performance')}>Mental Performance</button>
-    </div>
-
-    <div className="quickLayers competitionOverlayOptions">
-      {options.map(overlay=><button type="button" key={`${tab}-${overlay.name}`} className={(selectedLayers||[]).includes(overlay.name)?'activeLayer':''} onClick={()=>onToggle(overlay.name)}>
-        {(selectedLayers||[]).includes(overlay.name)?'✓ ':'+ '}{overlay.name}
-      </button>)}
-    </div>
-
-    <div className="activeOverlayPanel competitionActiveOverlayPanel">
-      <h3>Active Overlay Rules</h3>
-      {selectedRules.length===0?<p>No overlays selected.</p>:selectedRules.map(overlay=><div className="activeOverlayRule" key={overlay.name}>
-        <strong>{overlay.name}</strong>
-        <span>{overlay.category}</span>
-        <p>{overlay.rule}</p>
-        {overlay.coach&&<p><em>{overlay.coach}</em></p>}
-      </div>)}
-    </div>
-
-    <label>Checkerboard Code / Sequence
-      <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
-        {cbOptions.map(option=><option key={option}>{option}</option>)}
-      </select>
-    </label>
-  </div>;
-}
 
 function Competition({players=[]}){
   const [mode,setMode]=useState('invasion');
@@ -3417,13 +3399,16 @@ function Competition({players=[]}){
           </ul>
         </div>
 
-        <CompetitionOverlayTabs
-          selectedLayers={competitionLayers}
-          onToggle={toggleLayer}
-          competitionCbCode={competitionCbCode}
-          setCompetitionCbCode={setCompetitionCbCode}
-          cbOptions={cbOptions}
-        />
+        <div className="technicalScoringBox alwaysVisibleScoring">
+          <strong>Competition Overlays</strong>
+          <OverlayFamilyTabs selectedOverlays={competitionLayers} onToggle={toggleLayer} context="Competition" />
+
+          <label>Checkerboard Code / Sequence
+            <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
+              {cbOptions.map(option=><option key={option}>{option}</option>)}
+            </select>
+          </label>
+        </div>
 
         <div className="technicalScoringBox">
           <strong>Double-Bounce Handicaps</strong>
@@ -4476,7 +4461,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h54</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h54 Games Overlay Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
