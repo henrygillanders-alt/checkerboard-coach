@@ -1337,11 +1337,10 @@ function ClassicConditionedBuilder({onAddToSession}){
       <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
       <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
 
-      <div className="conditionedOverlayChooser">
-        <strong>Suggested overlays</strong><p className="overlayExplain">Suggested overlays are guidance only. Select what fits the group and learning aim.</p>
-        <div className="quickLayers">{(game.suggestedOverlays||[]).map(layer=><button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>{(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
-        <div className="overlayInfoGrid">{(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}</div>
-        <div className="allOverlaySection"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title} /></div>
+      <div className="technicalScoringBox alwaysVisibleScoring conditionedOverlayChooser">
+        <strong>Universal Overlays</strong>
+        <p className="overlayExplain">Use the same Technical / Tactical / Mental Performance overlay engine as Competition and ATL / BTL. Suggested overlays for this game: {(game.suggestedOverlays||[]).join(' · ')||'None'}.</p>
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title} />
       </div>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
@@ -1356,6 +1355,7 @@ function TechnicalFocusBuilder({onAddToSession}){
   const [origins,setOrigins]=useState({});
   const [types,setTypes]=useState({});
   const [scoring,setScoring]=useState({});
+  const [selectedOverlays,setSelectedOverlays]=useState({});
 
   const originInfo={
     'Isolated Technique Practice':{
@@ -1504,6 +1504,13 @@ function TechnicalFocusBuilder({onAddToSession}){
   function setScore(card,field,value){
     setScoring(prev=>({...prev,[k(card)]:{...choice(card),[field]:value}}));
   }
+  function toggleTechnicalOverlay(card,layer){
+    const key=k(card);
+    setSelectedOverlays(prev=>{
+      const current=prev[key]||[];
+      return {...prev,[key]:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};
+    });
+  }
   function remedialApproach(card){
     const o=origin(card);
     const t=type(card);
@@ -1528,7 +1535,7 @@ function TechnicalFocusBuilder({onAddToSession}){
       antiGaming:p.consequence,
       consequence:p.consequence,
       scoringProtocol:p.name,
-      layers:[],
+      layers:selectedOverlays[k(card)]||[],
       cbCode:'None'
     });
   }
@@ -1572,6 +1579,11 @@ function TechnicalFocusBuilder({onAddToSession}){
         {choice(card).name==='Coach custom'&&<div className="customScoringGrid"><label>Custom scoring<textarea value={choice(card).customScore} onChange={e=>setScore(card,'customScore',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/></label><label>Custom consequence<textarea value={choice(card).customConsequence} onChange={e=>setScore(card,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/></label></div>}
         <div className="infoBox"><strong>Selected scoring</strong><p>{protocol(card).score}</p></div>
         <div className="infoBox"><strong>Selected consequence</strong><p>{protocol(card).consequence}</p></div>
+      </div>
+
+      <div className="technicalScoringBox alwaysVisibleScoring">
+        <strong>Universal Overlays</strong>
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[k(card)]||[]} onToggle={layer=>toggleTechnicalOverlay(card,layer)} context={`Technical Diagnostic · ${card.title}`} />
       </div>
 
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
@@ -4457,7 +4469,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h55 Universal Overlay Completion</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h56 Universal Overlay Completion</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
