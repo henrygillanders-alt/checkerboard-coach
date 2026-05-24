@@ -903,7 +903,7 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<div className="overlayPanel"><strong>Universal Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={manualLayers.includes(layer)?'activeLayer':''} onClick={()=>toggleManualLayer(layer)}>{manualLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
+<div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
@@ -1107,7 +1107,7 @@ return <div className="checkerboardEngine">
       {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
     </div>
     <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
-    <div className="overlayPanel"><strong>Additional Overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(config.layers||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{(config.layers||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+    <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard" /></div>
     
     {config.deliveryMode==='Blind'&&<div className="blindCardPanel">
       <strong>Blind Card Delivery</strong>
@@ -1341,7 +1341,7 @@ function ClassicConditionedBuilder({onAddToSession}){
         <strong>Suggested overlays</strong><p className="overlayExplain">Suggested overlays are guidance only. Select what fits the group and learning aim.</p>
         <div className="quickLayers">{(game.suggestedOverlays||[]).map(layer=><button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>{(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
         <div className="overlayInfoGrid">{(game.suggestedOverlays||[]).map(layer=><OverlayInfoCard key={layer} overlay={layer}/>)}</div>
-        <div className="allOverlaySection"><strong>All overlays</strong><div className="quickLayers">{ALL_LAYERS.map(layer=><button key={layer} className={(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,layer)}>{(selectedOverlays[overlayKey(game)]||[]).includes(layer)?'✓ ':'+ '}{layer}</button>)}</div></div>
+        <div className="allOverlaySection"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title} /></div>
       </div>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
@@ -1875,13 +1875,9 @@ function InvasionGamesBuilder({onAddToSession}){
     <div className="infoBox"><strong>Player Focus</strong><p>{selected.playerFocus}</p></div>
 
     <div className="technicalScoringBox alwaysVisibleScoring">
-      <strong>Optional Overlays</strong>
+      <strong>Universal Overlays</strong>
       <p className="overlayExplain">No overlays are selected by default. Coach chooses what applies.</p>
-      <div className="quickLayers">
-        {overlayOptions.map(layer=><button key={layer} type="button" className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>
-          {layers.includes(layer)?'✓ ':'+ '}{layer}
-        </button>)}
-      </div>
+      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Invasion Game" />
       <label>Checkerboard Code / Sequence
         <select value={cbCode} onChange={e=>setCbCode(e.target.value)}>
           {cbOptions.map(option=><option key={option}>{option}</option>)}
@@ -1965,8 +1961,8 @@ function CustomGameBuilder({onAddToSession}){
     </div>
 
     <div className="technicalScoringBox alwaysVisibleScoring">
-      <strong>Overlays</strong><p className="overlayExplain">No overlays are selected by default.</p>
-      <div className="quickLayers">{overlayOptions.map(layer=><button key={layer} type="button" className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+      <strong>Universal Overlays</strong><p className="overlayExplain">No overlays are selected by default.</p>
+      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game" />
     </div>
 
     <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} /></label>
@@ -4461,7 +4457,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h54 Games Overlay Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h55 Universal Overlay Completion</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
