@@ -450,6 +450,31 @@ function UniversalOverlays({setScreen}){
   const shown=category==='All'?data:data.filter(o=>o.category===category);
   const active=selected||shown[0];
 
+  function isMentalOverlay(overlay){
+    return !!overlay && typeof overlay.category==='string' && (
+      overlay.category.includes('Identity') ||
+      overlay.category.includes('Visual Performance') ||
+      overlay.category.includes('Regulation') ||
+      overlay.category.includes('Competitive Behaviours')
+    );
+  }
+
+  function extractMentalAnimals(overlay){
+    const text=overlay?.coach||'';
+    const primary=(text.match(/Primary animal:\s*([^\.]+)/i)||[])[1]?.trim();
+    const secondary=(text.match(/Secondary animal:\s*([^\.]+)/i)||[])[1]?.trim();
+    return {primary,secondary};
+  }
+
+  function cleanMentalCoachText(overlay){
+    const text=overlay?.coach||'';
+    return text
+      .replace(/Primary animal:\s*[^\.]+\.\s*/ig,'')
+      .replace(/Secondary animal:\s*[^\.]+\.\s*/ig,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
   return <div className="page universalOverlaysPage bottomOverlayPad">
     <div className="pageTop">
       <div>
@@ -478,8 +503,13 @@ function UniversalOverlays({setScreen}){
         <section><h3>Common Coordination Breakdown</h3><p>{active.technical.breakdown}</p></section>
         <section><h3>Constraint / Refereeing Rule</h3><p>{active.technical.constraint}</p></section>
         <section><h3>Checkerboard Applications</h3><p>{active.technical.checkerboard}</p></section></>}
-        {!active.technical&&<section><h3>Coach Observation</h3><p>{active.coach}</p></section>}
-        <section><h3>Recommended Pairings</h3><div className="chipRow">{(active.pairings||[]).map(x=><span key={x}>{x}</span>)}</div></section>
+        {!active.technical&&<section><h3>Coach Observation</h3><p>{isMentalOverlay(active)?cleanMentalCoachText(active):active.coach}</p></section>}
+        {!active.technical&&isMentalOverlay(active)&&<section><h3>Identify Animal</h3><div className="chipRow animalIdentifyRow">
+          {extractMentalAnimals(active).primary&&<span>{extractMentalAnimals(active).primary}</span>}
+          {extractMentalAnimals(active).secondary&&<span>{extractMentalAnimals(active).secondary}</span>}
+          {!extractMentalAnimals(active).primary&&!extractMentalAnimals(active).secondary&&<span>Coach selection</span>}
+        </div></section>}
+        <section><h3>{isMentalOverlay(active)?'Suggested Pairings':'Recommended Pairings'}</h3><div className="chipRow">{(active.pairings||[]).map(x=><span key={x}>{x}</span>)}</div></section>
       </div>}
     </div>
 
@@ -4511,7 +4541,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h58 Mental Performance Completion Phase 1</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h59 Mental Pairings Standardised</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

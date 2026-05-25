@@ -2589,3 +2589,10 @@ button.mentalSkillsTile p{
     font-size:12px;
   }
 }
+
+/* v99h59 mental performance pairing standardisation */
+.animalIdentifyRow span{
+  border-color:rgba(255,223,128,.55);
+  background:linear-gradient(135deg,rgba(255,223,128,.20),rgba(255,255,255,.06));
+  font-weight:900;
+}
