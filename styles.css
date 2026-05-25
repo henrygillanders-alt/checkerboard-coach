@@ -2589,3 +2589,56 @@ button.mentalSkillsTile p{
     font-size:12px;
   }
 }
+
+/* v99h57 Mental Performance completion */
+.mentalV2Page .visionFirstBox{
+  border-color:rgba(247,217,121,.9);
+  background:linear-gradient(135deg,rgba(247,217,121,.18),rgba(14,165,233,.10));
+}
+.mentalV2Page .visionFirstBox h2{
+  letter-spacing:.12em;
+  font-size:34px;
+}
+.mentalSelectLabel{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  color:var(--gold,#f7d979);
+  font-weight:1000;
+  margin:12px 0 18px;
+}
+.mentalSelectLabel select,
+.customAnimalGrid select{
+  border-radius:14px;
+  border:1px solid rgba(130,160,210,.55);
+  background:rgba(7,12,22,.95);
+  color:#fff;
+  padding:12px;
+  font-size:17px;
+}
+.diagnosticRecommendationGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+}
+.wideMentalCard{
+  grid-column:1 / -1;
+}
+.detailMentalCard p{
+  line-height:1.38;
+}
+.detailMentalCard p strong,
+.animalCard p strong{
+  color:var(--gold,#f7d979);
+}
+.mentalV2Page .animalCard{
+  min-height:0;
+}
+.mentalV2Page .animalCard .largeCue{
+  display:block;
+  margin:12px 0;
+}
+.mentalV2Page .customAnimalGrid label{
+  color:var(--gold,#f7d979);
+  font-weight:1000;
+}
