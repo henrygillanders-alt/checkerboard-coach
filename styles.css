@@ -2604,3 +2604,6 @@ button.mentalSkillsTile p{
 
 /* v99h61 PPP module update */
 .mentalContentPanel .prepFlow span{font-weight:900;}
+
+/* v99h62 Mental Performance home tile */
+.homeGrid > .mentalSkillsTile{grid-column:auto;}

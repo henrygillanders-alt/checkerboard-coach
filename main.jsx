@@ -946,6 +946,8 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeTile doubleBounceTile homeTitleOnly" onClick={()=>setScreen('doubleBounce')}><h2>Double Bounce</h2></button>
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
+
+      <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
     </div>;
 }
 
@@ -4569,7 +4571,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h61 PPP Update</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h62 Mental Performance Tile</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
