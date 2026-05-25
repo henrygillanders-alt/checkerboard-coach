@@ -2600,3 +2600,7 @@ button.mentalSkillsTile p{
 .visionFirstNote{border-color:#d8bd62;background:linear-gradient(135deg,rgba(216,189,98,.14),rgba(22,33,55,.7));}
 .diagnosticRecommendationCard{border-color:#d8bd62;}
 .animalIdentifyRow span{font-weight:900;}
+
+
+/* v99h61 PPP module update */
+.mentalContentPanel .prepFlow span{font-weight:900;}
