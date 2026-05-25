@@ -11,6 +11,18 @@ const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
 ];
 
+
+
+const ANIMAL_PAIRINGS=[
+{name:'Eagle + Golden Retriever',theme:'Awareness Under Distraction'},
+{name:'Eagle + Wolf',theme:'Observe and Stay Disciplined'},
+{name:'Lion + Eagle',theme:'Recognise and Commit'},
+{name:'Cat + Eagle',theme:'Patience and Recognition'},
+{name:'Owl + Dolphin',theme:'Adapt and Create'},
+{name:'Cheetah + Eagle',theme:'See Early, Move Early'},
+{name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
+];
+
 const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
