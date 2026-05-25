@@ -2596,3 +2596,7 @@ button.mentalSkillsTile p{
   background:linear-gradient(135deg,rgba(255,223,128,.20),rgba(255,255,255,.06));
   font-weight:900;
 }
+
+.visionFirstNote{border-color:#d8bd62;background:linear-gradient(135deg,rgba(216,189,98,.14),rgba(22,33,55,.7));}
+.diagnosticRecommendationCard{border-color:#d8bd62;}
+.animalIdentifyRow span{font-weight:900;}
