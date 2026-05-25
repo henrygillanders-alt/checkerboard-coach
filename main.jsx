@@ -789,6 +789,7 @@ function MentalSkillsPlaceholder({setScreen}){
   const [section,setSection]=useState('menu');
   const [selectedAnimal,setSelectedAnimal]=useState(null);
   const [visualTopic,setVisualTopic]=useState('overview');
+  const [diagnosticChallenge,setDiagnosticChallenge]=useState('Too distracted / bad calls / aggressive opponent');
   const [custom,setCustom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_custom_animal')||'{}')}catch(e){return {}}});
 
   const animals=[
@@ -825,6 +826,21 @@ function MentalSkillsPlaceholder({setScreen}){
     ['second','👀 Second Eye','Maintain access to opponent information while interacting with the ball. Avoid ball-only attention.'],
     ['external','🎯 External Focus','Focus on ball, target, space or opponent rather than wrist, elbow or swing mechanics unless used temporarily as a correction.']
   ];
+
+  const diagnosticItems=[
+    {challenge:'Too distracted / bad calls / aggressive opponent',animal:'🐕 Golden Retriever',hybrid:'Golden Retriever + Eagle',breath:'Centre Breath: inhale 3 sec → hold 3 sec → exhale 3 sec × 3 cycles',process:'Return attention to the next ball within 3 seconds.',ppp:'Stage 1 Solution Activation: watch a mental resilience highlight. Stage 3 Squash Activation: chase every feed and reset immediately.',overlays:['Reset Within 3 Seconds','Accept And Continue','Second Eye To Opponent','Compete To Last Ball'],reflection:'What is the next ball asking me to do?',why:'The player is losing useful information to distractions. Golden Retriever restores resilient attention; Eagle keeps the player seeing ball, opponent and task.'},
+    {challenge:'Not observing enough',animal:'🦅 Eagle',hybrid:'Eagle + Owl',breath:'Centre Breath: inhale 3 sec → hold 3 sec → exhale 3 sec × 3 cycles',process:'See first, then act.',ppp:'Stage 3 Squash Activation: tracking feeds, call high/low or short/long before striking. Stage 4 Official Warm-Up: gather information about volley, height and movement.',overlays:['Quiet Eye Before Attack','Opponent Reading','Tracking','Second Eye To Opponent'],reflection:'What information did I miss?',why:'The player needs better information pickup before decisions. Eagle prioritises vision; Owl supports pattern recognition and adaptation.'},
+    {challenge:'Rushing decisions',animal:'🐈 Cat',hybrid:'Cat + Eagle',breath:'Centre Breath: inhale 3 sec → hold 3 sec → exhale 3 sec × 3 cycles',process:'Wait until the opportunity is visible.',ppp:'Stage 3 Squash Activation: controlled hand feeds with pause-scan-strike. Stage 4 Official Warm-Up: notice whether opponent rushes or gives time.',overlays:['Quiet Eye Before Attack','External Target Focus','Width Before Attack'],reflection:'Did I wait until I saw the opportunity?',why:'Rushing often comes from acting before enough information is available. Cat waits; Eagle sees.'},
+    {challenge:'Too passive / hesitant',animal:'🦁 Lion',hybrid:'Lion + Eagle',breath:'Activate Breath: inhale 1 sec → forceful exhale 1 sec × 2–3 repetitions',process:'Recognise advantage and commit.',ppp:'Stage 3 Squash Activation: attacking volleys, front-court movement and strike, activation breath before attack.',overlays:['Attack Only On Advantage','Attack Breath','Compete To Last Ball','Quiet Eye Before Attack'],reflection:'Did I recognise and commit?',why:'The player is not acting on opportunity. Lion adds commitment; Eagle ensures the attack is based on information rather than blind aggression.'},
+    {challenge:'Not converting pressure',animal:'🐅 Tiger',hybrid:'Tiger + Eagle',breath:'Activate Breath: inhale 1 sec → forceful exhale 1 sec × 2–3 repetitions',process:'Find vulnerability and keep pressure on it.',ppp:'Stage 3 Squash Activation: targeted feed-and-strike; choose one weakness to pressure. Stage 4 Official Warm-Up: identify forehand/backhand/volley vulnerability.',overlays:['Recognise Opponent Vulnerability','Attack Only On Advantage','Quiet Eye Before Attack'],reflection:'What weakness did I keep pressure on?',why:'The player may create openings but let pressure disappear. Tiger sustains pressure; Eagle identifies the target.'},
+    {challenge:'Undisciplined / abandoning plan',animal:'🐺 Wolf',hybrid:'Wolf + Eagle',breath:'Centre Breath: inhale 3 sec → hold 3 sec → exhale 3 sec × 3 cycles',process:'Stay with the agreed plan until information says change.',ppp:'Stage 1 Solution Activation: review one tactical highlight. Stage 3 Squash Activation: hit planned targets repeatedly under light randomness.',overlays:['Process Goal Focus','Attack Only On Advantage','Route Breaker'],reflection:'What was my plan and did I stay with it?',why:'The player needs disciplined attention and tactical consistency. Wolf stays with the plan; Eagle monitors whether the plan is still appropriate.'},
+    {challenge:'Slow reactions / late movement',animal:'🐆 Cheetah',hybrid:'Cheetah + Eagle',breath:'Activate Breath: inhale 1 sec → forceful exhale 1 sec × 2–3 repetitions',process:'See early. Move early.',ppp:'Stage 3 Squash Activation: random hand feeds, early pickup calls and movement-before-bounce tasks.',overlays:['Early Pick-Up','Tracking','Move Before Bounce'],reflection:'What could I see earlier?',why:'Late movement is often late information pickup. Cheetah creates action readiness; Eagle improves early visual detection.'},
+    {challenge:'Too emotional / frustrated',animal:'🐘 Elephant',hybrid:'Elephant + Golden Retriever',breath:'Calm Breath: inhale 4 sec → exhale 6–8 sec × 3 cycles',process:'Nothing changes; return to the next useful action.',ppp:'Stage 1 Solution Activation: mental highlight showing calm recovery. Stage 2 General Warm-Up: slow tempo breathing and mobility.',overlays:['Neutral Error Response','Accept And Continue','Reset Within 3 Seconds'],reflection:'What matters now?',why:'The player is carrying emotion into the next rally. Elephant stabilises; Golden Retriever re-engages despite disruption.'},
+    {challenge:'Not adapting',animal:'🦉 Owl',hybrid:'Owl + Dolphin',breath:'Centre Breath: inhale 3 sec → hold 3 sec → exhale 3 sec × 3 cycles',process:'Observe the pattern and change the solution.',ppp:'Stage 4 Official Warm-Up: identify one opponent pattern and one tactical opportunity before the match starts.',overlays:['Pattern Recognition','Find Another Solution','Route Breaker'],reflection:'What is the game telling me?',why:'The player is repeating ineffective solutions. Owl diagnoses patterns; Dolphin creates alternatives.'},
+    {challenge:'Too predictable',animal:'🐬 Dolphin',hybrid:'Dolphin + Eagle',breath:'Centre Breath or Activate Breath depending on state',process:'See alternatives and vary with purpose.',ppp:'Stage 3 Squash Activation: route-breaker feeds, disguise options and two-choice striking tasks.',overlays:['Route Breaker','External Target Focus','Checkerboard Pair Challenge'],reflection:'What else is possible?',why:'Predictability is reduced when players see more possibilities. Dolphin explores; Eagle keeps creativity attached to information.'}
+  ];
+
+  const selectedDiagnostic=diagnosticItems.find(item=>item.challenge===diagnosticChallenge)||diagnosticItems[0];
 
   function saveCustom(){
     localStorage.setItem('checkerboard_custom_animal',JSON.stringify(custom));
@@ -872,26 +888,34 @@ function MentalSkillsPlaceholder({setScreen}){
     {!activeAnimal&&section==='diagnostic'&&<div className="mentalContentPanel diagnosticMentalEngine">
       <h2>🧭 Animal Diagnostic Engine</h2>
       <p><strong>Question:</strong> What is the player's biggest challenge today?</p>
+      <p className="mutedText">Select one challenge to generate a practical animal, hybrid, breathing, overlay and PPP recommendation. The animal is a performance lens, not a personality label.</p>
+
+      <div className="diagnosticChallengeTabs">
+        {diagnosticItems.map(item=><button key={item.challenge} className={diagnosticChallenge===item.challenge?'activeDiagnosticChallenge':''} onClick={()=>setDiagnosticChallenge(item.challenge)}>{item.challenge}</button>)}
+      </div>
+
+      <div className="diagnosticRecommendationHero">
+        <div className="diagnosticAnimalBlock">
+          <span>Recommended Animal</span>
+          <strong>{selectedDiagnostic.animal}</strong>
+          <em>{selectedDiagnostic.hybrid}</em>
+        </div>
+        <div className="diagnosticAnimalBlock">
+          <span>Recommended Breath</span>
+          <strong>{selectedDiagnostic.breath}</strong>
+        </div>
+      </div>
+
       <div className="mentalGrid">
-        {[
-          {challenge:'Too distracted / bad calls / aggressive opponent',animal:'🐕 Golden Retriever',hybrid:'Golden Retriever + Eagle',breath:'Centre Breath: 3 in / 3 hold / 3 out × 3',overlays:['Reset Within 3 Seconds','Accept And Continue','Second Eye To Opponent'],reflection:'What is the next ball asking me to do?'},
-          {challenge:'Not observing enough',animal:'🦅 Eagle',hybrid:'Eagle + Owl',breath:'Centre Breath: 3-3-3 × 3',overlays:['Quiet Eye Before Attack','Opponent Reading','Tracking'],reflection:'What information did I miss?'},
-          {challenge:'Rushing decisions',animal:'🐈 Cat',hybrid:'Cat + Eagle',breath:'Centre Breath: 3-3-3 × 3',overlays:['Quiet Eye Before Attack','External Target Focus','Width Before Attack'],reflection:'Did I wait until I saw the opportunity?'},
-          {challenge:'Too passive / hesitant',animal:'🦁 Lion',hybrid:'Lion + Eagle',breath:'Activate Breath: 1 in / 1 out × 2–3',overlays:['Attack Only On Advantage','Attack Breath','Compete To Last Ball'],reflection:'Did I recognise and commit?'},
-          {challenge:'Not converting pressure',animal:'🐅 Tiger',hybrid:'Tiger + Eagle',breath:'Activate Breath: 1 in / 1 out × 2–3',overlays:['Recognise Opponent Vulnerability','Attack Only On Advantage','Quiet Eye Before Attack'],reflection:'What weakness did I keep pressure on?'},
-          {challenge:'Undisciplined / abandoning plan',animal:'🐺 Wolf',hybrid:'Wolf + Eagle',breath:'Centre Breath: 3-3-3 × 3',overlays:['Process Goal Focus','Attack Only On Advantage','Route Breaker'],reflection:'What was my plan and did I stay with it?'},
-          {challenge:'Slow reactions / late movement',animal:'🐆 Cheetah',hybrid:'Cheetah + Eagle',breath:'Activate Breath: 1 in / 1 out × 2–3',overlays:['Early Pick-Up','Tracking','Move Before Bounce'],reflection:'What could I see earlier?'},
-          {challenge:'Too emotional / frustrated',animal:'🐘 Elephant',hybrid:'Elephant + Golden Retriever',breath:'Calm Breath: 4 in / 6–8 out × 3',overlays:['Neutral Error Response','Accept And Continue','Reset Within 3 Seconds'],reflection:'What matters now?'},
-          {challenge:'Not adapting',animal:'🦉 Owl',hybrid:'Owl + Dolphin',breath:'Centre Breath: 3-3-3 × 3',overlays:['Pattern Recognition','Find Another Solution','Route Breaker'],reflection:'What is the game telling me?'},
-          {challenge:'Too predictable',animal:'🐬 Dolphin',hybrid:'Dolphin + Eagle',breath:'Centre Breath or Activate Breath depending on state',overlays:['Route Breaker','External Target Focus','Checkerboard Pair Challenge'],reflection:'What else is possible?'}
-        ].map(item=><div className="mentalCard diagnosticRecommendationCard" key={item.challenge}>
-          <h3>{item.challenge}</h3>
-          <p><strong>Animal:</strong> {item.animal}</p>
-          <p><strong>Hybrid:</strong> {item.hybrid}</p>
-          <p><strong>Breath:</strong> {item.breath}</p>
-          <p><strong>Reflection:</strong> {item.reflection}</p>
-          <div className="chipRow">{item.overlays.map(x=><span key={x}>{x}</span>)}</div>
-        </div>)}
+        <div className="mentalCard"><h3>Process Goal</h3><p>{selectedDiagnostic.process}</p></div>
+        <div className="mentalCard"><h3>PPP Emphasis</h3><p>{selectedDiagnostic.ppp}</p></div>
+        <div className="mentalCard"><h3>Reflection Question</h3><p>{selectedDiagnostic.reflection}</p></div>
+        <div className="mentalCard"><h3>Why This Recommendation?</h3><p>{selectedDiagnostic.why}</p></div>
+      </div>
+
+      <div className="overlaySuggestionBox">
+        <h3>Recommended Overlay Package</h3>
+        <div className="chipRow">{selectedDiagnostic.overlays.map(x=><span key={x}>{x}</span>)}</div>
       </div>
     </div>}
 
@@ -4571,7 +4595,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h62 Mental Performance Tile</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h64 Animal Diagnostic Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
