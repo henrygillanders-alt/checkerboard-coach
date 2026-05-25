@@ -827,7 +827,7 @@ function MentalSkillsPlaceholder({setScreen}){
     ['🎯 Cue Statements','Animal-linked cues and custom performance cues','cues'],
     ['🫁 Breathing & Regulation','Calm (4 in / 6-8 out x3), Centre (3-3-3 x3), Activate (1 in / 1 out x2-3)','breathing'],
     ['🎬 Greatest Hits Videos','Performance identity reinforcement for players, parents and coaches','greatest'],
-    ['🎮 Mental Overlays','Use Universal Overlays to apply mental performance behaviours inside games','overlays']
+    ['🎮 Mental Overlays','Use Universal Overlays to apply mental performance behaviours inside games','overlays'],['📈 Player Mental Profile','Track attention, regulation, recovery, identity and agency development','profile']
   ];
 
   const visualTopics=[
@@ -928,6 +928,29 @@ function MentalSkillsPlaceholder({setScreen}){
       <div className="overlaySuggestionBox">
         <h3>Recommended Overlay Package</h3>
         <div className="chipRow">{selectedDiagnostic.overlays.map(x=><span key={x}>{x}</span>)}</div>
+      </div>
+
+      <div className="mentalCard" style={{marginTop:'20px'}}>
+        <h2>Animal Pairings</h2>
+        <p><strong>🦅 Eagle + 🦮 Golden Retriever</strong> — Awareness Under Distraction</p>
+        <p><strong>🦅 Eagle + 🐺 Wolf</strong> — Observe & Stay Disciplined</p>
+        <p><strong>🦁 Lion + 🦅 Eagle</strong> — Recognise & Commit</p>
+        <p><strong>🐱 Cat + 🦅 Eagle</strong> — Patience & Recognition</p>
+        <p><strong>🦉 Owl + 🐬 Dolphin</strong> — Adapt & Create</p>
+        <p><strong>🐆 Cheetah + 🦅 Eagle</strong> — See Early, Move Early</p>
+        <p><strong>🐘 Elephant + 🦮 Golden Retriever</strong> — Calm Resilience</p>
+      </div>
+    </div>}
+
+    {!activeAnimal&&section==='profile'&&<div className="mentalContentPanel">
+      <h2>📈 Player Mental Profile</h2>
+      <div className="mentalGrid">
+        <div className="mentalCard"><h3>Attention</h3><p>1–5 Rating</p></div>
+        <div className="mentalCard"><h3>Regulation</h3><p>1–5 Rating</p></div>
+        <div className="mentalCard"><h3>Recovery</h3><p>1–5 Rating</p></div>
+        <div className="mentalCard"><h3>Competitive Identity</h3><p>1–5 Rating</p></div>
+        <div className="mentalCard"><h3>Agency</h3><p>1–5 Rating</p></div>
+        <div className="mentalCard"><h3>Profile Notes</h3><p>Primary Animal • Secondary Animal • Preferred Breath • PPP Preference • Coach Notes</p></div>
       </div>
     </div>}
 
