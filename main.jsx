@@ -579,34 +579,23 @@ function DoubleBounceTool({setScreen}){
 
 
 const UNIVERSAL_MENTAL_OVERLAYS = [
-  {cat:'Information', name:'Quiet Eye Before Serve', rule:'Target → Ball → Target → Ball → Strike. Elite: Target → Ball → Strike.', objective:'Improve attentional control before initiating play.', instructions:'Use a stable target-ball routine before serving.', observe:'Stable gaze, less rushing and committed serve start.'},
-  {cat:'Information', name:'Quiet Eye Before Attack', rule:'Stabilise gaze on target or space before initiating attack.', objective:'Reduce rushed attacking decisions and improve commitment.', instructions:'See the space, commit, then attack.', observe:'Fewer late changes of mind and clearer attacking choices.'},
-  {cat:'Information', name:'Second Eye To Opponent', rule:'After contact, reconnect visually with the opponent as early as possible.', objective:'Improve perception-action coupling after the shot.', instructions:'Strike, recover, then immediately pick up opponent information.', observe:'Less ball-only attention and better next-shot readiness.'},
-  {cat:'Information', name:'Tracking', rule:'Track ball flight from opponent contact to own contact.', objective:'Improve continuous ball information pickup.', instructions:'Follow trajectory, bounce, speed and interception point.', observe:'Cleaner spacing, earlier movement and fewer rushed contacts.'},
-  {cat:'Information', name:'External Target Focus', rule:'Attend to ball, target, space or opponent instead of internal technical chatter.', objective:'Keep attention external and action-focused.', instructions:'Choose the external information source that solves the task.', observe:'Less mechanical thinking and more functional shot organisation.'},
-  {cat:'Information', name:'Opponent Awareness', rule:'Check opponent position, movement direction and recovery status before choosing.', objective:'Improve tactical information pickup.', instructions:'See opponent before committing to the shot.', observe:'Player stops playing predetermined shots.'},
-  {cat:'Information', name:'Pattern Recognition', rule:'Identify repeated opponent habits, strengths, weaknesses or predictable routes.', objective:'Support tactical adaptation.', instructions:'Name one pattern and adjust behaviour.', observe:'Player changes plan based on live evidence.'},
-  {cat:'Information', name:'Early Pick-Up', rule:'Read racquet cues, body position and movement intention earlier.', objective:'Move earlier by detecting earlier information.', instructions:'Look for information before the ball is fully obvious.', observe:'Earlier first step and better interception timing.'},
-  {cat:'Regulation', name:'Calm Breath', rule:'4 sec inhale → 6–8 sec exhale × 3 cycles. Use for anxiety, tension or rushing.', objective:'Lower over-arousal without disconnecting from the game.', instructions:'Longer exhale than inhale, then return to task.', observe:'Slower tempo, calmer body language and reduced rushing.'},
-  {cat:'Regulation', name:'Centre Breath', rule:'3 in → 3 hold → 3 out × 3 cycles. Use for distraction or overthinking.', objective:'Bring attention back to the present task.', instructions:'Breathe, cue, eyes up, ready posture.', observe:'Reconnection after distraction or error.'},
-  {cat:'Regulation', name:'Activate Breath', rule:'Sharp inhale → powerful exhale × 2–3 reps. Total time 5–6 seconds.', objective:'Increase readiness, intent and action energy.', instructions:'Use before competition, attacking games or low-energy periods.', observe:'Stronger posture, faster first movement and clearer commitment.'},
-  {cat:'Regulation', name:'Attack Breath', rule:'Recognise opportunity → single activation breath → attack.', objective:'Link activation directly to attacking affordance.', instructions:'One sharp breath as the opportunity appears, then act.', observe:'More committed attacks without becoming rushed.'},
-  {cat:'Attention Stability', name:'Reset Within 3 Seconds', rule:'After error or disruption: breathe, cue word, eyes up, ready posture within 3 seconds.', objective:'Recover attention quickly after mistakes or distractions.', instructions:'Visible reset, then immediate readiness.', observe:'No lingering frustration or delayed preparation.'},
-  {cat:'Attention Stability', name:'Cue Word After Error', rule:'Use one short cue after error before the next rally.', objective:'Interrupt negative self-talk.', instructions:'Use “next”, “reset”, “forward” or the player’s chosen cue.', observe:'Shorter emotional carry-over.'},
-  {cat:'Attention Stability', name:'No Admiring Shots', rule:'After every shot, recover or reposition immediately.', objective:'Prevent outcome watching.', instructions:'Hit and reconnect to the next information source.', observe:'Immediate recovery after attacks and winners.'},
-  {cat:'Attention Stability', name:'Full Recovery After Every Shot', rule:'Attempt full recovery even after poor shots or apparent winners.', objective:'Build process orientation and next-ball readiness.', instructions:'Recovery behaviour matters regardless of outcome.', observe:'Consistent effort and positioning.'},
-  {cat:'Attention Stability', name:'Compete To Last Ball', rule:'Continue effort until the rally is definitely over.', objective:'Build competitive persistence.', instructions:'No stopping early, even when the point looks lost or won.', observe:'Effort through final bounce and final contact.'},
-  {cat:'Attention Stability', name:'Neutral Error Response', rule:'After error, show neutral body language and immediate readiness.', objective:'Develop emotional control under consequence.', instructions:'Accept the error without drama and reset.', observe:'No visible collapse, anger or blame.'},
-  {cat:'Attention Stability', name:'Accept And Continue', rule:'After bad call, bad bounce or disruption, reset and continue.', objective:'Build psychological flexibility.', instructions:'Acknowledge disruption, then reconnect to the next ball.', observe:'No arguing, revenge shots or emotional carry-over.'},
-  {cat:'Tactical Awareness', name:'Recognise Opponent Vulnerability', rule:'Attack only when opponent is off-balance, late, unrecovered or out of position.', objective:'Tie attack selection to opponent information.', instructions:'See vulnerability before committing.', observe:'Fewer forced attacks from neutral positions.'},
-  {cat:'Tactical Awareness', name:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue or positional advantage.', objective:'Improve attack discipline.', instructions:'Build pressure, see advantage, then attack.', observe:'Better timing and fewer low-percentage attacks.'},
-  {cat:'Agency', name:'Solve Before Asking Coach', rule:'Player attempts one solution before asking the coach.', objective:'Build independent problem solving.', instructions:'Try an adjustment first, then discuss.', observe:'Player starts owning solutions.'},
-  {cat:'Agency', name:'Self Diagnose Error', rule:'Player identifies likely cause before coach feedback.', objective:'Improve self-awareness and ownership.', instructions:'Ask: what happened, why, and what next?', observe:'Better reflective accuracy over time.'},
-  {cat:'Agency', name:'Find Another Solution', rule:'Player cannot repeat the same unsuccessful tactic three times.', objective:'Promote adaptation under pressure.', instructions:'If it fails twice, change route, target, tempo or intention.', observe:'Less stubborn repetition.'},
-  {cat:'Agency', name:'Tactical Adjustment Challenge', rule:'Player chooses one tactical adjustment between games.', objective:'Develop ownership of match adaptation.', instructions:'Name the adjustment and test it.', observe:'Player links information to action.'},
-  {cat:'Agency', name:'Ownership Reset', rule:'Player selects their own reset strategy after disruption.', objective:'Move from coach-led regulation to self-regulation.', instructions:'Choose breath, cue, animal lens or visual focus.', observe:'Player resets without coach prompting.'},
-  {cat:'Agency', name:'Reflection Prompt', rule:'Player answers: what changed, what worked, what will I try next?', objective:'Convert experience into agency.', instructions:'Use between activities or post-session.', observe:'More specific player-led learning.'}
-]
+  {cat:'Attention', name:'Quiet Eye Before Serve', rule:'Target → Ball → Strike. Fixate front-wall target for 1–2 seconds, eyes to ball, serve immediately.'},
+  {cat:'Attention', name:'Quiet Eye Before Attack', rule:'Stabilise gaze on target/space before attacking.'},
+  {cat:'Attention', name:'Second Eye To Opponent', rule:'Maintain outside-eye access to opponent information space.'},
+  {cat:'Attention', name:'External Target Focus', rule:'Use ball, target, space or opponent information rather than internal technical chatter.'},
+  {cat:'Breathing', name:'Long Exhale Before Serve', rule:'Visible long controlled exhale before serve or pressure point.'},
+  {cat:'Breathing', name:'Breath Before Serve', rule:'One visible centering breath before every serve.'},
+  {cat:'Breathing', name:'Attack Breath', rule:'Sharp energising breath and attack cue before serve or attack phase.'},
+  {cat:'Reset', name:'Reset Within 3 Seconds', rule:'After error/lost rally: breathe, cue word, eyes up, ready posture within 3 seconds.'},
+  {cat:'Reset', name:'Cue Word After Error', rule:'Short cue word after error before next rally.'},
+  {cat:'Competitive Behaviour', name:'No Admiring Shots', rule:'After every shot, recover or reposition immediately.'},
+  {cat:'Competitive Behaviour', name:'Full Recovery After Every Shot', rule:'Attempt recovery even after poor shots or apparent winners.'},
+  {cat:'Competitive Behaviour', name:'Compete To Last Ball', rule:'Continue effort until rally is definitely over.'},
+  {cat:'Emotional Regulation', name:'Neutral Error Response', rule:'After error, show neutral body language and immediate readiness.'},
+  {cat:'Emotional Regulation', name:'Accept And Continue', rule:'After bad call, bad bounce or disruption, reset and continue.'},
+  {cat:'Tactical Awareness', name:'Recognise Opponent Vulnerability', rule:'Attack only when opponent is off-balance, late, unrecovered or out of position.'},
+  {cat:'Tactical Awareness', name:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue or positional advantage.'}
+];
 
 
 function cbPlayerRankValue(player){
@@ -728,106 +717,114 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
 }
 
 function MentalSkillsPlaceholder({setScreen}){
-  const [tab,setTab]=useState('diagnostic');
-  const [challenge,setChallenge]=useState('Too distracted');
-  const [primaryAnimal,setPrimaryAnimal]=useState('Eagle');
-  const [secondaryAnimal,setSecondaryAnimal]=useState('Golden Retriever');
-
-  const informationCards=[
-    {name:'Quiet Eye Before Serve',objective:'Improve attentional control before initiating play.',instructions:'Target → Ball → Target → Ball → Strike. Elite: Target → Ball → Strike.',observe:'Stable gaze, reduced rushing and committed serve.',errors:'Looking at opponent, outcome watching or rushed contact.',progression:'Normal serve → pressure serve → match-point serve.',cla:'Improves pickup of relevant information immediately before action.'},
-    {name:'Quiet Eye Before Attack',objective:'Improve attacking commitment.',instructions:'Before attack, briefly stabilise gaze on intended target or space, then commit.',observe:'Less hesitation and clearer attack decisions.',errors:'Rushed attack or late change of mind.',progression:'Open play → conditioned attack game → competition.',cla:'Reduces indecision before attacking action.'},
-    {name:'Second Eye To Opponent',objective:'Improve post-contact information pickup.',instructions:'After striking, reconnect visually to opponent as early as possible.',observe:'Opponent awareness improves after contact.',errors:'Watching own shot or admiring winner attempts.',progression:'Drive → open rally → competitive rally.',cla:'Improves perception-action coupling.'},
-    {name:'Tracking',objective:'Improve continuous ball awareness.',instructions:'Track ball from opponent contact until own contact.',observe:'Head stability, earlier movement and cleaner spacing.',errors:'Looking ahead too early or losing ball flight information.',progression:'Feed → rally → pressure rally.',cla:'Improves information detection under time pressure.'},
-    {name:'External Target Focus',objective:'Direct attention externally.',instructions:'Focus on target, ball, space or opponent rather than body mechanics.',observe:'Clear target selection and reduced internal focus.',errors:'Overthinking wrist, elbow, swing or foot position.',progression:'Simple target → checkerboard target → tactical target.',cla:'External focus supports functional self-organisation.'},
-    {name:'Opponent Awareness',objective:'Improve tactical information pickup.',instructions:'Identify opponent position, movement direction and recovery status before choosing.',observe:'Player checks opponent before committing.',errors:'Predetermined shots with no opponent information.',progression:'Closed task → live rally → competition.',cla:'Better decisions emerge from better information.'},
-    {name:'Pattern Recognition',objective:'Recognise opponent habits.',instructions:'Identify favourite shots, predictable patterns or repeated weaknesses.',observe:'Player adjusts based on observed patterns.',errors:'Repeating the same plan despite evidence.',progression:'Name one pattern → act on it → adapt under scoring pressure.',cla:'Supports adaptive behaviour and agency.'},
-    {name:'Early Pick-Up',objective:'Recognise information sooner.',instructions:'Read body position, racquet preparation and movement intention before ball contact.',observe:'Earlier movement initiation and better anticipation.',errors:'Waiting until the ball is obvious.',progression:'Coach feed cues → opponent cues → live pressure.',cla:'Earlier information allows more effective action.'}
-  ];
-
-  const breathCards=[
-    {name:'Calm Breath',use:'Anxiety, tension, rushing, panic.',protocol:'4 seconds inhale → 6–8 seconds exhale × 3 cycles.',timing:'Approximately 30 seconds.',observe:'Slower tempo, calmer body language and reduced rushing.'},
-    {name:'Centre Breath',use:'Distraction, wandering attention, overthinking.',protocol:'3 inhale → 3 hold → 3 exhale × 3 cycles.',timing:'Approximately 20 seconds.',observe:'Breath, cue, eyes up and ready posture.'},
-    {name:'Activate Breath',use:'Low energy, passivity, slow starts.',protocol:'Sharp inhale → powerful exhale × 2–3 repetitions.',timing:'5–6 seconds.',observe:'Stronger posture, faster first movement and clearer commitment.'},
-    {name:'Attack Breath',use:'Immediately before an attacking opportunity.',protocol:'Recognise opportunity → single activation breath → attack.',timing:'1–2 seconds.',observe:'Committed attack linked to live affordance, not a fixed ritual.'}
-  ];
+  const [section,setSection]=useState('menu');
+  const [selectedAnimal,setSelectedAnimal]=useState(null);
+  const [visualTopic,setVisualTopic]=useState('overview');
+  const [custom,setCustom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_custom_animal')||'{}')}catch(e){return {}}});
 
   const animals=[
-    {emoji:'🦅',name:'Eagle',state:'Awareness Mode',superpower:'Scanning',vision:'See information early and broadly.',used:'Tactically blind, reactive, rushing or not observing.',behaviour:'Observe, scan, recognise.',cue:'See first.',breath:'Centre Breath',overlays:['Second Eye To Opponent','Opponent Awareness','Pattern Recognition']},
-    {emoji:'🐈',name:'Cat',state:'Patient Opportunist',superpower:'Observation',vision:'Wait until the useful information appears.',used:'Rushing attacks, forcing winners or attacking too early.',behaviour:'Balance, wait, observe, strike at the right moment.',cue:'See before you strike.',breath:'Calm Breath',overlays:['Quiet Eye Before Attack','Attack Only On Advantage','Opponent Awareness']},
-    {emoji:'🦁',name:'Lion',state:'Attack Mode',superpower:'Commitment',vision:'Recognise opportunity then commit.',used:'Passive, hesitant or fearful.',behaviour:'Courage, initiative, commitment.',cue:'Be brave.',breath:'Activate Breath',overlays:['Attack Breath','Attack Only On Advantage','Compete To Last Ball']},
-    {emoji:'🐅',name:'Tiger',state:'Predatory Pressure',superpower:'Target lock',vision:'Find vulnerability and stay on it.',used:'Creating pressure but not converting.',behaviour:'Hunt space, maintain pressure, finish when advantage appears.',cue:'Find it. Hunt it.',breath:'Attack Breath',overlays:['Recognise Opponent Vulnerability','Attack Only On Advantage','No Admiring Shots']},
-    {emoji:'🐺',name:'Wolf',state:'Discipline Mode',superpower:'Plan discipline',vision:'Stay connected to tactical triggers.',used:'Inconsistent, emotional or abandoning plans.',behaviour:'Discipline, commitment, persistence.',cue:'Stay with the plan.',breath:'Centre Breath',overlays:['Full Recovery After Every Shot','Tactical Adjustment Challenge','Attack Only On Advantage']},
-    {emoji:'🐆',name:'Cheetah',state:'Speed Mode',superpower:'Early recognition',vision:'See early, move early.',used:'Slow reactions, poor anticipation or late movement.',behaviour:'Explosive movement, intercepting, readiness.',cue:'Move now.',breath:'Activate Breath',overlays:['Early Pick-Up','Tracking','Attack Breath']},
-    {emoji:'🐘',name:'Elephant',state:'Composure Mode',superpower:'Stable attention',vision:'Keep seeing clearly under emotional load.',used:'Anxious, emotional or frustrated.',behaviour:'Calm, steady, controlled.',cue:'Nothing changes.',breath:'Calm Breath',overlays:['Neutral Error Response','Accept And Continue','Calm Breath']},
-    {emoji:'🐕',name:'Golden Retriever',state:'Freedom & Persistence Mode',superpower:'Attention re-capture',vision:'Reconnect to ball, opponent, space and task after distraction.',used:'Bad calls, aggressive opponent, lucky nicks, crowd noise, mistakes or scoreboard pressure.',behaviour:'No sulking, no arguing, non-aggressive persistence, next-ball focus.',cue:'Next ball.',breath:'Centre Breath',overlays:['Reset Within 3 Seconds','Accept And Continue','Compete To Last Ball']},
-    {emoji:'🦉',name:'Owl',state:'Adaptation Mode',superpower:'Pattern recognition',vision:'See what the game is telling you.',used:'Tactically stuck, repeating errors or unable to solve problems.',behaviour:'Analyse, adapt, adjust.',cue:'Find the solution.',breath:'Centre Breath',overlays:['Pattern Recognition','Self Diagnose Error','Find Another Solution']},
-    {emoji:'🐬',name:'Dolphin',state:'Creativity Mode',superpower:'Alternative possibilities',vision:'See options others miss.',used:'Predictable, repetitive or lacking variety.',behaviour:'Explore, disguise, innovate.',cue:'What else is possible?',breath:'Centre Breath',overlays:['Find Another Solution','Tactical Adjustment Challenge','External Target Focus']}
+    {emoji:'🐈',name:'Cat',core:'Patience & Timing',strategy:'Survives by observing carefully, staying balanced and striking only when the moment is right.',behaviours:['Observe before acting','Stay balanced','Wait for real opportunity','Strike efficiently'],activation:['Smooth ghosting','Pause-scan-accelerate','Controlled feed and strike'],breakdown:['Rushes attacks','Forces low-percentage shots','Moves before seeing'],cue:'See before you strike.',overlays:['Width Before Attack','Quiet Eye Before Attack','External Focus']},
+    {emoji:'🐅',name:'Tiger',core:'Commitment & Action',strategy:'Survives by committing fully when opportunity appears.',behaviours:['Attack decisively','Commit to decisions','Dominate space','No hesitation'],activation:['Explosive ghosting','Fast first step','Decisive feed-and-strike'],breakdown:['Hesitates','Plays safe when opportunity appears','Attacks without conviction'],cue:'Hunt the ball.',overlays:['Activation Breath','Volley Opportunity','Attack Only On Advantage']},
+    {emoji:'🐕',name:'Golden Retriever',core:'Resilience, Focus & Visual Persistence',strategy:'Survives by ignoring distractions and staying focused on what matters.',behaviours:['Ignore distractions and controversy','Maintain visual connection to play','Recover immediately','Next-ball focus','Persistent non-aggressive resilience'],activation:['Recover after every ghost','Chase every feed','Reset without complaint'],breakdown:['Complains','Dwells on errors','Stops chasing','Reacts to opponent'],cue:'Next ball. Keep seeing.',overlays:['Refocus After Error','Centering Breath','Compete To The End']},
+    {emoji:'🐺',name:'Wolf',core:'Discipline & Tactical Intelligence',strategy:'Survives through patience, planning and intelligent hunting.',behaviours:['Follow the plan','Build pressure','Make intelligent decisions','Stay disciplined'],activation:['Ghost tactical patterns','Vary pace with purpose','Feed and strike into planned targets'],breakdown:['Over-attacks','Forgets plan','Gets emotional'],cue:'Hunt with purpose.',overlays:['Route Breaker','Attack Only On Advantage','Process Goal Focus']},
+    {emoji:'🦅',name:'Eagle',core:'Awareness & Anticipation',strategy:'Survives by rising above chaos, seeing early and choosing the right moment.',behaviours:['Scan early','Read opponent cues','Recognise opportunities','Stay calm under pressure'],activation:['Head-up ghosting','Scan before moving','Opponent-reading knock-up'],breakdown:['Ball-only attention','Late recognition','Gets drawn into chaos'],cue:'Rise above. See everything.',overlays:['Second Eye','Opponent Reading','Quiet Eye Return']},
+    {emoji:'🦁',name:'Lion',core:'Confidence & Responsibility',strategy:'Survives by owning the space and stepping forward when pressure rises.',behaviours:['Positive body language','Take responsibility','Step forward under pressure','Lead by example'],activation:['Strong posture','Assertive first movement','Controlled breathing'],breakdown:['Shrinks','Waits for opponent mistakes','Negative posture'],cue:'Own the court.',overlays:['Positive Body Language','Activation Breath','Attack Only On Advantage']},
+    {emoji:'🐘',name:'Elephant',core:'Protect What Matters',strategy:'Survives by protecting priorities and not wasting energy on irrelevant noise.',behaviours:['Protect routines','Protect process goals','Stay composed','Ignore score noise'],activation:['Stable ghosting','Deliberate reset','Controlled feed and strike'],breakdown:['Chases score','Panics after errors','Abandons routine'],cue:'Protect what matters.',overlays:['Process Goal Focus','Calming Breath','Accept And Continue']}
   ];
 
-  const hybrids=[
-    {name:'Eagle + Golden Retriever',purpose:'See clearly despite distraction.',cue:'See it. Next ball.',use:'Bad calls, aggressive opponents or emotional matches.'},
-    {name:'Eagle + Lion',purpose:'Recognise and attack.',cue:'See it. Take it.',use:'Hesitant players who need clearer attacking commitment.'},
-    {name:'Tiger + Eagle',purpose:'Find weakness and exploit it.',cue:'Find it. Hunt it.',use:'Players creating pressure but not sustaining it.'},
-    {name:'Wolf + Eagle',purpose:'Disciplined awareness.',cue:'Observe. Stay with it.',use:'Players who need a plan and continuous information pickup.'},
-    {name:'Owl + Dolphin',purpose:'Creative adaptation.',cue:'What else might work?',use:'Players stuck in repeated patterns.'},
-    {name:'Elephant + Eagle',purpose:'Calm observation under pressure.',cue:'Nothing changes. See first.',use:'Anxious players who stop seeing information.'}
+  const menu=[
+    ['🐾 Performance Identity','Animals, custom identity, survival strategy and observable behaviours','identity'],
+    ['👁 Visual Performance','Quiet Eye, tracking, opponent reading, second eye and external focus','visual'],
+    ['🚀 Pre-Performance Preparation','Identity, cue statement, breathing, process goal and greatest hits video','ppp'],
+    ['🏃 Activation & Calibration','Ghosting, animal ghosting, coach feed & strike and court-available options','activation'],
+    ['👁 Court Calibration','Official knock-up, opponent observation, Quiet Eye and information gathering','court'],
+    ['🎯 Cue Statements','Animal-linked cues and custom performance cues','cues'],
+    ['🫁 Breathing & Regulation','Calm (4 in / 6-8 out x3), Centre (3-3-3 x3), Activate (1 in / 1 out x2-3)','breathing'],
+    ['🎬 Greatest Hits Videos','Performance identity reinforcement for players, parents and coaches','greatest'],
+    ['🎮 Mental Overlays','Use Universal Overlays to apply mental performance behaviours inside games','overlays']
   ];
 
-  const agencyCards=[
-    {name:'Solve Before Asking Coach',objective:'Build independent problem solving.',rule:'Player attempts one solution before asking coach.',observe:'Player starts owning solutions.'},
-    {name:'Self Diagnose Error',objective:'Improve self-awareness.',rule:'Player identifies likely cause before coach feedback.',observe:'Player can describe what happened and what to try next.'},
-    {name:'Find Another Solution',objective:'Promote adaptation under pressure.',rule:'Cannot repeat the same unsuccessful tactic three times.',observe:'Player changes target, route, tempo or intention.'},
-    {name:'Tactical Adjustment Challenge',objective:'Develop ownership of match adaptation.',rule:'Player chooses one tactical adjustment between games.',observe:'Adjustment is specific and tested.'},
-    {name:'Ownership Reset',objective:'Move from coach-led regulation to self-regulation.',rule:'Player selects own reset strategy.',observe:'Player resets without prompting.'},
-    {name:'Reflection Prompt',objective:'Convert experience into agency.',rule:'What changed? What worked? What will I try next?',observe:'More specific player-led learning.'}
+  const visualTopics=[
+    ['overview','👁 Overview','Visual performance is directing attention to information that supports successful action: ball, opponent, target, space and time.'],
+    ['quiet','👁 Quiet Eye','Quiet Eye is the final fixation or tracking gaze directed toward task-relevant information before movement execution. It is not just targeting.'],
+    ['tracking','🎾 Tracking','Tracking is continuous visual monitoring of the ball to predict trajectory, bounce, speed, available time and interception point.'],
+    ['opponent','👤 Opponent Information Pickup','Read racquet preparation, shoulder orientation, balance, movement direction, recovery state and court position.'],
+    ['second','👀 Second Eye','Maintain access to opponent information while interacting with the ball. Avoid ball-only attention.'],
+    ['external','🎯 External Focus','Focus on ball, target, space or opponent rather than wrist, elbow or swing mechanics unless used temporarily as a correction.']
   ];
 
-  const diagnostic={
-    'Too distracted':{animal:'Golden Retriever',hybrid:'Eagle + Golden Retriever',breath:'Centre Breath',overlay:'Reset Within 3 Seconds',reflection:'How quickly did I reconnect to the next ball?'},
-    'Not observing':{animal:'Eagle',hybrid:'Wolf + Eagle',breath:'Centre Breath',overlay:'Second Eye To Opponent',reflection:'What information did I miss?'},
-    'Rushing decisions':{animal:'Cat',hybrid:'Elephant + Eagle',breath:'Calm Breath',overlay:'Quiet Eye Before Attack',reflection:'Did I wait until I saw the opportunity?'},
-    'Too passive':{animal:'Lion',hybrid:'Eagle + Lion',breath:'Activate Breath',overlay:'Attack Breath',reflection:'Did I take the opportunity when it appeared?'},
-    'Not converting pressure':{animal:'Tiger',hybrid:'Tiger + Eagle',breath:'Attack Breath',overlay:'Recognise Opponent Vulnerability',reflection:'Did I stay on the weakness?'},
-    'Undisciplined':{animal:'Wolf',hybrid:'Wolf + Eagle',breath:'Centre Breath',overlay:'Tactical Adjustment Challenge',reflection:'Did I stay with the plan?'},
-    'Slow reactions':{animal:'Cheetah',hybrid:'Eagle + Lion',breath:'Activate Breath',overlay:'Early Pick-Up',reflection:'What could I see earlier?'},
-    'Too emotional':{animal:'Elephant',hybrid:'Elephant + Eagle',breath:'Calm Breath',overlay:'Neutral Error Response',reflection:'Did my attention stay stable?'},
-    'Not adapting':{animal:'Owl',hybrid:'Owl + Dolphin',breath:'Centre Breath',overlay:'Find Another Solution',reflection:'What did the game tell me to change?'},
-    'Too predictable':{animal:'Dolphin',hybrid:'Owl + Dolphin',breath:'Centre Breath',overlay:'External Target Focus',reflection:'What else was possible?'}
-  };
+  function saveCustom(){
+    localStorage.setItem('checkerboard_custom_animal',JSON.stringify(custom));
+    alert('Custom animal saved.');
+  }
 
-  const recommendation=diagnostic[challenge];
-  const primary=animals.find(a=>a.name===primaryAnimal)||animals[0];
-  const secondary=animals.find(a=>a.name===secondaryAnimal)||animals[7];
-
-  function DetailCard({item}){
-    return <div className="mentalCard detailMentalCard"><h3>{item.name}</h3>
-      {Object.entries(item).filter(([k])=>k!=='name').map(([k,v])=><p key={k}><strong>{k[0].toUpperCase()+k.slice(1)}:</strong> {Array.isArray(v)?v.join(' · '):v}</p>)}
+  function SquashBallGraphic(){
+    return <div className="squashBallGraphic">
+      <div className="trajectoryArc"></div>
+      <div className="squashBallCore">●</div>
+      <span className="trackLabel labelTrajectory">Trajectory</span>
+      <span className="trackLabel labelBounce">Bounce</span>
+      <span className="trackLabel labelSpeed">Speed</span>
+      <span className="trackLabel labelIntercept">Interception</span>
+      <div className="bounceDot"></div>
+      <div className="interceptDot"></div>
     </div>;
   }
 
-  return <div className="page mentalPerformancePage mentalV2Page">
+  const activeAnimal=selectedAnimal?animals.find(a=>a.name===selectedAnimal):null;
+
+  return <div className="page mentalPerformancePage">
     <div className="pageTop">
-      <div><h1>Mental Performance</h1><p className="mutedText">Vision first · information pickup · attention stability · regulation · agency</p></div>
-      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+      <div><h1>Mental Performance</h1><p className="mutedText">Survive • Prosper • Perform</p></div>
+      <button className="secondaryBtn" onClick={()=>activeAnimal?setSelectedAnimal(null):section==='menu'?setScreen('home'):setSection('menu')}>{activeAnimal?'Animals':section==='menu'?'Home':'Back'}</button>
     </div>
 
-    <div className="mentalPhilosophyBox visionFirstBox"><h2>VISION FIRST</h2><p>In squash, mental performance begins with information pickup. Players must see useful information before they can regulate, decide, attack, adapt or demonstrate agency.</p><p><strong>See → Understand → Act</strong></p></div>
+    {activeAnimal&&<div className="animalFullPage">
+      <div className="animalHero"><div className="animalEmoji">{activeAnimal.emoji}</div><div><h2>{activeAnimal.name}</h2><h3>{activeAnimal.core}</h3><p>{activeAnimal.strategy}</p></div></div>
+      <div className="mentalGrid">
+        <div className="mentalCard"><h3>Observable Behaviours</h3>{activeAnimal.behaviours.map(x=><p key={x}>✓ {x}</p>)}</div>
+        <div className="mentalCard"><h3>Activation Exercises</h3>{activeAnimal.activation.map(x=><p key={x}>• {x}</p>)}</div>
+        <div className="mentalCard"><h3>Breakdown Behaviours</h3>{activeAnimal.breakdown.map(x=><p key={x}>✗ {x}</p>)}</div>
+        <div className="mentalCard"><h3>Recovery Cue</h3><p className="largeCue">“{activeAnimal.cue}”</p></div>
+      </div>
+      <div className="overlaySuggestionBox"><h3>Suggested Overlays</h3><div className="chipRow">{activeAnimal.overlays.map(x=><span key={x}>{x}</span>)}</div></div>
+    </div>}
 
-    <div className="mentalTabs">
-      {[['diagnostic','Diagnostic Engine'],['information','Information'],['breathing','Breathing'],['animals','Animals'],['hybrids','Hybrids'],['agency','Agency']].map(t=><button key={t[0]} className={tab===t[0]?'activeTab':''} onClick={()=>setTab(t[0])}>{t[1]}</button>)}
-    </div>
+    {!activeAnimal&&section==='menu'&&<div>
+      <div className="mentalPhilosophyBox"><h2>Survive and Prosper</h2><p>Mental performance is the ability to focus on what matters, regulate emotion, recover after setbacks and behave in ways that help the player adapt to the competitive environment.</p></div>
+      <div className="mentalMenuGrid">{menu.map(item=><button key={item[2]} className="mentalMenuCard" onClick={()=>setSection(item[2])}><h2>{item[0]}</h2><p>{item[1]}</p></button>)}</div>
+    </div>}
 
-    {tab==='diagnostic'&&<div className="mentalContentPanel"><h2>Diagnostic Engine</h2><label className="mentalSelectLabel">What is today’s biggest challenge?<select value={challenge} onChange={e=>setChallenge(e.target.value)}>{Object.keys(diagnostic).map(x=><option key={x}>{x}</option>)}</select></label><div className="diagnosticRecommendationGrid"><div className="mentalCard"><h3>Recommended Animal</h3><p className="largeCue">{recommendation.animal}</p></div><div className="mentalCard"><h3>Recommended Hybrid</h3><p className="largeCue">{recommendation.hybrid}</p></div><div className="mentalCard"><h3>Breath</h3><p>{recommendation.breath}</p></div><div className="mentalCard"><h3>Overlay</h3><p>{recommendation.overlay}</p></div><div className="mentalCard wideMentalCard"><h3>Reflection Question</h3><p>{recommendation.reflection}</p></div></div></div>}
+    {!activeAnimal&&section==='identity'&&<div>
+      <h2 className="sectionTitle">🐾 Performance Identity</h2>
+      <p className="mutedText">The animal is not the intervention. It is a memorable way to connect identity to observable performance behaviours.</p>
+      <div className="animalGrid">{animals.map(a=><button className="animalCard animalButtonCard" key={a.name} onClick={()=>setSelectedAnimal(a.name)}>
+        <div className="animalEmoji">{a.emoji}</div><h2>{a.name}</h2><h3>{a.core}</h3><p>{a.strategy}</p><p><strong>Cue:</strong> “{a.cue}”</p>
+      </button>)}</div>
+      <div className="customAnimalBox"><h2>➕ Create Your Own Animal</h2><p>Choose an animal that fits the player. The key question is: why did you choose it?</p>
+        <div className="customAnimalGrid"><input placeholder="Animal" value={custom.animal||''} onChange={e=>setCustom({...custom,animal:e.target.value})}/><input placeholder="Cue phrase" value={custom.cue||''} onChange={e=>setCustom({...custom,cue:e.target.value})}/><textarea placeholder="Why did you choose this animal?" value={custom.why||''} onChange={e=>setCustom({...custom,why:e.target.value})}/><textarea placeholder="What behaviours should a coach see?" value={custom.behaviours||''} onChange={e=>setCustom({...custom,behaviours:e.target.value})}/></div>
+        <button className="primaryBtn" onClick={saveCustom}>Save Custom Animal</button>
+      </div>
+    </div>}
 
-    {tab==='information'&&<div className="mentalContentPanel"><h2>Information Foundation</h2><p>Visual qualities are central because squash is time-limited. Better performers are better information users.</p><div className="mentalGrid">{informationCards.map(item=><DetailCard key={item.name} item={item}/>)}</div></div>}
+    {!activeAnimal&&section==='visual'&&<div className="mentalContentPanel visualPerformancePanel">
+      <h2>👁 Visual Performance</h2><p>Visual performance is the coachable system that helps players perceive the information that matters.</p>
+      <div className="visualTopicTabs">{visualTopics.map(t=><button key={t[0]} className={visualTopic===t[0]?'activeVisualTab':''} onClick={()=>setVisualTopic(t[0])}>{t[1]}</button>)}</div>
+      {visualTopic==='overview'&&<div className="mentalGrid"><div className="mentalCard"><h3>Information Sources</h3><p>🎾 Ball</p><p>👤 Opponent</p><p>🎯 Target</p><p>📍 Space</p><p>⏱ Time</p></div><div className="mentalCard"><h3>Coaching Question</h3><p>What information is the player attending to?</p></div><div className="mentalCard"><h3>Visual Pillars</h3><p>Quiet Eye, Tracking, Opponent Reading, Second Eye and External Focus.</p></div></div>}
+      {visualTopic==='quiet'&&<div className="mentalGrid"><div className="mentalCard"><h3>Definition</h3><p>Final fixation or tracking gaze directed toward task-relevant information before movement execution.</p></div><div className="mentalCard"><h3>Serve</h3><p>Target → Ball → Strike</p></div><div className="mentalCard"><h3>Return</h3><p>Opponent → Ball → Movement</p></div><div className="mentalCard"><h3>Attack / Volley</h3><p>Space or ball flight → Interception point → Strike</p></div><div className="mentalCard"><h3>Common Errors</h3><p>Excessive scanning, outcome watching, changing targets, internal technical focus.</p></div></div>}
+      {visualTopic==='tracking'&&<div><SquashBallGraphic/><div className="mentalGrid"><div className="mentalCard"><h3>Purpose</h3><p>Predict trajectory, bounce, speed, interception point and available time.</p></div><div className="mentalCard"><h3>Progression</h3><p>1. Track → Move → Strike</p><p>2. Variable height feed</p><p>3. Variable depth feed</p><p>4. Variable pace feed</p><p>5. Opponent cue → Ball flight → Strike</p></div><div className="mentalCard"><h3>Common Errors</h3><p>Looking away early, looking at target before contact, losing ball during movement, outcome watching.</p></div></div></div>}
+      {visualTopic==='opponent'&&<div className="mentalGrid"><div className="mentalCard"><h3>Information To Read</h3><p>Racquet preparation, shoulder orientation, balance, movement direction, recovery state and court position.</p></div><div className="mentalCard"><h3>Knock-Up Intelligence</h3><p>Use the 4-minute warm-up to assess pace tolerance, height tolerance, volley confidence, preparation quality and movement confidence.</p></div><div className="mentalCard"><h3>Coach Cue</h3><p>Watch the player, not just the ball.</p></div></div>}
+      {visualTopic==='second'&&<div className="mentalGrid"><div className="mentalCard"><h3>Definition</h3><p>Maintain visual access to opponent information while interacting with the ball.</p></div><div className="mentalCard"><h3>Benefits</h3><p>Anticipation, tactical awareness, earlier recognition and better adaptation.</p></div><div className="mentalCard"><h3>Common Error</h3><p>Opponent blindness: ball, ball, ball — with no opponent information.</p></div></div>}
+      {visualTopic==='external'&&<div className="mentalGrid"><div className="mentalCard"><h3>Attend To</h3><p>🎾 Ball</p><p>🎯 Target</p><p>📍 Space</p><p>👤 Opponent</p></div><div className="mentalCard"><h3>Avoid</h3><p>Wrist, elbow, swing mechanics, foot position — unless temporarily used as a correction.</p></div><div className="mentalCard"><h3>Example</h3><p>Instead of “keep your wrist firm”, use “send the ball through the back corner.”</p></div></div>}
+    </div>}
 
-    {tab==='breathing'&&<div className="mentalContentPanel"><h2>Breathing & Regulation</h2><p>Breathing is a selected tool, not the outcome. Agency is the outcome.</p><div className="mentalGrid">{breathCards.map(item=><DetailCard key={item.name} item={item}/>)}</div></div>}
-
-    {tab==='animals'&&<div className="mentalContentPanel"><h2>Performance Animals</h2><p>Animals are temporary performance states, not personality labels. Each animal has a vision quality.</p><div className="animalGrid">{animals.map(a=><div className="animalCard" key={a.name}><div className="animalEmoji">{a.emoji}</div><h2>{a.name}</h2><h3>{a.state}</h3><p><strong>Superpower:</strong> {a.superpower}</p><p><strong>Vision quality:</strong> {a.vision}</p><p><strong>Used when:</strong> {a.used}</p><p><strong>Behaviour:</strong> {a.behaviour}</p><p className="largeCue">“{a.cue}”</p><div className="chipRow">{a.overlays.map(x=><span key={x}>{x}</span>)}</div><p><strong>Breath:</strong> {a.breath}</p></div>)}</div></div>}
-
-    {tab==='hybrids'&&<div className="mentalContentPanel"><h2>Hybrid Performance Identities</h2><p>Players can combine lenses: for example, Golden Retriever resilience with Eagle vision.</p><div className="mentalGrid">{hybrids.map(h=><DetailCard key={h.name} item={h}/>)}</div><div className="customAnimalBox"><h2>Build Your Own Hybrid</h2><div className="customAnimalGrid"><label>Primary<select value={primaryAnimal} onChange={e=>setPrimaryAnimal(e.target.value)}>{animals.map(a=><option key={a.name}>{a.name}</option>)}</select></label><label>Secondary<select value={secondaryAnimal} onChange={e=>setSecondaryAnimal(e.target.value)}>{animals.map(a=><option key={a.name}>{a.name}</option>)}</select></label></div><div className="mentalCard"><h3>{primary.name} + {secondary.name}</h3><p><strong>Primary lens:</strong> {primary.vision}</p><p><strong>Secondary lens:</strong> {secondary.vision}</p><p><strong>Combined cue:</strong> “{primary.cue} / {secondary.cue}”</p></div></div></div>}
-
-    {tab==='agency'&&<div className="mentalContentPanel"><h2>Agency Overlays</h2><p>The final objective is not dependence on cues or routines. The objective is independent adaptation.</p><div className="mentalGrid">{agencyCards.map(item=><DetailCard key={item.name} item={item}/>)}</div></div>}
+    {!activeAnimal&&section==='greatest'&&<div className="mentalContentPanel"><h2>🎬 Greatest Hits Video</h2><p>A short video of the player’s best moments can reinforce performance identity before competition.</p><div className="mentalGrid"><div className="mentalCard"><h3>Purpose</h3><p>Remind the player: “This is what I do when I perform well.”</p></div><div className="mentalCard"><h3>Length</h3><p>60–180 seconds with the player’s chosen music.</p></div><div className="mentalCard"><h3>Include</h3><p>Movement, retrievals, resilience, good decisions, pressure moments, rallies and winners.</p></div><div className="mentalCard"><h3>Avoid</h3><p>Only trick shots, only winners, unrealistic editing or clips that promote low-percentage play.</p></div></div></div>}
+    {!activeAnimal&&section==='ppp'&&<div className="mentalContentPanel"><h2>🚀 Pre-Performance Preparation</h2><p>Usually done in a corridor, badminton hall, car park or waiting area. It does not depend on having a court.</p><div className="prepFlow"><span>Identity</span><span>Cue</span><span>Breathing</span><span>Process Goal</span><span>Greatest Hits</span><span>Activation & Calibration</span><span>Court Calibration</span><span>Compete</span></div></div>}
+    {!activeAnimal&&section==='activation'&&<div className="mentalContentPanel"><h2>🏃 Activation & Calibration</h2><p>This is the physical bridge from preparation to performance.</p><div className="mentalGrid"><div className="mentalCard"><h3>Ghosting</h3><p>Used for movement readiness and court-orientation imagery, not just fitness.</p></div><div className="mentalCard"><h3>Animal Ghosting</h3><p>Show the animal: Eagle scans, Retriever recovers, Tiger commits, Elephant controls tempo.</p></div><div className="mentalCard"><h3>Coach Feed & Strike</h3><p>Small-space squash-ball feed: player lunges and strikes controlled ball back to coach to catch.</p></div><div className="mentalCard"><h3>If Court Available</h3><p>Use representative rally prep: lengths, volley activation, boast-drive or tactical imagery.</p></div></div></div>}
+    {!activeAnimal&&section==='court'&&<div className="mentalContentPanel"><h2>👁 Court Calibration</h2><p>The official 4-minute knock-up is information gathering, not just warming up.</p><div className="mentalGrid"><div className="mentalCard"><h3>Self Calibration</h3><p>Check timing, length, movement, racket preparation and touch.</p></div><div className="mentalCard"><h3>Opponent Observation</h3><p>Notice whether opponent handles height, pace, volleys, late preparation or rotational swing paths.</p></div><div className="mentalCard"><h3>Quiet Eye</h3><p>Now the ball, court and opponent exist. Use target → ball → strike to launch into performance.</p></div></div></div>}
+    {!activeAnimal&&section==='cues'&&<div className="mentalContentPanel"><h2>🎯 Cue Statements</h2><div className="mentalGrid">{animals.map(a=><div className="mentalCard" key={a.name}><h3>{a.emoji} {a.name}</h3><p>“{a.cue}”</p></div>)}</div></div>}
+    {!activeAnimal&&section==='breathing'&&<div className="mentalContentPanel"><h2>🫁 Breathing & Regulation</h2><div className="mentalGrid"><div className="mentalCard"><h3>😌 Calming</h3><p><strong>Use:</strong> anxiety, rushing, panic, over-arousal.</p><p><strong>Protocol:</strong> longer exhale breathing.</p><p><strong>Coach observes:</strong> slower tempo, reduced rushing, calmer reset.</p></div><div className="mentalCard"><h3>🎯 Centering</h3><p><strong>Use:</strong> refocus, between rallies, after errors.</p><p><strong>Protocol:</strong> 3 in / 3 hold / 3 out.</p><p><strong>Coach observes:</strong> breath, cue, eyes up, ready posture.</p></div><div className="mentalCard"><h3>⚡ Activation</h3><p><strong>Use:</strong> flat, passive or under-aroused players.</p><p><strong>Protocol:</strong> sharp energising breath and action cue.</p><p><strong>Coach observes:</strong> stronger posture, faster first movement, commitment.</p></div></div></div>}
+    {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Overlays</button></div>}
   </div>;
 }
 
@@ -4472,7 +4469,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h57 Universal Overlay Completion</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h56 Universal Overlay Completion</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
