@@ -2456,6 +2456,9 @@ function Competition({players=[]}){
   const [matchPlayers,setMatchPlayers]=useState({a:'Player A',b:'Player B'});
   const [matchScoring,setMatchScoring]=useState('PAR 11');
   const [rrFixtures,setRrFixtures]=useState([]);
+  const [rrResults,setRrResults]=useState({});
+  const [monradRounds,setMonradRounds]=useState([]);
+  const [monradResults,setMonradResults]=useState({});
   const [nslOrgTab,setNslOrgTab]=useState('config');
   const [nslTeams,setNslTeams]=useState(4);
   const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(3);
@@ -2905,6 +2908,7 @@ function Competition({players=[]}){
     const names=[...playerNames];
     if(names.length<2){
       setRrFixtures([]);
+      setRrResults({});
       return;
     }
     const list=names.length%2===1?[...names,'BYE']:[...names];
@@ -2922,6 +2926,116 @@ function Competition({players=[]}){
       rotating=[rotating[0],rotating[n-1],...rotating.slice(1,n-1)];
     }
     setRrFixtures(rounds);
+    setRrResults({});
+  }
+
+  function rrKey(roundIndex,matchIndex){
+    return `${roundIndex}-${matchIndex}`;
+  }
+
+  function setRoundRobinWinner(roundIndex,matchIndex,winner){
+    setRrResults(prev=>({...prev,[rrKey(roundIndex,matchIndex)]:winner}));
+  }
+
+  function getRoundRobinStandings(){
+    const table={};
+    playerNames.forEach(name=>{table[name]={name,played:0,wins:0,losses:0,points:0};});
+    rrFixtures.forEach((round,ridx)=>round.forEach((match,midx)=>{
+      const winner=rrResults[rrKey(ridx,midx)];
+      if(!winner) return;
+      const loser=winner===match.a?match.b:match.a;
+      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,points:0}; table[name].played+=1;});
+      table[winner].wins+=1;
+      table[winner].points+=3;
+      table[loser].losses+=1;
+    }));
+    return Object.values(table).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
+  }
+
+  function monradResultKey(roundIndex,matchIndex){
+    return `m-${roundIndex}-${matchIndex}`;
+  }
+
+  function generateMonradFirstRound(){
+    const names=[...playerNames];
+    if(names.length<2){
+      setMonradRounds([]);
+      setMonradResults({});
+      return;
+    }
+    const seeded=[...names];
+    const half=Math.ceil(seeded.length/2);
+    const matches=[];
+    for(let i=0;i<half;i++){
+      const a=seeded[i];
+      const b=seeded[i+half]||'BYE';
+      if(a&&b!=='BYE') matches.push({a,b});
+      else if(a) matches.push({a,b:'BYE'});
+    }
+    setMonradRounds([matches]);
+    setMonradResults({});
+  }
+
+  function setMonradWinner(roundIndex,matchIndex,winner){
+    setMonradResults(prev=>({...prev,[monradResultKey(roundIndex,matchIndex)]:winner}));
+  }
+
+  function monradPlayerScores(){
+    const scores={};
+    playerNames.forEach(name=>{scores[name]={name,wins:0,played:0};});
+    monradRounds.forEach((round,ridx)=>round.forEach((match,midx)=>{
+      const winner=monradResults[monradResultKey(ridx,midx)];
+      if(match.a&&match.a!=='BYE') scores[match.a]&&(scores[match.a].played+=winner?1:0);
+      if(match.b&&match.b!=='BYE') scores[match.b]&&(scores[match.b].played+=winner?1:0);
+      if(winner&&scores[winner]) scores[winner].wins+=1;
+    }));
+    return scores;
+  }
+
+  function monradHavePlayed(a,b){
+    return monradRounds.some(round=>round.some(match=>(match.a===a&&match.b===b)||(match.a===b&&match.b===a)));
+  }
+
+  function generateNextMonradRound(){
+    if(!monradRounds.length){generateMonradFirstRound();return;}
+    const currentRound=monradRounds[monradRounds.length-1];
+    const allComplete=currentRound.every((match,midx)=>match.b==='BYE'||monradResults[monradResultKey(monradRounds.length-1,midx)]);
+    if(!allComplete) return;
+    const scores=monradPlayerScores();
+    const pool=[...playerNames].sort((a,b)=>(scores[b]?.wins||0)-(scores[a]?.wins||0)||a.localeCompare(b));
+    const next=[];
+    const used=new Set();
+    for(const a of pool){
+      if(used.has(a)) continue;
+      let opponent=pool.find(b=>b!==a&&!used.has(b)&&!monradHavePlayed(a,b));
+      if(!opponent) opponent=pool.find(b=>b!==a&&!used.has(b));
+      used.add(a);
+      if(opponent){used.add(opponent);next.push({a,b:opponent});}
+      else next.push({a,b:'BYE'});
+    }
+    setMonradRounds(prev=>[...prev,next]);
+  }
+
+  function getNslGeneratedTeams(){
+    const names=[...playerNames];
+    const count=Math.max(2,Number(nslTeams)||2);
+    const teams=Array.from({length:count},(_,idx)=>({name:`Team ${idx+1}`,players:[]}));
+    names.forEach((name,idx)=>{
+      const block=Math.floor(idx/count);
+      const position=idx%count;
+      const teamIndex=block%2===0?position:count-1-position;
+      teams[teamIndex].players.push(name);
+    });
+    return teams;
+  }
+
+  function getNslFixtures(){
+    const teams=getNslGeneratedTeams();
+    const fixtures=[];
+    for(let i=0;i<teams.length;i+=2){
+      fixtures.push({a:teams[i]?.name||'Team',b:teams[i+1]?.name||'BYE'});
+    }
+    return fixtures;
   }
 
   const modeInfo={
@@ -2981,15 +3095,15 @@ function Competition({players=[]}){
       ]
     },
     nsl:{
-      title:'NSL',
+      title:'NSSL',
       tactical:'Team ladder pressure · rotation discipline · repeated competitive exposure',
-      purpose:'NSL is a ladder / team / rotation competition format. It does not use Lives Format.',
+      purpose:'NSSL is a team / ladder / rotation competition format. It does not use Lives Format.',
       rules:[
-        'Use NSL for ladder, team or court-rotation competition formats.',
+        'Use NSSL for ladder, team or court-rotation competition formats.',
         'No Lives Format is used in NSL.',
         'No Invasion Points Format is used in NSL.',
         'Shared overlays, checkerboard codes and double-bounce handicaps may be added.',
-        'Detailed NSL draw and rotation engine planned for next competition build.'
+        'NSSL draw graphics, team boxes and period lanes are now available in the Sheet tab.'
       ]
     }
   };
@@ -3036,7 +3150,7 @@ function Competition({players=[]}){
         <button type="button" className={mode==='matchplay'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('matchplay')}>Matchplay</button>
         <button type="button" className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
         <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
-        <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSL</button>
+        <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSSL</button>
       </div>
 
       <div className="competitionProjectionToggle">
@@ -3057,7 +3171,7 @@ function Competition({players=[]}){
                 :mode==='roundRobin'
                   ?'Round Robin · Fixtures / next opponent'
                   :mode==='nsl'
-                    ?`NSL · ${nslTeams||'—'} teams · ${nslPlayersPerTeam||'—'} players / team`
+                    ?`NSSL · ${nslTeams||'—'} teams · ${nslPlayersPerTeam||'—'} players / team`
                     :'Competition information'}
             </p>
           </div>
@@ -3095,9 +3209,46 @@ function Competition({players=[]}){
             </div>
           )}
 
-          {mode==='nsl'&&(
+          {mode==='monrad'&&(
+          <div className="competitionEnginePanel competitionDrawPanel">
+            <div className="drawHeaderCard">
+              <h2>Monrad Draw Engine</h2>
+              <p>Generate a progressive draw. Winners move toward winners, players continue playing after every round.</p>
+              <div className="buttonRow">
+                <button className="primaryBtn" onClick={generateMonradFirstRound}>Generate Round 1</button>
+                <button className="secondaryBtn" onClick={generateNextMonradRound}>Generate Next Round</button>
+              </div>
+            </div>
+            {monradRounds.length===0&&<p className="overlayExplain">Use players marked present in Attendance. Round 1 pairs the top half against the lower half; later rounds pair players with similar records and avoid repeats where possible.</p>}
+            {monradRounds.length>0&&(
+              <div className="monradBracketScroll">
+                {monradRounds.map((round,ridx)=>(
+                  <div className="monradRoundColumn" key={ridx}>
+                    <div className="drawRoundTitle">Round {ridx+1}</div>
+                    {round.map((match,midx)=>{
+                      const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];
+                      return <div className="monradMatchCard" key={midx}>
+                        <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.a)}>Win</button>}</div>
+                        <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.b)}>Win</button>}</div>
+                      </div>;
+                    })}
+                  </div>
+                ))}
+                <div className="standingsBox monradStandingsBox">
+                  <h3>Monrad Table</h3>
+                  <div className="standingsTable">
+                    <div><b>Player</b><b>Played</b><b>Wins</b></div>
+                    {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span></div>)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode==='nsl'&&(
             <div className="projectionInfoCard wideProjectionCard">
-              <strong>NSL Sheet</strong>
+              <strong>NSSL Sheet</strong>
               <p>Period 1: {nslPeriod1} min · Period 2: {nslPeriod2} min · Period 3: {nslPeriod3} min · Overtime: {nslOvertime} min</p>
               <p>Teams: {nslTeams} · Players per team: {nslPlayersPerTeam}</p>
             </div>
@@ -3483,24 +3634,84 @@ function Competition({players=[]}){
         )}
 
         {mode==='roundRobin'&&(
-          <div className="competitionEnginePanel">
-            <button className="primaryBtn" onClick={generateRoundRobin}>Generate Round Robin Fixtures</button>
-            {rrFixtures.length===0&&<p className="overlayExplain">Uses players marked present in Attendance. Enter manual players if none are present.</p>}
-            {rrFixtures.length>0&&rrFixtures.map((round,idx)=>(
-              <div className="fixtureRound" key={idx}>
-                <strong>Round {idx+1}</strong>
-                {round.map((match,midx)=><p key={midx}>{match.a} v {match.b}</p>)}
+          <div className="competitionEnginePanel competitionDrawPanel">
+            <div className="drawHeaderCard">
+              <h2>Round Robin Draw Engine</h2>
+              <p>Generate every-player-plays-every-player fixtures, record winners and view a live standings table.</p>
+              <button className="primaryBtn" onClick={generateRoundRobin}>Generate Round Robin Fixtures</button>
+            </div>
+            {rrFixtures.length===0&&<p className="overlayExplain">Uses players marked present in Attendance. Enter manual players in the Double-Bounce section if none are present.</p>}
+            {rrFixtures.length>0&&(
+              <div className="drawTwoColumn">
+                <div className="roundRobinDrawGrid">
+                  {rrFixtures.map((round,idx)=>(
+                    <div className="drawRoundBox" key={idx}>
+                      <div className="drawRoundTitle">Round {idx+1}</div>
+                      {round.map((match,midx)=>{
+                        const winner=rrResults[rrKey(idx,midx)];
+                        return <div className="drawMatchBox" key={midx}>
+                          <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span><button type="button" onClick={()=>setRoundRobinWinner(idx,midx,match.a)}>Win</button></div>
+                          <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span><button type="button" onClick={()=>setRoundRobinWinner(idx,midx,match.b)}>Win</button></div>
+                        </div>;
+                      })}
+                    </div>
+                  ))}
+                </div>
+                <div className="standingsBox">
+                  <h3>Live Standings</h3>
+                  <div className="standingsTable">
+                    <div><b>Player</b><b>P</b><b>W</b><b>L</b><b>Pts</b></div>
+                    {getRoundRobinStandings().map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span><span>{row.losses}</span><span>{row.points}</span></div>)}
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
           </div>
         )}
 
 
+        {mode==='monrad'&&(
+          <div className="competitionEnginePanel competitionDrawPanel">
+            <div className="drawHeaderCard">
+              <h2>Monrad Draw Engine</h2>
+              <p>Generate a progressive draw. Winners move toward winners, players continue playing after every round.</p>
+              <div className="buttonRow">
+                <button className="primaryBtn" onClick={generateMonradFirstRound}>Generate Round 1</button>
+                <button className="secondaryBtn" onClick={generateNextMonradRound}>Generate Next Round</button>
+              </div>
+            </div>
+            {monradRounds.length===0&&<p className="overlayExplain">Use players marked present in Attendance. Round 1 pairs the top half against the lower half; later rounds pair players with similar records and avoid repeats where possible.</p>}
+            {monradRounds.length>0&&(
+              <div className="monradBracketScroll">
+                {monradRounds.map((round,ridx)=>(
+                  <div className="monradRoundColumn" key={ridx}>
+                    <div className="drawRoundTitle">Round {ridx+1}</div>
+                    {round.map((match,midx)=>{
+                      const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];
+                      return <div className="monradMatchCard" key={midx}>
+                        <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.a)}>Win</button>}</div>
+                        <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.b)}>Win</button>}</div>
+                      </div>;
+                    })}
+                  </div>
+                ))}
+                <div className="standingsBox monradStandingsBox">
+                  <h3>Monrad Table</h3>
+                  <div className="standingsTable">
+                    <div><b>Player</b><b>Played</b><b>Wins</b></div>
+                    {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span></div>)}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {mode==='nsl'&&(
           <div className="nslOrganiser">
             <div className="nslHero">
-              <span>NSL ORGANISER</span>
-              <h2>National Squash League</h2>
+              <span>NSSL ORGANISER</span>
+              <h2>National Squash Super League</h2>
               <p>Configure periods · Add players · Auto-allocate teams by ranking</p>
             </div>
             <div className="nslTabs">
@@ -3543,9 +3754,31 @@ function Competition({players=[]}){
               </div>
             )}
             {nslOrgTab==='sheet'&&(
-              <div className="nslPanel">
-                <h3>Sheet / Draw</h3>
-                <div className="nslSheet"><div>Period 1</div><div>Team 1 v Team 2</div><div>{nslPeriod1} min</div><div>Period 2</div><div>Team 3 v Team 4</div><div>{nslPeriod2} min</div><div>Period 3</div><div>Winners / ranked rotation</div><div>{nslPeriod3} min</div><div>Overtime</div><div>If required</div><div>{nslOvertime} min</div></div>
+              <div className="nslPanel nslDrawPanel">
+                <h3>NSSL Sheet / Draw Graphic</h3>
+                <p className="overlayExplain">National Squash Super League style event sheet: team boxes, period cards and fixture lanes.</p>
+                <div className="nslDrawGrid">
+                  {getNslGeneratedTeams().map(team=><div className="nslDrawTeamBox" key={team.name}>
+                    <strong>{team.name}</strong>
+                    {team.players.length?team.players.map(player=><span key={player}>{player}</span>):<span>Waiting for players</span>}
+                  </div>)}
+                </div>
+                <div className="nslFixtureLane">
+                  {getNslFixtures().map((fixture,idx)=><div className="nslFixtureCard" key={idx}>
+                    <b>Court {idx+1}</b>
+                    <strong>{fixture.a} v {fixture.b}</strong>
+                    <span>Period 1: {nslPeriod1} min</span>
+                    <span>Period 2: {nslPeriod2} min</span>
+                    <span>Pressure Period: {nslPeriod3} min</span>
+                    <em>Overtime: {nslOvertime} min if required</em>
+                  </div>)}
+                </div>
+                <div className="nslPeriodStrip">
+                  <div><b>Period 1</b><span>{nslPeriod1} min · 1 match point</span></div>
+                  <div><b>Period 2</b><span>{nslPeriod2} min · 1 match point</span></div>
+                  <div><b>Period 3</b><span>{nslPeriod3} min · 2 match points</span></div>
+                  <div><b>Overtime</b><span>{nslOvertime} min · if required</span></div>
+                </div>
               </div>
             )}
           </div>
@@ -3978,7 +4211,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                   :competitionProjection.mode==='roundRobin'
                     ?'Round Robin · Fixtures / next opponent'
                     :competitionProjection.mode==='nsl'
-                      ?`NSL · ${competitionProjection.nslTeams||'—'} teams · ${competitionProjection.nslPlayersPerTeam||'—'} players per team`
+                      ?`NSSL · ${competitionProjection.nslTeams||'—'} teams · ${competitionProjection.nslPlayersPerTeam||'—'} players per team`
                       :'Competition active'}
             </div>
           </div>
@@ -4630,7 +4863,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h65 Animal Pairing Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h67 Competition Draw Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

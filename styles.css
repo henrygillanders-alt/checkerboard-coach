@@ -1,4 +1,4 @@
-/* v99h66 Mental Performance Completion */
+/* v99h67 Competition Draw Engine */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -2673,3 +2673,41 @@ button.mentalSkillsTile p{
   .diagnosticRecommendationHero{grid-template-columns:1fr;}
 }
 /* v99h65 styles marker */
+
+
+/* v99h67 Competition Draw Engine */
+.competitionDrawPanel{display:flex;flex-direction:column;gap:18px;}
+.drawHeaderCard{border:1px solid rgba(130,170,240,.45);background:rgba(12,24,40,.72);border-radius:18px;padding:18px;}
+.drawHeaderCard h2{margin:0 0 8px;color:#ffdf76;font-size:1.6rem;}
+.drawHeaderCard p{margin:0 0 14px;color:#d8e4ff;line-height:1.35;}
+.drawTwoColumn{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;}
+.roundRobinDrawGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.drawRoundBox,.monradRoundColumn,.standingsBox{border:1px solid rgba(112,148,208,.55);background:rgba(8,19,35,.82);border-radius:16px;padding:14px;}
+.drawRoundTitle{font-weight:900;color:#ffdf76;margin-bottom:12px;letter-spacing:.05em;text-transform:uppercase;}
+.drawMatchBox,.monradMatchCard{border:1px solid rgba(88,122,185,.45);background:rgba(20,34,58,.72);border-radius:14px;padding:10px;margin-bottom:10px;position:relative;}
+.drawMatchBox:after,.monradMatchCard:after{content:'';position:absolute;right:-10px;top:50%;width:10px;border-top:2px solid rgba(255,223,118,.35);}
+.drawPlayerLine{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;margin:4px 0;background:rgba(255,255,255,.035);}
+.drawPlayerLine span{font-weight:800;color:#eef5ff;}
+.drawPlayerLine button{border:1px solid rgba(120,160,230,.65);background:rgba(35,70,130,.75);color:#fff;border-radius:9px;padding:5px 9px;font-weight:800;}
+.winnerLine{background:linear-gradient(90deg,rgba(255,223,118,.28),rgba(255,255,255,.04));outline:1px solid rgba(255,223,118,.65);}
+.standingsBox h3{margin:0 0 12px;color:#ffdf76;}
+.standingsTable{display:flex;flex-direction:column;gap:7px;}
+.standingsTable>div{display:grid;grid-template-columns:1fr 42px 42px 42px 50px;gap:8px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);padding:6px 0;color:#eef5ff;}
+.monradStandingsBox .standingsTable>div{grid-template-columns:1fr 70px 70px;}
+.monradBracketScroll{display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;align-items:flex-start;}
+.monradRoundColumn{min-width:260px;}
+.nslDrawPanel{display:flex;flex-direction:column;gap:16px;}
+.nslDrawGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+.nslDrawTeamBox{border:1px solid rgba(255,223,118,.45);background:rgba(10,22,38,.82);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;}
+.nslDrawTeamBox strong{color:#ffdf76;font-size:1.15rem;}
+.nslDrawTeamBox span{color:#edf4ff;background:rgba(255,255,255,.04);border-radius:10px;padding:6px 8px;}
+.nslFixtureLane{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+.nslFixtureCard{border:1px solid rgba(112,148,208,.55);background:linear-gradient(135deg,rgba(25,49,86,.9),rgba(9,18,32,.9));border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:7px;}
+.nslFixtureCard b{color:#9fc0ff;text-transform:uppercase;letter-spacing:.05em;}
+.nslFixtureCard strong{color:#fff;font-size:1.2rem;}
+.nslFixtureCard span,.nslFixtureCard em{color:#d9e4ff;}
+.nslPeriodStrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;}
+.nslPeriodStrip div{border:1px solid rgba(255,223,118,.35);background:rgba(255,223,118,.08);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:5px;}
+.nslPeriodStrip b{color:#ffdf76;}
+.nslPeriodStrip span{color:#eef5ff;}
+@media(max-width:900px){.drawTwoColumn{grid-template-columns:1fr}.standingsBox{order:-1}.monradBracketScroll{flex-direction:column}.monradRoundColumn{min-width:0;width:100%;}}
