@@ -5064,23 +5064,192 @@ function PlayerHub({players,setPlayers,session,setSession}){
 
 
 
+
 function DiagnosticIntervention({setScreen}){
-  const [tab,setTab]=useState('clock');
-  const errors=[
-    {title:'Late Racket Preparation',obs:'Racket preparation begins too late, often after bounce or when time pressure is already high.',traditional:'Demonstrate earlier preparation, repeat shadow swings or straight drives, remind player to “get the racket back”.',cla:'Manipulate time and information: volley priority games, reduced-time tasks, early-information constraints, obstacle behind player, scoring for preparation before bounce.',bernstein:'The player is not trying to reproduce one ideal preparation pattern; they are learning to organise preparation under changing information.'},
-    {title:'Wrap-Around Follow Through',obs:'Racket finishes around the waist/body instead of organising through the target line.',traditional:'Stop play, demonstrate correct finish, rehearse finish position, repeat isolated swings.',cla:'Create target and affordance constraints: front-wall target games, checkerboard routes, contact-point challenges and accuracy tasks where a more functional finish emerges.',bernstein:'The nervous system solves movement problems rather than copying a stored template.'},
-    {title:'Poor Recovery To T',obs:'Player admires the shot, remains in corner or recovers without useful opponent information.',traditional:'Command “recover”, prescribe ghosting pattern, repeat movement routes.',cla:'Use T-reward scoring, recovery bonus points, opponent exploitation games and constraints where poor recovery is immediately punished.',bernstein:'Recovery becomes functional because it solves a tactical problem, not because the player memorised a pattern.'},
-    {title:'Wrist Collapse',obs:'Wrist breaks excessively, racket face becomes unstable and control is reduced.',traditional:'Tell player to keep wrist firm, rehearse fixed wrist swings.',cla:'Use haptic constraints such as tape from back of hand to forearm, smiley-face external focus, and checkerboard target tasks that reward stable racket-face outcomes.',bernstein:'Variability is not simply error; constraints can guide the search toward more useful coordination.'},
-    {title:'Visual Tracking Loss',obs:'Player looks away early, watches outcome or loses ball/opponent information during movement.',traditional:'Tell player to watch the ball and repeat feeds.',cla:'Use tracking constraints, Quiet Eye overlays, Second Eye tasks, opponent-reading games and coach feed-and-strike progressions.',bernstein:'Skilled action depends on coupling perception and movement in changing conditions.'}
+  const [tab,setTab]=useState('foundations');
+  const [activeCase,setActiveCase]=useState('Late To Ball');
+
+  const pda=[
+    {title:'Anticipation',text:'What did the player expect before the ball arrived?',questions:['Did the player read the opponent early?','Did they predict the likely reply?','Were they surprised by the ball?']},
+    {title:'Perception',text:'What information did the player actually pick up?',questions:['Did they see ball, opponent, space and time?','Did they track the ball early enough?','Did they recognise the affordance?']},
+    {title:'Decision',text:'Was the chosen solution appropriate?',questions:['Was the tactical intention clear?','Did the shot solve the problem?','Was the player attacking, neutralising or surviving?']},
+    {title:'Action',text:'Could the player execute the selected solution?',questions:['Was movement organised?','Was contact controlled?','Did balance, timing or force transfer break down?']}
   ];
-  const tools=[['Visual Constraints','Quiet Eye, tracking, second eye, external target focus, opponent-reading cues.'],['Haptic Constraints','Tape, touch cues, physical reference points, racket/hand feedback.'],['Spatial Constraints','Court zones, cones, target windows, checkerboard zones, restricted lanes.'],['Task Constraints','Scoring rules, time pressure, shot windows, bonus systems, live consequences.'],['Equipment Constraints','Ball type, racket/task modification, target aids, scaling tools.'],['Analogy Constraints','Animals, images, external metaphors, movement stories.'],['Scaling','Change court size, bounce rules, target size, speed, pressure and opponent level.']];
-  return <div className="page diagnosticInterventionPage"><div className="pageTop"><div><h1>Diagnostic & Intervention</h1><p className="mutedText">Observe · Diagnose · Intervene</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="diagnosticTabs"><button className={tab==='clock'?'activeTab':''} onClick={()=>setTab('clock')}>🔍 Diagnostic Clock</button><button className={tab==='errors'?'activeTab':''} onClick={()=>setTab('errors')}>❌ Common Errors</button><button className={tab==='tools'?'activeTab':''} onClick={()=>setTab('tools')}>🛠 Intervention Tools</button><button className={tab==='cla'?'activeTab':''} onClick={()=>setTab('cla')}>📚 Traditional vs CLA</button><button className={tab==='quick'?'activeTab':''} onClick={()=>setTab('quick')}>⚡ Quick Fix</button></div>
-    {tab==='clock'&&<div className="diagnosticStagePanel diagnosticClockActual"><h2>🔍 Diagnostic Clock</h2><p>Observe the visible behaviour, identify the likely source, then select a constraint-based intervention.</p><div className="clockFace"><div className="clockCentre"><strong>Observe</strong><span>What changed?</span></div>{['Technical','Tactical','Visual','Mental','Movement','Physical','Environment','Equipment'].map((item,index)=><div key={item} className={`clockNode clockNode${index+1}`}><strong>{item}</strong></div>)}</div><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What is the player actually doing?</span></div><div><strong>2. Diagnose</strong><span>What constraint is shaping the behaviour?</span></div><div><strong>3. Intervene</strong><span>Change the task, information or environment.</span></div></div></div>}
-    {tab==='errors'&&<div className="diagnosticStagePanel"><h2>❌ Common Errors</h2><div className="errorComparisonGrid">{errors.map(error=><div className="errorMiniCard" key={error.title}><h3>{error.title}</h3><p>{error.obs}</p></div>)}</div></div>}
-    {tab==='tools'&&<div className="diagnosticStagePanel"><h2>🛠 Intervention Tools</h2><div className="interventionToolGrid">{tools.map(tool=><div className="interventionToolCard" key={tool[0]}><h3>{tool[0]}</h3><p>{tool[1]}</p></div>)}</div></div>}
-    {tab==='cla'&&<div className="diagnosticStagePanel"><div className="bernsteinBox"><h2>📚 Bernstein: Repetition Without Repetition</h2><p>Nikolai Bernstein argued that skilled movement is never the exact repetition of a fixed template. No two movements are ever exactly the same. Skilled performers solve movement problems under changing conditions.</p><p><strong>Traditional view:</strong> repeat the correct movement until it becomes automatic.</p><p><strong>CLA view:</strong> design representative constraints so adaptable solutions emerge.</p></div><div className="errorComparisonGrid">{errors.map(error=><div className="claComparisonCard" key={error.title}><h3>{error.title}</h3><section><strong>Observation</strong><p>{error.obs}</p></section><section><strong>Traditional Response</strong><p>{error.traditional}</p></section><section><strong>CLA Response</strong><p>{error.cla}</p></section><section><strong>Bernstein Connection</strong><p>{error.bernstein}</p></section></div>)}</div></div>}
-    {tab==='quick'&&<div className="diagnosticStagePanel"><h2>⚡ Quick Fix</h2><p>Courtside rule: identify the problem, choose one constraint, observe the next behaviour. Three taps maximum.</p><div className="stageHintGrid"><div><strong>1. Observe</strong><span>What behaviour is visible?</span></div><div><strong>2. Constraint</strong><span>What task change makes the desired behaviour useful?</span></div><div><strong>3. Review</strong><span>Did the behaviour change inside the game?</span></div></div></div>}
+
+  const lenses=[
+    {title:'Biomechanical Lens',icon:'⚙️',text:'Movement organisation: balance, timing, sequencing, force production, force transfer, acceleration, deceleration and adaptability.'},
+    {title:'Perceptual Lens',icon:'👁️',text:'Information pickup: tracking, Quiet Eye, opponent reading, anticipation, recognition and perception-action coupling.'},
+    {title:'Tactical Lens',icon:'♟️',text:'Problem solving: positioning, recovery, width, pressure, volley use, shot selection and Checkerboard recognition.'},
+    {title:'Mental Lens',icon:'🧠',text:'Attention and regulation: commitment, confidence, resilience, emotional recovery and agency.'}
+  ];
+
+  const movementPrinciples=[
+    ['Balance','Control body position while moving, striking and recovering.'],
+    ['Force Production','Generate force against the ground to create movement and racket speed.'],
+    ['Force Transfer','Transfer force efficiently through the body from larger segments to smaller segments.'],
+    ['Proximal-to-Distal Sequencing','Larger body segments usually organise before smaller segments and racket speed emerges through the chain.'],
+    ['Timing','Coordinate movement so force is produced and transferred at the useful moment.'],
+    ['Coordination','Organise body segments to achieve the task goal.'],
+    ['Stability & Mobility','Produce movement while maintaining enough control to adapt.'],
+    ['Acceleration & Deceleration','Start quickly, stop efficiently and reorganise for the next action.'],
+    ['Elastic Energy Use','Use stretch-shortening actions of muscles and tendons to improve efficiency and power.'],
+    ['Adaptability','Modify movement solutions in response to changing task, opponent and environmental demands.']
+  ];
+
+  const cases={
+    'Late To Ball':{
+      pda:'Anticipation / Perception',
+      lens:'Perceptual + Biomechanical',
+      causes:['Recognised the cue late','Recovery position left too much distance','Poor first movement or deceleration','Hesitation before committing'],
+      constraint:'Random hand-feed or live rally where player scores bonus for early movement or first interception step.',
+      checkerboard:'Use front-court recognition challenge with [8-1] or [7-2] after opponent displacement.',
+      conditioned:'Opponent Off T or moving-forward recognition game.',
+      technical:'Early preparation / movement timing overlay.',
+      mental:'Quiet Eye, Second Eye To Opponent, External Target Focus.',
+      animal:'🐆 Cheetah + 🦅 Eagle',
+      ppp:'Squash Activation with random hand feeds: move, strike, recover.'
+    },
+    'Slow Recovery':{
+      pda:'Action / Decision',
+      lens:'Tactical + Biomechanical + Mental',
+      causes:['Player admires shot','Poor balance after contact','No clear recovery intention','Opponent information not reconnected after strike'],
+      constraint:'Recovery bonus: point only counts if player returns to useful recovery position before next shot.',
+      checkerboard:'Use pressure sequence requiring recovery after each completed pair.',
+      conditioned:'T Challenge or Opponent Off T recovery game.',
+      technical:'Balance and follow-through overlay.',
+      mental:'No Admiring Shots, Full Recovery After Every Shot.',
+      animal:'🐺 Wolf + 🦅 Eagle',
+      ppp:'Stage 3 Squash Activation: strike and recover every feed.'
+    },
+    "Doesn't Volley":{
+      pda:'Perception / Decision',
+      lens:'Perceptual + Tactical + Mental',
+      causes:['Does not recognise interceptable ball','Standing too deep','Fear of error','Volley action not balanced under pressure'],
+      constraint:'Volley opportunity bonus: player scores only when taking suitable balls early.',
+      checkerboard:'Volley & Intercept series with wall/floor zone target.',
+      conditioned:'King of court with volley finish bonus.',
+      technical:'Volley preparation overlay.',
+      mental:'Attack Only On Advantage, Quiet Eye Before Attack.',
+      animal:'🦁 Lion + 🦅 Eagle',
+      ppp:'Activation feeds: easy volley control, then random volley/move feeds.'
+    },
+    'Forces Attack':{
+      pda:'Decision',
+      lens:'Tactical + Mental + Perceptual',
+      causes:['Attacks before advantage is created','Poor opponent reading','Over-arousal or impatience','Does not reduce opponent options first'],
+      constraint:'Attack only after width, opponent off T or limited-reply condition.',
+      checkerboard:'Reduce options sequence: create width before front-wall/floor finish.',
+      conditioned:'Length Before Attack or Route Breaker.',
+      technical:'External target focus overlay.',
+      mental:'Attack Only On Advantage, Reset Within 3 Seconds.',
+      animal:'🐱 Cat + 🦅 Eagle',
+      ppp:'Use My Highlights clip of patient attack construction.'
+    },
+    'Late Preparation':{
+      pda:'Perception / Action',
+      lens:'Perceptual + Biomechanical',
+      causes:['Ball recognised late','Preparation waits until arrival','Excessive backswing','Poor spacing to ball'],
+      constraint:'Foam roller/cone behind player to constrain excessive swing; random feeds to preserve information pickup.',
+      checkerboard:'Early-intercept challenge using appropriate wall/floor pair.',
+      conditioned:'Reduced-time rally or volley priority game.',
+      technical:'Late preparation overlay.',
+      mental:'Quiet Eye Return, Tracking.',
+      animal:'🦅 Eagle + 🐆 Cheetah',
+      ppp:'Random coach hand feed: call ball early, move, strike.'
+    },
+    'Emotional Reactions':{
+      pda:'Decision / Action',
+      lens:'Mental',
+      causes:['Attention stays on previous error','Bad call or opponent behaviour disrupts focus','Poor reset behaviour','Loss of next-ball orientation'],
+      constraint:'Reset within 3 seconds or opponent receives bonus point.',
+      checkerboard:'Simple pair challenge with reset rule after every error.',
+      conditioned:'Compete To Last Ball game.',
+      technical:'No technical correction first; stabilise regulation and attention.',
+      mental:'Accept And Continue, Neutral Error Response, Compete To Last Ball.',
+      animal:'🦮 Golden Retriever + 🐘 Elephant',
+      ppp:'Stage 1 mental resilience highlight + Centre Breath.'
+    }
+  };
+
+  const current=cases[activeCase];
+
+  return <div className="page diagnosticInterventionPage">
+    <div className="pageTop"><div><h1>Diagnostic & Intervention</h1><p className="mutedText">Observe · Diagnose · Intervene</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+
+    <div className="diagnosticTabs">
+      <button className={tab==='foundations'?'activeTab':''} onClick={()=>setTab('foundations')}>📚 Foundations</button>
+      <button className={tab==='pda'?'activeTab':''} onClick={()=>setTab('pda')}>🎯 PDA Diagnostic</button>
+      <button className={tab==='lenses'?'activeTab':''} onClick={()=>setTab('lenses')}>🔍 Four Lenses</button>
+      <button className={tab==='movement'?'activeTab':''} onClick={()=>setTab('movement')}>⚙️ Movement Principles</button>
+      <button className={tab==='builder'?'activeTab':''} onClick={()=>setTab('builder')}>🛠 Intervention Builder</button>
+      <button className={tab==='principles'?'activeTab':''} onClick={()=>setTab('principles')}>🏆 Coaching Principles</button>
+    </div>
+
+    {tab==='foundations'&&<div className="diagnosticStagePanel">
+      <h2>Perceive ↔ Move</h2>
+      <div className="bernsteinBox"><h3>We perceive to move. We move to perceive.</h3><p>Players do not simply perceive, decide and then act in a straight line. In squash, movement and perception continuously update each other. Movement creates information. Information guides movement.</p></div>
+      <div className="errorComparisonGrid">
+        <div className="claComparisonCard"><h3>Crossing a Busy Road</h3><p>It is easier to cross a busy road when you are already moving, adjusting and weaving than when you stand still and make one desperate run. As you move, gaps appear, speeds become clearer and options change. Squash works the same way.</p></div>
+        <div className="claComparisonCard"><h3>James Gibson · Affordances</h3><p>A door handle affords gripping and pulling. Stairs provide information about step height and how the body should organise. In squash, a loose ball affords volley, attack or deception if the player is attuned to it.</p></div>
+        <div className="claComparisonCard"><h3>Nikolai Bernstein · Repetition Without Repetition</h3><p>Skilled blacksmiths produced consistent hammer outcomes even though every strike was different. Walking down a gravelly hill is similar: the goal is stable, but every step adapts to changing surface, slope and balance demands.</p></div>
+        <div className="claComparisonCard"><h3>Karl Newell · Constraints</h3><p>Movement emerges from interacting individual, task and environmental constraints. Coaches do not directly create movement; they manipulate constraints so useful solutions can emerge.</p></div>
+        <div className="claComparisonCard"><h3>Keith Davids · Ecological Dynamics</h3><p>Skill develops through perception-action coupling inside representative environments. The closer practice preserves meaningful information, the more likely behaviour transfers to open play.</p></div>
+      </div>
+    </div>}
+
+    {tab==='pda'&&<div className="diagnosticStagePanel">
+      <h2>PDA Diagnostic Tool</h2>
+      <p>Before labelling an error as technical, ask where the breakdown occurred.</p>
+      <div className="interventionToolGrid">{pda.map(item=><div className="interventionToolCard" key={item.title}><h3>{item.title}</h3><p>{item.text}</p><ul>{item.questions.map(q=><li key={q}>{q}</li>)}</ul></div>)}</div>
+      <div className="infoBox"><strong>WWWH Link</strong><p><b>Why</b> = tactical intention · <b>When</b> = opportunity timing · <b>Where</b> = useful space · <b>How</b> = action solution.</p></div>
+    </div>}
+
+    {tab==='lenses'&&<div className="diagnosticStagePanel">
+      <h2>Four Diagnostic Lenses</h2>
+      <p>Technical is what the coach sees. The lenses help explain why the behaviour may be occurring.</p>
+      <div className="interventionToolGrid">{lenses.map(lens=><div className="interventionToolCard" key={lens.title}><h3>{lens.icon} {lens.title}</h3><p>{lens.text}</p></div>)}</div>
+    </div>}
+
+    {tab==='movement'&&<div className="diagnosticStagePanel">
+      <h2>Movement Principles</h2>
+      <p>Biomechanics helps describe movement, but it does not prescribe one ideal technique. Skilled players develop individual solutions that satisfy the task.</p>
+      <div className="errorComparisonGrid">{movementPrinciples.map(item=><div className="errorMiniCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p></div>)}</div>
+    </div>}
+
+    {tab==='builder'&&<div className="diagnosticStagePanel">
+      <h2>Intervention Builder</h2>
+      <p>Select the observable issue. The app then frames it through PDA, the four lenses and practical interventions.</p>
+      <div className="quickLayers">{Object.keys(cases).map(name=><button key={name} className={activeCase===name?'activeLayer':''} onClick={()=>setActiveCase(name)}>{name}</button>)}</div>
+      <div className="claComparisonCard">
+        <h3>{activeCase}</h3>
+        <section><strong>PDA Check</strong><p>{current.pda}</p></section>
+        <section><strong>Primary Lens</strong><p>{current.lens}</p></section>
+        <section><strong>Possible Causes</strong><ul>{current.causes.map(c=><li key={c}>{c}</li>)}</ul></section>
+      </div>
+      <div className="interventionToolGrid">
+        <div className="interventionToolCard"><h3>Constraint</h3><p>{current.constraint}</p></div>
+        <div className="interventionToolCard"><h3>Checkerboard</h3><p>{current.checkerboard}</p></div>
+        <div className="interventionToolCard"><h3>Conditioned Game</h3><p>{current.conditioned}</p></div>
+        <div className="interventionToolCard"><h3>Technical Overlay</h3><p>{current.technical}</p></div>
+        <div className="interventionToolCard"><h3>Mental Overlay</h3><p>{current.mental}</p></div>
+        <div className="interventionToolCard"><h3>Animal Pairing</h3><p>{current.animal}</p></div>
+        <div className="interventionToolCard"><h3>PPP Recommendation</h3><p>{current.ppp}</p></div>
+      </div>
+    </div>}
+
+    {tab==='principles'&&<div className="diagnosticStagePanel">
+      <h2>Checkerboard Coaching Principles</h2>
+      <div className="stageHintGrid">
+        <div><strong>Game-Based First</strong><span>Learning has taken place when the behaviour appears in open rally or game situations.</span></div>
+        <div><strong>Intention Not Action</strong><span>Describe the purpose, ball outcome and tactical effect before body mechanics.</span></div>
+        <div><strong>External Focus</strong><span>Use target, space, opponent information and trajectory before body-part cues.</span></div>
+      </div>
+      <div className="stageHintGrid">
+        <div><strong>Descriptive Feedback</strong><span>Tell the player what happened before prescribing what to do.</span></div>
+        <div><strong>Bandwidth Feedback</strong><span>Do not correct every error. Let players search and self-detect.</span></div>
+        <div><strong>Agency Before Dependency</strong><span>The coach helps the player become less dependent on correction and more able to solve problems.</span></div>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -5092,7 +5261,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h68 Competition Box & Placing Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h70 Diagnostic & Intervention Foundation</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

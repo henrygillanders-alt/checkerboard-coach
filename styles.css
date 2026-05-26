@@ -1,4 +1,4 @@
-/* v99h68 Competition Box & Placing Engine */
+/* v99h70 Diagnostic & Intervention Foundation */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -2675,7 +2675,7 @@ button.mentalSkillsTile p{
 /* v99h65 styles marker */
 
 
-/* v99h68 Competition Box & Placing Engine */
+/* v99h70 Diagnostic & Intervention Foundation */
 .competitionDrawPanel{display:flex;flex-direction:column;gap:18px;}
 .drawHeaderCard{border:1px solid rgba(130,170,240,.45);background:rgba(12,24,40,.72);border-radius:18px;padding:18px;}
 .drawHeaderCard h2{margin:0 0 8px;color:#ffdf76;font-size:1.6rem;}
@@ -2713,7 +2713,7 @@ button.mentalSkillsTile p{
 @media(max-width:900px){.drawTwoColumn{grid-template-columns:1fr}.standingsBox{order:-1}.monradBracketScroll{flex-direction:column}.monradRoundColumn{min-width:0;width:100%;}}
 
 
-/* v99h68 Competition Box & Placing Engine */
+/* v99h70 Diagnostic & Intervention Foundation */
 .rrBoxStagePanel,.rrFinalStagePanel,.monradPlacingLayout{display:flex;flex-direction:column;gap:16px;}
 .rrBoxStagePanel h3,.rrFinalStagePanel h3{color:#ffdf76;margin:4px 0;font-size:1.35rem;}
 .rrBoxGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;align-items:start;}
@@ -2731,3 +2731,22 @@ button.mentalSkillsTile p{
 .monradPlacingLayout .monradStandingsBox{position:sticky;top:12px;}
 .monradPlacingLayout .monradStandingsBox .standingsTable>div{grid-template-columns:1fr 70px;}
 @media(max-width:900px){.monradPlacingLayout{grid-template-columns:1fr}.placingBracketScroll{flex-direction:column}.placingRoundColumn{min-width:0;width:100%;}.monradPlacingLayout .monradStandingsBox{position:static;}}
+
+
+/* v99h70 Diagnostic Foundation Support */
+.diagnosticInterventionPage .bernsteinBox{
+  border:1px solid rgba(255,220,110,.45);
+  border-radius:22px;
+  padding:22px;
+  margin:18px 0;
+  background:linear-gradient(135deg,rgba(255,216,98,.12),rgba(29,78,216,.08));
+}
+.diagnosticInterventionPage .claComparisonCard section{
+  border-top:1px solid rgba(148,163,184,.18);
+  margin-top:14px;
+  padding-top:14px;
+}
+.diagnosticInterventionPage .quickLayers button.activeLayer{
+  border-color:rgba(255,220,110,.9);
+  background:rgba(255,220,110,.16);
+}
