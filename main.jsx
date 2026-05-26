@@ -2457,8 +2457,18 @@ function Competition({players=[]}){
   const [matchScoring,setMatchScoring]=useState('PAR 11');
   const [rrFixtures,setRrFixtures]=useState([]);
   const [rrResults,setRrResults]=useState({});
+  const [rrBoxCount,setRrBoxCount]=useState(1);
+  const [rrBoxes,setRrBoxes]=useState([]);
+  const [rrBoxFixtures,setRrBoxFixtures]=useState([]);
+  const [rrBoxResults,setRrBoxResults]=useState({});
+  const [rrFinalBoxes,setRrFinalBoxes]=useState([]);
+  const [rrFinalFixtures,setRrFinalFixtures]=useState([]);
+  const [rrFinalResults,setRrFinalResults]=useState({});
   const [monradRounds,setMonradRounds]=useState([]);
   const [monradResults,setMonradResults]=useState({});
+  const [monradPlacingRounds,setMonradPlacingRounds]=useState([]);
+  const [monradPlacingResults,setMonradPlacingResults]=useState({});
+  const [monradFinalPlaces,setMonradFinalPlaces]=useState({});
   const [nslOrgTab,setNslOrgTab]=useState('config');
   const [nslTeams,setNslTeams]=useState(4);
   const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(3);
@@ -2904,14 +2914,10 @@ function Competition({players=[]}){
     setInvasionCourtAssignments(assignments);
   }
 
-  function generateRoundRobin(){
-    const names=[...playerNames];
-    if(names.length<2){
-      setRrFixtures([]);
-      setRrResults({});
-      return;
-    }
-    const list=names.length%2===1?[...names,'BYE']:[...names];
+  function buildRoundRobinRounds(names){
+    const clean=[...(names||[])].filter(Boolean);
+    if(clean.length<2) return [];
+    const list=clean.length%2===1?[...clean,'BYE']:[...clean];
     const rounds=[];
     const n=list.length;
     let rotating=[...list];
@@ -2925,6 +2931,12 @@ function Competition({players=[]}){
       rounds.push(matches);
       rotating=[rotating[0],rotating[n-1],...rotating.slice(1,n-1)];
     }
+    return rounds;
+  }
+
+  function generateRoundRobin(){
+    const names=[...playerNames];
+    const rounds=buildRoundRobinRounds(names);
     setRrFixtures(rounds);
     setRrResults({});
   }
@@ -2952,28 +2964,93 @@ function Competition({players=[]}){
     return Object.values(table).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
   }
 
+  function distributeRoundRobinBoxes(){
+    const names=[...playerNames];
+    const count=Math.max(1,Math.min(Number(rrBoxCount)||1,Math.max(1,names.length)));
+    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:[]}));
+    names.forEach((name,idx)=>boxes[idx%count].players.push(name));
+    setRrBoxes(boxes);
+    setRrBoxFixtures(boxes.map(box=>buildRoundRobinRounds(box.players)));
+    setRrBoxResults({});
+    setRrFinalBoxes([]);
+    setRrFinalFixtures([]);
+    setRrFinalResults({});
+  }
+
+  function rrBoxKey(boxIndex,roundIndex,matchIndex,stage='group'){
+    return `${stage}-${boxIndex}-${roundIndex}-${matchIndex}`;
+  }
+
+  function setRrBoxWinner(boxIndex,roundIndex,matchIndex,winner,stage='group'){
+    const setter=stage==='final'?setRrFinalResults:setRrBoxResults;
+    setter(prev=>({...prev,[rrBoxKey(boxIndex,roundIndex,matchIndex,stage)]:winner}));
+  }
+
+  function getBoxStandings(box,fixtures,results,boxIndex,stage='group'){
+    const table={};
+    (box.players||[]).forEach(name=>{table[name]={name,played:0,wins:0,losses:0,points:0};});
+    (fixtures||[]).forEach((round,ridx)=>round.forEach((match,midx)=>{
+      const winner=results[rrBoxKey(boxIndex,ridx,midx,stage)];
+      if(!winner) return;
+      const loser=winner===match.a?match.b:match.a;
+      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,points:0}; table[name].played+=1;});
+      if(table[winner]){table[winner].wins+=1;table[winner].points+=3;}
+      if(table[loser]) table[loser].losses+=1;
+    }));
+    return Object.values(table).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
+  }
+
+  function generateRrFinalBoxes(){
+    if(!rrBoxes.length) return;
+    const groupStandings=rrBoxes.map((box,idx)=>getBoxStandings(box,rrBoxFixtures[idx]||[],rrBoxResults,idx,'group'));
+    const maxPlaces=Math.max(...groupStandings.map(rows=>rows.length));
+    const finalBoxes=[];
+    for(let placeIndex=0;placeIndex<maxPlaces;placeIndex++){
+      const players=groupStandings.map(rows=>rows[placeIndex]?.name).filter(Boolean);
+      if(players.length){
+        const start=placeIndex*rrBoxes.length+1;
+        const end=start+players.length-1;
+        finalBoxes.push({name:`Final Box ${placeIndex+1}`,range:`Places ${start}-${end}`,players});
+      }
+    }
+    setRrFinalBoxes(finalBoxes);
+    setRrFinalFixtures(finalBoxes.map(box=>buildRoundRobinRounds(box.players)));
+    setRrFinalResults({});
+  }
+
   function monradResultKey(roundIndex,matchIndex){
     return `m-${roundIndex}-${matchIndex}`;
   }
 
-  function generateMonradFirstRound(){
-    const names=[...playerNames];
-    if(names.length<2){
-      setMonradRounds([]);
-      setMonradResults({});
-      return;
-    }
-    const seeded=[...names];
-    const half=Math.ceil(seeded.length/2);
+  function nextPowerOfTwo(n){
+    let p=1; while(p<n) p*=2; return p;
+  }
+
+  function seedToPowerOfTwo(names){
+    const size=nextPowerOfTwo(Math.max(2,names.length));
+    return [...names,...Array.from({length:size-names.length},(_,idx)=>`BYE ${idx+1}`)];
+  }
+
+  function isByeName(name){return !name||String(name).startsWith('BYE');}
+
+  function makeSeededMatches(list){
+    const clean=[...(list||[])];
+    const half=Math.ceil(clean.length/2);
     const matches=[];
     for(let i=0;i<half;i++){
-      const a=seeded[i];
-      const b=seeded[i+half]||'BYE';
-      if(a&&b!=='BYE') matches.push({a,b});
-      else if(a) matches.push({a,b:'BYE'});
+      const a=clean[i];
+      const b=clean[clean.length-1-i];
+      if(a&&b&&a!==b) matches.push({a,b});
     }
+    return matches;
+  }
+
+  function generateMonradFirstRound(){
+    const seeded=seedToPowerOfTwo([...playerNames]);
+    const matches=makeSeededMatches(seeded);
     setMonradRounds([matches]);
     setMonradResults({});
+    generateMonradPlacingDraw();
   }
 
   function setMonradWinner(roundIndex,matchIndex,winner){
@@ -2985,8 +3062,8 @@ function Competition({players=[]}){
     playerNames.forEach(name=>{scores[name]={name,wins:0,played:0};});
     monradRounds.forEach((round,ridx)=>round.forEach((match,midx)=>{
       const winner=monradResults[monradResultKey(ridx,midx)];
-      if(match.a&&match.a!=='BYE') scores[match.a]&&(scores[match.a].played+=winner?1:0);
-      if(match.b&&match.b!=='BYE') scores[match.b]&&(scores[match.b].played+=winner?1:0);
+      if(match.a&&scores[match.a]) scores[match.a].played+=winner?1:0;
+      if(match.b&&scores[match.b]) scores[match.b].played+=winner?1:0;
       if(winner&&scores[winner]) scores[winner].wins+=1;
     }));
     return scores;
@@ -2997,23 +3074,82 @@ function Competition({players=[]}){
   }
 
   function generateNextMonradRound(){
-    if(!monradRounds.length){generateMonradFirstRound();return;}
-    const currentRound=monradRounds[monradRounds.length-1];
-    const allComplete=currentRound.every((match,midx)=>match.b==='BYE'||monradResults[monradResultKey(monradRounds.length-1,midx)]);
-    if(!allComplete) return;
-    const scores=monradPlayerScores();
-    const pool=[...playerNames].sort((a,b)=>(scores[b]?.wins||0)-(scores[a]?.wins||0)||a.localeCompare(b));
-    const next=[];
-    const used=new Set();
-    for(const a of pool){
-      if(used.has(a)) continue;
-      let opponent=pool.find(b=>b!==a&&!used.has(b)&&!monradHavePlayed(a,b));
-      if(!opponent) opponent=pool.find(b=>b!==a&&!used.has(b));
-      used.add(a);
-      if(opponent){used.add(opponent);next.push({a,b:opponent});}
-      else next.push({a,b:'BYE'});
+    generateNextMonradPlacingRound();
+  }
+
+  function generateMonradPlacingDraw(){
+    const names=seedToPowerOfTwo([...playerNames]);
+    if(names.length<2){
+      setMonradPlacingRounds([]);
+      setMonradPlacingResults({});
+      setMonradFinalPlaces({});
+      return;
     }
-    setMonradRounds(prev=>[...prev,next]);
+    const round=[{id:'1',range:`1-${names.length}`,players:names,matches:makeSeededMatches(names)}];
+    setMonradPlacingRounds([round]);
+    setMonradPlacingResults({});
+    setMonradFinalPlaces({});
+  }
+
+  function monradPlaceKey(roundIndex,groupId,matchIndex){
+    return `place-${roundIndex}-${groupId}-${matchIndex}`;
+  }
+
+  function setMonradPlaceWinner(roundIndex,groupId,matchIndex,winner){
+    setMonradPlacingResults(prev=>({...prev,[monradPlaceKey(roundIndex,groupId,matchIndex)]:winner}));
+  }
+
+  function parseRange(range){
+    const [start,end]=String(range).split('-').map(n=>Number(n));
+    return {start:start||1,end:end||start||1};
+  }
+
+  function generateNextMonradPlacingRound(){
+    if(!monradPlacingRounds.length){generateMonradPlacingDraw();return;}
+    const ridx=monradPlacingRounds.length-1;
+    const current=monradPlacingRounds[ridx];
+    const nextGroups=[];
+    const finalPlaces={...monradFinalPlaces};
+    let blocked=false;
+    current.forEach(group=>{
+      const {start,end}=parseRange(group.range);
+      if((group.players||[]).length<=1){
+        const p=(group.players||[]).find(name=>!isByeName(name));
+        if(p) finalPlaces[p]=start;
+        return;
+      }
+      if((group.players||[]).length===2){
+        const match=group.matches[0];
+        const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+        const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,0)];
+        if(!winner){blocked=true;return;}
+        const loser=winner===match.a?match.b:match.a;
+        if(!isByeName(winner)) finalPlaces[winner]=start;
+        if(!isByeName(loser)) finalPlaces[loser]=end;
+        return;
+      }
+      const complete=group.matches.every((match,midx)=>isByeName(match.a)||isByeName(match.b)||monradPlacingResults[monradPlaceKey(ridx,group.id,midx)]);
+      if(!complete){blocked=true;return;}
+      const winners=[];
+      const losers=[];
+      group.matches.forEach((match,midx)=>{
+        const winner=isByeName(match.a)?match.b:isByeName(match.b)?match.a:monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+        const loser=winner===match.a?match.b:match.a;
+        if(!isByeName(winner)) winners.push(winner);
+        if(!isByeName(loser)) losers.push(loser);
+      });
+      const mid=start+winners.length-1;
+      if(winners.length) nextGroups.push({id:`${group.id}W`,range:`${start}-${mid}`,players:winners,matches:makeSeededMatches(winners)});
+      if(losers.length) nextGroups.push({id:`${group.id}L`,range:`${mid+1}-${end}`,players:losers,matches:makeSeededMatches(losers)});
+    });
+    if(blocked) return;
+    setMonradFinalPlaces(finalPlaces);
+    if(nextGroups.length) setMonradPlacingRounds(prev=>[...prev,nextGroups]);
+  }
+
+  function getMonradFinalTable(){
+    const rows=[...playerNames].map(name=>({name,place:monradFinalPlaces[name]||'—'}));
+    return rows.sort((a,b)=>(Number(a.place)||999)-(Number(b.place)||999)||a.name.localeCompare(b.name));
   }
 
   function getNslGeneratedTeams(){
@@ -3636,12 +3772,95 @@ function Competition({players=[]}){
         {mode==='roundRobin'&&(
           <div className="competitionEnginePanel competitionDrawPanel">
             <div className="drawHeaderCard">
-              <h2>Round Robin Draw Engine</h2>
-              <p>Generate every-player-plays-every-player fixtures, record winners and view a live standings table.</p>
-              <button className="primaryBtn" onClick={generateRoundRobin}>Generate Round Robin Fixtures</button>
+              <h2>Round Robin Box Engine</h2>
+              <p>Choose one or more boxes. First stage boxes feed final placing boxes: box winners play for top places, second-placed players play for the next places, and so on.</p>
+              <div className="atlOptionsGrid">
+                <label>Number of boxes
+                  <select value={rrBoxCount} onChange={e=>setRrBoxCount(Number(e.target.value))}>
+                    {Array.from({length:Math.max(1,Math.min(6,playerNames.length||6))},(_,idx)=><option key={idx+1} value={idx+1}>{idx+1} box{idx?'es':''}</option>)}
+                  </select>
+                </label>
+                <label>Players available
+                  <input value={`${playerNames.length} players`} readOnly />
+                </label>
+              </div>
+              <div className="buttonRow">
+                <button className="primaryBtn" onClick={distributeRoundRobinBoxes}>Generate Box Stage</button>
+                <button className="secondaryBtn" onClick={generateRrFinalBoxes}>Generate Final Placing Boxes</button>
+                <button className="secondaryBtn" onClick={generateRoundRobin}>Generate Single Box Only</button>
+              </div>
             </div>
-            {rrFixtures.length===0&&<p className="overlayExplain">Uses players marked present in Attendance. Enter manual players in the Double-Bounce section if none are present.</p>}
-            {rrFixtures.length>0&&(
+
+            {rrBoxes.length===0&&rrFixtures.length===0&&<p className="overlayExplain">Uses players marked present in Attendance. Enter manual players in the Double-Bounce section if none are present.</p>}
+
+            {rrBoxes.length>0&&(
+              <div className="rrBoxStagePanel">
+                <h3>Stage 1: Group Boxes</h3>
+                <div className="rrBoxGrid">
+                  {rrBoxes.map((box,bidx)=>(
+                    <div className="rrBoxCard" key={box.name}>
+                      <div className="drawRoundTitle">{box.name}</div>
+                      <p><b>Players:</b> {box.players.join(' · ')}</p>
+                      {(rrBoxFixtures[bidx]||[]).map((round,ridx)=>(
+                        <div className="drawRoundBox miniDrawRound" key={`${box.name}-${ridx}`}>
+                          <div className="drawRoundTitle">Round {ridx+1}</div>
+                          {round.map((match,midx)=>{
+                            const winner=rrBoxResults[rrBoxKey(bidx,ridx,midx,'group')];
+                            return <div className="drawMatchBox" key={midx}>
+                              <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.a,'group')}>Win</button></div>
+                              <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.b,'group')}>Win</button></div>
+                            </div>;
+                          })}
+                        </div>
+                      ))}
+                      <div className="standingsBox compactStandingsBox">
+                        <h3>{box.name} Standings</h3>
+                        <div className="standingsTable">
+                          <div><b>Player</b><b>P</b><b>W</b><b>Pts</b></div>
+                          {getBoxStandings(box,rrBoxFixtures[bidx]||[],rrBoxResults,bidx,'group').map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span><span>{row.points}</span></div>)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {rrFinalBoxes.length>0&&(
+              <div className="rrFinalStagePanel">
+                <h3>Stage 2: Final Placing Boxes</h3>
+                <p>Each placing box is populated from the same finishing position in the group boxes.</p>
+                <div className="rrBoxGrid">
+                  {rrFinalBoxes.map((box,bidx)=>(
+                    <div className="rrBoxCard finalBoxCard" key={box.name}>
+                      <div className="drawRoundTitle">{box.name} · {box.range}</div>
+                      <p><b>Qualified players:</b> {box.players.join(' · ')}</p>
+                      {(rrFinalFixtures[bidx]||[]).map((round,ridx)=>(
+                        <div className="drawRoundBox miniDrawRound" key={`${box.name}-${ridx}`}>
+                          <div className="drawRoundTitle">Round {ridx+1}</div>
+                          {round.map((match,midx)=>{
+                            const winner=rrFinalResults[rrBoxKey(bidx,ridx,midx,'final')];
+                            return <div className="drawMatchBox" key={midx}>
+                              <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.a,'final')}>Win</button></div>
+                              <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.b,'final')}>Win</button></div>
+                            </div>;
+                          })}
+                        </div>
+                      ))}
+                      <div className="standingsBox compactStandingsBox">
+                        <h3>{box.range}</h3>
+                        <div className="standingsTable">
+                          <div><b>Player</b><b>P</b><b>W</b><b>Pts</b></div>
+                          {getBoxStandings(box,rrFinalFixtures[bidx]||[],rrFinalResults,bidx,'final').map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span><span>{row.points}</span></div>)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {rrFixtures.length>0&&rrBoxes.length===0&&(
               <div className="drawTwoColumn">
                 <div className="roundRobinDrawGrid">
                   {rrFixtures.map((round,idx)=>(
@@ -3673,34 +3892,44 @@ function Competition({players=[]}){
         {mode==='monrad'&&(
           <div className="competitionEnginePanel competitionDrawPanel">
             <div className="drawHeaderCard">
-              <h2>Monrad Draw Engine</h2>
-              <p>Generate a progressive draw. Winners move toward winners, players continue playing after every round.</p>
+              <h2>Monrad Full Placing Draw</h2>
+              <p>Every player keeps playing until final placings are settled. Winners move toward the higher placing pathway; losers move into the next placing pathway.</p>
               <div className="buttonRow">
-                <button className="primaryBtn" onClick={generateMonradFirstRound}>Generate Round 1</button>
-                <button className="secondaryBtn" onClick={generateNextMonradRound}>Generate Next Round</button>
+                <button className="primaryBtn" onClick={generateMonradPlacingDraw}>Generate Placing Draw</button>
+                <button className="secondaryBtn" onClick={generateNextMonradPlacingRound}>Generate Next Placing Round</button>
               </div>
             </div>
-            {monradRounds.length===0&&<p className="overlayExplain">Use players marked present in Attendance. Round 1 pairs the top half against the lower half; later rounds pair players with similar records and avoid repeats where possible.</p>}
-            {monradRounds.length>0&&(
-              <div className="monradBracketScroll">
-                {monradRounds.map((round,ridx)=>(
-                  <div className="monradRoundColumn" key={ridx}>
-                    <div className="drawRoundTitle">Round {ridx+1}</div>
-                    {round.map((match,midx)=>{
-                      const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];
-                      return <div className="monradMatchCard" key={midx}>
-                        <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.a)}>Win</button>}</div>
-                        <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.b)}>Win</button>}</div>
-                      </div>;
-                    })}
-                  </div>
-                ))}
+            {monradPlacingRounds.length===0&&<p className="overlayExplain">Best with 4, 8 or 16 players. Other numbers are padded with byes so the placing pathways stay clear.</p>}
+            {monradPlacingRounds.length>0&&(
+              <div className="monradPlacingLayout">
+                <div className="monradBracketScroll placingBracketScroll">
+                  {monradPlacingRounds.map((round,ridx)=>(
+                    <div className="monradRoundColumn placingRoundColumn" key={ridx}>
+                      <div className="drawRoundTitle">Round {ridx+1}</div>
+                      {round.map(group=>(
+                        <div className="placingGroupBox" key={group.id}>
+                          <h3>Pathway {group.range}</h3>
+                          <p>{group.players.filter(name=>!isByeName(name)).join(' · ')}</p>
+                          {group.matches.map((match,midx)=>{
+                            const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+                            const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+                            return <div className="monradMatchCard" key={midx}>
+                              <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{isByeName(match.a)?'BYE':match.a}</span>{!auto&&!isByeName(match.a)&&<button type="button" onClick={()=>setMonradPlaceWinner(ridx,group.id,midx,match.a)}>Win</button>}</div>
+                              <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{isByeName(match.b)?'BYE':match.b}</span>{!auto&&!isByeName(match.b)&&<button type="button" onClick={()=>setMonradPlaceWinner(ridx,group.id,midx,match.b)}>Win</button>}</div>
+                            </div>;
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
                 <div className="standingsBox monradStandingsBox">
-                  <h3>Monrad Table</h3>
+                  <h3>Final Placing Table</h3>
                   <div className="standingsTable">
-                    <div><b>Player</b><b>Played</b><b>Wins</b></div>
-                    {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span></div>)}
+                    <div><b>Player</b><b>Place</b></div>
+                    {getMonradFinalTable().map(row=><div key={row.name}><span>{row.name}</span><span>{row.place}</span></div>)}
                   </div>
+                  <p className="overlayExplain">Generate the next placing round after all visible matches in the current round have winners.</p>
                 </div>
               </div>
             )}
@@ -4863,7 +5092,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h67 Competition Draw Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h68 Competition Box & Placing Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

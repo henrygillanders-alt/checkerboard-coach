@@ -1,4 +1,4 @@
-/* v99h67 Competition Draw Engine */
+/* v99h68 Competition Box & Placing Engine */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -2675,7 +2675,7 @@ button.mentalSkillsTile p{
 /* v99h65 styles marker */
 
 
-/* v99h67 Competition Draw Engine */
+/* v99h68 Competition Box & Placing Engine */
 .competitionDrawPanel{display:flex;flex-direction:column;gap:18px;}
 .drawHeaderCard{border:1px solid rgba(130,170,240,.45);background:rgba(12,24,40,.72);border-radius:18px;padding:18px;}
 .drawHeaderCard h2{margin:0 0 8px;color:#ffdf76;font-size:1.6rem;}
@@ -2711,3 +2711,23 @@ button.mentalSkillsTile p{
 .nslPeriodStrip b{color:#ffdf76;}
 .nslPeriodStrip span{color:#eef5ff;}
 @media(max-width:900px){.drawTwoColumn{grid-template-columns:1fr}.standingsBox{order:-1}.monradBracketScroll{flex-direction:column}.monradRoundColumn{min-width:0;width:100%;}}
+
+
+/* v99h68 Competition Box & Placing Engine */
+.rrBoxStagePanel,.rrFinalStagePanel,.monradPlacingLayout{display:flex;flex-direction:column;gap:16px;}
+.rrBoxStagePanel h3,.rrFinalStagePanel h3{color:#ffdf76;margin:4px 0;font-size:1.35rem;}
+.rrBoxGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;align-items:start;}
+.rrBoxCard,.placingGroupBox{border:1px solid rgba(112,148,208,.55);background:rgba(8,19,35,.82);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.rrBoxCard p,.placingGroupBox p{margin:0;color:#d8e4ff;line-height:1.35;}
+.finalBoxCard{border-color:rgba(255,223,118,.55);background:linear-gradient(135deg,rgba(34,31,20,.86),rgba(8,19,35,.86));}
+.miniDrawRound{padding:10px;margin:0;}
+.compactStandingsBox{padding:12px;background:rgba(4,12,24,.65);}
+.compactStandingsBox .standingsTable>div{grid-template-columns:1fr 36px 36px 46px;}
+.placingBracketScroll{display:flex;gap:16px;overflow-x:auto;align-items:flex-start;padding-bottom:12px;}
+.placingRoundColumn{min-width:320px;display:flex;flex-direction:column;gap:12px;}
+.placingGroupBox h3{margin:0;color:#ffdf76;font-size:1.1rem;}
+.placingGroupBox .monradMatchCard{margin-bottom:0;}
+.monradPlacingLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start;}
+.monradPlacingLayout .monradStandingsBox{position:sticky;top:12px;}
+.monradPlacingLayout .monradStandingsBox .standingsTable>div{grid-template-columns:1fr 70px;}
+@media(max-width:900px){.monradPlacingLayout{grid-template-columns:1fr}.placingBracketScroll{flex-direction:column}.placingRoundColumn{min-width:0;width:100%;}.monradPlacingLayout .monradStandingsBox{position:static;}}
