@@ -4090,7 +4090,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v71',
+      version:'v72',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4107,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v71',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v72',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v71.json';
+    a.download='checkerboard-backup-v72.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5132,6 +5132,30 @@ function DiagnosticIntervention({setScreen}){
       squash:'Before serve, attack or volley, the player stabilises attention on target, ball and useful information instead of rushing.',
       takeaway:'Ask “what did you see?” before saying “keep your head still.”'
     },
+
+    ,
+    origins:{
+      title:'Origins of Non-Functional Habits',
+      researcher:'This combines Newell’s constraints model, Bernstein’s coordination work and ecological dynamics.',
+      core:'A behaviour stabilises because previous constraints made it useful, easy, rewarded or never challenged.',
+      squash:'A large swing may work in feeds and at lower levels, then become non-functional when time pressure and opponent uncertainty increase.',
+      takeaway:'Do not ask only “what is wrong?” Ask “where did this solution come from?”'
+    },
+    attractors:{
+      title:'Mono-stable, Multi-stable and Meta-stable Attractors',
+      researcher:'Attractor language comes from dynamical systems theory used in ecological dynamics.',
+      core:'Mono-stable means one solution dominates. Multi-stable means several solutions exist. Meta-stable means the player can switch fluidly between solutions as information changes.',
+      squash:'A hard hitter should not lose the hard drive; they need soft, dying, height and hold options with equal selectivity.',
+      takeaway:'Sometimes the coach should expand the solution landscape rather than replace an existing behaviour.'
+    },
+    errors:{
+      title:'Errors as Information',
+      researcher:'This links to Bernstein, Newell, Davids, Bandura and Dweck.',
+      core:'Errors are not all the same. Some are exploration errors, some are stable non-functional habits, and some are pressure or perception breakdowns.',
+      squash:'A missed volley during earlier interception exploration may be useful. Repeatedly missing because the same late recognition habit dominates is different.',
+      takeaway:'Classify the error origin before choosing the intervention.'
+    }
+,
     wulf:{
       title:'Gabriele Wulf · External Focus',
       researcher:'Gabriele Wulf showed that focusing on movement effects often improves learning compared with body-part focus.',
@@ -5181,6 +5205,39 @@ function DiagnosticIntervention({setScreen}){
     ['Acceleration & Deceleration','Start quickly, stop efficiently and reorganise for the next action.','Deceleration is often what allows accurate striking and fast recovery.'],
     ['Elastic Energy & Reactivity','Use stretch-shortening actions of muscles and tendons to improve efficiency and power.','Examples include split step, lunge recovery, torso rotation, shoulder loading and elbow extension.'],
     ['Adaptability','Modify movement solutions in response to changing task, opponent and environmental demands.','Effective movement is adaptable rather than identical.']
+  ];
+
+
+  const habitOrigins=[
+    {title:'Functional At Lower Level',type:'Origin',text:'The behaviour worked against slower pace, weaker pressure or simpler opponents. It becomes non-functional when the environment becomes more demanding.',coach:'Do not shame the habit. Explain that the game has outgrown it.',intervention:'Add new solutions and increase selectivity under pressure.'},
+    {title:'Solo Practice / Repetition With Repetition',type:'Origin',text:'The behaviour stabilised in self-paced practice with no opponent, limited variability and known timing.',coach:'Look for collapse when opponent, time pressure or uncertainty returns.',intervention:'Reintroduce variability, opponent information and representative consequences.'},
+    {title:'Traditional Feeding-Origin Habit',type:'Origin',text:'The solution was shaped by continuous feeds where shot shape, power or cosmetic technique was celebrated without rally consequences.',coach:'Ask whether the movement survives live time pressure, recovery and opponent feedback.',intervention:'Shift from shot coaching to outcome coaching under constraints.'},
+    {title:'Missing Solution Development',type:'Origin',text:'The coordination or perceptual behaviour never developed. There is no reliable attractor yet.',coach:'This is not replacement work. It is construction work.',intervention:'Build a simple representative version, then scale pressure gradually.'},
+    {title:'Compensation Attractor',type:'Origin',text:'A secondary behaviour stabilised because it helped solve another issue: balance, spacing, timing or fear.',coach:'Do not attack the compensation first.',intervention:'Find the primary problem the compensation is solving.'}
+  ];
+
+  const attractorTypes=[
+    {title:'Type 1 — Missing Solution',text:'No useful attractor exists yet. Example: non-racquet hand has no functional role, no split step, no visual tracking habit.',action:'Add / build the missing behaviour through representative tasks.'},
+    {title:'Type 2 — Dominant Non-Functional Habit',text:'A stable solution exists but dominates in the wrong context. Example: huge swing, late prep, wrist break, admire-shot recovery.',action:'Destabilise dominance and create better contextual selectivity.'},
+    {title:'Add Rather Than Replace',text:'Some habits have limited functionality. They should remain available, but not dominate all situations.',action:'Develop more solutions with equal selectivity — this is the route toward meta-stability.'}
+  ];
+
+  const habitCards=[
+    {title:'Non-Racquet Hand Neutral / Absent',origin:'Missing Solution Development',type:'Type 1 — Missing Solution',why:'The player may never have developed the non-playing hand as a balance, spacing and shoulder-organisation resource.',debate:'Traditional correction might say “put your hand here.” Constraint-led coaching asks what task makes the hand useful.',coach:'Build a functional role rather than a cosmetic position.',intervention:'Use reaching, spacing and recoverable-strike constraints where the non-racquet hand helps solve the task.'},
+    {title:'Large Feeding-Grooved Swing',origin:'Traditional Feeding-Origin Habit',type:'Type 2 — Dominant Non-Functional Habit',why:'Continuous feeds can reward shape and power without opponent pressure, recovery demands or variability.',debate:'Traditional shot coaching may celebrate the swing. Outcome coaching asks whether it survives live time, space and opponent information.',coach:'Do not simply shorten the swing verbally. Change the time/space constraint.',intervention:'Use rally feeds, tempo compression, recovery bonuses and pressure windows.'},
+    {title:'Solo-Practice Straight Drive Attractor',origin:'Solo Practice / Repetition With Repetition',type:'Type 2 — Mono-stable Solution',why:'The drive may be stable in one self-paced environment but unavailable or poorly selected in open rally contexts.',debate:'The issue is not that solo practice is useless. The issue is whether it transfers to changing information.',coach:'Preserve the drive but add adaptability.',intervention:'Vary height, depth, pressure, opponent position and decision triggers.'},
+    {title:'Hard Hitter Only',origin:'Functional At Lower Level',type:'Add Rather Than Replace',why:'Power may have been highly functional at a lower level but becomes too predictable when opponents absorb pace.',debate:'Do not remove the penetrating drive. Add soft, dying, height, hold and change-of-tempo options.',coach:'The goal is not less power; it is better selectivity.',intervention:'Use variable pace games and score only when the player selects the appropriate ball shape for the affordance.'},
+    {title:'Spin-Out Recovery',origin:'Compensation Attractor',type:'Type 2 — Compensation Habit',why:'Over-rotation may help generate power or escape poor spacing, but damages next-shot readiness.',debate:'Correcting the spin directly may miss the primary cause.',coach:'Ask what the spin is solving: power, balance, spacing, or contact timing?',intervention:'Use recoverable-finish constraints and strike-to-recover scoring.'},
+    {title:'Visual Tracking Not Developed',origin:'Missing Solution Development',type:'Type 1 — Missing Perceptual Solution',why:'The player may never have learned what information to pick up from ball flight, opponent body, or racket head.',debate:'“Watch the ball” is too vague. The player needs specifying information.',coach:'Clarify what the player should see and when.',intervention:'Use Quiet Eye, call-before-contact, second-eye-to-opponent and early recognition games.'}
+  ];
+
+  const errorTypes=[
+    ['Exploration Error','Temporary miss while searching for a more useful solution. Do not over-correct too early.'],
+    ['Stable Non-Functional Habit','Same failure repeats because one attractor dominates. Change the constraints.'],
+    ['Functional Miss','Good intention and information, but execution failed. Keep the behaviour and adjust the demand.'],
+    ['Non-Functional Success','Player wins the point but reinforces a poor process. Coach the long-term pattern, not just outcome.'],
+    ['Pressure Error','Behaviour is available in practice but collapses under score, opponent, fatigue or time pressure.'],
+    ['Compensation Error','Visible behaviour is secondary. Find the primary problem it is compensating for.']
   ];
 
   const cases={
@@ -5282,6 +5339,7 @@ function DiagnosticIntervention({setScreen}){
       <button className={tab==='pda'?'activeTab':''} onClick={()=>setTab('pda')}>🎯 PDA Diagnostic</button>
       <button className={tab==='lenses'?'activeTab':''} onClick={()=>setTab('lenses')}>🔍 Four Lenses</button>
       <button className={tab==='movement'?'activeTab':''} onClick={()=>setTab('movement')}>⚙️ Movement Principles</button>
+      <button className={tab==='habits'?'activeTab':''} onClick={()=>setTab('habits')}>🧩 Habits & Origins</button>
       <button className={tab==='builder'?'activeTab':''} onClick={()=>setTab('builder')}>🛠 Intervention Builder</button>
       <button className={tab==='principles'?'activeTab':''} onClick={()=>setTab('principles')}>🏆 Coaching Principles</button>
     </div>
@@ -5321,6 +5379,43 @@ function DiagnosticIntervention({setScreen}){
       <p>Biomechanics helps describe movement, but it does not prescribe one ideal technique. Skilled players develop individual solutions that satisfy the task.</p>
       <div className="errorComparisonGrid">{movementPrinciples.map(item=><div className="errorMiniCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p><small>{item[2]}</small>{item[0]==='Elastic Energy & Reactivity'&&<InfoButton id="elastic"/>}</div>)}</div>
     </div>}
+
+
+    {tab==='habits'&&<div className="diagnosticStagePanel habitOriginsPage">
+      <h2>Non-Functional Habits, Missing Solutions & Their Origins</h2>
+      <div className="bernsteinBox">
+        <h3>Origin determines intervention.</h3>
+        <p>Players do not repeat non-functional habits because they are wrong. They repeat them because those solutions became stable under previous constraints.</p>
+        <p>A movement pattern is not defined by how it looks in isolation, but by how effectively it adapts under representative performance conditions.</p>
+        <InfoButton id="origins"/>
+      </div>
+
+      <h3>Where Did The Habit Come From?</h3>
+      <div className="originGrid">{habitOrigins.map(item=><div className="originCard" key={item.title}>
+        <span>{item.type}</span><h3>{item.title}</h3><p>{item.text}</p><section><strong>Coach Debate</strong><p>{item.coach}</p></section><section><strong>Intervention Direction</strong><p>{item.intervention}</p></section>
+      </div>)}</div>
+
+      <h3>Type 1 / Type 2 / Add Rather Than Replace</h3>
+      <div className="interventionToolGrid">{attractorTypes.map(item=><div className="interventionToolCard" key={item.title}>
+        <h3>{item.title}</h3><p>{item.text}</p><p><strong>Action:</strong> {item.action}</p>
+      </div>)}</div>
+      <div className="infoBox"><strong>Meta-stability Goal</strong><p>The goal is not always to remove an existing movement solution. Some solutions have limited functionality. The coaching goal is to add more solutions and develop equal selectivity so the player can switch fluidly as information changes.</p><InfoButton id="attractors"/></div>
+
+      <h3>Sample Non-Functional Habits</h3>
+      <div className="habitCardList">{habitCards.map(card=><div className="habitCard" key={card.title}>
+        <div className="habitCardTop"><h3>{card.title}</h3><span>{card.type}</span></div>
+        <p><strong>Origin:</strong> {card.origin}</p>
+        <p><strong>Why it stabilised:</strong> {card.why}</p>
+        <p><strong>Coach debate:</strong> {card.debate}</p>
+        <p><strong>Coach question:</strong> {card.coach}</p>
+        <p><strong>Constraint direction:</strong> {card.intervention}</p>
+      </div>)}</div>
+
+      <h3>Not All Errors Mean The Same Thing</h3>
+      <div className="errorTypeGrid">{errorTypes.map(row=><div className="errorTypeCard" key={row[0]}><strong>{row[0]}</strong><p>{row[1]}</p></div>)}</div>
+      <div className="infoBox"><strong>Key Coaching Shift</strong><p>Do not ask only: “How do we stop the error?” Ask: “What type of error is this, where did it originate, and should we replace, rebuild, or expand the player’s solution landscape?”</p><InfoButton id="errors"/></div>
+    </div>}
+
 
     {tab==='builder'&&<div className="diagnosticStagePanel">
       <h2>Intervention Builder</h2>
@@ -5372,7 +5467,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h71 Diagnostic Refinement</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h72 Habits & Origins</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
