@@ -5133,7 +5133,6 @@ function DiagnosticIntervention({setScreen}){
       takeaway:'Ask “what did you see?” before saying “keep your head still.”'
     },
 
-    ,
     origins:{
       title:'Origins of Non-Functional Habits',
       researcher:'This combines Newell’s constraints model, Bernstein’s coordination work and ecological dynamics.',
