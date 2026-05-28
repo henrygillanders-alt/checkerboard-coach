@@ -1065,6 +1065,7 @@ return <div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+<IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
@@ -1268,8 +1269,7 @@ return <div className="checkerboardEngine">
       {!config.showCustomSequence&&<button className="secondaryBtn" onClick={()=>update('showCustomSequence',true)}>+ Custom Sequence</button>}
       {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
     </div>
-    <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
-    <IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
+    <div className="overlayUnificationNote"><strong>Completion conditions now live in the Overlay Stack.</strong><p>Select clean winner, volley finish, opponent off T, T Challenge and similar demands as ordered overlays with consequences.</p></div>
     <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard" /></div>
     
     {config.deliveryMode==='Blind'&&<div className="blindCardPanel">
@@ -1308,6 +1308,7 @@ return <div className="checkerboardEngine">
     </div>}
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
+    <IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
   </div>;
 }
 
@@ -4092,7 +4093,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v79',
+      version:'v80',
       created:new Date().toISOString(),
       players,
       session
@@ -4109,12 +4110,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v79',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v80',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v79.json';
+    a.download='checkerboard-backup-v80.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5680,6 +5681,14 @@ function DiagnosticIntervention({setScreen}){
 function IntegratedOverlayBuilder({context='General Game', compact=false}){
   const overlayOptions=[
     {id:'none',name:'None',category:'None',description:'No overlay selected.'},
+    {id:'cleanWinner',name:'Clean Winner Finish',category:'Completion',description:'Bonus applies only if the rally is finished with a clean winner or unplayable ball.'},
+    {id:'volleyFinish',name:'Volley Finish',category:'Completion',description:'Bonus applies only if the scoring shot is taken on the volley.'},
+    {id:'oppositeSideFinish',name:'Opposite Side Finish',category:'Completion',description:'Bonus applies when the finish goes to the opposite side from the previous pressure shot.'},
+    {id:'frontWallFinish',name:'Front Wall Finish',category:'Completion',description:'Bonus applies when the final shot satisfies the selected front-wall target.'},
+    {id:'floorFinish',name:'Floor Finish',category:'Completion',description:'Bonus applies when the final shot satisfies the selected floor target.'},
+    {id:'opponentMovingForward',name:'Opponent Moving Forward',category:'Completion / Tactical',description:'Bonus applies when the finish is played while opponent is still moving forward.'},
+    {id:'opponentOffBalance',name:'Opponent Off Balance',category:'Completion / Tactical',description:'Bonus applies when the player attacks an opponent who is stretched or off balance.'},
+    {id:'tChallenge',name:'T Challenge',category:'Completion / Movement',description:'Bonus or unlock applies only if the player completes the challenge and recovers through the T.'},
     {id:'offT',name:'Opponent Off T',category:'Tactical State',description:'Bonus/permission applies only when opponent is not set in the T-zone.'},
     {id:'unsetT',name:'Opponent Not Set In T',category:'Tactical State',description:'Attack below the line only if opponent is not balanced and set in the T-zone.'},
     {id:'stillMoving',name:'Opponent Still Moving',category:'Tactical State',description:'Action is valid only while opponent is recovering or changing direction.'},
@@ -5800,7 +5809,7 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
 
   return <div className={`integratedOverlayBuilder ${compact?'compactOverlayBuilder':''}`}>
     <div className="integratedOverlayTop">
-      <div><strong>Developmental Overlay Stack</strong><p>Attach optional overlays to this {context} after the base game is designed. Base rules remain unchanged.</p></div>
+      <div><strong>Game Overlay Stack</strong><p>Design the base game first, then add ordered overlays and consequences. The coach decides what the environment should encourage.</p></div>
       <div className="buttonRow"><button type="button" className="secondaryBtn" onClick={()=>setEnabled(!enabled)}>{enabled?'Hide Overlays':'Add Overlays'}</button>{enabled&&<button type="button" className="secondaryBtn" onClick={resetStack}>Reset Stack</button>}</div>
     </div>
     {enabled&&<>
@@ -5852,7 +5861,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h79 Overlay Placement Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h80 Unified Overlay Stack</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
