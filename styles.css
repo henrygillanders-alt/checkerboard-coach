@@ -1,4 +1,4 @@
-/* v99h74 Habit Science FIXED */
+/* v99h76 Overlay Architecture Engine */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -2909,3 +2909,20 @@ button.mentalSkillsTile p{
 .quickFixTwoCol p,.quickFixActionStrip p{color:#dbeafe;margin:0;line-height:1.4}
 .quickFixActionStrip{background:#10233b;border:1px solid #5e83be;border-radius:16px;padding:14px;margin-top:14px}
 @media(max-width:900px){.quickFixTwoCol{grid-template-columns:1fr}}
+
+
+/* v99h76 Overlay Architecture Engine CSS */
+.homeBrandCard .homeTagline,.homeTagline{color:#ffd980!important;font-size:20px!important;line-height:1.2!important;font-weight:1000!important;margin:4px 0 12px!important;letter-spacing:.4px!important}
+.overlayEnginePage .bernsteinBox{border:2px solid rgba(255,217,128,.62)}
+.overlayBaseSelector{background:#081320;border:1px solid #35567e;border-radius:18px;padding:16px;margin:18px 0}
+.overlayBaseSelector label,.overlayStackCard label{display:flex;flex-direction:column;gap:7px;color:#ffd980;font-weight:1000}
+.overlayBaseSelector select,.overlayStackCard select{background:#06111f;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white}
+.overlayStackGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0}
+.overlayStackCard{background:#0b1828;border:1px solid #5e83be;border-radius:20px;padding:16px}
+.overlayNumber{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 12px;font-weight:1000;margin-bottom:12px}
+.overlayMiniPreview{margin-top:12px;background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
+.overlayMiniPreview strong{color:#ffd980}.overlayMiniPreview p{color:#dbeafe;margin:8px 0;line-height:1.35}.overlayMiniPreview em{display:block;color:#9bc1ff;font-style:normal;font-weight:900}
+.overlayPreviewCard{background:#06111f;border:2px solid #ffd980;border-radius:22px;padding:18px;margin:22px 0}
+.overlayPreviewCard h3{color:#ffd980;margin-top:0}.overlayPreviewCard ol{margin:12px 0 0 20px}.overlayPreviewCard li{margin-bottom:14px}.overlayPreviewCard li strong,.overlayPreviewCard li span,.overlayPreviewCard li b{display:block}.overlayPreviewCard li span{color:#dbeafe;margin:5px 0}.overlayPreviewCard li b{color:#ffd980}
+.overlayOutputGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.overlayOutputCard{background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px}.overlayOutputCard h3{color:#ffd980;margin:0 0 10px}.overlayOutputCard p{color:#dbeafe;margin:0;line-height:1.4}

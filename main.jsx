@@ -4090,7 +4090,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v74',
+      version:'v76',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4107,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v74',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v76',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v74.json';
+    a.download='checkerboard-backup-v76.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5261,6 +5261,55 @@ function DiagnosticIntervention({setScreen}){
   const [quickFixIssue,setQuickFixIssue]=useState('Late Preparation');
   const selectedQuickFix=quickFixHabits.find(item=>item.issue===quickFixIssue)||quickFixHabits[0];
 
+
+  const overlayOptions=[
+    {id:'none',name:'None',category:'None',description:'No additional overlay selected.',behaviour:'Base game only.',cue:'Play the base game.'},
+    {id:'offT',name:'Opponent Off T',category:'Tactical State',description:'Bonus or permission only applies when opponent is not set in the T-zone.',behaviour:'Recognise when opponent cannot cover both sides.',cue:'Attack when they are not set.'},
+    {id:'unsetT',name:'Opponent Not Set In T',category:'Tactical State',description:'Player may go below the line only if opponent is not balanced and set in the T-zone.',behaviour:'Attack below the line only when tactical permission exists.',cue:'Below line only when they are not set.'},
+    {id:'stillMoving',name:'Opponent Still Moving',category:'Tactical State',description:'Action is valid only while opponent is still recovering or changing direction.',behaviour:'Exploit movement state rather than static court position.',cue:'Play before they settle.'},
+    {id:'reduceOptions',name:'Reduce Options First',category:'Tactical',description:'Attack or bonus unlocks only after the previous shot has limited opponent replies.',behaviour:'Build pressure before attacking.',cue:'Limit replies, then attack.'},
+    {id:'attackAdvantage',name:'Attack After Advantage',category:'Tactical',description:'Attack only counts after an advantage cue appears: off T, stretched, below ball, moving away, or reduced options.',behaviour:'Stop forced attacks and improve tactical selectivity.',cue:'Earn it. See it. Take it.'},
+    {id:'recoverUnlock',name:'Recover Before Score Unlock',category:'Movement',description:'Challenge only counts if player reconnects to a useful recovery position before the next opponent contact.',behaviour:'Couple strike and recovery.',cue:'Shot ends when you are ready again.'},
+    {id:'balancedFinish',name:'Balanced Finish',category:'Movement',description:'Bonus or permission only applies if player can finish in a recoverable balanced shape.',behaviour:'Prevent uncontrolled hitting and spinning out.',cue:'Finish where you can recover.'},
+    {id:'earlyRecognition',name:'Early Recognition Call',category:'Perceptual',description:'Player must call forehand/backhand/volley/bounce or opponent state before action.',behaviour:'Train earlier information pickup.',cue:'Call it as soon as you know.'},
+    {id:'likelyReply',name:'Call Likely Reply',category:'Perceptual',description:'Player predicts the opponent’s likely reply before attacking or before the next shot.',behaviour:'Develop anticipation and local probability reading.',cue:'What is most likely next?'},
+    {id:'finishWindow',name:'Finish Window',category:'Temporal / Pressure',description:'After the overlay trigger is met, player must win within the selected shot window.',behaviour:'Convert advantage before it disappears.',cue:'Advantage has a clock.'},
+    {id:'rebuild',name:'Rebuild Before Re-Attack',category:'Decision',description:'If attack fails, player must rebuild before attacking again.',behaviour:'Prevent repeated forcing from neutral or poor positions.',cue:'If it is gone, rebuild.'},
+    {id:'liveOnly',name:'Live Rally Only',category:'Representative',description:'Overlay only applies in live rally play with opponent freedom.',behaviour:'Preserve perception-action coupling.',cue:'The opponent must be real.'},
+    {id:'variability',name:'Variability Required',category:'Representative',description:'Coach or opponent must vary feed, pace, position or reply before bonus can count.',behaviour:'Avoid repetition-with-repetition.',cue:'Same problem, changing information.'}
+  ];
+
+  const consequenceOptions=[
+    {id:'none',label:'No consequence',text:'No bonus or punishment attached.'},
+    {id:'plus1',label:'+1 bonus',text:'Award +1 when this overlay is satisfied.'},
+    {id:'plus2',label:'+2 bonus',text:'Award +2 when this overlay is satisfied.'},
+    {id:'plus3',label:'+3 bonus',text:'Award +3 when this overlay is satisfied.'},
+    {id:'plus4',label:'+4 bonus',text:'Award +4 when this overlay is satisfied.'},
+    {id:'rallyLost',label:'Rally lost if broken',text:'If the player breaks this overlay, they lose the rally.'},
+    {id:'reset',label:'Condition resets',text:'If missed or broken, the challenge resets and must be rebuilt.'},
+    {id:'unlock',label:'Unlock scoring',text:'This overlay unlocks the next scoring opportunity.'},
+    {id:'opponentBonus',label:'Opponent +1 if broken',text:'Opponent receives +1 if this overlay is broken.'},
+    {id:'window2',label:'Finish within 2 shots',text:'Once satisfied, player must win within 2 shots.'},
+    {id:'window3',label:'Finish within 3 shots',text:'Once satisfied, player must win within 3 shots.'},
+    {id:'coachCall',label:'Coach call required',text:'Coach must confirm this overlay before consequence applies.'}
+  ];
+
+  const baseGameOptions=['ATL / Above The Line','BTL / Below The Line','Checkerboard Pair','Checkerboard Triple','Conditioned Game','Volley Game','T-Zone Game','Double Bounce Game','Coach Custom Game'];
+  const [overlayBaseGame,setOverlayBaseGame]=useState('ATL / Above The Line');
+  const [overlay1,setOverlay1]=useState('unsetT');
+  const [overlay2,setOverlay2]=useState('finishWindow');
+  const [overlay3,setOverlay3]=useState('recoverUnlock');
+  const [consequence1,setConsequence1]=useState('unlock');
+  const [consequence2,setConsequence2]=useState('window3');
+  const [consequence3,setConsequence3]=useState('plus2');
+  function findOverlay(id){return overlayOptions.find(o=>o.id===id)||overlayOptions[0];}
+  function findConsequence(id){return consequenceOptions.find(c=>c.id===id)||consequenceOptions[0];}
+  const selectedOverlays=[
+    {level:1,overlay:findOverlay(overlay1),consequence:findConsequence(consequence1)},
+    {level:2,overlay:findOverlay(overlay2),consequence:findConsequence(consequence2)},
+    {level:3,overlay:findOverlay(overlay3),consequence:findConsequence(consequence3)}
+  ];
+
   const cases={
     'Late To Ball':{
       pda:'Anticipation / Perception',
@@ -5362,6 +5411,7 @@ function DiagnosticIntervention({setScreen}){
       <button className={tab==='movement'?'activeTab':''} onClick={()=>setTab('movement')}>⚙️ Movement Principles</button>
       <button className={tab==='habits'?'activeTab':''} onClick={()=>setTab('habits')}>🧩 Habits & Origins</button>
       <button className={tab==='quickfix'?'activeTab':''} onClick={()=>setTab('quickfix')}>⚡ Quick Fix</button>
+      <button className={tab==='overlayEngine'?'activeTab':''} onClick={()=>setTab('overlayEngine')}>🧱 Overlay Engine</button>
       <button className={tab==='science'?'activeTab':''} onClick={()=>setTab('science')}>🧠 Habit Science</button>
       <button className={tab==='builder'?'activeTab':''} onClick={()=>setTab('builder')}>🛠 Intervention Builder</button>
       <button className={tab==='principles'?'activeTab':''} onClick={()=>setTab('principles')}>🏆 Coaching Principles</button>
@@ -5530,10 +5580,54 @@ function DiagnosticIntervention({setScreen}){
 
       <div className="infoBox">
         <strong>Key Principle</strong>
-        <p>The brain does not simply store perfect movement templates. Skilled behaviour emerges through the interaction of player, task, environment and information. Constraints shape what becomes automatic.</p>
+        <p>The brain does not simply store perfect movement templates. Skilled behaviour emerges through the interaction of player, task, environment and information. Constraints shape which behaviours stabilise and become more readily self-organised under pressure.</p>
       </div>
 
       <div className="scienceQuote"><p>A constraint is worth a 1000 words.</p></div>
+    </div>}
+
+
+
+    {tab==='overlayEngine'&&<div className="diagnosticStagePanel overlayEnginePage">
+      <h2>Overlay Architecture Engine</h2>
+      <p>Base games stay unchanged. Overlays sit on top of them as developmental filters. The coach decides what the game should encourage for the players in front of them.</p>
+
+      <div className="bernsteinBox">
+        <h3>Coach-centred game design</h3>
+        <p>The app does not prescribe one correct solution. It provides tools that allow coaches to design representative environments appropriate to the needs of their players.</p>
+        <p><strong>Sequence matters:</strong> Overlay 2 only matters after Overlay 1. Overlay 3 only matters after Overlay 2.</p>
+      </div>
+
+      <div className="overlayBaseSelector"><label>Base Game<select value={overlayBaseGame} onChange={e=>setOverlayBaseGame(e.target.value)}>{baseGameOptions.map(game=><option key={game} value={game}>{game}</option>)}</select></label></div>
+
+      <div className="overlayStackGrid">{[1,2,3].map(n=>{
+        const overlayValue=n===1?overlay1:n===2?overlay2:overlay3;
+        const consequenceValue=n===1?consequence1:n===2?consequence2:consequence3;
+        const setOverlay=n===1?setOverlay1:n===2?setOverlay2:setOverlay3;
+        const setConsequence=n===1?setConsequence1:n===2?setConsequence2:setConsequence3;
+        const current=findOverlay(overlayValue);
+        return <div className="overlayStackCard" key={n}>
+          <span className="overlayNumber">Overlay {n}</span>
+          <label>Requirement<select value={overlayValue} onChange={e=>setOverlay(e.target.value)}>{overlayOptions.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+          <label>Consequence<select value={consequenceValue} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+          <div className="overlayMiniPreview"><strong>{current.category}</strong><p>{current.description}</p><em>{current.cue}</em></div>
+        </div>;
+      })}</div>
+
+      <div className="overlayPreviewCard">
+        <h3>Generated Overlay Stack</h3>
+        <p><strong>Base Game:</strong> {overlayBaseGame}</p>
+        <ol>{selectedOverlays.map(item=><li key={item.level}><strong>Overlay {item.level}: {item.overlay.name}</strong><span>{item.overlay.description}</span><b>Consequence: {item.consequence.text}</b></li>)}</ol>
+      </div>
+
+      <div className="overlayOutputGrid">
+        <div className="overlayOutputCard"><h3>Tactical Emphasis</h3><p>{selectedOverlays.filter(x=>x.overlay.category.includes('Tactical')||x.overlay.category.includes('Decision')).map(x=>x.overlay.name).join(' · ')||'Coach-selected tactical emphasis appears here.'}</p></div>
+        <div className="overlayOutputCard"><h3>Perception / Affordance</h3><p>{selectedOverlays.filter(x=>x.overlay.category.includes('Perceptual')||x.overlay.id==='unsetT'||x.overlay.id==='stillMoving'||x.overlay.id==='offT').map(x=>x.overlay.behaviour).join(' · ')||'Overlay stack can train information pickup and affordance recognition.'}</p></div>
+        <div className="overlayOutputCard"><h3>Movement Coupling</h3><p>{selectedOverlays.filter(x=>x.overlay.category.includes('Movement')).map(x=>x.overlay.behaviour).join(' · ')||'Add recovery, balance or movement overlays if needed.'}</p></div>
+        <div className="overlayOutputCard"><h3>Pressure / Consequence</h3><p>{selectedOverlays.map(x=>x.consequence.label).join(' → ')}</p></div>
+      </div>
+
+      <div className="infoBox"><strong>Example ATL Use</strong><p>Base game: ATL. Overlay 1: Opponent Not Set In T. Consequence: Unlock scoring. Overlay 2: Finish Window. Consequence: Finish within 3 shots. Overlay 3: Recover Before Score Unlock. Consequence: +2 bonus.</p><p>This keeps ATL intact while making the attack below the line dependent on perception of opponent state.</p></div>
     </div>}
 
 
@@ -5587,7 +5681,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h74 Habit Science FIXED</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h76 Overlay Architecture Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
