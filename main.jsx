@@ -1252,7 +1252,7 @@ function CheckerboardEngine({onAddToSession}){
     setConfig(prev=>({...prev,blindFinishCard:'',blindFinishFace:'closed'}));
   }
 
-return <div className="checkerboardEngine">
+return <div className="checkerboardEngine"><IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
     <h2>Checkerboard Level Builder</h2>
     <p className="engineIntro">Level controls challenge type, T-zone prevention and conversion window automatically.</p>
     <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
@@ -2035,7 +2035,7 @@ function InvasionGamesBuilder({onAddToSession}){
     <h2>Invasion Games Library</h2>
     <p className="engineIntro">Choose the invasion format first. Lives and Points formats create different tactical behaviours.</p>
 
-    <div className="gameClassGrid">
+    <div className="gameTypeResetWarning"><strong>Game Type Note</strong><p>When changing game family, rebuild the base rule first, then apply overlays. v99h77 keeps overlays modular so ATL rules are not intended to define Checkerboard games.</p></div><div className="gameClassGrid">
       {games.map(game=><button key={game.id} type="button" className={format===game.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setFormat(game.id)}>
         {game.id==='lives'?'Lives Format':'Points Format'}
       </button>)}
@@ -4090,7 +4090,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v76',
+      version:'v77',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4107,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v76',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v77',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v76.json';
+    a.download='checkerboard-backup-v77.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5674,6 +5674,83 @@ function DiagnosticIntervention({setScreen}){
 }
 
 
+function IntegratedOverlayBuilder({context='General Game', compact=false}){
+  const overlayOptions=[
+    {id:'none',name:'None',category:'None',description:'No overlay selected.'},
+    {id:'offT',name:'Opponent Off T',category:'Tactical State',description:'Bonus/permission applies only when opponent is not set in the T-zone.'},
+    {id:'unsetT',name:'Opponent Not Set In T',category:'Tactical State',description:'Attack below the line only if opponent is not balanced and set in the T-zone.'},
+    {id:'stillMoving',name:'Opponent Still Moving',category:'Tactical State',description:'Action is valid only while opponent is recovering or changing direction.'},
+    {id:'reduceOptions',name:'Reduce Options First',category:'Tactical',description:'Attack or bonus unlocks only after opponent replies have been limited.'},
+    {id:'attackAdvantage',name:'Attack After Advantage',category:'Tactical',description:'Attack counts only after an advantage cue appears.'},
+    {id:'recoverUnlock',name:'Recover Before Score Unlock',category:'Movement',description:'Challenge counts only if player recovers before next opponent contact.'},
+    {id:'balancedFinish',name:'Balanced Finish',category:'Movement',description:'Bonus applies only if player finishes in a recoverable balanced shape.'},
+    {id:'earlyRecognition',name:'Early Recognition Call',category:'Perceptual',description:'Player calls cue before action: forehand/backhand/volley/bounce or opponent state.'},
+    {id:'likelyReply',name:'Call Likely Reply',category:'Perceptual',description:'Player predicts likely opponent reply before attacking.'},
+    {id:'finishWindow',name:'Finish Window',category:'Temporal / Pressure',description:'After trigger, player must win inside a shot window.'},
+    {id:'rebuild',name:'Rebuild Before Re-Attack',category:'Decision',description:'If attack fails, player must rebuild before attacking again.'},
+    {id:'liveOnly',name:'Live Rally Only',category:'Representative',description:'Overlay applies only in live rally play with opponent freedom.'},
+    {id:'variability',name:'Variability Required',category:'Representative',description:'Feed, pace, position or reply must vary before bonus counts.'}
+  ];
+  const consequenceOptions=[
+    {id:'none',label:'No consequence',text:'No bonus or punishment attached.'},
+    {id:'plus1',label:'+1 bonus',text:'Award +1 when satisfied.'},
+    {id:'plus2',label:'+2 bonus',text:'Award +2 when satisfied.'},
+    {id:'plus3',label:'+3 bonus',text:'Award +3 when satisfied.'},
+    {id:'plus4',label:'+4 bonus',text:'Award +4 when satisfied.'},
+    {id:'rallyLost',label:'Rally lost if broken',text:'Player loses rally if broken.'},
+    {id:'reset',label:'Condition resets',text:'Challenge resets and must be rebuilt.'},
+    {id:'unlock',label:'Unlock scoring',text:'Unlocks next scoring opportunity.'},
+    {id:'opponentBonus',label:'Opponent +1 if broken',text:'Opponent receives +1 if broken.'},
+    {id:'window2',label:'Finish within 2 shots',text:'Must win within 2 shots.'},
+    {id:'window3',label:'Finish within 3 shots',text:'Must win within 3 shots.'},
+    {id:'coachCall',label:'Coach call required',text:'Coach must confirm.'}
+  ];
+  const [enabled,setEnabled]=useState(false);
+  const [o1,setO1]=useState('unsetT');
+  const [o2,setO2]=useState('finishWindow');
+  const [o3,setO3]=useState('none');
+  const [c1,setC1]=useState('unlock');
+  const [c2,setC2]=useState('window3');
+  const [c3,setC3]=useState('none');
+  const findO=id=>overlayOptions.find(o=>o.id===id)||overlayOptions[0];
+  const findC=id=>consequenceOptions.find(c=>c.id===id)||consequenceOptions[0];
+  const rows=[
+    {n:1,o:o1,c:c1,setO:setO1,setC:setC1},
+    {n:2,o:o2,c:c2,setO:setO2,setC:setC2},
+    {n:3,o:o3,c:c3,setO:setO3,setC:setC3}
+  ];
+  function resetStack(){
+    setO1('unsetT');setC1('unlock');
+    setO2('finishWindow');setC2('window3');
+    setO3('none');setC3('none');
+  }
+  return <div className={`integratedOverlayBuilder ${compact?'compactOverlayBuilder':''}`}>
+    <div className="integratedOverlayTop">
+      <div><strong>Developmental Overlay Stack</strong><p>Attach optional overlays to this {context}. Base game rules remain unchanged.</p></div>
+      <div className="buttonRow"><button type="button" className="secondaryBtn" onClick={()=>setEnabled(!enabled)}>{enabled?'Hide Overlays':'Add Overlays'}</button>{enabled&&<button type="button" className="secondaryBtn" onClick={resetStack}>Reset Stack</button>}</div>
+    </div>
+    {enabled&&<>
+      <div className="integratedOverlayGrid">{rows.map(row=>{
+        const ov=findO(row.o); const co=findC(row.c);
+        return <div className="integratedOverlayCard" key={row.n}>
+          <span>Overlay {row.n}</span>
+          <label>Requirement<select value={row.o} onChange={e=>row.setO(e.target.value)}>{overlayOptions.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+          <label>Consequence<select value={row.c} onChange={e=>row.setC(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+          <small>{ov.category}: {ov.description}</small>
+          <em>{co.text}</em>
+        </div>
+      })}</div>
+      <div className="integratedOverlayPreview">
+        <strong>Generated Rule Add-On</strong>
+        <ol>{rows.filter(r=>r.o!=='none').map(r=><li key={r.n}><b>Overlay {r.n}: {findO(r.o).name}</b> — {findO(r.o).description} <span>Consequence: {findC(r.c).text}</span></li>)}</ol>
+        <p><b>Order rule:</b> Overlay 2 only matters after Overlay 1; Overlay 3 only matters after Overlay 2.</p>
+      </div>
+    </>}
+  </div>;
+}
+
+
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
@@ -5681,7 +5758,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h76 Overlay Architecture Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h77 Integrated Overlay Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
