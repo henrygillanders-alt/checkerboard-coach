@@ -1063,10 +1063,9 @@ return <div>
 <div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
-<IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
+<IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
@@ -1307,8 +1306,9 @@ return <div className="checkerboardEngine">
       </div>
     </div>}
 
-    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
-    <IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
+    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
+<button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
+    
   </div>;
 }
 
@@ -4093,7 +4093,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v80',
+      version:'v81',
       created:new Date().toISOString(),
       players,
       session
@@ -4110,12 +4110,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v80',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v81',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v80.json';
+    a.download='checkerboard-backup-v81.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5611,7 +5611,7 @@ function DiagnosticIntervention({setScreen}){
         const current=findOverlay(overlayValue);
         return <div className="overlayStackCard" key={n}>
           <span className="overlayNumber">Overlay {n}</span>
-          <label>Requirement<select value={overlayValue} onChange={e=>setOverlay(e.target.value)}>{overlayOptions.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+          <label>Requirement<select value={overlayValue} onChange={e=>setOverlay(e.target.value)}>{allowedOverlayOptions(row.n).map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
           <label>Consequence<select value={consequenceValue} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
           <div className="overlayMiniPreview"><strong>{current.category}</strong><p>{current.description}</p><em>{current.cue}</em></div>
         </div>;
@@ -5718,12 +5718,12 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
     {id:'coachCall',label:'Coach call required',text:'Coach must confirm.',points:0,mode:'coachCall'}
   ];
   const [enabled,setEnabled]=useState(false);
-  const [o1,setO1]=useState('unsetT');
+  const [o1,setO1]=useState('reduceOptions');
   const [o2,setO2]=useState('finishWindow');
-  const [o3,setO3]=useState('none');
+  const [o3,setO3]=useState('cleanWinner');
   const [c1,setC1]=useState('unlock');
   const [c2,setC2]=useState('window3');
-  const [c3,setC3]=useState('none');
+  const [c3,setC3]=useState('plus2');
   const [overlayScore,setOverlayScore]=useState(0);
   const [opponentOverlayScore,setOpponentOverlayScore]=useState(0);
   const [rallyState,setRallyState]=useState('No overlay scoring action yet.');
@@ -5732,6 +5732,20 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
 
   const findO=id=>overlayOptions.find(o=>o.id===id)||overlayOptions[0];
   const findC=id=>consequenceOptions.find(c=>c.id===id)||consequenceOptions[0];
+  function isTerminalOverlay(id){return ['cleanWinner','volleyFinish','oppositeSideFinish','frontWallFinish','floorFinish','opponentMovingForward','opponentOffBalance'].includes(id);}
+  function terminalBefore(n){return (n>1&&isTerminalOverlay(o1))||(n>2&&(isTerminalOverlay(o1)||isTerminalOverlay(o2)));}
+  function allowedOverlayOptions(n){
+    if(terminalBefore(n)) return overlayOptions.filter(o=>o.id==='none');
+    if(n===1) return overlayOptions.filter(o=>!['cleanWinner','volleyFinish','oppositeSideFinish','frontWallFinish','floorFinish'].includes(o.id));
+    if(n===2 && o1==='none') return overlayOptions.filter(o=>o.id==='none');
+    if(n===3 && (o1==='none'||o2==='none')) return overlayOptions.filter(o=>o.id==='none');
+    return overlayOptions;
+  }
+  function setOverlayOrdered(n,value){
+    if(n===1){setO1(value); if(value==='none'||isTerminalOverlay(value)){setO2('none');setC2('none');setO3('cleanWinner');setC3('plus2');}}
+    if(n===2){setO2(value); if(value==='none'||isTerminalOverlay(value)){setO3('cleanWinner');setC3('plus2');}}
+    if(n===3){setO3(value);}
+  }
   const rows=[
     {n:1,o:o1,c:c1,setO:setO1,setC:setC1},
     {n:2,o:o2,c:c2,setO:setO2,setC:setC2},
@@ -5739,9 +5753,9 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
   ];
 
   function resetStack(){
-    setO1('unsetT');setC1('unlock');
+    setO1('reduceOptions');setC1('unlock');
     setO2('finishWindow');setC2('window3');
-    setO3('none');setC3('none');
+    setO3('cleanWinner');setC3('plus2');
     resetScoring();
   }
   function resetScoring(){
@@ -5809,16 +5823,17 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
 
   return <div className={`integratedOverlayBuilder ${compact?'compactOverlayBuilder':''}`}>
     <div className="integratedOverlayTop">
-      <div><strong>Game Overlay Stack</strong><p>Design the base game first, then add ordered overlays and consequences. The coach decides what the environment should encourage.</p></div>
+      <div><strong>Sequenced Game Overlay Stack</strong><p>Design the base game first, then add sequenced overlays and consequences. Trigger → conversion → terminal finish.</p></div>
       <div className="buttonRow"><button type="button" className="secondaryBtn" onClick={()=>setEnabled(!enabled)}>{enabled?'Hide Overlays':'Add Overlays'}</button>{enabled&&<button type="button" className="secondaryBtn" onClick={resetStack}>Reset Stack</button>}</div>
     </div>
     {enabled&&<>
+      <div className="overlayLogicNote"><strong>Sequence logic</strong><p>Start with a trigger or affordance, add conversion pressure, then finish with a terminal completion demand if needed. Terminal finish overlays close the stack.</p></div>
       <div className="integratedOverlayGrid">{rows.map(row=>{
         const ov=findO(row.o); const co=findC(row.c);
         return <div className={`integratedOverlayCard ${activeStage===row.n?'activeOverlayStage':''}`} key={row.n}>
           <span>Overlay {row.n}</span>
-          <label>Requirement<select value={row.o} onChange={e=>row.setO(e.target.value)}>{overlayOptions.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
-          <label>Consequence<select value={row.c} onChange={e=>row.setC(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+          <label>Requirement<select value={row.o} disabled={terminalBefore(row.n)} onChange={e=>setOverlayOrdered(row.n,e.target.value)}>{allowedOverlayOptions(row.n).map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+          <label>Consequence<select value={row.c} disabled={terminalBefore(row.n)||row.o==='none'} onChange={e=>row.setC(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
           <small>{ov.category}: {ov.description}</small>
           <em>{co.text}</em>
         </div>
@@ -5861,7 +5876,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h80 Unified Overlay Stack</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h81 Sequenced Overlay Stack</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
