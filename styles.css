@@ -1,4 +1,4 @@
-/* v99h73 Quick Fix Habits Engine */
+/* v99h72 Habits & Origins */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -2891,21 +2891,58 @@ button.mentalSkillsTile p{
 }
 
 
-/* v99h73 Quick Fix Habits Engine */
-.quickFixEnginePage .quickFixPrincipleGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0 22px}
-.quickFixPrinciple{background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px}
-.quickFixPrinciple strong{color:#ffd980;display:block;margin-bottom:8px}
-.quickFixPrinciple p{color:#dbeafe;margin:0;line-height:1.35}
-.quickFixButtonGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:14px 0 18px}
-.quickFixButtonGrid button{background:#12253d;border:1px solid #486b9a;color:white;border-radius:14px;padding:13px;font-weight:900;cursor:pointer;text-align:left}
-.quickFixButtonGrid button.activeQuickFix{background:#ffd980;color:#0f172a;border-color:white}
-.quickFixResultCard{background:#0b1828;border:2px solid #ffd980;border-radius:22px;padding:18px;margin:18px 0}
-.quickFixHeader{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;border-bottom:1px solid rgba(255,217,128,.35);padding-bottom:12px;margin-bottom:14px}
-.quickFixHeader h3{color:#ffd980;margin:0;font-size:26px}
-.quickFixHeader span{background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 12px;font-weight:1000}
-.quickFixTwoCol{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.quickFixTwoCol section{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
-.quickFixTwoCol strong,.quickFixActionStrip strong{color:#ffd980;display:block;margin-bottom:8px}
-.quickFixTwoCol p,.quickFixActionStrip p{color:#dbeafe;margin:0;line-height:1.4}
-.quickFixActionStrip{background:#10233b;border:1px solid #5e83be;border-radius:16px;padding:14px;margin-top:14px}
-@media(max-width:900px){.quickFixTwoCol{grid-template-columns:1fr}}
+/* v99h74 Habit Science */
+.homeTagline{
+  color:#ffd980;
+  font-size:15px;
+  font-weight:900;
+  margin-top:6px;
+  letter-spacing:.3px;
+}
+
+.habitSciencePage .scienceGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+  margin:18px 0;
+}
+
+.scienceCard{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:18px;
+  padding:16px;
+}
+
+.scienceCard h3{
+  color:#ffd980;
+  margin:0 0 12px;
+}
+
+.scienceCard p{
+  color:#dbeafe;
+  line-height:1.42;
+  margin:8px 0;
+}
+
+.scienceRef{
+  color:#ffd980 !important;
+  font-size:13px;
+  font-weight:800;
+}
+
+.scienceQuote{
+  margin-top:20px;
+  padding:18px;
+  border:2px solid rgba(255,217,128,.45);
+  border-radius:20px;
+  background:#10233b;
+  text-align:center;
+}
+
+.scienceQuote p{
+  color:#ffd980;
+  font-size:22px;
+  font-weight:1000;
+  margin:0;
+}
