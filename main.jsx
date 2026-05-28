@@ -4090,7 +4090,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v72',
+      version:'v74',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4107,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v72',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v74',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v72.json';
+    a.download='checkerboard-backup-v74.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5239,6 +5239,28 @@ function DiagnosticIntervention({setScreen}){
     ['Compensation Error','Visible behaviour is secondary. Find the primary problem it is compensating for.']
   ];
 
+
+  const quickFixHabits=[
+    {issue:'Late Preparation',visible:'Preparation begins after the ball has already solved the player.',origin:'Often repetition-induced by predictable feeding, or historically functional at a slower level.',type:'Type 2 — dominant non-functional habit',addReplace:'Usually expand first, then replace if it collapses under all pressure.',coachQuestion:'When did the player first know forehand / backhand / volley / bounce?',constraint:'Early Recognition Rally: player calls FOREHAND, BACKHAND, VOLLEY or BOUNCE as soon as they know, then play continues.',checkerboard:'[6-4] volley or [6-4]+[8-1] with early recognition requirement.',progression:'Increase feed variability, reduce time, then move to live rally with opponent cues.',regression:'Slow the ball and ask for earlier call only; no tactical finish required.',cue:'Recognise early. Prepare with the movement, not after it.'},
+    {issue:'Hard Hitter Only',visible:'Player drives hard regardless of opponent, space, score or ball quality.',origin:'Functional at lower level; often rewarded by early success and dominance against weaker movers.',type:'Add rather than replace — power has limited functionality.',addReplace:'Do not remove power. Add soft, dying, height, hold and working pace options with equal selectivity.',coachQuestion:'What information told the player that hard was the best solution?',constraint:'Shape Change Game: player must win one rally with pace, one with height, one with soft dying ball before hard winners count again.',checkerboard:'[6-4]+[8-1], [6-4]+[5-4], and variable pace overlays.',progression:'Score only when the chosen shape matches opponent position.',regression:'Coach feeds three obvious affordances: drive, soft, height.',cue:'Power stays. Predictability goes.'},
+    {issue:'No Non-Racquet Hand',visible:'Non-playing hand hangs neutral or crosses in front with no functional role.',origin:'Missing solution development; the coordination may never have been built.',type:'Type 1 — missing solution',addReplace:'Build from scratch; do not treat it as a cosmetic technical correction.',coachQuestion:'What function should the non-racquet hand serve here: balance, spacing, shoulder organisation or recovery?',constraint:'Balanced Finish Game: player scores only if they can hold a stable finish for two seconds after contact.',checkerboard:'[6-4] straight-line task, then [6-4]+[8-1] transition under balance demand.',progression:'Move from simple rally to continuous rally with no reset between shots.',regression:'Start with shadow-to-ball spacing task, then low-pressure rally.',cue:'The free hand solves balance and spacing.'},
+    {issue:'Visual Tracking / Quiet Eye',visible:'Player watches front wall, opponent or outcome too early and loses ball-contact information.',origin:'Missing perceptual solution; sometimes caused by coaching emphasis on shot result rather than information pickup.',type:'Type 1 — missing informational solution',addReplace:'Add a visual information routine, then integrate with rally decision making.',coachQuestion:'What did the player actually see before and during contact?',constraint:'Call Before Contact: player calls ball height or opponent position before striking.',checkerboard:'[6-4]+[8-1] with call of opponent position before the finish.',progression:'Move from coach feed to live rally with second-eye-to-opponent overlay.',regression:'Start with slower rally and one visual call only.',cue:'See the ball. Read the opponent. Then act.'},
+    {issue:'Spinning / Rotation',visible:'Player rotates out of the shot and cannot recover or control direction.',origin:'Compensation attractor for poor spacing, excessive backswing, balance failure or power search.',type:'Type 2 — compensation habit',addReplace:'Do not attack the spin first. Find what the spin is solving.',coachQuestion:'Is the spin solving power, spacing, balance or preparation?',constraint:'Recoverable Finish Game: point counts only if the player can strike and recover before the opponent contacts the next ball.',checkerboard:'[6-4] straight drive with recoverable finish; then [6-4]+[8-1].',progression:'Add opponent pressure and shorter recovery windows.',regression:'Use channel constraint and slower ball to stabilise line first.',cue:'Finish in a shape you can recover from.'},
+    {issue:'Forced Attack',visible:'Player attacks before advantage exists.',origin:'May be functional at lower level, emotional/identity-driven, or reinforced by weak opponents.',type:'Type 2 — dominant decision habit',addReplace:'Expand tactical selectivity; attacking remains available but must be linked to affordance recognition.',coachQuestion:'What evidence showed the opponent was vulnerable?',constraint:'Attack After Advantage: attack only scores after opponent is off T, stretched, below ball, moving away or options reduced.',checkerboard:'Reduce options sequence: [6-4] pressure before [8-1] finish.',progression:'Coach removes prompts; player must call the advantage cue independently.',regression:'Coach identifies advantage cues aloud first.',cue:'Earn it. See it. Then take it.'},
+    {issue:'Poor Recovery / Admiring Shot',visible:'Player watches own shot and reconnects late to opponent, ball and space.',origin:'Often functional at lower level where opponents cannot punish; sometimes traditional coaching overvalues shot shape.',type:'Type 2 — dominant non-functional habit',addReplace:'Add recovery and re-perception as part of the shot, not after the shot.',coachQuestion:'When did the player reconnect with opponent information?',constraint:'Shot Not Finished Until Recovered: challenge only counts if player recovers to a useful position before next opponent contact.',checkerboard:'Complete pair then recover before next opportunity unlocks: [6-4] → recover → [8-1].',progression:'Shorten recovery window and add live opponent exploitation.',regression:'Coach calls “recover” after contact, then removes prompt.',cue:'The shot ends when you are ready for the next ball.'},
+    {issue:'Limited Swing / Shot Range',visible:'One swing shape or one ball shape used across many situations.',origin:'Solo-practice repetition, feed-grooved technique, or early success with one reliable attractor.',type:'Mono-stable solution landscape',addReplace:'Add solutions; do not destroy the reliable one unless it is universally harmful.',coachQuestion:'Which shot shapes are unavailable or not selected?',constraint:'Three Shapes Game: penetrating, working, soft/dying must each appear before normal scoring unlocks.',checkerboard:'[6-4]+[5-4], [6-4]+[8-1], variable height/pace overlays.',progression:'Add opponent position as the trigger for shape choice.',regression:'Coach calls required shape first, then player chooses.',cue:'Same preparation. Different solutions.'}
+  ];
+
+  const quickFixPrinciples=[
+    ['Origin First','Was it functional at a lower level, repetition-induced, undeveloped, traditionally coached, or compensatory?'],
+    ['Add vs Replace','Some habits must be rebuilt. Others should remain available while additional solutions are added.'],
+    ['Meta-Stability','The target is not one perfect solution. The target is fluid switching between appropriate solutions.'],
+    ['Representative Pressure','The solution must appear in open rally or game conditions, not only in a cooperative drill.']
+  ];
+
+  const [quickFixIssue,setQuickFixIssue]=useState('Late Preparation');
+  const selectedQuickFix=quickFixHabits.find(item=>item.issue===quickFixIssue)||quickFixHabits[0];
+
   const cases={
     'Late To Ball':{
       pda:'Anticipation / Perception',
@@ -5339,6 +5361,8 @@ function DiagnosticIntervention({setScreen}){
       <button className={tab==='lenses'?'activeTab':''} onClick={()=>setTab('lenses')}>🔍 Four Lenses</button>
       <button className={tab==='movement'?'activeTab':''} onClick={()=>setTab('movement')}>⚙️ Movement Principles</button>
       <button className={tab==='habits'?'activeTab':''} onClick={()=>setTab('habits')}>🧩 Habits & Origins</button>
+      <button className={tab==='quickfix'?'activeTab':''} onClick={()=>setTab('quickfix')}>⚡ Quick Fix</button>
+      <button className={tab==='science'?'activeTab':''} onClick={()=>setTab('science')}>🧠 Habit Science</button>
       <button className={tab==='builder'?'activeTab':''} onClick={()=>setTab('builder')}>🛠 Intervention Builder</button>
       <button className={tab==='principles'?'activeTab':''} onClick={()=>setTab('principles')}>🏆 Coaching Principles</button>
     </div>
@@ -5417,72 +5441,99 @@ function DiagnosticIntervention({setScreen}){
 
 
 
+    {tab==='quickfix'&&<div className="diagnosticStagePanel quickFixEnginePage">
+      <h2>Quick Fix · Habits Integration</h2>
+      <p>Three-tap courtside workflow: select the visible behaviour, identify the origin, then choose add / replace / expand with a representative constraint.</p>
+      <div className="quickFixPrincipleGrid">{quickFixPrinciples.map(row=><div className="quickFixPrinciple" key={row[0]}><strong>{row[0]}</strong><p>{row[1]}</p></div>)}</div>
+      <h3>1. Select Observable Behaviour</h3>
+      <div className="quickFixButtonGrid">{quickFixHabits.map(item=><button type="button" key={item.issue} className={quickFixIssue===item.issue?'activeQuickFix':''} onClick={()=>setQuickFixIssue(item.issue)}>{item.issue}</button>)}</div>
+      <div className="quickFixResultCard">
+        <div className="quickFixHeader"><h3>{selectedQuickFix.issue}</h3><span>{selectedQuickFix.type}</span></div>
+        <div className="quickFixTwoCol">
+          <section><strong>Visible Behaviour</strong><p>{selectedQuickFix.visible}</p></section>
+          <section><strong>Likely Origin</strong><p>{selectedQuickFix.origin}</p></section>
+          <section><strong>Add / Replace Decision</strong><p>{selectedQuickFix.addReplace}</p></section>
+          <section><strong>Coach Question</strong><p>{selectedQuickFix.coachQuestion}</p></section>
+        </div>
+        <div className="quickFixActionStrip"><strong>Coach Cue</strong><p>{selectedQuickFix.cue}</p></div>
+      </div>
+      <h3>2. Apply Representative Constraint</h3>
+      <div className="interventionToolGrid">
+        <div className="interventionToolCard"><h3>Constraint</h3><p>{selectedQuickFix.constraint}</p></div>
+        <div className="interventionToolCard"><h3>Checkerboard Link</h3><p>{selectedQuickFix.checkerboard}</p></div>
+        <div className="interventionToolCard"><h3>Progression</h3><p>{selectedQuickFix.progression}</p></div>
+        <div className="interventionToolCard"><h3>Regression</h3><p>{selectedQuickFix.regression}</p></div>
+      </div>
+      <div className="infoBox"><strong>Key Principle</strong><p>Quick Fix does not mean quick technical correction. It means quickly identifying the player’s current solution landscape: missing solution, dominant non-functional habit, compensation attractor, or useful solution that needs more selectable alternatives.</p></div>
+    </div>}
+
+
+
     {tab==='science'&&<div className="diagnosticStagePanel habitSciencePage">
       <h2>Science of Habit Formation</h2>
-      <p>Habits stabilise because the nervous system repeatedly organises around solutions that reduce uncertainty, effort or pressure. The system strengthens whatever survives repeatedly — functional or non-functional.</p>
+      <p>Why do habits stabilise, why do old solutions return under pressure, and why are constraints often more powerful than verbal correction?</p>
 
       <div className="bernsteinBox">
         <h3>Repetition strengthens stability — not necessarily functionality.</h3>
-        <p>A player can automate adaptable representative behaviours, or automate rigid context-insensitive ones. The coaching question is not simply “how much repetition?” but “what information, pressure and constraints were present during repetition?”</p>
+        <p>The nervous system stabilises solutions that reduce uncertainty, effort or pressure. The repeated behaviour may be functional, partially functional, or non-functional when the environment changes.</p>
+        <p>The coaching question is not simply “how much repetition?” It is: what information, pressure and constraints were present when the behaviour stabilised?</p>
       </div>
 
       <div className="scienceGrid">
         <div className="scienceCard">
           <h3>🧠 Basal Ganglia</h3>
-          <p><strong>Role:</strong> Automates repeated behaviours and reduces conscious control demands.</p>
-          <p><strong>Squash Example:</strong> A player automatically attacks too early or admires their shot without consciously choosing to.</p>
-          <p><strong>Coaching Implication:</strong> Verbal correction alone often fails because the behaviour is deeply stabilised. Constraint change is usually more powerful.</p>
-          <p className="scienceRef">Research links: Graybiel · Doya</p>
+          <p><strong>Role:</strong> Repeated behaviours become automatic and less dependent on conscious control.</p>
+          <p><strong>Squash example:</strong> A player automatically attacks too early, admires their shot, or recovers late without consciously deciding to.</p>
+          <p><strong>Coaching implication:</strong> “Stop doing that” often fails. Change the task constraints so the old habit no longer solves the problem.</p>
+          <p className="scienceRef">Research links: Ann Graybiel · Kenji Doya</p>
         </div>
 
         <div className="scienceCard">
           <h3>🎯 Cerebellum</h3>
-          <p><strong>Role:</strong> Timing, calibration, prediction and movement adjustment.</p>
-          <p><strong>Squash Example:</strong> Adjusting volley timing, lunge spacing, force control or deceptive hold.</p>
-          <p><strong>Coaching Implication:</strong> The cerebellum develops through variable representative repetition, not only blocked repetition.</p>
-          <p className="scienceRef">Research links: Wolpert · Bernstein</p>
+          <p><strong>Role:</strong> Timing, calibration, prediction, error correction and movement adjustment.</p>
+          <p><strong>Squash example:</strong> Calibrating volley timing, lunge depth, racket spacing, force control or deceptive hold.</p>
+          <p><strong>Coaching implication:</strong> Calibration improves through variable representative repetition, not only blocked repetition.</p>
+          <p className="scienceRef">Research links: Daniel Wolpert · Nikolai Bernstein</p>
         </div>
 
         <div className="scienceCard">
           <h3>👁️ Dorsal Stream</h3>
           <p><strong>“Where / How” system.</strong></p>
-          <p>Supports movement guidance, timing and online action control.</p>
-          <p><strong>Squash Example:</strong> Tracking the ball while moving to intercept a volley.</p>
-          <p><strong>Coaching Implication:</strong> Elite players move while perceiving and perceive while moving.</p>
+          <p>Guides online movement, spatial control and timing.</p>
+          <p><strong>Squash example:</strong> Tracking the ball while moving to intercept a volley.</p>
+          <p><strong>Coaching implication:</strong> Players perceive to move and move to perceive. Static decision-making is not enough.</p>
         </div>
 
         <div className="scienceCard">
           <h3>🧩 Ventral Stream</h3>
           <p><strong>“What” system.</strong></p>
           <p>Supports recognition, opponent pattern reading and tactical interpretation.</p>
-          <p><strong>Squash Example:</strong> Recognising deceptive preparation or opponent tendencies.</p>
-          <p><strong>Coaching Implication:</strong> High-level squash requires interaction between recognition and action systems.</p>
+          <p><strong>Squash example:</strong> Recognising opponent deception, favourite patterns or likely reply.</p>
+          <p><strong>Coaching implication:</strong> Recognition must be linked to action, not taught as classroom knowledge.</p>
         </div>
 
         <div className="scienceCard">
-          <h3>🔁 Mono-Stable vs Meta-Stable</h3>
-          <p><strong>Mono-stable:</strong> One dominant solution across many contexts.</p>
-          <p><strong>Meta-stable:</strong> Fluid switching between solutions as information changes.</p>
-          <p><strong>Squash Example:</strong> Elite players change height, pace, hold and recovery rhythm without conscious calculation.</p>
-          <p><strong>Coaching Implication:</strong> The goal is adaptable solution landscapes, not one perfect movement.</p>
+          <h3>🔁 Mono-Stable → Meta-Stable</h3>
+          <p><strong>Mono-stable:</strong> one dominant solution used too often.</p>
+          <p><strong>Multi-stable:</strong> several solutions exist.</p>
+          <p><strong>Meta-stable:</strong> the player switches fluidly between solutions as information changes.</p>
+          <p><strong>Squash example:</strong> A hard hitter keeps the penetrating drive but adds soft, height, hold and dying options with equal selectivity.</p>
         </div>
 
         <div className="scienceCard">
           <h3>⚠️ Pressure & Habit Reversion</h3>
-          <p>Under pressure, older stable attractors often dominate.</p>
-          <p><strong>Squash Example:</strong> A player trained to hold and vary pace returns to hard straight drives during competition.</p>
-          <p><strong>Coaching Implication:</strong> New behaviours must stabilise under representative fatigue, uncertainty and score pressure.</p>
+          <p>Under pressure, older and more stable attractors often reappear.</p>
+          <p><strong>Squash example:</strong> A player can vary pace in practice but returns to hard straight drives in competition.</p>
+          <p><strong>Coaching implication:</strong> New behaviours must stabilise under fatigue, uncertainty, score pressure and opponent pressure.</p>
         </div>
       </div>
 
       <div className="infoBox">
-        <strong>Important Principle</strong>
-        <p>The brain does not simply store perfect movement templates. Skilled behaviour emerges through interaction between player, task, environment and information. Stable solutions form under constraints and are strengthened through repeated successful organisation.</p>
+        <strong>Key Principle</strong>
+        <p>The brain does not simply store perfect movement templates. Skilled behaviour emerges through the interaction of player, task, environment and information. Constraints shape what becomes automatic.</p>
       </div>
 
-      <div className="scienceQuote">
-        <p>“A constraint is worth a 1000 words.”</p>
-      </div>
+      <div className="scienceQuote"><p>A constraint is worth a 1000 words.</p></div>
     </div>}
 
 
@@ -5536,7 +5587,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h74 Habit Science</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h74 Habit Science FIXED</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
