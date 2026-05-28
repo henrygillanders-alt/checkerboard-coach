@@ -1,4 +1,4 @@
-/* v99h80 Unified Overlay Stack */
+/* v99h82 Standalone Overlay Builder */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3141,3 +3141,30 @@ button.mentalSkillsTile p{
 .overlayUnificationNote strong{color:#ffd980;display:block;margin-bottom:6px}
 .overlayUnificationNote p{color:#dbeafe;margin:0}
 .integratedOverlayBuilder{border-color:#ffd980!important}
+
+/* v99h81 Logical Overlay Sequence */
+.integratedOverlayCard select:disabled{opacity:.55;cursor:not-allowed}
+
+
+/* v99h82 Standalone Overlay Builder */
+.standaloneOverlayPage{max-width:1180px;margin:0 auto}
+.overlayPhilosophyBox{background:#0c1a2c;border:2px solid rgba(255,217,128,.55);border-radius:18px;padding:16px;margin:16px 0}
+.overlayPhilosophyBox strong{color:#ffd980;font-size:20px}.overlayPhilosophyBox p{color:#dbeafe;margin:8px 0 0}
+.overlayBuilderCard,.generatedOverlayCard{background:#06111f;border:1px solid #35567e;border-radius:20px;padding:18px;margin:18px 0}
+.overlayBuilderCard label{display:flex;flex-direction:column;gap:8px;color:#ffd980;font-weight:1000;margin-bottom:14px}
+.overlayBuilderCard select,.overlayBuilderCard textarea{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}
+.overlayBuilderCard textarea{min-height:100px;resize:vertical}
+.overlayRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
+.overlayRowCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:15px}
+.overlayRowCard>span{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:7px 12px;font-weight:1000;margin-bottom:10px}
+.overlayExplain{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
+.overlayExplain b,.generatedOverlayCard h2,.generatedOverlayCard li strong,.overlayCoachOutput strong{color:#ffd980}
+.overlayExplain p,.generatedOverlayCard p,.generatedOverlayCard li span,.overlayCoachOutput p{color:#dbeafe;line-height:1.4}
+.overlayExplain em{display:block;color:#9bc1ff;font-style:normal;font-weight:900;margin:8px 0}.overlayExplain strong{display:block;color:#ffd980;margin-top:8px}
+.generatedOverlayCard ol{margin-left:20px}.generatedOverlayCard li{margin:14px 0}.generatedOverlayCard li span,.generatedOverlayCard li b{display:block;margin-top:5px}
+.overlayCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-top:14px}
+
+/* v99h82 Overlay Builder Home Tile */
+.overlayBuilderTile{
+  background:linear-gradient(135deg,#0f766e,#2563eb)!important;
+}
