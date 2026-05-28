@@ -4090,7 +4090,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v77',
+      version:'v78',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4107,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v77',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v78',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v77.json';
+    a.download='checkerboard-backup-v78.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5674,6 +5674,7 @@ function DiagnosticIntervention({setScreen}){
 }
 
 
+
 function IntegratedOverlayBuilder({context='General Game', compact=false}){
   const overlayOptions=[
     {id:'none',name:'None',category:'None',description:'No overlay selected.'},
@@ -5692,18 +5693,18 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
     {id:'variability',name:'Variability Required',category:'Representative',description:'Feed, pace, position or reply must vary before bonus counts.'}
   ];
   const consequenceOptions=[
-    {id:'none',label:'No consequence',text:'No bonus or punishment attached.'},
-    {id:'plus1',label:'+1 bonus',text:'Award +1 when satisfied.'},
-    {id:'plus2',label:'+2 bonus',text:'Award +2 when satisfied.'},
-    {id:'plus3',label:'+3 bonus',text:'Award +3 when satisfied.'},
-    {id:'plus4',label:'+4 bonus',text:'Award +4 when satisfied.'},
-    {id:'rallyLost',label:'Rally lost if broken',text:'Player loses rally if broken.'},
-    {id:'reset',label:'Condition resets',text:'Challenge resets and must be rebuilt.'},
-    {id:'unlock',label:'Unlock scoring',text:'Unlocks next scoring opportunity.'},
-    {id:'opponentBonus',label:'Opponent +1 if broken',text:'Opponent receives +1 if broken.'},
-    {id:'window2',label:'Finish within 2 shots',text:'Must win within 2 shots.'},
-    {id:'window3',label:'Finish within 3 shots',text:'Must win within 3 shots.'},
-    {id:'coachCall',label:'Coach call required',text:'Coach must confirm.'}
+    {id:'none',label:'No consequence',text:'No bonus or punishment attached.',points:0,mode:'none'},
+    {id:'plus1',label:'+1 bonus',text:'Award +1 when satisfied.',points:1,mode:'bonus'},
+    {id:'plus2',label:'+2 bonus',text:'Award +2 when satisfied.',points:2,mode:'bonus'},
+    {id:'plus3',label:'+3 bonus',text:'Award +3 when satisfied.',points:3,mode:'bonus'},
+    {id:'plus4',label:'+4 bonus',text:'Award +4 when satisfied.',points:4,mode:'bonus'},
+    {id:'rallyLost',label:'Rally lost if broken',text:'Player loses rally if broken.',points:0,mode:'rallyLost'},
+    {id:'reset',label:'Condition resets',text:'Challenge resets and must be rebuilt.',points:0,mode:'reset'},
+    {id:'unlock',label:'Unlock scoring',text:'Unlocks next scoring opportunity.',points:0,mode:'unlock'},
+    {id:'opponentBonus',label:'Opponent +1 if broken',text:'Opponent receives +1 if broken.',points:0,mode:'opponentBonus'},
+    {id:'window2',label:'Finish within 2 shots',text:'Must win within 2 shots.',points:0,mode:'window'},
+    {id:'window3',label:'Finish within 3 shots',text:'Must win within 3 shots.',points:0,mode:'window'},
+    {id:'coachCall',label:'Coach call required',text:'Coach must confirm.',points:0,mode:'coachCall'}
   ];
   const [enabled,setEnabled]=useState(false);
   const [o1,setO1]=useState('unsetT');
@@ -5712,6 +5713,12 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
   const [c1,setC1]=useState('unlock');
   const [c2,setC2]=useState('window3');
   const [c3,setC3]=useState('none');
+  const [overlayScore,setOverlayScore]=useState(0);
+  const [opponentOverlayScore,setOpponentOverlayScore]=useState(0);
+  const [rallyState,setRallyState]=useState('No overlay scoring action yet.');
+  const [activeStage,setActiveStage]=useState(1);
+  const [history,setHistory]=useState([]);
+
   const findO=id=>overlayOptions.find(o=>o.id===id)||overlayOptions[0];
   const findC=id=>consequenceOptions.find(c=>c.id===id)||consequenceOptions[0];
   const rows=[
@@ -5719,11 +5726,76 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
     {n:2,o:o2,c:c2,setO:setO2,setC:setC2},
     {n:3,o:o3,c:c3,setO:setO3,setC:setC3}
   ];
+
   function resetStack(){
     setO1('unsetT');setC1('unlock');
     setO2('finishWindow');setC2('window3');
     setO3('none');setC3('none');
+    resetScoring();
   }
+  function resetScoring(){
+    setOverlayScore(0);
+    setOpponentOverlayScore(0);
+    setRallyState('Overlay scoring reset.');
+    setActiveStage(1);
+    setHistory([]);
+  }
+  function addHistory(text){
+    setHistory(prev=>[text,...prev].slice(0,6));
+  }
+  function achieve(row){
+    const ov=findO(row.o);
+    const co=findC(row.c);
+    let msg=`Overlay ${row.n} achieved: ${ov.name}. `;
+    if(co.mode==='bonus'){
+      setOverlayScore(s=>s+co.points);
+      msg+=`+${co.points} bonus.`;
+    }else if(co.mode==='unlock'){
+      msg+='Scoring / next condition unlocked.';
+    }else if(co.mode==='window'){
+      msg+=`${co.label} window is now active.`;
+    }else if(co.mode==='coachCall'){
+      msg+='Coach confirmation required.';
+    }else if(co.mode==='none'){
+      msg+='No direct scoring consequence.';
+    }else{
+      msg+=co.text;
+    }
+    setActiveStage(Math.min(row.n+1,3));
+    setRallyState(msg);
+    addHistory(msg);
+  }
+  function breakOverlay(row){
+    const ov=findO(row.o);
+    const co=findC(row.c);
+    let msg=`Overlay ${row.n} broken: ${ov.name}. `;
+    if(co.mode==='rallyLost'){
+      msg+='RALLY LOST.';
+    }else if(co.mode==='reset'){
+      setActiveStage(1);
+      msg+='Condition reset to Overlay 1.';
+    }else if(co.mode==='opponentBonus'){
+      setOpponentOverlayScore(s=>s+1);
+      msg+='Opponent +1.';
+    }else{
+      msg+='Coach applies selected consequence / restart if appropriate.';
+    }
+    setRallyState(msg);
+    addHistory(msg);
+  }
+  function addBasePoint(){
+    setOverlayScore(s=>s+1);
+    const msg='Base rally point added: +1.';
+    setRallyState(msg);
+    addHistory(msg);
+  }
+  function subtractPoint(){
+    setOverlayScore(s=>Math.max(0,s-1));
+    const msg='Overlay score reduced by 1.';
+    setRallyState(msg);
+    addHistory(msg);
+  }
+
   return <div className={`integratedOverlayBuilder ${compact?'compactOverlayBuilder':''}`}>
     <div className="integratedOverlayTop">
       <div><strong>Developmental Overlay Stack</strong><p>Attach optional overlays to this {context}. Base game rules remain unchanged.</p></div>
@@ -5732,7 +5804,7 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
     {enabled&&<>
       <div className="integratedOverlayGrid">{rows.map(row=>{
         const ov=findO(row.o); const co=findC(row.c);
-        return <div className="integratedOverlayCard" key={row.n}>
+        return <div className={`integratedOverlayCard ${activeStage===row.n?'activeOverlayStage':''}`} key={row.n}>
           <span>Overlay {row.n}</span>
           <label>Requirement<select value={row.o} onChange={e=>row.setO(e.target.value)}>{overlayOptions.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
           <label>Consequence<select value={row.c} onChange={e=>row.setC(e.target.value)}>{consequenceOptions.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
@@ -5740,15 +5812,35 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
           <em>{co.text}</em>
         </div>
       })}</div>
+
       <div className="integratedOverlayPreview">
         <strong>Generated Rule Add-On</strong>
         <ol>{rows.filter(r=>r.o!=='none').map(r=><li key={r.n}><b>Overlay {r.n}: {findO(r.o).name}</b> — {findO(r.o).description} <span>Consequence: {findC(r.c).text}</span></li>)}</ol>
         <p><b>Order rule:</b> Overlay 2 only matters after Overlay 1; Overlay 3 only matters after Overlay 2.</p>
       </div>
+
+      <div className="overlayScoringPanel">
+        <div className="overlayScoreTop">
+          <div><strong>Overlay Score</strong><span>{overlayScore}</span></div>
+          <div><strong>Opponent Overlay Bonus</strong><span>{opponentOverlayScore}</span></div>
+          <div><strong>Active Stage</strong><span>{activeStage}</span></div>
+        </div>
+        <p className="overlayStateLine">{rallyState}</p>
+        <div className="overlayScoreActions">
+          <button type="button" className="primaryBtn" onClick={addBasePoint}>+1 Base Rally Point</button>
+          <button type="button" className="secondaryBtn" onClick={subtractPoint}>-1</button>
+          <button type="button" className="secondaryBtn" onClick={resetScoring}>Reset Score</button>
+        </div>
+        <div className="overlayAchieveGrid">{rows.filter(r=>r.o!=='none').map(row=><div className="overlayAchieveCard" key={row.n}>
+          <strong>Overlay {row.n}: {findO(row.o).name}</strong>
+          <button type="button" className="primaryBtn" onClick={()=>achieve(row)}>✅ Achieved</button>
+          <button type="button" className="dangerBtn" onClick={()=>breakOverlay(row)}>❌ Broken</button>
+        </div>)}</div>
+        {history.length>0&&<div className="overlayHistory"><strong>Recent Actions</strong>{history.map((h,i)=><p key={i}>{h}</p>)}</div>}
+      </div>
     </>}
   </div>;
 }
-
 
 
 function App(){
@@ -5758,7 +5850,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h77 Integrated Overlay Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h78 Overlay Scoring Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
