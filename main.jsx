@@ -1063,6 +1063,7 @@ return <div>
 <div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
+<IntegratedOverlayBuilder context="ATL / BTL game" compact={true}/>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
@@ -1252,7 +1253,7 @@ function CheckerboardEngine({onAddToSession}){
     setConfig(prev=>({...prev,blindFinishCard:'',blindFinishFace:'closed'}));
   }
 
-return <div className="checkerboardEngine"><IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
+return <div className="checkerboardEngine">
     <h2>Checkerboard Level Builder</h2>
     <p className="engineIntro">Level controls challenge type, T-zone prevention and conversion window automatically.</p>
     <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
@@ -1268,6 +1269,7 @@ return <div className="checkerboardEngine"><IntegratedOverlayBuilder context="Ch
       {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
     </div>
     <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
+    <IntegratedOverlayBuilder context="Checkerboard game" compact={true}/>
     <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard" /></div>
     
     {config.deliveryMode==='Blind'&&<div className="blindCardPanel">
@@ -4090,7 +4092,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v78',
+      version:'v79',
       created:new Date().toISOString(),
       players,
       session
@@ -4107,12 +4109,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v78',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v79',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v78.json';
+    a.download='checkerboard-backup-v79.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5798,7 +5800,7 @@ function IntegratedOverlayBuilder({context='General Game', compact=false}){
 
   return <div className={`integratedOverlayBuilder ${compact?'compactOverlayBuilder':''}`}>
     <div className="integratedOverlayTop">
-      <div><strong>Developmental Overlay Stack</strong><p>Attach optional overlays to this {context}. Base game rules remain unchanged.</p></div>
+      <div><strong>Developmental Overlay Stack</strong><p>Attach optional overlays to this {context} after the base game is designed. Base rules remain unchanged.</p></div>
       <div className="buttonRow"><button type="button" className="secondaryBtn" onClick={()=>setEnabled(!enabled)}>{enabled?'Hide Overlays':'Add Overlays'}</button>{enabled&&<button type="button" className="secondaryBtn" onClick={resetStack}>Reset Stack</button>}</div>
     </div>
     {enabled&&<>
@@ -5850,7 +5852,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h78 Overlay Scoring Engine</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h79 Overlay Placement Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
