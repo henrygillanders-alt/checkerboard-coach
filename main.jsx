@@ -4092,7 +4092,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v82',
+      version:'v83',
       created:new Date().toISOString(),
       players,
       session
@@ -4109,12 +4109,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v82',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v83',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v82.json';
+    a.download='checkerboard-backup-v83.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5679,171 +5679,232 @@ function DiagnosticIntervention({setScreen}){
 
 
 
-function OverlayBuilderStandalone({setScreen}){
-  const baseGames=[
-    'ATL / BTL',
-    'Checkerboard',
-    'Volley & Intercept',
-    'Pressure Game',
-    'Classic Conditioned Game',
-    'Double Bounce',
-    'Custom Game'
-  ];
+
+function OverlayBuilderStandalone({setScreen,setSession}){
+  const baseTemplates={
+    'ATL / BTL':{
+      title:'ATL / BTL Overlay Game',
+      category:'ATL / BTL',
+      task:'Play standard ATL / BTL rules. The base game is designed first; overlays add extra developmental focus.',
+      scoring:'Base scoring as selected by coach.',
+      rationale:'Develop disciplined use of below-the-line attack and tactical timing.',
+      coach:'Coach observes whether the player recognises the correct moment to change from containment to attack.'
+    },
+    'Checkerboard':{
+      title:'Checkerboard Overlay Game',
+      category:'Checkerboard',
+      task:'Play selected Checkerboard sequence or challenge. Overlays add tactical, perceptual or pressure requirements.',
+      scoring:'Checkerboard base scoring plus selected overlay consequences.',
+      rationale:'Develop target discipline, recognition and tactical conversion.',
+      coach:'Coach observes whether the player links zones to opponent state and advantage.'
+    },
+    'Volley & Intercept':{
+      title:'Volley & Intercept Overlay Game',
+      category:'Volley & Intercept',
+      task:'Play a live rally where volley opportunities are created and recognised.',
+      scoring:'Base rally scoring plus selected overlay consequences.',
+      rationale:'Develop early interception and recognition of volley affordances.',
+      coach:'Coach watches court position, preparation, visual pickup and commitment to intercept.'
+    },
+    'Pressure Game':{
+      title:'Pressure Overlay Game',
+      category:'Pressure',
+      task:'Play a rally game where players must build and convert pressure.',
+      scoring:'Base scoring plus pressure-window overlays.',
+      rationale:'Develop conversion under opponent pressure and score pressure.',
+      coach:'Coach observes whether the player attacks after advantage rather than forcing.'
+    },
+    'Classic Conditioned Game':{
+      title:'Conditioned Overlay Game',
+      category:'Classic Conditioned',
+      task:'Play the chosen conditioned game. Overlay stack adds specific developmental focus.',
+      scoring:'Conditioned game scoring plus selected overlay consequences.',
+      rationale:'Use constraints to shape perception, decision making and action.',
+      coach:'Coach checks whether the intended behaviour appears in open rally conditions.'
+    },
+    'Custom Game':{
+      title:'Custom Overlay Game',
+      category:'Custom',
+      task:'Enter the base game rules, then add overlays.',
+      scoring:'Coach-defined scoring plus selected overlay consequences.',
+      rationale:'Coach-designed representative game.',
+      coach:'Coach defines the behavioural outcome and adjusts constraints as needed.'
+    }
+  };
 
   const overlayLibrary=[
-    {id:'none',name:'None',group:'None',text:'No overlay selected.',purpose:'Base game only.'},
+    {id:'none',name:'None',type:'none',group:'None',text:'No overlay selected.',purpose:'Base game only.'},
 
-    {id:'oppNotSetT',name:'Opponent Not Set In T',group:'Tactical State',text:'Attack / BTL / bonus is only allowed when opponent is not balanced and set in the T-zone.',purpose:'Affordance recognition, tactical patience, attack permission.'},
-    {id:'oppOffT',name:'Opponent Off T',group:'Tactical State',text:'Scoring opportunity opens when opponent is outside the T-zone.',purpose:'Recognise advantage before attacking.'},
-    {id:'oppStillMoving',name:'Opponent Still Moving',group:'Tactical State',text:'Attack only counts while opponent is still recovering, turning or changing direction.',purpose:'Exploit movement state rather than static court position.'},
-    {id:'oppMovingForward',name:'Opponent Moving Forward',group:'Tactical State',text:'Attack / finish only counts if opponent is still moving forward and has not reorganised.',purpose:'Train timing of short attack and deception.'},
-    {id:'oppWrongSide',name:'Opponent Wrong Side Of Body Line',group:'Tactical State',text:'Attack only counts if opponent is on the wrong side of the player’s body line or court line.',purpose:'Train recognition of exposed space.'},
-    {id:'oppOffBalance',name:'Opponent Off Balance',group:'Tactical State',text:'Bonus opens when opponent is stretched, falling, late, or below the ball.',purpose:'Attack when opponent stability is compromised.'},
+    {id:'oppNotSetT',name:'Opponent Not Set In T',type:'permission',group:'Tactical State',text:'Action/attack/BTL is only allowed when opponent is not balanced and set in the T-zone.',purpose:'Affordance recognition, tactical patience, attack permission.'},
+    {id:'oppOffT',name:'Opponent Off T',type:'permission',group:'Tactical State',text:'Scoring or attack opportunity opens when opponent is outside the T-zone.',purpose:'Recognise advantage before attacking.'},
+    {id:'oppStillMoving',name:'Opponent Still Moving',type:'permission',group:'Tactical State',text:'Attack only becomes available while opponent is still recovering, turning or changing direction.',purpose:'Exploit movement state rather than static court position.'},
+    {id:'reduceOptions',name:'Reduce Options First',type:'permission',group:'Decision',text:'Player must first limit opponent replies before attacking or scoring.',purpose:'Connect pressure-building with finishing.'},
+    {id:'attackAdvantage',name:'Attack Only After Advantage',type:'permission',group:'Decision',text:'Attacking shot only becomes valid after a clear advantage cue has appeared.',purpose:'Stop forced attacks and improve shot selection.'},
+    {id:'oneLikelyReply',name:'One Likely Reply',type:'permission',group:'Decision',text:'Attack or score unlocks only after the previous shot leaves the opponent one likely reply.',purpose:'Develop reduce-options logic.'},
 
-    {id:'attackAdvantage',name:'Attack Only After Advantage',group:'Decision',text:'Attacking shot only scores after a clear advantage cue has appeared.',purpose:'Stop forced attacks and improve shot selection.'},
-    {id:'reduceOptions',name:'Reduce Options First',group:'Decision',text:'Player must first limit opponent replies before attacking.',purpose:'Connect pressure-building with finishing.'},
-    {id:'rebuild',name:'Rebuild Before Re-Attack',group:'Decision',text:'If the attack does not finish, player must rebuild before attacking again.',purpose:'Prevent repeated low-quality forcing.'},
-    {id:'oneLikelyReply',name:'One Likely Reply',group:'Decision',text:'Bonus only applies if the previous shot has left the opponent with one likely reply.',purpose:'Develop reduce-options logic.'},
+    {id:'cleanWinner',name:'Clean Winner',type:'bonus',group:'Completion',text:'Bonus if the rally finishes with a clean winner or unplayable ball.',purpose:'Reward quality conversion.'},
+    {id:'volleyFinish',name:'Volley Finish',type:'bonus',group:'Completion',text:'Bonus if the finishing shot is a volley.',purpose:'Encourage early interception.'},
+    {id:'recoverBeforeContact',name:'Recover Before Opponent Contact',type:'bonus',group:'Movement',text:'Bonus if player recovers to a useful position before opponent contacts the next ball.',purpose:'Couple strike and recovery.'},
+    {id:'balancedFinish',name:'Balanced Finish',type:'bonus',group:'Movement',text:'Bonus if the player finishes in a recoverable balanced shape.',purpose:'Prevent uncontrolled hitting or spinning out.'},
+    {id:'callLikelyReply',name:'Call Likely Reply',type:'bonus',group:'Perceptual',text:'Bonus if player calls opponent’s likely reply before the next shot.',purpose:'Develop anticipation and local probability.'},
+    {id:'quietEye',name:'Quiet Eye / Stable Contact Gaze',type:'bonus',group:'Perceptual',text:'Bonus if player maintains stable visual information through the strike.',purpose:'Improve timing and contact information.'},
 
-    {id:'earlyCall',name:'Early Recognition Call',group:'Perceptual',text:'Player must call the relevant cue before acting: opponent off T, volley, bounce, forehand/backhand, or likely reply.',purpose:'Train earlier information pickup.'},
-    {id:'callLikelyReply',name:'Call Likely Reply',group:'Perceptual',text:'Player predicts opponent’s likely reply before attacking or before the next shot.',purpose:'Develop anticipation and local probability.'},
-    {id:'quietEye',name:'Quiet Eye / Stable Contact Gaze',group:'Perceptual',text:'Bonus only counts if player maintains stable visual information through the strike.',purpose:'Improve timing and contact information.'},
+    {id:'finish2',name:'Finish Within 2 Shots',type:'window',group:'Pressure Window',text:'Once the trigger is achieved, player must win within 2 shots.',purpose:'Convert advantage quickly.'},
+    {id:'finish3',name:'Finish Within 3 Shots',type:'window',group:'Pressure Window',text:'Once the trigger is achieved, player must win within 3 shots.',purpose:'Convert pressure without panic.'},
+    {id:'finish4',name:'Finish Within 4 Shots',type:'window',group:'Pressure Window',text:'Once the trigger is achieved, player must win within 4 shots.',purpose:'Maintain pressure and convert patiently.'},
 
-    {id:'recoverUnlock',name:'Recover Before Score Unlock',group:'Movement',text:'Score or bonus only counts if player recovers to a useful position before opponent’s next contact.',purpose:'Couple strike with recovery.'},
-    {id:'balancedFinish',name:'Balanced Finish',group:'Movement',text:'Bonus only counts if player finishes in a recoverable balanced shape.',purpose:'Prevent uncontrolled hitting or spinning out.'},
-    {id:'splitReady',name:'Ready Before Opponent Contact',group:'Movement',text:'Player must be physically ready before the opponent strikes the next ball.',purpose:'Train continuous readiness.'},
-
-    {id:'finish2',name:'Finish Within 2 Shots',group:'Pressure Window',text:'Once the trigger is achieved, player must win within 2 shots.',purpose:'Convert advantage quickly.'},
-    {id:'finish3',name:'Finish Within 3 Shots',group:'Pressure Window',text:'Once the trigger is achieved, player must win within 3 shots.',purpose:'Convert pressure without panic.'},
-    {id:'cleanWinner',name:'Clean Winner Bonus',group:'Completion',text:'Additional bonus if the rally finishes with a clean winner or unplayable ball.',purpose:'Reward quality conversion.'},
-    {id:'volleyFinish',name:'Volley Finish Bonus',group:'Completion',text:'Additional bonus if the finishing shot is a volley.',purpose:'Encourage early interception.'},
-    {id:'frontWallFinish',name:'Front Wall Finish',group:'Completion',text:'Additional bonus if the finishing shot satisfies the front-wall target.',purpose:'Link finish quality to target discipline.'},
-    {id:'floorFinish',name:'Floor Finish',group:'Completion',text:'Additional bonus if the finishing shot satisfies the floor target.',purpose:'Link finish quality to landing / depth / shortness.'},
-
-    {id:'liveOnly',name:'Live Rally Only',group:'Representative',text:'Overlay applies only in live rally play with opponent freedom.',purpose:'Preserve perception-action coupling.'},
-    {id:'variableFeed',name:'Variability Required',group:'Representative',text:'Coach / opponent must vary feed, pace, angle, height or reply.',purpose:'Avoid repetition-with-repetition.'}
+    {id:'liveOnly',name:'Live Rally Only',type:'condition',group:'Representative',text:'Overlay only applies in live rally play with opponent freedom.',purpose:'Preserve perception-action coupling.'},
+    {id:'variabilityRequired',name:'Variability Required',type:'condition',group:'Representative',text:'Coach/opponent must vary feed, pace, angle, height or reply.',purpose:'Avoid repetition-with-repetition.'}
   ];
 
-  const consequences=[
-    {id:'none',name:'No direct consequence',text:'Overlay is used as a coaching focus only.'},
-    {id:'plus1',name:'+1 bonus',text:'Award +1 when overlay is satisfied.'},
-    {id:'plus2',name:'+2 bonus',text:'Award +2 when overlay is satisfied.'},
-    {id:'plus3',name:'+3 bonus',text:'Award +3 when overlay is satisfied.'},
-    {id:'plus4',name:'+4 bonus',text:'Award +4 when overlay is satisfied.'},
-    {id:'rallyLost',name:'Rally lost if broken',text:'Player loses rally if they break the overlay rule.'},
-    {id:'reset',name:'Condition resets',text:'Challenge resets if overlay is broken or missed.'},
-    {id:'unlock',name:'Unlock attack / scoring',text:'Overlay opens permission to attack or score.'},
-    {id:'opponentBonus',name:'Opponent +1 if broken',text:'Opponent gets +1 if overlay is broken.'},
-    {id:'coachCall',name:'Coach confirms',text:'Coach decides if the overlay was achieved.'}
-  ];
+  const consequenceByType={
+    none:[{id:'none',name:'No consequence',text:'No consequence.'}],
+    permission:[
+      {id:'unlockAttack',name:'Unlock attack',text:'Overlay unlocks permission to attack.'},
+      {id:'unlockBTL',name:'Unlock BTL',text:'Overlay unlocks below-the-line attack.'},
+      {id:'unlockScoring',name:'Unlock scoring',text:'Overlay unlocks scoring opportunity.'},
+      {id:'rallyLostIfIgnored',name:'Rally lost if ignored',text:'If player attacks without satisfying this overlay, rally is lost.'},
+      {id:'resetIfIgnored',name:'Condition resets if ignored',text:'If player ignores the overlay, the challenge resets.'}
+    ],
+    bonus:[
+      {id:'plus1',name:'+1 bonus',text:'Award +1 if achieved.'},
+      {id:'plus2',name:'+2 bonus',text:'Award +2 if achieved.'},
+      {id:'plus3',name:'+3 bonus',text:'Award +3 if achieved.'},
+      {id:'plus4',name:'+4 bonus',text:'Award +4 if achieved.'},
+      {id:'coachConfirmsBonus',name:'Coach confirms bonus',text:'Coach decides whether the bonus is awarded.'}
+    ],
+    window:[
+      {id:'plus2Window',name:'+2 if completed',text:'Award +2 if the player wins inside the window.'},
+      {id:'plus3Window',name:'+3 if completed',text:'Award +3 if the player wins inside the window.'},
+      {id:'resetWindow',name:'Reset if not completed',text:'If the player does not win inside the window, the challenge resets.'},
+      {id:'rallyLostWindow',name:'Rally lost if not completed',text:'If the player does not win inside the window, rally is lost.'}
+    ],
+    condition:[
+      {id:'mustApply',name:'Must apply',text:'Overlay is a required condition for this game.'},
+      {id:'coachReminder',name:'Coach reminder only',text:'Coach uses this as a focus without extra scoring.'},
+      {id:'resetIfBroken',name:'Reset if broken',text:'If this condition is broken, the challenge resets.'}
+    ]
+  };
 
   const [baseGame,setBaseGame]=useState('ATL / BTL');
-  const [overlay1,setOverlay1]=useState('oppNotSetT');
-  const [overlay2,setOverlay2]=useState('finish3');
-  const [overlay3,setOverlay3]=useState('none');
-  const [cons1,setCons1]=useState('unlock');
-  const [cons2,setCons2]=useState('plus3');
-  const [cons3,setCons3]=useState('none');
-  const [notes,setNotes]=useState('');
+  const [title,setTitle]=useState(baseTemplates['ATL / BTL'].title);
+  const [task,setTask]=useState(baseTemplates['ATL / BTL'].task);
+  const [scoring,setScoring]=useState(baseTemplates['ATL / BTL'].scoring);
+  const [rationale,setRationale]=useState(baseTemplates['ATL / BTL'].rationale);
+  const [coach,setCoach]=useState(baseTemplates['ATL / BTL'].coach);
+  const [o1,setO1]=useState('oppNotSetT');
+  const [o2,setO2]=useState('finish3');
+  const [o3,setO3]=useState('none');
+  const [c1,setC1]=useState('unlockBTL');
+  const [c2,setC2]=useState('plus3Window');
+  const [c3,setC3]=useState('none');
+  const [status,setStatus]=useState('');
 
-  const getOverlay=id=>overlayLibrary.find(o=>o.id===id)||overlayLibrary[0];
-  const getConsequence=id=>consequences.find(c=>c.id===id)||consequences[0];
-
-  const rows=[
-    {n:1,overlay:overlay1,setOverlay:setOverlay1,cons:cons1,setCons:setCons1},
-    {n:2,overlay:overlay2,setOverlay:setOverlay2,cons:cons2,setCons:setCons2},
-    {n:3,overlay:overlay3,setOverlay:setOverlay3,cons:cons3,setCons:setCons3}
-  ];
-  const activeRows=rows.filter(r=>r.overlay!=='none');
-
-  function reset(){
-    setBaseGame('ATL / BTL');
-    setOverlay1('oppNotSetT'); setCons1('unlock');
-    setOverlay2('finish3'); setCons2('plus3');
-    setOverlay3('none'); setCons3('none');
-    setNotes('');
+  function applyBaseTemplate(name){
+    const t=baseTemplates[name];
+    setBaseGame(name);
+    setTitle(t.title);
+    setTask(t.task);
+    setScoring(t.scoring);
+    setRationale(t.rationale);
+    setCoach(t.coach);
   }
 
-  return <div className="page standaloneOverlayPage">
+  const getOverlay=id=>overlayLibrary.find(o=>o.id===id)||overlayLibrary[0];
+  const validConsequences=(overlayId)=>consequenceByType[getOverlay(overlayId).type]||consequenceByType.none;
+  function sanitiseConsequence(overlayId,current,setter){
+    const valid=validConsequences(overlayId);
+    if(!valid.some(c=>c.id===current)) setter(valid[0].id);
+  }
+  function setOverlayFor(row,value){
+    if(row===1){setO1(value);sanitiseConsequence(value,c1,setC1);}
+    if(row===2){setO2(value);sanitiseConsequence(value,c2,setC2);}
+    if(row===3){setO3(value);sanitiseConsequence(value,c3,setC3);}
+  }
+
+  const rows=[
+    {n:1,overlay:o1,setOverlay:(v)=>setOverlayFor(1,v),cons:c1,setCons:setC1},
+    {n:2,overlay:o2,setOverlay:(v)=>setOverlayFor(2,v),cons:c2,setCons:setC2},
+    {n:3,overlay:o3,setOverlay:(v)=>setOverlayFor(3,v),cons:c3,setCons:setC3}
+  ];
+  const getConsequence=(overlayId,consId)=>validConsequences(overlayId).find(c=>c.id===consId)||validConsequences(overlayId)[0];
+  const activeRows=rows.filter(r=>r.overlay!=='none');
+
+  const overlayRuleText=activeRows.map(r=>{
+    const ov=getOverlay(r.overlay);
+    const co=getConsequence(r.overlay,r.cons);
+    return `Overlay ${r.n}: ${ov.name} — ${ov.text} Consequence: ${co.text}`;
+  }).join(' ');
+
+  const builtGame={
+    id:Date.now(),
+    title,
+    category:baseTemplates[baseGame].category,
+    duration:15,
+    task:`${task}${overlayRuleText?' Overlay Stack: '+overlayRuleText:''}`,
+    scoring:`${scoring}${overlayRuleText?' Overlay consequences: '+activeRows.map(r=>getConsequence(r.overlay,r.cons).text).join(' '):''}`,
+    rationale,
+    coach,
+    layers:['Custom Overlay Stack',baseGame,...activeRows.map(r=>getOverlay(r.overlay).name)]
+  };
+
+  function addToSession(){
+    if(!setSession){setStatus('Session connection not available on this screen.');return;}
+    setSession(prev=>[...prev,{...builtGame,id:Date.now()+Math.random()}]);
+    setStatus('Overlay game card added to session.');
+  }
+
+  return <div className="page overlayGameCardBuilder">
     <div className="pageTop">
       <div>
-        <h1>Customisable Overlay Builder</h1>
-        <p className="mutedText">Base game first. Optional overlays second. Coach judgement always decides.</p>
+        <h1>Game Card Overlay Builder</h1>
+        <p className="mutedText">Build the base game, add logical overlays, then save one complete game card.</p>
       </div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
-    <div className="overlayPhilosophyBox">
-      <strong>Clean Concept</strong>
-      <p>Overlays are optional rule add-ons that make an existing game more focused. This page does not change existing ATL, Checkerboard or conditioned-game logic.</p>
+    <div className="overlayPhilosophyBox"><strong>Clean approach</strong><p>Overlays are optional rule add-ons inside a complete game card. Consequence choices are filtered by overlay type so the rule set stays logical.</p></div>
+
+    <div className="overlayBuilderCard">
+      <h2>1. Base Game</h2>
+      <label>Game Type<select value={baseGame} onChange={e=>applyBaseTemplate(e.target.value)}>{Object.keys(baseTemplates).map(g=><option key={g}>{g}</option>)}</select></label>
+      <label>Title<input value={title} onChange={e=>setTitle(e.target.value)}/></label>
+      <label>Base Rules<textarea value={task} onChange={e=>setTask(e.target.value)}/></label>
+      <label>Base Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
+      <label>Rationale<textarea value={rationale} onChange={e=>setRationale(e.target.value)}/></label>
+      <label>Coach Help<textarea value={coach} onChange={e=>setCoach(e.target.value)}/></label>
     </div>
 
     <div className="overlayBuilderCard">
-      <label>Base Game
-        <select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>
-          {baseGames.map(g=><option key={g}>{g}</option>)}
-        </select>
-      </label>
-
+      <h2>2. Overlay Stack</h2>
+      <p className="mutedText">Permission overlays unlock actions. Bonus overlays award points. Window overlays create conversion pressure. Representative conditions preserve game realism.</p>
       <div className="overlayRows">
         {rows.map(row=>{
           const ov=getOverlay(row.overlay);
-          const co=getConsequence(row.cons);
+          const options=validConsequences(row.overlay);
+          const co=getConsequence(row.overlay,row.cons);
           return <div className="overlayRowCard" key={row.n}>
             <span>Overlay {row.n}</span>
-            <label>Requirement
-              <select value={row.overlay} onChange={e=>row.setOverlay(e.target.value)}>
-                {overlayLibrary.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-            </label>
-            <label>Consequence
-              <select value={row.cons} onChange={e=>row.setCons(e.target.value)}>
-                {consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
-            <div className="overlayExplain">
-              <b>{ov.group}</b>
-              <p>{ov.text}</p>
-              <em>{ov.purpose}</em>
-              <strong>{co.text}</strong>
-            </div>
+            <label>Requirement<select value={row.overlay} onChange={e=>row.setOverlay(e.target.value)}>{overlayLibrary.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
+            <label>Consequence<select value={co.id} onChange={e=>row.setCons(e.target.value)}>{options.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+            <div className="overlayExplain"><b>{ov.type.toUpperCase()} · {ov.group}</b><p>{ov.text}</p><em>{ov.purpose}</em><strong>{co.text}</strong></div>
           </div>;
         })}
-      </div>
-
-      <label>Coach Notes / Custom Wording
-        <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Example: BTL may only be played when opponent is not set in T. If played too early, rally is lost."/>
-      </label>
-
-      <div className="buttonRow">
-        <button className="secondaryBtn" onClick={reset}>Reset Overlay Builder</button>
       </div>
     </div>
 
     <div className="generatedOverlayCard">
-      <h2>Generated Overlay Card</h2>
+      <h2>3. Generated Game Card</h2>
+      <p><strong>{builtGame.title}</strong></p>
       <p><strong>Base Game:</strong> {baseGame}</p>
-      {activeRows.length===0&&<p>No overlays selected. Use the base game only.</p>}
-      {activeRows.length>0&&<ol>
-        {activeRows.map(row=>{
-          const ov=getOverlay(row.overlay);
-          const co=getConsequence(row.cons);
-          return <li key={row.n}>
-            <strong>Overlay {row.n}: {ov.name}</strong>
-            <span>{ov.text}</span>
-            <b>Consequence: {co.text}</b>
-          </li>;
-        })}
-      </ol>}
-      <div className="overlayCoachOutput">
-        <strong>Coach Intention</strong>
-        <p>{activeRows.map(r=>getOverlay(r.overlay).purpose).join(' · ')||'General game play.'}</p>
-      </div>
-      {notes.trim()&&<div className="overlayCoachOutput"><strong>Coach Notes</strong><p>{notes}</p></div>}
+      <div className="overlayCoachOutput"><strong>Rules</strong><p>{builtGame.task}</p></div>
+      <div className="overlayCoachOutput"><strong>Scoring</strong><p>{builtGame.scoring}</p></div>
+      <div className="overlayCoachOutput"><strong>Coach Intention</strong><p>{activeRows.map(r=>getOverlay(r.overlay).purpose).join(' · ')||'Base game focus.'}</p></div>
+      <div className="buttonRow"><button className="primaryBtn" onClick={addToSession}>Add Complete Game Card To Session</button><button className="secondaryBtn" onClick={()=>setStatus('')}>Clear Status</button></div>
+      {status&&<div className="statusBox">{status}</div>}
     </div>
   </div>;
 }
-
 
 
 function App(){
@@ -5853,9 +5914,9 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h82 Standalone Overlay Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h83 Game Card Overlay Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
-{screen==='home'&&<Home setScreen={setScreen}/>}\n{screen==='overlayBuilder'&&<OverlayBuilderStandalone setScreen={setScreen}/>}
+{screen==='home'&&<Home setScreen={setScreen}/>}\n{screen==='overlayBuilder'&&<OverlayBuilderStandalone setScreen={setScreen} setSession={setSession}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={setScreen}/>}
