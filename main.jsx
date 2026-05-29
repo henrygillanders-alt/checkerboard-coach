@@ -1013,7 +1013,7 @@ return <div className="homeGrid homeGridV99h52">
 }
 
 function GamesLibrary({setScreen,setSession}){
-  const [tab,setTab]=useState('explore');
+  const [tab,setTab]=useState('stabilise');
   return <div className="page gamesLibraryPage">
     <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="universalFamilyTabs gamesLibraryTabs">
@@ -4094,7 +4094,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v84',
+      version:'v85',
       created:new Date().toISOString(),
       players,
       session
@@ -4111,12 +4111,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v84',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v85',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v84.json';
+    a.download='checkerboard-backup-v85.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5785,7 +5785,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h84 Game Logic Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h85 Games Library Tab Layout</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}\n{screen==='overlayBuilder'&&<OverlayBuilderStandalone setScreen={setScreen} setSession={setSession}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
