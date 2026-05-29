@@ -1,4 +1,4 @@
-/* v99h83 Game Card Overlay Builder */
+/* v99h84 Game Logic Builder */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3186,3 +3186,8 @@ button.mentalSkillsTile p{
 .overlayGameCardBuilder .statusBox{
   margin-top:14px;
 }
+
+
+/* v99h84 Game Logic Builder */
+.gameLogicBuilderPage input{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}
+.gameLogicBuilderPage h2{color:#ffd980;margin-top:0}.triggerAddRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin:12px 0}.triggerAddRow select{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}.triggerStackList{display:grid;gap:10px;margin-top:12px}.triggerStackItem{display:grid;grid-template-columns:minmax(160px,220px) 1fr auto;gap:10px;align-items:center;background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}.triggerStackItem strong{color:#ffd980}.triggerStackItem span{color:#dbeafe}.logicExplainBox{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px;margin-top:10px}.logicExplainBox strong{color:#ffd980}.logicExplainBox p{color:#dbeafe;margin-bottom:0}.qualityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}.qualityGrid button{background:#12253d;border:1px solid #486b9a;color:white;border-radius:12px;padding:12px;font-weight:900;text-align:left}.qualityGrid button.activeQualityBtn{background:#ffd980;color:#0f172a;border-color:white}.dualViewGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.playerViewCard ol{color:#dbeafe;margin:10px 0 0 20px}.playerViewCard li{margin-bottom:8px}@media(max-width:900px){.dualViewGrid{grid-template-columns:1fr}.triggerAddRow{grid-template-columns:1fr}.triggerStackItem{grid-template-columns:1fr}}
