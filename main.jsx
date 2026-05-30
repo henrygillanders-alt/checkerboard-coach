@@ -1006,8 +1006,6 @@ return <div className="homeGrid homeGridV99h52">
       
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
 
-      <button className="homeTile overlayBuilderTile homeTitleOnly" onClick={()=>setScreen('overlayBuilder')}><h2>Game Logic Builder</h2></button>
-
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
     </div>;
 }
@@ -2156,6 +2154,98 @@ function CustomGameBuilder({onAddToSession}){
   </div>;
 }
 
+
+
+function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
+  const triggerOptions=[
+    {id:'oppNotSetT',name:'Opponent not set in T',player:'opponent is not set in the T'},
+    {id:'oppOffT',name:'Opponent off T',player:'opponent is off the T'},
+    {id:'oppStillMoving',name:'Opponent still moving',player:'opponent is still moving'},
+    {id:'oppOffBalance',name:'Opponent off balance',player:'opponent is off balance or stretched'},
+    {id:'reduceOptions',name:'Reduce options first',player:'you have reduced opponent options first'},
+    {id:'widthAchieved',name:'Width achieved',player:'you have created width first'},
+    {id:'completePair',name:'Complete Checkerboard pair',player:'you have completed the Checkerboard pair'},
+    {id:'completeTriple',name:'Complete Checkerboard triple',player:'you have completed the Checkerboard triple'},
+    {id:'volleyOpportunity',name:'Volley opportunity appears',player:'a volley opportunity appears'},
+    {id:'attackableBall',name:'Attackable ball appears',player:'the ball is attackable'}
+  ];
+  const actions=[
+    {id:'none',name:'No required action',player:'Choose the best solution.'},
+    {id:'btl',name:'BTL attack',player:'Attack below the line.'},
+    {id:'atl',name:'ATL attack',player:'Attack above the line.'},
+    {id:'volley',name:'Volley next opportunity',player:'Volley the next available ball.'},
+    {id:'oppositeSide',name:'Attack opposite side',player:'Attack the opposite side.'},
+    {id:'straightDrive',name:'Straight drive',player:'Play straight.'},
+    {id:'boast',name:'Boast / angle',player:'Use the boast/angle.'},
+    {id:'finish2',name:'Finish within 2 shots',player:'Win within 2 shots.'},
+    {id:'finish3',name:'Finish within 3 shots',player:'Win within 3 shots.'},
+    {id:'finish4',name:'Finish within 4 shots',player:'Win within 4 shots.'}
+  ];
+  const consequences=[
+    {id:'plus1',name:'+1',text:'Award +1 if achieved.',player:'Earn +1 if successful.'},
+    {id:'plus2',name:'+2',text:'Award +2 if achieved.',player:'Earn +2 if successful.'},
+    {id:'plus3',name:'+3',text:'Award +3 if achieved.',player:'Earn +3 if successful.'},
+    {id:'plus4',name:'+4',text:'Award +4 if achieved.',player:'Earn +4 if successful.'},
+    {id:'rallyLost',name:'Rally lost',text:'Rally is lost if broken.',player:'If you break the rule, you lose the rally.'},
+    {id:'reset',name:'Challenge resets',text:'Challenge resets if not completed.',player:'If you miss the condition, the challenge resets.'},
+    {id:'bonusLost',name:'Bonus lost',text:'The bonus is lost if not completed.',player:'If you miss the condition, the bonus is gone.'},
+    {id:'coachConfirms',name:'Coach confirms',text:'Coach confirms whether the condition is satisfied.',player:'Coach confirms whether it counts.'}
+  ];
+  const qualityOptions=[
+    {id:'cleanWinner',name:'Clean winner +2',player:'Clean winner earns +2 extra.'},
+    {id:'recoverBeforeContact',name:'Recover before opponent contact +1',player:'Recover before the next shot for +1 extra.'},
+    {id:'volleyWinner',name:'Volley winner +2',player:'Volley winner earns +2 extra.'},
+    {id:'balancedFinish',name:'Balanced finish +1',player:'Balanced finish earns +1 extra.'},
+    {id:'correctTarget',name:'Correct target +1',player:'Correct target earns +1 extra.'}
+  ];
+  const [triggers,setTriggers]=useState(['oppNotSetT']);
+  const [newTrigger,setNewTrigger]=useState('reduceOptions');
+  const [requiredAction,setRequiredAction]=useState('none');
+  const [consequence,setConsequence]=useState('plus2');
+  const [qualities,setQualities]=useState([]);
+  const find=(arr,id)=>arr.find(x=>x.id===id)||arr[0];
+  const activeTriggers=triggers.map(id=>find(triggerOptions,id));
+  const selectedAction=find(actions,requiredAction);
+  const selectedConsequence=find(consequences,consequence);
+  const activeQualities=qualities.map(id=>find(qualityOptions,id));
+  function addTrigger(){if(triggers.length<5&&!triggers.includes(newTrigger))setTriggers([...triggers,newTrigger]);}
+  function toggleQuality(id){setQualities(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
+  const triggerText=activeTriggers.length?activeTriggers.map(t=>t.name).join(' AND '):'No additional trigger';
+  const playerRules=[
+    baseGame?.task||baseGame?.description||'Play the base game as set.',
+    activeTriggers.length?`Extra condition applies when ${activeTriggers.map(t=>t.player).join(' AND ')}.`:'',
+    selectedAction.player,
+    selectedConsequence.player,
+    ...activeQualities.map(q=>q.player)
+  ].filter(Boolean);
+  const coachLogic=`Triggers: ${triggerText}. Required Action: ${selectedAction.name}. Consequence: ${selectedConsequence.text}${activeQualities.length?' Quality: '+activeQualities.map(q=>q.name).join(' · '):''}`;
+  function buildGame(){
+    return {
+      ...baseGame,
+      id:Date.now()+Math.random(),
+      title:`${baseGame.title||'Game'} + Game Logic`,
+      task:`${baseGame.task||baseGame.description||'Play the base game.'} Added Game Logic: ${coachLogic}`,
+      scoring:`${baseGame.scoring||'Base scoring applies.'} Added Game Logic: ${selectedConsequence.text}${activeQualities.length?' Quality bonuses: '+activeQualities.map(q=>q.name).join(' · '):''}`,
+      coach:`${baseGame.coach||''} Game Logic: ${coachLogic}`,
+      playerView:playerRules.join(' '),
+      layers:[...(baseGame.layers||[]),'Game Logic',...activeTriggers.map(t=>t.name),...(requiredAction!=='none'?[selectedAction.name]:[]),selectedConsequence.name,...activeQualities.map(q=>q.name)]
+    };
+  }
+  return <div className="inlineLogicPanel gameCard">
+    <div className="categoryTag">Add Game Logic To This Card</div>
+    <h3>{baseGame.title}</h3>
+    <div className="logicBasePreview"><strong>Base Game Protected</strong><p>{baseGame.task||baseGame.description||'Base game rules remain unchanged.'}</p>{baseGame.scoring&&<p><b>Scoring:</b> {baseGame.scoring}</p>}</div>
+    <h4>Trigger Stack</h4>
+    <div className="triggerAddRow"><select value={newTrigger} onChange={e=>setNewTrigger(e.target.value)}>{triggerOptions.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><button className="secondaryBtn" onClick={addTrigger}>+ Add Trigger</button></div>
+    <div className="triggerStackList">{activeTriggers.map(t=><div className="triggerStackItem" key={t.id}><strong>{t.name}</strong><button className="secondaryBtn" onClick={()=>setTriggers(triggers.filter(x=>x!==t.id))}>Remove</button></div>)}</div>
+    <label>Required Action<select value={requiredAction} onChange={e=>setRequiredAction(e.target.value)}>{actions.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
+    <label>Consequence<select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    <h4>Quality Modifiers</h4>
+    <div className="qualityGrid">{qualityOptions.map(q=><button type="button" key={q.id} className={qualities.includes(q.id)?'activeQualityBtn':''} onClick={()=>toggleQuality(q.id)}>{qualities.includes(q.id)?'✓ ':'+ '}{q.name}</button>)}</div>
+    <div className="dualViewGrid"><div className="overlayCoachOutput"><strong>Coach View</strong><p>{coachLogic}</p></div><div className="overlayCoachOutput playerViewCard"><strong>Player View</strong><ol>{playerRules.map((r,i)=><li key={i}>{r}</li>)}</ol></div></div>
+    <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add With Game Logic</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+  </div>;
+}
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(null);
   const [message,setMessage]=useState('');
@@ -2166,6 +2256,7 @@ function Games({setSession,setScreen}){
     }catch{return[];}
   });
   const [editingCard,setEditingCard]=useState(null);
+  const [logicCard,setLogicCard]=useState(null);
 
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_KEY,JSON.stringify(savedCards));
@@ -2178,6 +2269,7 @@ function Games({setSession,setScreen}){
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'pressure',label:'Pressure',category:'Pressure'},
+    {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
     {id:'custom',label:'Custom',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -2190,9 +2282,9 @@ function Games({setSession,setScreen}){
     const safeGame={...game,id:game.id||Date.now()+Math.random()};
     let finalGame=safeGame;
     try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
-    setSession(prev=>[...prev,finalGame]);
-    setMessage(`${game.title||'Game'} added to Session Builder.`);
-    setScreen('sessions');
+    setLogicCard(finalGame);
+    setMessage('Base game built. Add Game Logic or add the base game only.');
+    window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function addStay(game){
@@ -2257,6 +2349,8 @@ function Games({setSession,setScreen}){
 
     {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
 
+    {logicCard&&<InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/>}
+
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
@@ -2264,10 +2358,11 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={setScreen}/></div>}
 
     
 
-    {activeClassId&& !['checkerboard','atl','classic','technical','custom','saved'].includes(activeClassId)&&
+    {activeClassId&& !['checkerboard','atl','classic','technical','custom','doubleBounce','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -2284,7 +2379,7 @@ function Games({setSession,setScreen}){
           <div className="actionRow">
             <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
             <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
-            <button onClick={()=>addStay(card)}>Add To Session</button>
+            <button onClick={()=>setLogicCard(card)}>Add Logic</button><button onClick={()=>addStay(card)}>Add To Session</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
             <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
@@ -4093,7 +4188,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v87',
+      version:'v88',
       created:new Date().toISOString(),
       players,
       session
@@ -4110,12 +4205,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v87',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v88',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v87.json';
+    a.download='checkerboard-backup-v88.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5740,9 +5835,9 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h87 Final Game Logic Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h88 Add Logic To Game Cards</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
-{screen==='home'&&<Home setScreen={setScreen}/>}\n{screen==='overlayBuilder'&&<OverlayBuilderStandalone setScreen={setScreen} setSession={setSession}/>}
+{screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
 {screen==='tools'&&<ToolsArchitecture/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={setScreen}/>}
