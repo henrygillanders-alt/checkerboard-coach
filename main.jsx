@@ -7,6 +7,7 @@ const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
+const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
 const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
 
 const LEVELS=[
@@ -1325,8 +1326,9 @@ const ATL_CB_ZONE_OPTIONS=[
 ];
 
 function ATLBTLDirectBuilder({onAddToSession}){
-  const [atl,setAtl]=useState(DEFAULT_ATL); const [side,setSide]=useState('Right side'); const [useCustomCb,setUseCustomCb]=useState(false); const [customCbZone,setCustomCbZone]=useState('');
-  const [manualLayers,setManualLayers]=useState([]);
+  const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
+  const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
+  const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
   const [atlHistory,setAtlHistory]=useState([]);
 
   const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
@@ -1339,6 +1341,9 @@ function ATLBTLDirectBuilder({onAddToSession}){
   }
   const autoCbZone=sideToCbZone(side);
   const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
+  useEffect(()=>{
+    localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers}));
+  },[atl,side,useCustomCb,customCbZone,manualLayers]);
 
   function saveAtlSnapshot(){
     setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);
@@ -1380,6 +1385,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
   return <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div>
     <h2>ATL / BTL Full Structure Builder</h2>
+    <div className="statusBox atlDraftSavedNote">ATL / BTL draft is saved automatically while you work.</div>
 
     <div className="atlOptionsGrid">
       <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
@@ -4198,7 +4204,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v89',
+      version:'v90',
       created:new Date().toISOString(),
       players,
       session
@@ -4215,12 +4221,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v89',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v90',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v89.json';
+    a.download='checkerboard-backup-v90.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5845,7 +5851,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h89 Game Logic Persistence Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h90 ATL Persistence Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
