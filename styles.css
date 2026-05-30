@@ -1,4 +1,4 @@
-/* v99h88 Add Logic To Game Cards */
+/* v99h89 Game Logic Persistence Fix */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3245,3 +3245,19 @@ button.mentalSkillsTile p{
 .qualityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}.qualityGrid button{background:#12253d;border:1px solid #486b9a;color:white;border-radius:12px;padding:12px;font-weight:900;text-align:left}.qualityGrid button.activeQualityBtn{background:#ffd980;color:#0f172a;border-color:white}
 .dualViewGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.overlayCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px}.overlayCoachOutput strong{color:#ffd980}.overlayCoachOutput p,.playerViewCard li{color:#dbeafe}.playerViewCard ol{margin:10px 0 0 20px}
 @media(max-width:900px){.dualViewGrid{grid-template-columns:1fr}.triggerAddRow{grid-template-columns:1fr}}
+
+
+/* v99h89 Game Logic Persistence Fix */
+.logicDraftSection{
+  border:2px solid rgba(255,217,128,.7);
+  border-radius:20px;
+  padding:14px;
+  margin:16px 0;
+  background:#06111f;
+}
+.logicDraftSection .statusBox{
+  margin-bottom:14px;
+}
+.inlineLogicPanel{
+  border-color:#ffd980!important;
+}

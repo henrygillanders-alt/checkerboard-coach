@@ -6,6 +6,8 @@ import'./styles.css';
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
+const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
+const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
 
 const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
@@ -1046,7 +1048,7 @@ const filtered=games.filter(game=>game.category===category);
 return <div>
 <div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);}}>{cat}</button>)}</div>
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
-{category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={setScreen}/></div>}
+{category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
 <div className="atlOptionsGrid">
@@ -2243,11 +2245,11 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     <h4>Quality Modifiers</h4>
     <div className="qualityGrid">{qualityOptions.map(q=><button type="button" key={q.id} className={qualities.includes(q.id)?'activeQualityBtn':''} onClick={()=>toggleQuality(q.id)}>{qualities.includes(q.id)?'✓ ':'+ '}{q.name}</button>)}</div>
     <div className="dualViewGrid"><div className="overlayCoachOutput"><strong>Coach View</strong><p>{coachLogic}</p></div><div className="overlayCoachOutput playerViewCard"><strong>Player View</strong><ol>{playerRules.map((r,i)=><li key={i}>{r}</li>)}</ol></div></div>
-    <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add With Game Logic</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+    <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
 }
 function Games({setSession,setScreen}){
-  const [activeClassId,setActiveClassId]=useState(null);
+  const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
   const [savedCards,setSavedCards]=useState(()=>{
     try{
@@ -2256,11 +2258,19 @@ function Games({setSession,setScreen}){
     }catch{return[];}
   });
   const [editingCard,setEditingCard]=useState(null);
-  const [logicCard,setLogicCard]=useState(null);
+  const [logicCard,setLogicCard]=useState(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}});
 
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_KEY,JSON.stringify(savedCards));
   },[savedCards]);
+  useEffect(()=>{
+    if(activeClassId)localStorage.setItem(GAME_LIBRARY_CLASS_KEY,activeClassId);
+    else localStorage.removeItem(GAME_LIBRARY_CLASS_KEY);
+  },[activeClassId]);
+  useEffect(()=>{
+    if(logicCard)localStorage.setItem(GAME_LIBRARY_DRAFT_KEY,JSON.stringify(logicCard));
+    else localStorage.removeItem(GAME_LIBRARY_DRAFT_KEY);
+  },[logicCard]);
 
   const gameClasses=[
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
@@ -2283,7 +2293,7 @@ function Games({setSession,setScreen}){
     let finalGame=safeGame;
     try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
     setLogicCard(finalGame);
-    setMessage('Base game built. Add Game Logic or add the base game only.');
+    setMessage('Base game built and held on this page. Add Game Logic below, or add the base game only.');
     window.scrollTo({top:0,behavior:'smooth'});
   }
 
@@ -2349,7 +2359,7 @@ function Games({setSession,setScreen}){
 
     {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
 
-    {logicCard&&<InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/>}
+    {logicCard&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
@@ -2358,7 +2368,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={setScreen}/></div>}
+    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
 
     
 
@@ -4188,7 +4198,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v88',
+      version:'v89',
       created:new Date().toISOString(),
       players,
       session
@@ -4205,12 +4215,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v88',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v89',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v88.json';
+    a.download='checkerboard-backup-v89.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5835,7 +5845,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h88 Add Logic To Game Cards</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h89 Game Logic Persistence Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
