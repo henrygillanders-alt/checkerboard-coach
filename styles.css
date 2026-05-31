@@ -1,4 +1,4 @@
-/* v99h94 Game Page Order + DB Present Players */
+/* v99h95 Emergency Stable DB 3 Option */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3323,51 +3323,3 @@ button.mentalSkillsTile p{
 .dbSummaryBox{background:#0b1828;border:1px solid #35567e;border-radius:14px;padding:12px;margin:12px 0}
 .dbSummaryBox strong{color:#ffd980}.dbSummaryBox p{color:#dbeafe;font-weight:900;margin:8px 0 0;line-height:1.35}
 @media(max-width:700px){.dbAllocationRow{grid-template-columns:1fr}}
-
-
-/* v99h94 Game Page Order + DB Present Players */
-.gameAddOnTabs{
-  border:2px solid rgba(255,217,128,.7);
-  border-radius:22px;
-  padding:16px;
-  margin:18px 0;
-  background:#06111f;
-}
-.addOnTabHeader{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
-  align-items:center;
-  border-bottom:1px solid #35567e;
-  padding-bottom:12px;
-  margin-bottom:14px;
-}
-.addOnTabHeader strong{
-  color:#ffd980;
-  font-size:22px;
-}
-.addOnTabHeader span{
-  color:#cbd5e1;
-  font-weight:800;
-}
-.dbSourceBox{
-  background:#081320;
-  border:1px solid #5e83be;
-  border-radius:14px;
-  padding:12px;
-  margin:12px 0;
-}
-.dbSourceBox strong{
-  color:#ffd980;
-  display:block;
-  margin-bottom:6px;
-}
-.dbSourceBox p{
-  color:#dbeafe;
-  margin:0;
-  font-weight:800;
-}
-.dbPlayerInput textarea{
-  min-height:72px;
-}
