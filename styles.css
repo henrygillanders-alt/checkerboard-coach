@@ -1,4 +1,4 @@
-/* v99h95 Emergency Stable DB 3 Option */
+/* v99h96 Invasion Display Cleanup */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3323,3 +3323,30 @@ button.mentalSkillsTile p{
 .dbSummaryBox{background:#0b1828;border:1px solid #35567e;border-radius:14px;padding:12px;margin:12px 0}
 .dbSummaryBox strong{color:#ffd980}.dbSummaryBox p{color:#dbeafe;font-weight:900;margin:8px 0 0;line-height:1.35}
 @media(max-width:700px){.dbAllocationRow{grid-template-columns:1fr}}
+
+
+/* v99h96 Invasion Display Cleanup */
+.invasionCleanBoard{display:flex;flex-direction:column;gap:22px}
+.activeInvaderPanel,.courtAssignmentPanel,.teamListPanel,.courtDetailPanel{background:#071827;border:1px solid #35567e;border-radius:22px;padding:20px}
+.activeInvaderPanel h2,.courtAssignmentPanel h2,.teamListPanel h2,.courtDetailPanel h2{color:#ffd980;font-size:34px;margin:0 0 16px}
+.activeInvaderGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.activeInvaderCard{background:#020617;border:3px solid #ffd980;border-radius:22px;padding:22px;text-align:center}
+.activeInvaderCard span{display:block;color:#cbd5e1;font-weight:900;font-size:20px}
+.activeInvaderCard strong{display:block;color:white;font-size:48px;line-height:1.05;margin:12px 0}
+.activeInvaderCard p{color:#dbeafe;font-size:18px;font-weight:900;margin:8px 0}
+.activeInvaderCard em{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 14px;font-style:normal;font-weight:1000}
+.courtAssignmentGrid,.teamListGrid,.courtDetailGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.courtAssignmentGrid div,.cleanTeamCard,.cleanCourtCard{background:#0b1828;border:1px solid #5e83be;border-radius:16px;padding:16px}
+.courtAssignmentGrid strong{display:block;color:#ffd980;font-size:24px}
+.courtAssignmentGrid span{display:block;color:white;font-size:26px;font-weight:1000;margin-top:6px}
+.cleanTeamCard h3,.cleanCourtCard h3{color:#ffd980;font-size:26px;margin:0 0 12px}
+.cleanTeamCard h3 small{color:#9bc1ff;font-size:16px;margin-left:8px}
+.cleanTeamCard p,.cleanCourtCard p{color:white;font-size:18px;font-weight:850;margin:8px 0}
+.cleanTeamCard b{color:#ffd980;margin-right:8px}
+.cleanTeamCard em,.cleanCourtCard em{color:#0f172a;background:#ffd980;border-radius:999px;padding:4px 8px;font-style:normal;font-weight:1000;margin-left:6px}
+.queueList{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.queueList span{background:#10233b;border:1px solid #35567e;color:white;border-radius:12px;padding:9px 11px;font-weight:900}
+.queueList .queueCurrent{border-color:#ffd980;background:#1f5dd0;color:white}
+.courtLivesCompact{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;background:#10233b;border:1px solid #5e83be;border-radius:14px;padding:12px;margin-top:12px}
+.courtLivesCompact span{color:#cbd5e1;font-weight:900}.courtLivesCompact strong{color:#ffd980;font-size:28px}
+@media(max-width:800px){.activeInvaderCard strong{font-size:36px}.courtLivesCompact{grid-template-columns:1fr auto}}
