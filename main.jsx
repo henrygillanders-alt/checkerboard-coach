@@ -6,6 +6,7 @@ import'./styles.css';
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
+const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v91';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
 const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
@@ -26,7 +27,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -1034,7 +1035,7 @@ const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
 const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);
-const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Double Bounce','Technical','Invasion','Matchplay'];
+const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
@@ -1049,6 +1050,7 @@ const filtered=games.filter(game=>game.category===category);
 return <div>
 <div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);}}>{cat}</button>)}</div>
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
+{category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>} 
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -2254,6 +2256,57 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
 }
+
+
+function InformationAnticipationBuilder({onAddToSession}){
+  const cueOptions=['Ball','Racquet','Arm','Shoulder','Trunk','Hips'];
+  const cueValues={Ball:1,Racquet:2,Arm:3,Shoulder:4,Trunk:5,Hips:6};
+  const directionOptions=['Straight','Crosscourt'];
+  const freezeOptions=['Straight','Crosscourt','Drop','Boast'];
+  const activities=[
+    {id:'cueDiscovery',title:'Cue Discovery',level:'Level 0A',objective:'Discover where useful opponent information exists.',task:'Players observe rallies or simple feeds and identify where they were looking: ball, racquet, arm, shoulder, trunk or hips. No prediction required.',scoring:'No formal score. Coach records cue source selections.',coach:'Ask: Where were you looking? What information did you use? What moved first?',defaultPrediction:false},
+    {id:'cueAwareness',title:'Cue Awareness',level:'Level 0B',objective:'Help players notice earlier movement sources.',task:'Coach asks “what moved first?” after each action. Player identifies hips, trunk, shoulder, arm or racquet.',scoring:'No formal score. Earlier cue sources indicate progress.',coach:'Use ATL, BTL or double bounce to slow the exchange and make information easier to perceive.',defaultPrediction:false},
+    {id:'directionRead',title:'Direction Read',level:'Level 1',objective:'Predict straight or crosscourt before opponent contact.',task:'In a live or semi-live rally, player calls Straight or Crosscourt before contact.',scoring:'Prediction Accuracy % = correct predictions ÷ total attempts.',coach:'Keep the task representative. Do not turn it into eyesight training.',defaultPrediction:true,options:directionOptions},
+    {id:'freezeRead',title:'Freeze Read',level:'Level 1',objective:'Predict likely shot from opponent preparation.',task:'Coach freezes before opponent contact. Player predicts Straight, Crosscourt, Drop or Boast.',scoring:'Prediction Accuracy % = correct predictions ÷ total attempts.',coach:'Ask what gave the shot away: hips, trunk, shoulder, arm, racquet or ball.',defaultPrediction:true,options:freezeOptions}
+  ];
+  const [selectedActivity,setSelectedActivity]=useState('cueDiscovery');
+  const [selectedCue,setSelectedCue]=useState('Racquet');
+  const [prediction,setPrediction]=useState('Straight');
+  const [actual,setActual]=useState('Straight');
+  const [playerName,setPlayerName]=useState('');
+  const [note,setNote]=useState('');
+  const [records,setRecords]=useState(()=>{try{const saved=localStorage.getItem(INFO_ANTICIPATION_KEY);return saved?JSON.parse(saved):[];}catch{return[];}});
+  useEffect(()=>{localStorage.setItem(INFO_ANTICIPATION_KEY,JSON.stringify(records));},[records]);
+  const activity=activities.find(a=>a.id===selectedActivity)||activities[0];
+  const predictionOptions=activity.options||directionOptions;
+  const totalPredictions=records.filter(r=>r.activityId==='directionRead'||r.activityId==='freezeRead').length;
+  const correctPredictions=records.filter(r=>(r.activityId==='directionRead'||r.activityId==='freezeRead')&&r.correct).length;
+  const predictionAccuracy=totalPredictions?Math.round((correctPredictions/totalPredictions)*100):0;
+  const cueCounts=cueOptions.reduce((acc,cue)=>{acc[cue]=records.filter(r=>r.cue===cue).length;return acc;},{});
+  const cueScoreTotal=records.reduce((sum,r)=>sum+(cueValues[r.cue]||0),0);
+  const cueAverage=records.length?(cueScoreTotal/records.length):0;
+  const dominantCue=records.length?cueOptions.reduce((best,cue)=>cueCounts[cue]>cueCounts[best]?cue:best,'Ball'):'—';
+  const classification=records.length===0?'No Data':cueAverage>=4.8?'Advanced':cueAverage>=3.2?'Intermediate':'Beginner';
+  function recordObservation(){
+    const isPrediction=activity.defaultPrediction;
+    const correct=isPrediction?prediction===actual:null;
+    setRecords(prev=>[{id:Date.now()+Math.random(),at:new Date().toISOString(),player:playerName.trim(),activityId:activity.id,activityTitle:activity.title,cue:selectedCue,prediction:isPrediction?prediction:'',actual:isPrediction?actual:'',correct,note:note.trim()},...prev].slice(0,250));
+    setNote('');
+  }
+  function clearRecords(){if(confirm('Clear Information & Anticipation records?')) setRecords([]);}
+  function addActivityToSession(){
+    onAddToSession({id:Date.now()+Math.random(),title:`Information & Anticipation: ${activity.title}`,category:'Information & Anticipation',duration:12,task:activity.task,scoring:activity.scoring,rationale:activity.objective,coach:activity.coach,layers:['Information & Anticipation','Opponent Information','Quiet Eye / Cue Source']});
+  }
+  return <div className="infoAnticipationBuilder gameCard">
+    <div className="categoryTag">Information & Anticipation</div>
+    <h2>Opponent Information, Anticipation & Quiet Eye</h2>
+    <div className="infoVisionPrinciple"><strong>Read → Predict → Commit → Resist Deception</strong><p>This is not eyesight training. It develops opponent information pickup, anticipation and perception-action coupling in representative squash environments.</p></div>
+    <div className="infoActivityGrid">{activities.map(item=><button key={item.id} className={selectedActivity===item.id?'activeInfoActivity':''} onClick={()=>{setSelectedActivity(item.id); if(item.options){setPrediction(item.options[0]);setActual(item.options[0]);}}}><span>{item.level}</span><strong>{item.title}</strong><small>{item.objective}</small></button>)}</div>
+    <div className="infoPanel"><h3>{activity.level}: {activity.title}</h3><p><strong>Objective:</strong> {activity.objective}</p><p><strong>Task:</strong> {activity.task}</p><p><strong>Scoring:</strong> {activity.scoring}</p><p><strong>Coach:</strong> {activity.coach}</p><div className="buttonRow"><button className="primaryBtn" onClick={addActivityToSession}>Add Activity To Session</button></div></div>
+    <div className="infoRecorder"><h3>Record Cue Source / Prediction</h3><div className="infoRecorderGrid"><label>Player / Group<input value={playerName} onChange={e=>setPlayerName(e.target.value)} placeholder="Optional"/></label><label>What gave it away?<select value={selectedCue} onChange={e=>setSelectedCue(e.target.value)}>{cueOptions.map(cue=><option key={cue}>{cue}</option>)}</select></label>{activity.defaultPrediction&&<label>Prediction<select value={prediction} onChange={e=>setPrediction(e.target.value)}>{predictionOptions.map(o=><option key={o}>{o}</option>)}</select></label>}{activity.defaultPrediction&&<label>Actual<select value={actual} onChange={e=>setActual(e.target.value)}>{predictionOptions.map(o=><option key={o}>{o}</option>)}</select></label>}</div><label>Coach Observation<textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="What moved first? What information did the player use?"/></label><div className="buttonRow"><button className="primaryBtn" onClick={recordObservation}>Record Observation</button><button className="secondaryBtn" onClick={clearRecords}>Clear Records</button></div></div>
+    <div className="cueDashboard"><h3>Cue Source Profile</h3><div className="cueStatsGrid"><div><strong>Prediction Accuracy</strong><span>{predictionAccuracy}%</span><small>{correctPredictions}/{totalPredictions}</small></div><div><strong>Dominant Cue</strong><span>{dominantCue}</span><small>{records.length} records</small></div><div><strong>Classification</strong><span>{classification}</span><small>Beginner → Intermediate → Advanced</small></div></div><div className="cueBars">{cueOptions.map(cue=>{const max=Math.max(1,...cueOptions.map(c=>cueCounts[c]));const width=Math.round((cueCounts[cue]/max)*100);return <div className="cueBarRow" key={cue}><strong>{cue}</strong><div><span style={{width:`${width}%`}}></span></div><em>{cueCounts[cue]}</em></div>;})}</div><div className="cueProfileNote"><p><strong>Beginner profile:</strong> Ball / Racquet dominant.</p><p><strong>Intermediate profile:</strong> Arm / Shoulder dominant.</p><p><strong>Advanced profile:</strong> Shoulder / Trunk / Hips dominant.</p></div></div>
+  </div>;
+}
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -2285,6 +2338,7 @@ function Games({setSession,setScreen}){
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'pressure',label:'Pressure',category:'Pressure'},
+    {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
     {id:'custom',label:'Custom',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
@@ -2374,6 +2428,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>} 
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
 
     
@@ -4204,7 +4259,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v90',
+      version:'v91',
       created:new Date().toISOString(),
       players,
       session
@@ -4221,12 +4276,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v90',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v91',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v90.json';
+    a.download='checkerboard-backup-v91.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5851,7 +5906,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h90 ATL Persistence Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h91 Information Anticipation MVP</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
