@@ -6,6 +6,7 @@ import'./styles.css';
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
+const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v93';
 const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
@@ -27,7 +28,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -1050,7 +1051,8 @@ const filtered=games.filter(game=>game.category===category);
 return <div>
 <div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);}}>{cat}</button>)}</div>
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
-{category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>} 
+{category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
+{category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame}/>}  
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -1992,7 +1994,7 @@ function InvasionGamesBuilder({onAddToSession}){
   const [layers,setLayers]=useState([]);
   const [cbCode,setCbCode]=useState('None');
 
-  const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
+  const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
 
   function toggleLayer(layer){
@@ -2004,7 +2006,7 @@ function InvasionGamesBuilder({onAddToSession}){
       id:'lives',
       title:'Invasion Game — Lives Format',
       tactical:'Survival · discipline · pressure management',
-      task:'Defenders always serve. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps are assigned in Competition: choose each player and set None, 1 DB, 2 DBs or Unlimited DBs.',
+      task:'Defenders always serve. Players track lives. Same penalty applies to invader and defenders. Double-bounce handicaps are assigned in Competition: choose each player and set None, 1 DB, 2 DBs, 3 DBs or Unlimited DBs.',
       rationale:'Lives format creates a consequence ecology: players protect lives, manage pressure and make disciplined decisions. Defenders serve to prevent gaming the system.',
       scoring:'If invader hits out of the court area then -1 life penalty against invader. If invader hits out of court area and into the balcony then -3 lives penalty against invader. Once one invader loses all lives play is stopped and invaders rotate courts. Unused lives are carried forward to next court and when invader finishes all court rotations and unused lives are carried forward to next invader',
       playerFocus:'Stay disciplined. Protect your lives. Attack only when the opportunity is clear.'
@@ -2139,7 +2141,7 @@ function CustomGameBuilder({onAddToSession}){
       <div className="atlOptionsGrid">
         <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
         <label>Crosscourt Allowance<select value={crosscourtLimit} onChange={e=>setCrosscourtLimit(e.target.value)}><option>None</option><option>0 crosscourts</option><option>1 crosscourt per rally</option><option>2 crosscourts per rally</option><option>3 crosscourts per rally</option><option>Unlimited</option></select></label>
-        <label>Double Bounce<select value={doubleBounce} onChange={e=>setDoubleBounce(e.target.value)}><option>None</option><option>1 double bounce</option><option>2 double bounces</option><option>Unlimited double bounces</option></select></label>
+        <label>Double Bounce<select value={doubleBounce} onChange={e=>setDoubleBounce(e.target.value)}><option>None</option><option>1 double bounce</option><option>2 double bounces</option><option>3 double bounces</option><option>Unlimited double bounces</option></select></label>
         <label>Checkerboard / Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
       </div>
     </div>
@@ -2281,7 +2283,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       title:'Cue Awareness',
       level:'Level 0B',
       type:'movementFirst',
-      objective:'Help players notice earlier movement sources.',
+      objective:'Identify what moved first.',
       task:'Coach asks “what moved first?” after each action. Player identifies hips, trunk, shoulder, arm or racquet.',
       scoring:'No formal score. Earlier movement sources indicate progress.',
       coach:'Use ATL, BTL or double bounce to slow the exchange and make information easier to perceive.',
@@ -2456,6 +2458,54 @@ function InformationAnticipationBuilder({onAddToSession}){
     </div>
   </div>;
 }
+
+function UniversalDBHandicapPanel({onAddToSession}){
+  const dbOptions=['No DB','1 DB','2 DB','3 DB','Unlimited DB'];
+  const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').enabled||false;}catch{return false;}});
+  const [playersText,setPlayersText]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').playersText||'';}catch{return '';}});
+  const [allocations,setAllocations]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations||{};}catch{return {};}});
+  const players=playersText.split(/\n|,/).map(name=>name.trim()).filter(Boolean);
+
+  useEffect(()=>{
+    localStorage.setItem(DB_HANDICAP_KEY,JSON.stringify({enabled,playersText,allocations}));
+  },[enabled,playersText,allocations]);
+
+  function setDb(name,value){setAllocations(prev=>({...prev,[name]:value}));}
+  function clearDb(){setEnabled(false);setPlayersText('');setAllocations({});}
+  function activeSummary(){return players.length?players.map(name=>`${name}: ${allocations[name]||'No DB'}`).join(' · '):'No players assigned';}
+  function addDbCard(){
+    if(!onAddToSession)return;
+    onAddToSession({
+      id:Date.now()+Math.random(),
+      title:'DB Handicap Allocation',
+      category:'Universal Overlay',
+      duration:0,
+      task:'Apply player-specific double-bounce handicap to the selected game.',
+      scoring:'Base game scoring remains unchanged. DB handicap only changes each player’s allowed bounce allocation.',
+      rationale:'Levels mixed-standard groups while keeping the rally live and representative.',
+      coach:'Apply these DB allocations across the current game or rotation: '+activeSummary(),
+      layers:['DB Handicap','Double Bounce'],
+      playerView:'DB handicap allocations: '+activeSummary()
+    });
+  }
+
+  return <div className="universalDbPanel">
+    <div className="universalDbHeader">
+      <div><strong>DB Handicap · All Games</strong><p>Use player-specific double-bounce allocation to level mixed standards across ATL/BTL, Checkerboard, Pressure, Technical, Volley, Information & Anticipation, Matchplay and Classic Games.</p></div>
+      <button className={enabled?'primaryBtn':'secondaryBtn'} onClick={()=>setEnabled(!enabled)}>{enabled?'DB Handicap On':'Enable DB Handicap'}</button>
+    </div>
+    {enabled&&<>
+      <label className="dbPlayerInput">Players / Groups<textarea value={playersText} onChange={e=>setPlayersText(e.target.value)} placeholder={'One per line or comma separated\nPlayer A\nPlayer B\nPlayer C'}/></label>
+      <div className="dbAllocationGrid">
+        {players.length===0&&<div className="statusBox">Add players or groups to assign DB handicaps.</div>}
+        {players.map(name=><div className="dbAllocationRow" key={name}><span>{name}</span><select value={allocations[name]||'No DB'} onChange={e=>setDb(name,e.target.value)}>{dbOptions.map(opt=><option key={opt}>{opt}</option>)}</select></div>)}
+      </div>
+      <div className="dbSummaryBox"><strong>Active DB Rules</strong><p>{activeSummary()}</p></div>
+      <div className="buttonRow"><button className="primaryBtn" onClick={addDbCard}>Add DB Handicap To Session</button><button className="secondaryBtn" onClick={clearDb}>Clear DB Handicap</button></div>
+    </>}
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -2569,6 +2619,8 @@ function Games({setSession,setScreen}){
     {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
 
     {logicCard&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
+
+    {activeClassId&&activeClassId!=='saved'&&<UniversalDBHandicapPanel onAddToSession={addStay}/>}
 
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
@@ -2845,7 +2897,7 @@ function Competition({players=[]}){
 
 
 
-  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','Quality Length Before Attack'];
+  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
 
   function toggleLayer(layer){
@@ -4408,7 +4460,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v92',
+      version:'v93',
       created:new Date().toISOString(),
       players,
       session
@@ -4425,12 +4477,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v92',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v93',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v92.json';
+    a.download='checkerboard-backup-v93.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5352,7 +5404,7 @@ function LiveSessionDelivery({session=[],setScreen}){
     <div className="gameCard">
       <div className="categoryTag">Quick Layer</div><h2>Quick Constraint / Overlay</h2>
       <div className="quickLayers">
-        {['Clean Winner','Opponent Off T','Volley Finish','Double Bounce','4-Shot Window','2-Shot Window','Quality Length Before Attack'].map(layer=><button key={layer} className={quickLayer===layer?'activeLayer':''} onClick={()=>setQuickLayer(quickLayer===layer?'':layer)}>{quickLayer===layer?'✓ ':'+ '}{layer}</button>)}
+        {['Clean Winner','Opponent Off T','Volley Finish','Double Bounce','DB Handicap','4-Shot Window','2-Shot Window','Quality Length Before Attack'].map(layer=><button key={layer} className={quickLayer===layer?'activeLayer':''} onClick={()=>setQuickLayer(quickLayer===layer?'':layer)}>{quickLayer===layer?'✓ ':'+ '}{layer}</button>)}
       </div>
       {quickLayer&&<div className="infoBox"><strong>Temporary Layer</strong><p>{quickLayer}</p></div>}
     </div>
@@ -6055,7 +6107,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h92 Information Anticipation Refinement</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h93 DB Handicap Universal + Info KPI Polish</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
