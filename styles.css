@@ -1,4 +1,4 @@
-/* v99h96 Invasion Display Cleanup */
+/* v99h97 Captain Teams Invasion */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3350,3 +3350,15 @@ button.mentalSkillsTile p{
 .courtLivesCompact{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;background:#10233b;border:1px solid #5e83be;border-radius:14px;padding:12px;margin-top:12px}
 .courtLivesCompact span{color:#cbd5e1;font-weight:900}.courtLivesCompact strong{color:#ffd980;font-size:28px}
 @media(max-width:800px){.activeInvaderCard strong{font-size:36px}.courtLivesCompact{grid-template-columns:1fr auto}}
+
+
+/* v99h97 Captain Teams Invasion */
+.activeInvaderCard p b{color:#ffd980}
+.activeInvaderCard p{margin:6px 0}
+.courtAssignmentGrid div span{font-size:20px;margin:6px 0}
+.cleanTeamCard h3 small{color:#9bc1ff;font-size:15px;margin-left:8px}
+.teamCurrentQueue{display:flex;flex-direction:column;gap:6px}
+.teamCurrentQueue>strong{color:#ffd980;margin-top:6px}
+.teamCurrentQueue p{background:#081320;border:1px solid #35567e;border-radius:10px;padding:8px 10px;margin:0}
+.teamCurrentQueue p:first-of-type{border:2px solid #ffd980}
+.cleanTeamCard em,.cleanCourtCard em{display:inline-block}

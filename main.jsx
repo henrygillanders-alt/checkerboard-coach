@@ -6,7 +6,7 @@ import'./styles.css';
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
-const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v96';
+const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v97';
 const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
@@ -266,7 +266,17 @@ function ProjectionView({session,setScreen}){
     }
     const courts=Array.from({length:Math.max(teams.length,Number(competitionProjection.invasionCourts||0)||teams.length)},(_,idx)=>idx+1);
     function rankOf(name){return competitionProjection.invasionRankMap?.[name]??'';}
+    function rankLabel(name){const rank=rankOf(name);return rank?`#${rank} `:'';}
     function dbOf(name){return competitionProjection.playerBounces?.[name]||'No DB';}
+    function activeDb(name){const value=dbOf(name);return value&&value!=='No DB'?value:'';}
+    function captainOf(team){
+      const sorted=playersByRank(team);
+      return sorted[0]||team?.captain||team?.name||'Team';
+    }
+    function captainTeamName(team){
+      const captain=captainOf(team);
+      return captain?`${captain}’s Team`:(team?.name||'Team');
+    }
     function playersByRank(team){
       return [...(team?.players||[])].sort((a,b)=>(rankOf(a)||9999)-(rankOf(b)||9999));
     }
@@ -305,9 +315,10 @@ function ProjectionView({session,setScreen}){
           <div className="activeInvaderGrid">
             {courtRows.map(row=><div className="activeInvaderCard" key={`active-${row.court}`}>
               <span>Court {row.court}</span>
-              <strong>{row.current||'Waiting'}</strong>
-              <p>{row.invading?.name||'No invading team'} → attacking {row.defending?.name||'No defending team'}</p>
-              <em>{dbOf(row.current)}</em>
+              <strong>{rankLabel(row.current)}{row.current||'Waiting'}</strong>
+              <p><b>Invaders:</b> {captainTeamName(row.invading)}</p>
+              <p><b>Defenders:</b> {captainTeamName(row.defending)}</p>
+              {activeDb(row.current)&&<em>{activeDb(row.current)}</em>}
             </div>)}
           </div>
         </div>
@@ -317,7 +328,8 @@ function ProjectionView({session,setScreen}){
           <div className="courtAssignmentGrid">
             {courtRows.map(row=><div key={`court-assign-${row.court}`}>
               <strong>Court {row.court}</strong>
-              <span>{row.defending?.name||'Waiting'}</span>
+              <span>Invaders: {captainTeamName(row.invading)}</span>
+              <span>Defenders: {captainTeamName(row.defending)}</span>
             </div>)}
           </div>
         </div>
@@ -326,8 +338,13 @@ function ProjectionView({session,setScreen}){
           <h2>Teams · Snake Seeded By Ranking</h2>
           <div className="teamListGrid">
             {[...teams].sort((a,b)=>(a.seedOrder||Number(a.id?.replace(/\D/g,''))||0)-(b.seedOrder||Number(b.id?.replace(/\D/g,''))||0)).map(team=><div className="cleanTeamCard" key={team.id}>
-              <h3>{team.name} <small>{team.court||''}</small></h3>
-              {playersByRank(team).map(name=><p key={name}><b>#{rankOf(name)||'?'}</b> {name} <em>{dbOf(name)}</em></p>)}
+              <h3>{captainTeamName(team)} <small>{team.court||''}</small></h3>
+              <div className="teamCurrentQueue">
+                <strong>Current</strong>
+                <p>{rankLabel(projCurrentInvader(team))}{projCurrentInvader(team)} {activeDb(projCurrentInvader(team))&&<em>{activeDb(projCurrentInvader(team))}</em>}</p>
+                <strong>Queue</strong>
+                {playersByRank(team).filter(name=>name!==projCurrentInvader(team)).map(name=><p key={name}><b>{rankLabel(name)}</b>{name} {activeDb(name)&&<em>{activeDb(name)}</em>}</p>)}
+              </div>
             </div>)}
           </div>
         </div>
@@ -340,11 +357,11 @@ function ProjectionView({session,setScreen}){
               const finish=competitionProjection.invasionFinishLives?.[row.invading?.id];
               return <div className="cleanCourtCard" key={`court-detail-${row.court}`}>
                 <h3>Court {row.court}</h3>
-                <p><b>Defending:</b> {row.defending?.name||'Waiting'}</p>
-                <p><b>Invading:</b> {row.invading?.name||'Waiting'}</p>
-                <p><b>Current:</b> {row.current||'Waiting'} <em>{dbOf(row.current)}</em></p>
+                <p><b>Defenders:</b> {captainTeamName(row.defending)}</p>
+                <p><b>Invaders:</b> {captainTeamName(row.invading)}</p>
+                <p><b>Current:</b> {rankLabel(row.current)}{row.current||'Waiting'} {activeDb(row.current)&&<em>{activeDb(row.current)}</em>}</p>
                 <div className="queueList">
-                  {(playersByRank(row.invading)||[]).map(name=><span key={name} className={name===row.current?'queueCurrent':''}>{name}{name===row.current?' ← current':''}</span>)}
+                  {(playersByRank(row.invading)||[]).map(name=><span key={name} className={name===row.current?'queueCurrent':''}>{rankLabel(name)}{name}{activeDb(name)?` (${activeDb(name)})`:''}{name===row.current?' ← current':''}</span>)}
                 </div>
                 <div className="courtLivesCompact"><span>Lives</span><strong>{competitionProjection.invasionFormat==='lives'?startLives:'Points'}</strong><span>Remaining</span><strong>{competitionProjection.invasionFormat==='lives'?(finish!==undefined?finish:'Live'):projTeamPoints(row.invading)}</strong></div>
               </div>;
@@ -4467,7 +4484,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v96',
+      version:'v97',
       created:new Date().toISOString(),
       players,
       session
@@ -4484,12 +4501,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v96',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v97',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v96.json';
+    a.download='checkerboard-backup-v97.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -6114,7 +6131,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h96 Invasion Display Cleanup</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h97 Captain Teams Invasion</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
