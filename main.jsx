@@ -199,156 +199,90 @@ function ProjectionView({session,setScreen}){
   if(competitionProjection?.mode==='invasion'&&competitionProjection?.invasionGameStarted){
     const teams=competitionProjection.invasionTeams||[];
     const n=teams.length;
-    const liveCourts=n;
     const isLive=!!competitionProjection.invasionGameStarted;
+    const courtTeams=[...teams].sort((a,b)=>(Number(a.courtNumber)||Number(String(a.court||'').match(/\d+/)?.[0])||999)-(Number(b.courtNumber)||Number(String(b.court||'').match(/\d+/)?.[0])||999));
+    function projRank(name){return competitionProjection.invasionRankMap?.[name]??9999;}
+    function projDb(name){return competitionProjection.playerBounces?.[name]||'No DB';}
     function projBaseLives(team){
       if(!team) return Number(competitionProjection?.invasionStartingLives||5);
       const exact=Number(competitionProjection.invasionFairLivesByTeam?.[team.id] ?? competitionProjection.invasionFairLivesByTeam?.[team.name]);
       if(exact>0) return exact;
-      const allTeams=competitionProjection.invasionTeams||[];
-      const counts=allTeams.map(t=>(t.players||[]).length).filter(n=>n>0);
       const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives)||5;
-      const maxPlayers=counts.length?Math.max(...counts):1;
+      const maxPlayers=Math.max(1,...(teams||[]).map(t=>(t.players||[]).length||1));
       const baseCapacity=maxPlayers*selected;
       const playerCount=(team?.players||[]).length||1;
-      if(baseCapacity>0) return Math.max(1,Math.ceil(baseCapacity/playerCount));
-      return selected;
+      return Math.max(1,Math.ceil(baseCapacity/playerCount));
     }
-    function projCarry(team){
-      return competitionProjection.invasionCarryLives?.[team?.id]||0;
-    }
-    function projStartLives(team){
-      return projBaseLives(team)+projCarry(team);
-    }
-    function projOrderedPlayers(team){
-      return [...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
-    }
-    function projCurrentInvader(team){
-      const list=projOrderedPlayers(team);
+    function projCarry(team){return competitionProjection.invasionCarryLives?.[team?.id]||0;}
+    function projStartLives(team){return projBaseLives(team)+projCarry(team);}
+    function orderedPlayers(team){return [...(team?.players||[])].sort((a,b)=>projRank(a)-projRank(b));}
+    function invaderQueue(team){return [...(team?.players||[])].sort((a,b)=>projRank(b)-projRank(a));}
+    function currentInvader(team){
+      const list=invaderQueue(team);
       if(!list.length) return 'Waiting';
       const override=competitionProjection.invasionInvaderOverrides?.[team?.id]||competitionProjection.invasionInvaderOverrides?.[team?.name];
       if(override) return override;
       return list[(competitionProjection.invasionPlayerRound||0)%list.length];
     }
-    function projNextInvader(team){
-      const list=projOrderedPlayers(team);
+    function nextInvader(team){
+      const list=invaderQueue(team);
       if(!list.length) return 'Waiting';
-      const current=projCurrentInvader(team);
+      const current=currentInvader(team);
       const idx=list.findIndex(name=>name===current);
-      const baseIndex=idx>=0?idx:(competitionProjection.invasionPlayerRound||0)%list.length;
-      return list[(baseIndex+1)%list.length];
+      return list[((idx>=0?idx:0)+1)%list.length];
     }
-    function projTeamPoints(team){
-      const manual=Number(competitionProjection.invasionTeamPoints?.[team?.id]||0);
-      const playerTotal=(team?.players||[]).reduce((total,name)=>total+Number(competitionProjection.invasionPlayerPoints?.[name]||0),0);
-      return manual+playerTotal;
-    }
-    function projPlayerRole(team,name){
-      const current=projCurrentInvader(team);
-      const next=projNextInvader(team);
-      if(name===current) return 'invading';
-      if(name===next) return 'next invader';
-      return '';
-    }
-    function projTeamPlayerLine(team,name){
-      const role=projPlayerRole(team,name);
-      return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
-        <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
-      </div>;
-    }
-    function projDefending(idx){
-      if(!n) return null;
-      return teams[idx%n];
-    }
-    function projInvading(idx){
-      if(!n) return null;
-      return teams[(idx - 1 + (competitionProjection.invasionCourtRound||0) + n) % n];
-    }
-    return <div className="projectionPage invasionOnlyProjector">
+    function defendingTeamForCourt(idx){return courtTeams[idx]||null;}
+    function invadingTeamForCourt(idx){if(!courtTeams.length)return null;return courtTeams[(idx-1+courtTeams.length)%courtTeams.length];}
+    function playerLine(name,active=false){return <span key={name} className={active?'invasionV96Player active':'invasionV96Player'}><b>#{projRank(name)===9999?'—':projRank(name)}</b> {name} <em>{projDb(name)}</em></span>;}
+    const courtRows=courtTeams.map((defending,idx)=>{
+      const invading=invadingTeamForCourt(idx);
+      return {court:idx+1,defending,invading,current:currentInvader(invading),next:nextInvader(invading),lives:projStartLives(invading),remaining:competitionProjection.invasionFinishLives?.[invading?.id]};
+    });
+    return <div className="projectionPage invasionOnlyProjector invasionV96Page">
       <div className="projectionTop">
         <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
-        <div>
-          <span className="projectionKicker">LIVE EVENT DISPLAY</span>
-          <h1>Invasion Game</h1>
-        </div>
+        <div><span className="projectionKicker">LIVE EVENT DISPLAY</span><h1>Invasion Game</h1></div>
       </div>
-
-      <div className="invasionProjectorBoard">
+      <div className="invasionProjectorBoard invasionV96Board">
         <div className="invasionProjectorHeader">
           <span>PLAYER PROJECTION</span>
-          <h1>Invasion Game</h1>
-          <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Team points {(competitionProjection.invasionPlayerRound||0)+1} · Court rotation {(competitionProjection.invasionCourtRound||0)+1}</p>
+          <h1>Current Invaders</h1>
+          <p>Snake-seeded teams · Random court allocation · Round {(competitionProjection.invasionPlayerRound||0)+1}</p>
         </div>
 
-        <div className="finalProjectorSummary">
-          <div><b>Format</b><strong>{competitionProjection.invasionFormat==='lives'?'LIVES':'POINTS'}</strong></div>
-          <div><b>Courts</b><strong>{liveCourts}</strong></div>
-          <div><b>Status</b><strong>{isLive?'LIVE':'WAITING'}</strong></div>
+        <div className="invasionV96CurrentGrid">
+          {courtRows.map(row=><div className="invasionV96CurrentCard" key={`current-${row.court}`}>
+            <span>Court {row.court}</span>
+            <strong>{row.current}</strong>
+            <em>{row.invading?.name||'Waiting'} invading</em>
+          </div>)}
         </div>
 
-        {!isLive&&(
-          <div className="projectorWaitingBanner">START GAME on coach screen to begin live court display.</div>
-        )}
-
-        <div className="invasionProjectorRules">
-          <strong>Essential Rules</strong>
-          <div className="rulePillGrid">
-            <span>{competitionProjection.invasionFormat==='lives'?'Defenders serve':'Invader serves'}</span>
-            <span>{competitionProjection.invasionFormat==='lives'?'Base lives + carry-over':'Team points only'}</span>
-            <span>All courts active</span>
-            <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
-          </div>
-
+        <div className="invasionV96CourtAllocation">
+          <strong>Court Allocation</strong>
+          <div>{courtTeams.map((team,idx)=><span key={team.id}>Court {idx+1} → {team.name}</span>)}</div>
         </div>
 
-        {competitionProjection.invasionFormat==='lives'&&n>0&&(
-          <div className="finalProjectorCourts">
-            {teams.map((_,idx)=>{
-              const defending=projDefending(idx);
-              const invading=projInvading(idx);
-              const invader=projCurrentInvader(invading);
-              const startLives=projStartLives(invading);
-              const finish=competitionProjection.invasionFinishLives?.[invading?.id];
-              return <div className="finalProjectorCourtCard projectorLivesTeamCard" key={`project-screen-invasion-${idx}`}>
-                <h2>Court {idx+1}</h2>
-                <p><b>Invading team:</b> {invading?.name||'Waiting'} · <b>Current:</b> {invader}</p>
-                <div className="projectorTeamList compactProjectorTeamList">
-                  {(invading?.players&&invading.players.length?invading.players:[]).map(name=>projTeamPlayerLine(invading,name))}
-                </div>
-                <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                <div className="projectorTeamList compactProjectorTeamList defendingProjectorTeamList">
-                  {(defending?.players&&defending.players.length?defending.players:[]).map(name=><div key={name} className="projectorPlayerLine"><span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span></div>)}
-                </div>
-                <div className="finalLifeNumbers">
-                  <span>Lives</span><strong>{startLives}</strong>
-                  <span>Remaining</span><strong>{finish!==undefined?finish:'Live'}</strong>
-                </div>
-              </div>;
-            })}
-          </div>
-        )}
+        <div className="invasionV96TeamGrid">
+          {teams.map(team=><div className="invasionV96TeamCard" key={team.id}>
+            <h2>{team.name}</h2>
+            <p>{team.court||'Court pending'}</p>
+            <div>{orderedPlayers(team).map(name=>playerLine(name))}</div>
+          </div>)}
+        </div>
 
-        {competitionProjection.invasionFormat==='points'&&n>0&&(
-          <div className="finalProjectorCourts">
-            {teams.map(team=>(
-              <div className="finalProjectorCourtCard invasionPointsProjectorCard" key={team.id}>
-                <h2>{team.name}</h2>
-                <div className="projectorTeamList">
-                  {(team.players&&team.players.length?team.players:[]).map(name=>{
-                    const role=projPlayerRole(team,name);
-                    return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
-                      <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
-                    </div>;
-                  })}
-                  {(!team.players||!team.players.length)&&<div className="projectorPlayerLine"><span>Waiting</span></div>}
-                </div>
-                <div className="finalLifeNumbers">
-                  <span>Team points</span><strong>{projTeamPoints(team)}</strong>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="invasionV96CourtDetailGrid">
+          {courtRows.map(row=><div className="invasionV96CourtDetail" key={`detail-${row.court}`}>
+            <h2>Court {row.court}</h2>
+            <p><b>Invading:</b> {row.invading?.name||'Waiting'} · <b>Current:</b> {row.current}</p>
+            <p><b>Defending:</b> {row.defending?.name||'Waiting'}</p>
+            <div className="invasionV96Queue">
+              <strong>Invader Queue</strong>
+              {invaderQueue(row.invading).map(name=>playerLine(name,name===row.current))}
+            </div>
+            <div className="invasionV96Lives"><span>Lives</span><strong>{row.lives}</strong><span>Remaining</span><strong>{row.remaining!==undefined?row.remaining:'Live'}</strong></div>
+          </div>)}
+        </div>
       </div>
     </div>;
   }
@@ -2816,7 +2750,7 @@ function Competition({players=[]}){
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
   const [invasionEliminated,setInvasionEliminated]=useState('');
-  const [invasionCourtAssignmentMode,setInvasionCourtAssignmentMode]=useState('fixed');
+  const [invasionCourtAssignmentMode:'random',setInvasionCourtAssignmentMode]=useState('fixed');
   const [invasionCourtAssignments,setInvasionCourtAssignments]=useState([]);
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
@@ -3117,7 +3051,7 @@ function Competition({players=[]}){
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted:true,
-        invasionCourtAssignmentMode,
+        invasionCourtAssignmentMode:'random',
         showInvasionDashboard:true
       }));
     }catch{}
@@ -3175,11 +3109,19 @@ function Competition({players=[]}){
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
     const seeded=snakeSeedPlayers(source,count);
-    const nextTeams=seeded.map((teamPlayers,index)=>({
+    const seededTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:`Team ${index+1}`,
-      court:`Court ${index+1}`,
+      seed:index+1,
       players:teamPlayers
+    }));
+    const randomCourtOrder=shuffleInvasionArray(seededTeams.map(team=>team.id));
+    const courtMap={};
+    randomCourtOrder.forEach((teamId,index)=>{courtMap[teamId]=index+1;});
+    const nextTeams=seededTeams.map(team=>({
+      ...team,
+      court:`Court ${courtMap[team.id]||team.seed}`,
+      courtNumber:courtMap[team.id]||team.seed
     }));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
@@ -4460,7 +4402,7 @@ function Storage({players,setPlayers,session,setSession}){
   function buildBackup(){
     const data={
       app:'Checkerboard Coach',
-      version:'v95',
+      version:'v96',
       created:new Date().toISOString(),
       players,
       session
@@ -4477,12 +4419,12 @@ function Storage({players,setPlayers,session,setSession}){
   }
 
   function downloadBackup(){
-    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v95',created:new Date().toISOString(),players,session},null,2);
+    const data=backupText || JSON.stringify({app:'Checkerboard Coach',version:'v96',created:new Date().toISOString(),players,session},null,2);
     const blob=new Blob([data],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='checkerboard-backup-v95.json';
+    a.download='checkerboard-backup-v96.json';
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -6107,7 +6049,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h95 Emergency Stable DB 3 Option</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h96 Invasion Display Cleanup</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}

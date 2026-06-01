@@ -3326,27 +3326,25 @@ button.mentalSkillsTile p{
 
 
 /* v99h96 Invasion Display Cleanup */
-.invasionCleanBoard{display:flex;flex-direction:column;gap:22px}
-.activeInvaderPanel,.courtAssignmentPanel,.teamListPanel,.courtDetailPanel{background:#071827;border:1px solid #35567e;border-radius:22px;padding:20px}
-.activeInvaderPanel h2,.courtAssignmentPanel h2,.teamListPanel h2,.courtDetailPanel h2{color:#ffd980;font-size:34px;margin:0 0 16px}
-.activeInvaderGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.activeInvaderCard{background:#020617;border:3px solid #ffd980;border-radius:22px;padding:22px;text-align:center}
-.activeInvaderCard span{display:block;color:#cbd5e1;font-weight:900;font-size:20px}
-.activeInvaderCard strong{display:block;color:white;font-size:48px;line-height:1.05;margin:12px 0}
-.activeInvaderCard p{color:#dbeafe;font-size:18px;font-weight:900;margin:8px 0}
-.activeInvaderCard em{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 14px;font-style:normal;font-weight:1000}
-.courtAssignmentGrid,.teamListGrid,.courtDetailGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.courtAssignmentGrid div,.cleanTeamCard,.cleanCourtCard{background:#0b1828;border:1px solid #5e83be;border-radius:16px;padding:16px}
-.courtAssignmentGrid strong{display:block;color:#ffd980;font-size:24px}
-.courtAssignmentGrid span{display:block;color:white;font-size:26px;font-weight:1000;margin-top:6px}
-.cleanTeamCard h3,.cleanCourtCard h3{color:#ffd980;font-size:26px;margin:0 0 12px}
-.cleanTeamCard h3 small{color:#9bc1ff;font-size:16px;margin-left:8px}
-.cleanTeamCard p,.cleanCourtCard p{color:white;font-size:18px;font-weight:850;margin:8px 0}
-.cleanTeamCard b{color:#ffd980;margin-right:8px}
-.cleanTeamCard em,.cleanCourtCard em{color:#0f172a;background:#ffd980;border-radius:999px;padding:4px 8px;font-style:normal;font-weight:1000;margin-left:6px}
-.queueList{display:flex;flex-direction:column;gap:8px;margin:12px 0}
-.queueList span{background:#10233b;border:1px solid #35567e;color:white;border-radius:12px;padding:9px 11px;font-weight:900}
-.queueList .queueCurrent{border-color:#ffd980;background:#1f5dd0;color:white}
-.courtLivesCompact{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;background:#10233b;border:1px solid #5e83be;border-radius:14px;padding:12px;margin-top:12px}
-.courtLivesCompact span{color:#cbd5e1;font-weight:900}.courtLivesCompact strong{color:#ffd980;font-size:28px}
-@media(max-width:800px){.activeInvaderCard strong{font-size:36px}.courtLivesCompact{grid-template-columns:1fr auto}}
+.invasionV96Board{border:3px solid #ffd980;background:#050914}
+.invasionV96CurrentGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin:20px 0}
+.invasionV96CurrentCard{background:#071827;border:3px solid #ffd980;border-radius:22px;padding:22px;text-align:center}
+.invasionV96CurrentCard span{display:block;color:#cbd5e1;font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:1px}
+.invasionV96CurrentCard strong{display:block;color:#ffd980;font-size:48px;line-height:1.05;margin:12px 0}
+.invasionV96CurrentCard em{display:block;color:white;font-style:normal;font-size:20px;font-weight:900}
+.invasionV96CourtAllocation{background:#071827;border:1px solid #5e83be;border-radius:18px;padding:18px;margin:18px 0}
+.invasionV96CourtAllocation>strong{display:block;color:#ffd980;font-size:24px;margin-bottom:12px}
+.invasionV96CourtAllocation div{display:flex;gap:12px;flex-wrap:wrap}
+.invasionV96CourtAllocation span{background:#10233b;border:1px solid #5e83be;border-radius:999px;padding:10px 14px;color:white;font-weight:900}
+.invasionV96TeamGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.invasionV96TeamCard{background:#0b1828;border:1px solid #35567e;border-radius:18px;padding:16px}
+.invasionV96TeamCard h2{color:#ffd980;margin:0 0 4px;font-size:28px}
+.invasionV96TeamCard p{color:#cbd5e1;font-weight:900;margin:0 0 12px}
+.invasionV96Player{display:flex;justify-content:space-between;gap:8px;align-items:center;background:#10233b;border:1px solid #35567e;border-radius:12px;padding:9px 12px;margin:7px 0;color:white;font-weight:900}
+.invasionV96Player b{color:#ffd980}.invasionV96Player em{font-style:normal;color:#cbd5e1;font-size:14px}.invasionV96Player.active{border:2px solid #ffd980;background:#2a2a19;color:#ffd980}
+.invasionV96CourtDetailGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:18px 0}
+.invasionV96CourtDetail{background:#0b1828;border:2px solid #5e83be;border-radius:20px;padding:18px}
+.invasionV96CourtDetail h2{color:#ffd980;font-size:32px;margin:0 0 10px}.invasionV96CourtDetail p{color:white;font-size:18px;margin:8px 0}.invasionV96CourtDetail b{color:#ffd980}
+.invasionV96Queue{background:#071827;border:1px solid #35567e;border-radius:14px;padding:12px;margin:12px 0}.invasionV96Queue>strong{color:#ffd980;display:block;margin-bottom:8px}
+.invasionV96Lives{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;background:#10233b;border:1px solid #5e83be;border-radius:14px;padding:12px;margin-top:12px}.invasionV96Lives span{color:#cbd5e1;font-weight:900}.invasionV96Lives strong{color:#ffd980;font-size:34px}
+@media(max-width:800px){.invasionV96CurrentCard strong{font-size:38px}.invasionV96Lives{grid-template-columns:1fr auto}}
