@@ -6,7 +6,7 @@ import'./styles.css';
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
-const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v95';
+const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v96';
 const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
@@ -353,6 +353,8 @@ function ProjectionView({session,setScreen}){
         </div>
       </div>
     </div>;
+  }
+
   const hasSession=session&&session.length>0;
   const current=hasSession?session[Math.min(selectedIndex,session.length-1)]:null;
   const title=current?.title||'PLAYER VIEW';
