@@ -1011,6 +1011,42 @@ function MentalSkillsPlaceholder({setScreen}){
   </div>;
 }
 
+
+function ShotsModule({setScreen}){
+  const shotFamilies=[
+    {name:'Lobs',what:'A high recovering or pressuring ball that changes time and height.',when:'When under pressure, when opponent crowds the T, or when height can move the opponent away from the middle.',where:'Front-wall height above the service line, dying into back-court space where possible.',how:'Use constraints that reward height, depth, delay and recovery rather than asking for a perfect swing shape.'},
+    {name:'Penetrating Drives',what:'A flatter driving ball that travels through the court quickly.',when:'When space is available behind the opponent or when the player can take time away.',where:'Length target lanes, back-court floor zones and side-wall depth windows.',how:'Shape the task around ball speed, line, depth and opponent displacement.'},
+    {name:'Working Length',what:'A rally-building length that contains, probes and holds court position.',when:'When the player needs stability, pressure without over-risk, or a platform before attacking.',where:'Consistent back-court landing zones with enough height to recover and organise.',how:'Use quality-length-before-attack constraints and reward repeatable tactical effect.'},
+    {name:'Volleys',what:'Early interception to reduce opponent time and protect the T.',when:'When the ball presents above reachable height, when opponent is recovering, or when central control is available.',where:'Volley to depth, straight containment, cross-court change, or short finish depending on information.',how:'Use intercept gates, T-zone rules and external cues such as “take time away”.'},
+    {name:'Drops',what:'A short attacking or pressure-changing ball that must die quickly.',when:'When opponent is deep, late, off balance, or expecting length.',where:'Front-court floor zones with clear height and dying-ball targets.',how:'Use dying-ball, second-bounce and opponent-start-position constraints rather than fixed hand-position coaching.'}
+  ];
+  const principles=[
+    ['Use of constraints','Change task, space, scoring, bounce rules, targets or opponent behaviour to invite the desired shot solution.'],
+    ['Reduce verbal correction','Coach with short task instructions and observable outcomes; avoid repeated technical fixing.'],
+    ['External focus first','Direct attention to ball flight, target, opponent movement, time, space and tactical effect.'],
+    ['Body parts only if necessary','Use body-part cues only as a temporary bridge; finish with an external-focus cue.'],
+    ['Variability not fixed repetition','Vary feed, position, pace, target and opponent pressure so the shot adapts to context.'],
+    ['Use analogies','Use simple images such as “send the ball upstairs”, “make it die”, “take time away”.'],
+    ['Use video','Show tactical effect, opponent movement and ball outcome rather than only racket mechanics.'],
+    ['Self-discovery','Let the player search for workable solutions before the coach gives an answer.']
+  ];
+  const builderCards=[
+    {title:'Shot Page Structure',text:'Each shot should be built around WSF What · When · Where · How, with CLA principles underneath.'},
+    {title:'Coaching Position',text:'The module should challenge technique-perfection coaching and frame technique as functional adaptation.'},
+    {title:'App Integration',text:'Shots starts as a Home tile and can later connect to Games Library, Session Builder and Diagnostic interventions.'}
+  ];
+  return <div className="page shotsPage">
+    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">CLA shot development · What · When · Where · How</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="libraryStageIntro shotsIntro"><h2>Developing shot types without chasing technical perfection</h2><p>Shots are developed as adaptable solutions to game problems. The coach designs constraints that help players discover how ball shape, height, pace, line, timing and opponent information create tactical effect.</p></div>
+    <h2>CLA Principles For Coaching Technique</h2>
+    <div className="shotsPrincipleGrid">{principles.map(([title,text])=><div className="gameCard shotsPrincipleCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
+    <h2>WSF What · When · Where · How Shot Families</h2>
+    <div className="shotsFamilyGrid">{shotFamilies.map(shot=><div className="gameCard shotFamilyCard" key={shot.name}><div className="categoryTag">Shot Type</div><h2>{shot.name}</h2><div className="shotQuad"><div><strong>What</strong><p>{shot.what}</p></div><div><strong>When</strong><p>{shot.when}</p></div><div><strong>Where</strong><p>{shot.where}</p></div><div><strong>How</strong><p>{shot.how}</p></div></div></div>)}</div>
+    <h2>Builder Notes</h2>
+    <div className="shotsBuilderGrid">{builderCards.map(card=><div className="statusBox" key={card.title}><strong>{card.title}</strong><p>{card.text}</p></div>)}</div>
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
@@ -1018,7 +1054,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
 
-      <button className="homeCard rotationalHomeCard homeTitleOnly" onClick={()=>setScreen('rotational')}><h2>Rotations</h2></button>
+      <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
@@ -2558,6 +2594,7 @@ function Games({setSession,setScreen}){
     {id:'pressure',label:'Pressure',category:'Pressure'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
+    {id:'rotations',label:'Rotations',category:'Rotations'},
     {id:'custom',label:'Custom',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -2650,10 +2687,11 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>} 
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
+    {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
     
 
-    {activeClassId&& !['checkerboard','atl','classic','technical','custom','doubleBounce','saved'].includes(activeClassId)&&
+    {activeClassId&& !['checkerboard','atl','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -6131,7 +6169,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h97 Captain Teams Invasion</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h98 Shots Module</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -6144,6 +6182,7 @@ return <div>
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={setScreen}/>}
+      {screen==='shots'&&<ShotsModule setScreen={setScreen}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>

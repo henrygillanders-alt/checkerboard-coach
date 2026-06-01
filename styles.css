@@ -3362,3 +3362,45 @@ button.mentalSkillsTile p{
 .teamCurrentQueue p{background:#081320;border:1px solid #35567e;border-radius:10px;padding:8px 10px;margin:0}
 .teamCurrentQueue p:first-of-type{border:2px solid #ffd980}
 .cleanTeamCard em,.cleanCourtCard em{display:inline-block}
+
+/* v99h98 Shots module + Home cleanup */
+.shotsHomeCard{
+  background:linear-gradient(135deg,#f8fafc,#dbeafe);
+  border:1px solid rgba(30,64,175,.18);
+}
+.shotsPage .shotsIntro{
+  margin-bottom:18px;
+}
+.shotsPrincipleGrid,
+.shotsFamilyGrid,
+.shotsBuilderGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+  margin:12px 0 22px;
+}
+.shotsPrincipleCard h3,
+.shotFamilyCard h2{
+  margin-top:0;
+}
+.shotQuad{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.shotQuad div{
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(15,23,42,.08);
+  border-radius:14px;
+  padding:10px;
+}
+.shotQuad strong{
+  display:block;
+  color:#1e3a8a;
+  margin-bottom:4px;
+}
+.shotQuad p,
+.shotsBuilderGrid p{
+  margin:0;
+}
