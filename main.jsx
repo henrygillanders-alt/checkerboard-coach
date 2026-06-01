@@ -199,94 +199,160 @@ function ProjectionView({session,setScreen}){
   if(competitionProjection?.mode==='invasion'&&competitionProjection?.invasionGameStarted){
     const teams=competitionProjection.invasionTeams||[];
     const n=teams.length;
+    const liveCourts=n;
     const isLive=!!competitionProjection.invasionGameStarted;
-    const courtTeams=[...teams].sort((a,b)=>(Number(a.courtNumber)||Number(String(a.court||'').match(/\d+/)?.[0])||999)-(Number(b.courtNumber)||Number(String(b.court||'').match(/\d+/)?.[0])||999));
-    function projRank(name){return competitionProjection.invasionRankMap?.[name]??9999;}
-    function projDb(name){return competitionProjection.playerBounces?.[name]||'No DB';}
     function projBaseLives(team){
       if(!team) return Number(competitionProjection?.invasionStartingLives||5);
       const exact=Number(competitionProjection.invasionFairLivesByTeam?.[team.id] ?? competitionProjection.invasionFairLivesByTeam?.[team.name]);
       if(exact>0) return exact;
+      const allTeams=competitionProjection.invasionTeams||[];
+      const counts=allTeams.map(t=>(t.players||[]).length).filter(n=>n>0);
       const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives)||5;
-      const maxPlayers=Math.max(1,...(teams||[]).map(t=>(t.players||[]).length||1));
+      const maxPlayers=counts.length?Math.max(...counts):1;
       const baseCapacity=maxPlayers*selected;
       const playerCount=(team?.players||[]).length||1;
-      return Math.max(1,Math.ceil(baseCapacity/playerCount));
+      if(baseCapacity>0) return Math.max(1,Math.ceil(baseCapacity/playerCount));
+      return selected;
     }
-    function projCarry(team){return competitionProjection.invasionCarryLives?.[team?.id]||0;}
-    function projStartLives(team){return projBaseLives(team)+projCarry(team);}
-    function orderedPlayers(team){return [...(team?.players||[])].sort((a,b)=>projRank(a)-projRank(b));}
-    function invaderQueue(team){return [...(team?.players||[])].sort((a,b)=>projRank(b)-projRank(a));}
-    function currentInvader(team){
-      const list=invaderQueue(team);
+    function projCarry(team){
+      return competitionProjection.invasionCarryLives?.[team?.id]||0;
+    }
+    function projStartLives(team){
+      return projBaseLives(team)+projCarry(team);
+    }
+    function projOrderedPlayers(team){
+      return [...(team?.players||[])].sort((a,b)=>(competitionProjection.invasionRankMap?.[b]??9999)-(competitionProjection.invasionRankMap?.[a]??9999));
+    }
+    function projCurrentInvader(team){
+      const list=projOrderedPlayers(team);
       if(!list.length) return 'Waiting';
       const override=competitionProjection.invasionInvaderOverrides?.[team?.id]||competitionProjection.invasionInvaderOverrides?.[team?.name];
       if(override) return override;
       return list[(competitionProjection.invasionPlayerRound||0)%list.length];
     }
-    function nextInvader(team){
-      const list=invaderQueue(team);
+    function projNextInvader(team){
+      const list=projOrderedPlayers(team);
       if(!list.length) return 'Waiting';
-      const current=currentInvader(team);
+      const current=projCurrentInvader(team);
       const idx=list.findIndex(name=>name===current);
-      return list[((idx>=0?idx:0)+1)%list.length];
+      const baseIndex=idx>=0?idx:(competitionProjection.invasionPlayerRound||0)%list.length;
+      return list[(baseIndex+1)%list.length];
     }
-    function defendingTeamForCourt(idx){return courtTeams[idx]||null;}
-    function invadingTeamForCourt(idx){if(!courtTeams.length)return null;return courtTeams[(idx-1+courtTeams.length)%courtTeams.length];}
-    function playerLine(name,active=false){return <span key={name} className={active?'invasionV96Player active':'invasionV96Player'}><b>#{projRank(name)===9999?'—':projRank(name)}</b> {name} <em>{projDb(name)}</em></span>;}
-    const courtRows=courtTeams.map((defending,idx)=>{
-      const invading=invadingTeamForCourt(idx);
-      return {court:idx+1,defending,invading,current:currentInvader(invading),next:nextInvader(invading),lives:projStartLives(invading),remaining:competitionProjection.invasionFinishLives?.[invading?.id]};
+    function projTeamPoints(team){
+      const manual=Number(competitionProjection.invasionTeamPoints?.[team?.id]||0);
+      const playerTotal=(team?.players||[]).reduce((total,name)=>total+Number(competitionProjection.invasionPlayerPoints?.[name]||0),0);
+      return manual+playerTotal;
+    }
+    function projPlayerRole(team,name){
+      const current=projCurrentInvader(team);
+      const next=projNextInvader(team);
+      if(name===current) return 'invading';
+      if(name===next) return 'next invader';
+      return '';
+    }
+    function projTeamPlayerLine(team,name){
+      const role=projPlayerRole(team,name);
+      return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+        <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
+      </div>;
+    }
+    function projDefending(idx){
+      if(!n) return null;
+      return teams[idx%n];
+    }
+    function projInvading(idx){
+      if(!n) return null;
+      return teams[(idx - 1 + (competitionProjection.invasionCourtRound||0) + n) % n];
+    }
+    const courts=Array.from({length:Math.max(teams.length,Number(competitionProjection.invasionCourts||0)||teams.length)},(_,idx)=>idx+1);
+    function rankOf(name){return competitionProjection.invasionRankMap?.[name]??'';}
+    function dbOf(name){return competitionProjection.playerBounces?.[name]||'No DB';}
+    function playersByRank(team){
+      return [...(team?.players||[])].sort((a,b)=>(rankOf(a)||9999)-(rankOf(b)||9999));
+    }
+    function teamForCourt(court){return teams.find(team=>String(team.court||'').includes(String(court)))||teams[court-1]||null;}
+    function nextCourtTeam(court){
+      if(!teams.length) return null;
+      const defender=teamForCourt(court);
+      const orderedCourts=courts.map(c=>teamForCourt(c)).filter(Boolean);
+      const idx=orderedCourts.findIndex(team=>team?.id===defender?.id);
+      return orderedCourts[(idx-1+orderedCourts.length)%orderedCourts.length]||null;
+    }
+    const courtRows=courts.map(court=>{
+      const defending=teamForCourt(court);
+      const invading=nextCourtTeam(court);
+      return {court,defending,invading,current:projCurrentInvader(invading),next:projNextInvader(invading)};
     });
-    return <div className="projectionPage invasionOnlyProjector invasionV96Page">
+
+    return <div className="projectionPage invasionOnlyProjector">
       <div className="projectionTop">
         <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
-        <div><span className="projectionKicker">LIVE EVENT DISPLAY</span><h1>Invasion Game</h1></div>
+        <div>
+          <span className="projectionKicker">LIVE EVENT DISPLAY</span>
+          <h1>Invasion Game</h1>
+        </div>
       </div>
-      <div className="invasionProjectorBoard invasionV96Board">
+
+      <div className="invasionProjectorBoard invasionCleanBoard">
         <div className="invasionProjectorHeader">
           <span>PLAYER PROJECTION</span>
-          <h1>Current Invaders</h1>
-          <p>Snake-seeded teams · Random court allocation · Round {(competitionProjection.invasionPlayerRound||0)+1}</p>
+          <h1>Invasion Game</h1>
+          <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Snake seeded teams · Random court allocation</p>
         </div>
 
-        <div className="invasionV96CurrentGrid">
-          {courtRows.map(row=><div className="invasionV96CurrentCard" key={`current-${row.court}`}>
-            <span>Court {row.court}</span>
-            <strong>{row.current}</strong>
-            <em>{row.invading?.name||'Waiting'} invading</em>
-          </div>)}
+        <div className="activeInvaderPanel">
+          <h2>Current Invaders</h2>
+          <div className="activeInvaderGrid">
+            {courtRows.map(row=><div className="activeInvaderCard" key={`active-${row.court}`}>
+              <span>Court {row.court}</span>
+              <strong>{row.current||'Waiting'}</strong>
+              <p>{row.invading?.name||'No invading team'} → attacking {row.defending?.name||'No defending team'}</p>
+              <em>{dbOf(row.current)}</em>
+            </div>)}
+          </div>
         </div>
 
-        <div className="invasionV96CourtAllocation">
-          <strong>Court Allocation</strong>
-          <div>{courtTeams.map((team,idx)=><span key={team.id}>Court {idx+1} → {team.name}</span>)}</div>
+        <div className="courtAssignmentPanel">
+          <h2>Court Allocation</h2>
+          <div className="courtAssignmentGrid">
+            {courtRows.map(row=><div key={`court-assign-${row.court}`}>
+              <strong>Court {row.court}</strong>
+              <span>{row.defending?.name||'Waiting'}</span>
+            </div>)}
+          </div>
         </div>
 
-        <div className="invasionV96TeamGrid">
-          {teams.map(team=><div className="invasionV96TeamCard" key={team.id}>
-            <h2>{team.name}</h2>
-            <p>{team.court||'Court pending'}</p>
-            <div>{orderedPlayers(team).map(name=>playerLine(name))}</div>
-          </div>)}
+        <div className="teamListPanel">
+          <h2>Teams · Snake Seeded By Ranking</h2>
+          <div className="teamListGrid">
+            {[...teams].sort((a,b)=>(a.seedOrder||Number(a.id?.replace(/\D/g,''))||0)-(b.seedOrder||Number(b.id?.replace(/\D/g,''))||0)).map(team=><div className="cleanTeamCard" key={team.id}>
+              <h3>{team.name} <small>{team.court||''}</small></h3>
+              {playersByRank(team).map(name=><p key={name}><b>#{rankOf(name)||'?'}</b> {name} <em>{dbOf(name)}</em></p>)}
+            </div>)}
+          </div>
         </div>
 
-        <div className="invasionV96CourtDetailGrid">
-          {courtRows.map(row=><div className="invasionV96CourtDetail" key={`detail-${row.court}`}>
-            <h2>Court {row.court}</h2>
-            <p><b>Invading:</b> {row.invading?.name||'Waiting'} · <b>Current:</b> {row.current}</p>
-            <p><b>Defending:</b> {row.defending?.name||'Waiting'}</p>
-            <div className="invasionV96Queue">
-              <strong>Invader Queue</strong>
-              {invaderQueue(row.invading).map(name=>playerLine(name,name===row.current))}
-            </div>
-            <div className="invasionV96Lives"><span>Lives</span><strong>{row.lives}</strong><span>Remaining</span><strong>{row.remaining!==undefined?row.remaining:'Live'}</strong></div>
-          </div>)}
+        <div className="courtDetailPanel">
+          <h2>Court Details</h2>
+          <div className="courtDetailGrid">
+            {courtRows.map(row=>{
+              const startLives=projStartLives(row.invading);
+              const finish=competitionProjection.invasionFinishLives?.[row.invading?.id];
+              return <div className="cleanCourtCard" key={`court-detail-${row.court}`}>
+                <h3>Court {row.court}</h3>
+                <p><b>Defending:</b> {row.defending?.name||'Waiting'}</p>
+                <p><b>Invading:</b> {row.invading?.name||'Waiting'}</p>
+                <p><b>Current:</b> {row.current||'Waiting'} <em>{dbOf(row.current)}</em></p>
+                <div className="queueList">
+                  {(playersByRank(row.invading)||[]).map(name=><span key={name} className={name===row.current?'queueCurrent':''}>{name}{name===row.current?' ← current':''}</span>)}
+                </div>
+                <div className="courtLivesCompact"><span>Lives</span><strong>{competitionProjection.invasionFormat==='lives'?startLives:'Points'}</strong><span>Remaining</span><strong>{competitionProjection.invasionFormat==='lives'?(finish!==undefined?finish:'Live'):projTeamPoints(row.invading)}</strong></div>
+              </div>;
+            })}
+          </div>
         </div>
       </div>
     </div>;
-  }
-
   const hasSession=session&&session.length>0;
   const current=hasSession?session[Math.min(selectedIndex,session.length-1)]:null;
   const title=current?.title||'PLAYER VIEW';
@@ -2750,7 +2816,7 @@ function Competition({players=[]}){
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
   const [invasionEliminated,setInvasionEliminated]=useState('');
-  const [invasionCourtAssignmentMode:'random',setInvasionCourtAssignmentMode]=useState('fixed');
+  const [invasionCourtAssignmentMode,setInvasionCourtAssignmentMode]=useState('fixed');
   const [invasionCourtAssignments,setInvasionCourtAssignments]=useState([]);
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
@@ -3051,7 +3117,7 @@ function Competition({players=[]}){
         invasionPlayerRound,
         invasionCourtRound,
         invasionGameStarted:true,
-        invasionCourtAssignmentMode:'random',
+        invasionCourtAssignmentMode,
         showInvasionDashboard:true
       }));
     }catch{}
@@ -3109,20 +3175,17 @@ function Competition({players=[]}){
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
     const seeded=snakeSeedPlayers(source,count);
-    const seededTeams=seeded.map((teamPlayers,index)=>({
+    const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:`Team ${index+1}`,
-      seed:index+1,
+      seedOrder:index+1,
       players:teamPlayers
     }));
-    const randomCourtOrder=shuffleInvasionArray(seededTeams.map(team=>team.id));
-    const courtMap={};
-    randomCourtOrder.forEach((teamId,index)=>{courtMap[teamId]=index+1;});
-    const nextTeams=seededTeams.map(team=>({
+    const courtOrder=shuffleInvasionArray(baseTeams.map(team=>team.id));
+    const nextTeams=baseTeams.map(team=>({
       ...team,
-      court:`Court ${courtMap[team.id]||team.seed}`,
-      courtNumber:courtMap[team.id]||team.seed
-    }));
+      court:`Court ${courtOrder.indexOf(team.id)+1}`
+    })).sort((a,b)=>Number(String(a.court).replace(/\D/g,''))-Number(String(b.court).replace(/\D/g,'')));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
     const fair=getInvasionFairRows(nextTeams);
