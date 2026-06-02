@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h02';
+const APP_VERSION='v100h03';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -1059,12 +1059,71 @@ function ShotsModule({setScreen}){
   </div>;
 }
 
+
+function PlugAndPlay({setScreen,setSession}){
+  const [active,setActive]=useState('Pressure');
+  const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce'];
+  const games=[
+    {title:'Invasion Lives',tags:['Pressure','Movement'],type:'Competition Game',players:'8–20',level:'Intermediate → Professional',why:'Creates immediate pressure because every rally affects team lives. Players must cope with consequence, rotation, fatigue and changing opponents.',coach:'Win the rally problem in front of you; protect the team life bank.',load:'Invasion Lives'},
+    {title:'Winner Loses a Bounce',tags:['Pressure','Movement','Double Bounce'],type:'Conditioned Matchplay',players:'2–8',level:'Junior Beginner → Professional',why:'Balances mixed ability groups and creates pressure as successful players lose support. It keeps rallies alive while gradually increasing challenge.',coach:'Use the extra bounce to organise early, then play the first bounce when you can.',load:'Winner Loses A Bounce'},
+    {title:'Quality Length Before Attack',tags:['Pressure','Length','Decision Making'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Prevents low-quality early attacking by requiring players to build pressure through length before they can score with a short attack.',coach:'Earn the attack before you take the attack.',load:'Quality Length Before Attack'},
+    {title:'4-Shot Conversion',tags:['Pressure','Decision Making','T-Zone'],type:'Checkerboard Overlay',players:'2–4',level:'Performance → Professional',why:'Adds consequence after a completed challenge. Players must convert the created advantage within a short window rather than banking success forever.',coach:'Recognise the advantage and convert it quickly.',load:'4-Shot Conversion'},
+    {title:'2-Shot Conversion',tags:['Pressure','Decision Making','T-Zone'],type:'Checkerboard Overlay',players:'2–4',level:'Professional',why:'A high-pressure version of conversion play. It tests decision speed, composure and the ability to finish from genuine advantage.',coach:'Make the next two shots count.',load:'2-Shot Conversion'},
+    {title:'Working Length ATL',tags:['Length','Decision Making'],type:'ATL / BTL',players:'2–4',level:'Junior Beginner → Professional',why:'Uses above-the-line and below-the-line cues to shape height, time and tactical intention without reverting to fixed technical repetition.',coach:'Build pressure with length until the court opens.',load:'Working Length ATL'},
+    {title:'Long & Short',tags:['Length','Movement','Pressure'],type:'Classic Conditioned Game',players:'2–4',level:'Junior Beginner → Performance',why:'Alternates deep and short problems, forcing players to manage recovery, depth and tactical change rather than grooving one shot.',coach:'Move early and change the opponent’s working distance.',load:'Long & Short'},
+    {title:'Deep Attractor',tags:['Length','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Rewards repeated pressure into back-court areas and helps replace loose mid-court habits with purposeful depth.',coach:'Make the back of the court the problem for your opponent.',load:'Deep Attractor'},
+    {title:'Front Court Dominator',tags:['Volleys','T-Zone','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Invites early interception and front-court control. Players learn to take time away while remaining connected to the opponent’s movement.',coach:'Take time away and keep the middle under pressure.',load:'Front Court Dominator'},
+    {title:'Return To Sender Not',tags:['Volleys','Decision Making','Width'],type:'Classic Conditioned Game',players:'2–4',level:'Junior Beginner → Professional',why:'Stops automatic repeat shots back to the same place and encourages players to perceive alternative spaces and opponent recovery.',coach:'Do not return the same problem; create a new one.',load:'Return To Sender Not'},
+    {title:'Volley Finish',tags:['Volleys','Pressure','T-Zone'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Rewards early interception and makes players search for volleying opportunities as part of normal rally play.',coach:'Look early, step early, take time away.',load:'Volley Finish'},
+    {title:'Central Intercept Challenge',tags:['Volleys','T-Zone','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Connects T-zone control with interception. Players learn that central position matters because it creates earlier hitting opportunities.',coach:'Own the middle by intercepting, not by standing still.',load:'Central Intercept Challenge'},
+    {title:'Double Bounce Protocol',tags:['Double Bounce','Movement','Anticipation','Deception','Pressure','Conditioning','Short Game'],type:'Universal Overlay',players:'2–8',level:'Junior Beginner → Professional',why:'Encourages slow or doubtful movers to adopt a move-first mindset, allows more time to observe opponent information, supports hold and deception, extends rallies and can add physical pressure.',coach:'Move early, observe more, and attack only when the opportunity is genuine.',load:'Double Bounce Protocol'},
+    {title:'3 DB Protocol',tags:['Double Bounce','Movement','Pressure'],type:'DB Handicap',players:'2–8',level:'Mixed Standard',why:'A useful middle setting: enough support to keep hesitant players engaged, but limited enough to stop passive waiting.',coach:'Use the three double bounces to organise better decisions, not to delay movement.',load:'3 DB Protocol'},
+    {title:'1 DB Matchplay',tags:['Double Bounce','Pressure','Decision Making'],type:'DB Handicap',players:'2–4',level:'Intermediate → Professional',why:'Gives each player one rescue opportunity while preserving match pressure and encouraging strategic use of the support.',coach:'Save your DB for the rally problem that matters.',load:'1 DB Matchplay'},
+    {title:'DB Hold & Deception',tags:['Double Bounce','Deception','Anticipation','Short Game'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Uses extra time to let players explore hold, disguise and opponent movement without turning the game into isolated technical drilling.',coach:'Hold long enough to move the opponent, then send the ball into the space.',load:'DB Hold & Deception'},
+    {title:'T-Zone Game 1',tags:['T-Zone','Pressure','Movement'],type:'Conditioned Game',players:'2–4',level:'Junior Beginner → Performance',why:'Rewards moving the opponent away from the middle and helps players understand that winning space often comes before winning the rally.',coach:'Move the opponent before trying to win the point.',load:'T-Zone Game 1'},
+    {title:'T-Zone Game 2',tags:['T-Zone','Decision Making','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Adds stronger scoring consequence for creating central displacement and asks players to recognise when the opponent is off balance or off the T.',coach:'Notice when the T opens and make the next shot count.',load:'T-Zone Game 2'},
+    {title:'Off-T Finish',tags:['T-Zone','Pressure','Decision Making'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Only rewards finishes when the opponent has actually been displaced, reducing random attacking and improving tactical judgement.',coach:'Finish because the opponent is out of position, not because you pre-decided to attack.',load:'Off-T Finish'},
+    {title:'Central Control',tags:['T-Zone','Volleys','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Links central occupation, early recognition and active interception. Players learn to control the middle through action, not static positioning.',coach:'Control the middle by making the next ball easier to intercept.',load:'Central Control'}
+  ];
+  const filtered=games.filter(g=>g.tags.includes(active));
+  function loadGame(game){
+    const card={
+      title:game.title,
+      category:'Plug & Play',
+      task:`${game.type} · ${game.players} · ${game.level}`,
+      rationale:game.why,
+      coach:game.coach,
+      playerFocus:game.coach,
+      scoring:'Use the game or overlay scoring shown in the source game. Adjust points to suit the group.',
+      antiGaming:'Keep the constraint tied to the learning purpose. Remove or reduce it if players start exploiting it.',
+      suggestedOverlays:game.tags.filter(t=>['Pressure','Length','Volleys','T-Zone','Double Bounce'].includes(t))
+    };
+    if(typeof setSession==='function') setSession(prev=>[...(prev||[]),card]);
+  }
+  return <div className="page plugPlayPage">
+    <div className="pageTop"><div><h1>Plug & Play</h1><p className="mutedText">Select an outcome. Run a proven game.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="libraryStageIntro plugPlayIntro"><h2>Coach View: What do you want to improve today?</h2><p>Plug & Play organises games by coaching outcome rather than by game type. A game can appear in several categories because the same constraint can solve several coaching problems.</p></div>
+    <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''} onClick={()=>setActive(o)}>{o}</button>)}</div>
+    <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
+    <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.title}>
+      <div className="plugPlayCardTop"><span className="categoryTag">{game.type}</span><span className="plugLevel">{game.level}</span></div>
+      <h2>{game.title}</h2>
+      <div className="plugTags">{game.tags.map(t=><span key={t}>{t}</span>)}</div>
+      <p><strong>Why use it?</strong><br/>{game.why}</p>
+      <p><strong>Players:</strong> {game.players}</p>
+      <p><strong>Coach cue:</strong> {game.coach}</p>
+      <button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button>
+    </div>)}</div>
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+      <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
@@ -6220,7 +6279,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h02 Setup Naming + DB Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h03 Plug & Play + Undo</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -6233,6 +6292,7 @@ return <div>
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={setScreen}/>}
+      {screen==='plugPlay'&&<PlugAndPlay setScreen={setScreen} setSession={setSession}/>}
       {screen==='shots'&&<ShotsModule setScreen={setScreen}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}

@@ -3363,7 +3363,7 @@ button.mentalSkillsTile p{
 .teamCurrentQueue p:first-of-type{border:2px solid #ffd980}
 .cleanTeamCard em,.cleanCourtCard em{display:inline-block}
 
-/* v100h02 Shots tile contrast + Home cleanup */
+/* v100h03 Shots tile + Plug & Play */
 .shotsHomeCard{
   background:linear-gradient(135deg,#064e3b,#0f766e 45%,#0f172a);
   border:1px solid rgba(45,212,191,.55);
@@ -3411,3 +3411,22 @@ button.mentalSkillsTile p{
 }
 
 .undoBtn{border-color:#ffd980;color:#ffd980;}
+
+
+/* v100h03 Plug & Play */
+.plugPlayHomeCard{
+  background:linear-gradient(135deg,#166534,#16a34a 48%,#064e3b);
+  border:1px solid rgba(134,239,172,.62);
+  box-shadow:0 18px 45px rgba(22,163,74,.24), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.plugPlayHomeCard h2{color:#fff;text-shadow:0 3px 12px rgba(0,0,0,.55)}
+.plugPlayIntro{margin-bottom:16px}
+.plugPlayTabs{margin:14px 0 18px}
+.plugPlayOutcomeBar{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px solid rgba(134,239,172,.35);border-radius:18px;background:rgba(10,28,22,.76);padding:14px 16px;margin-bottom:16px}
+.plugPlayOutcomeBar strong{color:#86efac;font-size:22px}.plugPlayOutcomeBar span{color:#cbd5e1;font-weight:800}
+.plugPlayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.plugPlayCard{display:flex;flex-direction:column;gap:10px}
+.plugPlayCard h2{margin:0;color:#f7d979}.plugPlayCard p{margin:0;line-height:1.45}
+.plugPlayCardTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.plugLevel{font-size:12px;font-weight:900;color:#9bc1ff;text-align:right}
+.plugTags{display:flex;gap:7px;flex-wrap:wrap}.plugTags span{border:1px solid rgba(134,239,172,.35);border-radius:999px;padding:5px 8px;background:rgba(22,163,74,.12);font-size:12px;font-weight:900;color:#d1fae5}
+.plugPlayCard .primaryBtn{margin-top:auto}
