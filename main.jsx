@@ -3,6 +3,10 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
+const APP_VERSION='v100h01';
+const TEAM_NAMING_STANDARD="Max's Team";
+const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
+
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
@@ -2515,7 +2519,7 @@ function InformationAnticipationBuilder({onAddToSession}){
 }
 
 function UniversalDBHandicapPanel({onAddToSession}){
-  const dbOptions=['No DB','1 DB','2 DB','3 DB','Unlimited DB'];
+  const dbOptions=UNIVERSAL_DB_OPTIONS;
   const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').enabled||false;}catch{return false;}});
   const [playersText,setPlayersText]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').playersText||'';}catch{return '';}});
   const [allocations,setAllocations]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations||{};}catch{return {};}});
@@ -6169,7 +6173,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v99h98 Shots Module</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h01 Undo + Team Naming</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
