@@ -3413,11 +3413,11 @@ button.mentalSkillsTile p{
 .undoBtn{border-color:#ffd980;color:#ffd980;}
 
 
-/* v100h03 Plug & Play */
+/* v100h04 Plug & Play distinct amber tile */
 .plugPlayHomeCard{
-  background:linear-gradient(135deg,#166534,#16a34a 48%,#064e3b);
-  border:1px solid rgba(134,239,172,.62);
-  box-shadow:0 18px 45px rgba(22,163,74,.24), inset 0 1px 0 rgba(255,255,255,.14);
+  background:linear-gradient(135deg,#7c2d12,#f59e0b 52%,#92400e);
+  border:1px solid rgba(253,230,138,.72);
+  box-shadow:0 18px 45px rgba(245,158,11,.28), inset 0 1px 0 rgba(255,255,255,.18);
 }
 .plugPlayHomeCard h2{color:#fff;text-shadow:0 3px 12px rgba(0,0,0,.55)}
 .plugPlayIntro{margin-bottom:16px}
