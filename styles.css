@@ -3430,15 +3430,3 @@ button.mentalSkillsTile p{
 .plugPlayCardTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.plugLevel{font-size:12px;font-weight:900;color:#9bc1ff;text-align:right}
 .plugTags{display:flex;gap:7px;flex-wrap:wrap}.plugTags span{border:1px solid rgba(134,239,172,.35);border-radius:999px;padding:5px 8px;background:rgba(22,163,74,.12);font-size:12px;font-weight:900;color:#d1fae5}
 .plugPlayCard .primaryBtn{margin-top:auto}
-
-/* v100h05 Player View + Overlay 2.0 */
-.plugPlayHomeCard{
-  background:linear-gradient(135deg,#0f766e,#14b8a6 52%,#0f3f46)!important;
-  border:1px solid rgba(94,234,212,.75)!important;
-  box-shadow:0 18px 45px rgba(20,184,166,.24), inset 0 1px 0 rgba(255,255,255,.18)!important;
-}
-.universalPlayerViewPanel{min-height:70vh;background:#020817;color:white;border-radius:28px;padding:28px;border:2px solid #5e83be;box-shadow:0 24px 60px rgba(2,8,23,.28)}
-.playerViewTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}.playerViewTop h1{font-size:48px;line-height:1.05;margin:6px 0 0;color:white}
-.playerViewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.playerViewGrid section{background:#0c1a2c;border:2px solid #5e83be;border-radius:22px;padding:22px}.playerViewGrid section:nth-child(3),.playerViewGrid section:nth-child(5){grid-column:1/-1}.playerViewGrid h2{color:#ffd980;margin:0 0 12px;font-size:26px}.playerViewGrid p{font-size:26px;line-height:1.28;margin:0;font-weight:800;color:#eff6ff}
-.overlay2Grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:16px 0}.overlay2Group{background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px}.overlay2Group h3{margin:0 0 10px;color:#ffd980}.overlay2Group button{width:100%;display:block;margin:7px 0;padding:10px;border-radius:12px;border:1px solid #486b9a;background:#12253d;color:#fff;font-weight:900;text-align:left}.overlay2Group button.selectedOverlay{background:#ffd980;color:#0f172a;border-color:#fff}
-@media(max-width:900px){.playerViewGrid{grid-template-columns:1fr}.playerViewGrid section{grid-column:1/-1}.playerViewTop h1{font-size:34px}.playerViewGrid p{font-size:21px}}
