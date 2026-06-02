@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h04';
+const APP_VERSION='v100h05';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -33,6 +33,14 @@ const ANIMAL_PAIRINGS=[
 ];
 
 const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
+
+const OVERLAY2_GROUPS=[
+  {family:'Position',items:['Opponent Off T','Self On T','Weak Side','Central Control']},
+  {family:'Timing',items:['4 Shot Window','2 Shot Window','First Opportunity','Delayed Attack']},
+  {family:'Contact',items:['Volley Finish','Blind Finish','Weak Side Finish','Clean Winner']},
+  {family:'Pressure',items:['Length Before Attack','Double Bounce','Consecutive Pressure','Limited Attacks']}
+];
+
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -52,6 +60,31 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 
 function safeLayersForSession(game){
   return Array.isArray(game?.layers)?game.layers:[];
+}
+
+
+function universalPlayerViewData(game={}){
+  const title=game.title||game.name||'Coach Game';
+  const what=game.task||game.description||game.playerView||'Play the selected game using the rules shown by the coach.';
+  const score=game.scoring||game.score||'Win rallies and apply any bonus conditions shown on this card.';
+  const focus=game.playerFocus||game.focus||((game.layers&&game.layers.length)?game.layers.join(' · '):'See early. Move early. Decide early.');
+  const coach=game.coach||game.coachInstruction||'Keep the task representative and let the constraint shape the solution.';
+  const player=game.playerCue||game.player||game.playerFocus||'See early. Move early. Decide early.';
+  return {title,what,score,focus,coach,player};
+}
+
+function UniversalPlayerViewPanel({game,onClose}){
+  const data=universalPlayerViewData(game);
+  return <div className="universalPlayerViewPanel">
+    <div className="playerViewTop"><div><span className="projectionKicker">PLAYER VIEW</span><h1>{data.title}</h1></div>{onClose&&<button className="secondaryBtn" onClick={onClose}>Coach View</button>}</div>
+    <div className="playerViewGrid">
+      <section><h2>WHAT TO DO</h2><p>{data.what}</p></section>
+      <section><h2>HOW TO SCORE</h2><p>{data.score}</p></section>
+      <section><h2>KEY FOCUS</h2><p>{data.focus}</p></section>
+      <section><h2>COACH INSTRUCTION</h2><p>{data.coach}</p></section>
+      <section><h2>PLAYER FOCUS</h2><p>{data.player}</p></section>
+    </div>
+  </div>;
 }
 
 function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
@@ -805,29 +838,33 @@ function MentalOverlaySelector({context='Game'}){
 
 
 function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
-  const [family,setFamily]=useState('Tactical');
+  const [family,setFamily]=useState('Overlay 2.0');
 
   const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
   const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
   const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
-  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : mentalOptions;
-  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions];
+  const overlay2Options=OVERLAY2_GROUPS.flatMap(group=>group.items.map(item=>({name:item,category:group.family,rule:`${item} overlay can be layered onto the base game without changing the game itself.`,coach:'Base game + overlay = new learning environment.'})));
+  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : family==='Mental Performance' ? mentalOptions : overlay2Options;
+  const allOptions=[...overlay2Options,...technicalOptions,...tacticalOptions,...mentalOptions];
   const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
 
-  return <div className="overlayFamilyEngine">
+  return <div className="overlayFamilyEngine overlay2Foundation">
     <div className="overlayFamilyTabs">
+      <button type="button" className={family==='Overlay 2.0'?'activeFamilyTab':''} onClick={()=>setFamily('Overlay 2.0')}>🧩 Overlay 2.0</button>
       <button type="button" className={family==='Technical'?'activeFamilyTab':''} onClick={()=>setFamily('Technical')}>🔧 Technical</button>
       <button type="button" className={family==='Tactical'?'activeFamilyTab':''} onClick={()=>setFamily('Tactical')}>♟ Tactical</button>
       <button type="button" className={family==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setFamily('Mental Performance')}>🧠 Mental Performance</button>
     </div>
 
-    <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Selected overlays continue to feed the Active Overlay Rules section and projection text.</p>
+    <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Base Game + Overlay = new learning environment.</p>
 
-    <div className="mentalOverlayChips overlayFamilyChips">
-      {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
-        <strong>{o.name}</strong><span>{o.category}</span>
-      </button>)}
-    </div>
+    {family==='Overlay 2.0'
+      ? <div className="overlay2Grid">{OVERLAY2_GROUPS.map(group=><div className="overlay2Group" key={group.family}><h3>{group.family}</h3>{group.items.map(item=><button key={item} type="button" className={selectedOverlays.includes(item)?'selectedOverlay':''} onClick={()=>onToggle(item)}>{selectedOverlays.includes(item)?'✓ ':'+ '}{item}</button>)}</div>)}</div>
+      : <div className="mentalOverlayChips overlayFamilyChips">
+          {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
+            <strong>{o.name}</strong><span>{o.category}</span>
+          </button>)}
+        </div>}
 
     <div className="activeOverlayPanel">
       <h3>Active Overlay Rules</h3>
@@ -1030,6 +1067,7 @@ function MentalSkillsPlaceholder({setScreen}){
 
 
 function ShotsModule({setScreen}){
+  const [playerViewGame,setPlayerViewGame]=useState(null);
   const shotFamilies=[
     {name:'Lobs',what:'A high recovering or pressuring ball that changes time and height.',when:'When under pressure, when opponent crowds the T, or when height can move the opponent away from the middle.',where:'Front-wall height above the service line, dying into back-court space where possible.',how:'Use constraints that reward height, depth, delay and recovery rather than asking for a perfect swing shape.'},
     {name:'Penetrating Drives',what:'A flatter driving ball that travels through the court quickly.',when:'When space is available behind the opponent or when the player can take time away.',where:'Length target lanes, back-court floor zones and side-wall depth windows.',how:'Shape the task around ball speed, line, depth and opponent displacement.'},
@@ -1047,13 +1085,15 @@ function ShotsModule({setScreen}){
     ['Use video','Show tactical effect, opponent movement and ball outcome rather than only racket mechanics.'],
     ['Self-discovery','Let the player search for workable solutions before the coach gives an answer.']
   ];
+  const shotsPlayerView={title:'Shots Module',task:'Use the What · When · Where · How tabs to connect shot shape to game information.',scoring:'No fixed scoring. Choose a shot family and load a representative activity or constraint.',playerFocus:'Shot shape solves a game problem. See the opponent and the space before choosing.',coach:'Design constraints that invite functional shot solutions.'};
+  if(playerViewGame) return <div className="page"><UniversalPlayerViewPanel game={playerViewGame} onClose={()=>setPlayerViewGame(null)}/></div>;
   const builderCards=[
     {title:'Shot Page Structure',text:'Each shot should be built around WSF What · When · Where · How, with CLA principles underneath.'},
     {title:'Coaching Position',text:'The module should challenge technique-perfection coaching and frame technique as functional adaptation.'},
     {title:'App Integration',text:'Shots starts as a Home tile and can later connect to Games Library, Session Builder and Diagnostic interventions.'}
   ];
   return <div className="page shotsPage">
-    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">CLA shot development · What · When · Where · How</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">CLA shot development · What · When · Where · How</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setPlayerViewGame(shotsPlayerView)}>Player View</button><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
     <div className="libraryStageIntro shotsIntro"><h2>Developing shot types without chasing technical perfection</h2><p>Shots are developed as adaptable solutions to game problems. The coach designs constraints that help players discover how ball shape, height, pace, line, timing and opponent information create tactical effect.</p></div>
     <h2>CLA Principles For Coaching Technique</h2>
     <div className="shotsPrincipleGrid">{principles.map(([title,text])=><div className="gameCard shotsPrincipleCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
@@ -1067,6 +1107,7 @@ function ShotsModule({setScreen}){
 
 function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Pressure');
+  const [playerViewGame,setPlayerViewGame]=useState(null);
   const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce'];
   const games=[
     {title:'Invasion Lives',tags:['Pressure','Movement'],type:'Competition Game',players:'8–20',level:'Intermediate → Professional',why:'Creates immediate pressure because every rally affects team lives. Players must cope with consequence, rotation, fatigue and changing opponents.',coach:'Win the rally problem in front of you; protect the team life bank.',load:'Invasion Lives'},
@@ -1117,7 +1158,7 @@ function PlugAndPlay({setScreen,setSession}){
       <p><strong>Why use it?</strong><br/>{game.why}</p>
       <p><strong>Players:</strong> {game.players}</p>
       <p><strong>Coach cue:</strong> {game.coach}</p>
-      <button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button>
+      <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setPlayerViewGame(game)}>Player View</button><button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button></div>
     </div>)}</div>
   </div>;
 }
@@ -1179,6 +1220,7 @@ function resetAtlBuilder(){saveAtlSnapshot();setAtl(DEFAULT_ATL);setManualLayers
 function undoAtl(){const last=atlHistory[atlHistory.length-1];if(!last)return;setAtl(last.atl);setManualLayers(last.manualLayers);setAtlHistory(atlHistory.slice(0,-1));}
 function addGame(game){onAddToSession({...clone(game),id:Date.now()+Math.random()});}
 const filtered=games.filter(game=>game.category===category);
+if(playerViewGame)return <div><UniversalPlayerViewPanel game={playerViewGame} onClose={()=>setPlayerViewGame(null)}/></div>;
 return <div>
 <div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);}}>{cat}</button>)}</div>
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
@@ -1204,7 +1246,7 @@ return <div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
-<button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
+<div className="buttonRow"><button className="secondaryBtn" onClick={()=>setPlayerViewGame(composedAtl)}>Player View</button><button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button></div>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
@@ -1216,12 +1258,12 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{selectedGame.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{selectedGame.coach}</p></div>
 <div className="chips">{selectedGame.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<button className="primaryBtn" onClick={()=>addGame(selectedGame)}>{addButtonText}</button>
+<div className="buttonRow"><button className="secondaryBtn" onClick={()=>setPlayerViewGame(selectedGame)}>Player View</button><button className="primaryBtn" onClick={()=>addGame(selectedGame)}>{addButtonText}</button></div>
 </div>}
 </div>;
 }
 
-function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const[playerViewGame,setPlayerViewGame]=useState(null);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
@@ -1235,6 +1277,7 @@ function stopRotationProjection(){
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+if(playerViewGame)return <div className="page"><UniversalPlayerViewPanel game={playerViewGame} onClose={()=>setPlayerViewGame(null)}/></div>;
 return <div className="page">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
 <GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
@@ -1250,6 +1293,7 @@ return <div className="page">
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="actionRow">
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
+<button className="secondaryBtn" onClick={()=>setPlayerViewGame(game)}>Player View</button>
 <button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
 <button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
 </div>
@@ -2638,6 +2682,7 @@ function UniversalDBHandicapPanel({onAddToSession}){
 }
 
 function Games({setSession,setScreen}){
+  const [playerViewGame,setPlayerViewGame]=useState(null);
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
   const [savedCards,setSavedCards]=useState(()=>{
@@ -2738,7 +2783,6 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -2768,7 +2812,7 @@ function Games({setSession,setScreen}){
     
 
     {activeClassId&& !['checkerboard','atl','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
-      <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
+      <div className="placeholder">{activeClass?.label} games will be restored as the next functional class.</div>
     }
 
     {message&&<div className="statusBox">{message}</div>}
@@ -6284,7 +6328,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h03 Plug & Play + Undo</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h05 Player View + Overlay 2.0</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
