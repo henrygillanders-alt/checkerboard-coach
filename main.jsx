@@ -3,8 +3,8 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h01';
-const TEAM_NAMING_STANDARD="Max's Team";
+const APP_VERSION='v100h02';
+const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
 const PLAYER_KEY='checkerboard_master_v54_players';
@@ -71,6 +71,14 @@ function playerSeedValue(player){
 function playerDisplayName(player){
   if(typeof player==='string') return player;
   return player.name||player.fullName||player.playerName||'Player';
+}
+function playerFirstName(name){
+  const clean=String(name||'Team').trim();
+  return clean.split(/\s+/)[0]||'Team';
+}
+function possessiveTeamName(firstName){
+  const first=playerFirstName(firstName);
+  return `${first}${first.toLowerCase().endsWith('s')?"'":"'s"} Team`;
 }
 function snakeSeedPlayers(players,teamCount){
   const list=[...(players||[])].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b));
@@ -2151,7 +2159,7 @@ function CustomGameBuilder({onAddToSession}){
 
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
   const cbOptions=['None','[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
-  const randomBank=['Must play straight','Can only score in zone [1]','Can only score in zone [2]','Has 1 crosscourt per rally','Has 2 crosscourts per rally','Has 1 double bounce','Has 2 double bounces','Must win with a volley','Must complete a checkerboard pair before scoring','No condition'];
+  const randomBank=['Must play straight','Can only score in zone [1]','Can only score in zone [2]','Has 1 crosscourt per rally','Has 2 crosscourts per rally','Has 1 DB','Has 2 DB','Has 3 DB','Has 4 DB','Has 5 DB','Must win with a volley','Must complete a checkerboard pair before scoring','No condition'];
 
   function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}
   function resetCustom(){
@@ -2879,6 +2887,24 @@ function Competition({players=[]}){
   const [invasionEliminated,setInvasionEliminated]=useState('');
   const [invasionCourtAssignmentMode,setInvasionCourtAssignmentMode]=useState('fixed');
   const [invasionCourtAssignments,setInvasionCourtAssignments]=useState([]);
+  const [competitionUndo,setCompetitionUndo]=useState(null);
+  function captureCompetitionUndo(label='Competition change'){
+    setCompetitionUndo({label,invasionTeams:clone(invasionTeams),invasionTeamPoints:clone(invasionTeamPoints),invasionPlayerPoints:clone(invasionPlayerPoints),invasionTeamLives:clone(invasionTeamLives),invasionCarryLives:clone(invasionCarryLives),invasionFinishLives:clone(invasionFinishLives),invasionInvaderOverrides:clone(invasionInvaderOverrides),invasionCourtAssignments:clone(invasionCourtAssignments),invasionPlayerRound,invasionCourtRound});
+  }
+  function undoCompetitionChange(){
+    if(!competitionUndo) return;
+    setInvasionTeams(competitionUndo.invasionTeams||[]);
+    setInvasionTeamPoints(competitionUndo.invasionTeamPoints||{});
+    setInvasionPlayerPoints(competitionUndo.invasionPlayerPoints||{});
+    setInvasionTeamLives(competitionUndo.invasionTeamLives||{});
+    setInvasionCarryLives(competitionUndo.invasionCarryLives||{});
+    setInvasionFinishLives(competitionUndo.invasionFinishLives||{});
+    setInvasionInvaderOverrides(competitionUndo.invasionInvaderOverrides||{});
+    setInvasionCourtAssignments(competitionUndo.invasionCourtAssignments||[]);
+    setInvasionPlayerRound(competitionUndo.invasionPlayerRound||0);
+    setInvasionCourtRound(competitionUndo.invasionCourtRound||0);
+    setCompetitionUndo(null);
+  }
   const [competitionLayers,setCompetitionLayers]=useState([]);
   const [competitionCbCode,setCompetitionCbCode]=useState('None');
   const [playerBounces,setPlayerBounces]=useState({});
@@ -2914,6 +2940,29 @@ function Competition({players=[]}){
   const automaticNames=present.length?present.map(player=>player.name):[];
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
+
+  function rankForTeamName(name){
+    const player=players.find(p=>p.name===name || p.fullName===name || p.playerName===name);
+    if(player) return playerSeedValue(player);
+    return invasionRankForName(name);
+  }
+  function teamNameFromPlayers(teamPlayers=[],fallbackIndex=0){
+    const names=(teamPlayers||[]).map(invasionName).filter(Boolean);
+    if(!names.length) return `Team ${fallbackIndex+1}`;
+    const sorted=[...names].sort((a,b)=>rankForTeamName(a)-rankForTeamName(b)||String(a).localeCompare(String(b)));
+    const top=sorted[0];
+    const first=playerFirstName(top);
+    const duplicateFirst=playerNames.filter(name=>playerFirstName(name).toLowerCase()===first.toLowerCase()).length>1;
+    if(duplicateFirst){
+      const parts=String(top).trim().split(/\s+/);
+      const initial=parts.length>1?` ${parts[1][0].toUpperCase()}`:'';
+      return `${first}${initial}'s Team`;
+    }
+    return possessiveTeamName(first);
+  }
+  function displayTeamName(team,index=0){
+    return teamNameFromPlayers(team?.players||[],index);
+  }
 
   function invasionDbLabel(name){
     const status=playerBounces?.[invasionName(name)]||'No DB';
@@ -3232,15 +3281,16 @@ function Competition({players=[]}){
   },[invasionGameStarted,invasionFormat,invasionStartingLives,invasionTeams,invasionCarryLives,invasionFinishLives,invasionPlayerRound,invasionCourtRound,invasionCourtAssignmentMode,showInvasionDashboard]);
 
   function generateInvasionTeams(){
+    captureCompetitionUndo('Generate Teams From Attendance');
     const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
     const seeded=snakeSeedPlayers(source,count);
     const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
-      name:`Team ${index+1}`,
+      name:teamNameFromPlayers(teamPlayers,index),
       seedOrder:index+1,
-      players:teamPlayers
+      players:teamPlayers.map(playerDisplayName)
     }));
     const courtOrder=shuffleInvasionArray(baseTeams.map(team=>team.id));
     const nextTeams=baseTeams.map(team=>({
@@ -3598,7 +3648,7 @@ function Competition({players=[]}){
       const teamIndex=block%2===0?position:count-1-position;
       teams[teamIndex].players.push(name);
     });
-    return teams;
+    return teams.map((team,idx)=>({...team,name:teamNameFromPlayers(team.players,idx)}));
   }
 
   function getNslFixtures(){
@@ -3904,13 +3954,13 @@ function Competition({players=[]}){
             <div className="invasionSetupBox">
               <strong>Teams / Courts Setup</strong>
               <p>Players are pulled from Attendance. Choose number of courts above, then generate teams.</p>
-              <button type="button" className="primaryBtn" onClick={generateInvasionTeams}>Generate Teams From Attendance</button>
+              <div className="buttonRow"><button type="button" className="primaryBtn" onClick={generateInvasionTeams}>Generate Teams From Attendance</button>{competitionUndo&&<button type="button" className="secondaryBtn undoBtn" onClick={undoCompetitionChange}>Undo {competitionUndo.label}</button>}</div>
 
               {invasionTeams.length>0&&(
                 <div className="invasionTeamGrid">
-                  {invasionTeams.map(team=>(
+                  {invasionTeams.map((team,index)=>(
                     <div className="invasionTeamCard" key={team.id}>
-                      <h3>{team.name}</h3>
+                      <h3>{displayTeamName(team,index)}</h3>
                       <p><strong>Court:</strong> {team.court}</p>
                       <p><strong>Players:</strong> {team.players.length?team.players.join(' · '):'Waiting for players'}</p>
 
@@ -3958,11 +4008,11 @@ function Competition({players=[]}){
               )}
 
               {invasionFormat==='points'&&invasionTeams.length>0&&(
-                <button type="button" className="secondaryBtn" onClick={resetInvasionPoints}>Reset Invasion Points</button>
+                <button type="button" className="secondaryBtn" onClick={()=>{captureCompetitionUndo('Reset Invasion Points');resetInvasionPoints();}}>Reset Invasion Points</button>
               )}
 
               {invasionFormat==='lives'&&invasionTeams.length>0&&(
-                <button type="button" className="secondaryBtn" onClick={resetInvasionLifeBanks}>Reset Team Life Banks</button>
+                <button type="button" className="secondaryBtn" onClick={()=>{captureCompetitionUndo('Reset Team Life Banks');resetInvasionLifeBanks();}}>Reset Team Life Banks</button>
               )}
 
               {invasionTeams.length>0&&(
@@ -3970,11 +4020,11 @@ function Competition({players=[]}){
                   <h2>Coach Invader Selection</h2>
                   <p>Default order is lowest-ranked player first. Override here if a team chooses a tactical invader.</p>
                   <div className="coachInvaderGrid">
-                    {invasionTeams.map(team=>{
+                    {invasionTeams.map((team,index)=>{
                       const ordered=sortInvasionPlayersLowestFirst(team.players||[]);
                       const current=invasionInvaderOverrides[team.id]||ordered[invasionPlayerRound%Math.max(1,ordered.length)]||'';
                       return <div className="coachInvaderCard" key={team.id}>
-                        <h3>{team.name}</h3>
+                        <h3>{displayTeamName(team,index)}</h3>
                         <label>Current invader
                           <select value={current} onChange={e=>setInvasionInvaderOverrides(prev=>({...prev,[team.id]:e.target.value}))}>
                             {ordered.map(player=><option key={player} value={player}>{player}</option>)}
@@ -4035,7 +4085,7 @@ function Competition({players=[]}){
 
                 {showInvasionDashboard&&(
                   <div className="invasionCourtDashboard">
-                    {(invasionCourtAssignments.length?invasionCourtAssignments:invasionTeams.map((team,idx)=>({court:idx+1,defendingTeamId:team.id,defendingTeamName:team.name,defenders:team.players||[],invadingTeamId:'',invadingTeamName:'Waiting',invader:'Generate / rotate courts'}))).map(assign=>(
+                    {(invasionCourtAssignments.length?invasionCourtAssignments:invasionTeams.map((team,idx)=>({court:idx+1,defendingTeamId:team.id,defendingTeamName:displayTeamName(team,idx),defenders:team.players||[],invadingTeamId:'',invadingTeamName:'Waiting',invader:'Generate / rotate courts'}))).map(assign=>(
                       <div className="invasionCourtCard activeCourtCard" key={`${assign.court}-${assign.defendingTeamId}-${assign.invader}`}>
                         <div className="courtCardHeader">
                           <span>Court {assign.court}</span>
@@ -4077,9 +4127,9 @@ function Competition({players=[]}){
                 <p>Fair lives: Starting Lives applies to the largest/equal-sized team. Smaller teams receive extra lives per player so team capacity stays fair. Carry-over then adds to the next invasion.</p>
 
                 <div className="fairLivesGrid">
-                  {invasionTeams.map(team=>(
+                  {invasionTeams.map((team,index)=>(
                     <div className="fairLivesTeamCard" key={team.id}>
-                      <h3>{team.name}</h3>
+                      <h3>{displayTeamName(team,index)}</h3>
                       <p><strong>Players:</strong> {team.players.length}</p>
                       <p><strong>Base lives:</strong> {getInvasionBaseLives(team)}</p>
                       <p><strong>Carry-over:</strong> {getInvasionCarry(team.id)}</p>
@@ -4091,7 +4141,7 @@ function Competition({players=[]}){
                   ))}
                 </div>
 
-                <button type="button" className="primaryBtn" onClick={postInvasionRotationLives}>Post Lives Score After Court Rotation</button>
+                <button type="button" className="primaryBtn" onClick={()=>{captureCompetitionUndo('Post Lives');postInvasionRotationLives();}}>Post Lives Score After Court Rotation</button>
               </div>
             )}
 
@@ -4110,9 +4160,9 @@ function Competition({players=[]}){
                 </div>
 
                 <div className="finalTeamStateGrid">
-                  {invasionTeams.map(team=>(
+                  {invasionTeams.map((team,index)=>(
                     <div className="finalTeamStateCard" key={team.id}>
-                      <h3>{team.name}</h3>
+                      <h3>{displayTeamName(team,index)}</h3>
                       <p><b>Current invader:</b> {getFinalInvader(team)}</p>
                       <p><b>Base lives:</b> {getInvasionBaseLives(team)}</p>
                       <p><b>Carry-over:</b> {getInvasionCarry(team.id)}</p>
@@ -4130,18 +4180,18 @@ function Competition({players=[]}){
                     const invading=getFinalInvadingTeamForCourt(idx);
                     return <div className="finalCourtStateCard" key={`final-court-${idx}`}>
                       <h3>Court {idx+1}</h3>
-                      <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
-                      <p><b>Invader:</b> {invading?getFinalInvader(invading):'Waiting'} · {invading?.name||''}</p>
+                      <p><b>Defending team:</b> {defending?displayTeamName(defending,idx):'Waiting'}</p>
+                      <p><b>Invader:</b> {invading?getFinalInvader(invading):'Waiting'} · {invading?displayTeamName(invading,idx):''}</p>
                       <p><b>Start lives:</b> {invading?getFinalStartLives(invading):'—'}</p>
                     </div>;
                   })}
                 </div>
 
                 <div className="finalActionRow">
-                  <button type="button" className="secondaryBtn" onClick={postFinalCourtResults}>Post Remaining Lives</button>
-                  <button type="button" className="primaryBtn" onClick={rotateFinalCourts}>End Court Rotation</button>
-                  <button type="button" className="primaryBtn" onClick={nextFinalInvaders}>Next Invaders</button>
-                  <button type="button" className="secondaryBtn" onClick={resetFinalInvasionEngine}>Reset Invasion Engine</button>
+                  <button type="button" className="secondaryBtn" onClick={()=>{captureCompetitionUndo('Post Remaining Lives');postFinalCourtResults();}}>Post Remaining Lives</button>
+                  <button type="button" className="primaryBtn" onClick={()=>{captureCompetitionUndo('End Court Rotation');rotateFinalCourts();}}>End Court Rotation</button>
+                  <button type="button" className="primaryBtn" onClick={()=>{captureCompetitionUndo('Next Invaders');nextFinalInvaders();}}>Next Invaders</button>
+                  <button type="button" className="secondaryBtn" onClick={()=>{captureCompetitionUndo('Reset Invasion Engine');resetFinalInvasionEngine();}}>Reset Invasion Engine</button>
                 </div>
               </div>
             )}
@@ -4491,11 +4541,8 @@ function Competition({players=[]}){
             <div className="playerBounceGrid">
               {playerNames.map(name=>(
                 <label key={name}>{name}
-                  <select value={playerBounces[name]||'None'} onChange={e=>setBounceFor(name,e.target.value)}>
-                    <option>None</option>
-                    <option>1 double bounce</option>
-                    <option>2 double bounces</option>
-                    <option>Unlimited double bounces</option>
+                  <select value={playerBounces[name]||'No DB'} onChange={e=>setBounceFor(name,e.target.value)}>
+                    {UNIVERSAL_DB_OPTIONS.map(opt=><option key={opt}>{opt}</option>)}
                   </select>
                 </label>
               ))}
@@ -6173,7 +6220,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h01 Undo + Team Naming</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h02 Setup Naming + DB Fix</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
