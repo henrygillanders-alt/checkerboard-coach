@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h06';
+const APP_VERSION='v100h07';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -1069,26 +1069,166 @@ function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Pressure');
   const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce'];
   const games=[
-    {title:'Invasion Lives',tags:['Pressure','Movement'],type:'Competition Game',players:'8–20',level:'Intermediate → Professional',why:'Creates immediate pressure because every rally affects team lives. Players must cope with consequence, rotation, fatigue and changing opponents.',coach:'Win the rally problem in front of you; protect the team life bank.',load:'Invasion Lives'},
-    {title:'Winner Loses a Bounce',tags:['Pressure','Movement','Double Bounce'],type:'Conditioned Matchplay',players:'2–8',level:'Junior Beginner → Professional',why:'Balances mixed ability groups and creates pressure as successful players lose support. It keeps rallies alive while gradually increasing challenge.',coach:'Use the extra bounce to organise early, then play the first bounce when you can.',load:'Winner Loses A Bounce'},
-    {title:'Quality Length Before Attack',tags:['Pressure','Length','Decision Making'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Prevents low-quality early attacking by requiring players to build pressure through length before they can score with a short attack.',coach:'Earn the attack before you take the attack.',load:'Quality Length Before Attack'},
-    {title:'4-Shot Conversion',tags:['Pressure','Decision Making','T-Zone'],type:'Checkerboard Overlay',players:'2–4',level:'Performance → Professional',why:'Adds consequence after a completed challenge. Players must convert the created advantage within a short window rather than banking success forever.',coach:'Recognise the advantage and convert it quickly.',load:'4-Shot Conversion'},
-    {title:'2-Shot Conversion',tags:['Pressure','Decision Making','T-Zone'],type:'Checkerboard Overlay',players:'2–4',level:'Professional',why:'A high-pressure version of conversion play. It tests decision speed, composure and the ability to finish from genuine advantage.',coach:'Make the next two shots count.',load:'2-Shot Conversion'},
-    {title:'Working Length ATL',tags:['Length','Decision Making'],type:'ATL / BTL',players:'2–4',level:'Junior Beginner → Professional',why:'Uses above-the-line and below-the-line cues to shape height, time and tactical intention without reverting to fixed technical repetition.',coach:'Build pressure with length until the court opens.',load:'Working Length ATL'},
-    {title:'Long & Short',tags:['Length','Movement','Pressure'],type:'Classic Conditioned Game',players:'2–4',level:'Junior Beginner → Performance',why:'Alternates deep and short problems, forcing players to manage recovery, depth and tactical change rather than grooving one shot.',coach:'Move early and change the opponent’s working distance.',load:'Long & Short'},
-    {title:'Deep Attractor',tags:['Length','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Rewards repeated pressure into back-court areas and helps replace loose mid-court habits with purposeful depth.',coach:'Make the back of the court the problem for your opponent.',load:'Deep Attractor'},
-    {title:'Front Court Dominator',tags:['Volleys','T-Zone','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Invites early interception and front-court control. Players learn to take time away while remaining connected to the opponent’s movement.',coach:'Take time away and keep the middle under pressure.',load:'Front Court Dominator'},
-    {title:'Return To Sender Not',tags:['Volleys','Decision Making','Width'],type:'Classic Conditioned Game',players:'2–4',level:'Junior Beginner → Professional',why:'Stops automatic repeat shots back to the same place and encourages players to perceive alternative spaces and opponent recovery.',coach:'Do not return the same problem; create a new one.',load:'Return To Sender Not'},
-    {title:'Volley Finish',tags:['Volleys','Pressure','T-Zone'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Rewards early interception and makes players search for volleying opportunities as part of normal rally play.',coach:'Look early, step early, take time away.',load:'Volley Finish'},
-    {title:'Central Intercept Challenge',tags:['Volleys','T-Zone','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Connects T-zone control with interception. Players learn that central position matters because it creates earlier hitting opportunities.',coach:'Own the middle by intercepting, not by standing still.',load:'Central Intercept Challenge'},
-    {title:'Double Bounce Protocol',tags:['Double Bounce','Movement','Anticipation','Deception','Pressure','Conditioning','Short Game'],type:'Universal Overlay',players:'2–8',level:'Junior Beginner → Professional',why:'Encourages slow or doubtful movers to adopt a move-first mindset, allows more time to observe opponent information, supports hold and deception, extends rallies and can add physical pressure.',coach:'Move early, observe more, and attack only when the opportunity is genuine.',load:'Double Bounce Protocol'},
-    {title:'3 DB Protocol',tags:['Double Bounce','Movement','Pressure'],type:'DB Handicap',players:'2–8',level:'Mixed Standard',why:'A useful middle setting: enough support to keep hesitant players engaged, but limited enough to stop passive waiting.',coach:'Use the three double bounces to organise better decisions, not to delay movement.',load:'3 DB Protocol'},
-    {title:'1 DB Matchplay',tags:['Double Bounce','Pressure','Decision Making'],type:'DB Handicap',players:'2–4',level:'Intermediate → Professional',why:'Gives each player one rescue opportunity while preserving match pressure and encouraging strategic use of the support.',coach:'Save your DB for the rally problem that matters.',load:'1 DB Matchplay'},
-    {title:'DB Hold & Deception',tags:['Double Bounce','Deception','Anticipation','Short Game'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Uses extra time to let players explore hold, disguise and opponent movement without turning the game into isolated technical drilling.',coach:'Hold long enough to move the opponent, then send the ball into the space.',load:'DB Hold & Deception'},
-    {title:'T-Zone Game 1',tags:['T-Zone','Pressure','Movement'],type:'Conditioned Game',players:'2–4',level:'Junior Beginner → Performance',why:'Rewards moving the opponent away from the middle and helps players understand that winning space often comes before winning the rally.',coach:'Move the opponent before trying to win the point.',load:'T-Zone Game 1'},
-    {title:'T-Zone Game 2',tags:['T-Zone','Decision Making','Pressure'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Adds stronger scoring consequence for creating central displacement and asks players to recognise when the opponent is off balance or off the T.',coach:'Notice when the T opens and make the next shot count.',load:'T-Zone Game 2'},
-    {title:'Off-T Finish',tags:['T-Zone','Pressure','Decision Making'],type:'Overlay',players:'2–4',level:'Intermediate → Professional',why:'Only rewards finishes when the opponent has actually been displaced, reducing random attacking and improving tactical judgement.',coach:'Finish because the opponent is out of position, not because you pre-decided to attack.',load:'Off-T Finish'},
-    {title:'Central Control',tags:['T-Zone','Volleys','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',why:'Links central occupation, early recognition and active interception. Players learn to control the middle through action, not static positioning.',coach:'Control the middle by making the next ball easier to intercept.',load:'Central Control'}
+    {
+      id:'PP001',title:'Build Pressure Before Attack',tags:['Pressure','Length','Decision Making'],type:'Plug & Play Pressure',players:'2–4',level:'Intermediate → Professional',
+      develops:['Patience','Pressure recognition','Shot selection'],
+      why:'Stops players attacking from neutral positions and teaches them to earn the right to attack through depth, width or opponent displacement.',
+      what:'Rally normally. A player may only attack short or go for a finish after creating two quality pressure shots.',
+      score:'Win rally = 1. Bonus +1 if the winning attack comes after the pressure requirement.',
+      coach:'Build pressure before attacking.',player:'Create the problem first, then attack the space.',load:'Build Pressure Before Attack'
+    },
+    {
+      id:'PP002',title:'Opponent Off T',tags:['Pressure','T-Zone','Decision Making'],type:'Universal Overlay',players:'2–4',level:'Junior Elite → Professional',
+      develops:['Opportunity recognition','Tactical patience','Finishing decisions'],
+      why:'Links attacking decisions to opponent position rather than pre-planned shot choice. Players learn to attack advantage, not hope.',
+      what:'Player may attack or claim attack bonus only when the opponent is visibly off the T at striker contact.',
+      score:'Win rally = 1. Bonus +1 if attack is made when opponent is off T.',
+      coach:'Only attack when the opponent has been moved.',player:'Attack advantage, not opportunity.',load:'Opponent Off T'
+    },
+    {
+      id:'PP003',title:'Last Shot While Opponent Off T',tags:['Pressure','T-Zone','Decision Making'],type:'Finishing Overlay',players:'2–4',level:'Intermediate → Professional',
+      develops:['Finishing awareness','Opponent information pickup','Composure'],
+      why:'Rewards players for noticing the actual finishing moment and discourages random attacking from poor positions.',
+      what:'Rally normally. Bonus only counts if the final winning shot is played while the opponent is clearly off T.',
+      score:'Win rally = 1. Bonus +2 for a finish while opponent is off T.',
+      coach:'Recognise the finishing moment.',player:'Move them first. Finish second.',load:'Last Shot While Opponent Off T'
+    },
+    {
+      id:'PP101',title:'Length Before Attack',tags:['Length','Pressure','Decision Making'],type:'Length Overlay',players:'2–4',level:'Junior Beginner → Professional',
+      develops:['Rally construction','Depth control','Attack selection'],
+      why:'Creates a simple structure for players who attack too early. It makes length a tactical requirement rather than a technical drill.',
+      what:'Player must hit three quality length shots before any short attack can score a bonus.',
+      score:'Win rally = 1. Bonus +1 if player completes the length requirement then wins with an attack.',
+      coach:'Use length to create the attack.',player:'Length first, attack second.',load:'Length Before Attack'
+    },
+    {
+      id:'PP102',title:'Deep Attractor',tags:['Length','Pressure','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',
+      develops:['Back-court pressure','Depth habits','Patient construction'],
+      why:'Rewards repeated purposeful depth and helps replace loose mid-court hitting with a stable pressure-building attractor.',
+      what:'Rally normally. Bonus is awarded for consecutive quality balls landing or dying in the back-court target area.',
+      score:'Win rally = 1. Two consecutive deep targets = +1 bonus.',
+      coach:'Make the back of the court the problem.',player:'Keep the ball working deep until the court opens.',load:'Deep Attractor'
+    },
+    {
+      id:'PP103',title:'Break The Middle',tags:['Length','Width','Pressure','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',
+      develops:['Width creation','Opponent displacement','Court geometry'],
+      why:'Encourages players to move the opponent away from central control rather than simply hitting harder through the middle.',
+      what:'Score bonuses for shots that force the opponent outside the central corridor or away from the T-zone.',
+      score:'Win rally = 1. Bonus +1 when opponent is forced clearly outside central corridor.',
+      coach:'Break the middle before trying to finish.',player:'Move them away from the centre.',load:'Break The Middle'
+    },
+    {
+      id:'PP201',title:'First Volley',tags:['Volleys','T-Zone','Anticipation'],type:'Volley Game',players:'2–4',level:'Junior Beginner → Professional',
+      develops:['Early interception','T-zone connection','Anticipation'],
+      why:'Creates a simple invitation to look for the first realistic interception opportunity instead of waiting behind the ball.',
+      what:'During each rally, the first player to take a realistic volley opportunity earns a bonus.',
+      score:'Win rally = 1. First volley opportunity taken = +1 bonus.',
+      coach:'Look early and take time away.',player:'See it early. Step in early.',load:'First Volley'
+    },
+    {
+      id:'PP202',title:'Volley Finish',tags:['Volleys','Pressure','T-Zone'],type:'Volley Overlay',players:'2–4',level:'Intermediate → Professional',
+      develops:['Front-foot pressure','Finishing from the air','Central control'],
+      why:'Makes volleying part of the scoring problem and encourages players to search for attacking interceptions in live rallies.',
+      what:'Rally normally, but the bonus finish must be made with a volley.',
+      score:'Win rally = 1. Volley winner = +2 bonus.',
+      coach:'Take time away when the ball presents.',player:'Own the space in front of you.',load:'Volley Finish'
+    },
+    {
+      id:'PP203',title:'Intercept Bonus',tags:['Volleys','Anticipation','Movement'],type:'Interception Overlay',players:'2–4',level:'Intermediate → Professional',
+      develops:['Opponent information pickup','Early movement','Interception skills'],
+      why:'Links anticipation to action by rewarding players for moving early enough to intercept rather than simply reacting late.',
+      what:'Bonus for a successful interception that changes the rally problem, even if it is not a winner.',
+      score:'Win rally = 1. Successful intercept = +1 bonus.',
+      coach:'Read earlier, arrive earlier.',player:'Move before the ball has already passed you.',load:'Intercept Bonus'
+    },
+    {
+      id:'PP301',title:'Move Mindset',tags:['Movement','Double Bounce','Pressure'],type:'Double Bounce Game',players:'2–8',level:'Junior Beginner → Professional',
+      develops:['Retrieval mentality','Early movement','Confidence under pressure'],
+      why:'Double bounce gives slow or doubtful movers permission to commit. They learn that most balls are reachable if they move early.',
+      what:'Use DB allowance so players can chase more balls and keep rallies alive while still trying to play on first bounce where possible.',
+      score:'Win rally = 1. Coach may add bonus for early movement/retrieval effort.',
+      coach:'Use the extra bounce to move, not to wait.',player:'Go early. You have time.',load:'Move Mindset'
+    },
+    {
+      id:'PP302',title:'Recover To T',tags:['Movement','T-Zone','Pressure'],type:'Movement Overlay',players:'2–4',level:'Junior Beginner → Performance',
+      develops:['Recovery habits','Court balance','Repeat movement'],
+      why:'Makes recovery visible and scoreable without turning the session into isolated movement lines.',
+      what:'Rally normally. Coach awards bonus when player recovers to an effective central position after shot execution.',
+      score:'Win rally = 1. Quality recovery = +1 coach bonus.',
+      coach:'Recover into the next problem.',player:'Hit, recover, read again.',load:'Recover To T'
+    },
+    {
+      id:'PP303',title:'Continuous Pressure',tags:['Movement','Pressure','Conditioning'],type:'Conditioned Game',players:'2–8',level:'Intermediate → Professional',
+      develops:['Physical resilience','Repeat effort','Decision making under fatigue'],
+      why:'Extends rallies and keeps players solving squash problems while tired, rather than separating conditioning from perception and decision making.',
+      what:'Use extended-rally scoring or DB support to keep rallies alive and maintain repeated movement pressure.',
+      score:'Win rally = 1. Optional bonus for winning after 8+ shots.',
+      coach:'Keep solving the rally problem when tired.',player:'Stay organised under pressure.',load:'Continuous Pressure'
+    },
+    {
+      id:'PP401',title:'Off T Recognition',tags:['T-Zone','Pressure','Decision Making'],type:'T-Zone Game',players:'2–4',level:'Intermediate → Professional',
+      develops:['Tactical awareness','Opponent displacement','Shot selection'],
+      why:'Teaches players to recognise when they have created positional advantage rather than attacking automatically.',
+      what:'Player calls or identifies when opponent is off T and may then use an attacking option.',
+      score:'Win rally = 1. Correct off-T attack = +1 bonus.',
+      coach:'Notice the opponent, not just the ball.',player:'See when the middle opens.',load:'Off T Recognition'
+    },
+    {
+      id:'PP402',title:'T Challenge',tags:['T-Zone','Movement','Pressure'],type:'Checkerboard Overlay',players:'2–4',level:'Junior Elite → Professional',
+      develops:['Central control','Recovery pressure','Opponent management'],
+      why:'Connects scoring to court position and makes players fight for useful central control instead of standing passively on the T.',
+      what:'Use T-zone bonus or requirement linked to the selected base game.',
+      score:'Win rally = 1. T challenge achieved = +1 bonus.',
+      coach:'Control the middle through better shots and better recovery.',player:'Win space, then use it.',load:'T Challenge'
+    },
+    {
+      id:'PP403',title:'T + Finish',tags:['T-Zone','Volleys','Pressure'],type:'Finishing Game',players:'2–4',level:'Performance → Professional',
+      develops:['Conversion','Central control','Finishing under pressure'],
+      why:'Requires players to create a central advantage and then convert it rather than simply earning a position and resetting.',
+      what:'Player must create T-zone advantage before the finish can score a bonus.',
+      score:'Win rally = 1. T advantage + finish = +2 bonus.',
+      coach:'Create the advantage and convert it.',player:'Use the middle to finish the rally.',load:'T + Finish'
+    },
+    {
+      id:'PP501',title:'DB Move Mindset',tags:['Double Bounce','Movement','Anticipation'],type:'DB Protocol',players:'2–8',level:'Junior Beginner → Performance',
+      develops:['Move-first behaviour','Anticipation','Confidence'],
+      why:'The extra bounce gives players a genuine chance to reach the ball, reducing hesitation and encouraging earlier commitment.',
+      what:'Give selected players DB allowance and reward early movement attempts.',
+      score:'Win rally = 1. Optional movement bonus for high-effort retrievals.',
+      coach:'The DB is there to help you move sooner.',player:'Move first, solve second.',load:'DB Move Mindset'
+    },
+    {
+      id:'PP502',title:'DB Physical Pressure',tags:['Double Bounce','Conditioning','Pressure','Movement'],type:'DB Protocol',players:'2–8',level:'Intermediate → Professional',
+      develops:['Physical pressure','Long-rally tolerance','Repeat decisions'],
+      why:'DB keeps rallies alive and creates squash-specific conditioning while maintaining perception, decision making and tactical pressure.',
+      what:'Use DB allowances to extend rallies and increase the number of meaningful movement problems.',
+      score:'Win rally = 1. Optional bonus for winning after extended rally length.',
+      coach:'Keep the rally alive and keep solving.',player:'Stay organised as the rally gets longer.',load:'DB Physical Pressure'
+    },
+    {
+      id:'PP503',title:'DB Early Deception',tags:['Double Bounce','Deception','Anticipation','Short Game'],type:'DB Deception Game',players:'2–4',level:'Intermediate → Professional',
+      develops:['Hold','Disguise','Opponent movement reading'],
+      why:'The extra time allows players to experiment with hold and deception without the rally collapsing immediately.',
+      what:'Allow DB and encourage players to hold long enough to move the opponent before choosing the space.',
+      score:'Win rally = 1. Deceptive shot that moves opponent wrong way = +1 bonus.',
+      coach:'Hold to move the opponent, not to show off.',player:'Move them with your shape, then use the space.',load:'DB Early Deception'
+    },
+    {
+      id:'PP504',title:'DB Dying Ball',tags:['Double Bounce','Short Game','Pressure'],type:'DB Short Game',players:'2–4',level:'Junior Beginner → Professional',
+      develops:['Short-ball quality','Touch under pressure','Judicious attack'],
+      why:'Because the opponent can often still reach the ball, players learn that a good short ball must die or create genuine pressure.',
+      what:'Use DB while rewarding short balls that bounce twice quickly or force a very poor retrieval.',
+      score:'Win rally = 1. Dying short ball = +1 bonus.',
+      coach:'Make the ball die, not just land short.',player:'Short ball must lose energy.',load:'DB Dying Ball'
+    },
+    {
+      id:'PP505',title:'DB Extended Rally Conditioning',tags:['Double Bounce','Conditioning','Pressure','Movement'],type:'DB Conditioning Game',players:'2–8',level:'Intermediate → Professional',
+      develops:['Physical resilience','Rally extension','Pressure tolerance'],
+      why:'Useful for conditioning phases because rallies last longer while still preserving squash decisions and opponent information.',
+      what:'Run DB matchplay with team or player DB allocations to extend rallies for a defined work period.',
+      score:'Win rally = 1. Optional team bonus for longest rally or repeated retrievals.',
+      coach:'Use the support to create more meaningful work.',player:'Keep moving and keep deciding.',load:'DB Extended Rally Conditioning'
+    }
   ];
   const filtered=games.filter(g=>g.tags.includes(active));
   function loadGame(game){
@@ -1098,10 +1238,11 @@ function PlugAndPlay({setScreen,setSession}){
       task:`${game.type} · ${game.players} · ${game.level}`,
       rationale:game.why,
       coach:game.coach,
-      playerFocus:game.coach,
-      scoring:'Use the game or overlay scoring shown in the source game. Adjust points to suit the group.',
+      playerFocus:game.player,
+      scoring:game.score,
+      whatToDo:game.what,
       antiGaming:'Keep the constraint tied to the learning purpose. Remove or reduce it if players start exploiting it.',
-      suggestedOverlays:game.tags.filter(t=>['Pressure','Length','Volleys','T-Zone','Double Bounce'].includes(t))
+      suggestedOverlays:game.tags.filter(t=>['Pressure','Length','Volleys','T-Zone','Double Bounce','Movement'].includes(t))
     };
     if(typeof setSession==='function') setSession(prev=>[...(prev||[]),card]);
   }
@@ -1110,13 +1251,17 @@ function PlugAndPlay({setScreen,setSession}){
     <div className="libraryStageIntro plugPlayIntro"><h2>Coach View: What do you want to improve today?</h2><p>Plug & Play organises games by coaching outcome rather than by game type. A game can appear in several categories because the same constraint can solve several coaching problems.</p></div>
     <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''} onClick={()=>setActive(o)}>{o}</button>)}</div>
     <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
-    <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.title}>
-      <div className="plugPlayCardTop"><span className="categoryTag">{game.type}</span><span className="plugLevel">{game.level}</span></div>
+    <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.id}>
+      <div className="plugPlayCardTop"><span className="categoryTag">{game.id} · {game.type}</span><span className="plugLevel">{game.level}</span></div>
       <h2>{game.title}</h2>
       <div className="plugTags">{game.tags.map(t=><span key={t}>{t}</span>)}</div>
+      <p><strong>Develops</strong><br/>{game.develops.join(' · ')}</p>
       <p><strong>Why use it?</strong><br/>{game.why}</p>
+      <p><strong>What to do</strong><br/>{game.what}</p>
+      <p><strong>How to score</strong><br/>{game.score}</p>
+      <p><strong>Coach instruction</strong><br/>{game.coach}</p>
+      <p><strong>Player focus</strong><br/>{game.player}</p>
       <p><strong>Players:</strong> {game.players}</p>
-      <p><strong>Coach cue:</strong> {game.coach}</p>
       <button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button>
     </div>)}</div>
   </div>;
@@ -6284,7 +6429,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h06 DB Present Players</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h07 Plug & Play Packs</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
