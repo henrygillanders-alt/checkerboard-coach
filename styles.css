@@ -3503,3 +3503,10 @@ button.mentalSkillsTile p{
 .playerViewMini h3{color:#ffd86b;margin:0 0 8px}
 @media(max-width:900px){.conditionBuilderPanel{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.conditionBuilderPanel{grid-template-columns:1fr}}
+
+/* v100h10 embedded conditions */
+.conditionsAttachBar{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(125,211,252,.45);background:rgba(15,23,42,.72);border-radius:16px;padding:16px;margin:18px 0;box-shadow:0 0 0 1px rgba(15,23,42,.2) inset}
+.conditionsEmbeddedTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border:1px solid rgba(45,212,191,.45);background:linear-gradient(135deg,rgba(13,148,136,.18),rgba(15,23,42,.9));border-radius:16px;padding:16px;margin-bottom:16px}
+.conditionsEmbeddedTop h2{margin:0 0 6px;color:#99f6e4}
+.conditionsEmbeddedTop p{margin:0}
+@media(max-width:800px){.conditionsAttachBar,.conditionsEmbeddedTop{flex-direction:column;align-items:stretch}.conditionsAttachBar button,.conditionsEmbeddedTop button{width:100%}}

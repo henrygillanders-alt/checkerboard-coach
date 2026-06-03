@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h09';
+const APP_VERSION='v100h10';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -1268,11 +1268,11 @@ function PlugAndPlay({setScreen,setSession}){
 }
 
 
-function GameConditionsEngine({setScreen,setSession}){
+function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=false,initialBaseGame='ATL / BTL',onClose}){
   const [family,setFamily]=useState('Tactical Conditions');
   const [selected,setSelected]=useState({});
   const [status,setStatus]=useState('');
-  const [baseGame,setBaseGame]=useState('ATL / BTL');
+  const [baseGame,setBaseGame]=useState(initialBaseGame||'ATL / BTL');
   const [appliesTo,setAppliesTo]=useState('Whole game');
   const [consequence,setConsequence]=useState('No Bonus');
   const [customCode,setCustomCode]=useState('[5-4]');
@@ -1322,9 +1322,8 @@ function GameConditionsEngine({setScreen,setSession}){
   const picked=Object.values(selected).filter(Boolean);
   const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No conditions selected';
   function addToSession(){
-    if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
     const title=`${baseGame} + Game Conditions`;
-    setSession(prev=>[...(prev||[]),{
+    const game={
       id:Date.now()+Math.random(),title,category:'Game Conditions',duration:10,
       task:`Base game: ${baseGame}. Apply to: ${appliesTo}. Checkerboard code / spatial code: ${customCode}.`,
       rationale:'Conditions keep the base game simple while shaping tactical decisions, behaviour standards or handicap restrictions.',
@@ -1332,13 +1331,16 @@ function GameConditionsEngine({setScreen,setSession}){
       scoring:`Consequence: ${consequence}. Use only the minimum consequence needed to shape the behaviour.`,
       coach:'Choose the base game first, then add the minimum condition needed for the coaching problem.',
       playerFocus:'Understand the condition. Solve the rally problem inside it.',
-      suggestedOverlays:picked.map(x=>x.title)
-    }]);
-    setStatus('Game Conditions card added to session.');
+      suggestedOverlays:picked.map(x=>x.title),layers:['Game Conditions'],cbCode:customCode,conditions:picked,applyTo:appliesTo,consequence
+    };
+    if(typeof onAddToSession==='function'){onAddToSession(game);setStatus('Game Conditions card added to session.');return;}
+    if(typeof setSession==='function'){setSession(prev=>[...(prev||[]),game]);setStatus('Game Conditions card added to session.');return;}
+    setStatus('Session connection not available.');
   }
   return <div className="page gameConditionsPage">
-    <div className="pageTop"><div><h1>Game Conditions</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap conditions with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="conditionsIntro"><h2>v100h09 Coach Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
+    {!embedded&&<div className="pageTop"><div><h1>Game Conditions</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap conditions with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="conditionsEmbeddedTop"><div><h2>Game Conditions</h2><p className="mutedText">Add tactical, behaviour or handicap conditions to this base game without leaving the page.</p></div><button className="secondaryBtn" onClick={onClose}>Close Conditions</button></div>}
+    <div className="conditionsIntro"><h2>v100h10 Embedded Conditions Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
     <div className="conditionBuilderPanel">
       <div><label>Base Game</label><select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>{baseGames.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Apply To</label><select value={appliesTo} onChange={e=>setAppliesTo(e.target.value)}>{applicationOptions.map(x=><option key={x}>{x}</option>)}</select></div>
@@ -1400,7 +1402,7 @@ function GameSelector({onAddToSession,addButtonText='Add To Session'}){
 const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
-const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);
+const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
 const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
@@ -1413,8 +1415,11 @@ function resetAtlBuilder(){saveAtlSnapshot();setAtl(DEFAULT_ATL);setManualLayers
 function undoAtl(){const last=atlHistory[atlHistory.length-1];if(!last)return;setAtl(last.atl);setManualLayers(last.manualLayers);setAtlHistory(atlHistory.slice(0,-1));}
 function addGame(game){onAddToSession({...clone(game),id:Date.now()+Math.random()});}
 const filtered=games.filter(game=>game.category===category);
+const conditionsBaseGame=category==='ATL / BTL'?'ATL / BTL':category==='Checkerboard'?'Checkerboard':category==='Invasion'?'Invasion':category==='Double Bounce'?'Double Bounce':category||'Selected Game';
 return <div>
-<div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);}}>{cat}</button>)}</div>
+<div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);setShowConditions(false);}}>{cat}</button>)}</div>
+{category&&<div className="conditionsAttachBar"><div><strong>Base game:</strong> {conditionsBaseGame}<br/><span className="mutedText">Design the base game, then add tactical, behaviour or handicap conditions from this same page.</span></div><button className="primaryBtn" onClick={()=>setShowConditions(v=>!v)}>{showConditions?'Hide Conditions':'Add Game Conditions'}</button></div>}
+{showConditions&&category&&<GameConditionsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame}/>}  
@@ -6518,7 +6523,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h09 Conditions Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h10 Embedded Conditions</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
