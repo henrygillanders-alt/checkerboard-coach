@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h08';
+const APP_VERSION='v100h09';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -1272,13 +1272,20 @@ function GameConditionsEngine({setScreen,setSession}){
   const [family,setFamily]=useState('Tactical Conditions');
   const [selected,setSelected]=useState({});
   const [status,setStatus]=useState('');
+  const [baseGame,setBaseGame]=useState('ATL / BTL');
+  const [appliesTo,setAppliesTo]=useState('Whole game');
+  const [consequence,setConsequence]=useState('No Bonus');
+  const [customCode,setCustomCode]=useState('[5-4]');
+  const baseGames=['ATL / BTL','Checkerboard','Matchplay','Invasion','Pressure','Double Bounce','Plug & Play'];
+  const applicationOptions=['Whole game','Selected player','Stronger player','Selected team','Both players'];
+  const consequenceOptions=['No Bonus','Opponent +1','Lose Rally','Warning Then Penalty','Bonus +1','Bonus +2'];
   const conditionFamilies={
     'Tactical Conditions':[
-      {id:'TC01',title:'Opponent Off T',type:'Required / Bonus',develops:'Opportunity recognition',rule:'Attack or score bonus only when opponent is visibly off the T at striker contact.',rationale:'Encourages players to attack genuine advantage rather than attacking by habit.',best:'ATL/BTL · Matchplay · Plug & Play · Pressure'},
-      {id:'TC02',title:'Quality Length Before Attack',type:'Required',develops:'Pressure before attack',rule:'Player must create quality length before attacking short or BTL.',rationale:'Builds rally construction and reduces premature attacking.',best:'ATL/BTL · Length games · Pressure games'},
+      {id:'TC01',title:'Opponent Off T',type:'Required / Bonus',develops:'Opportunity recognition',rule:'Attack, score or gain bonus only when the opponent is visibly off the T at striker contact.',rationale:'Encourages players to attack genuine advantage rather than attacking by habit.',best:'ATL/BTL · Matchplay · Plug & Play · Pressure'},
+      {id:'TC02',title:'Quality Length Before Attack',type:'Required',develops:'Pressure before attack',rule:'Player must create a quality length before attacking short or going BTL.',rationale:'Builds rally construction and reduces premature attacking.',best:'ATL/BTL · Length games · Pressure games'},
       {id:'TC03',title:'Checkerboard Gate',type:'Required',develops:'Tactical preparation',rule:'Complete a selected Checkerboard challenge before the attack is valid. Example: complete [5-4] before BTL.',rationale:'Links attack to a clear tactical affordance gate using the app language.',best:'ATL/BTL · Checkerboard · Matchplay'},
       {id:'TC04',title:'Weak Side Access',type:'Required / Bonus',develops:'Targeting opponent weakness',rule:'Attack or bonus must use the nominated weak-side zone or route.',rationale:'Connects decision making to opponent-specific tactical information.',best:'Matchplay · Plug & Play · Pressure'},
-      {id:'TC05',title:'First Volley Opportunity',type:'Behaviour Trigger',develops:'Interception intent',rule:'If a realistic volley opportunity appears, player is rewarded for taking it.',rationale:'Encourages volley behaviour without forcing impossible volleys.',best:'Volley games · T-Zone · Anticipation'},
+      {id:'TC05',title:'First Volley Opportunity',type:'Tactical behaviour',develops:'Interception intent',rule:'If a realistic volley opportunity appears, player is rewarded for taking it.',rationale:'Encourages volley behaviour without forcing impossible volleys.',best:'Volley games · T-Zone · Anticipation'},
       {id:'TC06',title:'4 Shot Conversion Window',type:'Conversion',develops:'Opportunity conversion',rule:'Complete condition, then win within 4 shots.',rationale:'Turns recognition into a conversion challenge under time pressure.',best:'Checkerboard Level 4 · Pressure'},
       {id:'TC07',title:'2 Shot Conversion Window',type:'Conversion',develops:'Elite urgency',rule:'Complete condition, then win within 2 shots.',rationale:'Creates high-level urgency and punishes slow conversion.',best:'Checkerboard Level 5 · Performance'}
     ],
@@ -1286,7 +1293,7 @@ function GameConditionsEngine({setScreen,setSession}){
       {id:'BC01',title:'Racquet Above Wrist',type:'Technical',develops:'Ready shape',rule:'If racquet head drops below wrist in preparation, apply selected consequence.',rationale:'Establishes a useful preparation behaviour through the game rather than stopping for instruction.',best:'Group sessions · Volleys · Technical focus'},
       {id:'BC02',title:'Early Preparation',type:'Technical',develops:'Earlier organisation',rule:'Preparation must be visible before leaving the T or before the final approach step.',rationale:'Couples movement and preparation earlier under representative pressure.',best:'ATL/BTL · Checkerboard · Movement games'},
       {id:'BC03',title:'Non-Playing Arm Visible',type:'Technical',develops:'Body organisation',rule:'Non-playing arm must remain useful/visible during preparation and spacing.',rationale:'Constrains body shape without over-coaching swing mechanics.',best:'Drive games · Back-court games'},
-      {id:'BC04',title:'Finish To Front Wall',type:'Technical',develops:'Target-directed swing',rule:'If follow-through wraps away from the front wall target line, apply consequence.',rationale:'Uses an external target finish to reduce wrap-around habits.',best:'Forehand follow-through · Drives'},
+      {id:'BC04',title:'Finish To Front Wall',type:'Technical',develops:'Target-directed swing',rule:'If follow-through wraps away from the front-wall target line, apply consequence.',rationale:'Uses an external target finish to reduce wrap-around habits.',best:'Forehand follow-through · Drives'},
       {id:'BC05',title:'Positive Body Language',type:'Mental',develops:'Reset behaviour',rule:'Negative reaction after error triggers warning or point consequence.',rationale:'Builds competitive stability in group sessions without long coach lectures.',best:'Competition · Matchplay · Junior groups'},
       {id:'BC06',title:'Move First',type:'Mental / Movement',develops:'Commitment to movement',rule:'Hesitation or stopping when ball is reachable triggers coach consequence.',rationale:'Builds a move-first mindset, especially with slow or doubtful movers.',best:'Double Bounce · Movement · Invasion'},
       {id:'BC07',title:'Commit To Decision',type:'Mental',develops:'Decisive action',rule:'Indecisive half-attack or pull-out triggers no bonus or opponent point.',rationale:'Encourages players to make and own decisions under pressure.',best:'Pressure · Deception · Matchplay'}
@@ -1313,16 +1320,17 @@ function GameConditionsEngine({setScreen,setSession}){
   const activeList=conditionFamilies[family]||[];
   function toggle(item){setStatus('');setSelected(prev=>({...prev,[item.id]:prev[item.id]?undefined:item}));}
   const picked=Object.values(selected).filter(Boolean);
+  const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No conditions selected';
   function addToSession(){
     if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
-    const title='Game Conditions Card';
+    const title=`${baseGame} + Game Conditions`;
     setSession(prev=>[...(prev||[]),{
       id:Date.now()+Math.random(),title,category:'Game Conditions',duration:10,
-      task:'Base game plus selected Tactical, Behaviour and Handicap Conditions.',
-      rationale:'Conditions keep the base game simple while shaping the behaviour or tactical decision the coach wants to develop.',
+      task:`Base game: ${baseGame}. Apply to: ${appliesTo}. Checkerboard code / spatial code: ${customCode}.`,
+      rationale:'Conditions keep the base game simple while shaping tactical decisions, behaviour standards or handicap restrictions.',
       whatToDo:picked.length?picked.map(x=>`${x.title}: ${x.rule}`).join(' '):'Select conditions, then apply them to a base game.',
-      scoring:'Use selected consequences: No Bonus, Opponent +1, Lose Rally, Warning Then Penalty or Bonus +1/+2.',
-      coach:'Choose the base game first, then add only the minimum conditions needed.',
+      scoring:`Consequence: ${consequence}. Use only the minimum consequence needed to shape the behaviour.`,
+      coach:'Choose the base game first, then add the minimum condition needed for the coaching problem.',
       playerFocus:'Understand the condition. Solve the rally problem inside it.',
       suggestedOverlays:picked.map(x=>x.title)
     }]);
@@ -1330,17 +1338,23 @@ function GameConditionsEngine({setScreen,setSession}){
   }
   return <div className="page gameConditionsPage">
     <div className="pageTop"><div><h1>Game Conditions</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap conditions with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="conditionsIntro"><h2>Usability Principle</h2><p>Conditions replace scattered overlays and game logic. The coach chooses a base game, then adds a small number of purposeful conditions.</p><p><strong>Core question:</strong> Is this tactical decision-making, behaviour shaping, or a handicap to balance players?</p></div>
+    <div className="conditionsIntro"><h2>v100h09 Coach Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
+    <div className="conditionBuilderPanel">
+      <div><label>Base Game</label><select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>{baseGames.map(x=><option key={x}>{x}</option>)}</select></div>
+      <div><label>Apply To</label><select value={appliesTo} onChange={e=>setAppliesTo(e.target.value)}>{applicationOptions.map(x=><option key={x}>{x}</option>)}</select></div>
+      <div><label>Consequence</label><select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(x=><option key={x}>{x}</option>)}</select></div>
+      <div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>
+    </div>
+    <div className="conditionsExampleBox"><h2>Example</h2><p><strong>Base Game:</strong> ATL / BTL</p><p><strong>Tactical condition:</strong> Complete <strong>[5-4]</strong> before BTL.</p><p><strong>Handicap restriction:</strong> Stronger player allowed zones <strong>[5]+[7]</strong> only.</p><p><strong>Behaviour condition:</strong> Racquet above wrist. Consequence: {consequence}.</p></div>
     <div className="conditionsTabs">{families.map(f=><button key={f} className={family===f?'activeConditionTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
     <div className="conditionsLayout">
       <div className="conditionsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'conditionCard selectedConditionCard':'conditionCard'} onClick={()=>toggle(item)}>
         <span className="conditionCode">{item.id} · {item.type}</span><h2>{item.title}</h2><p><strong>Develops</strong><br/>{item.develops}</p><p><strong>Rule</strong><br/>{item.rule}</p><p><strong>Rationale</strong><br/>{item.rationale}</p><p><strong>Best used with</strong><br/>{item.best}</p>
       </button>)}</div>
-      <aside className="activeConditionsPanel"><h2>Selected Conditions</h2>{picked.length===0?<p>No conditions selected.</p>:picked.map(item=><div key={item.id} className="activeConditionItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Conditions Card To Session</button>{status&&<div className="statusBox">{status}</div>}</aside>
+      <aside className="activeConditionsPanel"><h2>Selected Conditions</h2><div className="activeConditionMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p><p><strong>CB / Spatial:</strong> {customCode}</p></div>{picked.length===0?<p>No conditions selected.</p>:picked.map(item=><div key={item.id} className="activeConditionItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Conditions Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected conditions.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
     </div>
   </div>;
 }
-
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
@@ -6504,7 +6518,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h08 Game Conditions</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h09 Conditions Builder</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
