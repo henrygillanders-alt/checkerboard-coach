@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h07';
+const APP_VERSION='v100h08';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -1267,6 +1267,80 @@ function PlugAndPlay({setScreen,setSession}){
   </div>;
 }
 
+
+function GameConditionsEngine({setScreen,setSession}){
+  const [family,setFamily]=useState('Tactical Conditions');
+  const [selected,setSelected]=useState({});
+  const [status,setStatus]=useState('');
+  const conditionFamilies={
+    'Tactical Conditions':[
+      {id:'TC01',title:'Opponent Off T',type:'Required / Bonus',develops:'Opportunity recognition',rule:'Attack or score bonus only when opponent is visibly off the T at striker contact.',rationale:'Encourages players to attack genuine advantage rather than attacking by habit.',best:'ATL/BTL · Matchplay · Plug & Play · Pressure'},
+      {id:'TC02',title:'Quality Length Before Attack',type:'Required',develops:'Pressure before attack',rule:'Player must create quality length before attacking short or BTL.',rationale:'Builds rally construction and reduces premature attacking.',best:'ATL/BTL · Length games · Pressure games'},
+      {id:'TC03',title:'Checkerboard Gate',type:'Required',develops:'Tactical preparation',rule:'Complete a selected Checkerboard challenge before the attack is valid. Example: complete [5-4] before BTL.',rationale:'Links attack to a clear tactical affordance gate using the app language.',best:'ATL/BTL · Checkerboard · Matchplay'},
+      {id:'TC04',title:'Weak Side Access',type:'Required / Bonus',develops:'Targeting opponent weakness',rule:'Attack or bonus must use the nominated weak-side zone or route.',rationale:'Connects decision making to opponent-specific tactical information.',best:'Matchplay · Plug & Play · Pressure'},
+      {id:'TC05',title:'First Volley Opportunity',type:'Behaviour Trigger',develops:'Interception intent',rule:'If a realistic volley opportunity appears, player is rewarded for taking it.',rationale:'Encourages volley behaviour without forcing impossible volleys.',best:'Volley games · T-Zone · Anticipation'},
+      {id:'TC06',title:'4 Shot Conversion Window',type:'Conversion',develops:'Opportunity conversion',rule:'Complete condition, then win within 4 shots.',rationale:'Turns recognition into a conversion challenge under time pressure.',best:'Checkerboard Level 4 · Pressure'},
+      {id:'TC07',title:'2 Shot Conversion Window',type:'Conversion',develops:'Elite urgency',rule:'Complete condition, then win within 2 shots.',rationale:'Creates high-level urgency and punishes slow conversion.',best:'Checkerboard Level 5 · Performance'}
+    ],
+    'Behaviour Conditions':[
+      {id:'BC01',title:'Racquet Above Wrist',type:'Technical',develops:'Ready shape',rule:'If racquet head drops below wrist in preparation, apply selected consequence.',rationale:'Establishes a useful preparation behaviour through the game rather than stopping for instruction.',best:'Group sessions · Volleys · Technical focus'},
+      {id:'BC02',title:'Early Preparation',type:'Technical',develops:'Earlier organisation',rule:'Preparation must be visible before leaving the T or before the final approach step.',rationale:'Couples movement and preparation earlier under representative pressure.',best:'ATL/BTL · Checkerboard · Movement games'},
+      {id:'BC03',title:'Non-Playing Arm Visible',type:'Technical',develops:'Body organisation',rule:'Non-playing arm must remain useful/visible during preparation and spacing.',rationale:'Constrains body shape without over-coaching swing mechanics.',best:'Drive games · Back-court games'},
+      {id:'BC04',title:'Finish To Front Wall',type:'Technical',develops:'Target-directed swing',rule:'If follow-through wraps away from the front wall target line, apply consequence.',rationale:'Uses an external target finish to reduce wrap-around habits.',best:'Forehand follow-through · Drives'},
+      {id:'BC05',title:'Positive Body Language',type:'Mental',develops:'Reset behaviour',rule:'Negative reaction after error triggers warning or point consequence.',rationale:'Builds competitive stability in group sessions without long coach lectures.',best:'Competition · Matchplay · Junior groups'},
+      {id:'BC06',title:'Move First',type:'Mental / Movement',develops:'Commitment to movement',rule:'Hesitation or stopping when ball is reachable triggers coach consequence.',rationale:'Builds a move-first mindset, especially with slow or doubtful movers.',best:'Double Bounce · Movement · Invasion'},
+      {id:'BC07',title:'Commit To Decision',type:'Mental',develops:'Decisive action',rule:'Indecisive half-attack or pull-out triggers no bonus or opponent point.',rationale:'Encourages players to make and own decisions under pressure.',best:'Pressure · Deception · Matchplay'}
+    ],
+    'Handicap Conditions':[
+      {id:'HC01',title:'Bounce Handicap',type:'DB Allocation',develops:'Balancing movement/time',rule:'Assign No DB, 1 DB, 2 DB, 3 DB, 4 DB, 5 DB or Unlimited DB to present players.',rationale:'Balances mismatches while keeping players solving the same rally problem.',best:'Groups · Invasion · Matchplay'},
+      {id:'HC02',title:'ATL Only',type:'Restriction Handicap',develops:'Balance stronger player',rule:'Selected stronger player may only play above-the-line until handicap is removed.',rationale:'Limits attacking power while preserving recognisable squash patterns.',best:'Mismatched pairs · Team games'},
+      {id:'HC03',title:'Straight Only',type:'Restriction Handicap',develops:'Limits angle/width',rule:'Selected stronger player may only play straight.',rationale:'Reduces available options and forces better rally construction.',best:'Mismatched pairs · Length focus'},
+      {id:'HC04',title:'Right Side Only',type:'Spatial Restriction',develops:'Court-side limitation',rule:'Selected stronger player can only use right-side targets/zones.',rationale:'Creates an understandable court restriction without inventing a new rule language.',best:'Groups · Side-specific development'},
+      {id:'HC05',title:'Left Side Only',type:'Spatial Restriction',develops:'Court-side limitation',rule:'Selected stronger player can only use left-side targets/zones.',rationale:'Balances challenge and supports side-specific tactical work.',best:'Groups · Side-specific development'},
+      {id:'HC06',title:'Checkerboard Gate Handicap',type:'Checkerboard Restriction',develops:'Work harder before attack',rule:'Selected stronger player must complete a single/pair/triple code before attack. Example: [5-4] before BTL.',rationale:'The stronger player is handicapped by needing to create a tactical gate, not by silly non-representative rules.',best:'Checkerboard culture · ATL/BTL · Matchplay'},
+      {id:'HC07',title:'Spatial Allowed Zones',type:'Checkerboard Spatial Restriction',develops:'Universal code restriction',rule:'Selected stronger player may only play into nominated zones. Example: [5]+[7] or [5-4]+[6-3].',rationale:'Uses Checkerboard notation as the universal app language, reducing clutter and increasing consistency.',best:'Advanced handicaps · Tactical targeting'},
+      {id:'HC08',title:'Spatial Forbidden Zones',type:'Checkerboard Spatial Restriction',develops:'Option removal',rule:'Selected stronger player may not use nominated zones/routes. Example: cannot use [8-1].',rationale:'Removes a strength or habit while preserving representative rally play.',best:'Opponent-specific prep · Match analysis transfer'}
+    ],
+    'Consequences':[
+      {id:'CE01',title:'No Bonus',type:'Soft consequence',develops:'Low-friction learning',rule:'Condition failure means no bonus awarded but rally continues.',rationale:'Good first step for learning without over-penalising.',best:'Junior beginner · New condition'},
+      {id:'CE02',title:'Opponent +1',type:'Point consequence',develops:'Accountability',rule:'Condition failure gives opponent one point.',rationale:'Useful when behaviour is established but needs pressure.',best:'Groups · Behaviour conditions'},
+      {id:'CE03',title:'Lose Rally',type:'Hard consequence',develops:'Strong behaviour shaping',rule:'Condition failure immediately loses rally.',rationale:'Use sparingly for clear behaviours that are already understood.',best:'Performance · Strong habit correction'},
+      {id:'CE04',title:'Warning Then Penalty',type:'Progressive consequence',develops:'Fair behaviour change',rule:'First offence warning, second offence penalty.',rationale:'Good for mental/technical behaviours in groups.',best:'Junior groups · Behaviour conditions'},
+      {id:'CE05',title:'Bonus +1 / +2',type:'Reward consequence',develops:'Positive shaping',rule:'Condition success earns bonus.',rationale:'Encourages desired behaviour without making game feel punitive.',best:'Plug & Play · Tactical conditions'}
+    ]
+  };
+  const families=Object.keys(conditionFamilies);
+  const activeList=conditionFamilies[family]||[];
+  function toggle(item){setStatus('');setSelected(prev=>({...prev,[item.id]:prev[item.id]?undefined:item}));}
+  const picked=Object.values(selected).filter(Boolean);
+  function addToSession(){
+    if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
+    const title='Game Conditions Card';
+    setSession(prev=>[...(prev||[]),{
+      id:Date.now()+Math.random(),title,category:'Game Conditions',duration:10,
+      task:'Base game plus selected Tactical, Behaviour and Handicap Conditions.',
+      rationale:'Conditions keep the base game simple while shaping the behaviour or tactical decision the coach wants to develop.',
+      whatToDo:picked.length?picked.map(x=>`${x.title}: ${x.rule}`).join(' '):'Select conditions, then apply them to a base game.',
+      scoring:'Use selected consequences: No Bonus, Opponent +1, Lose Rally, Warning Then Penalty or Bonus +1/+2.',
+      coach:'Choose the base game first, then add only the minimum conditions needed.',
+      playerFocus:'Understand the condition. Solve the rally problem inside it.',
+      suggestedOverlays:picked.map(x=>x.title)
+    }]);
+    setStatus('Game Conditions card added to session.');
+  }
+  return <div className="page gameConditionsPage">
+    <div className="pageTop"><div><h1>Game Conditions</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap conditions with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="conditionsIntro"><h2>Usability Principle</h2><p>Conditions replace scattered overlays and game logic. The coach chooses a base game, then adds a small number of purposeful conditions.</p><p><strong>Core question:</strong> Is this tactical decision-making, behaviour shaping, or a handicap to balance players?</p></div>
+    <div className="conditionsTabs">{families.map(f=><button key={f} className={family===f?'activeConditionTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
+    <div className="conditionsLayout">
+      <div className="conditionsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'conditionCard selectedConditionCard':'conditionCard'} onClick={()=>toggle(item)}>
+        <span className="conditionCode">{item.id} · {item.type}</span><h2>{item.title}</h2><p><strong>Develops</strong><br/>{item.develops}</p><p><strong>Rule</strong><br/>{item.rule}</p><p><strong>Rationale</strong><br/>{item.rationale}</p><p><strong>Best used with</strong><br/>{item.best}</p>
+      </button>)}</div>
+      <aside className="activeConditionsPanel"><h2>Selected Conditions</h2>{picked.length===0?<p>No conditions selected.</p>:picked.map(item=><div key={item.id} className="activeConditionItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Conditions Card To Session</button>{status&&<div className="statusBox">{status}</div>}</aside>
+    </div>
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
@@ -1274,6 +1348,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
+      <button className="homeCard conditionsHomeCard homeTitleOnly" onClick={()=>setScreen('conditions')}><h2>Game Conditions</h2></button>
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
@@ -6429,7 +6504,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h07 Plug & Play Packs</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h08 Game Conditions</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -6443,6 +6518,7 @@ return <div>
       {screen==='games'&&<Games setSession={setSession} setScreen={setScreen}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={setScreen}/>}
       {screen==='plugPlay'&&<PlugAndPlay setScreen={setScreen} setSession={setSession}/>}
+      {screen==='conditions'&&<GameConditionsEngine setScreen={setScreen} setSession={setSession}/>}
       {screen==='shots'&&<ShotsModule setScreen={setScreen}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
 {screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}

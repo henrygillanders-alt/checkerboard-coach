@@ -3430,3 +3430,63 @@ button.mentalSkillsTile p{
 .plugPlayCardTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.plugLevel{font-size:12px;font-weight:900;color:#9bc1ff;text-align:right}
 .plugTags{display:flex;gap:7px;flex-wrap:wrap}.plugTags span{border:1px solid rgba(134,239,172,.35);border-radius:999px;padding:5px 8px;background:rgba(22,163,74,.12);font-size:12px;font-weight:900;color:#d1fae5}
 .plugPlayCard .primaryBtn{margin-top:auto}
+
+/* v100h08 Game Conditions foundation */
+.conditionsHomeCard{
+  background:linear-gradient(135deg,#082f49,#0f766e 52%,#134e4a);
+  border:1px solid rgba(125,211,252,.55);
+  box-shadow:0 18px 45px rgba(14,116,144,.25), inset 0 1px 0 rgba(255,255,255,.18);
+}
+.conditionsHomeCard h2{color:#ecfeff;text-shadow:0 3px 14px rgba(0,0,0,.55)}
+.gameConditionsPage .pageTop h1{color:#f8fafc}
+.conditionsIntro{
+  border:1px solid rgba(45,212,191,.36);
+  background:linear-gradient(180deg,rgba(8,47,73,.78),rgba(15,23,42,.82));
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:16px;
+}
+.conditionsIntro h2{margin-top:0;color:#99f6e4}.conditionsIntro p{margin:8px 0;color:#e2e8f0;line-height:1.45}
+.conditionsTabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.conditionsTabs button{
+  border:1px solid rgba(148,163,184,.35);
+  background:rgba(15,23,42,.78);
+  color:#e2e8f0;
+  border-radius:999px;
+  padding:10px 13px;
+  font-weight:900;
+}
+.conditionsTabs button.activeConditionTab{
+  background:linear-gradient(135deg,#0f766e,#14b8a6);
+  color:#042f2e;
+  border-color:#5eead4;
+}
+.conditionsLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.conditionsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.conditionCard{
+  text-align:left;
+  border:1px solid rgba(148,163,184,.28);
+  background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.88));
+  color:#e5e7eb;
+  border-radius:18px;
+  padding:16px;
+  box-shadow:0 12px 32px rgba(0,0,0,.22);
+  cursor:pointer;
+}
+.conditionCard:hover{border-color:#5eead4;transform:translateY(-1px)}
+.conditionCard.selectedConditionCard{border-color:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.18),0 16px 36px rgba(0,0,0,.28)}
+.conditionCard h2{margin:7px 0 10px;color:#fde68a;font-size:21px}
+.conditionCard p{margin:8px 0;line-height:1.38}.conditionCard strong{color:#bfdbfe}
+.conditionCode{display:inline-flex;border:1px solid rgba(45,212,191,.35);background:rgba(20,184,166,.12);color:#ccfbf1;border-radius:999px;padding:5px 8px;font-size:12px;font-weight:900}
+.activeConditionsPanel{
+  position:sticky;top:16px;
+  border:1px solid rgba(250,204,21,.35);
+  background:linear-gradient(180deg,rgba(69,26,3,.8),rgba(15,23,42,.88));
+  color:#fff7ed;
+  border-radius:20px;
+  padding:16px;
+}
+.activeConditionsPanel h2{margin-top:0;color:#fde68a}
+.activeConditionItem{border:1px solid rgba(251,191,36,.28);border-radius:14px;padding:10px;margin:10px 0;background:rgba(15,23,42,.45)}
+.activeConditionItem strong{display:block;color:#fff}.activeConditionItem span{display:block;color:#facc15;font-size:12px;font-weight:900;margin:3px 0}.activeConditionItem p{margin:4px 0;color:#e2e8f0}
+@media(max-width:900px){.conditionsLayout{grid-template-columns:1fr}.activeConditionsPanel{position:static}}
