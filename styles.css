@@ -3548,3 +3548,21 @@ button.mentalSkillsTile p{
   .heroNav{width:100%;}
   .heroNav .homeBtn{font-size:12px;padding:10px 12px;}
 }
+
+
+/* v100h27 Shots Phase 1 */
+.shotSelectorRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0 18px}
+.shotSelectorRow button{border:1px solid rgba(15,118,110,.35);background:linear-gradient(135deg,#ecfeff,#f8fafc);border-radius:16px;padding:14px;text-align:left;font-weight:1000;color:#0f172a;box-shadow:0 10px 22px rgba(15,23,42,.08)}
+.shotSelectorRow button span{display:block;font-size:12px;color:#0f766e;font-weight:900;margin-top:5px}
+.shotSelectorRow button.activeShotBtn{background:linear-gradient(135deg,#0f766e,#064e3b);color:white;border-color:#5eead4}
+.shotSelectorRow button.activeShotBtn span{color:#ccfbf1}
+.shotDetailPanel{background:rgba(255,255,255,.9);border:1px solid rgba(15,23,42,.09);border-radius:22px;padding:18px;box-shadow:0 18px 45px rgba(15,23,42,.1);margin:18px 0}
+.shotDetailHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.shotDetailHeader h2{font-size:32px;margin:6px 0;color:#0f172a}
+.shotTabRow{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.shotTabRow button{border:1px solid rgba(15,23,42,.12);background:#f1f5f9;border-radius:999px;padding:9px 13px;font-weight:1000;color:#334155}
+.shotTabRow button.activeShotTab{background:#0f766e;color:white;border-color:#0f766e}
+.shotTabContent{background:#f8fafc;border:1px solid rgba(15,23,42,.08);border-radius:18px;padding:16px;font-size:17px;line-height:1.55;color:#0f172a}
+.shotTabContent ul{margin:0;padding-left:22px}.shotTabContent li{margin:8px 0}
+.shotPlayerView{margin-top:16px;background:linear-gradient(135deg,#0f172a,#164e63);color:white;border-radius:18px;padding:16px}
+.shotPlayerView h3{color:#ffd980;margin-top:0}.shotPlayerView p{color:white}

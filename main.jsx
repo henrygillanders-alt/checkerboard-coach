@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h26';
+const APP_VERSION='v100h27';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1079,39 +1079,96 @@ function MentalSkillsPlaceholder({setScreen}){
 
 function ShotsModule({setScreen}){
   const shotFamilies=[
-    {name:'Lobs',what:'A high recovering or pressuring ball that changes time and height.',when:'When under pressure, when opponent crowds the T, or when height can move the opponent away from the middle.',where:'Front-wall height above the service line, dying into back-court space where possible.',how:'Use constraints that reward height, depth, delay and recovery rather than asking for a perfect swing shape.'},
-    {name:'Penetrating Drives',what:'A flatter driving ball that travels through the court quickly.',when:'When space is available behind the opponent or when the player can take time away.',where:'Length target lanes, back-court floor zones and side-wall depth windows.',how:'Shape the task around ball speed, line, depth and opponent displacement.'},
-    {name:'Working Length',what:'A rally-building length that contains, probes and holds court position.',when:'When the player needs stability, pressure without over-risk, or a platform before attacking.',where:'Consistent back-court landing zones with enough height to recover and organise.',how:'Use quality-length-before-attack constraints and reward repeatable tactical effect.'},
-    {name:'Volleys',what:'Early interception to reduce opponent time and protect the T.',when:'When the ball presents above reachable height, when opponent is recovering, or when central control is available.',where:'Volley to depth, straight containment, cross-court change, or short finish depending on information.',how:'Use intercept gates, T-zone rules and external cues such as “take time away”.'},
-    {name:'Drops',what:'A short attacking or pressure-changing ball that must die quickly.',when:'When opponent is deep, late, off balance, or expecting length.',where:'Front-court floor zones with clear height and dying-ball targets.',how:'Use dying-ball, second-bounce and opponent-start-position constraints rather than fixed hand-position coaching.'}
+    {
+      name:'Lobs',tag:'Height · Time · Recovery',level:'Junior Beginner → Professional',
+      what:'A high ball that changes time, height and opponent position. It can recover the rally, move an opponent away from the T, or create a new attacking problem.',
+      when:'When under pressure, when the opponent is crowding the T, when you need recovery time, or when height creates a better problem than pace.',
+      where:'Use height to send the ball over the opponent and into the back-court target. Useful Checkerboard routes include [5-4], [6-3], [5-3] and [6-4].',
+      how:'External focus: lift the ball over the opponent’s reach and let it fall behind them. Use the cue “clear the racket, land behind.”',
+      progressions:['Level 0: big-ball or front-half height game with generous targets.','Level 1: cooperative rally where lob earns recovery time.','Level 2–3: lob only scores if opponent is moved off T or forced behind.','Level 4–5: complete a checkerboard gate such as [5-4], then convert within 4 or 2 shots.'],
+      errors:['Too flat because player tries to hit through pressure.','Too short because player watches the front wall rather than the landing problem.','Uses lob as escape only, not as a tactical change of time.'],
+      constraints:['Target height band on front wall.','Opponent starts slightly advanced to invite height.','Bonus if opponent must turn or retreat.','DB support for developing players so they move early and still try to create height.'],
+      checkerboard:'Best linked to high-wall/back-court routes such as [5-4], [6-3], [5-3] and [6-4]. Use as a gate before attacking if the stronger player needs a restriction.'
+    },
+    {
+      name:'Working Length',tag:'Pressure · Patience · Rally Construction',level:'Junior Beginner → Professional',
+      what:'A controlled length ball that builds pressure without forcing an immediate finish.',
+      when:'When attack is not genuinely available, when the opponent is balanced, or when you need to keep the rally under control.',
+      where:'Back-court targets: deep enough to reduce opponent attacking options but not so hard that the ball rebounds loose. Common routes: [5-4], [6-3], [5-3], [6-4].',
+      how:'External focus: make the ball die in the back quarter. Cue: “send it deep enough to keep them behind you.”',
+      progressions:['Level 0: two-target length game with large back targets.','Level 1: quality length before any short attack.','Level 2–3: opponent off-T bonus only after length pressure.','Level 4–5: three quality lengths then 4-shot or 2-shot conversion window.'],
+      errors:['Attacks too early from neutral positions.','Hits length too hard and creates rebound.','Confuses working length with passive hitting.'],
+      constraints:['Quality Length Before Attack.','Opponent Off T before attack.','Consecutive deep targets = bonus.','Limited attacks to stop premature short play.'],
+      checkerboard:'Use [5-4] or [6-3] as a single gate before attack. Pair examples: [6-4]+[8-1] or [5-3]+[7-2] to link length with front-court opening.'
+    },
+    {
+      name:'Penetrating Drives',tag:'Pace · Direction · Time Pressure',level:'Intermediate → Professional',
+      what:'A flatter, faster drive that takes time away and pushes the opponent deep or past the central corridor.',
+      when:'When the ball is loose enough, when the opponent is late, or when there is space behind or beside the opponent.',
+      where:'Through the side wall/floor channel into the back quarter. Use the drive to pass the opponent, not simply to hit harder.',
+      how:'External focus: drive the ball through the back corner. Cue: “make the ball travel past their hip and keep going.”',
+      progressions:['Level 0: target channels with controlled feed.','Level 1: drive only when the ball is available above pressure height.','Level 2–3: drive bonus if opponent is forced behind or outside the middle.','Level 4–5: drive after a checkerboard gate then convert within a shot window.'],
+      errors:['Big swing with no perception of opponent position.','Pace without width, causing central rebounds.','Drives from defensive positions that invite counter-attack.'],
+      constraints:['Attack only when opponent off T.','Break the middle corridor.','Straight-only restriction for stronger player.','Width before attack.'],
+      checkerboard:'Strong with [6-3], [5-4], [6-4] and [5-3]. Use spatial restrictions such as allowed [5-4]+[6-3] for stronger players.'
+    },
+    {
+      name:'Volleys',tag:'Interception · Anticipation · T Control',level:'Junior Beginner → Professional',
+      what:'Taking the ball before it bounces to reduce opponent time and protect central control.',
+      when:'When a realistic interception opportunity exists and the player can take the ball without losing balance or awareness.',
+      where:'Around the T and front/mid-court interception zones. The target depends on opponent position: deep reset, short pressure, or finishing angle.',
+      how:'External focus: meet the ball before it passes your body line. Cue: “step into the flight, then choose the space.”',
+      progressions:['Level 0: first realistic volley opportunity with large targets.','Level 1: volley bonus, not forced volley only.','Level 2–3: intercept bonus linked to opponent information.','Level 4–5: volley finish after a checkerboard or off-T gate.'],
+      errors:['Tries to volley impossible balls.','Stands on T without reading the opponent.','Swings too big and loses next-action balance.'],
+      constraints:['First Volley Opportunity.','Intercept Bonus.','Volley Finish bonus.','Opponent Off T before attacking volley.'],
+      checkerboard:'Use front wall zones [5] and [6] to develop height/width interception decisions. Combine with [5-4] or [6-3] gates before volley attack.'
+    },
+    {
+      name:'Drops',tag:'Short Game · Dying Ball · Opportunity Recognition',level:'Junior Beginner → Professional',
+      what:'A short ball that dies quickly enough to create movement pressure and prevent easy counter-attack.',
+      when:'When the opponent is deep, late, off balance, or when the ball is suitable for touch rather than force.',
+      where:'Front-court floor targets [1] and [2], with wall-zone support from [7] and [8] depending on angle and height.',
+      how:'External focus: land the ball so the second bounce dies before the service box line. Cue: “make it die, not just go short.”',
+      progressions:['Level 0: dying-ball target game using big targets.','Level 1: drop only after opponent is moved deep.','Level 2–3: short attack must follow quality length or off-T cue.','Level 4–5: complete a gate, then drop/finish inside 4 or 2 shots.'],
+      errors:['Drops from neutral positions.','Ball sits up and invites counter-attack.','Player thinks short target rather than dying ball quality.'],
+      constraints:['Quality Length Before Attack.','Opponent Off T before short attack.','Dying ball bonus.','Double Bounce for early learning and deception exploration.'],
+      checkerboard:'Use [8-1], [7-2], [5-1] and [6-2] style routes. Pair a deep gate such as [5-4] with a front target [8-1] to connect pressure to short attack.'
+    }
   ];
+  const tabs=['What','When','Where','How','Progressions','Errors','Constraints','Checkerboard'];
   const principles=[
-    ['Use of constraints','Change task, space, scoring, bounce rules, targets or opponent behaviour to invite the desired shot solution.'],
-    ['Reduce verbal correction','Coach with short task instructions and observable outcomes; avoid repeated technical fixing.'],
-    ['External focus first','Direct attention to ball flight, target, opponent movement, time, space and tactical effect.'],
-    ['Body parts only if necessary','Use body-part cues only as a temporary bridge; finish with an external-focus cue.'],
-    ['Variability not fixed repetition','Vary feed, position, pace, target and opponent pressure so the shot adapts to context.'],
-    ['Use analogies','Use simple images such as “send the ball upstairs”, “make it die”, “take time away”.'],
-    ['Use video','Show tactical effect, opponent movement and ball outcome rather than only racket mechanics.'],
-    ['Self-discovery','Let the player search for workable solutions before the coach gives an answer.']
+    ['Constraints before correction','Change task, target, bounce, scoring, opponent position or permission rules before giving technical fixes.'],
+    ['External focus last','If a body cue is needed, finish with an external cue such as target, ball flight, space or opponent.'],
+    ['Variability over repetition','Vary height, speed, pressure, target and opponent information so the shot adapts to context.'],
+    ['Self-discovery','Ask players what information invited the shot and what the ball did to the opponent.'],
+    ['Video as evidence','Use short clips to show ball shape, opponent movement and decision timing, not to chase perfect technique.']
   ];
-  const builderCards=[
-    {title:'Shot Page Structure',text:'Each shot should be built around WSF What · When · Where · How, with CLA principles underneath.'},
-    {title:'Coaching Position',text:'The module should challenge technique-perfection coaching and frame technique as functional adaptation.'},
-    {title:'App Integration',text:'Shots starts as a Home tile and can later connect to Games Library, Session Builder and Diagnostic interventions.'}
-  ];
+  const [selected,setSelected]=useState(shotFamilies[0].name);
+  const [tab,setTab]=useState('What');
+  const active=shotFamilies.find(s=>s.name===selected)||shotFamilies[0];
+  function tabContent(){
+    if(tab==='What')return <p>{active.what}</p>;
+    if(tab==='When')return <p>{active.when}</p>;
+    if(tab==='Where')return <p>{active.where}</p>;
+    if(tab==='How')return <p>{active.how}</p>;
+    if(tab==='Progressions')return <ul>{active.progressions.map(x=><li key={x}>{x}</li>)}</ul>;
+    if(tab==='Errors')return <ul>{active.errors.map(x=><li key={x}>{x}</li>)}</ul>;
+    if(tab==='Constraints')return <ul>{active.constraints.map(x=><li key={x}>{x}</li>)}</ul>;
+    return <p>{active.checkerboard}</p>;
+  }
   return <div className="page shotsPage">
-    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">CLA shot development · What · When · Where · How</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="libraryStageIntro shotsIntro"><h2>Developing shot types without chasing technical perfection</h2><p>Shots are developed as adaptable solutions to game problems. The coach designs constraints that help players discover how ball shape, height, pace, line, timing and opponent information create tactical effect.</p></div>
-    <h2>CLA Principles For Coaching Technique</h2>
+    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">WSF What · When · Where · How · CLA constraints-led shot development</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div></div>
+    <div className="libraryStageIntro shotsIntro"><h2>Developing shot types without chasing technical perfection</h2><p>Shots are treated as adaptable solutions to game problems. The coach designs constraints that help players discover ball shape, height, pace, line, timing and opponent information.</p></div>
     <div className="shotsPrincipleGrid">{principles.map(([title,text])=><div className="gameCard shotsPrincipleCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
-    <h2>WSF What · When · Where · How Shot Families</h2>
-    <div className="shotsFamilyGrid">{shotFamilies.map(shot=><div className="gameCard shotFamilyCard" key={shot.name}><div className="categoryTag">Shot Type</div><h2>{shot.name}</h2><div className="shotQuad"><div><strong>What</strong><p>{shot.what}</p></div><div><strong>When</strong><p>{shot.when}</p></div><div><strong>Where</strong><p>{shot.where}</p></div><div><strong>How</strong><p>{shot.how}</p></div></div></div>)}</div>
-    <h2>Builder Notes</h2>
-    <div className="shotsBuilderGrid">{builderCards.map(card=><div className="statusBox" key={card.title}><strong>{card.title}</strong><p>{card.text}</p></div>)}</div>
+    <div className="shotSelectorRow">{shotFamilies.map(s=><button key={s.name} className={selected===s.name?'activeShotBtn':''} onClick={()=>{setSelected(s.name);setTab('What')}}>{s.name}<span>{s.tag}</span></button>)}</div>
+    <div className="shotDetailPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Shot Development</div><h2>{active.name}</h2><p className="mutedText">{active.tag} · {active.level}</p></div><button className="primaryBtn" onClick={()=>setScreen('sessions')}>Add idea to session</button></div>
+      <div className="shotTabRow">{tabs.map(t=><button key={t} className={tab===t?'activeShotTab':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
+      <div className="shotTabContent">{tabContent()}</div>
+      <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use {active.name.toLowerCase()} when the game information invites it.</p><p><strong>KEY FOCUS</strong><br/>See the opponent, shape the ball, then recover for the next problem.</p></div>
+    </div>
   </div>;
 }
-
 
 function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Pressure');
