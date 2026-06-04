@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h17';
+const APP_VERSION='v100h18';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -3193,8 +3193,16 @@ return <div className="page">
 
 
 function Competition({players=[]}){
+  // v100h18: restore the active Invasion format from saved state so a Points game does not reopen on Lives.
   const [mode,setMode]=useState('invasion');
-  const [invasionFormat,setInvasionFormat]=useState('lives');
+  const [invasionFormat,setInvasionFormat]=useState(()=>{
+    try{
+      const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
+      return saved.invasionFormat==='points'?'points':'lives';
+    }catch{
+      return 'lives';
+    }
+  });
   const [invasionCourts,setInvasionCourts]=useState(3);
   const [invasionStartingLives,setInvasionStartingLives]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
@@ -6620,7 +6628,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h17 Clean Invasion Player View</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h18 Invasion Format Persistence</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
