@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h14';
+const APP_VERSION='v100h17';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -311,14 +311,14 @@ function ProjectionView({session,setScreen}){
       return {court,defending,invading,current:projCurrentInvader(invading),next:projNextInvader(invading)};
     });
 
-    if(competitionProjection.invasionFormat==='points'){
+    {
       const teamScores=[...teams].map(team=>({team,score:projTeamPoints(team)})).sort((a,b)=>b.score-a.score);
       return <div className="projectionPage invasionOnlyProjector invasionPointsCleanView">
         <div className="projectionTop">
           <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
           <div>
-            <span className="projectionKicker">PLAYER DISPLAY / POINTS FORMAT</span>
-            <h1>Invasion Points Format</h1>
+            <span className="projectionKicker">{competitionProjection.invasionFormat==='points'?'PLAYER DISPLAY / POINTS FORMAT':'PLAYER DISPLAY / LIVES FORMAT'}</span>
+            <h1>{competitionProjection.invasionFormat==='points'?'Invasion Points Format':'Invasion Lives Format'}</h1>
             <p>Round {(competitionProjection.invasionPlayerRound||0)+1}</p>
           </div>
         </div>
@@ -345,12 +345,12 @@ function ProjectionView({session,setScreen}){
           <div className="simpleScoresPanel">
             <h2>Team Scores</h2>
             <div className="simpleScoreGrid">
-              {teamScores.map(({team,score})=><div className="simpleScoreCard" key={team.id}>
-                <div className="simpleScoreTeamInfo">
+              {teamScores.map(({team,score})=><div className="simpleScoreCard simpleScoreCardWithPlayers" key={team.id}>
+                <div className="simpleScoreTeamRow">
                   <span>{captainTeamName(team)}</span>
-                  <small>Players: {(team.players||[]).join(' · ')||'No players listed'}</small>
+                  <strong>{score}</strong>
                 </div>
-                <strong>{score}</strong>
+                <div className="simpleScorePlayers">Players: {playersByRank(team).join(' • ')}</div>
               </div>)}
             </div>
           </div>
@@ -6620,7 +6620,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h14 Player View Team Members</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h17 Clean Invasion Player View</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
