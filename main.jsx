@@ -3,9 +3,10 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h19';
+const APP_VERSION='v100h20';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
+const INVASION_UI_STATE_KEY='checkerboardInvasionUiState_v100h20';
 
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
@@ -3197,6 +3198,8 @@ function Competition({players=[]}){
   const [mode,setMode]=useState('invasion');
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
+      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
+      if(ui.invasionFormat==='points'||ui.invasionFormat==='lives') return ui.invasionFormat;
       const direct=localStorage.getItem('checkerboardInvasionFormat');
       if(direct==='points'||direct==='lives') return direct;
       const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
@@ -3210,6 +3213,7 @@ function Competition({players=[]}){
     setInvasionFormat(next);
     try{
       localStorage.setItem('checkerboardInvasionFormat',next);
+      localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat:next,updatedAt:new Date().toISOString()}));
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({...current,mode:'invasion',invasionFormat:next}));
@@ -3219,6 +3223,21 @@ function Competition({players=[]}){
   const [invasionStartingLives,setInvasionStartingLives]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
   });
+  useEffect(()=>{
+    // v100h20: robustly restore the selected Invasion tab when returning from Project/Home.
+    try{
+      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
+      const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
+      const restored=(ui.invasionFormat==='points'||ui.invasionFormat==='lives')
+        ?ui.invasionFormat
+        :(saved.invasionFormat==='points'||saved.invasionFormat==='lives')
+          ?saved.invasionFormat
+          :localStorage.getItem('checkerboardInvasionFormat');
+      if((restored==='points'||restored==='lives')&&restored!==invasionFormat){
+        setInvasionFormat(restored);
+      }
+    }catch{}
+  },[]);
   const [invasionRotation,setInvasionRotation]=useState('Rotate courts when one invader loses all lives.');
   const [invasionChallenge,setInvasionChallenge]=useState('Invader tries to win points / survive pressure while defenders control risk.');
   const [invasionTeams,setInvasionTeams]=useState(()=>{
@@ -3576,6 +3595,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardInvasionLive','true');
       localStorage.setItem('checkerboardProjectionTab','competition');
       localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
+      localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat,updatedAt:new Date().toISOString()}));
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       const fair=getInvasionFairRows(activeTeams);
@@ -3612,6 +3632,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardInvasionGameStarted','false');
       localStorage.setItem('checkerboardInvasionLive','false');
       localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
+      localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat,updatedAt:new Date().toISOString()}));
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
@@ -3631,6 +3652,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardInvasionLive','true');
       localStorage.setItem('checkerboardProjectionTab','competition');
       localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
+      localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat,updatedAt:new Date().toISOString()}));
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
         ...current,
         mode:'invasion',
@@ -3673,6 +3695,7 @@ function Competition({players=[]}){
   useEffect(()=>{
     try{
       localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
+      localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat,updatedAt:new Date().toISOString()}));
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
