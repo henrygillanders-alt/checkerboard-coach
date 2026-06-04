@@ -3,10 +3,10 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h20';
+const APP_VERSION='v100h21';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
-const INVASION_UI_STATE_KEY='checkerboardInvasionUiState_v100h20';
+const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
 
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
@@ -212,7 +212,7 @@ function ProjectionView({session,setScreen}){
     loadCompetitionProjection();
     const timer=setInterval(loadCompetitionProjection,1000);
     return ()=>clearInterval(timer);
-  },[]);
+  },[initialInvasionFormat,onInvasionFormatChange]);
 
   if(competitionProjection?.mode==='invasion'&&competitionProjection?.invasionGameStarted){
     const teams=competitionProjection.invasionTeams||[];
@@ -3193,17 +3193,20 @@ return <div className="page">
 
 
 
-function Competition({players=[]}){
+function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatChange=()=>{}}){
   // v100h19: restore the active Invasion format from saved state so a Points game does not reopen on Lives.
   const [mode,setMode]=useState('invasion');
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
-      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
-      if(ui.invasionFormat==='points'||ui.invasionFormat==='lives') return ui.invasionFormat;
+      // v100h21: first use the App-level remembered format. This survives page changes.
+      if(initialInvasionFormat==='points'||initialInvasionFormat==='lives') return initialInvasionFormat;
       const direct=localStorage.getItem('checkerboardInvasionFormat');
       if(direct==='points'||direct==='lives') return direct;
       const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
-      return saved.invasionFormat==='points'?'points':'lives';
+      if(saved.invasionFormat==='points'||saved.invasionFormat==='lives') return saved.invasionFormat;
+      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
+      if(ui.invasionFormat==='points'||ui.invasionFormat==='lives') return ui.invasionFormat;
+      return 'lives';
     }catch{
       return 'lives';
     }
@@ -3211,6 +3214,7 @@ function Competition({players=[]}){
   function chooseInvasionFormat(format){
     const next=format==='points'?'points':'lives';
     setInvasionFormat(next);
+    onInvasionFormatChange(next);
     try{
       localStorage.setItem('checkerboardInvasionFormat',next);
       localStorage.setItem(INVASION_UI_STATE_KEY,JSON.stringify({invasionFormat:next,updatedAt:new Date().toISOString()}));
@@ -3224,17 +3228,21 @@ function Competition({players=[]}){
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
   });
   useEffect(()=>{
-    // v100h20: robustly restore the selected Invasion tab when returning from Project/Home.
+    // v100h21: restore from App-level state first, then the stable direct key.
     try{
-      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
+      const direct=localStorage.getItem('checkerboardInvasionFormat');
       const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
-      const restored=(ui.invasionFormat==='points'||ui.invasionFormat==='lives')
-        ?ui.invasionFormat
-        :(saved.invasionFormat==='points'||saved.invasionFormat==='lives')
-          ?saved.invasionFormat
-          :localStorage.getItem('checkerboardInvasionFormat');
+      const ui=JSON.parse(localStorage.getItem(INVASION_UI_STATE_KEY)||'{}');
+      const restored=(initialInvasionFormat==='points'||initialInvasionFormat==='lives')
+        ?initialInvasionFormat
+        :(direct==='points'||direct==='lives')
+          ?direct
+          :(saved.invasionFormat==='points'||saved.invasionFormat==='lives')
+            ?saved.invasionFormat
+            :ui.invasionFormat;
       if((restored==='points'||restored==='lives')&&restored!==invasionFormat){
         setInvasionFormat(restored);
+        onInvasionFormatChange(restored);
       }
     }catch{}
   },[]);
@@ -6664,10 +6672,20 @@ function App(){
 const[screen,setScreen]=useState('home');
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
 const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY))||[]}catch{return[]}});
+const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
+  try{
+    const direct=localStorage.getItem('checkerboardInvasionFormat');
+    if(direct==='points'||direct==='lives') return direct;
+    const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
+    if(saved.invasionFormat==='points'||saved.invasionFormat==='lives') return saved.invasionFormat;
+  }catch{}
+  return 'lives';
+});
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
+useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h19 Invasion Format Persistence</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h21 Invasion Format App State</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
@@ -6684,7 +6702,7 @@ return <div>
       {screen==='conditions'&&<GameConditionsEngine setScreen={setScreen} setSession={setSession}/>}
       {screen==='shots'&&<ShotsModule setScreen={setScreen}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={setScreen}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={setScreen}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={setScreen}/>} 
-{screen==='competition'&&<Competition players={players}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
+{screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 
 <footer className="checkerboardFooter">
