@@ -9,17 +9,17 @@
 .totalBox{background:#1f5dd0;border-radius:12px;padding:12px 16px;font-weight:900}.rotationTop{display:flex;justify-content:space-between;gap:10px}.competitionControls{display:grid;grid-template-columns:1fr 1fr;gap:14px}.stepper{display:flex;align-items:center;justify-content:space-between;background:#081320;border:1px solid #35567e;border-radius:12px;padding:8px}.stepper button{background:#1f5dd0;border:none;color:white;border-radius:10px;width:44px;height:38px;font-weight:900;font-size:20px}.stepper strong{font-size:26px;color:#ffd980}.fixtureCard{background:#091625;border:1px solid #2f4d72;border-radius:12px;padding:14px;margin-bottom:10px}.boxGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.boxOption{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white}.activeBox{background:#1f5dd0}
 @media(max-width:900px){.homeGrid,.playerGrid,.quickGuestRow,.competitionControls{grid-template-columns:1fr}.tile h2{font-size:32px}.tile p{font-size:18px}.gameMenuGrid,.atlOptionsGrid,.boxGrid{grid-template-columns:1fr 1fr}.pageTop,.rotationTop{flex-direction:column;align-items:flex-start}}
 
-.overlayPanel{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0;color:#dce8ff}
-.overlayPanel strong{color:#ffd980;display:block;margin-bottom:10px}.quickLayers .activeLayer{background:#1f5dd0;border-color:#8ab6ff}.formatGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.formatBtn{background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:14px;font-weight:900}.activeFormat{background:#1f5dd0;border-color:#8ab6ff}@media(max-width:900px){.formatGrid{grid-template-columns:1fr 1fr}}
+.constraintPanel{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:14px 0;color:#dce8ff}
+.constraintPanel strong{color:#ffd980;display:block;margin-bottom:10px}.quickLayers .activeLayer{background:#1f5dd0;border-color:#8ab6ff}.formatGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.formatBtn{background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:14px;font-weight:900}.activeFormat{background:#1f5dd0;border-color:#8ab6ff}@media(max-width:900px){.formatGrid{grid-template-columns:1fr 1fr}}
 
-.competitionOverlayBox{
+.competitionConstraintBox{
   background:#0c1a2c;
   border:1px solid #5e83be;
   border-radius:14px;
   padding:14px;
   margin-bottom:16px;
 }
-.competitionOverlayBox > strong,
+.competitionConstraintBox > strong,
 .doubleBounceEdit strong{
   color:#ffd980;
   display:block;
@@ -139,7 +139,7 @@
   }
 }
 
-.overlayPanel .buttonRow{
+.constraintPanel .buttonRow{
   margin-top:12px;
 }
 .quickLayers button.activeLayer{
@@ -389,41 +389,41 @@
   }
 }
 
-.conditionedOverlayChooser{
+.conditionedConstraintChooser{
   background:#081320;
   border:1px solid #35567e;
   border-radius:12px;
   padding:12px;
   margin-bottom:12px;
 }
-.conditionedOverlayChooser strong{
+.conditionedConstraintChooser strong{
   display:block;
   color:#ffd980;
   margin-bottom:10px;
 }
 
-.overlayExplain{
+.constraintExplain{
   color:#9fb0c8;
   margin-top:6px;
 }
-.overlayInfoGrid{
+.constraintInfoGrid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:12px;
   margin-top:12px;
 }
-.overlayInfoCard{
+.constraintInfoCard{
   background:#101b2a;
   border:1px solid #35567e;
   border-radius:14px;
   padding:12px;
 }
-.overlayInfoCard h4{
+.constraintInfoCard h4{
   margin:0 0 10px 0;
   color:#ffd980;
 }
 @media(max-width:900px){
-  .overlayInfoGrid{
+  .constraintInfoGrid{
     grid-template-columns:1fr;
   }
 }
@@ -468,10 +468,10 @@
   padding:0 16px 16px 16px;
   border-top:1px solid #35567e;
 }
-.allOverlaySection{
+.allConstraintSection{
   margin-top:16px;
 }
-.allOverlaySection strong{
+.allConstraintSection strong{
   display:block;
   margin-bottom:10px;
   color:#ffd980;
@@ -1698,26 +1698,26 @@
   cursor:pointer;
 }
 
-/* v99h30 Technical Overlays */
-.technicalOverlaysPage .pageTop p{margin:6px 0 0}
-.overlayCategoryTabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-.overlayCategoryTabs button{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;background:rgba(15,23,42,.7);color:#fff;font-weight:800}
-.overlayCategoryTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
-.overlayLayout{display:grid;grid-template-columns:minmax(240px,330px) 1fr;gap:18px;align-items:start}
-.overlayList{display:flex;flex-direction:column;gap:10px}
-.overlayListCard{text-align:left;border:1px solid rgba(130,160,210,.5);border-radius:16px;background:rgba(18,31,52,.75);color:#fff;padding:14px}
-.overlayListCard strong{display:block;font-size:16px}
-.overlayListCard span{display:inline-block;margin-top:6px;opacity:.8;font-size:13px}
-.overlayListCard.active{border-color:var(--gold,#f7d979);box-shadow:0 0 0 2px rgba(247,217,121,.15)}
-.overlayDetail{border:2px solid var(--gold,#f7d979);border-radius:24px;padding:22px;background:rgba(8,14,27,.72)}
-.overlayDetail h2{margin:8px 0 18px;color:var(--gold,#f7d979);font-size:34px}
-.overlayDetail section{border-top:1px solid rgba(255,255,255,.12);padding-top:14px;margin-top:14px}
-.overlayDetail h3{margin:0 0 8px;color:var(--gold,#f7d979)}
+/* v99h30 Technical Constraints */
+.technicalConstraintsPage .pageTop p{margin:6px 0 0}
+.constraintCategoryTabs{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.constraintCategoryTabs button{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;background:rgba(15,23,42,.7);color:#fff;font-weight:800}
+.constraintCategoryTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
+.constraintLayout{display:grid;grid-template-columns:minmax(240px,330px) 1fr;gap:18px;align-items:start}
+.constraintList{display:flex;flex-direction:column;gap:10px}
+.constraintListCard{text-align:left;border:1px solid rgba(130,160,210,.5);border-radius:16px;background:rgba(18,31,52,.75);color:#fff;padding:14px}
+.constraintListCard strong{display:block;font-size:16px}
+.constraintListCard span{display:inline-block;margin-top:6px;opacity:.8;font-size:13px}
+.constraintListCard.active{border-color:var(--gold,#f7d979);box-shadow:0 0 0 2px rgba(247,217,121,.15)}
+.constraintDetail{border:2px solid var(--gold,#f7d979);border-radius:24px;padding:22px;background:rgba(8,14,27,.72)}
+.constraintDetail h2{margin:8px 0 18px;color:var(--gold,#f7d979);font-size:34px}
+.constraintDetail section{border-top:1px solid rgba(255,255,255,.12);padding-top:14px;margin-top:14px}
+.constraintDetail h3{margin:0 0 8px;color:var(--gold,#f7d979)}
 .chipRow{display:flex;gap:8px;flex-wrap:wrap}
 .chipRow span{border-radius:999px;padding:8px 11px;background:rgba(247,217,121,.14);border:1px solid rgba(247,217,121,.35)}
-@media(max-width:850px){.overlayLayout{grid-template-columns:1fr}}
+@media(max-width:850px){.constraintLayout{grid-template-columns:1fr}}
 
-/* v99h31 Technical Overlays home access */
+/* v99h31 Technical Constraints home access */
 .technicalHomeAccess{
   border:2px solid var(--gold,#f7d979);
   border-radius:22px;
@@ -1726,8 +1726,8 @@
   background:rgba(8,14,27,.72);
 }
 
-/* v99h32 Technical Overlays home tile */
-.technicalOverlayTile{
+/* v99h32 Technical Constraints home tile */
+.technicalConstraintTile{
   width:100%;
   min-height:170px;
   border:0;
@@ -1743,21 +1743,21 @@
   justify-content:center;
   align-items:flex-start;
 }
-.technicalOverlayTile h2{
+.technicalConstraintTile h2{
   margin:0 0 14px;
   font-size:clamp(24px,3.2vw,40px);
   line-height:1.05;
   font-weight:900;
   letter-spacing:0;
 }
-.technicalOverlayTile p{
+.technicalConstraintTile p{
   margin:0;
   font-size:clamp(15px,1.5vw,22px);
   line-height:1.25;
   font-weight:700;
 }
-.technicalOverlayTile:hover,
-.technicalOverlayTile:focus{
+.technicalConstraintTile:hover,
+.technicalConstraintTile:focus{
   transform:translateY(-1px);
   outline:2px solid rgba(247,217,121,.55);
 }
@@ -1785,7 +1785,7 @@
 }
 
 .homeTile,
-.technicalOverlayTile{
+.technicalConstraintTile{
   min-height:170px !important;
   display:flex !important;
   flex-direction:column !important;
@@ -1817,15 +1817,15 @@
 .page .featureCard h1,
 .page .featureCard h2,
 .page .featureCard h3,
-.page .technicalOverlayTile h1,
-.page .technicalOverlayTile h2,
-.page .technicalOverlayTile h3,
+.page .technicalConstraintTile h1,
+.page .technicalConstraintTile h2,
+.page .technicalConstraintTile h3,
 button.homeTile h1,
 button.homeTile h2,
 button.homeTile h3,
-button.technicalOverlayTile h1,
-button.technicalOverlayTile h2,
-button.technicalOverlayTile h3{
+button.technicalConstraintTile h1,
+button.technicalConstraintTile h2,
+button.technicalConstraintTile h3{
   font-size:40px !important;
   line-height:1.05 !important;
   font-weight:900 !important;
@@ -1839,9 +1839,9 @@ button.technicalOverlayTile h3{
 .page .menuCard p,
 .page .quickCard p,
 .page .featureCard p,
-.page .technicalOverlayTile p,
+.page .technicalConstraintTile p,
 button.homeTile p,
-button.technicalOverlayTile p{
+button.technicalConstraintTile p{
   font-size:20px !important;
   line-height:1.3 !important;
   font-weight:750 !important;
@@ -1858,9 +1858,9 @@ button.technicalOverlayTile p{
 .page .menuCard,
 .page .quickCard,
 .page .featureCard,
-.page .technicalOverlayTile,
+.page .technicalConstraintTile,
 button.homeTile,
-button.technicalOverlayTile{
+button.technicalConstraintTile{
   min-height:170px !important;
 }
 @media(max-width:900px){
@@ -1879,15 +1879,15 @@ button.technicalOverlayTile{
   .page .featureCard h1,
   .page .featureCard h2,
   .page .featureCard h3,
-  .page .technicalOverlayTile h1,
-  .page .technicalOverlayTile h2,
-  .page .technicalOverlayTile h3,
+  .page .technicalConstraintTile h1,
+  .page .technicalConstraintTile h2,
+  .page .technicalConstraintTile h3,
   button.homeTile h1,
   button.homeTile h2,
   button.homeTile h3,
-  button.technicalOverlayTile h1,
-  button.technicalOverlayTile h2,
-  button.technicalOverlayTile h3{
+  button.technicalConstraintTile h1,
+  button.technicalConstraintTile h2,
+  button.technicalConstraintTile h3{
     font-size:36px !important;
   }
 }
@@ -1916,7 +1916,7 @@ button.technicalOverlayTile{
 
 /* v99h38 Home tile polish + Mental Skills placeholder */
 .doubleBounceTile,
-.technicalOverlayTile,
+.technicalConstraintTile,
 .mentalSkillsTile{
   border-radius:28px !important;
   border:0 !important;
@@ -1937,7 +1937,7 @@ button.technicalOverlayTile{
   background:linear-gradient(135deg,#0f766e 0%,#2563eb 100%) !important;
 }
 
-.technicalOverlayTile{
+.technicalConstraintTile{
   background:linear-gradient(135deg,#6d28d9 0%,#7c3aed 48%,#c2410c 100%) !important;
 }
 
@@ -1946,7 +1946,7 @@ button.technicalOverlayTile{
 }
 
 .doubleBounceTile h2,
-.technicalOverlayTile h2,
+.technicalConstraintTile h2,
 .mentalSkillsTile h2{
   color:#fff !important;
   font-size:40px !important;
@@ -1959,7 +1959,7 @@ button.technicalOverlayTile{
 }
 
 .doubleBounceTile p,
-.technicalOverlayTile p,
+.technicalConstraintTile p,
 .mentalSkillsTile p{
   color:#fff !important;
   font-size:20px !important;
@@ -1991,11 +1991,11 @@ button.technicalOverlayTile{
 .homeGrid > button,
 .homeGrid > .homeTile,
 .homeGrid > .doubleBounceTile,
-.homeGrid > .technicalOverlayTile,
+.homeGrid > .technicalConstraintTile,
 .homeGrid > .mentalSkillsTile,
 button.homeTile,
 button.doubleBounceTile,
-button.technicalOverlayTile,
+button.technicalConstraintTile,
 button.mentalSkillsTile{
   height:190px !important;
   min-height:190px !important;
@@ -2014,11 +2014,11 @@ button.mentalSkillsTile{
 .homeGrid > button h2,
 .homeGrid > .homeTile h2,
 .homeGrid > .doubleBounceTile h2,
-.homeGrid > .technicalOverlayTile h2,
+.homeGrid > .technicalConstraintTile h2,
 .homeGrid > .mentalSkillsTile h2,
 button.homeTile h2,
 button.doubleBounceTile h2,
-button.technicalOverlayTile h2,
+button.technicalConstraintTile h2,
 button.mentalSkillsTile h2{
   font-size:40px !important;
   line-height:1.05 !important;
@@ -2031,11 +2031,11 @@ button.mentalSkillsTile h2{
 .homeGrid > button p,
 .homeGrid > .homeTile p,
 .homeGrid > .doubleBounceTile p,
-.homeGrid > .technicalOverlayTile p,
+.homeGrid > .technicalConstraintTile p,
 .homeGrid > .mentalSkillsTile p,
 button.homeTile p,
 button.doubleBounceTile p,
-button.technicalOverlayTile p,
+button.technicalConstraintTile p,
 button.mentalSkillsTile p{
   font-size:20px !important;
   line-height:1.3 !important;
@@ -2050,11 +2050,11 @@ button.mentalSkillsTile p{
   .homeGrid > button,
   .homeGrid > .homeTile,
   .homeGrid > .doubleBounceTile,
-  .homeGrid > .technicalOverlayTile,
+  .homeGrid > .technicalConstraintTile,
   .homeGrid > .mentalSkillsTile,
   button.homeTile,
   button.doubleBounceTile,
-  button.technicalOverlayTile,
+  button.technicalConstraintTile,
   button.mentalSkillsTile{
     height:auto !important;
     min-height:170px !important;
@@ -2068,10 +2068,10 @@ button.mentalSkillsTile p{
 .mentalTabs .activeTab{background:var(--gold,#f7d979);color:#08111f}
 .mentalPanel{border:2px solid rgba(247,217,121,.65);border-radius:26px;padding:24px;background:rgba(8,14,27,.72)}
 .mentalPanel h2{color:var(--gold,#f7d979);margin-top:0;font-size:32px}
-.mentalGrid,.overlayMentalGrid,.ratingGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0}
-.mentalCard,.mentalOverlayCard,.ratingCard,.routineBox,.breathCard{border:1px solid rgba(130,160,210,.5);border-radius:20px;padding:18px;background:rgba(18,31,52,.75)}
-.mentalCard h3,.mentalOverlayCard h3,.ratingCard h3,.breathCard h3{color:#fff;margin:0 0 8px}
-.mentalOverlayCard span{display:inline-flex;border-radius:999px;padding:6px 10px;background:rgba(247,217,121,.16);border:1px solid rgba(247,217,121,.35);color:var(--gold,#f7d979);font-weight:900;margin-bottom:8px}
+.mentalGrid,.constraintMentalGrid,.ratingGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0}
+.mentalCard,.mentalConstraintCard,.ratingCard,.routineBox,.breathCard{border:1px solid rgba(130,160,210,.5);border-radius:20px;padding:18px;background:rgba(18,31,52,.75)}
+.mentalCard h3,.mentalConstraintCard h3,.ratingCard h3,.breathCard h3{color:#fff;margin:0 0 8px}
+.mentalConstraintCard span{display:inline-flex;border-radius:999px;padding:6px 10px;background:rgba(247,217,121,.16);border:1px solid rgba(247,217,121,.35);color:var(--gold,#f7d979);font-weight:900;margin-bottom:8px}
 .routineBox label{display:block;color:var(--gold,#f7d979);font-weight:900;margin-bottom:8px}
 .routineBox input,.goalList input{width:100%;box-sizing:border-box;border-radius:12px;border:1px solid rgba(130,160,210,.55);background:rgba(7,12,22,.85);color:#fff;padding:12px;font-size:17px;margin-bottom:10px}
 .breathSteps{display:flex;gap:10px;flex-wrap:wrap}
@@ -2087,38 +2087,38 @@ button.mentalSkillsTile p{
 .quietEyeBox li{margin:8px 0;line-height:1.35}
 .coachCue{display:inline-flex;border-radius:999px;padding:10px 14px;background:var(--gold,#f7d979);color:#08111f;font-weight:1000}
 .breathSystemCard h3{color:var(--gold,#f7d979)}
-.mentalOverlayCard p{line-height:1.36}
+.mentalConstraintCard p{line-height:1.36}
 
-/* v99h42 Universal Mental Overlay Selector */
-.mentalOverlaySelector{
+/* v99h42 Universal Mental Constraint Selector */
+.mentalConstraintSelector{
   border:2px solid rgba(247,217,121,.65);
   border-radius:24px;
   padding:20px;
   margin:18px 0 24px;
   background:rgba(8,14,27,.72);
 }
-.mentalOverlaySelector .sectionHead{
+.mentalConstraintSelector .sectionHead{
   display:flex;
   justify-content:space-between;
   gap:14px;
   align-items:flex-start;
   flex-wrap:wrap;
 }
-.mentalOverlaySelector h2{
+.mentalConstraintSelector h2{
   color:var(--gold,#f7d979);
   margin:0 0 6px;
   font-size:28px;
 }
-.mentalOverlaySelector p{
+.mentalConstraintSelector p{
   margin:0;
   line-height:1.35;
 }
-.overlayModeButtons{
+.constraintModeButtons{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
 }
-.overlayModeButtons button{
+.constraintModeButtons button{
   border:1px solid rgba(247,217,121,.35);
   border-radius:999px;
   padding:8px 12px;
@@ -2126,17 +2126,17 @@ button.mentalSkillsTile p{
   color:#fff;
   font-weight:900;
 }
-.overlayModeButtons .activeMode{
+.constraintModeButtons .activeMode{
   background:var(--gold,#f7d979);
   color:#08111f;
 }
-.mentalOverlayChips{
+.mentalConstraintChips{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:10px;
   margin:16px 0;
 }
-.mentalOverlayChips button{
+.mentalConstraintChips button{
   text-align:left;
   border:1px solid rgba(130,160,210,.45);
   border-radius:16px;
@@ -2144,40 +2144,40 @@ button.mentalSkillsTile p{
   background:rgba(18,31,52,.75);
   color:#fff;
 }
-.mentalOverlayChips button strong{
+.mentalConstraintChips button strong{
   display:block;
   font-size:15px;
 }
-.mentalOverlayChips button span{
+.mentalConstraintChips button span{
   display:inline-block;
   margin-top:5px;
   opacity:.8;
   font-size:12px;
 }
-.mentalOverlayChips .selectedOverlay{
+.mentalConstraintChips .selectedConstraint{
   border-color:var(--gold,#f7d979);
   box-shadow:0 0 0 2px rgba(247,217,121,.15);
   background:rgba(247,217,121,.12);
 }
-.activeOverlayPanel{
+.activeConstraintPanel{
   border-top:1px solid rgba(255,255,255,.12);
   padding-top:14px;
 }
-.activeOverlayPanel h3{
+.activeConstraintPanel h3{
   color:var(--gold,#f7d979);
   margin:0 0 10px;
 }
-.activeOverlayRule{
+.activeConstraintRule{
   border:1px solid rgba(247,217,121,.25);
   border-radius:14px;
   padding:12px;
   margin:8px 0;
   background:rgba(247,217,121,.08);
 }
-.activeOverlayRule strong{
+.activeConstraintRule strong{
   color:#fff;
 }
-.activeOverlayRule p{
+.activeConstraintRule p{
   margin:6px 0 0;
 }
 
@@ -2241,7 +2241,7 @@ button.mentalSkillsTile p{
 
 /* v99h46 Starting Lives respected in Invasion Fair Lives */
 
-/* v99h47 M1 Universal Overlays + Mental Performance Navigation */
+/* v99h47 M1 Universal Constraints + Mental Performance Navigation */
 .universalFamilyTabs{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -2406,11 +2406,11 @@ button.mentalSkillsTile p{
 .animalHero h2{margin:0;color:#fff;font-size:38px}
 .animalHero h3{margin:4px 0 8px;color:var(--gold,#f7d979)}
 .largeCue{font-size:26px;font-weight:1000;color:var(--gold,#f7d979)}
-.overlaySuggestionBox{border:1px solid rgba(247,217,121,.35);border-radius:22px;padding:18px;background:rgba(247,217,121,.08)}
+.constraintSuggestionBox{border:1px solid rgba(247,217,121,.35);border-radius:22px;padding:18px;background:rgba(247,217,121,.08)}
 .prepFlow{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .prepFlow span{border-radius:999px;padding:12px 16px;background:rgba(247,217,121,.12);border:1px solid rgba(247,217,121,.35);font-weight:900}
 
-/* v99h48c: Mental Performance moved under Universal Overlays */
+/* v99h48c: Mental Performance moved under Universal Constraints */
 .universalInfoNote{
   display:flex;
   gap:10px;
@@ -2524,9 +2524,9 @@ button.mentalSkillsTile p{
 .compactProjectorTeamList{margin:8px 0 12px;gap:5px}.compactProjectorTeamList .projectorPlayerLine{font-size:18px;padding:7px 10px}.defendingProjectorTeamList .projectorPlayerLine{opacity:.88}.projectorLivesTeamCard p{margin:8px 0}
 @media (max-width:780px){.clockFace{min-height:330px}.clockNode{width:112px;font-size:13px}}
 
-/* v99h53 bottom overlay tabs */
-.bottomOverlayPad{padding-bottom:108px!important}
-.bottomOverlayTabs{
+/* v99h53 bottom constraint tabs */
+.bottomConstraintPad{padding-bottom:108px!important}
+.bottomConstraintTabs{
   position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
   width:min(720px,calc(100vw - 24px));padding:10px;
@@ -2534,35 +2534,35 @@ button.mentalSkillsTile p{
   background:rgba(5,10,20,.94);backdrop-filter:blur(14px);
   box-shadow:0 14px 34px rgba(0,0,0,.38)
 }
-.bottomOverlayTabs button{
+.bottomConstraintTabs button{
   border:1px solid rgba(130,160,210,.34);border-radius:18px;
   background:rgba(18,31,52,.84);color:#fff;min-height:62px;
   display:flex;align-items:center;justify-content:center;gap:8px;
   font-weight:1000;font-size:20px
 }
-.bottomOverlayTabs button span{font-size:17px}
-.bottomOverlayTabs .activeBottomOverlayTab{
+.bottomConstraintTabs button span{font-size:17px}
+.bottomConstraintTabs .activeBottomConstraintTab{
   background:linear-gradient(135deg,rgba(247,217,121,.95),rgba(244,114,182,.78));
   color:#08111f;border-color:rgba(247,217,121,.95)
 }
-.universalOverlaysPage .pageTop .mutedText{color:var(--gold,#f7d979);font-weight:900}
+.universalConstraintsPage .pageTop .mutedText{color:var(--gold,#f7d979);font-weight:900}
 @media (max-width:720px){
-  .bottomOverlayTabs{bottom:8px;width:calc(100vw - 12px);border-radius:18px}
-  .bottomOverlayTabs button{min-height:56px;font-size:18px;flex-direction:column;gap:2px}
-  .bottomOverlayTabs button span{font-size:13px}
+  .bottomConstraintTabs{bottom:8px;width:calc(100vw - 12px);border-radius:18px}
+  .bottomConstraintTabs button{min-height:56px;font-size:18px;flex-direction:column;gap:2px}
+  .bottomConstraintTabs button span{font-size:13px}
 }
 
-/* v99h54 Competition tabbed overlay engine */
-.overlayFamilyEngine{
+/* v99h54 Competition tabbed constraint engine */
+.constraintFamilyEngine{
   margin-top:10px;
 }
-.overlayFamilyTabs{
+.constraintFamilyTabs{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:10px;
   margin:12px 0 14px;
 }
-.overlayFamilyTabs button{
+.constraintFamilyTabs button{
   border:2px solid rgba(130,160,210,.45);
   border-radius:18px;
   padding:14px 12px;
@@ -2571,22 +2571,22 @@ button.mentalSkillsTile p{
   font-weight:1000;
   cursor:pointer;
 }
-.overlayFamilyTabs .activeFamilyTab{
+.constraintFamilyTabs .activeFamilyTab{
   border-color:var(--gold,#f7d979);
   background:linear-gradient(135deg,rgba(247,217,121,.24),rgba(14,165,233,.12));
   color:var(--gold,#f7d979);
 }
-.overlayFamilyChips{
+.constraintFamilyChips{
   margin-top:14px;
 }
-.bottomOverlayTabs button span{
+.bottomConstraintTabs button span{
   white-space:nowrap;
 }
 @media(max-width:720px){
-  .overlayFamilyTabs{
+  .constraintFamilyTabs{
     grid-template-columns:1fr;
   }
-  .bottomOverlayTabs button span{
+  .bottomConstraintTabs button span{
     font-size:12px;
   }
 }
@@ -2666,7 +2666,7 @@ button.mentalSkillsTile p{
   font-style:normal;
   font-weight:900;
 }
-.diagnosticMentalEngine .overlaySuggestionBox{
+.diagnosticMentalEngine .constraintSuggestionBox{
   margin-top:18px;
 }
 @media(max-width:820px){
@@ -2911,59 +2911,59 @@ button.mentalSkillsTile p{
 @media(max-width:900px){.quickFixTwoCol{grid-template-columns:1fr}}
 
 
-/* v99h76 Overlay Architecture Engine CSS */
+/* v99h76 Constraint Architecture Engine CSS */
 .homeBrandCard .homeTagline,.homeTagline{color:#ffd980!important;font-size:20px!important;line-height:1.2!important;font-weight:1000!important;margin:4px 0 12px!important;letter-spacing:.4px!important}
-.overlayEnginePage .bernsteinBox{border:2px solid rgba(255,217,128,.62)}
-.overlayBaseSelector{background:#081320;border:1px solid #35567e;border-radius:18px;padding:16px;margin:18px 0}
-.overlayBaseSelector label,.overlayStackCard label{display:flex;flex-direction:column;gap:7px;color:#ffd980;font-weight:1000}
-.overlayBaseSelector select,.overlayStackCard select{background:#06111f;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white}
-.overlayStackGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0}
-.overlayStackCard{background:#0b1828;border:1px solid #5e83be;border-radius:20px;padding:16px}
-.overlayNumber{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 12px;font-weight:1000;margin-bottom:12px}
-.overlayMiniPreview{margin-top:12px;background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
-.overlayMiniPreview strong{color:#ffd980}.overlayMiniPreview p{color:#dbeafe;margin:8px 0;line-height:1.35}.overlayMiniPreview em{display:block;color:#9bc1ff;font-style:normal;font-weight:900}
-.overlayPreviewCard{background:#06111f;border:2px solid #ffd980;border-radius:22px;padding:18px;margin:22px 0}
-.overlayPreviewCard h3{color:#ffd980;margin-top:0}.overlayPreviewCard ol{margin:12px 0 0 20px}.overlayPreviewCard li{margin-bottom:14px}.overlayPreviewCard li strong,.overlayPreviewCard li span,.overlayPreviewCard li b{display:block}.overlayPreviewCard li span{color:#dbeafe;margin:5px 0}.overlayPreviewCard li b{color:#ffd980}
-.overlayOutputGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
-.overlayOutputCard{background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px}.overlayOutputCard h3{color:#ffd980;margin:0 0 10px}.overlayOutputCard p{color:#dbeafe;margin:0;line-height:1.4}
+.constraintEnginePage .bernsteinBox{border:2px solid rgba(255,217,128,.62)}
+.constraintBaseSelector{background:#081320;border:1px solid #35567e;border-radius:18px;padding:16px;margin:18px 0}
+.constraintBaseSelector label,.constraintStackCard label{display:flex;flex-direction:column;gap:7px;color:#ffd980;font-weight:1000}
+.constraintBaseSelector select,.constraintStackCard select{background:#06111f;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white}
+.constraintStackGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0}
+.constraintStackCard{background:#0b1828;border:1px solid #5e83be;border-radius:20px;padding:16px}
+.constraintNumber{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 12px;font-weight:1000;margin-bottom:12px}
+.constraintMiniPreview{margin-top:12px;background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
+.constraintMiniPreview strong{color:#ffd980}.constraintMiniPreview p{color:#dbeafe;margin:8px 0;line-height:1.35}.constraintMiniPreview em{display:block;color:#9bc1ff;font-style:normal;font-weight:900}
+.constraintPreviewCard{background:#06111f;border:2px solid #ffd980;border-radius:22px;padding:18px;margin:22px 0}
+.constraintPreviewCard h3{color:#ffd980;margin-top:0}.constraintPreviewCard ol{margin:12px 0 0 20px}.constraintPreviewCard li{margin-bottom:14px}.constraintPreviewCard li strong,.constraintPreviewCard li span,.constraintPreviewCard li b{display:block}.constraintPreviewCard li span{color:#dbeafe;margin:5px 0}.constraintPreviewCard li b{color:#ffd980}
+.constraintOutputGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.constraintOutputCard{background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px}.constraintOutputCard h3{color:#ffd980;margin:0 0 10px}.constraintOutputCard p{color:#dbeafe;margin:0;line-height:1.4}
 
 
-/* v99h77 Integrated Overlay Builder */
-.integratedOverlayBuilder{
+/* v99h77 Integrated Constraint Builder */
+.integratedConstraintBuilder{
   background:#06111f;
   border:2px solid rgba(255,217,128,.48);
   border-radius:18px;
   padding:16px;
   margin:14px 0 18px;
 }
-.integratedOverlayTop{
+.integratedConstraintTop{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
   gap:14px;
   flex-wrap:wrap;
 }
-.integratedOverlayTop strong{
+.integratedConstraintTop strong{
   color:#ffd980;
   font-size:20px;
 }
-.integratedOverlayTop p{
+.integratedConstraintTop p{
   color:#dbeafe;
   margin:6px 0 0;
 }
-.integratedOverlayGrid{
+.integratedConstraintGrid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
   gap:12px;
   margin-top:14px;
 }
-.integratedOverlayCard{
+.integratedConstraintCard{
   background:#0b1828;
   border:1px solid #5e83be;
   border-radius:16px;
   padding:14px;
 }
-.integratedOverlayCard>span{
+.integratedConstraintCard>span{
   display:inline-block;
   background:#ffd980;
   color:#0f172a;
@@ -2972,7 +2972,7 @@ button.mentalSkillsTile p{
   font-weight:1000;
   margin-bottom:10px;
 }
-.integratedOverlayCard label{
+.integratedConstraintCard label{
   display:flex;
   flex-direction:column;
   gap:6px;
@@ -2980,45 +2980,45 @@ button.mentalSkillsTile p{
   font-weight:900;
   margin:9px 0;
 }
-.integratedOverlayCard select{
+.integratedConstraintCard select{
   background:#06111f;
   border:1px solid #5e83be;
   border-radius:10px;
   padding:10px;
   color:white;
 }
-.integratedOverlayCard small{
+.integratedConstraintCard small{
   display:block;
   color:#dbeafe;
   line-height:1.35;
   margin-top:8px;
 }
-.integratedOverlayCard em{
+.integratedConstraintCard em{
   display:block;
   color:#9bc1ff;
   font-style:normal;
   font-weight:900;
   margin-top:8px;
 }
-.integratedOverlayPreview{
+.integratedConstraintPreview{
   background:#081320;
   border:1px solid #35567e;
   border-radius:14px;
   padding:14px;
   margin-top:14px;
 }
-.integratedOverlayPreview strong{
+.integratedConstraintPreview strong{
   color:#ffd980;
 }
-.integratedOverlayPreview li{
+.integratedConstraintPreview li{
   color:#dbeafe;
   margin:8px 0;
 }
-.integratedOverlayPreview li b,
-.integratedOverlayPreview li span{
+.integratedConstraintPreview li b,
+.integratedConstraintPreview li span{
   color:#ffd980;
 }
-.integratedOverlayPreview p{
+.integratedConstraintPreview p{
   color:#dbeafe;
   margin-bottom:0;
 }
@@ -3038,42 +3038,42 @@ button.mentalSkillsTile p{
 }
 
 
-/* v99h78 Overlay Scoring Engine */
-.integratedOverlayCard.activeOverlayStage{
+/* v99h78 Constraint Scoring Engine */
+.integratedConstraintCard.activeConstraintStage{
   border:2px solid #ffd980;
   box-shadow:0 0 0 3px rgba(255,217,128,.16);
 }
-.overlayScoringPanel{
+.constraintScoringPanel{
   background:#050914;
   border:2px solid #ffd980;
   border-radius:20px;
   padding:16px;
   margin-top:16px;
 }
-.overlayScoreTop{
+.constraintScoreTop{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:12px;
 }
-.overlayScoreTop div{
+.constraintScoreTop div{
   background:#0b1828;
   border:1px solid #5e83be;
   border-radius:16px;
   padding:14px;
   text-align:center;
 }
-.overlayScoreTop strong{
+.constraintScoreTop strong{
   display:block;
   color:#cbd5e1;
   font-size:14px;
   margin-bottom:8px;
 }
-.overlayScoreTop span{
+.constraintScoreTop span{
   color:#ffd980;
   font-size:42px;
   font-weight:1000;
 }
-.overlayStateLine{
+.constraintStateLine{
   background:#10233b;
   border:1px solid #5e83be;
   color:#dbeafe;
@@ -3081,97 +3081,97 @@ button.mentalSkillsTile p{
   padding:12px;
   font-weight:900;
 }
-.overlayScoreActions{
+.constraintScoreActions{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
   margin:12px 0;
 }
-.overlayAchieveGrid{
+.constraintAchieveGrid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
   gap:12px;
   margin-top:14px;
 }
-.overlayAchieveCard{
+.constraintAchieveCard{
   background:#081320;
   border:1px solid #35567e;
   border-radius:16px;
   padding:14px;
 }
-.overlayAchieveCard strong{
+.constraintAchieveCard strong{
   display:block;
   color:#ffd980;
   margin-bottom:10px;
 }
-.overlayAchieveCard button{
+.constraintAchieveCard button{
   display:block;
   width:100%;
   margin-top:8px;
 }
-.overlayHistory{
+.constraintHistory{
   background:#081320;
   border:1px solid #35567e;
   border-radius:16px;
   padding:14px;
   margin-top:14px;
 }
-.overlayHistory strong{
+.constraintHistory strong{
   color:#ffd980;
 }
-.overlayHistory p{
+.constraintHistory p{
   color:#dbeafe;
   margin:8px 0 0;
   line-height:1.35;
 }
 
 
-/* v99h79 Overlay Placement Fix */
-.integratedOverlayBuilder{
+/* v99h79 Constraint Placement Fix */
+.integratedConstraintBuilder{
   scroll-margin-top:24px;
 }
-.integratedOverlayBuilder.compactOverlayBuilder{
+.integratedConstraintBuilder.compactConstraintBuilder{
   margin-top:18px!important;
   margin-bottom:22px!important;
 }
 
 
-/* v99h80 Unified Overlay Stack */
-.overlayUnificationNote{background:#0c1a2c;border:1px solid #ffd980;border-radius:16px;padding:14px;margin:16px 0}
-.overlayUnificationNote strong{color:#ffd980;display:block;margin-bottom:6px}
-.overlayUnificationNote p{color:#dbeafe;margin:0}
-.integratedOverlayBuilder{border-color:#ffd980!important}
+/* v99h80 Unified Constraint Stack */
+.constraintUnificationNote{background:#0c1a2c;border:1px solid #ffd980;border-radius:16px;padding:14px;margin:16px 0}
+.constraintUnificationNote strong{color:#ffd980;display:block;margin-bottom:6px}
+.constraintUnificationNote p{color:#dbeafe;margin:0}
+.integratedConstraintBuilder{border-color:#ffd980!important}
 
-/* v99h81 Logical Overlay Sequence */
-.integratedOverlayCard select:disabled{opacity:.55;cursor:not-allowed}
+/* v99h81 Logical Constraint Sequence */
+.integratedConstraintCard select:disabled{opacity:.55;cursor:not-allowed}
 
 
-/* v99h82 Standalone Overlay Builder */
-.standaloneOverlayPage{max-width:1180px;margin:0 auto}
-.overlayPhilosophyBox{background:#0c1a2c;border:2px solid rgba(255,217,128,.55);border-radius:18px;padding:16px;margin:16px 0}
-.overlayPhilosophyBox strong{color:#ffd980;font-size:20px}.overlayPhilosophyBox p{color:#dbeafe;margin:8px 0 0}
-.overlayBuilderCard,.generatedOverlayCard{background:#06111f;border:1px solid #35567e;border-radius:20px;padding:18px;margin:18px 0}
-.overlayBuilderCard label{display:flex;flex-direction:column;gap:8px;color:#ffd980;font-weight:1000;margin-bottom:14px}
-.overlayBuilderCard select,.overlayBuilderCard textarea{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}
-.overlayBuilderCard textarea{min-height:100px;resize:vertical}
-.overlayRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
-.overlayRowCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:15px}
-.overlayRowCard>span{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:7px 12px;font-weight:1000;margin-bottom:10px}
-.overlayExplain{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
-.overlayExplain b,.generatedOverlayCard h2,.generatedOverlayCard li strong,.overlayCoachOutput strong{color:#ffd980}
-.overlayExplain p,.generatedOverlayCard p,.generatedOverlayCard li span,.overlayCoachOutput p{color:#dbeafe;line-height:1.4}
-.overlayExplain em{display:block;color:#9bc1ff;font-style:normal;font-weight:900;margin:8px 0}.overlayExplain strong{display:block;color:#ffd980;margin-top:8px}
-.generatedOverlayCard ol{margin-left:20px}.generatedOverlayCard li{margin:14px 0}.generatedOverlayCard li span,.generatedOverlayCard li b{display:block;margin-top:5px}
-.overlayCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-top:14px}
+/* v99h82 Standalone Constraint Builder */
+.standaloneConstraintPage{max-width:1180px;margin:0 auto}
+.constraintPhilosophyBox{background:#0c1a2c;border:2px solid rgba(255,217,128,.55);border-radius:18px;padding:16px;margin:16px 0}
+.constraintPhilosophyBox strong{color:#ffd980;font-size:20px}.constraintPhilosophyBox p{color:#dbeafe;margin:8px 0 0}
+.constraintBuilderCard,.generatedConstraintCard{background:#06111f;border:1px solid #35567e;border-radius:20px;padding:18px;margin:18px 0}
+.constraintBuilderCard label{display:flex;flex-direction:column;gap:8px;color:#ffd980;font-weight:1000;margin-bottom:14px}
+.constraintBuilderCard select,.constraintBuilderCard textarea{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}
+.constraintBuilderCard textarea{min-height:100px;resize:vertical}
+.constraintRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
+.constraintRowCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:15px}
+.constraintRowCard>span{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:7px 12px;font-weight:1000;margin-bottom:10px}
+.constraintExplain{background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}
+.constraintExplain b,.generatedConstraintCard h2,.generatedConstraintCard li strong,.constraintCoachOutput strong{color:#ffd980}
+.constraintExplain p,.generatedConstraintCard p,.generatedConstraintCard li span,.constraintCoachOutput p{color:#dbeafe;line-height:1.4}
+.constraintExplain em{display:block;color:#9bc1ff;font-style:normal;font-weight:900;margin:8px 0}.constraintExplain strong{display:block;color:#ffd980;margin-top:8px}
+.generatedConstraintCard ol{margin-left:20px}.generatedConstraintCard li{margin:14px 0}.generatedConstraintCard li span,.generatedConstraintCard li b{display:block;margin-top:5px}
+.constraintCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-top:14px}
 
-/* v99h82 Overlay Builder Home Tile */
-.overlayBuilderTile{
+/* v99h82 Constraint Builder Home Tile */
+.constraintBuilderTile{
   background:linear-gradient(135deg,#0f766e,#2563eb)!important;
 }
 
 
-/* v99h83 Game Card Overlay Builder */
-.overlayGameCardBuilder input{
+/* v99h83 Game Card Constraint Builder */
+.constraintGameCardBuilder input{
   background:#081320;
   border:1px solid #5e83be;
   border-radius:12px;
@@ -3179,11 +3179,11 @@ button.mentalSkillsTile p{
   color:white;
   font-weight:800;
 }
-.overlayGameCardBuilder h2{
+.constraintGameCardBuilder h2{
   color:#ffd980;
   margin-top:0;
 }
-.overlayGameCardBuilder .statusBox{
+.constraintGameCardBuilder .statusBox{
   margin-top:14px;
 }
 
@@ -3243,7 +3243,7 @@ button.mentalSkillsTile p{
 .triggerAddRow select{background:#081320;border:1px solid #5e83be;border-radius:12px;padding:12px;color:white;font-weight:800}
 .triggerStackList{display:grid;gap:10px;margin:10px 0}.triggerStackItem{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#081320;border:1px solid #35567e;border-radius:14px;padding:12px}.triggerStackItem strong{color:#ffd980}
 .qualityGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}.qualityGrid button{background:#12253d;border:1px solid #486b9a;color:white;border-radius:12px;padding:12px;font-weight:900;text-align:left}.qualityGrid button.activeQualityBtn{background:#ffd980;color:#0f172a;border-color:white}
-.dualViewGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.overlayCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px}.overlayCoachOutput strong{color:#ffd980}.overlayCoachOutput p,.playerViewCard li{color:#dbeafe}.playerViewCard ol{margin:10px 0 0 20px}
+.dualViewGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.constraintCoachOutput{background:#0b1828;border:1px solid #5e83be;border-radius:14px;padding:14px}.constraintCoachOutput strong{color:#ffd980}.constraintCoachOutput p,.playerViewCard li{color:#dbeafe}.playerViewCard ol{margin:10px 0 0 20px}
 @media(max-width:900px){.dualViewGrid{grid-template-columns:1fr}.triggerAddRow{grid-template-columns:1fr}}
 
 
@@ -3431,7 +3431,7 @@ button.mentalSkillsTile p{
 .plugTags{display:flex;gap:7px;flex-wrap:wrap}.plugTags span{border:1px solid rgba(134,239,172,.35);border-radius:999px;padding:5px 8px;background:rgba(22,163,74,.12);font-size:12px;font-weight:900;color:#d1fae5}
 .plugPlayCard .primaryBtn{margin-top:auto}
 
-/* v100h08 Game Conditions foundation */
+/* v100h08 Constraints foundation */
 .conditionsHomeCard{
   background:linear-gradient(135deg,#082f49,#0f766e 52%,#134e4a);
   border:1px solid rgba(125,211,252,.55);
