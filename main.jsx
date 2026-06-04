@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h24';
+const APP_VERSION='v100h25';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -192,7 +192,7 @@ function stopCoachProjectionSession(){
   }catch{}
 }
 
-function ProjectionView({session,setScreen}){
+function ProjectionView({session,setScreen,players=[]}){
   const [selectedIndex,setSelectedIndex]=useState(0);
   const [competitionProjection,setCompetitionProjection]=useState(null);
 
@@ -6705,7 +6705,7 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h24 Universal Navigation</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h25 Project Guard</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
@@ -6715,7 +6715,7 @@ return <div>
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={go}/>} 
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={go}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
-      {screen==='projection'&&<ProjectionView session={session} setScreen={go}/>}
+      {screen==='projection'&&<ProjectionView session={session} setScreen={go} players={players}/>}
       {screen==='level0'&&<Level0Exploration/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
