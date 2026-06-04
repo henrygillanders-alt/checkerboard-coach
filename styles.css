@@ -3511,7 +3511,7 @@ button.mentalSkillsTile p{
 .conditionsEmbeddedTop p{margin:0}
 @media(max-width:800px){.conditionsAttachBar,.conditionsEmbeddedTop{flex-direction:column;align-items:stretch}.conditionsAttachBar button,.conditionsEmbeddedTop button{width:100%}}
 
-/* v100h16 Invasion points player-view cleanup */
+/* v100h13 Invasion points player-view cleanup */
 .invasionPointsCleanView .projectionTop{align-items:center;}
 .invasionSimplePlayerBoard{max-width:1180px;margin:0 auto;padding:28px;border:2px solid rgba(255,214,102,.85);border-radius:24px;background:rgba(7,17,34,.92);box-shadow:0 0 0 1px rgba(103,160,255,.18) inset;}
 .simpleRoundBanner{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:28px;padding:18px;border-radius:18px;background:rgba(255,214,102,.12);border:1px solid rgba(255,214,102,.5);}
@@ -3529,10 +3529,8 @@ button.mentalSkillsTile p{
 .simpleScoresPanel h2{margin:0 0 18px;color:#ffd66b;font-size:34px;}
 .simpleScoreGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
 .simpleScoreCard{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-radius:16px;background:rgba(16,32,60,.95);border:1px solid rgba(103,160,255,.35);}
+.simpleScoreTeamInfo{display:flex;flex-direction:column;gap:6px;min-width:0;}
 .simpleScoreCard span{font-size:22px;font-weight:900;color:#fff;}
+.simpleScoreCard small{font-size:14px;font-weight:800;color:#b9c7df;line-height:1.3;}
 .simpleScoreCard strong{font-size:52px;line-height:1;color:#ffd66b;}
 .invasionRoundControls{margin:14px 0 18px;}
-
-.simpleScoreCardWithPlayers{display:block;}
-.simpleScoreTeamRow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.simpleScorePlayers{margin-top:6px;font-size:0.9rem;color:rgba(232,241,255,0.72);line-height:1.25;}
