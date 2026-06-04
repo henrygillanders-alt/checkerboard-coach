@@ -3511,26 +3511,12 @@ button.mentalSkillsTile p{
 .conditionsEmbeddedTop p{margin:0}
 @media(max-width:800px){.conditionsAttachBar,.conditionsEmbeddedTop{flex-direction:column;align-items:stretch}.conditionsAttachBar button,.conditionsEmbeddedTop button{width:100%}}
 
-/* v100h13 Invasion points player-view cleanup */
-.invasionPointsCleanView .projectionTop{align-items:center;}
-.invasionSimplePlayerBoard{max-width:1180px;margin:0 auto;padding:28px;border:2px solid rgba(255,214,102,.85);border-radius:24px;background:rgba(7,17,34,.92);box-shadow:0 0 0 1px rgba(103,160,255,.18) inset;}
-.simpleRoundBanner{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:28px;padding:18px;border-radius:18px;background:rgba(255,214,102,.12);border:1px solid rgba(255,214,102,.5);}
-.simpleRoundBanner span{font-size:18px;font-weight:900;letter-spacing:.18em;color:#9db5d8;text-transform:uppercase;}
-.simpleRoundBanner strong{font-size:58px;line-height:1;color:#ffd66b;}
-.simpleCourtGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-bottom:26px;}
-.simpleCourtCard{border:2px solid rgba(255,214,102,.8);border-radius:22px;padding:24px;background:rgba(4,10,25,.95);text-align:center;}
-.simpleCourtLabel{display:inline-block;padding:7px 14px;border-radius:999px;background:#ffd66b;color:#081224;font-weight:900;margin-bottom:16px;}
-.simpleCourtCard h2{font-size:46px;line-height:1.05;margin:8px 0 6px;color:#fff;}
-.simpleCourtCard p{font-size:18px;margin:7px 0;color:#dce8ff;}
-.simpleNextInvader{margin-top:18px;border-top:1px solid rgba(103,160,255,.35);padding-top:16px;}
-.simpleNextInvader span{display:block;color:#9db5d8;text-transform:uppercase;font-size:13px;font-weight:900;letter-spacing:.14em;margin-bottom:6px;}
-.simpleNextInvader strong{font-size:28px;color:#ffd66b;}
-.simpleScoresPanel{border-radius:20px;padding:22px;background:rgba(11,27,52,.9);border:1px solid rgba(103,160,255,.35);}
-.simpleScoresPanel h2{margin:0 0 18px;color:#ffd66b;font-size:34px;}
-.simpleScoreGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
-.simpleScoreCard{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-radius:16px;background:rgba(16,32,60,.95);border:1px solid rgba(103,160,255,.35);}
-.simpleScoreTeamInfo{display:flex;flex-direction:column;gap:6px;min-width:0;}
-.simpleScoreCard span{font-size:22px;font-weight:900;color:#fff;}
-.simpleScoreCard small{font-size:14px;font-weight:800;color:#b9c7df;line-height:1.3;}
-.simpleScoreCard strong{font-size:52px;line-height:1;color:#ffd66b;}
-.invasionRoundControls{margin:14px 0 18px;}
+/* v100h15 universal navigation + refined invasion player view */
+.globalNavButtons{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-right:12px}
+.projectHeaderBtn{background:#0f766e!important;color:#fff!important;border-color:#0f766e!important}
+.invasionPlayerViewCompact .teamScoresPanel{margin-top:22px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px}
+.invasionPlayerViewCompact .teamScoreGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.invasionPlayerViewCompact .teamScoreCard{background:#fff;color:#102033;border-radius:16px;padding:16px;border:2px solid rgba(15,118,110,.18);box-shadow:0 8px 18px rgba(0,0,0,.14)}
+.invasionPlayerViewCompact .teamScoreTop{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:1.05rem}
+.invasionPlayerViewCompact .teamScoreTop span{font-size:2.15rem;line-height:1;font-weight:900;color:#0f766e}
+.invasionPlayerViewCompact .teamMembersLine{margin:7px 0 0;color:#52606d;font-size:.95rem;line-height:1.25}
