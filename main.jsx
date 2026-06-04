@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h13';
+const APP_VERSION='v100h14';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -346,7 +346,10 @@ function ProjectionView({session,setScreen}){
             <h2>Team Scores</h2>
             <div className="simpleScoreGrid">
               {teamScores.map(({team,score})=><div className="simpleScoreCard" key={team.id}>
-                <span>{captainTeamName(team)}</span>
+                <div className="simpleScoreTeamInfo">
+                  <span>{captainTeamName(team)}</span>
+                  <small>Players: {(team.players||[]).join(' · ')||'No players listed'}</small>
+                </div>
                 <strong>{score}</strong>
               </div>)}
             </div>
@@ -6617,7 +6620,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h10 Embedded Conditions</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h14 Player View Team Members</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
