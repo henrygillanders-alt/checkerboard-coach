@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h18';
+const APP_VERSION='v100h19';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 
@@ -3193,16 +3193,28 @@ return <div className="page">
 
 
 function Competition({players=[]}){
-  // v100h18: restore the active Invasion format from saved state so a Points game does not reopen on Lives.
+  // v100h19: restore the active Invasion format from saved state so a Points game does not reopen on Lives.
   const [mode,setMode]=useState('invasion');
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
+      const direct=localStorage.getItem('checkerboardInvasionFormat');
+      if(direct==='points'||direct==='lives') return direct;
       const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
       return saved.invasionFormat==='points'?'points':'lives';
     }catch{
       return 'lives';
     }
   });
+  function chooseInvasionFormat(format){
+    const next=format==='points'?'points':'lives';
+    setInvasionFormat(next);
+    try{
+      localStorage.setItem('checkerboardInvasionFormat',next);
+      const saved=localStorage.getItem('checkerboardCompetitionProjection');
+      const current=saved?JSON.parse(saved):{};
+      localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({...current,mode:'invasion',invasionFormat:next}));
+    }catch{}
+  }
   const [invasionCourts,setInvasionCourts]=useState(3);
   const [invasionStartingLives,setInvasionStartingLives]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
@@ -3563,6 +3575,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardInvasionGameStarted','true');
       localStorage.setItem('checkerboardInvasionLive','true');
       localStorage.setItem('checkerboardProjectionTab','competition');
+      localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       const fair=getInvasionFairRows(activeTeams);
@@ -3598,6 +3611,7 @@ function Competition({players=[]}){
     try{
       localStorage.setItem('checkerboardInvasionGameStarted','false');
       localStorage.setItem('checkerboardInvasionLive','false');
+      localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
@@ -3616,6 +3630,7 @@ function Competition({players=[]}){
       localStorage.setItem('checkerboardInvasionGameStarted','true');
       localStorage.setItem('checkerboardInvasionLive','true');
       localStorage.setItem('checkerboardProjectionTab','competition');
+      localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
         ...current,
         mode:'invasion',
@@ -3657,6 +3672,7 @@ function Competition({players=[]}){
 
   useEffect(()=>{
     try{
+      localStorage.setItem('checkerboardInvasionFormat',invasionFormat);
       const saved=localStorage.getItem('checkerboardCompetitionProjection');
       const current=saved?JSON.parse(saved):{};
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify({
@@ -4299,8 +4315,8 @@ function Competition({players=[]}){
         {mode==='invasion'&&(
           <div className="invasionRebuildPanel">
             <div className="invasionFormatToggle">
-              <button type="button" className={invasionFormat==='lives'?'activeInvasionFormat':''} onClick={()=>setInvasionFormat('lives')}>Lives Format</button>
-              <button type="button" className={invasionFormat==='points'?'activeInvasionFormat':''} onClick={()=>setInvasionFormat('points')}>Points Format</button>
+              <button type="button" className={invasionFormat==='lives'?'activeInvasionFormat':''} onClick={()=>chooseInvasionFormat('lives')}>Lives Format</button>
+              <button type="button" className={invasionFormat==='points'?'activeInvasionFormat':''} onClick={()=>chooseInvasionFormat('points')}>Points Format</button>
             </div>
 
             <div className="invasionRuleHero">
@@ -6628,7 +6644,7 @@ const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getIt
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 return <div>
-<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h18 Invasion Format Persistence</h1><p>Sessions · Games · Players · Competition</p></div></header>
+<header className="hero"><button className="homeBtn" onClick={()=>setScreen('home')}>HOME</button><div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h19 Invasion Format Persistence</h1><p>Sessions · Games · Players · Competition</p></div></header>
 <main className="container">
 {screen==='home'&&<Home setScreen={setScreen}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={setScreen}/>}
