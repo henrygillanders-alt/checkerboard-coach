@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h30';
+const APP_VERSION='v100h31';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1087,7 +1087,8 @@ function ShotsModule({setScreen}){
     {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Volley Drive · Early Intercept'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
-    {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'}
+    {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'},
+    {id:'wrist',title:'Wrist Mechanics',tag:'Elastic Release · Smiley Face Protocol'}
   ];
   const quickStartCards=[
 {id:'f',title:'Function Before Form',subtitle:'Shots are defined by their purpose, not their appearance.'},
@@ -1131,7 +1132,7 @@ const learningCards=[
   const workingLength=[
     ['What is Working Length?','Working Length is a shot played primarily to make your opponent’s next shot more difficult. It is not usually played to win the rally. It is played to improve your position within the rally.'],
     ['Why is it important?','Most rallies are not won by spectacular winners. Most rallies are won because one player gradually creates a better situation than the other. Working Length builds pressure, restricts attacking options, improves court position and creates future opportunities.'],
-    ['Traditional Description','A coach may describe Working Length as hitting the ball deep, hitting the side wall, landing in a target area or keeping the ball tight. These descriptions focus on where the ball travels.'],
+    ['Traditional Description','A coach may describe Working Length as hitting the ball deep, keeping the ball tight to the side wall, forcing the opponent into the back corners or maintaining good length and width. These descriptions focus mainly on ball placement and consistency.'],
     ['Checkerboard Description','A Working Length is judged by its effect on the opponent. It is successful if the opponent arrives late, cannot volley, cannot attack, loses T position, is forced to defend or produces a weaker return.'],
     ['Example A','Player A hits a length. Player B arrives comfortably, volleys easily and attacks. Result: poor Working Length, even if the ball landed in a traditional target area.'],
     ['Example B','Player A hits a length. Player B arrives late, cannot volley and is forced to defend. Result: good Working Length, even if the ball did not land in a textbook target area.'],
@@ -1143,7 +1144,8 @@ const learningCards=[
     increase:{title:'Increase Pressure',intro:'Future shot pages will show how players increase pressure after Working Length has begun to restrict the opponent.',items:['Penetrating Drive — take time away','Volley Drive — remove recovery time','Early Intercept — turn information into action']},
     movement:{title:'Force Movement',intro:'Future shot pages will show how players stretch the court and create instability without attacking too early.',items:['Straight Drop — move opponent forward','Soft Dying Shot — make the ball stop being available','Trickle Boast — change the movement problem']},
     time:{title:'Gain Time',intro:'Future shot pages will show how players reset the rally, change tempo and recover court position.',items:['Lob — gain time and clear the opponent','High Defensive Crosscourt — change height and recover','Reset Length — slow the rally problem down']},
-    finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']}
+    finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']},
+    wrist:{title:'Wrist Mechanics & Elastic Release',intro:'Coming soon: a CLA-informed module for loading and release without teaching players to consciously use the wrist.',items:['Coach View — contested coaching positions','Player Challenges — Smiley Face Protocol','Error Cards — early smile, roll-over, pre-tension and preparation loop']}
   };
   function addWorkingLengthToSession(){
     const card={
@@ -1185,6 +1187,7 @@ const learningCards=[
           <div><h3>Self-Organisation</h3><p>Players may solve the same rally problem with different movement solutions.</p></div>
           <div><h3>Deep Attractor States</h3><p>Stable habits can be useful or limiting. Change the task constraints to help better solutions emerge.</p></div>
           <div><h3>Implicit Learning</h3><p>Use external focus, analogies and representative games to reduce over-thinking of body parts.</p></div>
+          <div><h3>Reinvestment</h3><p>Under pressure, players may consciously monitor movement mechanics. Checkerboard cues return attention to information and intention.</p></div>
           <div><h3>Representative Learning Design</h3><p>Practice should preserve the information, pressure, timing and choices of the game.</p></div>
         </div>
       </div>}
@@ -1193,7 +1196,7 @@ const learningCards=[
           <div className="whyBox traditionalBox"><h3>Traditional response</h3><p>Player misses a volley return.</p><p><strong>“Keep your racket up.”</strong></p><p><strong>“Turn sideways.”</strong></p><p>Attention shifts internally to body positions and movement control.</p></div>
           <div className="whyBox checkerboardBox"><h3>Checkerboard response</h3><p>Player misses a volley return.</p><p><strong>“Intercept earlier.”</strong></p><p><strong>“Take time away.”</strong></p><p>Attention stays on the task, the opponent, the ball, space and time.</p></div>
         </div>
-        <div className="shotCoachRule"><h3>Reinvestment</h3><p>Under pressure, players can start consciously controlling movements that should run automatically. The coaching aim is to refocus attention on information, opportunity and intention.</p></div>
+        <div className="shotCoachRule"><h3>Reinvestment</h3><p>Under pressure, players can shift attention away from information and opportunities and towards conscious movement control. The coaching aim is to refocus attention on the task, the opponent and the intended effect.</p></div>
       </div>}
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Solve the rally problem. Notice the opponent, the ball, the space and the time available.</p><p><strong>KEY FOCUS</strong><br/>Information → Opportunity → Intention → Effect.</p></div>
     </div>}
@@ -1202,7 +1205,7 @@ const learningCards=[
       <div className="workingLengthGrid">{workingLength.map(([title,text])=><div className="gameCard workingLengthCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
     </div>}
-    {['increase','movement','time','finish'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
+    {['increase','movement','time','finish','wrist'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
   </div>;
 }
 
