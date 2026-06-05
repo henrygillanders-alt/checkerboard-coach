@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h27';
+const APP_VERSION='v100h28';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1078,95 +1078,93 @@ function MentalSkillsPlaceholder({setScreen}){
 
 
 function ShotsModule({setScreen}){
-  const shotFamilies=[
+  const [section,setSection]=useState('learn');
+  const [openCard,setOpenCard]=useState('function');
+  const shotSections=[
+    {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Pressure'},
+    {id:'pressure',title:'Build Pressure',tag:'Working Length'},
+    {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Volley Drive · Early Intercept'},
+    {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
+    {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
+    {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'}
+  ];
+  const learningCards=[
     {
-      name:'Lobs',tag:'Height · Time · Recovery',level:'Junior Beginner → Professional',
-      what:'A high ball that changes time, height and opponent position. It can recover the rally, move an opponent away from the T, or create a new attacking problem.',
-      when:'When under pressure, when the opponent is crowding the T, when you need recovery time, or when height creates a better problem than pace.',
-      where:'Use height to send the ball over the opponent and into the back-court target. Useful Checkerboard routes include [5-4], [6-3], [5-3] and [6-4].',
-      how:'External focus: lift the ball over the opponent’s reach and let it fall behind them. Use the cue “clear the racket, land behind.”',
-      progressions:['Level 0: big-ball or front-half height game with generous targets.','Level 1: cooperative rally where lob earns recovery time.','Level 2–3: lob only scores if opponent is moved off T or forced behind.','Level 4–5: complete a checkerboard gate such as [5-4], then convert within 4 or 2 shots.'],
-      errors:['Too flat because player tries to hit through pressure.','Too short because player watches the front wall rather than the landing problem.','Uses lob as escape only, not as a tactical change of time.'],
-      constraints:['Target height band on front wall.','Opponent starts slightly advanced to invite height.','Bonus if opponent must turn or retreat.','DB support for developing players so they move early and still try to create height.'],
-      checkerboard:'Best linked to high-wall/back-court routes such as [5-4], [6-3], [5-3] and [6-4]. Use as a gate before attacking if the stronger player needs a restriction.'
+      id:'function',title:'Function First',subtitle:'Shots are defined by their function, not their form.',
+      body:[
+        'Traditional coaching often starts with grip, swing, contact point, follow-through and target areas.',
+        'Checkerboard starts with the problem the player is trying to solve and the effect the shot creates for the opponent.',
+        'A lob gains time. Working length builds pressure. A penetrating drive takes time away. A volley prevents recovery. A kill finishes the rally.'
+      ],
+      takeaway:'The goal is not to reproduce a movement. The goal is to achieve a function.'
     },
     {
-      name:'Working Length',tag:'Pressure · Patience · Rally Construction',level:'Junior Beginner → Professional',
-      what:'A controlled length ball that builds pressure without forcing an immediate finish.',
-      when:'When attack is not genuinely available, when the opponent is balanced, or when you need to keep the rally under control.',
-      where:'Back-court targets: deep enough to reduce opponent attacking options but not so hard that the ball rebounds loose. Common routes: [5-4], [6-3], [5-3], [6-4].',
-      how:'External focus: make the ball die in the back quarter. Cue: “send it deep enough to keep them behind you.”',
-      progressions:['Level 0: two-target length game with large back targets.','Level 1: quality length before any short attack.','Level 2–3: opponent off-T bonus only after length pressure.','Level 4–5: three quality lengths then 4-shot or 2-shot conversion window.'],
-      errors:['Attacks too early from neutral positions.','Hits length too hard and creates rebound.','Confuses working length with passive hitting.'],
-      constraints:['Quality Length Before Attack.','Opponent Off T before attack.','Consecutive deep targets = bonus.','Limited attacks to stop premature short play.'],
-      checkerboard:'Use [5-4] or [6-3] as a single gate before attack. Pair examples: [6-4]+[8-1] or [5-3]+[7-2] to link length with front-court opening.'
+      id:'emergence',title:'How Decisions Emerge',subtitle:'Good decisions emerge from the dynamic relationship between perception and action.',
+      body:[
+        'A simple coaching model says: Perception → Decision → Action. This is useful, but it can make decision making look like a separate calculation.',
+        'In representative squash, the player is moving while perceiving and perceiving while moving. The ball, opponent, space and player capabilities constantly shape what is available.',
+        'The coach’s job is to design constraints that help players recognise useful opportunities and act on them.'
+      ],
+      takeaway:'Decision making is not separate from movement. It emerges from player, opponent, ball and space.'
     },
     {
-      name:'Penetrating Drives',tag:'Pace · Direction · Time Pressure',level:'Intermediate → Professional',
-      what:'A flatter, faster drive that takes time away and pushes the opponent deep or past the central corridor.',
-      when:'When the ball is loose enough, when the opponent is late, or when there is space behind or beside the opponent.',
-      where:'Through the side wall/floor channel into the back quarter. Use the drive to pass the opponent, not simply to hit harder.',
-      how:'External focus: drive the ball through the back corner. Cue: “make the ball travel past their hip and keep going.”',
-      progressions:['Level 0: target channels with controlled feed.','Level 1: drive only when the ball is available above pressure height.','Level 2–3: drive bonus if opponent is forced behind or outside the middle.','Level 4–5: drive after a checkerboard gate then convert within a shot window.'],
-      errors:['Big swing with no perception of opponent position.','Pace without width, causing central rebounds.','Drives from defensive positions that invite counter-attack.'],
-      constraints:['Attack only when opponent off T.','Break the middle corridor.','Straight-only restriction for stronger player.','Width before attack.'],
-      checkerboard:'Strong with [6-3], [5-4], [6-4] and [5-3]. Use spatial restrictions such as allowed [5-4]+[6-3] for stronger players.'
-    },
-    {
-      name:'Volleys',tag:'Interception · Anticipation · T Control',level:'Junior Beginner → Professional',
-      what:'Taking the ball before it bounces to reduce opponent time and protect central control.',
-      when:'When a realistic interception opportunity exists and the player can take the ball without losing balance or awareness.',
-      where:'Around the T and front/mid-court interception zones. The target depends on opponent position: deep reset, short pressure, or finishing angle.',
-      how:'External focus: meet the ball before it passes your body line. Cue: “step into the flight, then choose the space.”',
-      progressions:['Level 0: first realistic volley opportunity with large targets.','Level 1: volley bonus, not forced volley only.','Level 2–3: intercept bonus linked to opponent information.','Level 4–5: volley finish after a checkerboard or off-T gate.'],
-      errors:['Tries to volley impossible balls.','Stands on T without reading the opponent.','Swings too big and loses next-action balance.'],
-      constraints:['First Volley Opportunity.','Intercept Bonus.','Volley Finish bonus.','Opponent Off T before attacking volley.'],
-      checkerboard:'Use front wall zones [5] and [6] to develop height/width interception decisions. Combine with [5-4] or [6-3] gates before volley attack.'
-    },
-    {
-      name:'Drops',tag:'Short Game · Dying Ball · Opportunity Recognition',level:'Junior Beginner → Professional',
-      what:'A short ball that dies quickly enough to create movement pressure and prevent easy counter-attack.',
-      when:'When the opponent is deep, late, off balance, or when the ball is suitable for touch rather than force.',
-      where:'Front-court floor targets [1] and [2], with wall-zone support from [7] and [8] depending on angle and height.',
-      how:'External focus: land the ball so the second bounce dies before the service box line. Cue: “make it die, not just go short.”',
-      progressions:['Level 0: dying-ball target game using big targets.','Level 1: drop only after opponent is moved deep.','Level 2–3: short attack must follow quality length or off-T cue.','Level 4–5: complete a gate, then drop/finish inside 4 or 2 shots.'],
-      errors:['Drops from neutral positions.','Ball sits up and invites counter-attack.','Player thinks short target rather than dying ball quality.'],
-      constraints:['Quality Length Before Attack.','Opponent Off T before short attack.','Dying ball bonus.','Double Bounce for early learning and deception exploration.'],
-      checkerboard:'Use [8-1], [7-2], [5-1] and [6-2] style routes. Pair a deep gate such as [5-4] with a front target [8-1] to connect pressure to short attack.'
+      id:'reinvestment',title:'Pressure & Reinvestment',subtitle:'Under pressure, internal technical thoughts can disrupt performance.',
+      body:[
+        'A player misses a return of serve and starts thinking: “Keep the racket up. Turn sideways. Prepare earlier.”',
+        'Attention moves away from ball, opponent, space and time and towards body positions and swing mechanics.',
+        'Checkerboard refocuses the player externally: “Intercept earlier”, “Take time away”, “Make the ball die”.'
+      ],
+      takeaway:'Under pressure, refocus on information, opportunity and intention — not body parts.'
     }
   ];
-  const tabs=['What','When','Where','How','Progressions','Errors','Constraints','Checkerboard'];
-  const principles=[
-    ['Constraints before correction','Change task, target, bounce, scoring, opponent position or permission rules before giving technical fixes.'],
-    ['External focus last','If a body cue is needed, finish with an external cue such as target, ball flight, space or opponent.'],
-    ['Variability over repetition','Vary height, speed, pressure, target and opponent information so the shot adapts to context.'],
-    ['Self-discovery','Ask players what information invited the shot and what the ball did to the opponent.'],
-    ['Video as evidence','Use short clips to show ball shape, opponent movement and decision timing, not to chase perfect technique.']
+  const workingLength=[
+    ['What is Working Length?','Working Length is a shot played primarily to make your opponent’s next shot more difficult. It is not usually played to win the rally. It is played to improve your position within the rally.'],
+    ['Why is it important?','Most rallies are not won by spectacular winners. Most rallies are won because one player gradually creates a better situation than the other. Working Length builds pressure, restricts attacking options, improves court position and creates future opportunities.'],
+    ['Traditional Description','A coach may describe Working Length as hitting the ball deep, hitting the side wall, landing in a target area or keeping the ball tight. These descriptions focus on where the ball travels.'],
+    ['Checkerboard Description','A Working Length is judged by its effect on the opponent. It is successful if the opponent arrives late, cannot volley, cannot attack, loses T position, is forced to defend or produces a weaker return.'],
+    ['Example A','Player A hits a length. Player B arrives comfortably, volleys easily and attacks. Result: poor Working Length, even if the ball landed in a traditional target area.'],
+    ['Example B','Player A hits a length. Player B arrives late, cannot volley and is forced to defend. Result: good Working Length, even if the ball did not land in a textbook target area.'],
+    ['Coach Observation Tool','Watch the opponent, not just the ball. Did the opponent arrive comfortably, arrive late, volley, attack, defend or lose T position? These answers often matter more than the landing position.'],
+    ['Checkerboard Principle','A Working Length is not defined by where it lands. A Working Length is defined by the pressure it creates.'],
+    ['Coach Takeaway','Before teaching players how to attack, teach them how to build pressure. Working Length is the foundation upon which attacking opportunities are created. It is the first move on the squash checkerboard.']
   ];
-  const [selected,setSelected]=useState(shotFamilies[0].name);
-  const [tab,setTab]=useState('What');
-  const active=shotFamilies.find(s=>s.name===selected)||shotFamilies[0];
-  function tabContent(){
-    if(tab==='What')return <p>{active.what}</p>;
-    if(tab==='When')return <p>{active.when}</p>;
-    if(tab==='Where')return <p>{active.where}</p>;
-    if(tab==='How')return <p>{active.how}</p>;
-    if(tab==='Progressions')return <ul>{active.progressions.map(x=><li key={x}>{x}</li>)}</ul>;
-    if(tab==='Errors')return <ul>{active.errors.map(x=><li key={x}>{x}</li>)}</ul>;
-    if(tab==='Constraints')return <ul>{active.constraints.map(x=><li key={x}>{x}</li>)}</ul>;
-    return <p>{active.checkerboard}</p>;
+  const categoryCards={
+    increase:{title:'Increase Pressure',intro:'Future shot pages will show how players increase pressure after Working Length has begun to restrict the opponent.',items:['Penetrating Drive — take time away','Volley Drive — remove recovery time','Early Intercept — turn information into action']},
+    movement:{title:'Force Movement',intro:'Future shot pages will show how players stretch the court and create instability without attacking too early.',items:['Straight Drop — move opponent forward','Soft Dying Shot — make the ball stop being available','Trickle Boast — change the movement problem']},
+    time:{title:'Gain Time',intro:'Future shot pages will show how players reset the rally, change tempo and recover court position.',items:['Lob — gain time and clear the opponent','High Defensive Crosscourt — change height and recover','Reset Length — slow the rally problem down']},
+    finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']}
+  };
+  function addWorkingLengthToSession(){
+    const card={
+      id:'shot-working-length-foundation',
+      title:'Working Length — First Move on the Squash Checkerboard',
+      type:'Shots Module',
+      rationale:'Build pressure before attack. Judge the shot by its effect on the opponent, not by a fixed technical model.',
+      task:'Use Working Length to make the opponent’s next shot more difficult before looking to attack.',
+      scoring:'Coach awards success when opponent arrives late, cannot volley, cannot attack, loses T position or produces a weak return.',
+      focus:'Watch the opponent, not just the ball.'
+    };
+    try{
+      const existing=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');
+      localStorage.setItem(SESSION_KEY,JSON.stringify([...existing,card]));
+    }catch(e){}
+    setScreen('sessions');
   }
-  return <div className="page shotsPage">
-    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">WSF What · When · Where · How · CLA constraints-led shot development</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div></div>
-    <div className="libraryStageIntro shotsIntro"><h2>Developing shot types without chasing technical perfection</h2><p>Shots are treated as adaptable solutions to game problems. The coach designs constraints that help players discover ball shape, height, pace, line, timing and opponent information.</p></div>
-    <div className="shotsPrincipleGrid">{principles.map(([title,text])=><div className="gameCard shotsPrincipleCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
-    <div className="shotSelectorRow">{shotFamilies.map(s=><button key={s.name} className={selected===s.name?'activeShotBtn':''} onClick={()=>{setSelected(s.name);setTab('What')}}>{s.name}<span>{s.tag}</span></button>)}</div>
-    <div className="shotDetailPanel">
-      <div className="shotDetailHeader"><div><div className="categoryTag">Shot Development</div><h2>{active.name}</h2><p className="mutedText">{active.tag} · {active.level}</p></div><button className="primaryBtn" onClick={()=>setScreen('sessions')}>Add idea to session</button></div>
-      <div className="shotTabRow">{tabs.map(t=><button key={t} className={tab===t?'activeShotTab':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
-      <div className="shotTabContent">{tabContent()}</div>
-      <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use {active.name.toLowerCase()} when the game information invites it.</p><p><strong>KEY FOCUS</strong><br/>See the opponent, shape the ball, then recover for the next problem.</p></div>
-    </div>
+  return <div className="page shotsPage shotsFoundationPage">
+    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">Function first · Perception-action · Constraints-led shot development</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div></div>
+    <div className="libraryStageIntro shotsIntro"><h2>Shots are defined by their function, not their form</h2><p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p></div>
+    <div className="shotSelectorRow shotFunctionRow">{shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}</div>
+    {section==='learn'&&<div className="shotDetailPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Function First</h2><p className="mutedText">A Level 1/2 coach-friendly introduction to CLA shot coaching.</p></div></div>
+      <div className="shotsPrincipleGrid">{learningCards.map(card=><button key={card.id} className={'gameCard shotsPrincipleCard shotLearningCard '+(openCard===card.id?'activeLearningCard':'')} onClick={()=>setOpenCard(openCard===card.id?'':card.id)}><h3>{card.title}</h3><p><strong>{card.subtitle}</strong></p>{openCard===card.id&&<div className="learningCardBody">{card.body.map(x=><p key={x}>{x}</p>)}<p className="coachTakeaway"><strong>Coach takeaway:</strong> {card.takeaway}</p></div>}</button>)}</div>
+      <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Solve the rally problem. Notice the opponent, the ball, the space and the time available.</p><p><strong>KEY FOCUS</strong><br/>Information → Opportunity → Intention → Effect.</p></div>
+    </div>}
+    {section==='pressure'&&<div className="shotDetailPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Build Pressure</div><h2>Working Length</h2><p className="mutedText">The first move on the squash checkerboard.</p></div><button className="primaryBtn" onClick={addWorkingLengthToSession}>Add to session</button></div>
+      <div className="workingLengthGrid">{workingLength.map(([title,text])=><div className="gameCard workingLengthCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
+      <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
+    </div>}
+    {['increase','movement','time','finish'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
   </div>;
 }
 
