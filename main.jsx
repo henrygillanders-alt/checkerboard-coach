@@ -1080,6 +1080,7 @@ function MentalSkillsPlaceholder({setScreen}){
 function ShotsModule({setScreen}){
   const [section,setSection]=useState('learn');
   const [openCard,setOpenCard]=useState('function');
+  const [learnTab,setLearnTab]=useState('quick');
   const shotSections=[
     {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Pressure'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
@@ -1088,7 +1089,17 @@ function ShotsModule({setScreen}){
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
     {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'}
   ];
-  const learningCards=[
+  const quickStartCards=[
+{id:'f',title:'Function Before Form',subtitle:'Shots are defined by their purpose, not their appearance.'},
+{id:'i',title:'Coach Intention Not Action',subtitle:'Focus on what the player is trying to achieve.'},
+{id:'e',title:'External Focus',subtitle:'Direct attention to ball, opponent, space and time.'},
+{id:'c',title:'Constraints Before Correction',subtitle:'Change the task before changing the player.'},
+{id:'v',title:'Variability Over Repetition',subtitle:'Learning requires adaptation, not copying.'},
+{id:'r',title:'Representative Practice',subtitle:'Practice should look like the game.'},
+{id:'s',title:'Individual Solutions',subtitle:'Different players may solve the same problem differently.'},
+{id:'t',title:'Technique Serves Function',subtitle:'Technique matters, but serves the task.'}
+];
+const learningCards=[[
     {
       id:'function',title:'Function First',subtitle:'Shots are defined by their function, not their form.',
       body:[
