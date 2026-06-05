@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h34';
+const APP_VERSION='v100h35';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1083,7 +1083,7 @@ function ShotsModule({setScreen}){
   const [learnTab,setLearnTab]=useState('quick');
   const [wristTab,setWristTab]=useState('coach');
   const shotSections=[
-    {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Self-discovery'},
+    {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Pressure'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
     {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Volley Drive · Early Intercept'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
@@ -1133,16 +1133,16 @@ const learningCards=[
   const workingLength=[
     ['What is Working Length?','Working Length is a shot played primarily to make your opponent’s next shot more difficult. It is not usually played to win the rally. It is played to improve your position within the rally.'],
     ['Why is it important?','Most rallies are not won by spectacular winners. Most rallies are won because one player gradually creates a better situation than the other. Working Length builds pressure, restricts attacking options, improves court position and creates future opportunities.'],
-    ['Traditional View','Hit the ball deep and tight. Good traditional coaching often emphasises ball placement, consistency, length and width. These targets can be useful, but they do not tell the whole story.'],
-    ['Checkerboard View','Force the opponent to play from positions that reduce their attacking options. A Working Length is successful if the opponent arrives late, cannot volley, cannot attack, loses T position, is forced to defend or produces a weaker return.'],
+    ['Traditional Description','A coach may describe Working Length as hitting the ball deep, keeping the ball tight to the side wall, forcing the opponent into the back corners or maintaining good length and width. These descriptions focus mainly on ball placement and consistency.'],
+    ['Checkerboard Description','A Working Length is judged by its effect on the opponent. It is successful if the opponent arrives late, cannot volley, cannot attack, loses T position, is forced to defend or produces a weaker return.'],
     ['Example A','Player A hits a length. Player B arrives comfortably, volleys easily and attacks. Result: poor Working Length, even if the ball landed in a traditional target area.'],
     ['Example B','Player A hits a length. Player B arrives late, cannot volley and is forced to defend. Result: good Working Length, even if the ball did not land in a textbook target area.'],
-    ['Coach Observation Questions','Watch the opponent, not just the ball. Ask: 1. Where is the opponent hitting from? 2. How many attacking options do they have? 3. Did my shot reduce those options? These answers often matter more than the landing position.'],
+    ['Coach Observation Tool','Watch the opponent, not just the ball. Did the opponent arrive comfortably, arrive late, volley, attack, defend or lose T position? These answers often matter more than the landing position.'],
     ['Checkerboard Principle','A Working Length is not defined by where it lands. A Working Length is defined by the pressure it creates.'],
     ['Coach Takeaway','Before teaching players how to attack, teach them how to build pressure. Working Length is the foundation upon which attacking opportunities are created. It is the first move on the squash checkerboard.']
   ];
   const categoryCards={
-    increase:{title:'Increase Pressure',intro:'Future shot pages will show how players increase pressure after Working Length has begun to restrict the opponent.',items:['Penetrating Drive — Coming Soon','Volley Drive — remove recovery time','Early Intercept — turn information into action']},
+    increase:{title:'Increase Pressure',intro:'Future shot pages will show how players increase pressure after Working Length has begun to restrict the opponent.',items:['Penetrating Drive — take time away','Volley Drive — remove recovery time','Early Intercept — turn information into action']},
     movement:{title:'Force Movement',intro:'Future shot pages will show how players stretch the court and create instability without attacking too early.',items:['Straight Drop — move opponent forward','Soft Dying Shot — make the ball stop being available','Trickle Boast — change the movement problem']},
     time:{title:'Gain Time',intro:'Future shot pages will show how players reset the rally, change tempo and recover court position.',items:['Lob — gain time and clear the opponent','High Defensive Crosscourt — change height and recover','Reset Length — slow the rally problem down']},
     finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']},
@@ -1180,7 +1180,6 @@ const learningCards=[
         <div className="shotCoachRule"><h3>10 second rule</h3><p>Before correcting technique, ask: <strong>what effect should this shot have on the opponent?</strong></p></div>
       </div>}
       {learnTab==='cla'&&<div>
-        <div className="shotCoachRule claSummaryBox"><h3>Checkerboard Coaching Principles</h3><div className="principlePillGrid"><span>Function Before Form</span><span>Coach Intention Not Action</span><span>External Focus</span><span>Constraints Before Correction</span><span>Variability Over Repetition</span><span>Representative Practice</span><span>Individual Solutions</span><span>Technique Serves Function</span></div></div>
         <div className="claPrincipleList">
           <div><h3>Ecological Dynamics</h3><p>Learning happens through the relationship between the player, opponent, ball, court and task.</p></div>
           <div><h3>Perception ↔ Action Coupling</h3><p>Players learn by seeing and acting together. Decision emerges while the player moves, not as a separate classroom calculation.</p></div>
@@ -6539,7 +6538,12 @@ function DiagnosticIntervention({setScreen}){
 
       <h3>Where Did The Habit Come From?</h3>
       <div className="originGrid">{habitOrigins.map(item=><div className="originCard" key={item.title}>
-        <span>{item.type}</span><h3>{item.title}</h3><p>{item.text}</p><section><strong>Coach Debate</strong><p>{item.coach}</p></section><section><strong>Intervention Direction</strong><p>{item.intervention}</p></section>
+        <span>{item.type}</span><h3>{item.title}</h3><p>{item.text}</p><section><strong>Coach Debate</strong><p>{item.coach}</p>
+          <div className="shotsTimeMini">
+            <span className="timeBadge take">🟢 TIME TAKER</span>
+            <p>Working Length usually acts as a Time Taker because it reduces opponent options and can delay their recovery to the T.</p>
+          </div>
+</section><section><strong>Intervention Direction</strong><p>{item.intervention}</p></section>
       </div>)}</div>
 
       <h3>Type 1 / Type 2 / Add Rather Than Replace</h3>
@@ -6734,6 +6738,37 @@ function DiagnosticIntervention({setScreen}){
       <h2>Checkerboard Coaching Principles</h2>
       <div className="stageHintGrid">
         <div><strong>Game-Based First</strong><span>Learning has taken place when the behaviour appears in open rally or game situations.</span></div>
+          <section className="shotsTimePanel">
+            <div className="shotsTimeHeader">
+              <span className="timeBadge take">🟢 TIME TAKER</span>
+              <span className="timeBadge give">🔴 TIME GIVER</span>
+            </div>
+            <h3>Time Givers vs Time Takers</h3>
+            <p><strong>Core question:</strong> Did this action give the opponent time or take time away?</p>
+            <div className="shotsTimeGrid">
+              <div>
+                <h4>Time Takers</h4>
+                <ul>
+                  <li>Penetrating drive</li>
+                  <li>Volley return of serve</li>
+                  <li>Early intercept</li>
+                  <li>Effective working length</li>
+                </ul>
+              </div>
+              <div>
+                <h4>Time Givers</h4>
+                <ul>
+                  <li>Non-functional crosscourt</li>
+                  <li>Letting volley opportunities pass</li>
+                  <li>Floating length</li>
+                  <li>Late preparation or unnecessary retreat</li>
+                </ul>
+              </div>
+            </div>
+            <p className="shotsCallout">Coach lens: don't only ask if the shot looked good. Ask whether it changed the opponent's available time.</p>
+          </section>
+
+
         <div><strong>Intention Not Action</strong><span>Describe the purpose, ball outcome and tactical effect before body mechanics.</span></div>
         <div><strong>External Focus</strong><span>Use target, space, opponent information and trajectory before body-part cues.</span><InfoButton id="wulf"/></div>
       </div>
