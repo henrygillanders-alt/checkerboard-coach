@@ -1083,7 +1083,7 @@ function ShotsModule({setScreen}){
   const [learnTab,setLearnTab]=useState('quick');
   const [wristTab,setWristTab]=useState('coach');
   const shotSections=[
-    {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Pressure'},
+    {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Self-discovery'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
     {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Volley Drive · Early Intercept'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
@@ -1169,7 +1169,9 @@ const learningCards=[
     <div className="libraryStageIntro shotsIntro"><h2>Shots are defined by their function, not their form</h2><p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p></div>
     <div className="shotSelectorRow shotFunctionRow">{shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}</div>
     {section==='learn'&&<div className="shotDetailPanel shotsLearnPanel">
-      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Coach the Shot Function</h2><p className="mutedText">Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div></div>
+      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Coach the Shot Function</h2><p className="mutedText">
+<div className="infoBox"><strong>TIME GIVERS vs TIME TAKERS</strong><p>Every action in squash either gives time to the opponent or takes time away.</p><p><strong>Coach Question:</strong> Did that action give the opponent more time or less time?</p><p>🔴 Time Givers: Non-functional crosscourt, failure to volley return of serve, floating length, late preparation.</p><p>🟢 Time Takers: Penetrating drive, volley return of serve, early intercept, effective working length.</p></div>
+Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div></div>
       <div className="shotsLearnTabs">
         <button className={learnTab==='quick'?'activeShotTab':''} onClick={()=>setLearnTab('quick')}>Quick Start</button>
         <button className={learnTab==='cla'?'activeShotTab':''} onClick={()=>setLearnTab('cla')}>CLA Principles</button>
