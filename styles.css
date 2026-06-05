@@ -1,4 +1,4 @@
-/* v99h97 Captain Teams Invasion */
+/* v100h30 Shots readability */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 .hero{display:flex;gap:20px;align-items:flex-start;padding:24px 30px;background:linear-gradient(135deg,#123f74,#0b203d);border-bottom:1px solid #35567e}.homeBtn,.primaryBtn,.secondaryBtn{border:1px solid #7ea6e8;color:white;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}.homeBtn,.secondaryBtn{background:#102844}.primaryBtn{background:#1f5dd0;border:none}.secondaryBtn:disabled{opacity:.45}.eyebrow{font-size:12px;letter-spacing:.2em;color:#9bc1ff;font-weight:900}.container{max-width:1200px;margin:0 auto;padding:24px}
@@ -3578,3 +3578,21 @@ button.mentalSkillsTile p{
 .workingLengthCard h3{margin-bottom:8px;}
 
 .shotsTabRow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.shotsTabRow button{background:#12253d;border:1px solid #486b9a;color:white;border-radius:999px;padding:10px 14px;font-weight:900}.shotsQuickCard{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin-bottom:12px}
+
+/* v100h30 Shots readability and CLA tabs */
+.shotsLearnPanel{background:#eef4ff!important;color:#07111f!important;border-radius:24px!important;padding:22px!important}
+.shotsLearnPanel h2,.shotsLearnPanel h3{color:#07111f!important}
+.shotsLearnPanel .mutedText{color:#334155!important}
+.shotsLearnTabs{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 20px}
+.shotsLearnTabs button{background:#dbeafe;border:1px solid #93c5fd;color:#0f172a;border-radius:999px;padding:12px 16px;font-weight:900;cursor:pointer}
+.shotsLearnTabs button.activeShotTab{background:#0f766e;color:#fff;border-color:#14b8a6}
+.shotQuickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.shotQuickCard{background:#ffffff;border:1px solid #cbd5e1;border-radius:18px;padding:16px;box-shadow:0 1px 0 rgba(15,23,42,.08)}
+.shotQuickCard h3{font-size:18px;margin:0 0 8px!important;color:#0f766e!important}
+.shotQuickCard p{margin:0;color:#0f172a;font-weight:800;line-height:1.35}
+.shotCoachRule{background:#0f172a;border:2px solid #0f766e;color:#fff;border-radius:18px;padding:18px;margin:18px 0}
+.shotCoachRule h3{color:#ffd980!important;margin:0 0 8px!important}.shotCoachRule p{font-size:18px;margin:0;line-height:1.35}.shotCoachRule strong{color:#ffd980}
+.claPrincipleList{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.claPrincipleList div{background:#ffffff;border:1px solid #cbd5e1;border-left:6px solid #0f766e;border-radius:16px;padding:16px}.claPrincipleList h3{font-size:18px;margin:0 0 8px!important;color:#0f766e!important}.claPrincipleList p{color:#0f172a;margin:0;line-height:1.4;font-weight:750}
+.whyCompareGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}.whyBox{border-radius:18px;padding:18px;border:1px solid #cbd5e1}.whyBox h3{margin:0 0 10px!important}.whyBox p{color:#0f172a;font-weight:800;line-height:1.35}.traditionalBox{background:#fff7ed;border-left:6px solid #f97316}.checkerboardBox{background:#ecfdf5;border-left:6px solid #0f766e}.checkerboardBox h3{color:#0f766e!important}.traditionalBox h3{color:#c2410c!important}
+.shotsLearnPanel .shotPlayerView{background:linear-gradient(135deg,#10233b,#0f766e)!important;color:white!important;border:1px solid #0f766e!important}.shotsLearnPanel .shotPlayerView h3{color:#ffd980!important}.shotsLearnPanel .shotPlayerView p{color:white!important}
+@media(max-width:900px){.shotQuickGrid,.claPrincipleList,.whyCompareGrid{grid-template-columns:1fr}.shotsLearnPanel{padding:16px!important}}

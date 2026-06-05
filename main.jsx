@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h29';
+const APP_VERSION='v100h30';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1165,9 +1165,36 @@ const learningCards=[
     <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">Function first · Perception-action · Constraints-led shot development</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div></div>
     <div className="libraryStageIntro shotsIntro"><h2>Shots are defined by their function, not their form</h2><p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p></div>
     <div className="shotSelectorRow shotFunctionRow">{shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}</div>
-    {section==='learn'&&<div className="shotDetailPanel">
-      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Function First</h2><p className="mutedText">A Level 1/2 coach-friendly introduction to CLA shot coaching.</p></div></div>
-      <div className="shotsPrincipleGrid">{learningCards.map(card=><button key={card.id} className={'gameCard shotsPrincipleCard shotLearningCard '+(openCard===card.id?'activeLearningCard':'')} onClick={()=>setOpenCard(openCard===card.id?'':card.id)}><h3>{card.title}</h3><p><strong>{card.subtitle}</strong></p>{openCard===card.id&&<div className="learningCardBody">{card.body.map(x=><p key={x}>{x}</p>)}<p className="coachTakeaway"><strong>Coach takeaway:</strong> {card.takeaway}</p></div>}</button>)}</div>
+    {section==='learn'&&<div className="shotDetailPanel shotsLearnPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Coach the Shot Function</h2><p className="mutedText">Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div></div>
+      <div className="shotsLearnTabs">
+        <button className={learnTab==='quick'?'activeShotTab':''} onClick={()=>setLearnTab('quick')}>Quick Start</button>
+        <button className={learnTab==='cla'?'activeShotTab':''} onClick={()=>setLearnTab('cla')}>CLA Principles</button>
+        <button className={learnTab==='why'?'activeShotTab':''} onClick={()=>setLearnTab('why')}>Why It Works</button>
+      </div>
+      {learnTab==='quick'&&<div>
+        <div className="shotQuickGrid">{quickStartCards.map(card=><div key={card.id} className="shotQuickCard"><h3>{card.title}</h3><p>{card.subtitle}</p></div>)}</div>
+        <div className="shotCoachRule"><h3>10 second rule</h3><p>Before correcting technique, ask: <strong>what effect should this shot have on the opponent?</strong></p></div>
+      </div>}
+      {learnTab==='cla'&&<div>
+        <div className="claPrincipleList">
+          <div><h3>Ecological Dynamics</h3><p>Learning happens through the relationship between the player, opponent, ball, court and task.</p></div>
+          <div><h3>Perception ↔ Action Coupling</h3><p>Players learn by seeing and acting together. Decision emerges while the player moves, not as a separate classroom calculation.</p></div>
+          <div><h3>Affordances</h3><p>A shot is an opportunity for action: a loose ball may afford a kill; a dominant opponent may afford a lob.</p></div>
+          <div><h3>Guided Discovery</h3><p>The coach designs the task so players discover useful solutions, rather than copying one fixed model.</p></div>
+          <div><h3>Self-Organisation</h3><p>Players may solve the same rally problem with different movement solutions.</p></div>
+          <div><h3>Deep Attractor States</h3><p>Stable habits can be useful or limiting. Change the task constraints to help better solutions emerge.</p></div>
+          <div><h3>Implicit Learning</h3><p>Use external focus, analogies and representative games to reduce over-thinking of body parts.</p></div>
+          <div><h3>Representative Learning Design</h3><p>Practice should preserve the information, pressure, timing and choices of the game.</p></div>
+        </div>
+      </div>}
+      {learnTab==='why'&&<div className="whyWorksPanel">
+        <div className="whyCompareGrid">
+          <div className="whyBox traditionalBox"><h3>Traditional response</h3><p>Player misses a volley return.</p><p><strong>“Keep your racket up.”</strong></p><p><strong>“Turn sideways.”</strong></p><p>Attention shifts internally to body positions and movement control.</p></div>
+          <div className="whyBox checkerboardBox"><h3>Checkerboard response</h3><p>Player misses a volley return.</p><p><strong>“Intercept earlier.”</strong></p><p><strong>“Take time away.”</strong></p><p>Attention stays on the task, the opponent, the ball, space and time.</p></div>
+        </div>
+        <div className="shotCoachRule"><h3>Reinvestment</h3><p>Under pressure, players can start consciously controlling movements that should run automatically. The coaching aim is to refocus attention on information, opportunity and intention.</p></div>
+      </div>}
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Solve the rally problem. Notice the opponent, the ball, the space and the time available.</p><p><strong>KEY FOCUS</strong><br/>Information → Opportunity → Intention → Effect.</p></div>
     </div>}
     {section==='pressure'&&<div className="shotDetailPanel">
