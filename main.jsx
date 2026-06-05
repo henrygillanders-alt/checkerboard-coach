@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h28';
+const APP_VERSION='v100h29';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1099,7 +1099,7 @@ function ShotsModule({setScreen}){
 {id:'s',title:'Individual Solutions',subtitle:'Different players may solve the same problem differently.'},
 {id:'t',title:'Technique Serves Function',subtitle:'Technique matters, but serves the task.'}
 ];
-const learningCards=[[
+const learningCards=[
     {
       id:'function',title:'Function First',subtitle:'Shots are defined by their function, not their form.',
       body:[
