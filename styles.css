@@ -3596,3 +3596,20 @@ button.mentalSkillsTile p{
 .whyCompareGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}.whyBox{border-radius:18px;padding:18px;border:1px solid #cbd5e1}.whyBox h3{margin:0 0 10px!important}.whyBox p{color:#0f172a;font-weight:800;line-height:1.35}.traditionalBox{background:#fff7ed;border-left:6px solid #f97316}.checkerboardBox{background:#ecfdf5;border-left:6px solid #0f766e}.checkerboardBox h3{color:#0f766e!important}.traditionalBox h3{color:#c2410c!important}
 .shotsLearnPanel .shotPlayerView{background:linear-gradient(135deg,#10233b,#0f766e)!important;color:white!important;border:1px solid #0f766e!important}.shotsLearnPanel .shotPlayerView h3{color:#ffd980!important}.shotsLearnPanel .shotPlayerView p{color:white!important}
 @media(max-width:900px){.shotQuickGrid,.claPrincipleList,.whyCompareGrid{grid-template-columns:1fr}.shotsLearnPanel{padding:16px!important}}
+
+
+/* v100h33 Wrist Mechanics & Elastic Release */
+.wristModulePanel{border:2px solid #0f766e!important}
+.wristTabs{margin-top:8px}
+.wristHeroCard{background:#0f172a;border:2px solid #ffd980;border-radius:20px;padding:20px;margin:16px 0;color:white}
+.wristHeroCard h3{color:#ffd980;margin:0 0 10px}
+.wristHeroCard p{font-size:18px;line-height:1.45}
+.wristPathGrid,.wristCoachGrid,.wristChallengeGrid,.wristErrorGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:16px 0}
+.wristPathCard,.wristChallengeCard,.wristErrorCard{background:#0b1828;border:1px solid #5e83be;border-radius:18px;padding:18px;color:white}
+.wristPathCard h3,.wristChallengeCard h3,.wristErrorCard h3{color:#ffd980;margin:0 0 10px}
+.wristPath{font-size:32px;font-weight:1000;color:#fff;background:#10233b;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:10px 0;text-align:center}
+.wristChallengeCard p,.wristErrorCard p{line-height:1.4}
+.wristChallengeCard strong,.wristErrorCard strong{color:#ffd980}
+.wristPlayerMessage{background:linear-gradient(135deg,#0f766e,#10233b)!important;border:2px solid #14b8a6!important;color:white!important}
+.wristPlayerMessage h3{color:#ffd980!important}
+@media(max-width:900px){.wristPath{font-size:24px}}

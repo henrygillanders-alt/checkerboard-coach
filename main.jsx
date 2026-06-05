@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h32';
+const APP_VERSION='v100h33';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1081,6 +1081,7 @@ function ShotsModule({setScreen}){
   const [section,setSection]=useState('learn');
   const [openCard,setOpenCard]=useState('function');
   const [learnTab,setLearnTab]=useState('quick');
+  const [wristTab,setWristTab]=useState('coach');
   const shotSections=[
     {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Pressure'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
@@ -1205,7 +1206,45 @@ const learningCards=[
       <div className="workingLengthGrid">{workingLength.map(([title,text])=><div className="gameCard workingLengthCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
     </div>}
-    {['increase','movement','time','finish','wrist'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
+    {['increase','movement','time','finish'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
+    {section==='wrist'&&<div className="shotDetailPanel wristModulePanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Wrist Mechanics & Elastic Release</div><h2>Wrist Mechanics</h2><p className="mutedText">A CLA approach to loading, release and racket-face self-monitoring.</p></div></div>
+      <div className="shotsLearnTabs wristTabs">
+        <button className={wristTab==='coach'?'activeShotTab':''} onClick={()=>setWristTab('coach')}>Coach View</button>
+        <button className={wristTab==='challenges'?'activeShotTab':''} onClick={()=>setWristTab('challenges')}>Player Challenges</button>
+        <button className={wristTab==='errors'?'activeShotTab':''} onClick={()=>setWristTab('errors')}>Error Cards</button>
+      </div>
+      {wristTab==='coach'&&<div>
+        <div className="wristHeroCard"><h3>The Debate</h3><p>Wrist mechanics remain one of the most debated topics in squash coaching. Some coaches advocate maintaining a cocked wrist throughout the swing. Others advocate maintaining a largely neutral wrist throughout the swing.</p><p><strong>Checkerboard takes a different position.</strong> The wrist is viewed as a dynamic component of the movement system rather than a position to be held.</p></div>
+        <div className="wristPathGrid">
+          <div className="wristPathCard"><h3>Backhand</h3><div className="wristPath">Neutral → Smile</div><p>Arrive neutral. Deliver the smile.</p></div>
+          <div className="wristPathCard"><h3>Forehand</h3><div className="wristPath">Smile → Neutral</div><p>Start with a smile. Deliver a straight face.</p></div>
+        </div>
+        <div className="wristCoachGrid">
+          <div className="gameCard"><h3>Core Concept</h3><p>Efficient racket acceleration emerges from preparation, movement to the ball, sequencing and elastic release. The wrist should not be coached as an isolated body part.</p></div>
+          <div className="gameCard"><h3>Plane-Consistent Preparation</h3><p>Many elite players appear to generate high racket speed while using relatively economical preparations. Reduce unnecessary loops and racket-face turning to preserve decision-making time.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div>
+          <div className="gameCard"><h3>Under Pressure</h3><p>Many players try to consciously control the wrist when pressure increases. This can create timing problems, face-control problems and increased variability.</p><p><strong>Cue:</strong> Organise the swing. Trust the release.</p></div>
+        </div>
+      </div>}
+      {wristTab==='challenges'&&<div>
+        <div className="wristChallengeGrid">
+          <div className="wristChallengeCard"><h3>Smiley Face Challenge</h3><p><strong>Objective:</strong> Develop awareness of wrist position using visual feedback.</p><p><strong>How:</strong> Mark the back of the hand with the neutral line from the thumb/index junction. Use video or partner observation.</p><p><strong>Overlay:</strong> Self-Monitoring Challenge · RLD 3</p></div>
+          <div className="wristChallengeCard"><h3>Neutral → Smile Challenge</h3><p><strong>Objective:</strong> Backhand loading and release.</p><p><strong>Cue:</strong> Arrive neutral. Deliver the smile.</p><p><strong>Common error:</strong> Early Backhand Smile.</p></div>
+          <div className="wristChallengeCard"><h3>Smile → Neutral Challenge</h3><p><strong>Objective:</strong> Forehand loading and release without roll-over.</p><p><strong>Cue:</strong> Start with a smile. Deliver a straight face.</p><p><strong>Common error:</strong> Forehand Roll-Over.</p></div>
+          <div className="wristChallengeCard"><h3>Plane Consistency Challenge</h3><p><strong>Objective:</strong> Reduce unnecessary racket-face turning.</p><p><strong>Cue:</strong> Show the front wall the strings.</p><p><strong>Video prompt:</strong> Did the strings stay simple during preparation?</p></div>
+          <div className="wristChallengeCard"><h3>Elastic Release Challenge</h3><p><strong>Objective:</strong> Encourage natural release without conscious wrist action.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p><p><strong>Overlay:</strong> External Focus · Variable Pace</p></div>
+        </div>
+      </div>}
+      {wristTab==='errors'&&<div>
+        <div className="wristErrorGrid">
+          <div className="wristErrorCard"><h3>Early Backhand Smile</h3><p><strong>Description:</strong> Player arrives with wrist already flexed.</p><p><strong>Consequence:</strong> Loading opportunity is reduced before impact.</p><p><strong>Cue:</strong> Keep the face neutral until delivery.</p></div>
+          <div className="wristErrorCard"><h3>Forehand Roll-Over</h3><p><strong>Description:</strong> Player continues into excessive wrist flexion through impact.</p><p><strong>Consequence:</strong> Reduced face control and accuracy.</p><p><strong>Cue:</strong> Deliver a straight face.</p></div>
+          <div className="wristErrorCard"><h3>Pre-Tensed Wrist</h3><p><strong>Description:</strong> Player actively holds the wrist rigid throughout the swing.</p><p><strong>Consequence:</strong> Reduced elastic contribution and mechanical movement.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p></div>
+          <div className="wristErrorCard"><h3>Preparation Loop</h3><p><strong>Description:</strong> Excessive racket-face turning during preparation.</p><p><strong>Consequence:</strong> Additional timing demand and reduced robustness under pressure.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div>
+        </div>
+      </div>}
+      <div className="playerViewCard wristPlayerMessage"><h3>Player Message</h3><p>Do not try to use your wrist. Do not try to keep your wrist fixed.</p><p><strong>Organise the swing. The loading and release will emerge naturally.</strong></p></div>
+    </div>}
   </div>;
 }
 
