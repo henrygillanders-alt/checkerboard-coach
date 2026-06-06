@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h40';
+const APP_VERSION='v100h41';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1200,83 +1200,8 @@ function ShotsModule({setScreen}){
         <p className="shotsCallout">Instead of only asking if the shot looked technically correct, ask whether it gave time or took time away.</p>
       </section>
 
-<section className="tauDevelopmentModule">
-  <div className="tauHero">
-    <span>PERCEPTION & ACTION</span>
-    <h2>Learning Time-to-Contact</h2>
-    <p>Tau development for young beginners: perception before technique.</p>
-  </div>
 
-  <div className="tauPrinciple">
-    <h3>Before you coach the swing, check what the player can see.</h3>
-    <p>Many beginner timing errors are perception-action problems rather than technical problems. A player who cannot judge when the ball will arrive will struggle to organise any technique consistently.</p>
-  </div>
 
-  <div className="tauGrid">
-    <div className="tauCard">
-      <h3>What Is Tau?</h3>
-      <p>Tau refers to information specifying time-to-contact. When a ball approaches, the visual system can use information from optical expansion to help regulate when contact will occur.</p>
-      <p>Coaches do not teach tau directly. Coaches design environments that allow players to become attuned to useful information.</p>
-    </div>
-    <div className="tauCard">
-      <h3>Important Age Note</h3>
-      <p>There is no fixed age at which tau suddenly becomes the specifying information.</p>
-      <p>Attunement develops gradually through experience. Young beginners often begin with visibility, apparent size and familiar flight paths before becoming sensitive to more specifying time-to-contact information.</p>
-    </div>
-  </div>
-
-  <div className="tauGrid three">
-    <div className="tauCard"><h3>Early Stage</h3><p><strong>Question:</strong> Where is the ball?</p><ul><li>Relies on visibility</li><li>Benefits from large balls</li><li>Needs slower feeds</li><li>Requires high success</li></ul></div>
-    <div className="tauCard"><h3>Intermediate Stage</h3><p><strong>Question:</strong> What is the ball doing?</p><ul><li>Speed becomes meaningful</li><li>Optical expansion becomes useful</li><li>Wall rebound begins to calibrate</li><li>Movement can be added</li></ul></div>
-    <div className="tauCard"><h3>Advanced Stage</h3><p><strong>Question:</strong> When will it arrive?</p><ul><li>Representative feeds</li><li>Variable trajectories</li><li>Rally-based coupling</li><li>Competition ball calibration</li></ul></div>
-  </div>
-
-  <div className="tauLadder">
-    <h3>Tau Calibration Ladder</h3>
-    <div><strong>Level 1</strong><span>Foam ball · Self-drop · Stationary</span></div>
-    <div><strong>Level 2</strong><span>Foam ball · Coach hand feed · Stationary</span></div>
-    <div><strong>Level 3</strong><span>Red dot · Hand feed · Small movement</span></div>
-    <div><strong>Level 4</strong><span>Red / Orange · Front wall feed · Recovery movement</span></div>
-    <div><strong>Level 5</strong><span>Orange / Green · Racket feed · Variable trajectories</span></div>
-    <div><strong>Level 6</strong><span>Yellow · Representative rally · Continuous perception-action coupling</span></div>
-  </div>
-
-  <div className="tauConstraintBuilder">
-    <h3>Constraint Builder</h3>
-    <div className="tauConstraintGrid">
-      <div><strong>Ball</strong><span>Foam · Red · Orange · Green · Yellow · Mixed</span></div>
-      <div><strong>Feed Source</strong><span>Self Drop · Coach Hand Feed · Front Wall Feed · Racket Feed · Rally</span></div>
-      <div><strong>Wall Calibration</strong><span>Bounce Chipping · Volley Chipping · Mixed Chipping</span></div>
-      <div><strong>Movement</strong><span>Stationary · Forward · Backward · Lateral · Recovery</span></div>
-      <div><strong>Feed Type</strong><span>Constant · Variable</span></div>
-      <div><strong>Time Available</strong><span>Add time first · Then progressively remove time</span></div>
-    </div>
-  </div>
-
-  <div className="tauGrid">
-    <div className="tauCard">
-      <h3>Wall Calibration: Chipping</h3>
-      <p>Chipping is retained as one of the few isolated practices in Checkerboard because it develops perception-action coupling, contact quality, force regulation and ball-flight prediction.</p>
-      <ul><li>Bounce chipping: start close and move back</li><li>Volley chipping: reduce available time</li><li>Mixed chipping: alternate bounce and volley</li><li>Use forehand, backhand and alternating sides</li></ul>
-    </div>
-    <div className="tauCard">
-      <h3>Time Giver / Time Taker Link</h3>
-      <p>Beginners often need more available time before they can perceive useful information.</p>
-      <p>Use larger balls, slower feeds, higher trajectories and reduced movement demand. As attunement develops, progressively remove time.</p>
-    </div>
-  </div>
-
-  <div className="tauCoachReflection">
-    <h3>Coach Reflection</h3>
-    <p>Before concluding that a young player is not trying, not concentrating, careless, or has poor hand-eye coordination, consider whether the challenge may be perceptual rather than behavioural.</p>
-    <p>A perception problem cannot be solved through criticism, repetition or technical instruction alone. Manipulate constraints and allow attunement to develop.</p>
-  </div>
-
-  <div className="tauFinalMessage">
-    <h3>Final Coach Message</h3>
-    <p>The objective is not perfect technique. The objective is helping the player become better attuned to the information that allows successful contact. When perception improves, technique often improves naturally.</p>
-  </div>
-</section>
 
 
 
@@ -2548,39 +2473,130 @@ function TechnicalFocusBuilder({onAddToSession}){
 }
 
 function Level0Exploration(){
-  const pillars=[
-    {title:'MOVE',text:'Balance, rhythm, agility and movement confidence.'},
-    {title:'TRACK',text:'Ball pickup, timing and visual stability.'},
-    {title:'STRIKE',text:'Different swing shapes and striking adaptability.'},
-    {title:'SEND & RECEIVE',text:'Cooperative rallying and directional awareness.'},
-    {title:'PLAY',text:'Exploratory games and creativity.'},
-    {title:'MINI CHECKERBOARD',text:'Visual target awareness before formal notation.'}
+  const perception=[
+    {title:'Tau Development',text:'Learning time-to-contact. Use ball size, feed source and available time to help young players perceive when the ball will arrive.'},
+    {title:'Tracking & Ball Watching',text:'Ball pickup, front-wall tracking, bounce tracking and contact tracking.'},
+    {title:'Quiet Eye Foundations',text:'Learning where to look before, during and after contact without over-coaching gaze mechanics.'},
+    {title:'Time Givers',text:'Large balls, slower feeds, higher trajectories and reduced movement demand give beginners time to perceive useful information.'}
   ];
 
-  return <div className="gameCard">
-    <div className="categoryTag">Level 0</div>
-    <h2>Level 0 — Exploration Stage (5–9 yrs)</h2>
+  const contact=[
+    {title:'Wall Calibration (Chipping)',text:'Bounce chipping, volley chipping and mixed chipping for contact quality, force regulation and ball-flight prediction.'},
+    {title:'First Contact Development',text:'Foam, red, orange, green and yellow ball progressions, including mixed ball mode to prevent one fixed timing solution.'}
+  ];
+
+  const movement=[
+    {title:'Movement Foundations',text:'Forward, backward, lateral and recovery movement linked to ball flight rather than isolated footwork patterns.'},
+    {title:'Move Mindset',text:'Move first. Solve later. Early double-bounce style tasks encourage hesitant players to commit to the ball.'}
+  ];
+
+  const rallying=[
+    {title:'First Rally Development',text:'Self-feed, partner feed, cooperative rally and representative rally progressions.'},
+    {title:'Return of Serve Foundations',text:'Failure to volley return of serve is one of the biggest developmental bottlenecks in junior squash.'}
+  ];
+
+  const section=(title,tag,items)=><div className="level0PathwaySection">
+    <div className="level0SectionHeader">
+      <span>{tag}</span>
+      <h3>{title}</h3>
+    </div>
+    <div className="level0PathwayGrid">
+      {items.map(item=><div className="level0PathwayCard" key={item.title}>
+        <strong>{item.title}</strong>
+        <p>{item.text}</p>
+      </div>)}
+    </div>
+  </div>;
+
+  return <div className="gameCard level0DevelopmentPage">
+    <div className="categoryTag">Explore · Level 0</div>
+    <h2>Level 0 Development</h2>
+    <p className="level0Subtitle">Building perception, movement, contact and rallying before technical refinement.</p>
+
+    <div className="level0CoachMessage">
+      <h3>Before Technique</h3>
+      <ol>
+        <li>Can the player see the information?</li>
+        <li>Can the player move to the ball?</li>
+        <li>Can the player organise contact?</li>
+        <li>Can the player sustain a rally?</li>
+      </ol>
+      <p><strong>Only then ask:</strong> How should they swing?</p>
+    </div>
 
     <div className="diagnosticPrinciple">
       <strong>Level 0 Philosophy</strong>
-      <p>This is not mini adult squash. Level 0 focuses on exploration, movement literacy, adaptability, creativity and representative play. Influenced by Athletic Skills Model, England Squash, Squash Canada, US Squash, observed Egyptian junior development and presented through a Constraints-Led Approach framework.</p>
+      <p>This is not mini adult squash. Level 0 is a beginner coaching pathway for perception, contact, movement and rally development. The objective is to help players become attuned to information and solve movement problems through exploration, constraints and representative play.</p>
     </div>
 
     <div className="infoBox">
       <strong>Core Principles</strong>
       <ul>
-        <li>Exploration before optimisation</li>
-        <li>Variability before precision</li>
+        <li>Adaptation over repetition</li>
+        <li>Perception before technique</li>
         <li>Play before correction</li>
         <li>Movement literacy before tactical systems</li>
+        <li>Representative problems before isolated solutions</li>
       </ul>
     </div>
 
-    <div className="problemGrid">
-      {pillars.map(pillar=><div className="problemBtn activeProblem" key={pillar.title}>
-        <strong>{pillar.title}</strong>
-        <span>{pillar.text}</span>
-      </div>)}
+    {section('Perception','SEE',perception)}
+    {section('Contact','CONTACT',contact)}
+    {section('Movement','MOVE',movement)}
+    {section('Rallying','RALLY',rallying)}
+
+    <div className="tauDevelopmentModule level0TauPanel">
+      <div className="tauHero">
+        <span>LEVEL 0 · PERCEPTION</span>
+        <h2>Learning Time-to-Contact</h2>
+        <p>Tau development for young beginners: perception before technique.</p>
+      </div>
+
+      <div className="tauPrinciple">
+        <h3>Before you coach the swing, check what the player can see.</h3>
+        <p>Many beginner timing errors are perception-action problems rather than technical problems. A player who cannot judge when the ball will arrive will struggle to organise any technique consistently.</p>
+      </div>
+
+      <div className="tauGrid">
+        <div className="tauCard">
+          <h3>What Is Tau?</h3>
+          <p>Tau refers to information specifying time-to-contact. When a ball approaches, the visual system can use information from optical expansion to help regulate when contact will occur.</p>
+          <p>Coaches do not teach tau directly. Coaches design environments that allow players to become attuned to useful information.</p>
+        </div>
+        <div className="tauCard">
+          <h3>Important Age Note</h3>
+          <p>There is no fixed age at which tau suddenly becomes the specifying information.</p>
+          <p>Attunement develops gradually through experience. Young beginners often begin with visibility, apparent size and familiar flight paths before becoming sensitive to more specifying time-to-contact information.</p>
+        </div>
+      </div>
+
+      <div className="tauGrid three">
+        <div className="tauCard"><h3>Early Stage</h3><p><strong>Question:</strong> Where is the ball?</p><ul><li>Relies on visibility</li><li>Benefits from large balls</li><li>Needs slower feeds</li><li>Requires high success</li></ul></div>
+        <div className="tauCard"><h3>Intermediate Stage</h3><p><strong>Question:</strong> What is the ball doing?</p><ul><li>Speed becomes meaningful</li><li>Optical expansion becomes useful</li><li>Wall rebound begins to calibrate</li><li>Movement can be added</li></ul></div>
+        <div className="tauCard"><h3>Advanced Stage</h3><p><strong>Question:</strong> When will it arrive?</p><ul><li>Representative feeds</li><li>Variable trajectories</li><li>Rally-based coupling</li><li>Competition ball calibration</li></ul></div>
+      </div>
+
+      <div className="tauLadder">
+        <h3>Tau Calibration Ladder</h3>
+        <div><strong>Level 1</strong><span>Foam ball · Self-drop · Stationary</span></div>
+        <div><strong>Level 2</strong><span>Foam ball · Coach hand feed · Stationary</span></div>
+        <div><strong>Level 3</strong><span>Red dot · Hand feed · Small movement</span></div>
+        <div><strong>Level 4</strong><span>Red / Orange · Front wall feed · Recovery movement</span></div>
+        <div><strong>Level 5</strong><span>Orange / Green · Racket feed · Variable trajectories</span></div>
+        <div><strong>Level 6</strong><span>Yellow · Representative rally · Continuous perception-action coupling</span></div>
+      </div>
+
+      <div className="tauConstraintBuilder">
+        <h3>Constraint Builder</h3>
+        <div className="tauConstraintGrid">
+          <div><strong>Ball</strong><span>Foam · Red · Orange · Green · Yellow · Mixed</span></div>
+          <div><strong>Feed Source</strong><span>Self Drop · Coach Hand Feed · Front Wall Feed · Racket Feed · Rally</span></div>
+          <div><strong>Wall Calibration</strong><span>Bounce Chipping · Volley Chipping · Mixed Chipping</span></div>
+          <div><strong>Movement</strong><span>Stationary · Forward · Backward · Lateral · Recovery</span></div>
+          <div><strong>Feed Type</strong><span>Constant · Variable</span></div>
+          <div><strong>Time Available</strong><span>Add time first · Then progressively remove time</span></div>
+        </div>
+      </div>
     </div>
 
     <div className="technicalScoringBox alwaysVisibleScoring">
