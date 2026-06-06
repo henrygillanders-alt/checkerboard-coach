@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h38';
+const APP_VERSION='v100h39';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1091,7 +1091,8 @@ function ShotsModule({setScreen}){
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
     {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'},
-    {id:'wrist',title:'Wrist Mechanics',tag:'Elastic Release · Smiley Face Protocol'}
+    {id:'wrist',title:'Wrist Mechanics',tag:'Elastic Release · Smiley Face Protocol'},
+    {id:'biomech',title:'Swing Biomechanics',tag:'Bow · Spring · Whip · Torch'}
   ];
 
   const quickStartCards=[
@@ -1099,7 +1100,7 @@ function ShotsModule({setScreen}){
     {id:'i',title:'Coach Intention Not Action',subtitle:'Focus on what the player is trying to achieve.'},
     {id:'e',title:'External Focus',subtitle:'Direct attention to ball, opponent, space and time.'},
     {id:'c',title:'Constraints Before Correction',subtitle:'Change the task before changing the player.'},
-    {id:'v',title:'Variability Over Repetition',subtitle:'Learning requires adaptation, not copying.'},
+    {id:'v',title:'Adaptation Over Repetition',subtitle:'Learning requires adaptation to fluid events, not copying a grooved technique with metric adjustments.'},
     {id:'r',title:'Representative Practice',subtitle:'Practice should look like the game.'},
     {id:'s',title:'Individual Solutions',subtitle:'Different players may solve the same problem differently.'},
     {id:'t',title:'Technique Serves Function',subtitle:'Technique matters, but serves the task.'}
@@ -1289,6 +1290,91 @@ function ShotsModule({setScreen}){
       <div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div>
       <p>{categoryCards[section].intro}</p>
       <div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div>
+    </div>}
+
+
+
+    {section==='biomech'&&<div className="shotDetailPanel biomechModulePanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Swing Biomechanics · Elastic Release · Movement Organisation</div><h2>Swing Biomechanics</h2><p className="mutedText">A CLA coaching framework for organising the chain rather than teaching fixed technique.</p></div></div>
+
+      <section className="shotPageBlock sscBiomechanicsPage">
+        <div className="shotHero springHero">
+          <span className="timeBadge take">🟢 ELASTIC ENERGY</span>
+          <h2>The Spring — SSC</h2>
+          <p>Load the spring. Let it rebound. Land and go.</p>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard">
+            <h3>What It Teaches</h3>
+            <p>The Spring explains stretch-shortening cycle behaviour in simple coaching language.</p>
+            <p>Rapid loading followed by rapid release can produce greater racket speed than muscular effort alone.</p>
+            <p>The longer the delay between load and release, the more energy is lost.</p>
+          </div>
+          <div className="shotInfoCard dangerCard">
+            <h3>Common Error: Load-Hold-Release</h3>
+            <p>The player loads correctly, then pauses before swinging.</p>
+            <p><strong>Result:</strong> energy leaks away and elastic contribution is reduced.</p>
+            <p><strong>Cue:</strong> Land and go.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="shotPageBlock">
+        <div className="shotInfoCard coachObservationCard">
+          <h3>Before You Intervene: Rob Gray Diagnostic Filter</h3>
+          <ol>
+            <li><strong>Is the output consistent and effective?</strong> If yes, why change it?</li>
+            <li><strong>Is the visible movement actually the problem?</strong> Or is it a compensation for something missing earlier in the chain?</li>
+          </ol>
+          <p><strong>Checkerboard principle:</strong> Do not coach the symptom. Find the earliest breakdown.</p>
+        </div>
+      </section>
+
+      <section className="shotPageBlock">
+        <div className="shotHero diagnosticBioHero"><h2>The Four Analogies</h2><p>Memorable tools for self-monitoring movement organisation.</p></div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard"><h3>🏹 The Bow — Loading</h3><p><strong>Player message:</strong> Lift the bow. Draw the string. Release the arrow.</p><p><strong>Checkpoint 1:</strong> Prepare on the T before moving.</p><p><strong>Checkpoint 2:</strong> Final plant and trunk rotation. Land loaded.</p><p><strong>Cue:</strong> Prepare before you move. Draw and release.</p></div>
+          <div className="shotInfoCard"><h3>〰️ The Whip — Sequencing</h3><p><strong>Player message:</strong> Move the body. Let the crack appear.</p><p>Power does not come from consciously moving the racket head. Power emerges when the chain is organised.</p><p>The body moves first. The racket follows.</p></div>
+          <div className="shotInfoCard"><h3>🙂 The Smiley Face — Elastic Release</h3><p><strong>Backhand:</strong> Neutral → Smile. Arrive neutral. Deliver the smile.</p><p><strong>Forehand:</strong> Smile → Neutral. Start with a smile. Deliver a straight face.</p><p>The marker runs from the thumb/index junction across the back of the hand for easy self-monitoring.</p></div>
+          <div className="shotInfoCard"><h3>🔦 The Torch — Plane Consistency</h3><p>Imagine a torch attached to the racket face.</p><p>The beam remains broadly directed toward the front wall through preparation, movement and final load.</p><p><strong>Cue:</strong> Keep the torch on the front wall.</p></div>
+        </div>
+      </section>
+
+      <section className="shotPageBlock">
+        <div className="shotInfoCard dangerCard">
+          <h3>Micro Drop — Diagnostic Marker, Not A Technique</h3>
+          <p>The micro drop is a small downward movement of the racket head immediately before the forward swing.</p>
+          <p><strong>Do not coach it directly.</strong> Do not tell players to create a racket drop.</p>
+          <p>If it appears naturally, usually leave it alone. If it does not appear, ask what is missing earlier in the chain.</p>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard checkerboardCard"><h3>Natural Micro Drop</h3><ul><li>Small</li><li>Emergent</li><li>Vertical</li><li>Maintains torch direction</li><li>Appears when the chain is organised</li></ul><p><strong>Coach response:</strong> Leave it alone.</p></div>
+          <div className="shotInfoCard dangerCard"><h3>Looping Backswing</h3><ul><li>Large</li><li>Habitual or conscious</li><li>Turns the torch away from the front wall</li><li>Creates timing problems</li></ul><p><strong>Coach response:</strong> Reduce it through constraints.</p></div>
+        </div>
+      </section>
+
+      <section className="shotPageBlock biomechanicsDiagnosticPage">
+        <div className="shotHero diagnosticBioHero"><span className="timeBadge give">🔍 DIAGNOSTIC</span><h2>Missing Micro Drop Pathway</h2><p>Do not coach the drop. Trace the chain backwards.</p></div>
+        <div className="shotInfoCard coachObservationCard">
+          <h3>Diagnostic Questions</h3>
+          <ol>
+            <li>Was the bow lifted? If no, improve preparation.</li>
+            <li>Was the string drawn? If no, look for passive landing.</li>
+            <li>Was the spring compressed? If no, create loading constraints.</li>
+            <li>Was there a load-hold-release pause? If yes, use Land and Go.</li>
+            <li>Did the torch stay on the front wall? If no, reduce looping.</li>
+            <li>Was the whip organised? If no, use Move the Body / Let the Crack Appear.</li>
+          </ol>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard"><h3>Common Observations</h3><ul><li>Missing micro drop</li><li>Early backhand smile</li><li>Forehand roll-over</li><li>Pre-tensed wrist</li><li>Excessive loop</li><li>Load-hold-release pause</li><li>Passive landing</li></ul></div>
+          <div className="shotInfoCard checkerboardCard"><h3>Suggested Challenges</h3><ul><li>Bow Challenge</li><li>Spring / Land and Go Challenge</li><li>Whip Challenge</li><li>Torch Challenge</li><li>Smiley Face Challenge</li><li>Natural Release Challenge</li></ul></div>
+        </div>
+        <div className="shotPrincipleBox"><h3>Attractor State Link</h3><p><strong>Type 1:</strong> Technique learned in isolation. Looks stable in feeding. Fails under pressure.</p><p><strong>Type 2:</strong> Match-developed compensation. Worked at previous level. Now limits progression.</p></div>
+      </section>
+
+      <div className="shotPrincipleBox"><h3>Checkerboard Swing Sequence</h3><p>Lift the bow → Draw the string → Compress the spring → Move the body → Keep the torch on the front wall → Deliver the smile → Let the crack appear → The arrow leaves.</p></div>
+      <div className="shotTakeaway"><p><strong>Final player message:</strong> Lift the bow. Draw the string. Land and go. Move the body. Keep the torch on the front wall. Deliver the smile. Let the crack appear.</p></div>
     </div>}
 
     {section==='wrist'&&<div className="shotDetailPanel wristModulePanel">
