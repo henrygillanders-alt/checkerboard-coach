@@ -3747,3 +3747,21 @@ button.mentalSkillsTile p{
 .shotTakeaway p{color:#fff;font-size:18px;font-weight:850}
 .shotTakeaway strong{color:#ffd980}
 @media(max-width:900px){.readableTimeGrid,.shotGridTwo{grid-template-columns:1fr}.shotHero h2{font-size:30px}}
+
+
+
+/* v100h40 Tau Development */
+.tauDevelopmentModule{background:#071827;border:2px solid #5eead4;border-radius:26px;padding:22px;margin:24px 0;color:#fff}
+.tauHero{background:linear-gradient(135deg,#0f766e,#0b1828);border:2px solid #5eead4;border-radius:24px;padding:24px;margin-bottom:18px}
+.tauHero span{display:inline-block;background:#5eead4;color:#06251f;border-radius:999px;padding:8px 14px;font-weight:1000;letter-spacing:.08em}
+.tauHero h2{font-size:40px;color:#fff;margin:16px 0 8px}.tauHero p{color:#fff;font-size:21px;font-weight:900}
+.tauPrinciple,.tauCoachReflection,.tauFinalMessage{background:#10233b;border:2px solid #ffd980;border-radius:18px;padding:18px;margin:18px 0}
+.tauPrinciple h3,.tauCoachReflection h3,.tauFinalMessage h3,.tauCard h3,.tauLadder h3,.tauConstraintBuilder h3{color:#ffd980;margin-top:0}
+.tauPrinciple p,.tauCoachReflection p,.tauFinalMessage p,.tauCard p,.tauCard li{color:#fff;font-size:17px;line-height:1.48}
+.tauGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}.tauGrid.three{grid-template-columns:repeat(3,1fr)}
+.tauCard{background:#0b1828;border:1px solid #35567e;border-radius:18px;padding:18px}.tauCard strong{color:#ffd980}
+.tauLadder,.tauConstraintBuilder{background:#06111f;border:1px solid #5e83be;border-radius:20px;padding:18px;margin:20px 0}
+.tauLadder div{display:grid;grid-template-columns:120px 1fr;gap:12px;border-top:1px solid #35567e;padding:12px 0}
+.tauLadder strong{color:#5eead4;font-weight:1000}.tauLadder span,.tauConstraintGrid span{color:#fff;font-weight:850}
+.tauConstraintGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.tauConstraintGrid div{background:#0b1828;border:1px solid #35567e;border-radius:16px;padding:14px}.tauConstraintGrid strong{display:block;color:#ffd980;margin-bottom:8px}
+@media(max-width:900px){.tauGrid,.tauGrid.three,.tauConstraintGrid{grid-template-columns:1fr}.tauLadder div{grid-template-columns:1fr}.tauHero h2{font-size:30px}}
