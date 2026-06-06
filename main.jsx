@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h35';
+const APP_VERSION='v100h38';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1077,77 +1077,52 @@ function MentalSkillsPlaceholder({setScreen}){
 }
 
 
+
 function ShotsModule({setScreen}){
   const [section,setSection]=useState('learn');
-  const [openCard,setOpenCard]=useState('function');
   const [learnTab,setLearnTab]=useState('quick');
   const [wristTab,setWristTab]=useState('coach');
+
   const shotSections=[
     {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Self-discovery'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
-    {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Volley Drive · Early Intercept'},
+    {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Time Taker'},
+    {id:'crosscourts',title:'Functional Crosscourts',tag:'Solve problem · avoid time donation'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
     {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'},
     {id:'wrist',title:'Wrist Mechanics',tag:'Elastic Release · Smiley Face Protocol'}
   ];
+
   const quickStartCards=[
-{id:'f',title:'Function Before Form',subtitle:'Shots are defined by their purpose, not their appearance.'},
-{id:'i',title:'Coach Intention Not Action',subtitle:'Focus on what the player is trying to achieve.'},
-{id:'e',title:'External Focus',subtitle:'Direct attention to ball, opponent, space and time.'},
-{id:'c',title:'Constraints Before Correction',subtitle:'Change the task before changing the player.'},
-{id:'v',title:'Variability Over Repetition',subtitle:'Learning requires adaptation, not copying.'},
-{id:'r',title:'Representative Practice',subtitle:'Practice should look like the game.'},
-{id:'s',title:'Individual Solutions',subtitle:'Different players may solve the same problem differently.'},
-{id:'t',title:'Technique Serves Function',subtitle:'Technique matters, but serves the task.'}
-];
-const learningCards=[
-    {
-      id:'function',title:'Function First',subtitle:'Shots are defined by their function, not their form.',
-      body:[
-        'Traditional coaching often starts with grip, swing, contact point, follow-through and target areas.',
-        'Checkerboard starts with the problem the player is trying to solve and the effect the shot creates for the opponent.',
-        'A lob gains time. Working length builds pressure. A penetrating drive takes time away. A volley prevents recovery. A kill finishes the rally.'
-      ],
-      takeaway:'The goal is not to reproduce a movement. The goal is to achieve a function.'
-    },
-    {
-      id:'emergence',title:'How Decisions Emerge',subtitle:'Good decisions emerge from the dynamic relationship between perception and action.',
-      body:[
-        'A simple coaching model says: Perception → Decision → Action. This is useful, but it can make decision making look like a separate calculation.',
-        'In representative squash, the player is moving while perceiving and perceiving while moving. The ball, opponent, space and player capabilities constantly shape what is available.',
-        'The coach’s job is to design constraints that help players recognise useful opportunities and act on them.'
-      ],
-      takeaway:'Decision making is not separate from movement. It emerges from player, opponent, ball and space.'
-    },
-    {
-      id:'reinvestment',title:'Pressure & Reinvestment',subtitle:'Under pressure, internal technical thoughts can disrupt performance.',
-      body:[
-        'A player misses a return of serve and starts thinking: “Keep the racket up. Turn sideways. Prepare earlier.”',
-        'Attention moves away from ball, opponent, space and time and towards body positions and swing mechanics.',
-        'Checkerboard refocuses the player externally: “Intercept earlier”, “Take time away”, “Make the ball die”.'
-      ],
-      takeaway:'Under pressure, refocus on information, opportunity and intention — not body parts.'
-    }
+    {id:'f',title:'Function Before Form',subtitle:'Shots are defined by their purpose, not their appearance.'},
+    {id:'i',title:'Coach Intention Not Action',subtitle:'Focus on what the player is trying to achieve.'},
+    {id:'e',title:'External Focus',subtitle:'Direct attention to ball, opponent, space and time.'},
+    {id:'c',title:'Constraints Before Correction',subtitle:'Change the task before changing the player.'},
+    {id:'v',title:'Variability Over Repetition',subtitle:'Learning requires adaptation, not copying.'},
+    {id:'r',title:'Representative Practice',subtitle:'Practice should look like the game.'},
+    {id:'s',title:'Individual Solutions',subtitle:'Different players may solve the same problem differently.'},
+    {id:'t',title:'Technique Serves Function',subtitle:'Technique matters, but serves the task.'}
   ];
+
   const workingLength=[
     ['What is Working Length?','Working Length is a shot played primarily to make your opponent’s next shot more difficult. It is not usually played to win the rally. It is played to improve your position within the rally.'],
     ['Why is it important?','Most rallies are not won by spectacular winners. Most rallies are won because one player gradually creates a better situation than the other. Working Length builds pressure, restricts attacking options, improves court position and creates future opportunities.'],
-    ['Traditional Description','A coach may describe Working Length as hitting the ball deep, keeping the ball tight to the side wall, forcing the opponent into the back corners or maintaining good length and width. These descriptions focus mainly on ball placement and consistency.'],
-    ['Checkerboard Description','A Working Length is judged by its effect on the opponent. It is successful if the opponent arrives late, cannot volley, cannot attack, loses T position, is forced to defend or produces a weaker return.'],
-    ['Example A','Player A hits a length. Player B arrives comfortably, volleys easily and attacks. Result: poor Working Length, even if the ball landed in a traditional target area.'],
+    ['Traditional View','Hit the ball deep and tight. Keep the ball in the back corners. Maintain good length and width. These descriptions are useful, but they focus mainly on the ball.'],
+    ['Checkerboard View','Force the opponent to play from positions that reduce their attacking options. Judge the shot by what happens to the opponent, not by landing position alone.'],
+    ['Example A','Player A hits a length. Player B arrives comfortably, maintains T position, volleys easily and attacks. Result: poor Working Length, even if the ball landed in a traditional target area.'],
     ['Example B','Player A hits a length. Player B arrives late, cannot volley and is forced to defend. Result: good Working Length, even if the ball did not land in a textbook target area.'],
-    ['Coach Observation Tool','Watch the opponent, not just the ball. Did the opponent arrive comfortably, arrive late, volley, attack, defend or lose T position? These answers often matter more than the landing position.'],
-    ['Checkerboard Principle','A Working Length is not defined by where it lands. A Working Length is defined by the pressure it creates.'],
-    ['Coach Takeaway','Before teaching players how to attack, teach them how to build pressure. Working Length is the foundation upon which attacking opportunities are created. It is the first move on the squash checkerboard.']
+    ['Coach Observation Questions','1. Where is the opponent hitting from? 2. How many attacking options do they have? 3. Did my shot reduce those options?'],
+    ['Checkerboard Principle','A Working Length is not defined solely by where it lands. A Working Length is defined by the effect it has on the opponent.'],
+    ['Coach Takeaway','Before teaching players how to attack, teach them how to build pressure. Working Length is the first move on the squash checkerboard.']
   ];
+
   const categoryCards={
-    increase:{title:'Increase Pressure',intro:'Future shot pages will show how players increase pressure after Working Length has begun to restrict the opponent.',items:['Penetrating Drive — take time away','Volley Drive — remove recovery time','Early Intercept — turn information into action']},
     movement:{title:'Force Movement',intro:'Future shot pages will show how players stretch the court and create instability without attacking too early.',items:['Straight Drop — move opponent forward','Soft Dying Shot — make the ball stop being available','Trickle Boast — change the movement problem']},
-    time:{title:'Gain Time',intro:'Future shot pages will show how players reset the rally, change tempo and recover court position.',items:['Lob — gain time and clear the opponent','High Defensive Crosscourt — change height and recover','Reset Length — slow the rally problem down']},
-    finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']},
-    wrist:{title:'Wrist Mechanics & Elastic Release',intro:'Coming soon: a CLA-informed module for loading and release without teaching players to consciously use the wrist.',items:['Coach View — contested coaching positions','Player Challenges — Smiley Face Protocol','Error Cards — early smile, roll-over, pre-tension and preparation loop']}
+    time:{title:'Gain Time',intro:'Future shot pages will show how players reset the rally, change tempo and recover court position. Lob will include defensive, organising and attacking functions.',items:['Lob — gain time, move opponent or attack','High Defensive Crosscourt — change height and recover','Reset Length — slow the rally problem down']},
+    finish:{title:'Finish',intro:'Future shot pages will show how players convert advantage only when the information says the finish is available.',items:['Kill — finish a loose ball','Nick — exploit vulnerable front space','Attacking Boast — finish when opponent organisation is poor']}
   };
+
   function addWorkingLengthToSession(){
     const card={
       id:'shot-working-length-foundation',
@@ -1164,25 +1139,80 @@ const learningCards=[
     }catch(e){}
     setScreen('sessions');
   }
+
   return <div className="page shotsPage shotsFoundationPage">
-    <div className="pageTop"><div><h1>Shots</h1><p className="mutedText">Function first · Perception-action · Constraints-led shot development</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div></div>
-    <div className="libraryStageIntro shotsIntro"><h2>Shots are defined by their function, not their form</h2><p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p></div>
-    <div className="shotSelectorRow shotFunctionRow">{shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}</div>
+    <div className="pageTop">
+      <div><h1>Shots</h1><p className="mutedText">Function first · Perception-action · Constraints-led shot development</p></div>
+      <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div>
+    </div>
+
+    <div className="libraryStageIntro shotsIntro">
+      <h2>Shots are defined by their function, not their form</h2>
+      <p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p>
+    </div>
+
+    <div className="shotSelectorRow shotFunctionRow">
+      {shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}
+    </div>
+
     {section==='learn'&&<div className="shotDetailPanel shotsLearnPanel">
-      <div className="shotDetailHeader"><div><div className="categoryTag">How Shots Are Learned</div><h2>Coach the Shot Function</h2><p className="mutedText">
-<div className="infoBox"><strong>TIME GIVERS vs TIME TAKERS</strong><p>Every action in squash either gives time to the opponent or takes time away.</p><p><strong>Coach Question:</strong> Did that action give the opponent more time or less time?</p><p>🔴 Time Givers: Non-functional crosscourt, failure to volley return of serve, floating length, late preparation.</p><p>🟢 Time Takers: Penetrating drive, volley return of serve, early intercept, effective working length.</p></div>
-Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div></div>
+      <div className="shotDetailHeader">
+        <div>
+          <div className="categoryTag">How Shots Are Learned</div>
+          <h2>Coach the Shot Function</h2>
+          <p className="mutedText">Quick coaching principles first. Deeper CLA theory sits behind a tab.</p>
+        </div>
+      </div>
+
+      <section className="shotsTimePanel shotsTimePanelReadable">
+        <div className="shotsTimeHeader">
+          <span className="timeBadge take">🟢 TIME TAKER</span>
+          <span className="timeBadge give">🔴 TIME GIVER</span>
+        </div>
+        <h3>Time Givers vs Time Takers</h3>
+        <p className="timeLead">Many actions in squash either give time to the opponent or take time away.</p>
+        <p className="timeCoachQuestion"><strong>Coach question:</strong> Did that action give the opponent more time or less time?</p>
+        <div className="shotsTimeGrid readableTimeGrid">
+          <div className="timeListBox giveBox">
+            <h4>🔴 Time Givers</h4>
+            <ul>
+              <li>Non-functional crosscourt</li>
+              <li>Failure to volley return of serve</li>
+              <li>Floating length</li>
+              <li>Late preparation</li>
+              <li>Passing up interception opportunities</li>
+              <li>Unnecessary retreat</li>
+            </ul>
+          </div>
+          <div className="timeListBox takeBox">
+            <h4>🟢 Time Takers</h4>
+            <ul>
+              <li>Penetrating drive</li>
+              <li>Volley return of serve</li>
+              <li>Early intercept</li>
+              <li>Effective working length</li>
+              <li>Front-court pressure</li>
+              <li>Taking the ball before side wall</li>
+            </ul>
+          </div>
+        </div>
+        <p className="shotsCallout">Instead of only asking if the shot looked technically correct, ask whether it gave time or took time away.</p>
+      </section>
+
       <div className="shotsLearnTabs">
         <button className={learnTab==='quick'?'activeShotTab':''} onClick={()=>setLearnTab('quick')}>Quick Start</button>
         <button className={learnTab==='cla'?'activeShotTab':''} onClick={()=>setLearnTab('cla')}>CLA Principles</button>
         <button className={learnTab==='why'?'activeShotTab':''} onClick={()=>setLearnTab('why')}>Why It Works</button>
       </div>
+
       {learnTab==='quick'&&<div>
         <div className="shotQuickGrid">{quickStartCards.map(card=><div key={card.id} className="shotQuickCard"><h3>{card.title}</h3><p>{card.subtitle}</p></div>)}</div>
         <div className="shotCoachRule"><h3>10 second rule</h3><p>Before correcting technique, ask: <strong>what effect should this shot have on the opponent?</strong></p></div>
       </div>}
+
       {learnTab==='cla'&&<div>
         <div className="claPrincipleList">
+          <div><h3>Checkerboard Coaching Principles</h3><p>Function before form · intention not action · external focus · constraints before correction · variability · representative practice · individual solutions · technique serves function.</p></div>
           <div><h3>Ecological Dynamics</h3><p>Learning happens through the relationship between the player, opponent, ball, court and task.</p></div>
           <div><h3>Perception ↔ Action Coupling</h3><p>Players learn by seeing and acting together. Decision emerges while the player moves, not as a separate classroom calculation.</p></div>
           <div><h3>Affordances</h3><p>A shot is an opportunity for action: a loose ball may afford a kill; a dominant opponent may afford a lob.</p></div>
@@ -1194,6 +1224,7 @@ Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div><
           <div><h3>Representative Learning Design</h3><p>Practice should preserve the information, pressure, timing and choices of the game.</p></div>
         </div>
       </div>}
+
       {learnTab==='why'&&<div className="whyWorksPanel">
         <div className="whyCompareGrid">
           <div className="whyBox traditionalBox"><h3>Traditional response</h3><p>Player misses a volley return.</p><p><strong>“Keep your racket up.”</strong></p><p><strong>“Turn sideways.”</strong></p><p>Attention shifts internally to body positions and movement control.</p></div>
@@ -1201,14 +1232,65 @@ Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div><
         </div>
         <div className="shotCoachRule"><h3>Reinvestment</h3><p>Under pressure, players can shift attention away from information and opportunities and towards conscious movement control. The coaching aim is to refocus attention on the task, the opponent and the intended effect.</p></div>
       </div>}
+
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Solve the rally problem. Notice the opponent, the ball, the space and the time available.</p><p><strong>KEY FOCUS</strong><br/>Information → Opportunity → Intention → Effect.</p></div>
     </div>}
+
     {section==='pressure'&&<div className="shotDetailPanel">
       <div className="shotDetailHeader"><div><div className="categoryTag">Build Pressure</div><h2>Working Length</h2><p className="mutedText">The first move on the squash checkerboard.</p></div><button className="primaryBtn" onClick={addWorkingLengthToSession}>Add to session</button></div>
-      <div className="workingLengthGrid">{workingLength.map(([title,text])=><div className="gameCard workingLengthCard" key={title}><h3>{title}</h3><p>{text}</p></div>)}</div>
+      <div className="shotsTimeMini"><span className="timeBadge take">🟢 TIME TAKER</span><p>Working Length usually acts as a Time Taker because it reduces opponent options and often reduces available time.</p></div>
+      <div className="workingLengthGrid">{workingLength.map(([title,body])=><div className="gameCard workingLengthCard" key={title}><h3>{title}</h3><p>{body}</p></div>)}</div>
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
     </div>}
-    {['increase','movement','time','finish'].includes(section)&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div><p>{categoryCards[section].intro}</p><div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div></div>}
+
+    {section==='increase'&&<div className="shotDetailPanel">
+      <section className="shotPageBlock penetratingDrivePage">
+        <div className="shotHero">
+          <span className="timeBadge take">🟢 STRONG TIME TAKER</span>
+          <h2>Penetrating Drive</h2>
+          <p>The second move on the squash checkerboard: once pressure is built, take time away.</p>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard"><h3>What is a Penetrating Drive?</h3><p>A Penetrating Drive is a drive whose primary function is to reduce the opponent’s available time.</p><p>It is not simply a hard drive. It is a shot that forces later arrival, less preparation and weaker responses.</p></div>
+          <div className="shotInfoCard"><h3>Why is it important?</h3><ul><li>Reduces preparation time</li><li>Reduces volley opportunities</li><li>Forces later arrival</li><li>Increases defensive responses</li><li>Creates weaker returns</li></ul></div>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard traditionalCard"><h3>Traditional View</h3><p>A coach may describe a Penetrating Drive as:</p><ul><li>Hit hard</li><li>Hit deep</li><li>Hit tight</li><li>Keep the ball low</li><li>Drive the ball through the back of the court</li></ul><p>These descriptions focus primarily on the characteristics of the ball.</p></div>
+          <div className="shotInfoCard checkerboardCard"><h3>Checkerboard View</h3><p>A Penetrating Drive is successful if the opponent:</p><ul><li>Arrives later</li><li>Cannot volley comfortably</li><li>Loses T position</li><li>Produces a weaker return</li><li>Is forced to defend</li></ul></div>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard exampleCard"><h3>Example A</h3><p>Player A hits a drive.</p><p>Player B arrives comfortably, maintains T position and volleys aggressively.</p><p><strong>Result:</strong> Poor Penetrating Drive, even if the ball looked technically accurate.</p></div>
+          <div className="shotInfoCard exampleCard"><h3>Example B</h3><p>Player A hits a drive.</p><p>Player B arrives late, cannot volley and produces a defensive return.</p><p><strong>Result:</strong> Good Penetrating Drive, even if it was not textbook perfect.</p></div>
+        </div>
+        <div className="shotInfoCard coachObservationCard"><h3>Coach Observation Questions</h3><ol><li>Did the opponent arrive later?</li><li>Could they volley?</li><li>Did they attack or defend?</li><li>Was the return weaker?</li><li>Did I remove time?</li></ol></div>
+        <div className="shotPrincipleBox"><h3>Checkerboard Principle</h3><p>A Penetrating Drive is not defined by racket speed.</p><p>A Penetrating Drive is not defined by side-wall contact.</p><p><strong>A Penetrating Drive is defined by the time it removes from the opponent.</strong></p></div>
+        <div className="shotTakeaway"><p><strong>Working Length asks:</strong> How many options does the opponent have?</p><p><strong>Penetrating Drive asks:</strong> How much time does the opponent have?</p></div>
+      </section>
+    </div>}
+
+    {section==='crosscourts'&&<div className="shotDetailPanel">
+      <section className="shotPageBlock functionalCrosscourtPage">
+        <div className="shotHero crosscourtHero">
+          <span className="timeBadge give">🔴 TIME GIVER RISK</span>
+          <h2>Functional Crosscourts</h2>
+          <p>A major junior development issue: crosscourts are not bad, but non-functional crosscourts donate time.</p>
+        </div>
+        <div className="shotGridTwo">
+          <div className="shotInfoCard checkerboardCard"><h3>Functional Crosscourt</h3><p>A crosscourt is functional when it solves a tactical problem.</p><ul><li>Gain time under pressure</li><li>Move the opponent away from the T</li><li>Change the shape of the rally</li><li>Attack exposed space</li><li>Create uncertainty</li></ul></div>
+          <div className="shotInfoCard dangerCard"><h3>Non-Functional Crosscourt</h3><p>A crosscourt is non-functional when it solves no tactical problem.</p><ul><li>Gives the opponent time</li><li>Gives volley opportunities</li><li>Surrenders T position</li><li>Creates pressure against yourself</li><li>Becomes an automatic panic response</li></ul></div>
+        </div>
+        <div className="shotInfoCard coachObservationCard"><h3>Coach Observation Tool</h3><ol><li>What problem was the player trying to solve?</li><li>Did the crosscourt solve it?</li><li>What happened to the opponent?</li><li>Did it give time or take time away?</li><li>Was there a better option?</li></ol></div>
+        <div className="shotPrincipleBox"><h3>Checkerboard Principle</h3><p>A crosscourt is not good because it reaches the opposite side of the court.</p><p><strong>A crosscourt is good because of the effect it creates.</strong></p></div>
+        <div className="shotTakeaway"><p><strong>Junior warning:</strong> Non-functional crosscourts and failure to volley return of serve are two of the biggest time donations in developing squash.</p></div>
+      </section>
+    </div>}
+
+    {['movement','time','finish'].includes(section)&&<div className="shotDetailPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div>
+      <p>{categoryCards[section].intro}</p>
+      <div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div>
+    </div>}
+
     {section==='wrist'&&<div className="shotDetailPanel wristModulePanel">
       <div className="shotDetailHeader"><div><div className="categoryTag">Wrist Mechanics & Elastic Release</div><h2>Wrist Mechanics</h2><p className="mutedText">A CLA approach to loading, release and racket-face self-monitoring.</p></div></div>
       <div className="shotsLearnTabs wristTabs">
@@ -1218,37 +1300,16 @@ Quick coaching principles first. Deeper CLA theory sits behind a tab.</p></div><
       </div>
       {wristTab==='coach'&&<div>
         <div className="wristHeroCard"><h3>The Debate</h3><p>Wrist mechanics remain one of the most debated topics in squash coaching. Some coaches advocate maintaining a cocked wrist throughout the swing. Others advocate maintaining a largely neutral wrist throughout the swing.</p><p><strong>Checkerboard takes a different position.</strong> The wrist is viewed as a dynamic component of the movement system rather than a position to be held.</p></div>
-        <div className="wristPathGrid">
-          <div className="wristPathCard"><h3>Backhand</h3><div className="wristPath">Neutral → Smile</div><p>Arrive neutral. Deliver the smile.</p></div>
-          <div className="wristPathCard"><h3>Forehand</h3><div className="wristPath">Smile → Neutral</div><p>Start with a smile. Deliver a straight face.</p></div>
-        </div>
-        <div className="wristCoachGrid">
-          <div className="gameCard"><h3>Core Concept</h3><p>Efficient racket acceleration emerges from preparation, movement to the ball, sequencing and elastic release. The wrist should not be coached as an isolated body part.</p></div>
-          <div className="gameCard"><h3>Plane-Consistent Preparation</h3><p>Many elite players appear to generate high racket speed while using relatively economical preparations. Reduce unnecessary loops and racket-face turning to preserve decision-making time.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div>
-          <div className="gameCard"><h3>Under Pressure</h3><p>Many players try to consciously control the wrist when pressure increases. This can create timing problems, face-control problems and increased variability.</p><p><strong>Cue:</strong> Organise the swing. Trust the release.</p></div>
-        </div>
+        <div className="wristPathGrid"><div className="wristPathCard"><h3>Backhand</h3><div className="wristPath">Neutral → Smile</div><p>Arrive neutral. Deliver the smile.</p></div><div className="wristPathCard"><h3>Forehand</h3><div className="wristPath">Smile → Neutral</div><p>Start with a smile. Deliver a straight face.</p></div></div>
+        <div className="wristCoachGrid"><div className="gameCard"><h3>Core Concept</h3><p>Efficient racket acceleration emerges from preparation, movement to the ball, sequencing and elastic release. The wrist should not be coached as an isolated body part.</p></div><div className="gameCard"><h3>Plane-Consistent Preparation</h3><p>Many elite players appear to generate high racket speed while using relatively economical preparations. Reduce unnecessary loops and racket-face turning to preserve decision-making time.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div><div className="gameCard"><h3>Under Pressure</h3><p>Many players try to consciously control the wrist when pressure increases. This can create timing problems, face-control problems and increased variability.</p><p><strong>Cue:</strong> Organise the swing. Trust the release.</p></div></div>
       </div>}
-      {wristTab==='challenges'&&<div>
-        <div className="wristChallengeGrid">
-          <div className="wristChallengeCard"><h3>Smiley Face Challenge</h3><p><strong>Objective:</strong> Develop awareness of wrist position using visual feedback.</p><p><strong>How:</strong> Mark the back of the hand with the neutral line from the thumb/index junction. Use video or partner observation.</p><p><strong>Overlay:</strong> Self-Monitoring Challenge · RLD 3</p></div>
-          <div className="wristChallengeCard"><h3>Neutral → Smile Challenge</h3><p><strong>Objective:</strong> Backhand loading and release.</p><p><strong>Cue:</strong> Arrive neutral. Deliver the smile.</p><p><strong>Common error:</strong> Early Backhand Smile.</p></div>
-          <div className="wristChallengeCard"><h3>Smile → Neutral Challenge</h3><p><strong>Objective:</strong> Forehand loading and release without roll-over.</p><p><strong>Cue:</strong> Start with a smile. Deliver a straight face.</p><p><strong>Common error:</strong> Forehand Roll-Over.</p></div>
-          <div className="wristChallengeCard"><h3>Plane Consistency Challenge</h3><p><strong>Objective:</strong> Reduce unnecessary racket-face turning.</p><p><strong>Cue:</strong> Show the front wall the strings.</p><p><strong>Video prompt:</strong> Did the strings stay simple during preparation?</p></div>
-          <div className="wristChallengeCard"><h3>Elastic Release Challenge</h3><p><strong>Objective:</strong> Encourage natural release without conscious wrist action.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p><p><strong>Overlay:</strong> External Focus · Variable Pace</p></div>
-        </div>
-      </div>}
-      {wristTab==='errors'&&<div>
-        <div className="wristErrorGrid">
-          <div className="wristErrorCard"><h3>Early Backhand Smile</h3><p><strong>Description:</strong> Player arrives with wrist already flexed.</p><p><strong>Consequence:</strong> Loading opportunity is reduced before impact.</p><p><strong>Cue:</strong> Keep the face neutral until delivery.</p></div>
-          <div className="wristErrorCard"><h3>Forehand Roll-Over</h3><p><strong>Description:</strong> Player continues into excessive wrist flexion through impact.</p><p><strong>Consequence:</strong> Reduced face control and accuracy.</p><p><strong>Cue:</strong> Deliver a straight face.</p></div>
-          <div className="wristErrorCard"><h3>Pre-Tensed Wrist</h3><p><strong>Description:</strong> Player actively holds the wrist rigid throughout the swing.</p><p><strong>Consequence:</strong> Reduced elastic contribution and mechanical movement.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p></div>
-          <div className="wristErrorCard"><h3>Preparation Loop</h3><p><strong>Description:</strong> Excessive racket-face turning during preparation.</p><p><strong>Consequence:</strong> Additional timing demand and reduced robustness under pressure.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div>
-        </div>
-      </div>}
+      {wristTab==='challenges'&&<div><div className="wristChallengeGrid"><div className="wristChallengeCard"><h3>Smiley Face Challenge</h3><p><strong>Objective:</strong> Develop awareness of wrist position using visual feedback.</p><p><strong>How:</strong> Mark the back of the hand with the neutral line from the thumb/index junction. Use video or partner observation.</p><p><strong>Overlay:</strong> Self-Monitoring Challenge · RLD 3</p></div><div className="wristChallengeCard"><h3>Neutral → Smile Challenge</h3><p><strong>Objective:</strong> Backhand loading and release.</p><p><strong>Cue:</strong> Arrive neutral. Deliver the smile.</p><p><strong>Common error:</strong> Early Backhand Smile.</p></div><div className="wristChallengeCard"><h3>Smile → Neutral Challenge</h3><p><strong>Objective:</strong> Forehand loading and release without roll-over.</p><p><strong>Cue:</strong> Start with a smile. Deliver a straight face.</p><p><strong>Common error:</strong> Forehand Roll-Over.</p></div><div className="wristChallengeCard"><h3>Plane Consistency Challenge</h3><p><strong>Objective:</strong> Reduce unnecessary racket-face turning.</p><p><strong>Cue:</strong> Show the front wall the strings.</p><p><strong>Video prompt:</strong> Did the strings stay simple during preparation?</p></div><div className="wristChallengeCard"><h3>Elastic Release Challenge</h3><p><strong>Objective:</strong> Encourage natural release without conscious wrist action.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p><p><strong>Overlay:</strong> External Focus · Variable Pace</p></div></div></div>}
+      {wristTab==='errors'&&<div><div className="wristErrorGrid"><div className="wristErrorCard"><h3>Early Backhand Smile</h3><p><strong>Description:</strong> Player arrives with wrist already flexed.</p><p><strong>Consequence:</strong> Loading opportunity is reduced before impact.</p><p><strong>Cue:</strong> Keep the face neutral until delivery.</p></div><div className="wristErrorCard"><h3>Forehand Roll-Over</h3><p><strong>Description:</strong> Player continues into excessive wrist flexion through impact.</p><p><strong>Consequence:</strong> Reduced face control and accuracy.</p><p><strong>Cue:</strong> Deliver a straight face.</p></div><div className="wristErrorCard"><h3>Pre-Tensed Wrist</h3><p><strong>Description:</strong> Player actively holds the wrist rigid throughout the swing.</p><p><strong>Consequence:</strong> Reduced elastic contribution and mechanical movement.</p><p><strong>Cue:</strong> Firm through the ball, not before.</p></div><div className="wristErrorCard"><h3>Preparation Loop</h3><p><strong>Description:</strong> Excessive racket-face turning during preparation.</p><p><strong>Consequence:</strong> Additional timing demand and reduced robustness under pressure.</p><p><strong>Cue:</strong> Show the front wall the strings.</p></div></div></div>}
       <div className="playerViewCard wristPlayerMessage"><h3>Player Message</h3><p>Do not try to use your wrist. Do not try to keep your wrist fixed.</p><p><strong>Organise the swing. The loading and release will emerge naturally.</strong></p></div>
     </div>}
   </div>;
 }
+
 
 function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Pressure');
