@@ -1,12 +1,13 @@
 
-import React,{useEffect,useMemo,useState}from'react';
+import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h42';
+const APP_VERSION='v100h43';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
+const COMPETITION_STATE_KEY='checkerboardCompetitionStateV100h43';
 
 const PLAYER_KEY='checkerboard_master_v54_players';
 const SESSION_KEY='checkerboard_master_v54_session';
@@ -1779,80 +1780,6 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-
-    <div className="level0BallControlModule">
-      <div className="ballControlHero">
-        <span>LEVEL 0 · BALL CONTROL & SPATIAL DEVELOPMENT</span>
-        <h2>Chipping Progression System</h2>
-        <p>Develop ball control, spacing, distance judgement, trajectory awareness and movement calibration through successful ball-space problems.</p>
-      </div>
-
-      <div className="spacingPrincipleBox">
-        <h3>Spacing Principle</h3>
-        <p>Poor contact is often diagnosed as poor technique. At Level 0 the real problem is often that the player has not arrived in a functional relationship to the ball.</p>
-        <p><strong>Before changing the swing ask:</strong> Can the player perceive the ball, move to it, and arrive in a useful position?</p>
-      </div>
-
-      <div className="competitiveLayerBox">
-        <h3>Competitive Layer</h3>
-        <p>Every activity can be used competitively without becoming technique-focused.</p>
-        <div className="competitivePills">
-          <span>Personal Best</span><span>Consecutive Success</span><span>Partner Challenge</span><span>Team Challenge</span><span>Last Player Standing</span>
-        </div>
-      </div>
-
-      <div className="ballControlStrand">
-        <h3>Strand 1 — Individual Ball Control</h3>
-        <div className="ballControlGrid">
-          <div className="ballControlCard"><strong>0A Stationary Chipping</strong><p><b>Task:</b> Player repeatedly chips the ball into a designated target space.</p><p><b>Options:</b> Forehand · Backhand · Forehand Volley · Backhand Volley.</p><p><b>Success:</b> Total contacts, consecutive contacts, or personal best.</p><p><b>Purpose:</b> Side-wall orientation, ball control, confidence and consistent contact.</p></div>
-          <div className="ballControlCard"><strong>0B Consecutive Success</strong><p><b>Task:</b> Repeatedly chip into the same target space.</p><p><b>Success:</b> 3, 5, 10 or 20 consecutive successful contacts depending on ability.</p><p><b>Purpose:</b> Consistency, focus and control under repetition.</p></div>
-          <div className="ballControlCard"><strong>0C Progressive Distance</strong><p><b>Task:</b> Continue chipping to the same target, then move further away after success.</p><p><b>Progression:</b> Near → Medium → Far → Maximum manageable distance.</p><p><b>Purpose:</b> Force regulation, distance calibration and trajectory awareness.</p></div>
-        </div>
-      </div>
-
-      <div className="ballControlStrand">
-        <h3>Strand 2 — Dynamic Control</h3>
-        <div className="ballControlGrid">
-          <div className="ballControlCard"><strong>0D Chip and Move</strong><p><b>Task:</b> Chip → Move → Chip → Move.</p><p>The ball trajectory created by the previous chip creates the next movement problem.</p><p><b>Purpose:</b> Tracking, movement calibration and early spacing awareness.</p></div>
-          <div className="ballControlCard"><strong>0E Continuous Chip and Move</strong><p><b>Task:</b> Maintain a continuous chip and move sequence without interruption.</p><p><b>Progressions:</b> Smaller target, longer duration, increased distance.</p><p><b>Purpose:</b> Continuous perception-action coupling, recovery and ball control while moving.</p></div>
-          <div className="ballControlCard"><strong>0F Volley Chip and Move</strong><p><b>Task:</b> Maintain control using volleys where appropriate.</p><p><b>Progressions:</b> Forehand only · Backhand only · Alternating · Free play.</p><p><b>Purpose:</b> Earlier interception, tracking, racket preparation and spatial awareness.</p></div>
-        </div>
-      </div>
-
-      <div className="ballControlStrand">
-        <h3>Strand 3 — Spacing Development</h3>
-        <div className="ballControlGrid two">
-          <div className="ballControlCard highlightCard"><strong>0G Arrive and Strike</strong><p><b>Purpose:</b> Many young players can strike a ball but have not learned where to position themselves relative to it.</p><ol><li>Feed</li><li>Move</li><li>Find the ball with a final lunge</li><li>Strike</li></ol><p><b>Coach cue:</b> “Find the ball with your lunge.”</p><p><b>Avoid:</b> “Move away from the ball” or “Give yourself more room.”</p><p><b>Outcomes:</b> Contact distance, strike zone awareness, arrival timing, anticipation, spacing and movement commitment.</p></div>
-          <div className="ballControlCard"><strong>0H Arrive and Strike Plus</strong><p><b>Task:</b> Progress from self-feed into more representative feeds.</p><p><b>Progression:</b> Large foam ball → Standard ball → Forehand side → Backhand side → Random self-feed → Coach feed → Live rally entry.</p><p><b>Purpose:</b> Bridge chipping and arrive-and-strike work into representative squash.</p></div>
-        </div>
-      </div>
-
-      <div className="ballControlStrand">
-        <h3>Strand 4 — Cooperative Rally Development</h3>
-        <div className="ballControlGrid two">
-          <div className="ballControlCard"><strong>0I Rotating Rally</strong><p><b>Task:</b> Players cooperate to keep the ball alive while hitting into marked target zones.</p><p><b>Example:</b> Zone 1 → Zone 2 → Zone 1 → Zone 2.</p><p>Use a clear target area so players learn control and the next player receives a more predictable ball.</p><p><b>Purpose:</b> Control, predictable ball position, movement, recovery and early rally cooperation.</p></div>
-          <div className="ballControlCard"><strong>Competitive Rotating Rally</strong><p><b>Team Score:</b> Highest number of consecutive shots in the rally.</p><p><b>Last Player Standing:</b> Players try to beat the next player in line. Losing players do court sprints until there is a winner.</p><p><b>Progression:</b> Zone 1 only → Zone 2 only → Zone 1 & 2 → Random target.</p></div>
-        </div>
-      </div>
-
-      <div className="level1ProgressionBox">
-        <h3>Level 1 Progressions</h3>
-        <ul>
-          <li><strong>Chipping:</strong> Maintain control while gradually moving back from the target wall.</li>
-          <li><strong>Rotating Rally:</strong> Increase court size using tape.</li>
-          <li><strong>Movement:</strong> Increase the movement demand but keep the task recognisable.</li>
-          <li><strong>Uncertainty:</strong> Add controlled variation before adding full randomness.</li>
-        </ul>
-      </div>
-
-      <div className="ballControlTakeaway">
-        <h3>Coach Takeaway</h3>
-        <p>Level 0 is not about technique perfection. It is about helping players learn how balls move, how space works, and how to organise themselves effectively around the ball.</p>
-        <p>Chipping provides a simple, high-activity environment where up to eight players can work at the same time while developing the perceptual foundations required for later rally play.</p>
-      </div>
-    </div>
-
-
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
@@ -2677,6 +2604,23 @@ function Level0Exploration(){
       <strong>Level 0 Coach Card Structure</strong>
       <p>Goal → Equipment → How to Play → Progress → Simplify → What to Observe</p>
     </div>
+
+    <div className="level0BallControlModule">
+      <div className="ballControlHero">
+        <span>LEVEL 0 · BALL CONTROL & SPATIAL DEVELOPMENT</span>
+        <h2>Chipping Progression System</h2>
+        <p>Develop ball control, spacing, distance judgement, trajectory awareness and movement calibration through successful ball-space problems.</p>
+      </div>
+      <div className="spacingPrincipleBox"><h3>Spacing Principle</h3><p>Poor contact is often diagnosed as poor technique. At Level 0 the real problem is often that the player has not arrived in a functional relationship to the ball.</p><p><strong>Before changing the swing ask:</strong> Can the player perceive the ball, move to it, and arrive in a useful position?</p></div>
+      <div className="competitiveLayerBox"><h3>Competitive Layer</h3><p>Every activity can be used competitively without becoming technique-focused.</p><div className="competitivePills"><span>Personal Best</span><span>Consecutive Success</span><span>Partner Challenge</span><span>Team Challenge</span><span>Last Player Standing</span></div></div>
+      <div className="ballControlStrand"><h3>Strand 1 — Individual Ball Control</h3><div className="ballControlGrid"><div className="ballControlCard"><strong>0A Stationary Chipping</strong><p><b>Task:</b> Player repeatedly chips the ball into a designated target space.</p><p><b>Options:</b> Forehand · Backhand · Forehand Volley · Backhand Volley.</p><p><b>Success:</b> Total contacts, consecutive contacts, or personal best.</p><p><b>Purpose:</b> Side-wall orientation, ball control, confidence and consistent contact.</p></div><div className="ballControlCard"><strong>0B Consecutive Success</strong><p><b>Task:</b> Repeatedly chip into the same target space.</p><p><b>Success:</b> 3, 5, 10 or 20 consecutive successful contacts depending on ability.</p><p><b>Purpose:</b> Consistency, focus and control under repetition.</p></div><div className="ballControlCard"><strong>0C Progressive Distance</strong><p><b>Task:</b> Continue chipping to the same target, then move further away after success.</p><p><b>Progression:</b> Near → Medium → Far → Maximum manageable distance.</p><p><b>Purpose:</b> Force regulation, distance calibration and trajectory awareness.</p></div></div></div>
+      <div className="ballControlStrand"><h3>Strand 2 — Dynamic Control</h3><div className="ballControlGrid"><div className="ballControlCard"><strong>0D Chip and Move</strong><p><b>Task:</b> Chip → Move → Chip → Move.</p><p>The ball trajectory created by the previous chip creates the next movement problem.</p><p><b>Purpose:</b> Tracking, movement calibration and early spacing awareness.</p></div><div className="ballControlCard"><strong>0E Continuous Chip and Move</strong><p><b>Task:</b> Maintain a continuous chip and move sequence without interruption.</p><p><b>Progressions:</b> Smaller target, longer duration, increased distance.</p><p><b>Purpose:</b> Continuous perception-action coupling, recovery and ball control while moving.</p></div><div className="ballControlCard"><strong>0F Volley Chip and Move</strong><p><b>Task:</b> Maintain control using volleys where appropriate.</p><p><b>Progressions:</b> Forehand only · Backhand only · Alternating · Free play.</p><p><b>Purpose:</b> Earlier interception, tracking, racket preparation and spatial awareness.</p></div></div></div>
+      <div className="ballControlStrand"><h3>Strand 3 — Spacing Development</h3><div className="ballControlGrid two"><div className="ballControlCard highlightCard"><strong>0G Arrive and Strike</strong><p><b>Purpose:</b> Many young players can strike a ball but have not learned where to position themselves relative to it.</p><ol><li>Feed</li><li>Move</li><li>Find the ball with a final lunge</li><li>Strike</li></ol><p><b>Coach cue:</b> “Find the ball with your lunge.”</p><p><b>Avoid:</b> “Move away from the ball” or “Give yourself more room.”</p><p><b>Outcomes:</b> Contact distance, strike zone awareness, arrival timing, anticipation, spacing and movement commitment.</p></div><div className="ballControlCard"><strong>0H Arrive and Strike Plus</strong><p><b>Task:</b> Progress from self-feed into more representative feeds.</p><p><b>Progression:</b> Large foam ball → Standard ball → Forehand side → Backhand side → Random self-feed → Coach feed → Live rally entry.</p><p><b>Purpose:</b> Bridge chipping and arrive-and-strike work into representative squash.</p></div></div></div>
+      <div className="ballControlStrand"><h3>Strand 4 — Cooperative Rally Development</h3><div className="ballControlGrid two"><div className="ballControlCard"><strong>0I Rotating Rally</strong><p><b>Task:</b> Players cooperate to keep the ball alive while hitting into marked target zones.</p><p><b>Example:</b> Zone 1 → Zone 2 → Zone 1 → Zone 2.</p><p>Use a clear target area so players learn control and the next player receives a more predictable ball.</p><p><b>Purpose:</b> Control, predictable ball position, movement, recovery and early rally cooperation.</p></div><div className="ballControlCard"><strong>Competitive Rotating Rally</strong><p><b>Team Score:</b> Highest number of consecutive shots in the rally.</p><p><b>Last Player Standing:</b> Players try to beat the next player in line. Losing players do court sprints until there is a winner.</p><p><b>Progression:</b> Zone 1 only → Zone 2 only → Zone 1 & 2 → Random target.</p></div></div></div>
+      <div className="level1ProgressionBox"><h3>Level 1 Progressions</h3><ul><li><strong>Chipping:</strong> Maintain control while gradually moving back from the target wall.</li><li><strong>Rotating Rally:</strong> Increase court size using tape.</li><li><strong>Movement:</strong> Increase the movement demand but keep the task recognisable.</li><li><strong>Uncertainty:</strong> Add controlled variation before adding full randomness.</li></ul></div>
+      <div className="ballControlTakeaway"><h3>Coach Takeaway</h3><p>Level 0 is not about technique perfection. It is about helping players learn how balls move, how space works, and how to organise themselves effectively around the ball.</p><p>Chipping provides a simple, high-activity environment where up to eight players can work at the same time while developing the perceptual foundations required for later rally play.</p></div>
+    </div>
+
   </div>;
 }
 
@@ -3648,8 +3592,10 @@ return <div className="page">
 
 
 function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatChange=()=>{}}){
-  // v100h19: restore the active Invasion format from saved state so a Points game does not reopen on Lives.
-  const [mode,setMode]=useState('invasion');
+  const competitionRestoredRef=useRef(false);
+  function getSavedCompetitionState(){try{return JSON.parse(localStorage.getItem(COMPETITION_STATE_KEY)||'{}')}catch{return {}}}
+  // v100h43: restore competition / box / NSSL state when returning to the page.
+  const [mode,setMode]=useState(()=>getSavedCompetitionState().mode||'invasion');
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
       // v100h21: first use the App-level remembered format. This survives page changes.
@@ -3756,34 +3702,41 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     setInvasionCourtRound(competitionUndo.invasionCourtRound||0);
     setCompetitionUndo(null);
   }
-  const [competitionLayers,setCompetitionLayers]=useState([]);
-  const [competitionCbCode,setCompetitionCbCode]=useState('None');
-  const [playerBounces,setPlayerBounces]=useState({});
-  const [manualPlayers,setManualPlayers]=useState('');
-  const [matchScore,setMatchScore]=useState({a:0,b:0});
-  const [matchPlayers,setMatchPlayers]=useState({a:'Player A',b:'Player B'});
-  const [matchScoring,setMatchScoring]=useState('PAR 11');
-  const [rrFixtures,setRrFixtures]=useState([]);
-  const [rrResults,setRrResults]=useState({});
-  const [rrBoxCount,setRrBoxCount]=useState(1);
-  const [rrBoxes,setRrBoxes]=useState([]);
-  const [rrBoxFixtures,setRrBoxFixtures]=useState([]);
-  const [rrBoxResults,setRrBoxResults]=useState({});
-  const [rrFinalBoxes,setRrFinalBoxes]=useState([]);
-  const [rrFinalFixtures,setRrFinalFixtures]=useState([]);
-  const [rrFinalResults,setRrFinalResults]=useState({});
+  const [competitionLayers,setCompetitionLayers]=useState(()=>getSavedCompetitionState().competitionLayers||[]);
+  const [competitionCbCode,setCompetitionCbCode]=useState(()=>getSavedCompetitionState().competitionCbCode||'None');
+  const [playerBounces,setPlayerBounces]=useState(()=>getSavedCompetitionState().playerBounces||{});
+  const [manualPlayers,setManualPlayers]=useState(()=>getSavedCompetitionState().manualPlayers||'');
+  const [matchScore,setMatchScore]=useState(()=>getSavedCompetitionState().matchScore||{a:0,b:0});
+  const [matchPlayers,setMatchPlayers]=useState(()=>getSavedCompetitionState().matchPlayers||{a:'Player A',b:'Player B'});
+  const [matchScoring,setMatchScoring]=useState(()=>getSavedCompetitionState().matchScoring||'PAR 11');
+  const [rrFixtures,setRrFixtures]=useState(()=>getSavedCompetitionState().rrFixtures||[]);
+  const [rrResults,setRrResults]=useState(()=>getSavedCompetitionState().rrResults||{});
+  const [rrBoxCount,setRrBoxCount]=useState(()=>getSavedCompetitionState().rrBoxCount||1);
+  const [rrBoxes,setRrBoxes]=useState(()=>getSavedCompetitionState().rrBoxes||[]);
+  const [rrBoxFixtures,setRrBoxFixtures]=useState(()=>getSavedCompetitionState().rrBoxFixtures||[]);
+  const [rrBoxResults,setRrBoxResults]=useState(()=>getSavedCompetitionState().rrBoxResults||{});
+  const [rrFinalBoxes,setRrFinalBoxes]=useState(()=>getSavedCompetitionState().rrFinalBoxes||[]);
+  const [rrFinalFixtures,setRrFinalFixtures]=useState(()=>getSavedCompetitionState().rrFinalFixtures||[]);
+  const [rrFinalResults,setRrFinalResults]=useState(()=>getSavedCompetitionState().rrFinalResults||{});
   const [monradRounds,setMonradRounds]=useState([]);
   const [monradResults,setMonradResults]=useState({});
   const [monradPlacingRounds,setMonradPlacingRounds]=useState([]);
   const [monradPlacingResults,setMonradPlacingResults]=useState({});
   const [monradFinalPlaces,setMonradFinalPlaces]=useState({});
-  const [nslOrgTab,setNslOrgTab]=useState('config');
-  const [nslTeams,setNslTeams]=useState(4);
-  const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(3);
-  const [nslPeriod1,setNslPeriod1]=useState(20);
-  const [nslPeriod2,setNslPeriod2]=useState(20);
-  const [nslPeriod3,setNslPeriod3]=useState(30);
-  const [nslOvertime,setNslOvertime]=useState(5);
+  const [nslOrgTab,setNslOrgTab]=useState(()=>getSavedCompetitionState().nslOrgTab||'config');
+  const [nslTeams,setNslTeams]=useState(()=>getSavedCompetitionState().nslTeams||4);
+  const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(()=>getSavedCompetitionState().nslPlayersPerTeam||3);
+  const [nslPeriod1,setNslPeriod1]=useState(()=>getSavedCompetitionState().nslPeriod1||20);
+  const [nslPeriod2,setNslPeriod2]=useState(()=>getSavedCompetitionState().nslPeriod2||20);
+  const [nslPeriod3,setNslPeriod3]=useState(()=>getSavedCompetitionState().nslPeriod3||30);
+  const [nslOvertime,setNslOvertime]=useState(()=>getSavedCompetitionState().nslOvertime||5);
+  const [nslScores,setNslScores]=useState(()=>getSavedCompetitionState().nslScores||{});
+  const [nslActivePeriod,setNslActivePeriod]=useState(()=>getSavedCompetitionState().nslActivePeriod||1);
+  const [nslRoundSeconds,setNslRoundSeconds]=useState(()=>getSavedCompetitionState().nslRoundSeconds ?? 20*60);
+  const [nslTimerRunning,setNslTimerRunning]=useState(false);
+  const [nslPowerPlayTeam,setNslPowerPlayTeam]=useState(()=>getSavedCompetitionState().nslPowerPlayTeam||'');
+  const [nslPowerPlaySeconds,setNslPowerPlaySeconds]=useState(()=>getSavedCompetitionState().nslPowerPlaySeconds||60);
+  const [nslPowerPlayActive,setNslPowerPlayActive]=useState(false);
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
@@ -4565,6 +4518,41 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return fixtures;
   }
 
+
+  function nslTeamKey(name){return String(name||'Team').replace(/\s+/g,'_');}
+  function nslFixtureKey(idx){return `fixture-${idx}`;}
+  function adjustNslScore(teamName,amount,fixtureIndex=0){
+    if(nslPowerPlayActive && nslPowerPlayTeam && nslPowerPlayTeam!==teamName && amount>0) return;
+    const key=`${nslFixtureKey(fixtureIndex)}:${nslTeamKey(teamName)}`;
+    setNslScores(prev=>({...prev,[key]:Math.max(0,Number(prev[key]||0)+amount)}));
+  }
+  function getNslScore(teamName,fixtureIndex=0){return nslScores[`${nslFixtureKey(fixtureIndex)}:${nslTeamKey(teamName)}`]||0;}
+  function nslFormatTime(seconds){const s=Math.max(0,Number(seconds)||0);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+  function setNslPeriod(period){
+    const p=Number(period)||1;
+    setNslActivePeriod(p);
+    const minutes=p===1?nslPeriod1:p===2?nslPeriod2:p===3?nslPeriod3:nslOvertime;
+    setNslRoundSeconds(Math.max(0,Number(minutes)||0)*60);
+    setNslTimerRunning(false);
+  }
+  function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(60);setNslPowerPlayActive(true);}
+  function stopNslPowerPlay(){setNslPowerPlayActive(false);}
+  function resetNslScores(){setNslScores({});}
+
+
+  useEffect(()=>{
+    if(!nslTimerRunning) return;
+    const id=setInterval(()=>setNslRoundSeconds(prev=>Math.max(0,Number(prev)-1)),1000);
+    return ()=>clearInterval(id);
+  },[nslTimerRunning]);
+  useEffect(()=>{
+    if(!nslPowerPlayActive) return;
+    const id=setInterval(()=>setNslPowerPlaySeconds(prev=>Math.max(0,Number(prev)-1)),1000);
+    return ()=>clearInterval(id);
+  },[nslPowerPlayActive]);
+  useEffect(()=>{if(nslPowerPlayActive&&nslPowerPlaySeconds<=0)setNslPowerPlayActive(false);},[nslPowerPlayActive,nslPowerPlaySeconds]);
+  // v100h43 NSSL round timer and competition persistence
+
   const modeInfo={
     invasion:{
       title:'Invasion Game',
@@ -4637,6 +4625,21 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   const current=modeInfo[mode];
 
+
+  useEffect(()=>{competitionRestoredRef.current=true;},[]);
+  useEffect(()=>{
+    if(!competitionRestoredRef.current) return;
+    try{
+      localStorage.setItem(COMPETITION_STATE_KEY,JSON.stringify({
+        mode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,
+        rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
+        monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,
+        nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,
+        updatedAt:new Date().toISOString()
+      }));
+    }catch{}
+  },[mode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds]);
+
   useEffect(()=>{
     const projectionState={
       mode,
@@ -4659,12 +4662,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       nslPeriod2,
       nslPeriod3,
       nslOvertime,
+      nslScores,
+      nslActivePeriod,
+      nslRoundSeconds,
+      nslPowerPlayTeam,
+      nslPowerPlaySeconds,
+      nslPowerPlayActive,
       updatedAt:new Date().toISOString()
     };
     try{
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(projectionState));
     }catch{}
-  },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,rrFixtures,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,current.title,current.tactical,current.purpose]);
+  },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,rrFixtures,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,current.title,current.tactical,current.purpose]);
 
 
   return (
@@ -4698,7 +4707,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 :mode==='roundRobin'
                   ?'Round Robin · Fixtures / next opponent'
                   :mode==='nsl'
-                    ?`NSSL · ${nslTeams||'—'} teams · ${nslPlayersPerTeam||'—'} players / team`
+                    ?`NSSL · P${nslActivePeriod} · ${nslFormatTime(nslRoundSeconds)} remaining`
                     :'Competition information'}
             </p>
           </div>
@@ -4777,7 +4786,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             <div className="projectionInfoCard wideProjectionCard">
               <strong>NSSL Sheet</strong>
               <p>Period 1: {nslPeriod1} min · Period 2: {nslPeriod2} min · Period 3: {nslPeriod3} min · Overtime: {nslOvertime} min</p>
-              <p>Teams: {nslTeams} · Players per team: {nslPlayersPerTeam}</p>
+              <p>Teams: {nslTeams} · Players per team: {nslPlayersPerTeam}</p><p>Timer: Period {nslActivePeriod} · {nslFormatTime(nslRoundSeconds)} remaining</p><p>Power Play: {nslPowerPlayActive?`${nslPowerPlayTeam} only · ${nslFormatTime(nslPowerPlaySeconds)}`:'Inactive'}</p><p>{getNslFixtures().map((fixture,idx)=>`${fixture.a} ${getNslScore(fixture.a,idx)} - ${getNslScore(fixture.b,idx)} ${fixture.b}`).join(' · ')}</p>
             </div>
           )}
 
@@ -5339,7 +5348,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               <p>Configure periods · Add players · Auto-allocate teams by ranking</p>
             </div>
             <div className="nslTabs">
-              {[['config','Config'],['players',`Players (${playerNames.length})`],['teams',`Teams (${nslTeams})`],['sheet','Sheet']].map(tab=>
+              {[['config','Config'],['players',`Players (${playerNames.length})`],['teams',`Teams (${nslTeams})`],['score','Score'],['sheet','Sheet']].map(tab=>
                 <button type="button" key={tab[0]} className={nslOrgTab===tab[0]?'activeNslTab':''} onClick={()=>setNslOrgTab(tab[0])}>{tab[1]}</button>
               )}
             </div>
@@ -5377,6 +5386,37 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 <div className="nslTeamGrid">{Array.from({length:nslTeams}).map((_,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>Team {teamIdx+1}</strong>{playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).map(name=><p key={name}>{name}</p>)}{!playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).length&&<p>Waiting for players</p>}</div>)}</div>
               </div>
             )}
+
+            {nslOrgTab==='score'&&(
+              <div className="nslPanel nslScorePanel">
+                <h3>NSSL Score Input</h3>
+                <div className="nslTimerBox">
+                  <div><strong>Round Timer</strong><span>Period {nslActivePeriod} · {nslFormatTime(nslRoundSeconds)} remaining</span></div>
+                  <div className="buttonRow">
+                    <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(1)}>P1</button>
+                    <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(2)}>P2</button>
+                    <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(3)}>P3</button>
+                    <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(4)}>OT</button>
+                    <button type="button" className="primaryBtn" onClick={()=>setNslTimerRunning(!nslTimerRunning)}>{nslTimerRunning?'Pause':'Start'}</button>
+                    <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(nslActivePeriod)}>Reset Period</button>
+                  </div>
+                </div>
+                {nslPowerPlayActive&&<div className="nslPowerPlayLive"><strong>POWER PLAY LIVE</strong><span>{nslPowerPlayTeam} can score · {nslFormatTime(nslPowerPlaySeconds)} remaining</span><button type="button" className="secondaryBtn dangerBtn" onClick={stopNslPowerPlay}>End Power Play</button></div>}
+                <div className="nslScoreGrid">
+                  {getNslFixtures().map((fixture,idx)=><div className="nslScoreCard" key={idx}>
+                    <h4>Court {idx+1}</h4>
+                    {[fixture.a,fixture.b].filter(name=>name&&name!=='BYE').map(team=><div className="nslScoreLine" key={team}>
+                      <span>{team}</span><strong>{getNslScore(team,idx)}</strong>
+                      <button type="button" onClick={()=>adjustNslScore(team,1,idx)}>+1</button>
+                      <button type="button" onClick={()=>adjustNslScore(team,-1,idx)}>-1</button>
+                      <button type="button" onClick={()=>startNslPowerPlay(team)}>Power Play</button>
+                    </div>)}
+                  </div>)}
+                </div>
+                <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={resetNslScores}>Reset NSSL Scores</button></div>
+              </div>
+            )}
+
             {nslOrgTab==='sheet'&&(
               <div className="nslPanel nslDrawPanel">
                 <h3>NSSL Sheet / Draw Graphic</h3>
@@ -5390,7 +5430,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 <div className="nslFixtureLane">
                   {getNslFixtures().map((fixture,idx)=><div className="nslFixtureCard" key={idx}>
                     <b>Court {idx+1}</b>
-                    <strong>{fixture.a} v {fixture.b}</strong>
+                    <strong>{fixture.a} {getNslScore(fixture.a,idx)} - {getNslScore(fixture.b,idx)} {fixture.b}</strong>
+                    <span>Time remaining: {nslFormatTime(nslRoundSeconds)}</span>
                     <span>Period 1: {nslPeriod1} min</span>
                     <span>Period 2: {nslPeriod2} min</span>
                     <span>Pressure Period: {nslPeriod3} min</span>
