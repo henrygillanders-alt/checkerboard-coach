@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h41';
+const APP_VERSION='v100h42';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1779,6 +1779,80 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+
+    <div className="level0BallControlModule">
+      <div className="ballControlHero">
+        <span>LEVEL 0 · BALL CONTROL & SPATIAL DEVELOPMENT</span>
+        <h2>Chipping Progression System</h2>
+        <p>Develop ball control, spacing, distance judgement, trajectory awareness and movement calibration through successful ball-space problems.</p>
+      </div>
+
+      <div className="spacingPrincipleBox">
+        <h3>Spacing Principle</h3>
+        <p>Poor contact is often diagnosed as poor technique. At Level 0 the real problem is often that the player has not arrived in a functional relationship to the ball.</p>
+        <p><strong>Before changing the swing ask:</strong> Can the player perceive the ball, move to it, and arrive in a useful position?</p>
+      </div>
+
+      <div className="competitiveLayerBox">
+        <h3>Competitive Layer</h3>
+        <p>Every activity can be used competitively without becoming technique-focused.</p>
+        <div className="competitivePills">
+          <span>Personal Best</span><span>Consecutive Success</span><span>Partner Challenge</span><span>Team Challenge</span><span>Last Player Standing</span>
+        </div>
+      </div>
+
+      <div className="ballControlStrand">
+        <h3>Strand 1 — Individual Ball Control</h3>
+        <div className="ballControlGrid">
+          <div className="ballControlCard"><strong>0A Stationary Chipping</strong><p><b>Task:</b> Player repeatedly chips the ball into a designated target space.</p><p><b>Options:</b> Forehand · Backhand · Forehand Volley · Backhand Volley.</p><p><b>Success:</b> Total contacts, consecutive contacts, or personal best.</p><p><b>Purpose:</b> Side-wall orientation, ball control, confidence and consistent contact.</p></div>
+          <div className="ballControlCard"><strong>0B Consecutive Success</strong><p><b>Task:</b> Repeatedly chip into the same target space.</p><p><b>Success:</b> 3, 5, 10 or 20 consecutive successful contacts depending on ability.</p><p><b>Purpose:</b> Consistency, focus and control under repetition.</p></div>
+          <div className="ballControlCard"><strong>0C Progressive Distance</strong><p><b>Task:</b> Continue chipping to the same target, then move further away after success.</p><p><b>Progression:</b> Near → Medium → Far → Maximum manageable distance.</p><p><b>Purpose:</b> Force regulation, distance calibration and trajectory awareness.</p></div>
+        </div>
+      </div>
+
+      <div className="ballControlStrand">
+        <h3>Strand 2 — Dynamic Control</h3>
+        <div className="ballControlGrid">
+          <div className="ballControlCard"><strong>0D Chip and Move</strong><p><b>Task:</b> Chip → Move → Chip → Move.</p><p>The ball trajectory created by the previous chip creates the next movement problem.</p><p><b>Purpose:</b> Tracking, movement calibration and early spacing awareness.</p></div>
+          <div className="ballControlCard"><strong>0E Continuous Chip and Move</strong><p><b>Task:</b> Maintain a continuous chip and move sequence without interruption.</p><p><b>Progressions:</b> Smaller target, longer duration, increased distance.</p><p><b>Purpose:</b> Continuous perception-action coupling, recovery and ball control while moving.</p></div>
+          <div className="ballControlCard"><strong>0F Volley Chip and Move</strong><p><b>Task:</b> Maintain control using volleys where appropriate.</p><p><b>Progressions:</b> Forehand only · Backhand only · Alternating · Free play.</p><p><b>Purpose:</b> Earlier interception, tracking, racket preparation and spatial awareness.</p></div>
+        </div>
+      </div>
+
+      <div className="ballControlStrand">
+        <h3>Strand 3 — Spacing Development</h3>
+        <div className="ballControlGrid two">
+          <div className="ballControlCard highlightCard"><strong>0G Arrive and Strike</strong><p><b>Purpose:</b> Many young players can strike a ball but have not learned where to position themselves relative to it.</p><ol><li>Feed</li><li>Move</li><li>Find the ball with a final lunge</li><li>Strike</li></ol><p><b>Coach cue:</b> “Find the ball with your lunge.”</p><p><b>Avoid:</b> “Move away from the ball” or “Give yourself more room.”</p><p><b>Outcomes:</b> Contact distance, strike zone awareness, arrival timing, anticipation, spacing and movement commitment.</p></div>
+          <div className="ballControlCard"><strong>0H Arrive and Strike Plus</strong><p><b>Task:</b> Progress from self-feed into more representative feeds.</p><p><b>Progression:</b> Large foam ball → Standard ball → Forehand side → Backhand side → Random self-feed → Coach feed → Live rally entry.</p><p><b>Purpose:</b> Bridge chipping and arrive-and-strike work into representative squash.</p></div>
+        </div>
+      </div>
+
+      <div className="ballControlStrand">
+        <h3>Strand 4 — Cooperative Rally Development</h3>
+        <div className="ballControlGrid two">
+          <div className="ballControlCard"><strong>0I Rotating Rally</strong><p><b>Task:</b> Players cooperate to keep the ball alive while hitting into marked target zones.</p><p><b>Example:</b> Zone 1 → Zone 2 → Zone 1 → Zone 2.</p><p>Use a clear target area so players learn control and the next player receives a more predictable ball.</p><p><b>Purpose:</b> Control, predictable ball position, movement, recovery and early rally cooperation.</p></div>
+          <div className="ballControlCard"><strong>Competitive Rotating Rally</strong><p><b>Team Score:</b> Highest number of consecutive shots in the rally.</p><p><b>Last Player Standing:</b> Players try to beat the next player in line. Losing players do court sprints until there is a winner.</p><p><b>Progression:</b> Zone 1 only → Zone 2 only → Zone 1 & 2 → Random target.</p></div>
+        </div>
+      </div>
+
+      <div className="level1ProgressionBox">
+        <h3>Level 1 Progressions</h3>
+        <ul>
+          <li><strong>Chipping:</strong> Maintain control while gradually moving back from the target wall.</li>
+          <li><strong>Rotating Rally:</strong> Increase court size using tape.</li>
+          <li><strong>Movement:</strong> Increase the movement demand but keep the task recognisable.</li>
+          <li><strong>Uncertainty:</strong> Add controlled variation before adding full randomness.</li>
+        </ul>
+      </div>
+
+      <div className="ballControlTakeaway">
+        <h3>Coach Takeaway</h3>
+        <p>Level 0 is not about technique perfection. It is about helping players learn how balls move, how space works, and how to organise themselves effectively around the ball.</p>
+        <p>Chipping provides a simple, high-activity environment where up to eight players can work at the same time while developing the perceptual foundations required for later rally play.</p>
+      </div>
+    </div>
+
+
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
