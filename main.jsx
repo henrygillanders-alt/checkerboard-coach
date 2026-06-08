@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h45';
+const APP_VERSION='v100h46';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -3846,13 +3846,74 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(Number.isNaN(a)||Number.isNaN(b)||a===b) return '';
     return a>b?match.a:match.b;
   }
+  function normalWinningScore(loserScore){
+    const n=Number(loserScore);
+    if(Number.isNaN(n)||loserScore===''||n<0) return '';
+    return n<10 ? 11 : n+2;
+  }
   function ScoreEntry({scoreId,match,onWinner}){
-    const score=getCompetitionScore(scoreId);
-    const winner=scoreWinner(match,score);
-    return <div className="compactScoreEntry">
-      <label>{match.a}<input type="number" value={score.a} onChange={e=>setCompetitionScore(scoreId,'a',e.target.value)} /></label>
-      <label>{match.b}<input type="number" value={score.b} onChange={e=>setCompetitionScore(scoreId,'b',e.target.value)} /></label>
-      <button type="button" className="secondaryBtn" disabled={!winner} onClick={()=>onWinner(winner)}>Save Score</button>
+    const saved=getCompetitionScore(scoreId);
+    const [mode,setLocalMode]=useState(saved.mode||'normal');
+    const [local,setLocal]=useState({a:saved.a??'',b:saved.b??'',last:saved.last||''});
+
+    function changeMode(nextMode){
+      setLocalMode(nextMode);
+      setLocal(prev=>({a:'',b:'',last:''}));
+    }
+
+    function changeNormal(side,value){
+      const cleaned=value.replace(/[^0-9]/g,'');
+      const winnerScore=normalWinningScore(cleaned);
+      if(side==='a'){
+        setLocal({a:cleaned,b:winnerScore,last:'a'});
+      }else{
+        setLocal({a:winnerScore,b:cleaned,last:'b'});
+      }
+    }
+
+    function changeCustom(side,value){
+      const cleaned=value.replace(/[^0-9]/g,'');
+      setLocal(prev=>({...prev,[side]:cleaned,last:side}));
+    }
+
+    function saveResult(){
+      const next={a:local.a,b:local.b,last:local.last,mode};
+      setCompetitionMatchScores(prev=>({...prev,[scoreId]:next}));
+      const a=Number(local.a);
+      const b=Number(local.b);
+      let winner='';
+      if(mode==='normal'){
+        if(local.last==='a') winner=match.b;
+        if(local.last==='b') winner=match.a;
+      }else if(!Number.isNaN(a)&&!Number.isNaN(b)&&a!==b){
+        winner=a>b?match.a:match.b;
+      }
+      if(winner) onWinner(winner);
+    }
+
+    const saveDisabled=mode==='normal'
+      ? !(local.last&&local.a!==''&&local.b!=='')
+      : !(local.a!==''&&local.b!==''&&Number(local.a)!==Number(local.b));
+
+    return <div className="cleanScoreEntry">
+      <div className="scoreModeRow">
+        <button type="button" className={mode==='normal'?'activeScoreMode':'secondaryBtn'} onClick={()=>changeMode('normal')}>Normal scoring</button>
+        <button type="button" className={mode==='custom'?'activeScoreMode':'secondaryBtn'} onClick={()=>changeMode('custom')}>Custom / timed</button>
+      </div>
+      <div className="cleanScoreNames">
+        <strong>{match.a}</strong>
+        <strong>{match.b}</strong>
+      </div>
+      <div className="cleanScoreInputs">
+        <input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder={mode==='normal'?'Loser score or auto':'Score'} onChange={e=>mode==='normal'?changeNormal('a',e.target.value):changeCustom('a',e.target.value)} />
+        <input inputMode="numeric" pattern="[0-9]*" value={local.b} placeholder={mode==='normal'?'Loser score or auto':'Score'} onChange={e=>mode==='normal'?changeNormal('b',e.target.value):changeCustom('b',e.target.value)} />
+      </div>
+      <div className="scoreEntryHint">
+        {mode==='normal'
+          ? 'Normal scoring: enter the loser score only. The winner score auto-fills to 11, or win by 2 after 10-all.'
+          : 'Custom / timed scoring: enter both scores manually.'}
+      </div>
+      <button type="button" className="primaryBtn saveResultBtn" disabled={saveDisabled} onClick={saveResult}>Save Result</button>
     </div>;
   }
 
