@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h46';
+const APP_VERSION='v100h47';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1697,7 +1697,7 @@ function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=fals
 }
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
-      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1></div>
+      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">A Constraint Is Worth a Thousand Words</p></div>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
@@ -3707,6 +3707,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [playerBounces,setPlayerBounces]=useState(()=>getSavedCompetitionState().playerBounces||{});
   const [manualPlayers,setManualPlayers]=useState(()=>getSavedCompetitionState().manualPlayers||'');
   const [matchScore,setMatchScore]=useState(()=>getSavedCompetitionState().matchScore||{a:0,b:0});
+  const [scoringMode,setScoringMode]=useState(()=>getSavedCompetitionState().scoringMode||'normal');
   const [competitionMatchScores,setCompetitionMatchScores]=useState(()=>getSavedCompetitionState().competitionMatchScores||{});
   const [matchPlayers,setMatchPlayers]=useState(()=>getSavedCompetitionState().matchPlayers||{a:'Player A',b:'Player B'});
   const [matchScoring,setMatchScoring]=useState(()=>getSavedCompetitionState().matchScoring||'PAR 11');
@@ -3724,6 +3725,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [monradPlacingRounds,setMonradPlacingRounds]=useState(()=>getSavedCompetitionState().monradPlacingRounds||[]);
   const [monradPlacingResults,setMonradPlacingResults]=useState(()=>getSavedCompetitionState().monradPlacingResults||{});
   const [monradFinalPlaces,setMonradFinalPlaces]=useState(()=>getSavedCompetitionState().monradFinalPlaces||{});
+  const [monradMatchFormat,setMonradMatchFormat]=useState(()=>getSavedCompetitionState().monradMatchFormat||'Best of 1');
   const [nslOrgTab,setNslOrgTab]=useState(()=>getSavedCompetitionState().nslOrgTab||'config');
   const [nslTeams,setNslTeams]=useState(()=>getSavedCompetitionState().nslTeams||4);
   const [nslPlayersPerTeam,setNslPlayersPerTeam]=useState(()=>getSavedCompetitionState().nslPlayersPerTeam||3);
@@ -3853,13 +3855,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
   function ScoreEntry({scoreId,match,onWinner}){
     const saved=getCompetitionScore(scoreId);
-    const [mode,setLocalMode]=useState(saved.mode||'normal');
     const [local,setLocal]=useState({a:saved.a??'',b:saved.b??'',last:saved.last||''});
-
-    function changeMode(nextMode){
-      setLocalMode(nextMode);
-      setLocal(prev=>({a:'',b:'',last:''}));
-    }
 
     function changeNormal(side,value){
       const cleaned=value.replace(/[^0-9]/g,'');
@@ -3877,12 +3873,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }
 
     function saveResult(){
-      const next={a:local.a,b:local.b,last:local.last,mode};
+      const next={a:local.a,b:local.b,last:local.last,mode:scoringMode};
       setCompetitionMatchScores(prev=>({...prev,[scoreId]:next}));
       const a=Number(local.a);
       const b=Number(local.b);
       let winner='';
-      if(mode==='normal'){
+      if(scoringMode==='normal'){
         if(local.last==='a') winner=match.b;
         if(local.last==='b') winner=match.a;
       }else if(!Number.isNaN(a)&&!Number.isNaN(b)&&a!==b){
@@ -3891,28 +3887,23 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       if(winner) onWinner(winner);
     }
 
-    const saveDisabled=mode==='normal'
+    const saveDisabled=scoringMode==='normal'
       ? !(local.last&&local.a!==''&&local.b!=='')
       : !(local.a!==''&&local.b!==''&&Number(local.a)!==Number(local.b));
 
     return <div className="cleanScoreEntry">
-      <div className="scoreModeRow">
-        <button type="button" className={mode==='normal'?'activeScoreMode':'secondaryBtn'} onClick={()=>changeMode('normal')}>Normal scoring</button>
-        <button type="button" className={mode==='custom'?'activeScoreMode':'secondaryBtn'} onClick={()=>changeMode('custom')}>Custom / timed</button>
-      </div>
       <div className="cleanScoreNames">
         <strong>{match.a}</strong>
+        <span>vs</span>
         <strong>{match.b}</strong>
       </div>
-      <div className="cleanScoreInputs">
-        <input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder={mode==='normal'?'Loser score or auto':'Score'} onChange={e=>mode==='normal'?changeNormal('a',e.target.value):changeCustom('a',e.target.value)} />
-        <input inputMode="numeric" pattern="[0-9]*" value={local.b} placeholder={mode==='normal'?'Loser score or auto':'Score'} onChange={e=>mode==='normal'?changeNormal('b',e.target.value):changeCustom('b',e.target.value)} />
+      <div className="cleanScoreInputs courtside">
+        {scoringMode==='normal'
+          ?<><input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder="Loser →" onChange={e=>changeNormal('a',e.target.value)} /><span className="scoreAutoLabel">{local.a!==''?local.b:''}</span></>
+          :<><input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder={match.a} onChange={e=>changeCustom('a',e.target.value)} /><input inputMode="numeric" pattern="[0-9]*" value={local.b} placeholder={match.b} onChange={e=>changeCustom('b',e.target.value)} /></>
+        }
       </div>
-      <div className="scoreEntryHint">
-        {mode==='normal'
-          ? 'Normal scoring: enter the loser score only. The winner score auto-fills to 11, or win by 2 after 10-all.'
-          : 'Custom / timed scoring: enter both scores manually.'}
-      </div>
+      {scoringMode==='normal'&&<div className="scoreEntryHint">Enter the loser's score — winner score auto-fills.</div>}
       <button type="button" className="primaryBtn saveResultBtn" disabled={saveDisabled} onClick={saveResult}>Save Result</button>
     </div>;
   }
@@ -4386,17 +4377,28 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   function getRoundRobinStandings(){
     const table={};
-    playerNames.forEach(name=>{table[name]={name,played:0,wins:0,losses:0,points:0};});
+    playerNames.forEach(name=>{table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0};});
     rrFixtures.forEach((round,ridx)=>round.forEach((match,midx)=>{
+      const result=competitionMatchScores[rrKey(ridx,midx)];
       const winner=rrResults[rrKey(ridx,midx)];
       if(!winner) return;
       const loser=winner===match.a?match.b:match.a;
-      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,points:0}; table[name].played+=1;});
+      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0}; table[name].played+=1;});
       table[winner].wins+=1;
-      table[winner].points+=3;
       table[loser].losses+=1;
+      if(result&&result.a!==''&&result.b!==''){
+        const sa=Number(result.a)||0;const sb=Number(result.b)||0;
+        if(table[match.a]){table[match.a].pf+=sa;table[match.a].pa+=sb;}
+        if(table[match.b]){table[match.b].pf+=sb;table[match.b].pa+=sa;}
+      }
     }));
-    return Object.values(table).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
+    return Object.values(table).sort((a,b)=>{
+      const wDiff=b.wins-a.wins; if(wDiff!==0) return wDiff;
+      const lDiff=a.losses-b.losses; if(lDiff!==0) return lDiff;
+      const pdA=a.pf-a.pa; const pdB=b.pf-b.pa;
+      const pdDiff=pdB-pdA; if(pdDiff!==0) return pdDiff;
+      return b.pf-a.pf;
+    });
   }
 
   function distributeRoundRobinBoxes(){
@@ -4423,16 +4425,29 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   function getBoxStandings(box,fixtures,results,boxIndex,stage='group'){
     const table={};
-    (box.players||[]).forEach(name=>{table[name]={name,played:0,wins:0,losses:0,points:0};});
+    (box.players||[]).forEach(name=>{table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0,points:0};});
     (fixtures||[]).forEach((round,ridx)=>round.forEach((match,midx)=>{
       const winner=results[rrBoxKey(boxIndex,ridx,midx,stage)];
       if(!winner) return;
       const loser=winner===match.a?match.b:match.a;
-      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,points:0}; table[name].played+=1;});
+      [match.a,match.b].forEach(name=>{if(!table[name]) table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0,points:0}; table[name].played+=1;});
       if(table[winner]){table[winner].wins+=1;table[winner].points+=3;}
       if(table[loser]) table[loser].losses+=1;
+      const scoreKey2=rrBoxKey(boxIndex,ridx,midx,stage);
+      const result=competitionMatchScores[`rr-${stage==='group'?'group':'final'}-${ridx}-${midx}-${boxIndex}`];
+      if(result&&result.a!==''&&result.b!==''){
+        const sa=Number(result.a)||0;const sb=Number(result.b)||0;
+        if(table[match.a]){table[match.a].pf+=sa;table[match.a].pa+=sb;}
+        if(table[match.b]){table[match.b].pf+=sb;table[match.b].pa+=sa;}
+      }
     }));
-    return Object.values(table).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
+    return Object.values(table).sort((a,b)=>{
+      const wDiff=b.wins-a.wins; if(wDiff!==0) return wDiff;
+      const lDiff=a.losses-b.losses; if(lDiff!==0) return lDiff;
+      const pdA=a.pf-a.pa; const pdB=b.pf-b.pa;
+      const pdDiff=pdB-pdA; if(pdDiff!==0) return pdDiff;
+      return b.pf-a.pf;
+    });
   }
 
   function generateRrFinalBoxes(){
@@ -4722,14 +4737,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(!competitionRestoredRef.current) return;
     try{
       localStorage.setItem(COMPETITION_STATE_KEY,JSON.stringify({
-        mode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,
+        mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,
         rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
-        monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,
+        monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,
         nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,
         updatedAt:new Date().toISOString()
       }));
     }catch{}
-  },[mode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
+  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
 
   useEffect(()=>{
     const projectionState={
@@ -4778,6 +4793,15 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={mode==='roundRobin'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('roundRobin')}>Round Robin</button>
         <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
         <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSSL</button>
+      </div>
+
+      <div className="competitionScoringModeBar">
+        <strong>Competition Scoring</strong>
+        <div className="scoringModeToggle">
+          <button type="button" className={scoringMode==='normal'?'activeScoringMode':''} onClick={()=>setScoringMode('normal')}>Normal Scoring</button>
+          <button type="button" className={scoringMode==='custom'?'activeScoringMode':''} onClick={()=>setScoringMode('custom')}>Custom / Timed</button>
+        </div>
+        <p className="scoringModeHint">{scoringMode==='normal'?'Enter loser score only — winner score auto-fills. Win by 2 after 10-all.':'Enter both scores manually for timed or conditioned matches.'}</p>
       </div>
 
       <div className="competitionProjectionToggle">
@@ -5384,9 +5408,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>
                 <div className="standingsBox">
                   <h3>Live Standings</h3>
-                  <div className="standingsTable">
-                    <div><b>Player</b><b>P</b><b>W</b><b>L</b><b>Pts</b></div>
-                    {getRoundRobinStandings().map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span><span>{row.losses}</span><span>{row.points}</span></div>)}
+                  <div className="standingsTable standingsTableFull">
+                    <div><b>#</b><b>Player</b><b>W</b><b>L</b><b>PF</b><b>PA</b><b>Diff</b></div>
+                    {getRoundRobinStandings().map((row,idx)=><div key={row.name}><span>{idx+1}</span><span>{row.name}</span><span>{row.wins}</span><span>{row.losses}</span><span>{row.pf}</span><span>{row.pa}</span><span>{row.pf-row.pa>0?'+':''}{row.pf-row.pa}</span></div>)}
                   </div>
                 </div>
               </div>
@@ -5400,11 +5424,32 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             <div className="drawHeaderCard">
               <h2>Monrad Full Placing Draw</h2>
               <p>Every player keeps playing until final placings are settled. Winners move toward the higher placing pathway; losers move into the next placing pathway.</p>
+              <div className="monradMatchFormatRow">
+                <strong>Match Format</strong>
+                <div className="monradFormatBtns">
+                  {['Best of 1','Best of 3','Best of 5'].map(fmt=><button type="button" key={fmt} className={monradMatchFormat===fmt?'activeMonradFormat':'secondaryBtn'} onClick={()=>setMonradMatchFormat(fmt)}>{fmt}</button>)}
+                </div>
+              </div>
               <div className="buttonRow">
                 <button className="primaryBtn" onClick={generateMonradPlacingDraw}>Generate Placing Draw</button>
                 <button className="secondaryBtn" onClick={generateNextMonradPlacingRound}>Generate Next Placing Round</button>
+                <button className="secondaryBtn dangerBtn" onClick={()=>{setMonradRounds([]);setMonradResults({});setMonradPlacingRounds([]);setMonradPlacingResults({});setMonradFinalPlaces({});}}>Reset Monrad</button>
               </div>
             </div>
+            {monradPlacingRounds.length>0&&(
+              <div className="monradPathwayDisplay">
+                <strong>Live Pathway</strong>
+                <div className="monradPathwayScroll">
+                  {Array.from({length:playerNames.length},(_,i)=>i+1).map(place=>{
+                    const player=Object.entries(monradFinalPlaces).find(([,p])=>p===place);
+                    return <div key={place} className={`monradPathwaySlot${player?' monradPathwayFilled':''}`}>
+                      <span>{place}</span>
+                      {player&&<strong>{player[0]}</strong>}
+                    </div>;
+                  })}
+                </div>
+              </div>
+            )}
             {monradPlacingRounds.length===0&&<p className="overlayExplain">Best with 4, 8 or 16 players. Other numbers are padded with byes so the placing pathways stay clear.</p>}
             {monradPlacingRounds.length>0&&(
               <div className="monradPlacingLayout">
@@ -5563,6 +5608,42 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             )}
           </div>
         )}
+
+        <div className="competitionStatusPanel">
+          <div className="statusPanelHeader"><strong>Competition Status</strong></div>
+          <div className="statusPanelGrid">
+            <div className="statusPanelCard"><span>Format</span><strong>{current.title}</strong></div>
+            <div className="statusPanelCard"><span>Scoring Mode</span><strong>{scoringMode==='normal'?'Normal Scoring':'Custom / Timed'}</strong></div>
+            {mode==='roundRobin'&&rrFixtures.length>0&&(()=>{
+              const standings=getRoundRobinStandings();
+              const leader=standings[0];
+              return <>
+                <div className="statusPanelCard"><span>Current Leader</span><strong>{leader?.name||'—'}</strong></div>
+                <div className="statusPanelCard"><span>Possible Finish</span><strong>1st – {standings.length}th</strong></div>
+              </>;
+            })()}
+            {mode==='monrad'&&(()=>{
+              const table=getMonradFinalTable();
+              const settled=table.filter(r=>r.place!=='—');
+              return <>
+                <div className="statusPanelCard"><span>Placings Settled</span><strong>{settled.length} of {table.length}</strong></div>
+                {settled.length>0&&<div className="statusPanelCard"><span>Current 1st</span><strong>{table[0]?.name||'—'}</strong></div>}
+              </>;
+            })()}
+            {mode==='matchplay'&&<>
+              <div className="statusPanelCard"><span>Match</span><strong>{matchPlayers.a||'A'} vs {matchPlayers.b||'B'}</strong></div>
+              <div className="statusPanelCard"><span>Score</span><strong>{matchScore.a} – {matchScore.b}</strong></div>
+            </>}
+            {mode==='invasion'&&<>
+              <div className="statusPanelCard"><span>Format</span><strong>{invasionFormat==='lives'?'Lives Format':'Points Format'}</strong></div>
+              <div className="statusPanelCard"><span>Teams</span><strong>{invasionTeams.length} active</strong></div>
+            </>}
+            {mode==='nsl'&&<>
+              <div className="statusPanelCard"><span>Period</span><strong>{nslActivePeriod===4?'OT':`P${nslActivePeriod}`}</strong></div>
+              <div className="statusPanelCard"><span>Time Left</span><strong>{nslFormatTime(nslRoundSeconds)}</strong></div>
+            </>}
+          </div>
+        </div>
 
         <div className="diagnosticPrinciple">
           <strong>Tactical Behaviour Focus</strong>
@@ -7014,10 +7095,6 @@ function DiagnosticIntervention({setScreen}){
       <h3>Where Did The Habit Come From?</h3>
       <div className="originGrid">{habitOrigins.map(item=><div className="originCard" key={item.title}>
         <span>{item.type}</span><h3>{item.title}</h3><p>{item.text}</p><section><strong>Coach Debate</strong><p>{item.coach}</p>
-          <div className="shotsTimeMini">
-            <span className="timeBadge take">🟢 TIME TAKER</span>
-            <p>Working Length usually acts as a Time Taker because it reduces opponent options and can delay their recovery to the T.</p>
-          </div>
 </section><section><strong>Intervention Direction</strong><p>{item.intervention}</p></section>
       </div>)}</div>
 
@@ -7351,7 +7428,7 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Rebuilt Master v100h26 Project Fix</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h47</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
