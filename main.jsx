@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h52';
+const APP_VERSION='v100h53';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1782,7 +1782,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
 
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
-      <button className="homeCard liveHomeCard homeTitleOnly" onClick={()=>setScreen('live')}><h2>Live</h2></button>
+      <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
 
       
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
@@ -2797,183 +2797,271 @@ function Level0Foundations({setScreen,setSession}){
 }
 
 
-function ToolsArchitecture(){
-  const toolGroups=[
+function ToolsArchitecture({setScreen}){
+  const [activeSection,setActiveSection]=useState('quickfix');
+  const [qfCategory,setQfCategory]=useState(null);
+  const [qfProblem,setQfProblem]=useState(null);
+  const [toolDetail,setToolDetail]=useState(null);
 
-    {
-      title:'Counterbalance Tools',
-      tools:[
-        {
-          name:'Side-Wall Ball Return Tool',
-          type:'Environmental Feedback / Counterbalance Tool',
-          purpose:'Prevent non-playing arm crossing the body on forehand and promote side-wall orientation. Player releases a squash ball from the non-playing hand at the end of follow-through so it hits the side wall behind them and rolls straight back to their feet.',
-          levels:'Level 0–3',
-          progression:'Static feed → hand feed → live rally feed → faded use'
-        },
-        {
-          name:'Second Racquet Counterbalance Tool',
-          type:'Spatial Constraint / External Focus',
-          purpose:'Player holds a second racquet or object in the non-playing hand so it must stay away from the swing path, encouraging the arm to remain behind/outside the body line.',
-          levels:'Level 0–3',
-          progression:'Static swing → fed ball → rally constraint'
-        }
-      ]
-    },
-    {
-      title:'Rhythm & Tempo Tools',
-      tools:[
-        {
-          name:'Waltz Rhythm Tool',
-          type:'Auditory Constraint / Tempo Regulation',
-          purpose:'Use 3/4 waltz rhythm, such as Blue Danube-style timing, to encourage relaxed movement rhythm, smoother striking and reduced rushing.',
-          levels:'Level 0–5',
-          progression:'Coach sings/counts 1-2-3 → metronome pulse → faster/slower tempo → faded rhythm cue'
-        }
-      ]
-    },
-
-    {
-      title:'Visual Perception Tools',
-      tools:[
-        {
-          name:'2 Coloured Racquet',
-          type:'Informational Constraint',
-          purpose:'Improve visual attention to the information source at contact.',
-          levels:'Level 0–3',
-          progression:'Continuous call → intermittent call → random call → fade out'
-        }
-      ]
-    },
-    {
-      title:'Coordination Feedback Tools',
-      tools:[
-        {
-          name:'Happy Smiley Face',
-          type:'External Focus / Haptic Feedback',
-          purpose:'Reduce wrist collapse through playful external focus.',
-          levels:'Level 0–2',
-          progression:'Visible feedback → faded awareness'
-        },
-        {
-          name:'Hand to Forearm Tape',
-          type:'Haptic Informational Feedback',
-          purpose:'Immediate feedback when wrist collapses.',
-          levels:'Level 0–3',
-          progression:'Reduce reliance gradually'
-        },
-        {
-          name:'Dog Buzzer',
-          type:'Feedback Tool',
-          purpose:'Awareness cue for inefficient movement behaviours.',
-          levels:'Level 1–5',
-          progression:'Intermittent cueing → fade out'
-        }
-      ]
-    },
-    {
-      title:'Body Alignment Tools',
-      tools:[
-        {
-          name:'Shoulder Alignment Tape',
-          type:'Environmental Constraint',
-          purpose:'Promote side-wall or front-wall orientation using external focus.',
-          levels:'Level 0–3',
-          progression:'Large visual references → subtle references'
-        }
-      ]
-    },
-    {
-      title:'Spatial Constraint Tools',
-      tools:[
-        {
-          name:'Wall Swing Constraint',
-          type:'Environmental / Spatial Constraint',
-          purpose:'Reduce excessive rotating swing patterns.',
-          levels:'Level 0–5',
-          progression:'Against wall → floor line → live feeds'
-        }
-      ]
-    },
-    {
-      title:'Scaling Tools',
-      tools:[
-        {
-          name:'Challenge Point Overlay',
-          type:'Progression / Regression System',
-          purpose:'Adjust difficulty based on success rate.',
-          levels:'All Levels',
-          progression:'<50% simplify · ~70% optimal · >85% increase challenge'
-        }
-      ]
-    },
-    {
-      title:'Analogy Tools',
-      tools:[
-        {
-          name:'Elastic Band to T',
-          type:'Movement Analogy',
-          purpose:'Encourage explosive recovery and return to T.',
-          levels:'Level 0–5',
-          progression:'Simple awareness → integrated movement behaviour'
-        },
-        {
-          name:'Skimming Stones',
-          type:'Forehand Swing Analogy',
-          purpose:'Encourage elbow-leading forehand swing shape.',
-          levels:'Level 0–3',
-          progression:'Throwing action → racquet integration'
-        },
-        {
-          name:'Eagle Spreading Wings',
-          type:'Balance / Coordination Analogy',
-          purpose:'Promote non-playing arm usage for balance.',
-          levels:'Level 0–2',
-          progression:'Large movements → subtle balance behaviour'
-        }
-      ]
-    }
+  const sections=[
+    {id:'quickfix',label:'⚡ Quick Fix',emoji:'⚡'},
+    {id:'coordination',label:'Coordination',emoji:'🤝'},
+    {id:'balance',label:'Balance',emoji:'⚖'},
+    {id:'visual',label:'Visual',emoji:'👁'},
+    {id:'rhythm',label:'Rhythm',emoji:'🎵'},
+    {id:'constraint',label:'Constraint',emoji:'🔧'},
+    {id:'scaling',label:'Scaling',emoji:'📏'},
+    {id:'analogy',label:'Analogy',emoji:'💡'},
+    {id:'principles',label:'Principles',emoji:'📋'},
   ];
 
-  return <div className="gameCard toolsPage">
-    <div className="categoryTag">Tools</div>
-    <h2>Constraints & Coaching Tools</h2>
+  // ── QUICK FIX DATA ──────────────────────────────────────────────
+  const qfCategories=[
+    {id:'preparation',label:'Preparation',emoji:'⏱',problems:['Late Preparation','Racquet Not Ready','Watching Ball Too Late','No Split Step']},
+    {id:'spacing',label:'Spacing',emoji:'📐',problems:['Poor Contact Distance','Too Close to Ball','Too Far from Ball','No Lunge']},
+    {id:'balance',label:'Balance & Recovery',emoji:'⚖',problems:['Falling Away After Strike','Poor Recovery to T','Non-Playing Arm Crossing','Rotational Instability']},
+    {id:'swing',label:'Swing & Contact',emoji:'🎾',problems:['Wrist Breakdown','Excessive Backswing','Flat-Footed Striking','Over-Hitting','Wristy Contact']},
+    {id:'movement',label:'Movement',emoji:'🏃',problems:['Flat Footed','Not Reaching Ball','Slow First Move','Poor Court Coverage']},
+    {id:'tension',label:'Tension & Rhythm',emoji:'😤',problems:['Tight Grip','Tense Shoulders','Rushing','Loss of Flow']},
+    {id:'visual',label:'Visual & Tracking',emoji:'👁',problems:['Visual Tracking Issues','Misjudged Bounce','Poor Anticipation','Late Information Pickup']},
+    {id:'tactical',label:'Tactical',emoji:'🧠',problems:['Hitting to Opponent','No Length','No Variation','Poor Court Awareness']},
+  ];
 
-    <div className="diagnosticPrinciple">
-      <strong>Constraints-Led Coaching Tools</strong>
-      <p>Tools shape behaviour through informational, spatial, environmental, haptic and task constraints rather than excessive verbal instruction.</p>
-    </div>
+  const qfInterventions={
+    'Late Preparation':{cause:'Information pickup delay — player is watching the ball too late or from a poor position.',constraint:'Two Coloured Racquet. Player must call the colour as the ball leaves the opponent racquet.',tool:'Visual Tracking Task — TAU-4 or TAU-5 feed source activity.',activity:'Coach feeds to alternate sides. Player must call the feed side before moving. No move without a call.',progression:'Reduce call to a hand signal. Then fade the call. Add rally pressure.',levels:'All levels'},
+    'Racquet Not Ready':{cause:'Sequential movement pattern — player organises movement before racquet preparation.',constraint:'Racquet must be at backswing height when the player arrives. Check position on arrival, not at contact.',tool:'Arrival constraint: place a target cone at the ideal arrival position. Racquet must be ready when foot hits the cone.',activity:'Coach feeds. Player must tap cone with foot AND have racquet ready simultaneously.',progression:'Remove cone. Add movement recovery. Add rally context.',levels:'Level 1–4'},
+    'Watching Ball Too Late':{cause:'Attention on body movement rather than information sources.',constraint:'Two Coloured Racquet — player calls colour of hitting face before player strikes.',tool:'Quiet Eye Task. Player tracks ball from opponent racquet through the flight path.',activity:'Stand-and-watch drill. Player does not move or strike — only tracks and calls each ball.',progression:'Add a strike. Add movement. Add rally.',levels:'All levels'},
+    'No Split Step':{cause:'Pre-programmed movement — player decides direction before reading opponent.',constraint:'Stop-and-start constraint: player must pause at T between every shot.',tool:'Rhythm cue: coach claps or calls "T" each time player should split step.',activity:'Feed and recover. Coach feeds. Player strikes, recovers to T, pauses visibly, then moves to next feed.',progression:'Reduce pause. Use rhythm cue only. Fade to natural movement.',levels:'Level 1–3'},
+    'Poor Contact Distance':{cause:'Player has not learned functional spacing through movement experience.',constraint:'Arrive and Strike (0G). Player must lunge to the ball — contact made on lunge arrival.',tool:'Lunge Gate: place a cone at ideal contact distance. Player must arrive with lunge reaching the cone.',activity:'Coach feeds. Player moves and lunges to each ball. Coach observes contact position.',progression:'Remove cone. Add directional variation. Add live rally entry.',levels:'Level 0–2'},
+    'Too Close to Ball':{cause:'Player stops movement too early or positions body too close to expected contact point.',constraint:'Extend the feed. Coach feeds slightly wider and deeper to force a longer movement arc.',tool:'Ball size reduction: smaller ball creates a smaller contact zone and requires more precise arrival.',activity:'Feed to extended positions. Player must fully extend lunge to reach the ball.',progression:'Vary feed distance. Add backhand. Add live feeds.',levels:'Level 0–3'},
+    'Too Far from Ball':{cause:'Player overshoots or positions body outside functional contact distance.',constraint:'Reduce feed distance. Coach feeds to tighter positions to reduce movement arc required.',tool:'Target marker: place a small cone at ideal contact distance. Player aims to arrive with lunge at the marker.',activity:'Short feed drill. Player must make clean contact without overextending.',progression:'Vary positions. Add movement. Add live rally.',levels:'Level 0–3'},
+    'No Lunge':{cause:'Movement pattern does not include a final arrival step.',constraint:'Arrive and Strike (0G): feed requires a lunge to reach. Cannot be reached without lunging.',tool:'Coach cue: "Find the ball with your lunge." Avoid "Move away from the ball."',activity:'Wide feeds to both sides. Player must lunge to reach every ball.',progression:'Add alternating sides. Increase feed distance. Live rally entry.',levels:'Level 0–2'},
+    'Falling Away After Strike':{cause:'Player unweighting from strike position — often linked to poor lunge mechanics.',constraint:'Side-Wall Ball Return Tool: player releases a ball from the non-playing hand after follow-through. Ball should roll straight back, not away from wall.',tool:'Second Racquet Counterbalance: player holds an object in non-playing hand to balance the swing.',activity:'Strike and hold: player must hold the strike position for one second after contact.',progression:'Reduce hold time. Add movement recovery. Live rally.',levels:'Level 0–3'},
+    'Poor Recovery to T':{cause:'Player stays watching their shot rather than moving immediately.',constraint:'Recovery cone: place a cone at the T. Player must touch the cone after every shot.',tool:'Elastic Band analogy: player imagines an elastic band connecting them to the T that pulls them back immediately.',activity:'Feed and touch drill. Player strikes and must touch T cone before next feed arrives.',progression:'Remove cone. Add faster feeds. Live rally recovery.',levels:'Level 1–4'},
+    'Non-Playing Arm Crossing':{cause:'Sequential movement pattern — non-playing arm pulled into body through swing.',constraint:'Second Racquet Counterbalance: object in non-playing hand prevents crossing.',tool:'Eagle Wings analogy: non-playing arm spreads outward like a wing at contact.',activity:'Static swing drill with second racquet. Feed ball with constraint active.',progression:'Fade second racquet. Use analogy cue only. Live rally.',levels:'Level 0–3'},
+    'Rotational Instability':{cause:'Insufficient non-playing arm counterbalance and weak lunge base.',constraint:'Strike and hold: player holds balanced position after each strike for one count.',tool:'Eagle Wings analogy. Second Racquet Counterbalance.',activity:'Wide lunge feeds. Player must arrive, strike, and hold balanced position.',progression:'Add movement. Reduce hold. Live rally constraint.',levels:'Level 0–3'},
+    'Wrist Breakdown':{cause:'Grip weakness or sequential wrist action at contact.',constraint:'Happy Smiley Face: draw a face on the palm. Player must maintain face visibility at follow-through.',tool:'Hand to Forearm Tape: immediate haptic feedback when wrist collapses.',activity:'Wall chipping with smiley face visible. Check face position at follow-through.',progression:'Remove visual cue. Use tape only. Fade tape. Live rally.',levels:'Level 0–2'},
+    'Excessive Backswing':{cause:'Over-preparation habit or timing compensation for late preparation.',constraint:'Wall Swing Constraint: player stands close to side wall. Excessive backswing contacts the wall.',tool:'Compact swing cue: "Racquet to cheek height — no higher."',activity:'Side-wall proximity drill. Feed ball with wall close behind player.',progression:'Increase feed pace. Move away from wall gradually. Live rally.',levels:'Level 0–4'},
+    'Flat-Footed Striking':{cause:'Weight not transferring through the strike. Static base at contact.',constraint:'Forward weight transfer constraint: player must step through the shot. Foot must land before contact.',tool:'Skimming Stones analogy: throwing action requires forward weight transfer.',activity:'Step-and-strike drill. Coach feeds. Player must step forward onto lunge foot before contact.',progression:'Add movement. Increase feed pace. Live rally.',levels:'Level 1–4'},
+    'Over-Hitting':{cause:'Force regulation issue — player using maximum force regardless of court position or tactical need.',constraint:'Scoring constraint: points only count for shots landing in target zone. Hitting hard loses the point.',tool:'Scaling down: reduce court size or introduce a low target zone on the front wall.',activity:'Target zone game. All shots must land in a defined zone. Hard shots that miss lose a point.',progression:'Increase zone difficulty. Add opponent. Live competitive game.',levels:'Level 1–5'},
+    'Wristy Contact':{cause:'Wrist leading the swing rather than elbow-led preparation.',constraint:'Hand to Forearm Tape: immediate feedback when wrist breaks through impact zone.',tool:'Happy Smiley Face on palm. Whip analogy: handle leads, tip follows.',activity:'Wall chipping with tape and smiley face. Focus on elbow-led preparation.',progression:'Remove tape. Add feeds. Live rally.',levels:'Level 0–3'},
+    'Flat Footed':{cause:'No reactive movement base — player waiting in static position.',constraint:'Split Step cue: coach calls or claps to trigger reactive step before each feed.',tool:'Rhythm tool: waltz tempo encourages continuous weight shifting.',activity:'Anticipation drill: player on toes throughout. Coach varies feed direction unpredictably.',progression:'Remove external cue. Add rally pace. Live competitive play.',levels:'Level 1–4'},
+    'Not Reaching Ball':{cause:'Movement initiation delayed or movement direction wrong.',constraint:'Feed source constraint: coach feeds from different positions to force varied movement solutions.',tool:'Two Coloured Racquet: player must read feed side before moving.',activity:'Early call drill: player calls side before moving. No call = no move.',progression:'Reduce call requirement. Add movement recovery. Live rally.',levels:'Level 1–3'},
+    'Slow First Move':{cause:'Reaction delay — player not reading information early enough.',constraint:'TAU-4 or TAU-5 feed tracking activity. Player must move before ball reaches halfway.',tool:'Visual constraint: Two Coloured Racquet colour call before movement.',activity:'Early move drill. Feed varies. Player must initiate movement before ball crosses service line.',progression:'Add direction variation. Reduce latency threshold. Live rally.',levels:'Level 1–4'},
+    'Poor Court Coverage':{cause:'Pattern-based movement — player moving to habitual positions rather than reading opponent.',constraint:'Random feed drill: no two consecutive feeds to same position.',tool:'Recovery cone: player must touch T between every shot.',activity:'Five-position drill. Coach feeds to five different positions in random order. Player recovers to T between each.',progression:'Increase feed pace. Add opponent. Live competitive game.',levels:'Level 2–5'},
+    'Tight Grip':{cause:'Anxiety or over-effort response.',constraint:'Grip looseness cue: "Hold a baby bird — firm enough to hold it, gentle enough not to hurt it."',tool:'Waltz Rhythm Tool: slow waltz tempo reduces tension throughout movement.',activity:'Chip and talk: player maintains conversation while chipping. Talking prevents breath-holding and tension.',progression:'Add movement. Increase pace. Live rally with rhythm constraint.',levels:'All levels'},
+    'Tense Shoulders':{cause:'Over-effort or anxiety. Often linked to grip tension.',constraint:'Blue Danube Waltz constraint: music shapes relaxed movement rhythm without instruction.',tool:'Drop-shoulder cue before every feed. "Shake hands — drop shoulders — play."',activity:'Rhythm warm-up: Blue Danube playing, players move and rally with no coaching input.',progression:'Fade music. Player learns to self-regulate. Live rally.',levels:'All levels'},
+    'Rushing':{cause:'Temporal pressure response — player perceiving insufficient time.',constraint:'Blue Danube Tempo constraint: slow waltz rhythm forces reduction in movement pace.',tool:'Scaling: reduce feed pace or use larger ball to increase available time.',activity:'Slow-motion rally: all shots hit at 50% pace. Only gentle, deliberate contacts count.',progression:'Gradually increase pace. Add normal ball. Live rally.',levels:'Level 0–3'},
+    'Loss of Flow':{cause:'Disrupted perception-action coupling — often after error or pressure.',constraint:'Waltz Rhythm Tool: re-establish movement rhythm through music constraint.',tool:'Reset routine: one breath, one bounce of ball, return to movement.',activity:'Rhythm reset drill: three cooperative rallies at walking pace to re-establish coupling.',progression:'Return to competitive pace. Monitor for loss of flow under pressure.',levels:'All levels'},
+    'Visual Tracking Issues':{cause:'Information pickup from incorrect source or insufficient time to track.',constraint:'TAU-1 Large Ball Tracking: player tracks large ball with no striking requirement.',tool:'Feed source constraint: begin with self-drop, progress to coach feed, wall rebound.',activity:'Watch-and-point drill: player points at ball throughout flight without striking. Coach observes gaze.',progression:'Add strike. Reduce ball size. Add movement. Live rally.',levels:'Level 0–2'},
+    'Misjudged Bounce':{cause:'Incomplete perceptual attunement to ball flight and wall rebound.',constraint:'TAU-5 Front Wall Tracking: player practices wall rebound prediction before adding movement.',tool:'Variable ball constraint: mix ball sizes to prevent fixed bounce timing solution.',activity:'Bounce prediction drill: player calls "now" when they expect ball to bounce. Coach compares to actual bounce.',progression:'Add movement. Reduce ball size. Live rally.',levels:'Level 0–2'},
+    'Poor Anticipation':{cause:'Player reading ball rather than opponent information sources.',constraint:'Two Coloured Racquet: player must read feed side from opponent body, not ball.',tool:'Quiet Eye Task: coach guides attention to shoulder and trunk cues.',activity:'Screen drill: ball hidden briefly at start of feed. Player must move based on body cues only.',progression:'Increase screen time. Add deception. Live competitive rally.',levels:'Level 2–5'},
+    'Late Information Pickup':{cause:'Attention fixated on ball arrival rather than earlier body cues.',constraint:'Two Coloured Racquet: call colour before ball leaves opponent racquet.',tool:'Information & Anticipation module: opponent cue source activities.',activity:'Shoulder-first drill: player reads opponent shoulder turn as the primary movement cue.',progression:'Add trunk and hip cues. Live competitive rally.',levels:'Level 2–5'},
+    'Hitting to Opponent':{cause:'Habitual cross-court hitting or lack of court awareness.',constraint:'Scoring constraint: points only for shots that move opponent. Hitting to opponent scores zero.',tool:'Court awareness task: player must verbalise opponent position before striking.',activity:'Call-and-hit drill: player calls "opponent left" or "opponent right" before every shot.',progression:'Add scoring. Make tactical decision implicit. Live competitive game.',levels:'Level 2–5'},
+    'No Length':{cause:'Force regulation issue or tactical habit of early attack.',constraint:'Length Before Attack constraint: all shots must pass the service box before an attack is valid.',tool:'Target zone: mark short-line area. Points only for shots landing past the line.',activity:'Length game: points awarded only for shots landing in back quarter of court.',progression:'Add opponent pressure. Live conditioned game. Remove constraint.',levels:'Level 2–4'},
+    'No Variation':{cause:'Predictable pattern formation — player locked into a single tactical solution.',constraint:'Route Breaker constraint: no two consecutive shots to the same position.',tool:'Checkerboard challenge: player must complete a pair challenge before each attack.',activity:'Checkerboard Pair Challenge game. Player earns right to attack only after completing the pair.',progression:'Add Triple Challenge. Increase pace. Live competitive game.',levels:'Level 2–5'},
+    'Poor Court Awareness':{cause:'Attention focused on ball and own action — insufficient opponent and court awareness.',constraint:'Call-and-move: player must call opponent position before every shot.',tool:'Checkerboard system: spatial awareness built into task design.',activity:'Two-touch awareness drill: after each shot player looks to opponent T position before next ball.',progression:'Add movement. Reduce call requirement. Live competitive game.',levels:'Level 2–5'},
+  };
 
-    <div className="infoBox">
-      <strong>Framework</strong>
-      <p>Tools and interventions underpinned by a Constraints-Led Approach framework.</p>
-    </div>
-    <div className="infoBox">
-      <strong>Newly Added Tools</strong>
-      <ul>
-        <li>Side-Wall Ball Return Tool</li>
-        <li>Second Racquet Counterbalance Tool</li>
-        <li>Waltz Rhythm Tool</li>
-      </ul>
-    </div>
+  // ── TOOL LIBRARY DATA ───────────────────────────────────────────
+  const toolLibrary={
+    coordination:[
+      {name:'Happy Smiley Face',does:'Draw a smiley face on the player palm. The face must remain visible at follow-through.',why:'Creates an external focus on wrist position without body instruction. The face is the reference, not the wrist.',apply:'Marker pen on palm. Player chips or strikes with face visible. Coach calls if face disappears.',remove:'When wrist position is consistent without the visual cue.',problems:['Wrist Breakdown','Wristy Contact'],levels:'Level 0–2'},
+      {name:'Hand to Forearm Tape',does:'Tape a short strip from the back of the hand to the forearm. Tape pulls when wrist collapses.',why:'Immediate haptic feedback at the moment of breakdown — no verbal instruction needed.',apply:'Small strip of sports tape. Active in chipping and live feeds.',remove:'Fade by cutting tape thinner. Remove when self-regulation is established.',problems:['Wrist Breakdown','Wristy Contact'],levels:'Level 0–3'},
+      {name:'Dog Buzzer',does:'A small vibrating device attached to the body that activates when a target behaviour occurs.',why:'Provides immediate non-verbal feedback without disrupting the movement flow.',apply:'Attach to wrist or forearm. Set threshold for target movement.',remove:'Fade frequency. Remove when player self-regulates.',problems:['Wrist Breakdown','Flat-Footed Striking'],levels:'Level 1–5'},
+      {name:'Two Hand Starts',does:'Player starts each rally with both hands on the racquet. Releases non-playing hand before striking.',why:'Forces non-playing arm to play an active role in preparation before the release.',apply:'Both hands on grip at T position. Release non-playing hand on movement initiation.',remove:'When non-playing arm becomes naturally active.',problems:['Non-Playing Arm Crossing','Rotational Instability'],levels:'Level 0–2'},
+      {name:'Split Step Rhythm',does:'Coach claps or calls at the moment player should split step. Player responds to the cue.',why:'External rhythm cue builds reactive movement timing before it becomes self-generated.',apply:'Coach observes and claps at opponent contact moment. Player reacts.',remove:'Fade clap to hand signal to silence.',problems:['No Split Step','Flat Footed'],levels:'Level 1–3'},
+    ],
+    balance:[
+      {name:'Side-Wall Ball Return',does:'Player holds a second ball in the non-playing hand. Releases it at follow-through — it should hit the side wall and return straight back.',why:'The return path reveals whether the player has moved away from or into the shot. Objective feedback.',apply:'Player holds spare ball in non-playing hand. Release at end of follow-through.',remove:'When follow-through consistently produces a straight return.',problems:['Falling Away After Strike','Non-Playing Arm Crossing'],levels:'Level 0–3'},
+      {name:'Second Racquet Counterbalance',does:'Player holds a second racquet or object in the non-playing hand throughout the shot.',why:'Forces non-playing arm outward, preventing crossing. Creates natural counterbalance.',apply:'Use a spare racquet, foam roller section, or similar object.',remove:'Fade to holding nothing. Monitor for regression.',problems:['Non-Playing Arm Crossing','Rotational Instability','Falling Away After Strike'],levels:'Level 0–3'},
+      {name:'Reach and Recover',does:'Player must reach a target cone with each lunge and return to a recovery cone immediately after.',why:'Creates a movement constraint that forces both the lunge extension and the recovery without instruction.',apply:'Two cones. Strike cone and recovery cone. Player must touch both.',remove:'Remove cones. Use mental image only.',problems:['Falling Away After Strike','Poor Recovery to T'],levels:'Level 1–3'},
+      {name:'Lunge Hold',does:'Player holds the lunge position for one count after contact before recovering.',why:'Addresses premature weight transfer and falling away by building a stable contact base.',apply:'Coach counts "one" after each contact. Player holds until the count.',remove:'Reduce count. Fade to natural recovery.',problems:['Falling Away After Strike','Flat-Footed Striking'],levels:'Level 0–2'},
+    ],
+    visual:[
+      {name:'Two Coloured Racquet',does:'Two colours on the hitting face. Player calls the colour as opponent strikes.',why:'Forces attention to the information source before the ball leaves the opponent racquet.',apply:'Tape two colours to racquet face halves. Player calls colour on every opponent shot.',remove:'Fade call frequency. Use randomly. Remove when preparation timing improves.',problems:['Late Preparation','Watching Ball Too Late','Poor Anticipation','Late Information Pickup'],levels:'Level 0–4'},
+      {name:'Ball Tracking Tasks',does:'Player tracks ball flight without striking. Focus only on watching the ball.',why:'Isolates the perceptual task from the motor task. Allows coach to observe tracking quality.',apply:'TAU-1 to TAU-7 progression. Start with large ball, build to yellow ball with movement.',remove:'When tracking is consistent, integrate with striking.',problems:['Visual Tracking Issues','Misjudged Bounce'],levels:'Level 0–2'},
+      {name:'Quiet Eye Task',does:'Player holds gaze on the contact point before and through the strike.',why:'Extends the quiet eye period — the final gaze fixation associated with skilled striking.',apply:'Player consciously holds gaze at contact point for one count after striking.',remove:'Fade the conscious hold. Monitor for maintained fixation in live play.',problems:['Watching Ball Too Late','Poor Contact','Late Preparation'],levels:'Level 1–4'},
+      {name:'Occlusion Activities',does:'Ball is briefly hidden at key moment — player must move based on body cues rather than ball flight.',why:'Forces use of earlier information sources: opponent body, racquet preparation, shoulder turn.',apply:'Coach or screen briefly hides ball at opponent contact. Player commits before seeing ball.',remove:'Reduce occlusion duration. Move to full rally.',problems:['Poor Anticipation','Late Information Pickup'],levels:'Level 2–5'},
+      {name:'Feed Source Manipulation',does:'Coach systematically varies feed source — self-drop, hand feed, wall feed, racquet feed.',why:'Prevents over-adaptation to one perceptual condition. Builds adaptable timing.',apply:'TAU-4 to TAU-7 protocol. Vary source within each session.',remove:'When timing is adaptable across all sources.',problems:['Visual Tracking Issues','Misjudged Bounce','Late Preparation'],levels:'Level 0–3'},
+    ],
+    rhythm:[
+      {name:'Blue Danube Constraint',does:'Play Blue Danube Waltz during the activity. No instruction about rhythm.',why:'3/4 waltz timing creates an attractor state for movement rhythm. Players synchronise without instruction.',apply:'Play from Level 0 Blue Danube module. Start before activity. Do not mention rhythm.',remove:'Fade volume. Play intermittently. Remove when rhythm is self-sustaining.',problems:['Rushing','Tight Grip','Tense Shoulders','Loss of Flow'],levels:'Level 0–5'},
+      {name:'Waltz Rhythm Count',does:'Coach counts 1-2-3 at waltz tempo throughout the activity.',why:'External tempo reference organises movement rhythm without body instruction.',apply:'Coach counts aloud. Player moves in time. Adjust tempo to player need.',remove:'Fade count to hand gesture to silence.',problems:['Rushing','Loss of Flow','Tension'],levels:'Level 0–3'},
+      {name:'Movement Tempo Tasks',does:'Player is instructed to move at a specific tempo — slower, normal, or faster.',why:'Adjusting movement tempo reveals whether timing breakdown is from rushing or from slowness.',apply:'Slow: 50% pace. Normal: standard. Fast: increase pace incrementally.',remove:'Return to normal tempo. Monitor for retention.',problems:['Rushing','Flat Footed','Slow First Move'],levels:'All levels'},
+    ],
+    constraint:[
+      {name:'Wall Swing Constraint',does:'Player stands very close to the side wall. Excessive backswing touches the wall.',why:'The wall provides immediate environmental feedback — no verbal instruction needed.',apply:'Player stands 20-30cm from side wall. Feed ball. Player swings without touching wall.',remove:'Increase distance from wall gradually. Live rally.',problems:['Excessive Backswing'],levels:'Level 0–5'},
+      {name:'Foam Roller Constraint',does:'Foam roller placed at the target backswing position. Player must not knock it over.',why:'External spatial reference for backswing limit. Object focus rather than body instruction.',apply:'Place foam roller at appropriate position. Feed ball.',remove:'Remove roller. Use mental image.',problems:['Excessive Backswing'],levels:'Level 0–3'},
+      {name:'Contact Gates',does:'Two cones placed to mark ideal contact zone. Player must strike between the cones.',why:'Defines the contact window spatially without body instruction.',apply:'Place cones at either side of ideal contact zone. Feed ball.',remove:'Remove cones when contact zone is consistent.',problems:['Poor Contact Distance','Flat-Footed Striking'],levels:'Level 0–3'},
+      {name:'Target Gates',does:'Target zone on wall or floor. Shots must pass through or land in the zone.',why:'Defines the required outcome. Player self-organises to achieve it.',apply:'Mark target with tape. Add scoring — points only in zone.',remove:'Reduce zone size. Remove marking. Live rally.',problems:['No Length','No Variation','Over-Hitting'],levels:'Level 1–5'},
+      {name:'Recovery Gates',does:'Cone or marker at T position. Player must touch it after every shot.',why:'Creates a movement constraint that forces recovery without verbal instruction.',apply:'Place cone at T. Player must physically touch it after each shot.',remove:'Remove cone. Use verbal reminder. Fade reminder.',problems:['Poor Recovery to T','Poor Court Coverage'],levels:'Level 1–4'},
+    ],
+    scaling:[
+      {name:'Ball Size Scaling',does:'Adjust ball size to change the perceptual and timing challenge.',why:'Larger balls provide more information and more time. Smaller balls increase challenge.',apply:'Foam → Red → Orange → Green → Yellow. Move up or down based on success rate.',remove:'When player achieves >80% success at current level.',problems:['Visual Tracking Issues','Poor Contact Distance','Misjudged Bounce'],levels:'Level 0–3'},
+      {name:'Feed Speed Scaling',does:'Adjust feed pace to change available time.',why:'Slower feeds give more time for perception and movement organisation.',apply:'Start at 50% pace. Increase in 10% increments on success.',remove:'When player succeeds at full match pace.',problems:['Late Preparation','Rushing','Slow First Move'],levels:'All levels'},
+      {name:'Court Size Scaling',does:'Use tape to reduce the court size. Players rally in a smaller space.',why:'Shorter distances reduce movement demand and increase rally sustainability.',apply:'Tape lines for reduced court. Rally within the taped area.',remove:'Expand court incrementally back to full size.',problems:['Poor Court Coverage','Not Reaching Ball'],levels:'Level 0–2'},
+      {name:'Distance Scaling',does:'Adjust the distance between player and ball source.',why:'Shorter distances give more time and reduce movement demand.',apply:'Start close. Move back in small steps after success.',remove:'Full court distance achieved.',problems:['Late Preparation','Not Reaching Ball','No Lunge'],levels:'Level 0–3'},
+    ],
+    analogy:[
+      {name:'Whip',does:'The racquet is the tip of a whip. The handle starts, the tip follows.',why:'Encourages sequential elbow-wrist-racquet movement rather than simultaneous body turning.',apply:'Demonstrate a whipping motion. Ask player to replicate with racquet.',use:'Wrist breakdown, wristy contact, over-rotation.',problems:['Wrist Breakdown','Wristy Contact'],levels:'Level 1–4'},
+      {name:'Bow and Arrow',does:'Non-playing arm stretches away like pulling a bow. Racquet arm is the arrow.',why:'Creates external focus on non-playing arm extension and body tension before release.',apply:'Ask player to feel the stretch before each shot.',use:'Non-playing arm crossing, rotational instability.',problems:['Non-Playing Arm Crossing','Rotational Instability'],levels:'Level 1–3'},
+      {name:'Skimming Stones',does:'Throwing action for a forehand — elbow leads, wrist snaps, weight transfers forward.',why:'External movement analogy for elbow-led forehand. No body instruction.',apply:'Player performs throwing motion first. Then apply to forehand.',use:'Flat-footed striking, excessive rotation, wrist collapse.',problems:['Flat-Footed Striking','Wrist Breakdown'],levels:'Level 0–3'},
+      {name:'Eagle Wings',does:'Non-playing arm spreads wide like an eagle wing at contact.',why:'Creates external focus for non-playing arm position. Prevents crossing.',apply:'"Spread your wings as you strike." No arm position instruction.',use:'Non-playing arm crossing, falling away, rotational instability.',problems:['Non-Playing Arm Crossing','Falling Away After Strike'],levels:'Level 0–2'},
+      {name:'Paintbrush',does:'Racquet paints the wall target. The shot is the brushstroke.',why:'External focus on the target rather than the swing. Accuracy and touch.',apply:'Ask player to paint the target zone. Where does the brush go?',use:'Over-hitting, poor length, lack of touch.',problems:['Over-Hitting','No Length'],levels:'Level 1–4'},
+      {name:'Throwing a Frisbee',does:'Forehand swing shape matches the frisbee release action — flat, extended, forward.',why:'Natural movement analogy. Most players can throw a frisbee correctly.',apply:'Player demonstrates frisbee throw. Coach connects to forehand shape.',use:'Excessive backswing, wrist breakdown, flat-footed striking.',problems:['Excessive Backswing','Flat-Footed Striking'],levels:'Level 0–3'},
+    ],
+  };
 
-    {toolGroups.map(group=><div className="expandedGame selectedExpandedGame" key={group.title}>
-      <span className="categoryTag">{group.title}</span>
-      <h3>{group.title}</h3>
+  const allProblems=qfCategories.flatMap(c=>c.problems);
+  const currentIntervention=qfProblem?qfInterventions[qfProblem]:null;
 
-      {group.tools.map(tool=><div className="constraintSuggestionBox" key={tool.name}>
+  function ToolCard({tool}){
+    const [open,setOpen]=useState(false);
+    return <div className={'toolCard'+(open?' toolCardOpen':'')}>
+      <button type="button" className="toolCardHeader" onClick={()=>setOpen(!open)}>
         <strong>{tool.name}</strong>
+        <span className="toolCardLevels">{tool.levels}</span>
+        <span className="toolCardChevron">{open?'▲':'▼'}</span>
+      </button>
+      {open&&<div className="toolCardBody">
+        <div className="toolCardSection tcDoes"><strong>What It Does</strong><p>{tool.does}</p></div>
+        <div className="toolCardSection tcWhy"><strong>Why It Works</strong><p>{tool.why}</p></div>
+        <div className="toolCardSection"><strong>How to Apply</strong><p>{tool.apply}</p></div>
+        <div className="toolCardSection tcRemove"><strong>When to Remove</strong><p>{tool.remove}</p></div>
+        {tool.problems&&<div className="toolCardSection"><strong>Problems Addressed</strong><div className="toolProblemTags">{tool.problems.map(p=><button key={p} type="button" className="toolProblemTag" onClick={()=>{setQfProblem(p);setActiveSection('quickfix');}}>{p}</button>)}</div></div>}
+      </div>}
+    </div>;
+  }
 
-        <div className="quickLayers">
-          <span className="badge">{tool.type}</span>
-          <span className="badge">{tool.levels}</span>
+  return <div className="page toolsPage">
+    <div className="pageTop">
+      <div><h1>Tools</h1><p className="mutedText">Quick Fix Intervention System</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+
+    {/* Section nav */}
+    <div className="toolsSectionNav">
+      {sections.map(s=><button key={s.id} type="button"
+        className={activeSection===s.id?'toolsSectionActive':'toolsSectionBtn'}
+        onClick={()=>setActiveSection(s.id)}>
+        <span>{s.emoji}</span>{s.label}
+      </button>)}
+    </div>
+
+    {/* ── QUICK FIX SELECTOR ── */}
+    {activeSection==='quickfix'&&<div className="qfSection">
+      {!qfProblem&&<div className="qfIntro">
+        <div className="qfIntroBanner">
+          <h2>⚡ Quick Fix Selector</h2>
+          <p>Tap a problem category to see specific problems. Tap a problem to get the instant intervention card.</p>
         </div>
+        {!qfCategory
+          ?<div className="qfCategoryGrid">
+            {qfCategories.map(cat=><button key={cat.id} type="button" className="qfCategoryBtn" onClick={()=>setQfCategory(cat.id)}>
+              <span>{cat.emoji}</span>
+              <strong>{cat.label}</strong>
+              <span className="qfCatCount">{cat.problems.length} problems</span>
+            </button>)}
+          </div>
+          :<div className="qfProblemList">
+            <div className="qfProblemListHeader">
+              <button type="button" className="secondaryBtn" onClick={()=>setQfCategory(null)}>← Back</button>
+              <strong>{qfCategories.find(c=>c.id===qfCategory)?.emoji} {qfCategories.find(c=>c.id===qfCategory)?.label}</strong>
+            </div>
+            <div className="qfProblemGrid">
+              {qfCategories.find(c=>c.id===qfCategory)?.problems.map(prob=><button key={prob} type="button" className="qfProblemBtn" onClick={()=>setQfProblem(prob)}>
+                {prob}
+              </button>)}
+            </div>
+          </div>
+        }
+      </div>}
 
-        <p><strong>Purpose:</strong> {tool.purpose}</p>
-        <p><strong>Progression:</strong> {tool.progression}</p>
-      </div>)}
-    </div>)}
+      {qfProblem&&currentIntervention&&<div className="qfInterventionCard">
+        <div className="qfInterventionHeader">
+          <button type="button" className="secondaryBtn" onClick={()=>setQfProblem(null)}>← Back</button>
+          <h2>{qfProblem}</h2>
+          <span className="qfLevelTag">{currentIntervention.levels}</span>
+        </div>
+        <div className="qfInterventionGrid">
+          <div className="qfBlock qfCause"><strong>1 — Likely Cause</strong><p>{currentIntervention.cause}</p></div>
+          <div className="qfBlock qfConstraint"><strong>2 — Best Constraint</strong><p>{currentIntervention.constraint}</p></div>
+          <div className="qfBlock qfTool"><strong>3 — Best Tool</strong><p>{currentIntervention.tool}</p></div>
+          <div className="qfBlock qfActivity"><strong>4 — Recommended Activity</strong><p>{currentIntervention.activity}</p></div>
+          <div className="qfBlock qfProgression"><strong>5 — Progression</strong><p>{currentIntervention.progression}</p></div>
+        </div>
+      </div>}
+
+      {qfProblem&&!currentIntervention&&<div className="qfNoResult">
+        <p>No intervention card found for "{qfProblem}". Check back soon.</p>
+        <button type="button" className="secondaryBtn" onClick={()=>setQfProblem(null)}>← Back</button>
+      </div>}
+    </div>}
+
+    {/* ── TOOL LIBRARY SECTIONS ── */}
+    {['coordination','balance','visual','rhythm','constraint','scaling'].includes(activeSection)&&<div className="toolLibrarySection">
+      <div className="toolLibraryIntro">
+        {{
+          coordination:<><h2>🤝 Coordination Tools</h2><p>Improve movement organisation without technical correction.</p></>,
+          balance:<><h2>⚖ Balance Tools</h2><p>Improve dynamic stability and recovery.</p></>,
+          visual:<><h2>👁 Visual Tools</h2><p>Improve information pickup and tracking.</p></>,
+          rhythm:<><h2>🎵 Rhythm Tools</h2><p>Improve tempo and movement rhythm. Reduce tension. Promote fluid movement.</p></>,
+          constraint:<><h2>🔧 Constraint Tools</h2><p>Use the environment to shape behaviour without verbal instruction.</p></>,
+          scaling:<><h2>📏 Scaling Tools</h2><p>Adjust challenge level. Change the task before changing the player.</p></>,
+        }[activeSection]}
+      </div>
+      <div className="toolCardStack">
+        {(toolLibrary[activeSection]||[]).map(tool=><ToolCard key={tool.name} tool={tool}/>)}
+      </div>
+    </div>}
+
+    {/* ── ANALOGY TOOLS ── */}
+    {activeSection==='analogy'&&<div className="toolLibrarySection">
+      <div className="toolLibraryIntro">
+        <h2>💡 Analogy Tools</h2>
+        <p>External focus coaching. Analogies shape movement without body instruction.</p>
+      </div>
+      <div className="toolCardStack">
+        {(toolLibrary.analogy||[]).map(tool=><div key={tool.name} className="toolCard toolCardOpen">
+          <div className="toolCardHeader" style={{cursor:'default'}}>
+            <strong>{tool.name}</strong>
+            <span className="toolCardLevels">{tool.levels}</span>
+          </div>
+          <div className="toolCardBody">
+            <div className="toolCardSection tcDoes"><strong>What It Does</strong><p>{tool.does}</p></div>
+            <div className="toolCardSection tcWhy"><strong>Why It Works</strong><p>{tool.why}</p></div>
+            <div className="toolCardSection"><strong>When to Use</strong><p>{tool.use}</p></div>
+            <div className="toolCardSection"><strong>How to Apply</strong><p>{tool.apply}</p></div>
+            {tool.problems&&<div className="toolCardSection"><strong>Problems Addressed</strong><div className="toolProblemTags">{tool.problems.map(p=><button key={p} type="button" className="toolProblemTag" onClick={()=>{setQfProblem(p);setActiveSection('quickfix');}}>{p}</button>)}</div></div>}
+          </div>
+        </div>)}
+      </div>
+    </div>}
+
+    {/* ── PRINCIPLES ── */}
+    {activeSection==='principles'&&<div className="toolLibrarySection">
+      <div className="toolLibraryIntro">
+        <h2>📋 Checkerboard Tools Principles</h2>
+        <p>The goal is not to fix movement. The goal is to change the environment so better movement emerges.</p>
+      </div>
+      <div className="toolPrinciplesGrid">
+        {[
+          {p:'Constraint before correction',d:'Change the environment before changing the player. A well-designed constraint produces better movement without verbal instruction.'},
+          {p:'External focus before body instruction',d:'Direct attention to the ball, the target, or the environment — not to body parts. External focus produces superior movement outcomes.'},
+          {p:'Environment before explanation',d:'Set up the constraint first. Let the player experience the problem and find the solution before offering any explanation.'},
+          {p:'Discovery before demonstration',d:'Give the player the opportunity to solve the movement problem through exploration. Demonstration reduces the discovery process.'},
+          {p:'Variability before repetition',d:'Variable practice builds adaptable skills. Perfect repetition builds fragile skills that fail under novel conditions.'},
+        ].map(item=><div key={item.p} className="toolPrincipleCard">
+          <strong>{item.p}</strong>
+          <p>{item.d}</p>
+        </div>)}
+      </div>
+    </div>}
+
   </div>;
 }
+
 
 
 
@@ -8243,7 +8331,7 @@ return <div>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
-{screen==='tools'&&<ToolsArchitecture/>}
+{screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={go}/>}
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={go}/>} 
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={go}/>} 
