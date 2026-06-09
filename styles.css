@@ -3442,23 +3442,23 @@ button.mentalSkillsTile p{
 .plugPlayCard .primaryBtn{margin-top:auto}
 
 /* v100h08 Game Conditions foundation */
-.conditionsHomeCard{
+.constraintsHomeCard{
   background:linear-gradient(135deg,#082f49,#0f766e 52%,#134e4a);
   border:1px solid rgba(125,211,252,.55);
   box-shadow:0 18px 45px rgba(14,116,144,.25), inset 0 1px 0 rgba(255,255,255,.18);
 }
-.conditionsHomeCard h2{color:#ecfeff;text-shadow:0 3px 14px rgba(0,0,0,.55)}
+.constraintsHomeCard h2{color:#ecfeff;text-shadow:0 3px 14px rgba(0,0,0,.55)}
 .gameConditionsPage .pageTop h1{color:#f8fafc}
-.conditionsIntro{
+.constraintsIntro{
   border:1px solid rgba(45,212,191,.36);
   background:linear-gradient(180deg,rgba(8,47,73,.78),rgba(15,23,42,.82));
   border-radius:20px;
   padding:18px;
   margin-bottom:16px;
 }
-.conditionsIntro h2{margin-top:0;color:#99f6e4}.conditionsIntro p{margin:8px 0;color:#e2e8f0;line-height:1.45}
-.conditionsTabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
-.conditionsTabs button{
+.constraintsIntro h2{margin-top:0;color:#99f6e4}.constraintsIntro p{margin:8px 0;color:#e2e8f0;line-height:1.45}
+.constraintsTabs{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.constraintsTabs button{
   border:1px solid rgba(148,163,184,.35);
   background:rgba(15,23,42,.78);
   color:#e2e8f0;
@@ -3466,14 +3466,14 @@ button.mentalSkillsTile p{
   padding:10px 13px;
   font-weight:900;
 }
-.conditionsTabs button.activeConditionTab{
+.constraintsTabs button.activeConstraintTab{
   background:linear-gradient(135deg,#0f766e,#14b8a6);
   color:#042f2e;
   border-color:#5eead4;
 }
-.conditionsLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
-.conditionsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.conditionCard{
+.constraintsLayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.constraintsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.constraintCard{
   text-align:left;
   border:1px solid rgba(148,163,184,.28);
   background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.88));
@@ -3483,12 +3483,12 @@ button.mentalSkillsTile p{
   box-shadow:0 12px 32px rgba(0,0,0,.22);
   cursor:pointer;
 }
-.conditionCard:hover{border-color:#5eead4;transform:translateY(-1px)}
-.conditionCard.selectedConditionCard{border-color:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.18),0 16px 36px rgba(0,0,0,.28)}
-.conditionCard h2{margin:7px 0 10px;color:#fde68a;font-size:21px}
-.conditionCard p{margin:8px 0;line-height:1.38}.conditionCard strong{color:#bfdbfe}
-.conditionCode{display:inline-flex;border:1px solid rgba(45,212,191,.35);background:rgba(20,184,166,.12);color:#ccfbf1;border-radius:999px;padding:5px 8px;font-size:12px;font-weight:900}
-.activeConditionsPanel{
+.constraintCard:hover{border-color:#5eead4;transform:translateY(-1px)}
+.constraintCard.selectedConstraintCard{border-color:#facc15;box-shadow:0 0 0 2px rgba(250,204,21,.18),0 16px 36px rgba(0,0,0,.28)}
+.constraintCard h2{margin:7px 0 10px;color:#fde68a;font-size:21px}
+.constraintCard p{margin:8px 0;line-height:1.38}.constraintCard strong{color:#bfdbfe}
+.constraintCode{display:inline-flex;border:1px solid rgba(45,212,191,.35);background:rgba(20,184,166,.12);color:#ccfbf1;border-radius:999px;padding:5px 8px;font-size:12px;font-weight:900}
+.activeConstraintsPanel{
   position:sticky;top:16px;
   border:1px solid rgba(250,204,21,.35);
   background:linear-gradient(180deg,rgba(69,26,3,.8),rgba(15,23,42,.88));
@@ -3496,30 +3496,30 @@ button.mentalSkillsTile p{
   border-radius:20px;
   padding:16px;
 }
-.activeConditionsPanel h2{margin-top:0;color:#fde68a}
-.activeConditionItem{border:1px solid rgba(251,191,36,.28);border-radius:14px;padding:10px;margin:10px 0;background:rgba(15,23,42,.45)}
-.activeConditionItem strong{display:block;color:#fff}.activeConditionItem span{display:block;color:#facc15;font-size:12px;font-weight:900;margin:3px 0}.activeConditionItem p{margin:4px 0;color:#e2e8f0}
-@media(max-width:900px){.conditionsLayout{grid-template-columns:1fr}.activeConditionsPanel{position:static}}
+.activeConstraintsPanel h2{margin-top:0;color:#fde68a}
+.activeConstraintItem{border:1px solid rgba(251,191,36,.28);border-radius:14px;padding:10px;margin:10px 0;background:rgba(15,23,42,.45)}
+.activeConstraintItem strong{display:block;color:#fff}.activeConstraintItem span{display:block;color:#facc15;font-size:12px;font-weight:900;margin:3px 0}.activeConstraintItem p{margin:4px 0;color:#e2e8f0}
+@media(max-width:900px){.constraintsLayout{grid-template-columns:1fr}.activeConstraintsPanel{position:static}}
 
 
 /* v100h09 Conditions Builder refinements */
-.conditionBuilderPanel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0;padding:16px;border:1px solid rgba(125,170,255,.35);border-radius:18px;background:rgba(5,14,28,.68)}
-.conditionBuilderPanel label{display:block;color:#ffd86b;font-weight:900;margin-bottom:8px}
-.conditionBuilderPanel select,.conditionBuilderPanel input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(125,170,255,.45);background:#071426;color:#fff;font-weight:800}
-.conditionsExampleBox{border:1px solid rgba(255,216,107,.45);border-radius:18px;padding:16px;margin:14px 0;background:rgba(255,172,28,.08)}
-.conditionsExampleBox h2{margin-top:0;color:#ffd86b}
-.activeConditionMeta{border:1px solid rgba(125,170,255,.25);border-radius:14px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.04)}
+.constraintBuilderPanel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0;padding:16px;border:1px solid rgba(125,170,255,.35);border-radius:18px;background:rgba(5,14,28,.68)}
+.constraintBuilderPanel label{display:block;color:#ffd86b;font-weight:900;margin-bottom:8px}
+.constraintBuilderPanel select,.constraintBuilderPanel input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(125,170,255,.45);background:#071426;color:#fff;font-weight:800}
+.constraintsExampleBox{border:1px solid rgba(255,216,107,.45);border-radius:18px;padding:16px;margin:14px 0;background:rgba(255,172,28,.08)}
+.constraintsExampleBox h2{margin-top:0;color:#ffd86b}
+.activeConstraintMeta{border:1px solid rgba(125,170,255,.25);border-radius:14px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,.04)}
 .playerViewMini{margin-top:14px;border-top:1px solid rgba(125,170,255,.25);padding-top:12px}
 .playerViewMini h3{color:#ffd86b;margin:0 0 8px}
-@media(max-width:900px){.conditionBuilderPanel{grid-template-columns:1fr 1fr}}
-@media(max-width:650px){.conditionBuilderPanel{grid-template-columns:1fr}}
+@media(max-width:900px){.constraintBuilderPanel{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.constraintBuilderPanel{grid-template-columns:1fr}}
 
 /* v100h10 embedded conditions */
-.conditionsAttachBar{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(125,211,252,.45);background:rgba(15,23,42,.72);border-radius:16px;padding:16px;margin:18px 0;box-shadow:0 0 0 1px rgba(15,23,42,.2) inset}
-.conditionsEmbeddedTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border:1px solid rgba(45,212,191,.45);background:linear-gradient(135deg,rgba(13,148,136,.18),rgba(15,23,42,.9));border-radius:16px;padding:16px;margin-bottom:16px}
-.conditionsEmbeddedTop h2{margin:0 0 6px;color:#99f6e4}
-.conditionsEmbeddedTop p{margin:0}
-@media(max-width:800px){.conditionsAttachBar,.conditionsEmbeddedTop{flex-direction:column;align-items:stretch}.conditionsAttachBar button,.conditionsEmbeddedTop button{width:100%}}
+.constraintsAttachBar{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(125,211,252,.45);background:rgba(15,23,42,.72);border-radius:16px;padding:16px;margin:18px 0;box-shadow:0 0 0 1px rgba(15,23,42,.2) inset}
+.constraintsEmbeddedTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border:1px solid rgba(45,212,191,.45);background:linear-gradient(135deg,rgba(13,148,136,.18),rgba(15,23,42,.9));border-radius:16px;padding:16px;margin-bottom:16px}
+.constraintsEmbeddedTop h2{margin:0 0 6px;color:#99f6e4}
+.constraintsEmbeddedTop p{margin:0}
+@media(max-width:800px){.constraintsAttachBar,.constraintsEmbeddedTop{flex-direction:column;align-items:stretch}.constraintsAttachBar button,.constraintsEmbeddedTop button{width:100%}}
 
 /* v100h16 Invasion points player-view cleanup */
 .invasionPointsCleanView .projectionTop{align-items:center;}
@@ -4701,4 +4701,67 @@ button.mentalSkillsTile p{
 @media(max-width:700px){
   .ppPresetGrid{grid-template-columns:1fr;}
   .ppOptionRow{grid-template-columns:1fr;}
+}
+
+
+/* v100h49 DB panel position + KoC explainer */
+.dbPanelBelowBuilders{
+  margin-top:24px;
+  border-top:1px solid #1e3450;
+  padding-top:20px;
+}
+.ppFormatExplainer{
+  background:#071827;
+  border:1px solid #486b9a;
+  border-radius:12px;
+  padding:12px 16px;
+  margin-top:12px;
+}
+.ppFormatExplainer strong{
+  display:block;
+  color:#ffd980;
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.ppFormatExplainer p{
+  color:#9fb0c8;
+  font-size:13px;
+  margin:0;
+  line-height:1.5;
+}
+
+
+/* v100h50 PP Plug & Play section */
+.ppPlugPlaySection{padding:0;}
+.ppPlugPlayIntro{
+  background:linear-gradient(135deg,#0d1f3c 0%,#1a0a2e 100%);
+  border:2px solid #7c3aed;
+  border-radius:18px;
+  padding:20px 24px;
+  margin-bottom:16px;
+}
+.ppPlugPlayIntro h2{color:#fff;font-size:22px;margin:8px 0 6px;}
+.ppPlugCard{border-color:#2a3560;}
+.ppPlugCardBody{margin:12px 0;}
+.ppPlugSection{margin-bottom:10px;}
+.ppPlugSection strong{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:#9bc1ff;
+  margin-bottom:4px;
+}
+.ppPlugSection p{color:#c4c9d9;font-size:14px;margin:0;line-height:1.5;}
+.ppPlugScoring strong{color:#ffd980;}
+.ppPlugScoring p{color:#ffd980;font-weight:700;}
+.ppPlugCoach strong{color:#4ade80;}
+.ppPlugPlayer strong{color:#c4b5fd;}
+.ppPlugAddBtn{width:100%;margin-top:10px;}
+.ppPlugPlayBuilderLink{
+  text-align:center;
+  padding:20px;
+  margin-top:8px;
 }
