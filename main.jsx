@@ -2561,128 +2561,32 @@ function TechnicalFocusBuilder({onAddToSession}){
 }
 
 function Level0Exploration(){
-  return null; // now accessed via Games Library → Explore → Level 0
-}
-
-// Blue Danube audio URLs (royalty-free / public domain recordings)
-const BLUE_DANUBE_TRACKS=[
-  {label:'Blue Danube Waltz',url:'https://archive.org/download/BlaueDonau/BlaueDonau.mp3'},
-  {label:'Slower Waltz Tempo',url:'https://archive.org/download/78_the-blue-danube-waltz_the-salon-orchestra-strauss_gbia0000085a/The%20Blue%20Danube%20Waltz%20-%20The%20Salon%20Orchestra.mp3'},
-];
-
-function BlueDanubePlayer(){
-  const [playing,setPlaying]=useState(false);
-  const [trackIdx,setTrackIdx]=useState(0);
-  const audioRef=React.useRef(null);
-
-  useEffect(()=>{
-    if(!audioRef.current) audioRef.current=new Audio();
-    audioRef.current.src=BLUE_DANUBE_TRACKS[trackIdx].url;
-    audioRef.current.loop=true;
-    if(playing) audioRef.current.play().catch(()=>{});
-    else audioRef.current.pause();
-  },[trackIdx]);
-
-  useEffect(()=>{
-    if(!audioRef.current) return;
-    if(playing) audioRef.current.play().catch(()=>{});
-    else audioRef.current.pause();
-  },[playing]);
-
-  useEffect(()=>()=>{if(audioRef.current){audioRef.current.pause();audioRef.current=null;}},[]);
-
-  function selectTrack(idx){
-    if(audioRef.current) audioRef.current.pause();
-    setPlaying(false);
-    setTrackIdx(idx);
-  }
-
-  return <div className="bdPlayerCard">
-    <div className="bdPlayerHeader">
-      <span className="bdNote">🎵</span>
-      <div>
-        <strong>Blue Danube Waltz</strong>
-        <span>Movement tempo constraint</span>
-      </div>
-      <button type="button" className={playing?'bdPlayBtn bdPlaying':'bdPlayBtn'} onClick={()=>setPlaying(p=>!p)}>
-        {playing?'⏹ Stop':'▶ Play'}
-      </button>
-    </div>
-    <div className="bdTrackRow">
-      {BLUE_DANUBE_TRACKS.map((t,i)=><button key={i} type="button"
-        className={trackIdx===i?'bdTrackActive':'bdTrackBtn'}
-        onClick={()=>selectTrack(i)}>{t.label}</button>)}
-    </div>
-    {playing&&<div className="bdPlayingBar">🎵 Playing — music acts as a movement constraint, not background entertainment.</div>}
-  </div>;
-}
-
-const L0_COACHING_CARDS={
-  tau:[
-    {id:'tau-1',code:'TAU 1',title:'Large Ball Tracking',purpose:'Develop basic ball awareness and optical expansion sensitivity.',task:'Player watches the ball arrive without striking. Focus only on tracking.',equipment:'Foam ball or red dot ball.',feed:'Coach hand feed — slow, high arc.',cue:'Watch the ball all the way in.',progress:'Add a gentle strike once tracking is consistent.',simplify:'Reduce feed speed. Move player closer.',observe:'Does the player track the ball to contact or look away early?'},
-    {id:'tau-2',code:'TAU 2',title:'Variable Ball Size Tracking',purpose:'Prevent a fixed timing solution forming around one ball.',task:'Mix foam, red dot and orange dot within the same activity.',equipment:'Foam · Red dot · Orange dot — mixed.',feed:'Coach hand feed.',cue:'Watch the ball. It will feel different each time.',progress:'Increase variety. Add green dot.',simplify:'Return to single ball size if player loses contact.',observe:'Does the player adapt timing between ball sizes or struggle with changes?'},
-    {id:'tau-3',code:'TAU 3',title:'Self-Feed Tracking',purpose:'Player controls the timing environment. Easiest perceptual condition.',task:'Player self-drops and strikes. Full control over when and where.',equipment:'Red or orange dot.',feed:'Self-drop.',cue:'Drop it — watch it — strike it.',progress:'Move to coach hand feed once consistent.',simplify:'Foam ball. Stationary position.',observe:'Can the player reproduce consistent contact timing from self-feed?'},
-    {id:'tau-4',code:'TAU 4',title:'Coach Hand-Feed Tracking',purpose:'Introduce trajectory variation. Player must adapt to arrival they did not create.',task:'Coach feeds underarm to player. Player tracks and strikes.',equipment:'Orange or green dot.',feed:'Coach underarm hand feed — vary arc and pace slightly.',cue:'Watch the feed leave my hand.',progress:'Increase variation in trajectory and pace.',simplify:'Return to self-drop if player loses timing.',observe:'Can the player adjust timing when trajectory varies?'},
-    {id:'tau-5',code:'TAU 5',title:'Front Wall Feed Tracking',purpose:'Introduce wall rebound timing. New perceptual challenge.',task:'Coach feeds to front wall. Ball rebounds to player.',equipment:'Orange or green dot.',feed:'Coach feeds to front wall — player intercepts rebound.',cue:'Pick the ball up early off the wall.',progress:'Vary angle of rebound.',simplify:'Stand closer to wall. Slower feed.',observe:'Does the player track the rebound or hesitate when direction changes?'},
-    {id:'tau-6',code:'TAU 6',title:'Mixed Feed Source',purpose:'Variable practice — prevents over-adaptation to one feed type.',task:'Coach alternates self-drop, hand feed and wall feed within the activity.',equipment:'Green or yellow dot.',feed:'Mixed — coach decides.',cue:'Every ball is a new problem.',progress:'Increase unpredictability of feed selection.',simplify:'Fewer feed options. Slower pace.',observe:'How quickly does the player adapt between feed types?'},
-    {id:'tau-7',code:'TAU 7',title:'Random Feed Tracking',purpose:'Full variable practice. Representative perceptual challenge.',task:'Coach varies trajectory, speed, source and timing unpredictably.',equipment:'Yellow dot.',feed:'Random — everything varies.',cue:'Trust what you see.',progress:'Add movement demand.',simplify:'Reduce variation. Return to mixed feed.',observe:'Does timing break down or does the player maintain functional contact across all feeds?'},
-  ],
-  chipping:[
-    {id:'chip-0a',code:'0A',title:'Stationary Chipping',purpose:'Ball control, side-wall orientation and consistent contact.',task:'Player repeatedly chips ball against wall from stationary position.',equipment:'Any ball suitable for ability.',feed:'Self-initiated.',options:'Forehand · Backhand · Front wall · Side wall',cue:'Watch the ball off the wall.',progress:'Introduce 0B consecutive targets.',simplify:'Foam ball. Move closer to wall.',observe:'Contact consistency. Does the player watch the ball?'},
-    {id:'chip-0b',code:'0B',title:'Consecutive Success',purpose:'Build repeatability and focus under sustained task.',task:'Chip into same target space. Count consecutive contacts.',equipment:'Any ball.',feed:'Self-initiated.',targets:'5 → 10 → 20 → 50 consecutive contacts',cue:'One at a time.',progress:'Increase target number. Add distance.',simplify:'Reduce target. Move closer.',observe:'Does focus drop after early success? Where does consistency break?'},
-    {id:'chip-0c',code:'0C',title:'Progressive Distance',purpose:'Force regulation and distance calibration.',task:'Continue chipping to same target. Move further away after reaching success target.',equipment:'Any ball.',feed:'Self-initiated.',progression:'Near → Medium → Far → Maximum manageable',cue:'Same target. More distance.',progress:'Increase success target at each distance.',simplify:'Return to closer distance.',observe:'Does the player adjust force or continue striking at the same pace?'},
-    {id:'chip-0d',code:'0D',title:'Chip and Move',purpose:'Integrate movement and contact. Early tracking and spacing.',task:'Chip → Move → Chip → Move. The trajectory created by the chip creates the next movement problem.',equipment:'Any ball.',feed:'Self-created.',cue:'Your chip decides your next move.',progress:'Reduce ball size. Add direction targets.',simplify:'Foam ball. Slower movement.',observe:'Does movement flow from ball tracking or does the player move first and look for the ball second?'},
-    {id:'chip-0e',code:'0E',title:'Continuous Chip and Move',purpose:'Continuous perception-action coupling. No stationary striking.',task:'Maintain continuous chip and move sequence without stopping.',equipment:'Any ball.',feed:'Self-created.',progression:'Smaller target → Longer duration → Increased distance',cue:'Keep moving.',progress:'Timed challenge. Partner counts consecutive shots.',simplify:'Allow brief pause between shots.',observe:'Does movement quality drop when continuous demand is added?'},
-    {id:'chip-0f',code:'0F',title:'Volley Chip and Move',purpose:'Earlier interception. Racket preparation. Spatial awareness.',task:'Maintain control using volleys where appropriate.',equipment:'Foam or red dot recommended for introduction.',feed:'Self-created.',options:'Forehand only · Backhand only · Alternating · Free play',cue:'Take it before the bounce.',progress:'Increase volley proportion. Reduce ball size.',simplify:'Return to bounce chipping. Foam ball.',observe:'Does the player move to intercept or wait for the ball to come to them?'},
-    {id:'chip-0g',code:'0G',title:'Arrive and Strike',purpose:'Perception-driven movement. Functional spacing development.',task:'Feed → Move → Find the ball with a final lunge → Strike.',equipment:'Any ball.',feed:'Coach feed or self-drop.',cue:'Find the ball with your lunge.',avoid:'Move away from the ball · Give yourself more room',progress:'Progress feed variety. Increase movement demand.',simplify:'Self-drop. Stationary arrival.',observe:'Does the player arrive in a functional position? Where does contact occur relative to the body?'},
-  ],
-  spacing:[
-    {id:'sp-1',code:'SP 1',title:'Task Constraint Spacing',purpose:'Design tasks that require functional arrival position.',task:'Set up a target zone. Player must arrive at the ball with a lunge to reach the target.',equipment:'Any ball. Target cones or tape.',feed:'Coach feed to edges of target zone.',cue:'Find the ball with your lunge.',progress:'Expand target zone. Add movement.',simplify:'Reduce distance. Slow feed.',observe:'Does the player arrive lunging to the ball or stopping short?'},
-    {id:'sp-2',code:'SP 2',title:'Feed Manipulation',purpose:'Change where the ball lands to change the movement and spacing problem.',task:'Coach systematically varies feed position. Player must solve spacing for each feed.',equipment:'Any ball.',feed:'Coach varies — close, medium, wide, deep.',cue:'Every ball is a different spacing problem.',progress:'Increase variation range.',simplify:'Narrow feed range.',observe:'Does spacing adapt to feed position or does the player use the same approach every time?'},
-    {id:'sp-3',code:'SP 3',title:'Ball Size Progression',purpose:'Larger balls are easier to arrive at. Reduce size as spacing control improves.',task:'Begin with foam or large ball. Reduce ball size as player achieves consistent spacing.',equipment:'Foam → Red → Orange → Green → Yellow',feed:'Coach hand feed.',cue:'Same movement — different ball.',progress:'Reduce ball size.',simplify:'Increase ball size.',observe:'Does spacing quality drop when ball size is reduced? What changes?'},
-    {id:'sp-4',code:'SP 4',title:'Variability Spacing',purpose:'Prevent a fixed spacing solution. Players must solve spacing fresh each time.',task:'Random feeds to different positions. No predictable pattern.',equipment:'Any ball.',feed:'Random coach feed.',cue:'Read it. Move. Find it.',progress:'Increase randomness.',simplify:'Narrow random range.',observe:'Is spacing adaptable or does the player need predictable feeds to arrive correctly?'},
-  ],
-  rally:[
-    {id:'rally-1',code:'R1',title:'Zone 1 Cooperative',purpose:'Control, direction and early rally cooperation.',task:'All players hit to Zone 1. Cooperative target.',equipment:'Any ball. Zone marked with tape.',feed:'Player-initiated rally.',cue:'Keep it in Zone 1.',progress:'Increase consecutive target.',simplify:'Slow feed. Larger zone.',observe:'Can players sustain direction control while rallying?'},
-    {id:'rally-2',code:'R2',title:'Zone 2 Cooperative',purpose:'Length and force calibration.',task:'All players hit to Zone 2. Deeper target area.',equipment:'Any ball. Zone marked with tape.',feed:'Player-initiated rally.',cue:'Push it deep.',progress:'Consecutive target.',simplify:'Reduce zone depth requirement.',observe:'Does force regulation improve with repeated zone targeting?'},
-    {id:'rally-3',code:'R3',title:'Alternate Zones',purpose:'Directional decision making within the rally.',task:'Players alternate between Zone 1 and Zone 2 on each shot.',equipment:'Any ball. Both zones marked.',feed:'Player-initiated rally.',cue:'Zone 1 then Zone 2. Zone 1 then Zone 2.',progress:'Increase pace.',simplify:'Return to single zone.',observe:'Does directional decision making feel deliberate or automatic?'},
-    {id:'rally-4',code:'R4',title:'Random Zones',purpose:'Full directional variation. Opponent must track and move.',task:'Players choose zone freely on each shot.',equipment:'Any ball.',feed:'Player-initiated rally.',cue:'Your choice. Make it count.',progress:'Add scoring — point for reaching Zone 1, bonus for Zone 2.',simplify:'Return to alternating.',observe:'Does zone selection feel tactical or random?'},
-    {id:'rally-5',code:'R5',title:'Team Challenge',purpose:'Communication, recovery and cooperative pressure.',task:'Teams cooperate to reach a target number of consecutive shots.',equipment:'Any ball.',feed:'Player-initiated.',targets:'10 · 20 · 30 · 50 consecutive shots',cue:'Keep it alive.',progress:'Increase target.',simplify:'Reduce target.',observe:'Does recovery improve when team consequence is added?'},
-    {id:'rally-6',code:'R6',title:'Last Player Standing',purpose:'Competitive consequence. Recovery pressure.',task:'Players try to beat the next player in the rotation. Losing players do court sprints. Last player standing wins.',equipment:'Any ball.',feed:'Player-initiated.',cue:'Win your rally.',progress:'Add scoring system.',simplify:'Reduce consequence.',observe:'Does quality change when competitive consequence is introduced?'},
-  ],
-};
-
-function Level0CoachCard({card,onClose,onAddToSession}){
-  return <div className="l0CardOverlay">
-    <div className="l0CardModal">
-      <div className="l0CardTop">
-        <span className="l0CardCode">{card.code}</span>
-        <button type="button" className="l0CardClose" onClick={onClose}>✕</button>
-      </div>
-      <h2>{card.title}</h2>
-      <div className="l0CardSection l0CardPurpose"><strong>Purpose</strong><p>{card.purpose}</p></div>
-      <div className="l0CardSection"><strong>Task</strong><p>{card.task}</p></div>
-      {card.equipment&&<div className="l0CardSection"><strong>Equipment</strong><p>{card.equipment}</p></div>}
-      {card.feed&&<div className="l0CardSection"><strong>Feed</strong><p>{card.feed}</p></div>}
-      {card.options&&<div className="l0CardSection"><strong>Options</strong><p>{card.options}</p></div>}
-      {card.targets&&<div className="l0CardSection"><strong>Challenge Targets</strong><p>{card.targets}</p></div>}
-      {card.progression&&<div className="l0CardSection"><strong>Progression</strong><p>{card.progression}</p></div>}
-      {card.avoid&&<div className="l0CardSection l0CardAvoid"><strong>Avoid</strong><p>{card.avoid}</p></div>}
-      <div className="l0CardSection l0CardCue"><strong>Coach Cue</strong><p>"{card.cue}"</p></div>
-      <div className="l0CardSection"><strong>Progress When</strong><p>{card.progress}</p></div>
-      <div className="l0CardSection"><strong>Simplify By</strong><p>{card.simplify}</p></div>
-      <div className="l0CardSection l0CardObserve"><strong>What to Observe</strong><p>{card.observe}</p></div>
-      <button type="button" className="primaryBtn l0CardAddBtn" onClick={()=>{onAddToSession&&onAddToSession({title:card.title,category:'Level 0',task:card.task,rationale:card.purpose,coach:card.observe,playerFocus:card.cue,scoring:'Consecutive contacts or coach observation.',duration:10});onClose();}}>Add to Session</button>
-    </div>
-  </div>;
+  return <Level0Foundations setScreen={()=>{}} setSession={null}/>;
 }
 
 function Level0Foundations({setScreen,setSession}){
   const [activeModule,setActiveModule]=useState('home');
-  const [selectedCard,setSelectedCard]=useState(null);
+  const [audioPlaying,setAudioPlaying]=useState(false);
+  const [audioObj,setAudioObj]=useState(null);
+  const [tempoLabel,setTempoLabel]=useState('Standard');
+
+  function playBlueDanube(tempo){
+    if(audioObj){audioObj.pause();setAudioObj(null);setAudioPlaying(false);}
+    const url='https://upload.wikimedia.org/wikipedia/commons/4/47/On_the_Beautiful_Blue_Danube.ogg';
+    const rates={Slow:0.75,Standard:1.0,Fast:1.25};
+    const audio=new Audio(url);
+    audio.playbackRate=rates[tempo]||1.0;
+    audio.loop=true;
+    audio.play().then(()=>{setAudioObj(audio);setAudioPlaying(true);setTempoLabel(tempo);}).catch(()=>{});
+  }
+
+  function stopBlueDanube(){
+    if(audioObj){audioObj.pause();setAudioObj(null);}
+    setAudioPlaying(false);
+  }
 
   const modules=[
-    {id:'home',label:'Home',emoji:'🏠'},
+    {id:'home',label:'Overview',emoji:'🏠'},
     {id:'tau',label:'Tau Development',emoji:'👁'},
     {id:'chipping',label:'Chipping System',emoji:'🎾'},
     {id:'spacing',label:'Spacing',emoji:'📐'},
@@ -2690,623 +2594,205 @@ function Level0Foundations({setScreen,setSession}){
     {id:'bluedanube',label:'Blue Danube',emoji:'🎵'},
   ];
 
-  function addToSession(card){
-    if(setSession) setSession(prev=>[...(prev||[]),{...card,id:Date.now()}]);
+  const tauCards=[
+    {code:'TAU-1',title:'Large Ball Tracking',purpose:'Develop basic ball awareness and tracking.',task:'Player watches and tracks a foam or large ball. No striking required initially.',constraint:'Foam ball. Coach rolls or bounces the ball slowly.',cue:'Watch the ball all the way until it stops.',simplify:'Reduce speed. Larger ball.',progress:'Add a simple tap or catch on arrival.'},
+    {code:'TAU-2',title:'Variable Ball Size',purpose:'Prevent fixed timing solution. Develop adaptive tracking.',task:'Chip or strike using different ball sizes within the same session.',constraint:'Mix foam, red dot and orange dot balls randomly.',cue:'See the ball clearly before you move.',simplify:'Start with foam only.',progress:'Introduce yellow ball briefly.'},
+    {code:'TAU-3',title:'Self-Feed Tracking',purpose:'Player controls timing. Easiest perceptual environment.',task:'Player self-drops and strikes. Full control over when the ball arrives.',constraint:'Red or orange dot. Player drops from waist height.',cue:'Watch it bounce, then strike.',simplify:'Larger ball. Drop from lower height.',progress:'Vary drop height to change bounce.'},
+    {code:'TAU-4',title:'Coach Hand-Feed Tracking',purpose:'Introduce trajectory variation from an external source.',task:'Coach feeds underarm. Player adapts to slightly unpredictable arrival.',constraint:'Red or orange dot. Underarm feed at medium pace.',cue:'Track the ball from the coach hand.',simplify:'Slower feed. Lower trajectory.',progress:'Vary pace and height of feed.'},
+    {code:'TAU-5',title:'Front Wall Tracking',purpose:'Introduce wall rebound timing.',task:'Ball fed to front wall, rebounds to player who strikes.',constraint:'Orange or green dot. Medium pace feed.',cue:'See the ball hit the wall, then move.',simplify:'Slow feed. Player stands close.',progress:'Add recovery movement after strike.'},
+    {code:'TAU-6',title:'Mixed Feed Source',purpose:'Develop adaptable timing across different sources.',task:'Alternate between hand feed, drop feed and wall rebound within the activity.',constraint:'Orange or green dot. Coach varies source each rally.',cue:'Stay ready — the ball might come from anywhere.',simplify:'Announce the source before each feed.',progress:'Random source without announcement.'},
+    {code:'TAU-7',title:'Random Feed Tracking',purpose:'Full variable practice condition.',task:'Coach varies trajectory, speed and source unpredictably. Player solves each ball independently.',constraint:'Yellow ball preferred. Full variation.',cue:'Every ball is different. See each one freshly.',simplify:'Return to TAU-5 or TAU-6.',progress:'Add movement recovery between feeds.'},
+  ];
+
+  const chippingCards=[
+    {code:'0A',title:'Stationary Chipping',purpose:'Ball control, consistency, confidence.',task:'Player repeatedly chips the ball into a wall target. No movement required.',constraint:'Any ball. Side wall or front wall target.',goal:'Personal best consecutive contacts.',variations:'Forehand · Backhand · Front wall · Side wall',cue:'Watch the ball hit the wall.',simplify:'Larger ball, closer to wall.',progress:'Set consecutive targets: 5 then 10 then 20.'},
+    {code:'0B',title:'Consecutive Success',purpose:'Build repeatability and focus.',task:'Chip into the same target zone repeatedly.',constraint:'Set a clear target zone on the wall.',goal:'Reach 5 · 10 · 20 · 50 consecutive successful contacts.',cue:'Same spot. Every time.',simplify:'Reduce the target count.',progress:'Increase the target. Add backhand alternation.'},
+    {code:'0C',title:'Progressive Distance',purpose:'Force regulation, distance calibration, trajectory awareness.',task:'Chip to wall target. Move further away after reaching the success target.',constraint:'Mark distances on the floor.',goal:'Reach the maximum manageable distance.',cue:'Same swing — more pace.',simplify:'Return to closer distance.',progress:'Add consecutive success requirement at each distance.'},
+    {code:'0D',title:'Chip and Move',purpose:'Integrate movement and contact.',task:'Chip. Move to a new position. Chip again. The ball trajectory creates the next movement problem.',constraint:'Player must move between each contact.',cue:'Move as soon as you strike.',simplify:'Slow feed. Large ball.',progress:'Set a target number of consecutive chip-and-moves.'},
+    {code:'0E',title:'Continuous Chip and Move',purpose:'Continuous perception-action coupling.',task:'Maintain a continuous chip and move sequence without stopping.',constraint:'No stationary striking allowed.',goal:'Longest unbroken sequence.',cue:'Keep moving.',simplify:'Reduce the target. Allow one stationary contact.',progress:'Smaller target zone. Increase court area used.'},
+    {code:'0F',title:'Volley Chip and Move',purpose:'Earlier interception, racket preparation, spatial awareness.',task:'Maintain control using volleys where appropriate.',constraint:'Forehand only then Backhand only then Alternating then Free play.',cue:'Take it before it bounces where you can.',simplify:'Allow bounces. Large ball.',progress:'Random forehand and backhand volley target.'},
+    {code:'0G',title:'Arrive and Strike',purpose:'Spacing development. Perception-driven movement.',task:'Feed. Move. Find the ball with a final lunge. Strike.',constraint:'Feed varies to force genuine movement. Player may not pre-position.',coachCue:'Find the ball with your lunge.',avoid:'Move away from the ball · Give yourself more room',simplify:'Slow feed. Large ball. Short distance.',progress:'Forehand then Backhand then Random side then Live rally entry.'},
+  ];
+
+  const spacingCards=[
+    {code:'SP-1',title:'Feed and Arrive',purpose:'Develop functional contact distance through movement.',task:'Coach feeds to varying positions. Player moves and arrives at the ball before striking.',constraint:'Player must move before every strike — no pre-positioning.',cue:'Find the ball with your lunge.',simplify:'Shorter feeds. Slower pace.',progress:'Increase feed variation. Add recovery.'},
+    {code:'SP-2',title:'Lunge Gate',purpose:'Direct attention to arrival position, not body mechanics.',task:'Place a cone or marker at an appropriate contact distance. Player must arrive with their lunge reaching the marker.',constraint:'The marker is the spatial reference — not a body instruction.',cue:'The marker tells you where to arrive.',simplify:'Larger marker zone.',progress:'Remove the marker once spacing is consistent.'},
+    {code:'SP-3',title:'Ball Size Constraint',purpose:'Use ball size to shape spatial relationship without instruction.',task:'Use a large ball to develop a wider contact relationship. Reduce ball size progressively.',constraint:'Foam then Red then Orange then Green then Yellow.',cue:'Let the ball tell you where to stand.',simplify:'Return to larger ball.',progress:'Alternate ball sizes within one activity.'},
+    {code:'SP-4',title:'Variability Feed',purpose:'Prevent fixed spacing pattern. Develop adaptive arrival.',task:'Coach varies feed position randomly. Player solves the spacing problem independently on each ball.',constraint:'No two feeds to the same position.',cue:'Every ball is a new problem.',simplify:'Reduce variation. Announce feed side.',progress:'Add movement recovery between feeds.'},
+  ];
+
+  const rallyCards=[
+    {code:'RR-1',title:'Zone 1 Rally',purpose:'Basic control. Cooperative accuracy.',task:'All players direct shots to Zone 1 — front area. Cooperative — aim is to keep the ball alive.',constraint:'Clear zone marking. All shots to Zone 1.',goal:'Highest number of consecutive cooperative shots.',cue:'Aim for the zone — not the winner.',simplify:'Start with a hand feed. Allow double bounce.',progress:'Increase consecutive target.'},
+    {code:'RR-2',title:'Zone 2 Rally',purpose:'Length development. Force calibration.',task:'All players hit to Zone 2 — back area. Cooperative.',constraint:'Zone 2 marking. All shots must land in Zone 2.',goal:'Consecutive shots in Zone 2.',cue:'Hit it to the back.',simplify:'Allow Zone 1 if Zone 2 fails.',progress:'Combine with Zone 1 in alternate pattern.'},
+    {code:'RR-3',title:'Alternate Zones',purpose:'Directional decision making.',task:'Players alternate between Zone 1 and Zone 2 on each shot.',constraint:'Zone 1 then Zone 2 then Zone 1 pattern.',cue:'Zone 1 or Zone 2 — decide before you strike.',simplify:'Return to single zone.',progress:'Add random zone call from coach.'},
+    {code:'RR-4',title:'Random Zones',purpose:'Full directional variation.',task:'Players choose zone freely. Opponent must track and move.',constraint:'No restriction on zone choice.',cue:'Vary your target.',simplify:'Return to alternate zones.',progress:'Add a third zone — middle.'},
+    {code:'RR-5',title:'Team Challenge',purpose:'Cooperation, communication, movement recovery.',task:'Team cooperates to reach a target number of consecutive shots. All shots within target zones.',constraint:'Set a team target: 10 then 20 then 50 consecutive.',cue:'Help the next player.',simplify:'Reduce target. Allow any zone.',progress:'Increase target. Reduce zone size.'},
+    {code:'RR-6',title:'Last Player Standing',purpose:'Competitive pressure. Recovery. Focus.',task:'Players compete in rotation. Losing a rally means running court sprints. Last player remaining wins.',constraint:'Loser runs court sprints before rejoining queue.',cue:'Stay focused on every rally.',simplify:'Replace sprints with a simple forfeit.',progress:'Add zone requirements to count as a valid rally.'},
+  ];
+
+  const bdCards=[
+    {code:'BD-1',title:'Waltz Rhythm — Stationary',purpose:'Establish movement rhythm without movement pressure.',task:'Player chips or rallies with a partner while the Blue Danube plays. No instruction about timing — let the music shape the rhythm.',constraint:'Blue Danube at standard tempo. No verbal rhythm cues.',cue:'No verbal cue — let the music work.',simplify:'Slow tempo version.',progress:'Add movement.'},
+    {code:'BD-2',title:'Waltz Rhythm — Movement',purpose:'Rhythm-regulated movement to the ball.',task:'Player moves to feeds with the Blue Danube playing. Preparation aligns with the 1-2-3 waltz beat naturally.',constraint:'Coach feeds in waltz timing where possible.',cue:'Move with the music.',simplify:'Slow tempo. Short feeds.',progress:'Remove music once rhythm is established.'},
+    {code:'BD-3',title:'Waltz Rhythm — Rally',purpose:'Relaxed, rhythmic rally play.',task:'Cooperative rally with Blue Danube playing. Both players aim to maintain a waltz-tempo rhythm across the rally.',constraint:'Music constraint active throughout rally.',cue:'Stay with the music.',simplify:'Zone targets to keep pace manageable.',progress:'Competitive rally with rhythm constraint.'},
+  ];
+
+  function CoachCard({card,onAdd}){
+    const [expanded,setExpanded]=useState(false);
+    return <div className={'l0CoachCard'+(expanded?' l0CoachCardOpen':'')}>
+      <button type="button" className="l0CoachCardHeader" onClick={()=>setExpanded(!expanded)}>
+        <span className="l0CoachCardCode">{card.code}</span>
+        <strong>{card.title}</strong>
+        <span className="l0CoachCardChevron">{expanded?'▲':'▼'}</span>
+      </button>
+      {expanded&&<div className="l0CoachCardBody">
+        <div className="l0CoachCardPurpose"><strong>Purpose</strong><p>{card.purpose}</p></div>
+        <div className="l0CoachCardTask"><strong>Task</strong><p>{card.task}</p></div>
+        {card.constraint&&<div className="l0CoachCardSection"><strong>Constraint</strong><p>{card.constraint}</p></div>}
+        {card.goal&&<div className="l0CoachCardSection"><strong>Goal</strong><p>{card.goal}</p></div>}
+        {card.variations&&<div className="l0CoachCardSection"><strong>Variations</strong><p>{card.variations}</p></div>}
+        {card.coachCue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.coachCue}{'"'}</blockquote></div>}
+        {card.avoid&&<div className="l0CoachCardAvoid"><strong>Avoid</strong><p>{card.avoid}</p></div>}
+        {!card.coachCue&&card.cue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.cue}{'"'}</blockquote></div>}
+        {card.simplify&&<div className="l0CoachCardSection simplifySection"><strong>Simplify</strong><p>{card.simplify}</p></div>}
+        {card.progress&&<div className="l0CoachCardSection progressSection"><strong>Progress</strong><p>{card.progress}</p></div>}
+        {onAdd&&<button type="button" className="primaryBtn l0AddBtn" onClick={()=>onAdd(card)}>Add to Session</button>}
+      </div>}
+    </div>;
   }
 
-  const cardSections={
-    tau:{label:'Tau Development',desc:'Seven progressions from large ball tracking to full random feed. Select any card.',cards:L0_COACHING_CARDS.tau},
-    chipping:{label:'Chipping System',desc:'Eight stages from stationary chipping to arrive and strike. Select any stage.',cards:L0_COACHING_CARDS.chipping},
-    spacing:{label:'Spacing Development',desc:'Four task-based spacing tools. Select any card.',cards:L0_COACHING_CARDS.spacing},
-    rally:{label:'Rotating Rally',desc:'Six rally progressions from cooperative to competitive. Select any progression.',cards:L0_COACHING_CARDS.rally},
-  };
+  function addToSession(card){
+    if(setSession) setSession(prev=>[...(prev||[]),{
+      title:card.title,category:'Level 0',
+      task:card.code+' · '+(card.task||card.purpose),
+      coach:card.coachCue||card.cue||'',
+      rationale:card.purpose,duration:10
+    }]);
+  }
 
   return <div className="page level0Page">
-    {selectedCard&&<Level0CoachCard card={selectedCard} onClose={()=>setSelectedCard(null)} onAddToSession={addToSession}/>}
     <div className="pageTop">
       <div><h1>Level 0 Foundations</h1><p className="mutedText">Perception Before Technique</p></div>
-      <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>← Explore</button>
+      <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>{'← Explore'}</button>
     </div>
 
-    <div className="level0ModuleNav">
+    <div className="l0ModuleNav">
       {modules.map(m=><button key={m.id} type="button"
-        className={activeModule===m.id?'level0ModuleNavActive':'level0ModuleNavBtn'}
+        className={activeModule===m.id?'l0ModuleNavActive':'l0ModuleNavBtn'}
         onClick={()=>setActiveModule(m.id)}>
         <span>{m.emoji}</span>{m.label}
       </button>)}
     </div>
 
-    {/* HOME */}
-    {activeModule==='home'&&<div className="level0HomePanel">
-      <div className="level0HeroBanner">
-        <div className="categoryTag" style={{background:'#166534',display:'inline-block',marginBottom:'10px'}}>Explore · Beginner Coaching</div>
+    {activeModule==='home'&&<div className="l0Overview">
+      <div className="l0HeroBanner">
         <h2>Level 0 Foundations</h2>
-        <p className="level0HeroSubtitle">Perception Before Technique</p>
-        <p>Level 0 develops the perceptual and movement foundations that make later technique possible. Players are learning to track the ball, judge time to contact, control contact distance, move to the ball, and coordinate perception and action.</p>
-        <div className="level0WarningBox">Do not assume technical faults are technical. Many beginner errors are perceptual-development issues.</div>
+        <p className="l0HeroSub">Perception Before Technique</p>
+        <p>Level 0 develops the perceptual and movement foundations that make later technique possible. Players learn to track the ball, judge time to contact, control contact distance, move to the ball and coordinate perception and action.</p>
+        <div className="l0Warning">Do not assume technical faults are technical. Many beginner errors are perceptual-development issues.</div>
       </div>
-
-      <div className="level0CoachPrinciples">
-        <h3>Level 0 Coach Principles</h3>
-        <div className="level0PrinciplesGrid">
-          {[{p:'Perception before technique',d:'Check what the player can see before coaching the swing.'},{p:'Representative learning',d:'Tasks should resemble real squash problems.'},{p:'Variability over repetition',d:'Varied practice builds adaptable skills.'},{p:'External focus',d:'Direct attention to the ball and target, not body parts.'},{p:'Discovery over instruction',d:'Let players solve movement problems through constraint.'},{p:'Constraints before correction',d:'Change the environment before changing the player.'}].map(item=><div key={item.p} className="level0PrincipleCard"><strong>{item.p}</strong><p>{item.d}</p></div>)}
+      <div className="l0PrinciplesPanel">
+        <strong>Level 0 Coach Principles</strong>
+        <div className="l0PrinciplesList">
+          {['Perception before technique','Representative learning','Variability over repetition','External focus','Discovery over instruction','Constraints before correction'].map(p=><div key={p} className="l0Principle">{'✓ '+p}</div>)}
         </div>
       </div>
-
-      <div className="level0BeforeTechBox">
-        <h3>Before You Coach Technique</h3>
-        <div className="level0FourQGrid">
-          {[{n:'1',q:'Can they see it?',d:'Can the player track the ball and judge when it will arrive?'},{n:'2',q:'Can they move to it?',d:'Can the player get to the ball with time and space?'},{n:'3',q:'Can they contact it?',d:'Can the player organise a functional contact?'},{n:'4',q:'Can they sustain it?',d:'Can the player maintain a cooperative rally?'}].map(q=><div key={q.n} className="level0FourQCard"><span>{q.n}</span><strong>{q.q}</strong><p>{q.d}</p></div>)}
+      <div className="l0FourQ">
+        <strong>Before coaching technique — ask these four questions:</strong>
+        <div className="l0FourQRow">
+          {[{n:'1',q:'Can they see it?'},{n:'2',q:'Can they move to it?'},{n:'3',q:'Can they contact it?'},{n:'4',q:'Can they sustain it?'}].map(q=><div key={q.n} className="l0FourQCard"><span>{q.n}</span><strong>{q.q}</strong></div>)}
         </div>
-        <div className="level0OnlyThen"><strong>Only then ask:</strong> How should they swing?</div>
-      </div>
-
-      <div className="level0ModuleCards">
-        <h3>Select a Module</h3>
-        <div className="level0ModuleGrid">
-          {[{id:'tau',emoji:'👁',title:'Tau Development',sub:'7 coaching cards',desc:'From large ball tracking to random feed. Develop optical expansion sensitivity and arrival timing.'},{id:'chipping',emoji:'🎾',title:'Chipping System',sub:'8 coaching cards · 0A–0G',desc:'From stationary chipping to arrive and strike. Ball control, spacing and movement calibration.'},{id:'spacing',emoji:'📐',title:'Spacing Development',sub:'4 coaching cards',desc:'Task-based spacing tools. Find the ball with your lunge.'},{id:'rally',emoji:'🔄',title:'Rotating Rally',sub:'6 coaching cards',desc:'Cooperative to competitive rally progressions. Zone targets, team challenge, last player standing.'},{id:'bluedanube',emoji:'🎵',title:'Blue Danube',sub:'Audio constraint',desc:'One-tap waltz tempo constraint for movement rhythm. Play directly from the app.'}].map(m=><button key={m.id} className="level0ModuleTile" onClick={()=>setActiveModule(m.id)}><span className="level0ModuleTileEmoji">{m.emoji}</span><div><strong>{m.title}</strong><span>{m.sub}</span><p>{m.desc}</p></div></button>)}
-        </div>
+        <div className="l0OnlyThen">Only then ask: How should they swing?</div>
       </div>
     </div>}
 
-    {/* COACHING CARD MODULES */}
-    {['tau','chipping','spacing','rally'].includes(activeModule)&&(()=>{
-      const section=cardSections[activeModule];
-      return <div className="level0ModulePanel">
-        <div className="level0ModuleHero">
-          <span className="categoryTag" style={{background:'#166534',display:'inline-block',marginBottom:'8px'}}>{section.label}</span>
-          <h2>{section.label}</h2>
-          <p className="mutedText">{section.desc} Tap any card to open it.</p>
-        </div>
-        <div className="l0CardGrid">
-          {section.cards.map(card=><button key={card.id} type="button" className="l0CardTile" onClick={()=>setSelectedCard(card)}>
-            <span className="l0CardTileCode">{card.code}</span>
-            <strong>{card.title}</strong>
-            <p>{card.purpose}</p>
-            <span className="l0CardTileArrow">Open →</span>
-          </button>)}
-        </div>
-      </div>;
-    })()}
-
-    {/* BLUE DANUBE */}
-    {activeModule==='bluedanube'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero" style={{borderColor:'#7c3aed',background:'linear-gradient(135deg,#0d1f3c,#1a0a2e)'}}>
-        <span className="categoryTag" style={{background:'#7c3aed',display:'inline-block',marginBottom:'8px'}}>Audio Constraint</span>
-        <h2>🎵 Blue Danube Tempo Constraint</h2>
-        <p className="mutedText">Music as a movement constraint. One tap plays. One tap stops. Use courtside.</p>
-      </div>
-      <BlueDanubePlayer/>
-      <div className="level0TopicGrid" style={{marginTop:'20px'}}>
-        {[{title:'Why This Works',text:'Waltz timing (1-2-3) provides an auditory attractor state for movement rhythm. Players unconsciously synchronise movement to the tempo. Reduces rushing and promotes smooth preparation.'},{title:'When to Use It',text:'Use with players who rush their preparation, tense up under pressure, or strike too early. Suitable for Level 1–3 and any player showing high tension in movement.'},{title:'How to Use It',text:'Start the music before the activity begins. Do not mention rhythm or timing. Let the constraint do the work. Fade it out once the rhythm is established.'},{title:'Music as Constraint',text:'The Blue Danube is not background entertainment. It is an environmental constraint that shapes movement behaviour without direct instruction.'}].map(t=><div key={t.title} className="level0TopicCard"><strong>{t.title}</strong><p>{t.text}</p></div>)}
-      </div>
-    </div>}
-
-  </div>;
-}
-
-function Level0Foundations({setScreen}){
-  const [activeModule,setActiveModule]=useState('home');
-
-  const modules=[
-    {id:'home',label:'Home',emoji:'🏠'},
-    {id:'tau',label:'Tau Development',emoji:'👁'},
-    {id:'chipping',label:'Chipping System',emoji:'🎾'},
-    {id:'spacing',label:'Spacing Development',emoji:'📐'},
-    {id:'rally',label:'Rotating Rally',emoji:'🔄'},
-    {id:'bluedanube',label:'Blue Danube',emoji:'🎵'},
-  ];
-
-  return <div className="page level0Page">
-    <div className="pageTop">
-      <div>
-        <h1>Level 0 Foundations</h1>
-        <p className="mutedText">Perception Before Technique</p>
-      </div>
-      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
-    </div>
-
-    {/* Module nav */}
-    <div className="level0ModuleNav">
-      {modules.map(m=><button key={m.id} type="button"
-        className={activeModule===m.id?'level0ModuleNavActive':'level0ModuleNavBtn'}
-        onClick={()=>setActiveModule(m.id)}>
-        <span>{m.emoji}</span>{m.label}
-      </button>)}
-    </div>
-
-    {/* ── HOME ── */}
-    {activeModule==='home'&&<div className="level0HomePanel">
-      <div className="level0HeroBanner">
-        <div className="categoryTag">Explore · Beginner Coaching</div>
-        <h2>Level 0 Foundations</h2>
-        <p className="level0HeroSubtitle">Perception Before Technique</p>
-        <p>Level 0 develops the perceptual and movement foundations that make later technique possible. Players are learning to track the ball, judge time to contact, control contact distance, move to the ball, and coordinate perception and action.</p>
-        <div className="level0WarningBox">Do not assume technical faults are technical. Many beginner errors are perceptual-development issues.</div>
-      </div>
-
-      <div className="level0CoachPrinciples">
-        <h3>Level 0 Coach Principles</h3>
-        <div className="level0PrinciplesGrid">
-          {[
-            {p:'Perception before technique',d:'Check what the player can see before coaching the swing.'},
-            {p:'Representative learning',d:'Tasks should resemble real squash problems, not isolated repetition.'},
-            {p:'Variability over repetition',d:'Varied practice builds adaptable skills. Perfect repetition builds fragile ones.'},
-            {p:'External focus',d:'Direct attention to the ball and the target, not to body parts.'},
-            {p:'Discovery over instruction',d:'Let players solve movement problems through constraint, not correction.'},
-            {p:'Constraints before correction',d:'Change the environment before changing the player.'},
-          ].map(item=><div key={item.p} className="level0PrincipleCard">
-            <strong>{item.p}</strong>
-            <p>{item.d}</p>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0BeforeTechBox">
-        <h3>Before You Coach Technique — Ask These Four Questions</h3>
-        <div className="level0FourQGrid">
-          <div className="level0FourQCard"><span>1</span><strong>Can they see it?</strong><p>Can the player track the ball and judge when it will arrive?</p></div>
-          <div className="level0FourQCard"><span>2</span><strong>Can they move to it?</strong><p>Can the player get to the ball with time and space to strike?</p></div>
-          <div className="level0FourQCard"><span>3</span><strong>Can they contact it?</strong><p>Can the player organise a functional contact with the ball?</p></div>
-          <div className="level0FourQCard"><span>4</span><strong>Can they sustain it?</strong><p>Can the player maintain a cooperative rally?</p></div>
-        </div>
-        <div className="level0OnlyThen"><strong>Only then ask:</strong> How should they swing?</div>
-      </div>
-
-      <div className="level0ModuleCards">
-        <h3>Modules</h3>
-        <div className="level0ModuleGrid">
-          {[
-            {id:'tau',emoji:'👁',title:'Tau Development',sub:'Learning Time To Contact',desc:'Develop sensitivity to optical expansion and arrival timing through feed manipulation, ball size variation and progressive task design.'},
-            {id:'chipping',emoji:'🎾',title:'Chipping System',sub:'0A → 0G Progression',desc:'Seven-stage chipping progression from stationary control to movement-integrated arrival and strike. Develops ball control, spacing and timing.'},
-            {id:'spacing',emoji:'📐',title:'Spacing Development',sub:'Find the Ball With Your Lunge',desc:'Task-based spacing development. Players learn functional contact distance through movement experience, not verbal instruction.'},
-            {id:'rally',emoji:'🔄',title:'Rotating Rally',sub:'Cooperative Rally System',desc:'Progressive rally system with zone targets, team challenges and Last Player Standing. Develops movement, recovery and rally cooperation.'},
-            {id:'bluedanube',emoji:'🎵',title:'Blue Danube Tempo',sub:'Coming Soon',desc:'Movement rhythm constraint using 3/4 waltz timing. Music acts as a constraint, not background entertainment.'},
-          ].map(m=><button key={m.id} className="level0ModuleTile" onClick={()=>setActiveModule(m.id)}>
-            <span className="level0ModuleTileEmoji">{m.emoji}</span>
-            <div>
-              <strong>{m.title}</strong>
-              <span>{m.sub}</span>
-              <p>{m.desc}</p>
-            </div>
-          </button>)}
-        </div>
-      </div>
-    </div>}
-
-    {/* ── TAU DEVELOPMENT ── */}
-    {activeModule==='tau'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero">
+    {activeModule==='tau'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
         <span className="categoryTag">Module 1 · Perception</span>
         <h2>Tau Development</h2>
-        <p className="level0ModuleSubtitle">Learning Time To Contact</p>
-        <p>Develop sensitivity to optical expansion and arrival timing. Before you coach the swing, check what the player can see.</p>
+        <p className="l0ModuleSub">Learning Time To Contact</p>
+        <p>Many beginner timing errors are perception-action problems rather than technical problems.</p>
+        <div className="l0PrincipleCallout">"Before you coach the swing, check what the player can see."</div>
       </div>
-
-      <div className="level0PrincipleCallout">
-        <strong>"Before you coach the swing, check what the player can see."</strong>
-        <p>Many beginner timing errors are perception-action problems rather than technical problems. A player who cannot judge when the ball will arrive will struggle to organise any technique consistently.</p>
-      </div>
-
-      <div className="level0TopicGrid">
-        {[
-          {title:'Optical Expansion',text:'As a ball approaches, its visual size increases. The rate of expansion provides information about time to contact. Young players need time to become attuned to this information.'},
-          {title:'Tau',text:'Tau refers to information specifying time-to-contact. Coaches do not teach tau directly — they design environments that allow players to become attuned to useful time-to-contact information.'},
-          {title:'Ball Size Constraints',text:'Larger balls produce stronger optical expansion signals. Foam and red dot balls give beginners more time to detect expansion and organise their response.'},
-          {title:'Feed Source Constraints',text:'Self-drop feeds are the most predictable. Coach hand feeds add trajectory variation. Front-wall feeds introduce wall rebound. Each step increases the perceptual challenge.'},
-          {title:'Variability',text:'Constant identical feeds produce a fixed timing solution. Variable feeds develop adaptable timing. Introduce variability before adding movement demands.'},
-          {title:'Perception Before Technique',text:'A player whose swing looks poor may simply not be receiving useful information. Improve the information environment before improving the technique.'},
-        ].map(t=><div key={t.title} className="level0TopicCard">
-          <strong>{t.title}</strong>
-          <p>{t.text}</p>
-        </div>)}
-      </div>
-
-      <div className="level0ProgressionSection">
-        <h3>Development Progressions</h3>
-        <div className="level0TauLadder">
-          {[
-            {step:'1',title:'Large Ball Tracking',desc:'Foam ball. Self-drop or coach hand feed. Stationary. No striking required — focus on watching the ball arrive.',ball:'Foam'},
-            {step:'2',title:'Variable Ball Size Tracking',desc:'Mix foam, red dot and orange dot within the same session. Prevents a fixed timing solution forming around one ball.',ball:'Foam · Red · Orange'},
-            {step:'3',title:'Self-Feed Tracking',desc:'Player self-drops and strikes. Full control over timing. Easiest perceptual environment for the player.',ball:'Red · Orange'},
-            {step:'4',title:'Coach Hand-Feed Tracking',desc:'Coach feeds underarm to introduce trajectory variation. Player adapts to slightly unpredictable arrival.',ball:'Red · Orange'},
-            {step:'5',title:'Front Wall Tracking',desc:'Ball fed to front wall, rebounds to player. Introduces wall rebound timing.',ball:'Orange · Green'},
-            {step:'6',title:'Mixed Feed Source Tracking',desc:'Alternate between hand feed, drop feed and wall rebound within the activity.',ball:'Orange · Green · Yellow'},
-            {step:'7',title:'Random Feed Tracking',desc:'Coach varies trajectory, speed and source unpredictably. Full variable practice condition.',ball:'Yellow'},
-          ].map(s=><div key={s.step} className="level0TauStep">
-            <div className="level0TauStepNum">{s.step}</div>
-            <div className="level0TauStepBody">
-              <strong>{s.title}</strong>
-              <p>{s.desc}</p>
-              <span className="level0BallTag">{s.ball}</span>
-            </div>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0ConstraintBuilder">
-        <h3>Tau Constraint Builder</h3>
-        <div className="level0CBGrid">
-          {[
-            {label:'Ball',options:'Foam · Red Dot · Orange Dot · Green Dot · Yellow · Mixed'},
-            {label:'Feed Source',options:'Self Drop · Coach Hand Feed · Front Wall · Racket Feed · Rally'},
-            {label:'Movement',options:'Stationary → Forward → Lateral → Recovery'},
-            {label:'Feed Type',options:'Constant · Variable'},
-            {label:'Time Available',options:'Add time first → progressively remove time'},
-            {label:'Wall Calibration',options:'Bounce Chipping · Volley Chipping · Mixed'},
-          ].map(c=><div key={c.label} className="level0CBCard">
-            <strong>{c.label}</strong>
-            <p>{c.options}</p>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0CoachNoteBox">
-        <strong>Coach Note</strong>
-        <p>Do not interpret poor contact as lack of effort. Often the player simply cannot yet judge arrival timing. Change the ball, the feed, or the time available before changing the technique.</p>
+      <div className="l0CardStack">
+        {tauCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
 
-    {/* ── CHIPPING SYSTEM ── */}
-    {activeModule==='chipping'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero">
+    {activeModule==='chipping'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
         <span className="categoryTag">Module 2 · Ball Control</span>
         <h2>Chipping Progression System</h2>
-        <p className="level0ModuleSubtitle">0A → 0G · Seven Stages</p>
-        <p>Develop ball control, contact quality, timing, spatial awareness and movement calibration through progressive ball-space problems.</p>
+        <p className="l0ModuleSub">0A → 0G · All stages visible</p>
+        <p>Seven stages from stationary chipping to perception-driven movement. All stages available — select the right one for the player.</p>
+        <div className="l0CompLayer"><strong>Competitive Layer — applies to any stage</strong><div className="l0CompPills">{['Personal Best','Consecutive Success','Partner Challenge','Team Challenge','Last Player Standing'].map(p=><span key={p}>{p}</span>)}</div></div>
       </div>
-
-      <div className="level0CompetitiveLayer">
-        <strong>Competitive Layer — Apply to Any Stage</strong>
-        <div className="level0CompPills">
-          {['Personal Best','Consecutive Success','Partner Challenge','Team Challenge','Last Player Standing'].map(p=><span key={p}>{p}</span>)}
-        </div>
-      </div>
-
-      <div className="level0ChipStrand">
-        <div className="level0StrandLabel">Strand 1 — Individual Ball Control</div>
-        <div className="level0ChipGrid">
-          {[
-            {code:'0A',title:'Stationary Chipping',task:'Repeatedly chip ball against wall.',goal:'Most consecutive contacts.',options:'Forehand · Backhand · Front wall · Side wall',focus:'Control and consistency.'},
-            {code:'0B',title:'Consecutive Success',task:'Chip into same target space repeatedly.',targets:'5 · 10 · 20 · 50 consecutive contacts.',focus:'Build repeatability.'},
-            {code:'0C',title:'Progressive Distance',task:'Continue chipping to same target, then move further away after success.',progression:'Near → Medium → Far → Maximum manageable distance.',focus:'Force regulation, distance calibration and trajectory awareness.'},
-          ].map(s=><div key={s.code} className="level0ChipCard">
-            <div className="level0ChipCode">{s.code}</div>
-            <h3>{s.title}</h3>
-            {s.task&&<p><strong>Task:</strong> {s.task}</p>}
-            {s.goal&&<p><strong>Goal:</strong> {s.goal}</p>}
-            {s.targets&&<p><strong>Targets:</strong> {s.targets}</p>}
-            {s.options&&<p><strong>Options:</strong> {s.options}</p>}
-            {s.progression&&<p><strong>Progression:</strong> {s.progression}</p>}
-            <p><strong>Focus:</strong> {s.focus}</p>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0ChipStrand">
-        <div className="level0StrandLabel">Strand 2 — Dynamic Control</div>
-        <div className="level0ChipGrid">
-          {[
-            {code:'0D',title:'Chip and Move',task:'Chip → Move → Chip → Move. The ball trajectory created by the chip creates the next movement problem.',focus:'Tracking, movement calibration and early spacing awareness.'},
-            {code:'0E',title:'Continuous Chip and Move',task:'Maintain a continuous chip and move sequence without interruption.',progression:'Smaller target → Longer duration → Increased distance.',focus:'Continuous perception-action coupling, recovery and ball control while moving.'},
-            {code:'0F',title:'Volley Chip and Move',task:'Maintain control using volleys where appropriate.',progression:'Forehand only · Backhand only · Alternating · Free play.',focus:'Earlier interception, tracking, racket preparation and spatial awareness.'},
-          ].map(s=><div key={s.code} className="level0ChipCard">
-            <div className="level0ChipCode">{s.code}</div>
-            <h3>{s.title}</h3>
-            <p><strong>Task:</strong> {s.task}</p>
-            {s.progression&&<p><strong>Progression:</strong> {s.progression}</p>}
-            <p><strong>Focus:</strong> {s.focus}</p>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0ChipStrand">
-        <div className="level0StrandLabel">Strand 3 — Spacing Development</div>
-        <div className="level0ChipGrid two">
-          <div className="level0ChipCard highlight0G">
-            <div className="level0ChipCode">0G</div>
-            <h3>Arrive and Strike</h3>
-            <p><strong>Purpose:</strong> Many young players can strike a ball but have not learned where to position themselves relative to it.</p>
-            <ol>
-              <li>Feed</li>
-              <li>Move</li>
-              <li>Find the ball with a final lunge</li>
-              <li>Strike</li>
-            </ol>
-            <div className="level0CueBox">
-              <strong>Coach Cue:</strong> "Find the ball with your lunge."
-            </div>
-            <div className="level0AvoidBox">
-              <strong>Avoid:</strong> "Move away from the ball" · "Give yourself more room"
-            </div>
-            <p><strong>Outcomes:</strong> Contact distance · Strike zone awareness · Arrival timing · Spacing · Movement commitment.</p>
-          </div>
-          <div className="level0ChipCard">
-            <div className="level0ChipCode">0H</div>
-            <h3>Arrive and Strike Plus</h3>
-            <p><strong>Purpose:</strong> Bridge chipping and arrive-and-strike work into representative squash.</p>
-            <p><strong>Progression:</strong></p>
-            <ul>
-              <li>Large foam ball</li>
-              <li>Standard ball</li>
-              <li>Forehand side</li>
-              <li>Backhand side</li>
-              <li>Random self-feed</li>
-              <li>Coach feed</li>
-              <li>Live rally entry</li>
-            </ul>
-          </div>
-        </div>
+      <div className="l0CardStack">
+        {chippingCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
 
-    {/* ── SPACING DEVELOPMENT ── */}
-    {activeModule==='spacing'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero">
+    {activeModule==='spacing'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
         <span className="categoryTag">Module 3 · Movement</span>
         <h2>Spacing Development</h2>
-        <p className="level0ModuleSubtitle">Functional Contact Distance</p>
-        <p>Players do not learn spacing through verbal instruction. They learn spacing through movement experiences.</p>
+        <p className="l0ModuleSub">Functional Contact Distance</p>
+        <p>Players do not learn spacing through verbal instruction. They learn through movement experiences.</p>
+        <div className="l0PrincipleCallout">"Find the ball with your lunge."</div>
+        <div className="l0AvoidNote">Avoid: "Move away from the ball" · "Give yourself more room"</div>
       </div>
-
-      <div className="level0SpacingCue">
-        <div className="level0CueHero">
-          <strong>Primary Coaching Cue</strong>
-          <blockquote>"Find the ball with your lunge."</blockquote>
-        </div>
-        <div className="level0AvoidPanel">
-          <strong>Avoid These Cues</strong>
-          <div className="level0AvoidList">
-            <span>❌ "Move away from the ball"</span>
-            <span>❌ "Give yourself more room"</span>
-          </div>
-          <p>These are internal body-position instructions. They direct attention away from the ball and towards the body. Use task constraints instead.</p>
-        </div>
-      </div>
-
-      <div className="level0SpacingTools">
-        <h3>Tools for Spacing Development</h3>
-        <div className="level0TopicGrid">
-          {[
-            {title:'Task Constraints',text:'Design tasks that require the player to arrive in a functional position. The task creates the spacing requirement — not the instruction.'},
-            {title:'Feed Manipulation',text:'Change where the ball lands to change the movement problem. Feeds close to the player develop tight spacing. Feeds further away develop longer movement arcs.'},
-            {title:'Ball Size Manipulation',text:'Larger balls are easier to track and arrive at. Reduce ball size progressively as spacing control improves.'},
-            {title:'Variability',text:'Random feeding prevents a fixed spacing solution. Players must solve the spacing problem each time rather than repeating a memorised pattern.'},
-            {title:'Arrive and Strike',text:'The 0G activity directly targets spacing. The lunge cue directs attention to the ball as the spatial reference point — not the body.'},
-            {title:'What to Observe',text:'Watch where the player strikes in relation to their body. If contact is too close or too far, look first at how they moved — not at the swing.'},
-          ].map(t=><div key={t.title} className="level0TopicCard">
-            <strong>{t.title}</strong>
-            <p>{t.text}</p>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0CoachNoteBox">
-        <strong>Spacing Principle</strong>
-        <p>Poor contact is often diagnosed as poor technique. At Level 0 the real problem is often that the player has not arrived in a functional relationship to the ball. Before changing the swing ask: Can the player perceive the ball, move to it, and arrive in a useful position?</p>
+      <div className="l0CardStack">
+        {spacingCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
 
-    {/* ── ROTATING RALLY ── */}
-    {activeModule==='rally'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero">
+    {activeModule==='rally'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
         <span className="categoryTag">Module 4 · Rallying</span>
         <h2>Rotating Rally</h2>
-        <p className="level0ModuleSubtitle">Cooperative Rally System</p>
-        <p>Introduce early rallying. Develop movement, recovery, accuracy, cooperation and competition through progressive zone-based rally tasks.</p>
+        <p className="l0ModuleSub">Cooperative Rally System · All 6 progressions</p>
+        <p>From basic zone cooperation through to competitive Last Player Standing. All progressions visible — select the right level.</p>
       </div>
-
-      <div className="level0RallyProgressions">
-        <h3>Rally Progressions</h3>
-        <div className="level0RallyGrid">
-          {[
-            {num:'1',title:'Zone 1 Only',desc:'All players hit to Zone 1. Simple cooperative target. Focus on control and consistent direction.',type:'Cooperative'},
-            {num:'2',title:'Zone 2 Only',desc:'All players hit to Zone 2. Deeper target. Develops length and force calibration.',type:'Cooperative'},
-            {num:'3',title:'Alternate Zones',desc:'Players alternate between Zone 1 and Zone 2 on each shot. Introduces directional decision making.',type:'Cooperative'},
-            {num:'4',title:'Random Zones',desc:'Players choose zone freely. Introduces full directional variation. Opponent must track and move.',type:'Cooperative'},
-            {num:'5',title:'Team Challenge',desc:'Teams cooperate to reach a target number of consecutive shots. Develop communication and recovery.',type:'Team'},
-            {num:'6',title:'Last Player Standing',desc:'Players try to beat the next player in the rotation. Losing players do court sprints until one winner remains.',type:'Competitive'},
-          ].map(p=><div key={p.num} className={`level0RallyCard${p.type==='Competitive'?' level0RallyCompetitive':p.type==='Team'?' level0RallyTeam':''}`}>
-            <div className="level0RallyNum">{p.num}</div>
-            <div>
-              <strong>{p.title}</strong>
-              <span className="level0RallyType">{p.type}</span>
-              <p>{p.desc}</p>
-            </div>
-          </div>)}
-        </div>
-      </div>
-
-      <div className="level0CoachNoteBox">
-        <strong>Coach Note</strong>
-        <p>Zone targets give the next player a more predictable ball — which is the key cooperative constraint. Start with Zone 1 only until players reliably hit the target, then progress. Last Player Standing should only be introduced when players can sustain a basic cooperative rally.</p>
+      <div className="l0CardStack">
+        {rallyCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
 
-    {/* ── BLUE DANUBE ── */}
-    {activeModule==='bluedanube'&&<div className="level0ModulePanel">
-      <div className="level0ModuleHero level0ComingSoonHero">
-        <span className="categoryTag">Coming Soon</span>
-        <h2>🎵 Blue Danube Tempo Constraints</h2>
-        <p className="level0ModuleSubtitle">Movement Rhythm Constraint</p>
+    {activeModule==='bluedanube'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
+        <span className="categoryTag">Module 5 · Rhythm Constraint</span>
+        <h2>🎵 Blue Danube Tempo</h2>
+        <p className="l0ModuleSub">Movement Rhythm Constraint</p>
+        <p>Music used as a movement constraint — not background entertainment. The 3/4 waltz rhythm regulates movement tempo and reduces rushing without any verbal instruction.</p>
+        <div className="l0PrincipleCallout">Start the music before the activity. Do not mention rhythm. Let the constraint work.</div>
       </div>
-      <div className="level0ComingSoonPanel">
-        <div className="level0ComingSoonCard">
-          <h3>What It Will Do</h3>
-          <p>Music used as a movement constraint — not background entertainment. The 3/4 waltz rhythm of the Blue Danube acts as a tempo regulator for movement, striking rhythm and tension reduction.</p>
-          <div className="level0ComingSoonPurposes">
-            <span>Relax rhythm</span>
-            <span>Reduce tension</span>
-            <span>Improve flow</span>
-            <span>Regulate movement tempo</span>
+
+      <div className="l0BDPlayer">
+        <div className="l0BDTitle">
+          <span className="l0BDIcon">🎵</span>
+          <div>
+            <strong>Blue Danube Waltz</strong>
+            <span>Johann Strauss II · 3/4 Waltz · Movement constraint</span>
           </div>
+          <div className={'l0BDStatus'+(audioPlaying?' l0BDPlaying':'')}>{audioPlaying?'▶ Playing':'■ Stopped'}</div>
         </div>
-        <div className="level0ComingSoonCard">
-          <h3>Planned Features</h3>
-          <ul>
-            <li>One-touch courtside music activation</li>
-            <li>Blue Danube Waltz as primary constraint</li>
-            <li>Additional 3/4 timing classical tracks</li>
-            <li>Tempo selector (slower / standard / faster)</li>
-            <li>Suitable for Level 1–3 and high-tension players</li>
-          </ul>
+        <div className="l0BDControls">
+          {['Slow','Standard','Fast'].map(tempo=><button key={tempo} type="button"
+            className={'l0BDBtn'+(audioPlaying&&tempoLabel===tempo?' l0BDBtnActive':'')}
+            onClick={()=>audioPlaying&&tempoLabel===tempo?stopBlueDanube():playBlueDanube(tempo)}>
+            {audioPlaying&&tempoLabel===tempo?'■ Stop '+tempo:'▶ '+tempo}
+          </button>)}
         </div>
-        <div className="level0ComingSoonCard">
-          <h3>Why This Works</h3>
-          <p>Waltz timing (1-2-3) provides an auditory attractor state for movement rhythm. Players unconsciously synchronise their movement pattern to the tempo. This reduces rushing, promotes smooth preparation and develops relaxed striking rhythm without direct technique instruction.</p>
+        <div className="l0BDTempoNotes">
+          <span><strong>Slow</strong> — beginners or highly tense players</span>
+          <span><strong>Standard</strong> — default waltz tempo</span>
+          <span><strong>Fast</strong> — players who are too slow in preparation</span>
         </div>
+      </div>
+
+      <div className="l0CardStack" style={{marginTop:'16px'}}>
+        {bdCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
-
-  </div>;
-}
-  const perception=[
-    {title:'Tau Development',text:'Learning time-to-contact. Use ball size, feed source and available time to help young players perceive when the ball will arrive.'},
-    {title:'Tracking & Ball Watching',text:'Ball pickup, front-wall tracking, bounce tracking and contact tracking.'},
-    {title:'Quiet Eye Foundations',text:'Learning where to look before, during and after contact without over-coaching gaze mechanics.'},
-    {title:'Time Givers',text:'Large balls, slower feeds, higher trajectories and reduced movement demand give beginners time to perceive useful information.'}
-  ];
-
-  const contact=[
-    {title:'Wall Calibration (Chipping)',text:'Bounce chipping, volley chipping and mixed chipping for contact quality, force regulation and ball-flight prediction.'},
-    {title:'First Contact Development',text:'Foam, red, orange, green and yellow ball progressions, including mixed ball mode to prevent one fixed timing solution.'}
-  ];
-
-  const movement=[
-    {title:'Movement Foundations',text:'Forward, backward, lateral and recovery movement linked to ball flight rather than isolated footwork patterns.'},
-    {title:'Move Mindset',text:'Move first. Solve later. Early double-bounce style tasks encourage hesitant players to commit to the ball.'}
-  ];
-
-  const rallying=[
-    {title:'First Rally Development',text:'Self-feed, partner feed, cooperative rally and representative rally progressions.'},
-    {title:'Return of Serve Foundations',text:'Failure to volley return of serve is one of the biggest developmental bottlenecks in junior squash.'}
-  ];
-
-  const section=(title,tag,items)=><div className="level0PathwaySection">
-    <div className="level0SectionHeader">
-      <span>{tag}</span>
-      <h3>{title}</h3>
-    </div>
-    <div className="level0PathwayGrid">
-      {items.map(item=><div className="level0PathwayCard" key={item.title}>
-        <strong>{item.title}</strong>
-        <p>{item.text}</p>
-      </div>)}
-    </div>
-  </div>;
-
-  return <div className="gameCard level0DevelopmentPage">
-    <div className="categoryTag">Explore · Level 0</div>
-    <h2>Level 0 Development</h2>
-    <p className="level0Subtitle">Building perception, movement, contact and rallying before technical refinement.</p>
-
-    <div className="level0CoachMessage">
-      <h3>Before Technique</h3>
-      <ol>
-        <li>Can the player see the information?</li>
-        <li>Can the player move to the ball?</li>
-        <li>Can the player organise contact?</li>
-        <li>Can the player sustain a rally?</li>
-      </ol>
-      <p><strong>Only then ask:</strong> How should they swing?</p>
-    </div>
-
-    <div className="diagnosticPrinciple">
-      <strong>Level 0 Philosophy</strong>
-      <p>This is not mini adult squash. Level 0 is a beginner coaching pathway for perception, contact, movement and rally development. The objective is to help players become attuned to information and solve movement problems through exploration, constraints and representative play.</p>
-    </div>
-
-    <div className="infoBox">
-      <strong>Core Principles</strong>
-      <ul>
-        <li>Adaptation over repetition</li>
-        <li>Perception before technique</li>
-        <li>Play before correction</li>
-        <li>Movement literacy before tactical systems</li>
-        <li>Representative problems before isolated solutions</li>
-      </ul>
-    </div>
-
-    {section('Perception','SEE',perception)}
-    {section('Contact','CONTACT',contact)}
-    {section('Movement','MOVE',movement)}
-    {section('Rallying','RALLY',rallying)}
-
-    <div className="tauDevelopmentModule level0TauPanel">
-      <div className="tauHero">
-        <span>LEVEL 0 · PERCEPTION</span>
-        <h2>Learning Time-to-Contact</h2>
-        <p>Tau development for young beginners: perception before technique.</p>
-      </div>
-
-      <div className="tauPrinciple">
-        <h3>Before you coach the swing, check what the player can see.</h3>
-        <p>Many beginner timing errors are perception-action problems rather than technical problems. A player who cannot judge when the ball will arrive will struggle to organise any technique consistently.</p>
-      </div>
-
-      <div className="tauGrid">
-        <div className="tauCard">
-          <h3>What Is Tau?</h3>
-          <p>Tau refers to information specifying time-to-contact. When a ball approaches, the visual system can use information from optical expansion to help regulate when contact will occur.</p>
-          <p>Coaches do not teach tau directly. Coaches design environments that allow players to become attuned to useful information.</p>
-        </div>
-        <div className="tauCard">
-          <h3>Important Age Note</h3>
-          <p>There is no fixed age at which tau suddenly becomes the specifying information.</p>
-          <p>Attunement develops gradually through experience. Young beginners often begin with visibility, apparent size and familiar flight paths before becoming sensitive to more specifying time-to-contact information.</p>
-        </div>
-      </div>
-
-      <div className="tauGrid three">
-        <div className="tauCard"><h3>Early Stage</h3><p><strong>Question:</strong> Where is the ball?</p><ul><li>Relies on visibility</li><li>Benefits from large balls</li><li>Needs slower feeds</li><li>Requires high success</li></ul></div>
-        <div className="tauCard"><h3>Intermediate Stage</h3><p><strong>Question:</strong> What is the ball doing?</p><ul><li>Speed becomes meaningful</li><li>Optical expansion becomes useful</li><li>Wall rebound begins to calibrate</li><li>Movement can be added</li></ul></div>
-        <div className="tauCard"><h3>Advanced Stage</h3><p><strong>Question:</strong> When will it arrive?</p><ul><li>Representative feeds</li><li>Variable trajectories</li><li>Rally-based coupling</li><li>Competition ball calibration</li></ul></div>
-      </div>
-
-      <div className="tauLadder">
-        <h3>Tau Calibration Ladder</h3>
-        <div><strong>Level 1</strong><span>Foam ball · Self-drop · Stationary</span></div>
-        <div><strong>Level 2</strong><span>Foam ball · Coach hand feed · Stationary</span></div>
-        <div><strong>Level 3</strong><span>Red dot · Hand feed · Small movement</span></div>
-        <div><strong>Level 4</strong><span>Red / Orange · Front wall feed · Recovery movement</span></div>
-        <div><strong>Level 5</strong><span>Orange / Green · Racket feed · Variable trajectories</span></div>
-        <div><strong>Level 6</strong><span>Yellow · Representative rally · Continuous perception-action coupling</span></div>
-      </div>
-
-      <div className="tauConstraintBuilder">
-        <h3>Constraint Builder</h3>
-        <div className="tauConstraintGrid">
-          <div><strong>Ball</strong><span>Foam · Red · Orange · Green · Yellow · Mixed</span></div>
-          <div><strong>Feed Source</strong><span>Self Drop · Coach Hand Feed · Front Wall Feed · Racket Feed · Rally</span></div>
-          <div><strong>Wall Calibration</strong><span>Bounce Chipping · Volley Chipping · Mixed Chipping</span></div>
-          <div><strong>Movement</strong><span>Stationary · Forward · Backward · Lateral · Recovery</span></div>
-          <div><strong>Feed Type</strong><span>Constant · Variable</span></div>
-          <div><strong>Time Available</strong><span>Add time first · Then progressively remove time</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div className="technicalScoringBox alwaysVisibleScoring">
-      <strong>Level 0 Coach Card Structure</strong>
-      <p>Goal → Equipment → How to Play → Progress → Simplify → What to Observe</p>
-    </div>
-
-    <div className="level0BallControlModule">
-      <div className="ballControlHero">
-        <span>LEVEL 0 · BALL CONTROL & SPATIAL DEVELOPMENT</span>
-        <h2>Chipping Progression System</h2>
-        <p>Develop ball control, spacing, distance judgement, trajectory awareness and movement calibration through successful ball-space problems.</p>
-      </div>
-      <div className="spacingPrincipleBox"><h3>Spacing Principle</h3><p>Poor contact is often diagnosed as poor technique. At Level 0 the real problem is often that the player has not arrived in a functional relationship to the ball.</p><p><strong>Before changing the swing ask:</strong> Can the player perceive the ball, move to it, and arrive in a useful position?</p></div>
-      <div className="competitiveLayerBox"><h3>Competitive Layer</h3><p>Every activity can be used competitively without becoming technique-focused.</p><div className="competitivePills"><span>Personal Best</span><span>Consecutive Success</span><span>Partner Challenge</span><span>Team Challenge</span><span>Last Player Standing</span></div></div>
-      <div className="ballControlStrand"><h3>Strand 1 — Individual Ball Control</h3><div className="ballControlGrid"><div className="ballControlCard"><strong>0A Stationary Chipping</strong><p><b>Task:</b> Player repeatedly chips the ball into a designated target space.</p><p><b>Options:</b> Forehand · Backhand · Forehand Volley · Backhand Volley.</p><p><b>Success:</b> Total contacts, consecutive contacts, or personal best.</p><p><b>Purpose:</b> Side-wall orientation, ball control, confidence and consistent contact.</p></div><div className="ballControlCard"><strong>0B Consecutive Success</strong><p><b>Task:</b> Repeatedly chip into the same target space.</p><p><b>Success:</b> 3, 5, 10 or 20 consecutive successful contacts depending on ability.</p><p><b>Purpose:</b> Consistency, focus and control under repetition.</p></div><div className="ballControlCard"><strong>0C Progressive Distance</strong><p><b>Task:</b> Continue chipping to the same target, then move further away after success.</p><p><b>Progression:</b> Near → Medium → Far → Maximum manageable distance.</p><p><b>Purpose:</b> Force regulation, distance calibration and trajectory awareness.</p></div></div></div>
-      <div className="ballControlStrand"><h3>Strand 2 — Dynamic Control</h3><div className="ballControlGrid"><div className="ballControlCard"><strong>0D Chip and Move</strong><p><b>Task:</b> Chip → Move → Chip → Move.</p><p>The ball trajectory created by the previous chip creates the next movement problem.</p><p><b>Purpose:</b> Tracking, movement calibration and early spacing awareness.</p></div><div className="ballControlCard"><strong>0E Continuous Chip and Move</strong><p><b>Task:</b> Maintain a continuous chip and move sequence without interruption.</p><p><b>Progressions:</b> Smaller target, longer duration, increased distance.</p><p><b>Purpose:</b> Continuous perception-action coupling, recovery and ball control while moving.</p></div><div className="ballControlCard"><strong>0F Volley Chip and Move</strong><p><b>Task:</b> Maintain control using volleys where appropriate.</p><p><b>Progressions:</b> Forehand only · Backhand only · Alternating · Free play.</p><p><b>Purpose:</b> Earlier interception, tracking, racket preparation and spatial awareness.</p></div></div></div>
-      <div className="ballControlStrand"><h3>Strand 3 — Spacing Development</h3><div className="ballControlGrid two"><div className="ballControlCard highlightCard"><strong>0G Arrive and Strike</strong><p><b>Purpose:</b> Many young players can strike a ball but have not learned where to position themselves relative to it.</p><ol><li>Feed</li><li>Move</li><li>Find the ball with a final lunge</li><li>Strike</li></ol><p><b>Coach cue:</b> “Find the ball with your lunge.”</p><p><b>Avoid:</b> “Move away from the ball” or “Give yourself more room.”</p><p><b>Outcomes:</b> Contact distance, strike zone awareness, arrival timing, anticipation, spacing and movement commitment.</p></div><div className="ballControlCard"><strong>0H Arrive and Strike Plus</strong><p><b>Task:</b> Progress from self-feed into more representative feeds.</p><p><b>Progression:</b> Large foam ball → Standard ball → Forehand side → Backhand side → Random self-feed → Coach feed → Live rally entry.</p><p><b>Purpose:</b> Bridge chipping and arrive-and-strike work into representative squash.</p></div></div></div>
-      <div className="ballControlStrand"><h3>Strand 4 — Cooperative Rally Development</h3><div className="ballControlGrid two"><div className="ballControlCard"><strong>0I Rotating Rally</strong><p><b>Task:</b> Players cooperate to keep the ball alive while hitting into marked target zones.</p><p><b>Example:</b> Zone 1 → Zone 2 → Zone 1 → Zone 2.</p><p>Use a clear target area so players learn control and the next player receives a more predictable ball.</p><p><b>Purpose:</b> Control, predictable ball position, movement, recovery and early rally cooperation.</p></div><div className="ballControlCard"><strong>Competitive Rotating Rally</strong><p><b>Team Score:</b> Highest number of consecutive shots in the rally.</p><p><b>Last Player Standing:</b> Players try to beat the next player in line. Losing players do court sprints until there is a winner.</p><p><b>Progression:</b> Zone 1 only → Zone 2 only → Zone 1 & 2 → Random target.</p></div></div></div>
-      <div className="level1ProgressionBox"><h3>Level 1 Progressions</h3><ul><li><strong>Chipping:</strong> Maintain control while gradually moving back from the target wall.</li><li><strong>Rotating Rally:</strong> Increase court size using tape.</li><li><strong>Movement:</strong> Increase the movement demand but keep the task recognisable.</li><li><strong>Uncertainty:</strong> Add controlled variation before adding full randomness.</li></ul></div>
-      <div className="ballControlTakeaway"><h3>Coach Takeaway</h3><p>Level 0 is not about technique perfection. It is about helping players learn how balls move, how space works, and how to organise themselves effectively around the ball.</p><p>Chipping provides a simple, high-activity environment where up to eight players can work at the same time while developing the perceptual foundations required for later rally play.</p></div>
-    </div>
-
   </div>;
 }
 
