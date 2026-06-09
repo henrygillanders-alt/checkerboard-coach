@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h48';
+const APP_VERSION='v100h49';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1405,8 +1405,48 @@ function ShotsModule({setScreen}){
 
 function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Pressure');
-  const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce'];
+  const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce','Power Play'];
   const games=[
+    {
+      id:'PPA01',title:'Open Power Play™',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
+      develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
+      why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
+      what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
+      score:'Win rally = +1. Successful Power Play (win the rally) = +3 (1 rally point + 2 PP bonus). Failed Power Play = 0. Each player receives 2 tokens per rotation (coach configurable).',
+      coach:'Watch when players choose to activate. Early activation under pressure is different to activation from a position of control. The timing decision is your coaching point.',
+      player:'Announce Power Play before the rally. Win it for +3. Lose it for 0. Choose your moment.',
+      load:'Open Power Play™'
+    },
+    {
+      id:'PPA02',title:'Blind Power Play™',tags:['Power Play','Decision Making','Anticipation'],type:'King of Court · Blind Power Play',players:'3–8',level:'Junior Elite → Professional',
+      develops:['Tactical judgement','Opportunity recognition','Risk management','Decision making under uncertainty'],
+      why:'Unlike Open Power Play, the challenge is not public pressure but selecting the perfect moment to gamble without anyone knowing. Opponents must also remain alert — they cannot see the Power Play but they can feel it in the rally outcome.',
+      what:'King of Court. Winner stays. Loser rotates. Before any rally a player secretly activates a token. Opponent does not know. Power Play applies to that rally only. Token consumed after the rally regardless of outcome.',
+      score:'Win rally = +1. Successful Blind Power Play (win the rally) = +3. Failed Blind Power Play = 0. Each player receives 3 tokens per rotation (coach configurable).',
+      coach:'Post-session debrief: when did each player activate? Was it the right moment? Blind PP reveals tactical timing judgement without the pressure of public declaration.',
+      player:'Secretly activate before a rally. Win it for +3. No-one knows when your token is active.',
+      load:'Blind Power Play™'
+    },
+    {
+      id:'PPA03',title:'Pressure Power Play™',tags:['Power Play','Pressure','Movement'],type:'King of Court · Pressure Power Play',players:'3–8',level:'Intermediate → Professional',
+      develops:['Competitive resilience','Confidence','Momentum management','Commitment under pressure'],
+      why:'The player publicly commits to winning three consecutive rallies across opponents. The sequence continues across rotations — making it a true test of sustained performance under pressure and against different opponents.',
+      what:'King of Court. Winner stays. Loser rotates. Player announces "Pressure Power Play". Objective: win 3 consecutive rallies. Sequence continues across opponents — e.g. beat Player A, beat Player B, beat Player C. Lose any rally before three consecutive wins and the sequence ends, token consumed, no bonus.',
+      score:'Each rally win = +1. Complete three consecutive wins = +6 bonus. Total available = 9 points. Each player receives 2 tokens per rotation (coach configurable).',
+      coach:'Three consecutive wins across different opponents is genuinely difficult. Watch for players who activate when they have momentum vs players who activate defensively. The public commitment is the pressure tool.',
+      player:'Announce Pressure Power Play. Win 3 rallies in a row — across any opponents. Rally 1 = +1, Rally 2 = +1, Rally 3 = +1 + 6 bonus = 9 total.',
+      load:'Pressure Power Play™'
+    },
+    {
+      id:'PPA04',title:'Power Play Duel™',tags:['Power Play','Pressure','T-Zone'],type:'King of Court · Duel',players:'3–8',level:'Intermediate → Professional',
+      develops:['Attacker vs disruptor mentality','Pressure vs break resistance','Momentum management','Competitive investment'],
+      why:'Creates a genuine attacker-versus-defender battle. Normal rotation pauses. Both players remain fully invested — the PP player hunting maximum reward, the disruptor hunting a break. Both roles require different tactical thinking.',
+      what:'King of Court. Winner stays. Loser rotates. Player announces "Power Play Duel". The two players on court lock together. Normal rotation pauses. They play exactly 3 consecutive rallies. After the third rally, normal King of Court rotation resumes regardless of outcome.',
+      score:'PP Player wins all 3 rallies: +1+1+1 = 3 rally points + 3 completion bonus = 6 total. Disruptor wins 2 consecutive rallies during the duel: +2 disruptor bonus. Partial: PP player keeps rally points earned. Token consumed. Each player receives 2 tokens per rotation (coach configurable).',
+      coach:'Example 1: PP wins all 3 — PP Player 6, Disruptor 0. Example 2: PP wins R1, Disruptor wins R2+R3 — PP Player 1, Disruptor 2. Example 3: Disruptor wins R1, PP wins R2, Disruptor wins R3 — no consecutive disruption — PP Player 1, Disruptor 0.',
+      player:'Announce Power Play Duel. You and your opponent play 3 rallies. Win all 3 for +6. Opponent earns a bonus if they win 2 in a row against you.',
+      load:'Power Play Duel™'
+    },
     {
       id:'PP001',title:'Build Pressure Before Attack',tags:['Pressure','Length','Decision Making'],type:'Plug & Play Pressure',players:'2–4',level:'Intermediate → Professional',
       develops:['Patience','Pressure recognition','Shot selection'],
@@ -3471,7 +3511,7 @@ const PP_REFRESH_OPTIONS=['Never','Every Round','Every Rotation','Every Time Blo
 const PP_TIME_OPTIONS=[30,60,90,120,180,'Custom'];
 const PP_RALLY_OPTIONS=[3,5,10,'Custom'];
 const PP_BREAK_OPTIONS=['2 consecutive','3 consecutive','4 consecutive','Disabled'];
-const PP_FORMAT_OPTIONS=['Two Player','King of Court','Invasion','Team Format','Rotation Court'];
+const PP_FORMAT_OPTIONS=['Two Player','King of Court','Invasion','Team Format'];
 
 function PowerPlayBuilder({onAddToSession}){
   const [ppTab,setPpTab]=useState('presets');
@@ -3630,12 +3670,16 @@ function PowerPlayBuilder({onAddToSession}){
             className={format===f?'ppChipActive':'ppChip'}
             onClick={()=>setFormat(f)}>{f}</button>)}
         </div>
+        {format==='King of Court'&&<div className="ppFormatExplainer">
+          <strong>King of Court</strong>
+          <p>After each time period, the player (or pair) with the lowest score moves down a court and the player (or pair) with the highest score moves up. All players start equal on each court at the beginning of the session.</p>
+        </div>}
       </div>
 
       <div className="ppSection">
         <h3>Step 3 — Tokens</h3>
         <div className="ppSubSection">
-          <strong>Power Plays Per Session</strong>
+          <strong>Power Plays Per Rotation</strong>
           <div className="ppChipRow">
             {PP_TOKEN_OPTIONS.map(t=><button key={t} type="button"
               className={tokens===t?'ppChipActive':'ppChip'}
@@ -3859,8 +3903,6 @@ function Games({setSession,setScreen}){
 
     {logicCard&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
-    {activeClassId&&activeClassId!=='saved'&&<UniversalDBHandicapPanel onAddToSession={addStay}/>}
-
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
@@ -3869,11 +3911,13 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>} 
+    {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
-    {activeClassId&& !['checkerboard','atl','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['powerplay','saved'].includes(activeClassId)&&<div className="dbPanelBelowBuilders"><UniversalDBHandicapPanel onAddToSession={addStay}/></div>}
+
+    {activeClassId&&!['checkerboard','atl','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
