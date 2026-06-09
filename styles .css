@@ -4730,3 +4730,38 @@ button.mentalSkillsTile p{
   margin:0;
   line-height:1.5;
 }
+
+
+/* v100h50 PP Plug & Play section */
+.ppPlugPlaySection{padding:0;}
+.ppPlugPlayIntro{
+  background:linear-gradient(135deg,#0d1f3c 0%,#1a0a2e 100%);
+  border:2px solid #7c3aed;
+  border-radius:18px;
+  padding:20px 24px;
+  margin-bottom:16px;
+}
+.ppPlugPlayIntro h2{color:#fff;font-size:22px;margin:8px 0 6px;}
+.ppPlugCard{border-color:#2a3560;}
+.ppPlugCardBody{margin:12px 0;}
+.ppPlugSection{margin-bottom:10px;}
+.ppPlugSection strong{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:#9bc1ff;
+  margin-bottom:4px;
+}
+.ppPlugSection p{color:#c4c9d9;font-size:14px;margin:0;line-height:1.5;}
+.ppPlugScoring strong{color:#ffd980;}
+.ppPlugScoring p{color:#ffd980;font-weight:700;}
+.ppPlugCoach strong{color:#4ade80;}
+.ppPlugPlayer strong{color:#c4b5fd;}
+.ppPlugAddBtn{width:100%;margin-top:10px;}
+.ppPlugPlayBuilderLink{
+  text-align:center;
+  padding:20px;
+  margin-top:8px;
+}

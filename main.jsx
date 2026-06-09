@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h49';
+const APP_VERSION='v100h50';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1608,11 +1608,11 @@ function PlugAndPlay({setScreen,setSession}){
       coach:'Use the support to create more meaningful work.',player:'Keep moving and keep deciding.',load:'DB Extended Rally Conditioning'
     }
   ];
-  const filtered=games.filter(g=>g.tags.includes(active));
+  const filtered=active==='Power Play'?games.filter(g=>g.tags.includes('Power Play')):games.filter(g=>g.tags.includes(active)&&!g.tags.includes('Power Play'));
   function loadGame(game){
     const card={
       title:game.title,
-      category:'Plug & Play',
+      category:game.tags.includes('Power Play')?'Power Play':'Plug & Play',
       task:`${game.type} · ${game.players} · ${game.level}`,
       rationale:game.why,
       coach:game.coach,
@@ -1627,10 +1627,39 @@ function PlugAndPlay({setScreen,setSession}){
   return <div className="page plugPlayPage">
     <div className="pageTop"><div><h1>Plug & Play</h1><p className="mutedText">Select an outcome. Run a proven game.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="libraryStageIntro plugPlayIntro"><h2>Coach View: What do you want to improve today?</h2><p>Plug & Play organises games by coaching outcome rather than by game type. A game can appear in several categories because the same constraint can solve several coaching problems.</p></div>
-    <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''} onClick={()=>setActive(o)}>{o}</button>)}</div>
-    <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
-    <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.id}>
-      <div className="plugPlayCardTop"><span className="categoryTag">{game.id} · {game.type}</span><span className="plugLevel">{game.level}</span></div>
+    <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''}  onClick={()=>setActive(o)}>{o}</button>)}</div>
+
+    {active==='Power Play'
+      ?<div className="ppPlugPlaySection">
+        <div className="ppPlugPlayIntro">
+          <span className="ppEngineTag" style={{marginBottom:'10px',display:'inline-block'}}>⚡ Power Play™</span>
+          <h2>Power Play Games</h2>
+          <p className="mutedText">Tactical decision-making games built around the question: <em>"When should I commit?"</em> All games use King of Court format. Select a game to add to session.</p>
+        </div>
+        <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard ppPlugCard" key={game.id}>
+          <div className="plugPlayCardTop">
+            <span className="categoryTag">{game.id} · {game.type}</span>
+            <span className="plugLevel">{game.level}</span>
+          </div>
+          <h2>{game.title}</h2>
+          <div className="ppPlugCardBody">
+            <div className="ppPlugSection"><strong>Why Use It</strong><p>{game.why}</p></div>
+            <div className="ppPlugSection"><strong>What To Do</strong><p>{game.what}</p></div>
+            <div className="ppPlugSection ppPlugScoring"><strong>Scoring</strong><p>{game.score}</p></div>
+            <div className="ppPlugSection ppPlugCoach"><strong>Coach Note</strong><p>{game.coach}</p></div>
+            <div className="ppPlugSection ppPlugPlayer"><strong>Player Instruction</strong><p>{game.player}</p></div>
+          </div>
+          <button className="primaryBtn ppPlugAddBtn" onClick={()=>loadGame(game)}>Add to Session</button>
+        </div>)}</div>
+        <div className="ppPlugPlayBuilderLink">
+          <p className="mutedText">Want to customise a Power Play game?</p>
+          <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Open Power Play™ Builder in Games Library</button>
+        </div>
+      </div>
+      :<>
+        <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
+        <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.id}>
+          <div className="plugPlayCardTop"><span className="categoryTag">{game.id} · {game.type}</span><span className="plugLevel">{game.level}</span></div>
       <h2>{game.title}</h2>
       <div className="plugTags">{game.tags.map(t=><span key={t}>{t}</span>)}</div>
       <p><strong>Develops</strong><br/>{game.develops.join(' · ')}</p>
@@ -1642,12 +1671,14 @@ function PlugAndPlay({setScreen,setSession}){
       <p><strong>Players:</strong> {game.players}</p>
       <button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button>
     </div>)}</div>
+      </>
+    }
   </div>;
 }
 
 
-function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=false,initialBaseGame='ATL / BTL',onClose}){
-  const [family,setFamily]=useState('Tactical Conditions');
+function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=false,initialBaseGame='ATL / BTL',onClose}){
+  const [family,setFamily]=useState('Tactical Constraints');
   const [selected,setSelected]=useState({});
   const [status,setStatus]=useState('');
   const [baseGame,setBaseGame]=useState(initialBaseGame||'ATL / BTL');
@@ -1657,17 +1688,17 @@ function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=fals
   const baseGames=['ATL / BTL','Checkerboard','Matchplay','Invasion','Pressure','Double Bounce','Plug & Play'];
   const applicationOptions=['Whole game','Selected player','Stronger player','Selected team','Both players'];
   const consequenceOptions=['No Bonus','Opponent +1','Lose Rally','Warning Then Penalty','Bonus +1','Bonus +2'];
-  const conditionFamilies={
-    'Tactical Conditions':[
+  const constraintFamilies={
+    'Tactical Constraints':[
       {id:'TC01',title:'Opponent Off T',type:'Required / Bonus',develops:'Opportunity recognition',rule:'Attack, score or gain bonus only when the opponent is visibly off the T at striker contact.',rationale:'Encourages players to attack genuine advantage rather than attacking by habit.',best:'ATL/BTL · Matchplay · Plug & Play · Pressure'},
       {id:'TC02',title:'Quality Length Before Attack',type:'Required',develops:'Pressure before attack',rule:'Player must create a quality length before attacking short or going BTL.',rationale:'Builds rally construction and reduces premature attacking.',best:'ATL/BTL · Length games · Pressure games'},
       {id:'TC03',title:'Checkerboard Gate',type:'Required',develops:'Tactical preparation',rule:'Complete a selected Checkerboard challenge before the attack is valid. Example: complete [5-4] before BTL.',rationale:'Links attack to a clear tactical affordance gate using the app language.',best:'ATL/BTL · Checkerboard · Matchplay'},
       {id:'TC04',title:'Weak Side Access',type:'Required / Bonus',develops:'Targeting opponent weakness',rule:'Attack or bonus must use the nominated weak-side zone or route.',rationale:'Connects decision making to opponent-specific tactical information.',best:'Matchplay · Plug & Play · Pressure'},
       {id:'TC05',title:'First Volley Opportunity',type:'Tactical behaviour',develops:'Interception intent',rule:'If a realistic volley opportunity appears, player is rewarded for taking it.',rationale:'Encourages volley behaviour without forcing impossible volleys.',best:'Volley games · T-Zone · Anticipation'},
-      {id:'TC06',title:'4 Shot Conversion Window',type:'Conversion',develops:'Opportunity conversion',rule:'Complete condition, then win within 4 shots.',rationale:'Turns recognition into a conversion challenge under time pressure.',best:'Checkerboard Level 4 · Pressure'},
-      {id:'TC07',title:'2 Shot Conversion Window',type:'Conversion',develops:'Elite urgency',rule:'Complete condition, then win within 2 shots.',rationale:'Creates high-level urgency and punishes slow conversion.',best:'Checkerboard Level 5 · Performance'}
+      {id:'TC06',title:'4 Shot Conversion Window',type:'Conversion',develops:'Opportunity conversion',rule:'Complete constraint, then win within 4 shots.',rationale:'Turns recognition into a conversion challenge under time pressure.',best:'Checkerboard Level 4 · Pressure'},
+      {id:'TC07',title:'2 Shot Conversion Window',type:'Conversion',develops:'Elite urgency',rule:'Complete constraint, then win within 2 shots.',rationale:'Creates high-level urgency and punishes slow conversion.',best:'Checkerboard Level 5 · Performance'}
     ],
-    'Behaviour Conditions':[
+    'Behaviour Constraints':[
       {id:'BC01',title:'Racquet Above Wrist',type:'Technical',develops:'Ready shape',rule:'If racquet head drops below wrist in preparation, apply selected consequence.',rationale:'Establishes a useful preparation behaviour through the game rather than stopping for instruction.',best:'Group sessions · Volleys · Technical focus'},
       {id:'BC02',title:'Early Preparation',type:'Technical',develops:'Earlier organisation',rule:'Preparation must be visible before leaving the T or before the final approach step.',rationale:'Couples movement and preparation earlier under representative pressure.',best:'ATL/BTL · Checkerboard · Movement games'},
       {id:'BC03',title:'Non-Playing Arm Visible',type:'Technical',develops:'Body organisation',rule:'Non-playing arm must remain useful/visible during preparation and spacing.',rationale:'Constrains body shape without over-coaching swing mechanics.',best:'Drive games · Back-court games'},
@@ -1676,7 +1707,7 @@ function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=fals
       {id:'BC06',title:'Move First',type:'Mental / Movement',develops:'Commitment to movement',rule:'Hesitation or stopping when ball is reachable triggers coach consequence.',rationale:'Builds a move-first mindset, especially with slow or doubtful movers.',best:'Double Bounce · Movement · Invasion'},
       {id:'BC07',title:'Commit To Decision',type:'Mental',develops:'Decisive action',rule:'Indecisive half-attack or pull-out triggers no bonus or opponent point.',rationale:'Encourages players to make and own decisions under pressure.',best:'Pressure · Deception · Matchplay'}
     ],
-    'Handicap Conditions':[
+    'Handicap Constraints':[
       {id:'HC01',title:'Bounce Handicap',type:'DB Allocation',develops:'Balancing movement/time',rule:'Assign No DB, 1 DB, 2 DB, 3 DB, 4 DB, 5 DB or Unlimited DB to present players.',rationale:'Balances mismatches while keeping players solving the same rally problem.',best:'Groups · Invasion · Matchplay'},
       {id:'HC02',title:'ATL Only',type:'Restriction Handicap',develops:'Balance stronger player',rule:'Selected stronger player may only play above-the-line until handicap is removed.',rationale:'Limits attacking power while preserving recognisable squash patterns.',best:'Mismatched pairs · Team games'},
       {id:'HC03',title:'Straight Only',type:'Restriction Handicap',develops:'Limits angle/width',rule:'Selected stronger player may only play straight.',rationale:'Reduces available options and forces better rally construction.',best:'Mismatched pairs · Length focus'},
@@ -1687,51 +1718,51 @@ function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=fals
       {id:'HC08',title:'Spatial Forbidden Zones',type:'Checkerboard Spatial Restriction',develops:'Option removal',rule:'Selected stronger player may not use nominated zones/routes. Example: cannot use [8-1].',rationale:'Removes a strength or habit while preserving representative rally play.',best:'Opponent-specific prep · Match analysis transfer'}
     ],
     'Consequences':[
-      {id:'CE01',title:'No Bonus',type:'Soft consequence',develops:'Low-friction learning',rule:'Condition failure means no bonus awarded but rally continues.',rationale:'Good first step for learning without over-penalising.',best:'Junior beginner · New condition'},
-      {id:'CE02',title:'Opponent +1',type:'Point consequence',develops:'Accountability',rule:'Condition failure gives opponent one point.',rationale:'Useful when behaviour is established but needs pressure.',best:'Groups · Behaviour conditions'},
-      {id:'CE03',title:'Lose Rally',type:'Hard consequence',develops:'Strong behaviour shaping',rule:'Condition failure immediately loses rally.',rationale:'Use sparingly for clear behaviours that are already understood.',best:'Performance · Strong habit correction'},
+      {id:'CE01',title:'No Bonus',type:'Soft consequence',develops:'Low-friction learning',rule:'constraint failure means no bonus awarded but rally continues.',rationale:'Good first step for learning without over-penalising.',best:'Junior beginner · New condition'},
+      {id:'CE02',title:'Opponent +1',type:'Point consequence',develops:'Accountability',rule:'constraint failure gives opponent one point.',rationale:'Useful when behaviour is established but needs pressure.',best:'Groups · Behaviour conditions'},
+      {id:'CE03',title:'Lose Rally',type:'Hard consequence',develops:'Strong behaviour shaping',rule:'constraint failure immediately loses rally.',rationale:'Use sparingly for clear behaviours that are already understood.',best:'Performance · Strong habit correction'},
       {id:'CE04',title:'Warning Then Penalty',type:'Progressive consequence',develops:'Fair behaviour change',rule:'First offence warning, second offence penalty.',rationale:'Good for mental/technical behaviours in groups.',best:'Junior groups · Behaviour conditions'},
-      {id:'CE05',title:'Bonus +1 / +2',type:'Reward consequence',develops:'Positive shaping',rule:'Condition success earns bonus.',rationale:'Encourages desired behaviour without making game feel punitive.',best:'Plug & Play · Tactical conditions'}
+      {id:'CE05',title:'Bonus +1 / +2',type:'Reward consequence',develops:'Positive shaping',rule:'Constraint success earns bonus.',rationale:'Encourages desired behaviour without making game feel punitive.',best:'Plug & Play · Tactical constraints'}
     ]
   };
-  const families=Object.keys(conditionFamilies);
-  const activeList=conditionFamilies[family]||[];
+  const families=Object.keys(constraintFamilies);
+  const activeList=constraintFamilies[family]||[];
   function toggle(item){setStatus('');setSelected(prev=>({...prev,[item.id]:prev[item.id]?undefined:item}));}
   const picked=Object.values(selected).filter(Boolean);
-  const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No conditions selected';
+  const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No constraints selected';
   function addToSession(){
-    const title=`${baseGame} + Game Conditions`;
+    const title=`${baseGame} + Game Constraints`;
     const game={
-      id:Date.now()+Math.random(),title,category:'Game Conditions',duration:10,
+      id:Date.now()+Math.random(),title,category:'Game Constraints',duration:10,
       task:`Base game: ${baseGame}. Apply to: ${appliesTo}. Checkerboard code / spatial code: ${customCode}.`,
       rationale:'Conditions keep the base game simple while shaping tactical decisions, behaviour standards or handicap restrictions.',
       whatToDo:picked.length?picked.map(x=>`${x.title}: ${x.rule}`).join(' '):'Select conditions, then apply them to a base game.',
       scoring:`Consequence: ${consequence}. Use only the minimum consequence needed to shape the behaviour.`,
-      coach:'Choose the base game first, then add the minimum condition needed for the coaching problem.',
-      playerFocus:'Understand the condition. Solve the rally problem inside it.',
-      suggestedOverlays:picked.map(x=>x.title),layers:['Game Conditions'],cbCode:customCode,conditions:picked,applyTo:appliesTo,consequence
+      coach:'Choose the base game first, then add the minimum constraint needed for the coaching problem.',
+      playerFocus:'Understand the constraint. Solve the rally problem inside it.',
+      suggestedOverlays:picked.map(x=>x.title),layers:['Game Constraints'],cbCode:customCode,conditions:picked,applyTo:appliesTo,consequence
     };
-    if(typeof onAddToSession==='function'){onAddToSession(game);setStatus('Game Conditions card added to session.');return;}
-    if(typeof setSession==='function'){setSession(prev=>[...(prev||[]),game]);setStatus('Game Conditions card added to session.');return;}
+    if(typeof onAddToSession==='function'){onAddToSession(game);setStatus('Game Constraints card added to session.');return;}
+    if(typeof setSession==='function'){setSession(prev=>[...(prev||[]),game]);setStatus('Game Constraints card added to session.');return;}
     setStatus('Session connection not available.');
   }
-  return <div className="page gameConditionsPage">
-    {!embedded&&<div className="pageTop"><div><h1>Game Conditions</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap conditions with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>}
-    {embedded&&<div className="conditionsEmbeddedTop"><div><h2>Game Conditions</h2><p className="mutedText">Add tactical, behaviour or handicap conditions to this base game without leaving the page.</p></div><button className="secondaryBtn" onClick={onClose}>Close Conditions</button></div>}
-    <div className="conditionsIntro"><h2>v100h10 Embedded Conditions Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
-    <div className="conditionBuilderPanel">
+  return <div className="page gameConstraintsPage">
+    {!embedded&&<div className="pageTop"><div><h1>Game Constraints</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap constraints with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="constraintsEmbeddedTop"><div><h2>Game Constraints</h2><p className="mutedText">Add tactical, behaviour or handicap constraints to this base game without leaving the page.</p></div><button className="secondaryBtn" onClick={onClose}>Close Conditions</button></div>}
+    <div className="constraintsIntro"><h2>v100h10 Embedded Conditions Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
+    <div className="constraintBuilderPanel">
       <div><label>Base Game</label><select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>{baseGames.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Apply To</label><select value={appliesTo} onChange={e=>setAppliesTo(e.target.value)}>{applicationOptions.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Consequence</label><select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>
     </div>
-    <div className="conditionsExampleBox"><h2>Example</h2><p><strong>Base Game:</strong> ATL / BTL</p><p><strong>Tactical condition:</strong> Complete <strong>[5-4]</strong> before BTL.</p><p><strong>Handicap restriction:</strong> Stronger player allowed zones <strong>[5]+[7]</strong> only.</p><p><strong>Behaviour condition:</strong> Racquet above wrist. Consequence: {consequence}.</p></div>
-    <div className="conditionsTabs">{families.map(f=><button key={f} className={family===f?'activeConditionTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
-    <div className="conditionsLayout">
-      <div className="conditionsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'conditionCard selectedConditionCard':'conditionCard'} onClick={()=>toggle(item)}>
+    <div className="constraintsExampleBox"><h2>Example</h2><p><strong>Base Game:</strong> ATL / BTL</p><p><strong>Tactical condition:</strong> Complete <strong>[5-4]</strong> before BTL.</p><p><strong>Handicap restriction:</strong> Stronger player allowed zones <strong>[5]+[7]</strong> only.</p><p><strong>Behaviour condition:</strong> Racquet above wrist. Consequence: {consequence}.</p></div>
+    <div className="constraintsTabs">{families.map(f=><button key={f} className={family===f?'activeConstraintTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
+    <div className="constraintsLayout">
+      <div className="constraintsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'constraintCard selectedConditionCard':'constraintCard'} onClick={()=>toggle(item)}>
         <span className="conditionCode">{item.id} · {item.type}</span><h2>{item.title}</h2><p><strong>Develops</strong><br/>{item.develops}</p><p><strong>Rule</strong><br/>{item.rule}</p><p><strong>Rationale</strong><br/>{item.rationale}</p><p><strong>Best used with</strong><br/>{item.best}</p>
       </button>)}</div>
-      <aside className="activeConditionsPanel"><h2>Selected Conditions</h2><div className="activeConditionMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p><p><strong>CB / Spatial:</strong> {customCode}</p></div>{picked.length===0?<p>No conditions selected.</p>:picked.map(item=><div key={item.id} className="activeConditionItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Conditions Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected conditions.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
+      <aside className="activeConstraintsPanel"><h2>Selected Constraints</h2><div className="activeConstraintMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p><p><strong>CB / Spatial:</strong> {customCode}</p></div>{picked.length===0?<p>No constraints selected.</p>:picked.map(item=><div key={item.id} className="activeConstraintItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Constraints Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected constraints.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
     </div>
   </div>;
 }
@@ -1742,7 +1773,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
-      <button className="homeCard conditionsHomeCard homeTitleOnly" onClick={()=>setScreen('conditions')}><h2>Game Conditions</h2></button>
+      <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
@@ -1796,8 +1827,8 @@ const filtered=games.filter(game=>game.category===category);
 const conditionsBaseGame=category==='ATL / BTL'?'ATL / BTL':category==='Checkerboard'?'Checkerboard':category==='Invasion'?'Invasion':category==='Double Bounce'?'Double Bounce':category||'Selected Game';
 return <div>
 <div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);setShowConditions(false);}}>{cat}</button>)}</div>
-{category&&<div className="conditionsAttachBar"><div><strong>Base game:</strong> {conditionsBaseGame}<br/><span className="mutedText">Design the base game, then add tactical, behaviour or handicap conditions from this same page.</span></div><button className="primaryBtn" onClick={()=>setShowConditions(v=>!v)}>{showConditions?'Hide Conditions':'Add Game Conditions'}</button></div>}
-{showConditions&&category&&<GameConditionsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
+{category&&<div className="conditionsAttachBar"><div><strong>Base game:</strong> {conditionsBaseGame}<br/><span className="mutedText">Design the base game, then add tactical, behaviour or handicap constraints from this same page.</span></div><button className="primaryBtn" onClick={()=>setShowConditions(v=>!v)}>{showConditions?'Hide Conditions':'Add Game Constraints'}</button></div>}
+{showConditions&&category&&<GameConstraintsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame}/>}  
@@ -1861,7 +1892,7 @@ return <div className="page">
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-<div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring condition.'}</p></div>
+<div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
@@ -2190,7 +2221,7 @@ function ClassicConditionedBuilder({onAddToSession}){
     {title:'Opposite Side Finish',problem:'Opponent Awareness',shortRationale:'Encourages players to finish away from opponent body-line and recovery direction.',level:'Levels 3–5',task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',rationale:'Links finishing choice to opponent orientation rather than a fixed target.',coach:'Use body-line and recovery direction as the reference, not simply left/right court side.',playerFocus:'Read the opponent’s recovery direction before choosing the finish.',scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',antiGaming:'If body-line reference is unclear, no bonus.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
     {title:'Server Above The Line',problem:'Neutralise vs Attack',shortRationale:'Develops recognition of neutralising versus attacking situations.',level:'Levels 2–5',task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',coach:'Observe whether players attack from neutral positions or only after creating advantage.',playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',scoring:'Win rally = 1 · Correct attack recognition = +3',antiGaming:'Do not reward random attacking from neutral or defensive positions.',suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']},
     {title:'Length Before Attack',problem:'Neutralise vs Attack',shortRationale:'Prevents rushed attacking before pressure has been created.',level:'Levels 2–5',task:'Player must create length pressure before attacking short. Attack bonus opens only after the opponent is delayed, displaced or unable to recover normally.',rationale:'Encourages patient pressure construction rather than premature front-court attacks.',coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',antiGaming:'If a player hits short before any pressure is created, only the rally point is available.',suggestedOverlays:['Quality Length Before Attack','Opponent Off T','4-Shot Window','Clean Winner']},
-    {title:'T-Zone Denial',problem:'T-Zone Games',shortRationale:'Rewards displacement before attack.',level:'Levels 2–5',task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',rationale:'Connects tactical pressure with recovery denial.',coach:'Use a clearly marked T-zone. Award only when the opponent is clearly outside it.',playerFocus:'Move opponent away from central recovery before attacking.',scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',antiGaming:'Opponent cannot intentionally stop recovering to manipulate the condition.',suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']},
+    {title:'T-Zone Denial',problem:'T-Zone Games',shortRationale:'Rewards displacement before attack.',level:'Levels 2–5',task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',rationale:'Connects tactical pressure with recovery denial.',coach:'Use a clearly marked T-zone. Award only when the opponent is clearly outside it.',playerFocus:'Move opponent away from central recovery before attacking.',scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',antiGaming:'Opponent cannot intentionally stop recovering to manipulate the constraint.',suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']},
     {title:'Central Control Volley Finish',problem:'T-Zone Games',shortRationale:'Encourages earned volley interception from central control.',level:'Levels 3–5',task:'Bonus only applies when the winning shot is a volley played from central control.',rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',coach:'The volley should be earned, not hunted recklessly.',playerFocus:'Use central pressure to create an intercepting opportunity.',scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.',suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner']},
     {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']},
     {title:'Double Bounce Pressure',problem:'Adapted Rules',shortRationale:'Balances mixed standards while preserving live rally information.',level:'Mixed Standard',task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',playerFocus:'Use the extra bounce to organise better decisions, not simply to wait passively.',scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',antiGaming:'Players should not intentionally wait for a second bounce if they could safely play the first bounce unless that is the learning purpose.',suggestedOverlays:['Double Bounce']},
@@ -2226,7 +2257,7 @@ function ClassicConditionedBuilder({onAddToSession}){
     <div className="gameCard serverConditionPlaceholder">
       <div className="categoryTag">Server Condition Games</div>
       <h2>Server Condition Games — Placeholder</h2>
-      <p className="engineIntro">Games where the server carries the condition. These are useful when the coach wants one player to train a specific tactical or technical behaviour while the receiver plays more freely.</p>
+      <p className="engineIntro">Games where the server carries the constraint. These are useful when the coach wants one player to train a specific tactical or technical behaviour while the receiver plays more freely.</p>
       <div className="infoBox"><strong>Example 1</strong><p>Server can only play straight.</p></div>
       <div className="infoBox"><strong>Example 2</strong><p>Server can only win with a volley.</p></div>
       <div className="infoBox"><strong>Future Build</strong><p>This subsection will become a selectable library with editable scoring, overlays, checkerboard codes and player-facing projection text.</p></div>
@@ -2941,7 +2972,7 @@ function CustomGameBuilder({onAddToSession}){
   const [doubleBounce,setDoubleBounce]=useState('None');
   const [cbCode,setCbCode]=useState('None');
   const [scoring,setScoring]=useState('Win rally = 1. Bonus scoring set by coach.');
-  const [playerFocus,setPlayerFocus]=useState('Read the condition, play the rally, and adapt.');
+  const [playerFocus,setPlayerFocus]=useState('Read the constraint, play the rally, and adapt.');
   const [layers,setLayers]=useState([]);
   const [randomMode,setRandomMode]=useState('Open');
   const [randomResult,setRandomResult]=useState('');
@@ -2954,7 +2985,7 @@ function CustomGameBuilder({onAddToSession}){
   function resetCustom(){
     setTitle('Custom Conditioned Game');setAssignment('Server');setNamedPlayer('');setConditionText('');
     setStraightOnly('None');setCrosscourtLimit('None');setDoubleBounce('None');setCbCode('None');
-    setScoring('Win rally = 1. Bonus scoring set by coach.');setPlayerFocus('Read the condition, play the rally, and adapt.');
+    setScoring('Win rally = 1. Bonus scoring set by coach.');setPlayerFocus('Read the constraint, play the rally, and adapt.');
     setLayers([]);setRandomMode('Open');setRandomResult('');
   }
   function generateRandom(){
@@ -2971,7 +3002,7 @@ function CustomGameBuilder({onAddToSession}){
     onAddToSession({
       id:Date.now()+Math.random(),title,duration:8,format:'Custom',category:'Custom',family:'Custom Conditioned Game',
       level:'Coach Designed',task:activeCondition,
-      rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific conditions.',
+      rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific constraints.',
       coach:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
       coachFocus:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
       player:playerFocus,playerFocus,scoring,layers,cbCode,crosscourtLimit,doubleBounce
@@ -3054,9 +3085,9 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     {id:'plus2',name:'+2',text:'Award +2 if achieved.',player:'Earn +2 if successful.'},
     {id:'plus3',name:'+3',text:'Award +3 if achieved.',player:'Earn +3 if successful.'},
     {id:'plus4',name:'+4',text:'Award +4 if achieved.',player:'Earn +4 if successful.'},
-    {id:'rallyLost',name:'Rally lost',text:'Rally is lost if broken.',player:'If you break the rule, you lose the rally.'},
-    {id:'reset',name:'Challenge resets',text:'Challenge resets if not completed.',player:'If you miss the condition, the challenge resets.'},
-    {id:'bonusLost',name:'Bonus lost',text:'The bonus is lost if not completed.',player:'If you miss the condition, the bonus is gone.'},
+    {id:'rallyLost',name:'Rally lost',text:'Rally is lost if broken.',player:'If you break the constraint, you lose the rally.'},
+    {id:'reset',name:'Challenge resets',text:'Challenge resets if not completed.',player:'If you miss the constraint, the challenge resets.'},
+    {id:'bonusLost',name:'Bonus lost',text:'The bonus is lost if not completed.',player:'If you miss the constraint, the bonus is gone.'},
     {id:'coachConfirms',name:'Coach confirms',text:'Coach confirms whether the condition is satisfied.',player:'Coach confirms whether it counts.'}
   ];
   const qualityOptions=[
@@ -3670,10 +3701,6 @@ function PowerPlayBuilder({onAddToSession}){
             className={format===f?'ppChipActive':'ppChip'}
             onClick={()=>setFormat(f)}>{f}</button>)}
         </div>
-        {format==='King of Court'&&<div className="ppFormatExplainer">
-          <strong>King of Court</strong>
-          <p>After each time period, the player (or pair) with the lowest score moves down a court and the player (or pair) with the highest score moves up. All players start equal on each court at the beginning of the session.</p>
-        </div>}
       </div>
 
       <div className="ppSection">
@@ -6973,7 +7000,7 @@ function RotationalAffordanceGames({setScreen}){
       focus:'Recognition of unstable recovery affordances.',
       purpose:'Developing tactical emergence from simplified rotational frameworks.',
       constraints:'Boast only if recovery is unstable.',
-      progression:'Increase tactical freedom and release conditions.'
+      progression:'Increase tactical freedom and release constraints.'
     },
     {
       title:'Continuous Rotational Drives',
@@ -7207,7 +7234,7 @@ function DiagnosticTemplate({setScreen}){
       {phase==='apply'&&<>
         <div className="categoryTag">Apply Constraint</div>
         <h2>Apply one constraint</h2>
-        <p>Use the selected tool in the live session. Change the task, space, time, equipment, rule or scoring condition.</p>
+        <p>Use the selected tool in the live session. Change the task, space, time, equipment, rule or scoring constraint.</p>
         {quickFix.length>0&&<div className="quickLayers">{quickFix.map(tool=><button key={tool} className="activeLayer">✓ {tool}</button>)}</div>}
       </>}
 
@@ -7671,7 +7698,7 @@ function DiagnosticIntervention({setScreen}){
       coachQuestion:'What evidence showed that attack was actually available?',
       expected:'Player attacks after advantage indicators appear rather than attacking from hope or impatience.',
       advantage:['Opponent off T','Opponent stretched','Opponent moving away from T','Opponent below the ball','Opponent under time pressure','Opponent options reduced'],
-      constraint:'Attack only after width, opponent off T, or limited-reply condition.',
+      constraint:'Attack only after width, opponent off T, or limited-reply constraint.',
       checkerboard:'Reduce options sequence: create width before front-wall/floor finish.',
       conditioned:'Length Before Attack or Route Breaker.',
       technical:'External target focus overlay.',
@@ -7770,7 +7797,7 @@ function DiagnosticIntervention({setScreen}){
       <div className="bernsteinBox">
         <h3>Origin determines intervention.</h3>
         <p>Players do not repeat non-functional habits because they are wrong. They repeat them because those solutions became stable under previous constraints.</p>
-        <p>A movement pattern is not defined by how it looks in isolation, but by how effectively it adapts under representative performance conditions.</p>
+        <p>A movement pattern is not defined by how it looks in isolation, but by how effectively it adapts under representative performance constraints.</p>
         <InfoButton id="origins"/>
       </div>
 
@@ -8038,7 +8065,7 @@ function OverlayBuilderStandalone({setScreen,setSession}){
     ['oppNotSetT','Opponent not set in T','opponent is not set in the T'],['oppOffT','Opponent off T','opponent is off the T'],['oppStillMoving','Opponent still moving','opponent is still moving'],['oppMovingForward','Opponent moving forward','opponent is still moving forward'],['oppOffBalance','Opponent off balance','opponent is off balance'],['weakSideExposed','Weak side exposed','weak/open side is exposed'],['oppositeBodyLine','Opposite body line exposed','opponent is on the wrong side of your body line'],['reduceOptions','Reduce options first','you have reduced opponent options'],['widthAchieved','Width achieved','you have created width'],['completePair','Complete Checkerboard pair','you have completed the Checkerboard pair'],['completeTriple','Complete Checkerboard triple','you have completed the Checkerboard triple'],['volleyOpportunity','Volley opportunity appears','a volley opportunity appears'],['attackableBall','Attackable ball appears','the ball is attackable']
   ].map(([id,name,player])=>({id,name,player,text:player}));
   const actions=[['none','No required action','Choose the best solution.'],['btl','BTL attack','Attack below the line.'],['atl','ATL attack','Attack above the line.'],['volley','Volley next opportunity','Volley the next available ball.'],['oppositeSide','Attack opposite side','Attack the opposite side.'],['straightDrive','Straight drive','Play straight.'],['boast','Boast / angle','Use the boast or angle.'],['finish2','Finish within 2 shots','Win within 2 shots.'],['finish3','Finish within 3 shots','Win within 3 shots.'],['finish4','Finish within 4 shots','Win within 4 shots.']].map(([id,name,player])=>({id,name,player,text:player}));
-  const consequences=[['plus1','+1','Earn +1 if successful.'],['plus2','+2','Earn +2 if successful.'],['plus3','+3','Earn +3 if successful.'],['plus4','+4','Earn +4 if successful.'],['rallyLost','Rally lost','If you break the rule, you lose the rally.'],['reset','Challenge resets','If you miss the condition, the challenge resets.'],['bonusLost','Bonus lost','If you miss the condition, the bonus is gone.'],['coachConfirms','Coach confirms','Coach confirms whether the point counts.'],['coachAwards','Coach awards bonus','Coach awards the bonus.']].map(([id,name,player])=>({id,name,player,text:player}));
+  const consequences=[['plus1','+1','Earn +1 if successful.'],['plus2','+2','Earn +2 if successful.'],['plus3','+3','Earn +3 if successful.'],['plus4','+4','Earn +4 if successful.'],['rallyLost','Rally lost','If you break the constraint, you lose the rally.'],['reset','Challenge resets','If you miss the constraint, the challenge resets.'],['bonusLost','Bonus lost','If you miss the constraint, the bonus is gone.'],['coachConfirms','Coach confirms','Coach confirms whether the point counts.'],['coachAwards','Coach awards bonus','Coach awards the bonus.']].map(([id,name,player])=>({id,name,player,text:player}));
   const quality=[['cleanWinner','Clean winner +2','Clean winner earns +2 extra.'],['recoverBeforeContact','Recover before opponent contact +1','Recover before opponent contact earns +1 extra.'],['volleyWinner','Volley winner +2','Volley winner earns +2 extra.'],['balancedFinish','Balanced finish +1','Balanced finish earns +1 extra.'],['correctTarget','Correct target +1','Correct target earns +1 extra.']].map(([id,name,player])=>({id,name,player,text:player}));
   const [base,setBase]=useState('ATL / BTL');
   const [title,setTitle]=useState(baseTemplates['ATL / BTL'].title);
@@ -8125,7 +8152,7 @@ return <div>
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
       {screen==='plugPlay'&&<PlugAndPlay setScreen={go} setSession={setSession}/>}
-      {screen==='conditions'&&<GameConditionsEngine setScreen={go} setSession={setSession}/>}
+      {screen==='constraints'&&<GameConstraintsEngine setScreen={go} setSession={setSession}/>}
       {screen==='shots'&&<ShotsModule setScreen={go}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
