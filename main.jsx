@@ -4685,7 +4685,47 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function getMonradFinalTable(){
-    const rows=[...playerNames].map(name=>({name,place:monradFinalPlaces[name]||'—'}));
+    // Compute live placings from all placing rounds + results without needing generateNextRound
+    const livePlaces={...monradFinalPlaces};
+    monradPlacingRounds.forEach((round,ridx)=>{
+      round.forEach(group=>{
+        const {start,end}=parseRange(group.range);
+        if((group.players||[]).length<=1){
+          const p=(group.players||[]).find(name=>!isByeName(name));
+          if(p) livePlaces[p]=start;
+          return;
+        }
+        if((group.players||[]).length===2){
+          const match=(group.matches||[])[0];
+          if(!match) return;
+          const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+          const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,0)];
+          if(!winner) return;
+          const loser=winner===match.a?match.b:match.a;
+          if(!isByeName(winner)) livePlaces[winner]=start;
+          if(!isByeName(loser)) livePlaces[loser]=end;
+          return;
+        }
+        // For larger groups, assign placings for any decided matches
+        let winnersCount=0;let losersCount=0;
+        (group.matches||[]).forEach((match,midx)=>{
+          const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+          const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+          if(winner) winnersCount++;
+          else losersCount++;
+        });
+        const mid=start+winnersCount-1;
+        (group.matches||[]).forEach((match,midx)=>{
+          const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+          const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+          if(!winner) return;
+          const loser=winner===match.a?match.b:match.a;
+          if(!isByeName(winner)&&!livePlaces[winner]) livePlaces[winner]=start+midx;
+          if(!isByeName(loser)&&!livePlaces[loser]) livePlaces[loser]=mid+1+midx;
+        });
+      });
+    });
+    const rows=[...playerNames].map(name=>({name,place:livePlaces[name]||'—'}));
     return rows.sort((a,b)=>(Number(a.place)||999)-(Number(b.place)||999)||a.name.localeCompare(b.name));
   }
 
@@ -4950,36 +4990,80 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           )}
 
           {mode==='monrad'&&(
-          <div className="competitionEnginePanel competitionDrawPanel">
-            <div className="drawHeaderCard">
-              <h2>Monrad Draw Engine</h2>
-              <p>Generate a progressive draw. Winners move toward winners, players continue playing after every round.</p>
-              <div className="buttonRow">
-                <button className="primaryBtn" onClick={generateMonradFirstRound}>Generate Round 1</button>
-                <button className="secondaryBtn" onClick={generateNextMonradRound}>Generate Next Round</button>
-              </div>
-            </div>
-            {monradRounds.length===0&&<p className="overlayExplain">Use players marked present in Attendance. Round 1 pairs the top half against the lower half; later rounds pair players with similar records and avoid repeats where possible.</p>}
+          <div className="projectionMonradBoard">
+            {monradRounds.length===0&&<div className="projectionInfoCard wideProjectionCard"><p>Competition not started yet.</p></div>}
             {monradRounds.length>0&&(
-              <div className="monradBracketScroll">
-                {monradRounds.map((round,ridx)=>(
-                  <div className="monradRoundColumn" key={ridx}>
-                    <div className="drawRoundTitle">Round {ridx+1}</div>
-                    {round.map((match,midx)=>{
-                      const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];
-                      return <div className="monradMatchCard" key={midx}>
-                        <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.a)}>Win</button>}</div>
-                        <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.b)}>Win</button>}</div>
-                        {match.b!=='BYE'&&<ScoreEntry scoreId={scoreKey('monrad',ridx,midx)} match={match} matchFormat={monradMatchFormat} onWinner={winner=>setMonradWinner(ridx,midx,winner)} />}
-                      </div>;
-                    })}
+              <div className="projectionMonradColumns">
+                <div className="projectionMonradLeft">
+                  {monradRounds.map((round,ridx)=>(
+                    <div key={ridx} className="projectionRoundBlock">
+                      <div className="projectionRoundTitle">Round {ridx+1}</div>
+                      {round.map((match,midx)=>{
+                        const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];
+                        const saved=competitionMatchScores[scoreKey('monrad',ridx,midx)];
+                        const games=saved?.games||[];
+                        return <div key={midx} className={`projectionMatchRow${winner?' projectionMatchDone':''}`}>
+                          <span className={winner===match.a?'projWinner':winner&&winner!==match.a?'projLoser':''}>{match.a}</span>
+                          <span className="projScores">
+                            {games.length>0
+                              ?games.filter(g=>g.a!==''||g.b!=='').map((g,gi)=><span key={gi} className="projGameScore">{g.a}–{g.b}</span>)
+                              :winner?<span className="projGameScore">✓</span>:<span className="projVs">v</span>
+                            }
+                          </span>
+                          <span className={winner===match.b?'projWinner':winner&&winner!==match.b?'projLoser':''}>{match.b==='BYE'?'BYE':match.b}</span>
+                        </div>;
+                      })}
+                    </div>
+                  ))}
+                  {monradPlacingRounds.length>0&&monradPlacingRounds.map((round,ridx)=>(
+                    <div key={`place-${ridx}`} className="projectionRoundBlock projectionPlacingRound">
+                      <div className="projectionRoundTitle">Placing Round {ridx+1}</div>
+                      {round.map(group=>(
+                        <div key={group.id} className="projectionGroupBlock">
+                          <div className="projectionGroupLabel">Places {group.range}</div>
+                          {(group.matches||[]).map((match,midx)=>{
+                            const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
+                            const winner=auto||monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+                            const saved=competitionMatchScores[scoreKey(`monrad-place-${group.id}`,ridx,midx)];
+                            const games=saved?.games||[];
+                            return <div key={midx} className={`projectionMatchRow${winner?' projectionMatchDone':''}`}>
+                              <span className={winner===match.a?'projWinner':winner&&winner!==match.a?'projLoser':''}>{match.a}</span>
+                              <span className="projScores">
+                                {games.length>0
+                                  ?games.filter(g=>g.a!==''||g.b!=='').map((g,gi)=><span key={gi} className="projGameScore">{g.a}–{g.b}</span>)
+                                  :winner?<span className="projGameScore">✓</span>:<span className="projVs">v</span>
+                                }
+                              </span>
+                              <span className={winner===match.b?'projWinner':winner&&winner!==match.b?'projLoser':''}>{isByeName(match.b)?'BYE':match.b}</span>
+                            </div>;
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="projectionMonradRight">
+                  <div className="projectionTableBlock">
+                    <div className="projectionTableTitle">W / L Table</div>
+                    <div className="projectionStandingsTable">
+                      <div className="projStandingsHeader"><span>Player</span><span>W</span><span>P</span></div>
+                      {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=>(
+                        <div key={row.name} className="projStandingsRow">
+                          <span>{row.name}</span><span>{row.wins}</span><span>{row.played}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-                <div className="standingsBox monradStandingsBox">
-                  <h3>Monrad Table</h3>
-                  <div className="standingsTable">
-                    <div><b>Player</b><b>Played</b><b>Wins</b></div>
-                    {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=><div key={row.name}><span>{row.name}</span><span>{row.played}</span><span>{row.wins}</span></div>)}
+                  <div className="projectionTableBlock">
+                    <div className="projectionTableTitle">Live Placings</div>
+                    <div className="projectionStandingsTable">
+                      <div className="projStandingsHeader"><span>#</span><span>Player</span></div>
+                      {getMonradFinalTable().map(row=>(
+                        <div key={row.name} className={`projStandingsRow${row.place!=='—'?' projPlacingSettled':''}`}>
+                          <span className="projPlaceNum">{row.place}</span><span>{row.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -5527,7 +5611,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               <div className="buttonRow">
                 <button className="primaryBtn" onClick={generateMonradPlacingDraw}>Generate Placing Draw</button>
                 <button className="secondaryBtn" onClick={generateNextMonradPlacingRound}>Generate Next Placing Round</button>
-                <button className="secondaryBtn dangerBtn" onClick={()=>{setMonradRounds([]);setMonradResults({});setMonradPlacingRounds([]);setMonradPlacingResults({});setMonradFinalPlaces({});}}>Reset Monrad</button>
+                <button className="secondaryBtn dangerBtn" onClick={()=>{
+                  setMonradRounds([]);
+                  setMonradResults({});
+                  setMonradPlacingRounds([]);
+                  setMonradPlacingResults({});
+                  setMonradFinalPlaces({});
+                  setCompetitionMatchScores(prev=>{
+                    const next={...prev};
+                    Object.keys(next).forEach(k=>{if(k.startsWith('monrad')) delete next[k];});
+                    return next;
+                  });
+                }}>Reset Monrad</button>
               </div>
             </div>
             {monradPlacingRounds.length>0&&false&&(

@@ -4177,3 +4177,131 @@ button.mentalSkillsTile p{
   padding:14px 20px;
   font-weight:900;
 }
+
+
+/* v100h47e Monrad projection board */
+.projectionMonradBoard{
+  padding:0 8px;
+}
+.projectionMonradColumns{
+  display:grid;
+  grid-template-columns:1fr 260px;
+  gap:16px;
+  align-items:start;
+}
+@media(max-width:800px){
+  .projectionMonradColumns{grid-template-columns:1fr;}
+}
+.projectionMonradLeft{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.projectionRoundBlock{
+  background:#081320;
+  border:1px solid #2f4d72;
+  border-radius:14px;
+  padding:12px 14px;
+}
+.projectionPlacingRound{border-color:#ffd980;}
+.projectionRoundTitle{
+  font-size:12px;
+  font-weight:900;
+  color:#ffd980;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.projectionGroupBlock{margin-bottom:8px;}
+.projectionGroupLabel{
+  font-size:11px;
+  color:#9bc1ff;
+  font-weight:700;
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.projectionMatchRow{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  gap:8px;
+  align-items:center;
+  padding:7px 4px;
+  border-bottom:1px solid #13263d;
+  font-size:15px;
+  font-weight:700;
+  color:#c8d8f0;
+}
+.projectionMatchRow:last-child{border-bottom:none;}
+.projectionMatchDone{opacity:.85;}
+.projWinner{color:#4ade80;font-weight:900;}
+.projLoser{color:#9fb0c8;font-weight:400;}
+.projScores{
+  display:flex;
+  gap:4px;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.projGameScore{
+  background:#0f2236;
+  border:1px solid #2f4d72;
+  border-radius:6px;
+  padding:2px 7px;
+  font-size:13px;
+  font-weight:900;
+  color:#fff;
+  white-space:nowrap;
+}
+.projVs{
+  color:#486b9a;
+  font-size:13px;
+}
+.projectionMonradRight{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:sticky;
+  top:8px;
+}
+.projectionTableBlock{
+  background:#071827;
+  border:1px solid #2f4d72;
+  border-radius:14px;
+  overflow:hidden;
+}
+.projectionTableTitle{
+  background:#0d2136;
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:900;
+  color:#ffd980;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.projectionStandingsTable{padding:4px 0;}
+.projStandingsHeader{
+  display:grid;
+  grid-template-columns:1fr 40px 40px;
+  padding:4px 14px;
+  font-size:11px;
+  color:#486b9a;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.projStandingsRow{
+  display:grid;
+  grid-template-columns:1fr 40px 40px;
+  padding:7px 14px;
+  font-size:14px;
+  font-weight:700;
+  color:#c8d8f0;
+  border-top:1px solid #0d2136;
+}
+.projPlacingSettled .projPlaceNum{color:#4ade80;font-weight:900;}
+.projPlaceNum{color:#486b9a;}
+/* Two-col for live placings (no third column) */
+.projectionTableBlock:last-child .projStandingsHeader,
+.projectionTableBlock:last-child .projStandingsRow{
+  grid-template-columns:40px 1fr;
+}
