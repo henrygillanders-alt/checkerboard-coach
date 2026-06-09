@@ -4106,10 +4106,10 @@ const ATB_FLOOR_ZONES={
 };
 
 const ATB_WALL_ZONES={
-  5:{label:'Zone 5',desc:'Front wall right',color:'#dc2626',short:'FWR'},
-  6:{label:'Zone 6',desc:'Front wall left',color:'#0891b2',short:'FWL'},
-  7:{label:'Zone 7',desc:'Side wall right',color:'#65a30d',short:'SWR'},
-  8:{label:'Zone 8',desc:'Side wall left',color:'#c026d3',short:'SWL'},
+  5:{label:'Zone 5',desc:'Front wall top left',color:'#dc2626',short:'FW-TL'},
+  6:{label:'Zone 6',desc:'Front wall top right',color:'#0891b2',short:'FW-TR'},
+  7:{label:'Zone 7',desc:'Front wall bottom right',color:'#65a30d',short:'FW-BR'},
+  8:{label:'Zone 8',desc:'Front wall bottom left',color:'#c026d3',short:'FW-BL'},
 };
 
 const ATB_GAME_FAMILIES=[
@@ -4193,10 +4193,10 @@ const ATB_GAME_FAMILIES=[
     emoji:'🧱',
     purpose:'Wall awareness, shot variety and wall targeting.',
     rationale:'Wall zones require different ball trajectories and shot selections. The follower only needs to use the same wall zone — not duplicate the shot. This opens up tactical variety and develops wall awareness at all levels.',
-    task:'Leader uses wall zones 5-8. Follower uses the same wall zone. Shot trajectory is completely unrestricted. Only zone occupancy matters.',
+    task:'Leader uses front wall zones 5-8. Follower uses the same front wall zone. Shot trajectory is completely unrestricted. Only zone occupancy matters.',
     scoring:'Win Rally +1, Wall Zone Completion +1.',
-    levels:['Zones 5-6 (front wall) only','Introduce zones 7-8 (side walls)','All four wall zones','Wall zones combined with floor zones'],
-    coach:'Zone 5 and 6 are typically more accessible. Zones 7 and 8 require more tactical variety — boasts, reverse angles and cross-courts. Note which wall zones players avoid.',
+    levels:['Zones 5-6 (top) only','Introduce zones 7-8 (bottom)','All four front wall zones','Wall zones combined with floor zones'],
+    coach:'Top zones (5-6) typically require more height and pace. Bottom zones (7-8) reward tight, low shots. Note which zones players avoid — this reveals their shot repertoire gaps.',
     player:'Use the same wall zone as the leader. Any trajectory is valid.',
     develops:['Wall awareness','Shot variety','Spatial targeting','Tactical range'],
   },
@@ -4253,14 +4253,36 @@ function AroundTheBoardBuilder({onAddToSession}){
   const [rldLevel,setRldLevel]=useState(3);
   const [selectedOverlays,setSelectedOverlays]=useState([]);
   const [customRoute,setCustomRoute]=useState('');
+  const [selectedGameLogic,setSelectedGameLogic]=useState([]);
+  const [selectedScoringLogic,setSelectedScoringLogic]=useState([]);
+  const [selectedConstraints,setSelectedConstraints]=useState([]);
+  const [dbHandicap,setDbHandicap]=useState('No DB');
 
+  const ATB_GAME_LOGIC_OPTIONS=[
+    'T-Zone Prevention','4-Shot Conversion','2-Shot Conversion',
+    'Length Before Attack','Challenge Completion Required','Double Bounce Allowed',
+  ];
+  const ATB_SCORING_LOGIC_OPTIONS=[
+    'Win Rally +1','Zone Completion +1','Circuit Completion +2',
+    'Clean Winner +2','Volley Finish +2','Challenge Bonus +1',
+  ];
+  const ATB_CONSTRAINT_OPTIONS=[
+    'Blue Danube Waltz','Foam Ball','Red Dot Ball','Orange Dot Ball',
+    'Recovery Cone','Volley Only','External Focus Cue','No Coaching',
+  ];
+
+  function toggleItem(setter,item){setter(prev=>prev.includes(item)?prev.filter(x=>x!==item):[...prev,item]);}
   function toggleOverlay(o){setSelectedOverlays(prev=>prev.includes(o)?prev.filter(x=>x!==o):[...prev,o]);}
 
   function buildAndAdd(family){
     const scoring=ATB_SCORING_OPTIONS.find(s=>s.id===scoringOption);
     const rld=ATB_RLD_LEVELS.find(r=>r.level===rldLevel);
     const lvl=selectedLevel||family.levels[0];
-    const overlayStr=selectedOverlays.length?` · Overlays: ${selectedOverlays.join(', ')}`:' · No overlays';
+    const allLayers=['Around The Board',...selectedOverlays,...selectedGameLogic,...selectedScoringLogic,...selectedConstraints];
+    const gameLogicStr=selectedGameLogic.length?` · Game Logic: ${selectedGameLogic.join(', ')}`:'';
+    const scoringLogicStr=selectedScoringLogic.length?` · Scoring: ${selectedScoringLogic.join(', ')}`:` · Scoring: ${scoring.desc}`;
+    const constraintStr=selectedConstraints.length?` · Constraints: ${selectedConstraints.join(', ')}`:'';
+    const dbStr=dbHandicap!=='No DB'?` · DB: ${dbHandicap}`:'';
     onAddToSession({
       id:Date.now()+Math.random(),
       title:family.title,
@@ -4269,8 +4291,8 @@ function AroundTheBoardBuilder({onAddToSession}){
       rationale:family.rationale,
       coach:family.coach,
       playerFocus:family.player,
-      scoring:scoring.desc+overlayStr,
-      layers:['Around The Board',...selectedOverlays],
+      scoring:scoring.desc+gameLogicStr+scoringLogicStr+constraintStr+dbStr,
+      layers:allLayers,
       rld:rld.label,
       duration:15,
     });
@@ -4387,12 +4409,46 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </div>
 
-          <div className="atbOverlaySection">
-            <strong>Checkerboard Overlays (optional)</strong>
-            <div className="atbOverlayChips">
-              {ATB_OVERLAYS.map(o=><button key={o} type="button"
-                className={selectedOverlays.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                onClick={()=>toggleOverlay(o)}>{o}</button>)}
+          <div className="atbLayersSection">
+            <div className="atbLayerBlock">
+              <div className="atbLayerHeader atbLayerGame"><span>1</span><strong>Game Logic</strong><p>What counts — changes eligibility and validity</p></div>
+              <div className="atbOverlayChips">
+                {ATB_GAME_LOGIC_OPTIONS.map(o=><button key={o} type="button"
+                  className={selectedGameLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                  onClick={()=>toggleItem(setSelectedGameLogic,o)}>{o}</button>)}
+              </div>
+            </div>
+            <div className="atbLayerBlock">
+              <div className="atbLayerHeader atbLayerScoring"><span>2</span><strong>Scoring Logic</strong><p>How points are awarded</p></div>
+              <div className="atbOverlayChips">
+                {ATB_SCORING_LOGIC_OPTIONS.map(o=><button key={o} type="button"
+                  className={selectedScoringLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                  onClick={()=>toggleItem(setSelectedScoringLogic,o)}>{o}</button>)}
+              </div>
+            </div>
+            <div className="atbLayerBlock">
+              <div className="atbLayerHeader atbLayerConstraints"><span>3</span><strong>Constraints</strong><p>Shape behaviour without changing rules</p></div>
+              <div className="atbOverlayChips">
+                {ATB_CONSTRAINT_OPTIONS.map(o=><button key={o} type="button"
+                  className={selectedConstraints.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                  onClick={()=>toggleItem(setSelectedConstraints,o)}>{o}</button>)}
+              </div>
+            </div>
+            <div className="atbLayerBlock">
+              <div className="atbLayerHeader atbLayerDB"><span>4</span><strong>DB Handicap</strong><p>Double bounce allowance</p></div>
+              <div className="atbOverlayChips">
+                {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
+                  className={dbHandicap===o?'atbOverlayActive':'atbOverlayChip'}
+                  onClick={()=>setDbHandicap(o)}>{o}</button>)}
+              </div>
+            </div>
+            <div className="atbLayerBlock">
+              <div className="atbLayerHeader atbLayerOverlays"><span>+</span><strong>Checkerboard Overlays</strong><p>Optional tactical overlays</p></div>
+              <div className="atbOverlayChips">
+                {ATB_OVERLAYS.map(o=><button key={o} type="button"
+                  className={selectedOverlays.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                  onClick={()=>toggleOverlay(o)}>{o}</button>)}
+              </div>
             </div>
           </div>
 
@@ -4437,24 +4493,15 @@ function AroundTheBoardBuilder({onAddToSession}){
       <h3>Court Zone Map</h3>
       <p className="mutedText">Visual reference for all 8 zones. Floor zones 1-4 in blue tones. Wall zones 5-8 in warm tones.</p>
       <div className="atbCourtDiagram">
-        <div className="atbCourtWall">
-          <div className="atbWallLabel">Front Wall</div>
-          <div className="atbWallZones">
-            <div className="atbWallZone" style={{background:'#dc262622',borderColor:'#dc2626'}}><span>5</span><small>FW Right</small></div>
-            <div className="atbWallZone" style={{background:'#0891b222',borderColor:'#0891b2'}}><span>6</span><small>FW Left</small></div>
+        <div className="atbCourtFrontWall">
+          <div className="atbWallLabel">Front Wall — Zones 5 to 8</div>
+          <div className="atbFrontWallGrid">
+            <div className="atbWallZone" style={{background:'#dc262622',borderColor:'#dc2626'}}><span>5</span><small>Top Left</small></div>
+            <div className="atbWallZone" style={{background:'#0891b222',borderColor:'#0891b2'}}><span>6</span><small>Top Right</small></div>
+            <div className="atbWallZone" style={{background:'#c026d322',borderColor:'#c026d3'}}><span>8</span><small>Bottom Left</small></div>
+            <div className="atbWallZone" style={{background:'#65a30d22',borderColor:'#65a30d'}}><span>7</span><small>Bottom Right</small></div>
           </div>
         </div>
-        <div className="atbCourtFloor">
-          <div className="atbSideWallZone left" style={{background:'#65a30d22',borderColor:'#65a30d'}}><span style={{writingMode:'vertical-rl'}}>7 SW Right</span></div>
-          <div className="atbFloorGrid">
-            <div className="atbFloorZone" style={{background:'#1d4ed822',borderColor:'#1d4ed8'}}><span>1</span><small>Front Right</small></div>
-            <div className="atbFloorZone" style={{background:'#05966922',borderColor:'#059669'}}><span>2</span><small>Front Left</small></div>
-            <div className="atbFloorZone" style={{background:'#b4530922',borderColor:'#b45309'}}><span>3</span><small>Back Right</small></div>
-            <div className="atbFloorZone" style={{background:'#7c3aed22',borderColor:'#7c3aed'}}><span>4</span><small>Back Left</small></div>
-          </div>
-          <div className="atbSideWallZone right" style={{background:'#c026d322',borderColor:'#c026d3'}}><span style={{writingMode:'vertical-rl'}}>8 SW Left</span></div>
-        </div>
-        <div className="atbCourtBack"><div className="atbWallLabel">Back Wall / Glass</div></div>
       </div>
       <div className="atbZoneKey">
         <strong>Floor Zones</strong>
