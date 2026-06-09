@@ -1697,7 +1697,7 @@ function GameConditionsEngine({setScreen,setSession,onAddToSession,embedded=fals
 }
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
-      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">A Constraint Is Worth a Thousand Words</p></div>
+      <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
