@@ -1671,6 +1671,15 @@
 .homeBrandCard small{
   display:none!important;
 }
+.homeBrandCard p.homeBrandSubtitle{
+  display:block!important;
+  color:#9bc1ff;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.04em;
+  margin:5px 0 0;
+  font-style:italic;
+}
 .fairLivesEngineRestored,
 .fairLivesEngineBox{
   border:2px solid var(--gold,#f7d979);
@@ -3765,3 +3774,352 @@ button.mentalSkillsTile p{
 .tauLadder strong{color:#5eead4;font-weight:1000}.tauLadder span,.tauConstraintGrid span{color:#fff;font-weight:850}
 .tauConstraintGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.tauConstraintGrid div{background:#0b1828;border:1px solid #35567e;border-radius:16px;padding:14px}.tauConstraintGrid strong{display:block;color:#ffd980;margin-bottom:8px}
 @media(max-width:900px){.tauGrid,.tauGrid.three,.tauConstraintGrid{grid-template-columns:1fr}.tauLadder div{grid-template-columns:1fr}.tauHero h2{font-size:30px}}
+
+
+/* v100h47 Competition Completion Build */
+
+/* Home brand subtitle */
+.homeBrandSubtitle{
+  color:#9bc1ff;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.04em;
+  margin:4px 0 0;
+  font-style:italic;
+}
+
+/* Competition scoring mode bar */
+.competitionScoringModeBar{
+  background:#071827;
+  border:2px solid #ffd980;
+  border-radius:18px;
+  padding:16px 20px;
+  margin:14px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  align-items:center;
+}
+.competitionScoringModeBar>strong{
+  color:#ffd980;
+  font-size:15px;
+  white-space:nowrap;
+}
+.scoringModeToggle{
+  display:flex;
+  gap:10px;
+}
+.activeScoringMode{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:12px;
+  padding:12px 20px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:15px;
+}
+.scoringModeToggle button:not(.activeScoringMode){
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:#9bc1ff;
+  border-radius:12px;
+  padding:12px 20px;
+  font-weight:900;
+  cursor:pointer;
+  font-size:15px;
+}
+.scoringModeHint{
+  color:#9fb0c8;
+  font-size:13px;
+  margin:0;
+  flex:1 1 100%;
+}
+@media(max-width:900px){
+  .competitionScoringModeBar{flex-direction:column;align-items:flex-start;}
+  .scoringModeToggle{flex-direction:column;}
+}
+
+/* Score entry redesign — large, courtside friendly */
+.cleanScoreEntry{
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:16px;
+  padding:16px;
+  margin-top:10px;
+}
+.cleanScoreNames{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  gap:10px;
+}
+.cleanScoreNames strong{
+  font-size:20px;
+  color:#fff;
+  flex:1;
+}
+.cleanScoreNames span{
+  color:#9fb0c8;
+  font-weight:700;
+}
+.cleanScoreInputs.courtside{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px;
+}
+.cleanScoreInputs.courtside input{
+  background:#0b1e34;
+  border:2px solid #5e83be;
+  border-radius:14px;
+  padding:18px 14px;
+  color:white;
+  font-size:32px;
+  font-weight:900;
+  text-align:center;
+  width:100%;
+  min-height:64px;
+  -webkit-appearance:none;
+}
+.cleanScoreInputs.courtside input:focus{
+  border-color:#ffd980;
+  outline:none;
+}
+.scoreAutoLabel{
+  font-size:32px;
+  font-weight:900;
+  color:#4ade80;
+  min-width:44px;
+  text-align:center;
+}
+.scoreEntryHint{
+  color:#9fb0c8;
+  font-size:13px;
+  margin-bottom:10px;
+}
+.saveResultBtn{
+  width:100%;
+  padding:16px;
+  font-size:18px;
+  margin-top:4px;
+}
+
+/* Round Robin full standings table */
+.standingsTableFull>div{
+  display:grid;
+  grid-template-columns:40px 1fr 44px 44px 50px 50px 60px;
+  gap:6px;
+  padding:8px 6px;
+  border-bottom:1px solid #1e3450;
+  align-items:center;
+  font-size:14px;
+}
+.standingsTableFull>div:first-child{
+  font-size:12px;
+  color:#9bc1ff;
+  font-weight:900;
+}
+.standingsTableFull>div span:first-child{
+  color:#ffd980;
+  font-weight:900;
+  text-align:center;
+}
+@media(max-width:700px){
+  .standingsTableFull>div{
+    grid-template-columns:30px 1fr 36px 36px 42px 42px 50px;
+    font-size:12px;
+  }
+}
+
+/* Monrad match format row */
+.monradMatchFormatRow{
+  margin:12px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+.monradMatchFormatRow>strong{
+  color:#ffd980;
+  font-size:15px;
+}
+.monradFormatBtns{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.activeMonradFormat{
+  background:#1f5dd0;
+  border:none;
+  color:white;
+  border-radius:12px;
+  padding:10px 16px;
+  font-weight:900;
+  cursor:pointer;
+}
+.monradFormatBtns button:not(.activeMonradFormat){
+  background:#12253d;
+  border:1px solid #486b9a;
+  color:#9bc1ff;
+  border-radius:12px;
+  padding:10px 16px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* Monrad live pathway display */
+.monradPathwayDisplay{
+  background:#071827;
+  border:1px solid #5e83be;
+  border-radius:18px;
+  padding:16px;
+  margin:14px 0;
+}
+.monradPathwayDisplay>strong{
+  color:#ffd980;
+  font-size:15px;
+  display:block;
+  margin-bottom:12px;
+}
+.monradPathwayScroll{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.monradPathwaySlot{
+  background:#0b1828;
+  border:1px dashed #35567e;
+  border-radius:12px;
+  padding:10px 14px;
+  min-width:70px;
+  text-align:center;
+}
+.monradPathwaySlot span{
+  display:block;
+  font-size:11px;
+  color:#9fb0c8;
+  margin-bottom:4px;
+}
+.monradPathwaySlot strong{
+  font-size:14px;
+  color:#fff;
+}
+.monradPathwayFilled{
+  border:1px solid #4ade80;
+  background:#0a2415;
+}
+.monradPathwayFilled span{
+  color:#4ade80;
+}
+
+/* Competition Status Panel */
+.competitionStatusPanel{
+  background:#071827;
+  border:1px solid #5e83be;
+  border-radius:18px;
+  padding:16px 20px;
+  margin:16px 0;
+}
+.statusPanelHeader{
+  margin-bottom:12px;
+}
+.statusPanelHeader>strong{
+  color:#ffd980;
+  font-size:16px;
+  letter-spacing:.03em;
+}
+.statusPanelGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:10px;
+}
+.statusPanelCard{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:14px;
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.statusPanelCard>span{
+  font-size:11px;
+  color:#9fb0c8;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.statusPanelCard>strong{
+  font-size:16px;
+  color:#fff;
+  font-weight:900;
+}
+
+
+/* v100h47b Multi-game score entry */
+.gameScoreRow{
+  display:grid;
+  grid-template-columns:70px 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid #1e3450;
+}
+.gameScoreRow:last-of-type{border-bottom:none;}
+.gameScoreDecided{opacity:.7;}
+.gameLabel{
+  color:#9bc1ff;
+  font-weight:900;
+  font-size:14px;
+}
+.gameScoreInputs{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.gameScoreInputs input{
+  background:#0b1e34;
+  border:2px solid #5e83be;
+  border-radius:12px;
+  padding:14px 10px;
+  color:white;
+  font-size:26px;
+  font-weight:900;
+  text-align:center;
+  width:72px;
+  -webkit-appearance:none;
+}
+.gameScoreInputs input:focus{border-color:#ffd980;outline:none;}
+.scoreVs{
+  color:#9fb0c8;
+  font-weight:700;
+  font-size:18px;
+  min-width:30px;
+  text-align:center;
+}
+.gameWinnerTag{
+  background:#1a3a1a;
+  border:1px solid #4ade80;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:900;
+  color:#4ade80;
+  white-space:nowrap;
+}
+.matchScoreSummary{
+  display:flex;
+  gap:16px;
+  padding:8px 0 12px;
+  font-size:15px;
+  font-weight:900;
+  color:#9fb0c8;
+}
+.matchWinnerSpan{color:#4ade80;}
+@media(max-width:600px){
+  .gameScoreRow{grid-template-columns:60px 1fr;}
+  .gameWinnerTag{display:none;}
+  .gameScoreInputs input{width:60px;font-size:22px;padding:12px 8px;}
+}
