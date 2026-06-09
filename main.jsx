@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h47';
+const APP_VERSION='v100h48';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -3322,6 +3322,427 @@ function UniversalDBHandicapPanel({onAddToSession}){
   </div>;
 }
 
+// ─── POWER PLAY™ BUILDER ─────────────────────────────────────────────────────
+
+const PP_OVERLAYS=[
+  {id:'cb-single',label:'Single Challenge',category:'Checkerboard'},
+  {id:'cb-pair',label:'Pair Challenge',category:'Checkerboard'},
+  {id:'cb-triple',label:'Triple Challenge',category:'Checkerboard'},
+  {id:'clean-winner',label:'Clean Winner',category:'Finishing'},
+  {id:'volley-finish',label:'Volley Finish',category:'Finishing'},
+  {id:'blind-finish',label:'Blind Finish',category:'Finishing'},
+  {id:'t-zone',label:'T-Zone Prevention',category:'Tactical'},
+  {id:'pressure',label:'Pressure',category:'Tactical'},
+  {id:'length-attack',label:'Length Before Attack',category:'Tactical'},
+  {id:'double-bounce',label:'Double Bounce',category:'Tactical'},
+];
+
+const PP_PRESETS=[
+  {
+    id:'pressure-pp',
+    title:'Pressure Power Play',
+    level:'Level 3+',
+    engine:'open',
+    format:'two-player',
+    tokens:3,
+    tokenRefresh:'never',
+    durationType:'rally',
+    durationValue:3,
+    breakCondition:'disabled',
+    scoringMode:'exclusive',
+    overlays:['pressure'],
+    tokenVisibility:'both',
+    rallyScoringRules:[1,1,1],
+    completionBonus:6,
+    rationale:'Win 3 consecutive rallies for 9 points. Each rally scored 1+1+1 with a 6-point completion bonus. Develops pressure tolerance, commitment, and momentum management. The player must decide when to commit and then hold their nerve across three consecutive rallies.',
+    coach:'Watch for players who activate early when they are winning, or hold too long and miss the moment. The timing of the declaration is the coaching point.',
+    player:'Declare Power Play. Win 3 rallies in a row. Rally 1 = 1pt, Rally 2 = 1pt, Rally 3 = 1pt + 6 bonus = 9 total.',
+    scoring:'Rally 1: +1 · Rally 2: +1 · Rally 3: +1 + 6 bonus = 9 points total.'
+  },
+  {
+    id:'the-gambit',
+    title:'The Gambit',
+    level:'Level 4+',
+    engine:'blind',
+    format:'two-player',
+    tokens:3,
+    tokenRefresh:'never',
+    durationType:'rally',
+    durationValue:1,
+    breakCondition:'disabled',
+    scoringMode:'exclusive',
+    overlays:[],
+    tokenVisibility:'hidden',
+    rallyScoringRules:[3],
+    completionBonus:0,
+    rationale:'Blind Power Play, single rally. Both players hold 3 tokens. Neither player knows when the other has activated. Pure timing and nerve — the player who reads the moment best wins. First to use all tokens scores a bonus.',
+    coach:'This is your highest-level tactical game. The skill is not the shot — it is the decision of when to commit under uncertainty. Debrief every activation.',
+    player:'Secretly activate your Power Play token before a rally. If you win that rally your PP is active and you score. Your opponent does not know when you have activated.',
+    scoring:'Win the rally when PP is active: +3. First to use all tokens: +5 bonus.'
+  },
+  {
+    id:'hot-streak',
+    title:'Hot Streak',
+    level:'Level 3+',
+    engine:'open',
+    format:'two-player',
+    tokens:2,
+    tokenRefresh:'every-rotation',
+    durationType:'rally',
+    durationValue:5,
+    breakCondition:'2-consecutive',
+    scoringMode:'exclusive',
+    overlays:[],
+    tokenVisibility:'both',
+    rallyScoringRules:[1,1,2,2,3],
+    completionBonus:4,
+    rationale:'Open Power Play lasting 5 rallies with escalating scores. Opponent can break it with 2 consecutive wins. High risk/reward momentum game — the longer the streak holds, the more valuable each rally becomes. Develops pressure management, momentum riding, and break resistance.',
+    coach:'Watch the opponent\'s break attempts. The coach point is whether the PP player manages their energy and focus across 5 rallies or fades under the pressure of knowing the opponent is hunting a break.',
+    player:'Declare Power Play. Rallies score 1, 1, 2, 2, 3 in sequence. Complete all 5 for +4 bonus. Opponent can break it with 2 wins in a row.',
+    scoring:'Rally 1: +1 · Rally 2: +1 · Rally 3: +2 · Rally 4: +2 · Rally 5: +3 · Completion bonus: +4. Break = PP ends.'
+  },
+  {
+    id:'token-war',
+    title:'Token War',
+    level:'Level 3+',
+    engine:'open',
+    format:'two-player',
+    tokens:2,
+    tokenRefresh:'every-rotation',
+    durationType:'rally',
+    durationValue:3,
+    breakCondition:'disabled',
+    scoringMode:'bonus',
+    overlays:[],
+    tokenVisibility:'both',
+    rallyScoringRules:[1,1,1],
+    completionBonus:2,
+    rationale:'Both players get 2 tokens per rotation. Normal scoring continues with Power Play bonuses added. Whoever uses their tokens most effectively wins the rotation. Develops timing, opportunity recognition, and strategic commitment across a session.',
+    coach:'The key question: did each player choose the right moment? A token used from a defensive position tells you something. A token used when already in control tells you something else.',
+    player:'Both players hold 2 tokens per rotation. Normal scoring applies. Activating Power Play adds bonus points. Use your tokens wisely — they refresh each rotation.',
+    scoring:'Normal rally scoring continues. PP rally wins add bonus points. Completion bonus: +2 per completed Power Play.'
+  },
+  {
+    id:'last-chance',
+    title:'Last Chance',
+    level:'Level 4+',
+    engine:'open',
+    format:'two-player',
+    tokens:1,
+    tokenRefresh:'never',
+    durationType:'rally',
+    durationValue:1,
+    breakCondition:'disabled',
+    scoringMode:'exclusive',
+    overlays:['clean-winner'],
+    tokenVisibility:'both',
+    rallyScoringRules:[5],
+    completionBonus:0,
+    rationale:'Each player gets exactly one token per match. One shot — pick your moment. Clean Winner overlay active. The decision of when to use it is the entire game. Develops patience, opportunity recognition, and commitment under maximum consequence.',
+    coach:'The player who uses their token at 0-5 down has made a different decision to the player who uses theirs at 4-5 down. Both can be right or wrong. The quality of the decision-making is your coaching point.',
+    player:'You have one Power Play token for the entire match. Choose your moment carefully. Clean Winner overlay active — the shot must be a clean winner for maximum points.',
+    scoring:'Win the rally with a clean winner during PP: +5 points. Normal scoring otherwise.'
+  },
+  {
+    id:'checkerboard-pp',
+    title:'Checkerboard Power Play',
+    level:'Level 2+',
+    engine:'open',
+    format:'two-player',
+    tokens:3,
+    tokenRefresh:'every-rotation',
+    durationType:'time',
+    durationValue:60,
+    breakCondition:'3-consecutive',
+    scoringMode:'exclusive',
+    overlays:['cb-triple'],
+    tokenVisibility:'both',
+    rallyScoringRules:[1,1,1,2,2,3],
+    completionBonus:3,
+    rationale:'Triple Challenge overlay active. Open Power Play for 60 seconds. Only the PP player scores during PP. Natural fit with Checkerboard levels — the player must solve the Triple Challenge under the added pressure of a time-limited Power Play window.',
+    coach:'This is the application game for Triple Challenge. The checkerboard constraint remains the primary focus. Power Play adds the consequence layer — they must execute the challenge while managing the pressure of the clock.',
+    player:'Declare Power Play. Triple Challenge overlay is active. You have 60 seconds. Only you can score during your Power Play. Solve the challenge and score as many points as possible.',
+    scoring:'Win rally with Triple Challenge: +3. Win rally during PP: scores accumulate. Completion bonus: +3.'
+  }
+];
+
+const PP_TOKEN_OPTIONS=[1,2,3,5,'Unlimited','Custom'];
+const PP_REFRESH_OPTIONS=['Never','Every Round','Every Rotation','Every Time Block','Custom'];
+const PP_TIME_OPTIONS=[30,60,90,120,180,'Custom'];
+const PP_RALLY_OPTIONS=[3,5,10,'Custom'];
+const PP_BREAK_OPTIONS=['2 consecutive','3 consecutive','4 consecutive','Disabled'];
+const PP_FORMAT_OPTIONS=['Two Player','King of Court','Invasion','Team Format','Rotation Court'];
+
+function PowerPlayBuilder({onAddToSession}){
+  const [ppTab,setPpTab]=useState('presets');
+  const [selectedPreset,setSelectedPreset]=useState(null);
+  const [ppStatus,setPpStatus]=useState('');
+
+  // Custom builder state
+  const [engine,setEngine]=useState('open');
+  const [format,setFormat]=useState('Two Player');
+  const [tokens,setTokens]=useState(3);
+  const [tokenRefresh,setTokenRefresh]=useState('Never');
+  const [tokenVisibility,setTokenVisibility]=useState('coach');
+  const [durationType,setDurationType]=useState('rally');
+  const [durationValue,setDurationValue]=useState(5);
+  const [breakCondition,setBreakCondition]=useState('Disabled');
+  const [scoringMode,setScoringMode]=useState('exclusive');
+  const [selectedOverlays,setSelectedOverlays]=useState([]);
+  const [customTitle,setCustomTitle]=useState('');
+
+  // PP History log
+  const [ppHistory,setPpHistory]=useState(()=>{
+    try{const s=localStorage.getItem('checkerboard_pp_history');return s?JSON.parse(s):[];}catch{return[];}
+  });
+
+  useEffect(()=>{
+    try{localStorage.setItem('checkerboard_pp_history',JSON.stringify(ppHistory));}catch{}
+  },[ppHistory]);
+
+  function toggleOverlay(id){
+    setSelectedOverlays(prev=>prev.includes(id)?prev.filter(o=>o!==id):[...prev,id]);
+  }
+
+  function buildGameCard(config,isPreset){
+    const overlayLabels=(config.overlays||[]).map(id=>{
+      const found=PP_OVERLAYS.find(o=>o.id===id);
+      return found?found.label:id;
+    });
+    const title=isPreset?config.title:(customTitle.trim()||`Power Play™ ${engine==='open'?'Open':'Blind'}`);
+    const durationLabel=config.durationType==='time'
+      ?`${config.durationValue}s`
+      :`${config.durationValue} ${config.durationValue===1?'rally':'rallies'}`;
+    const task=`${engine==='blind'?'BLIND ':''}Power Play™ · ${config.format||format} · ${config.tokens} token${config.tokens!==1?'s':''} · ${durationLabel}${overlayLabels.length?' · Overlays: '+overlayLabels.join(', '):''}`;
+    const scoring=config.scoring||`${scoringMode==='exclusive'?'Exclusive scoring — only PP player scores during Power Play.':scoringMode==='bonus'?'Bonus scoring — both players score, PP player gets bonuses.':'Custom scoring.'} Break: ${config.breakCondition||breakCondition}.`;
+    return {
+      id:Date.now()+Math.random(),
+      category:'Power Play',
+      title,
+      task,
+      scoring,
+      rationale:config.rationale||'',
+      coach:config.coach||'',
+      player:config.player||'',
+      duration:15,
+      layers:['Power Play™',...overlayLabels],
+      ppConfig:{...config,overlays:config.overlays||selectedOverlays,engine:config.engine||engine,format:config.format||format,tokenVisibility:config.tokenVisibility||tokenVisibility},
+      level:config.level||'All levels'
+    };
+  }
+
+  function addPreset(preset){
+    const card=buildGameCard(preset,true);
+    onAddToSession(card);
+    setPpHistory(prev=>[{id:Date.now(),title:card.title,activatedAt:new Date().toLocaleTimeString(),type:'Added to session'},
+      ...prev.slice(0,19)]);
+    setPpStatus(`${preset.title} added to session.`);
+  }
+
+  function addCustom(){
+    const config={engine,format,tokens,tokenRefresh,tokenVisibility,durationType,durationValue,breakCondition,scoringMode,overlays:selectedOverlays};
+    const card=buildGameCard(config,false);
+    onAddToSession(card);
+    setPpHistory(prev=>[{id:Date.now(),title:card.title,activatedAt:new Date().toLocaleTimeString(),type:'Custom — added to session'},
+      ...prev.slice(0,19)]);
+    setPpStatus('Custom Power Play added to session.');
+  }
+
+  const overlaysByCategory=PP_OVERLAYS.reduce((acc,o)=>{
+    if(!acc[o.category]) acc[o.category]=[];
+    acc[o.category].push(o);
+    return acc;
+  },{});
+
+  return <div className="ppBuilderWrap">
+    <div className="ppBuilderHeader">
+      <div className="categoryTag">Power Play™</div>
+      <h2>Power Play™ Builder</h2>
+      <p className="mutedText">A tactical scoring modifier that creates high-value windows requiring timing, risk, and commitment decisions. Works with all Checkerboard game systems.</p>
+    </div>
+
+    <div className="ppTabBar">
+      {['presets','builder','history'].map(t=><button key={t} type="button"
+        className={ppTab===t?'ppTabActive':'ppTabInactive'}
+        onClick={()=>setPpTab(t)}>
+        {t==='presets'?'Plug & Play':t==='builder'?'Custom Builder':'History Log'}
+      </button>)}
+    </div>
+
+    {/* ── PLUG & PLAY PRESETS ── */}
+    {ppTab==='presets'&&<div className="ppPresetGrid">
+      {PP_PRESETS.map(preset=><div key={preset.id} className={`ppPresetCard${selectedPreset===preset.id?' ppPresetSelected':''}`}>
+        <div className="ppPresetTopRow">
+          <span className="ppEngineTag">{preset.engine==='open'?'⚡ Open PP':'🔒 Blind PP'}</span>
+          <span className="ppLevelTag">{preset.level}</span>
+        </div>
+        <h3>{preset.title}</h3>
+        <p className="ppPresetRationale">{preset.rationale}</p>
+
+        <div className="ppPresetMeta">
+          <span>Format: {preset.format==='two-player'?'Two Player':preset.format}</span>
+          <span>Tokens: {preset.tokens}</span>
+          <span>Duration: {preset.durationType==='time'?`${preset.durationValue}s`:`${preset.durationValue} rallies`}</span>
+          {preset.overlays.length>0&&<span>Overlays: {preset.overlays.map(id=>PP_OVERLAYS.find(o=>o.id===id)?.label||id).join(', ')}</span>}
+          <span>Break: {preset.breakCondition==='disabled'?'No break':preset.breakCondition}</span>
+        </div>
+
+        <div className="ppPresetCoachNote">
+          <strong>Coach Note</strong>
+          <p>{preset.coach}</p>
+        </div>
+        <div className="ppPresetPlayerNote">
+          <strong>Player Instructions</strong>
+          <p>{preset.player}</p>
+        </div>
+        <div className="ppPresetScoring">
+          <strong>Scoring</strong>
+          <p>{preset.scoring}</p>
+        </div>
+
+        <div className="ppPresetActions">
+          <button type="button" className="primaryBtn" onClick={()=>addPreset(preset)}>Add to Session</button>
+          <button type="button" className="secondaryBtn" onClick={()=>setSelectedPreset(selectedPreset===preset.id?null:preset.id)}>
+            {selectedPreset===preset.id?'Less':'More'}
+          </button>
+        </div>
+      </div>)}
+    </div>}
+
+    {/* ── CUSTOM BUILDER ── */}
+    {ppTab==='builder'&&<div className="ppCustomBuilder">
+      <div className="ppSection">
+        <h3>Step 1 — Engine</h3>
+        <div className="ppOptionRow">
+          <button type="button" className={engine==='open'?'ppOptionActive':'ppOptionBtn'} onClick={()=>setEngine('open')}>
+            ⚡ Open Power Play<span>All players know PP is active</span>
+          </button>
+          <button type="button" className={engine==='blind'?'ppOptionActive':'ppOptionBtn'} onClick={()=>setEngine('blind')}>
+            🔒 Blind Power Play<span>PP activation is secret</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="ppSection">
+        <h3>Step 2 — Format</h3>
+        <div className="ppChipRow">
+          {PP_FORMAT_OPTIONS.map(f=><button key={f} type="button"
+            className={format===f?'ppChipActive':'ppChip'}
+            onClick={()=>setFormat(f)}>{f}</button>)}
+        </div>
+      </div>
+
+      <div className="ppSection">
+        <h3>Step 3 — Tokens</h3>
+        <div className="ppSubSection">
+          <strong>Power Plays Per Session</strong>
+          <div className="ppChipRow">
+            {PP_TOKEN_OPTIONS.map(t=><button key={t} type="button"
+              className={tokens===t?'ppChipActive':'ppChip'}
+              onClick={()=>setTokens(t)}>{t}</button>)}
+          </div>
+        </div>
+        <div className="ppSubSection">
+          <strong>Token Refresh</strong>
+          <div className="ppChipRow">
+            {PP_REFRESH_OPTIONS.map(r=><button key={r} type="button"
+              className={tokenRefresh===r?'ppChipActive':'ppChip'}
+              onClick={()=>setTokenRefresh(r)}>{r}</button>)}
+          </div>
+        </div>
+        <div className="ppSubSection">
+          <strong>Token Visibility</strong>
+          <div className="ppChipRow">
+            <button type="button" className={tokenVisibility==='coach'?'ppChipActive':'ppChip'} onClick={()=>setTokenVisibility('coach')}>Coach Only</button>
+            <button type="button" className={tokenVisibility==='both'?'ppChipActive':'ppChip'} onClick={()=>setTokenVisibility('both')}>Visible to All</button>
+            <button type="button" className={tokenVisibility==='hidden'?'ppChipActive':'ppChip'} onClick={()=>setTokenVisibility('hidden')}>Hidden (Blind)</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="ppSection">
+        <h3>Step 4 — Duration</h3>
+        <div className="ppSubSection">
+          <strong>Type</strong>
+          <div className="ppChipRow">
+            <button type="button" className={durationType==='time'?'ppChipActive':'ppChip'} onClick={()=>setDurationType('time')}>Time Based</button>
+            <button type="button" className={durationType==='rally'?'ppChipActive':'ppChip'} onClick={()=>setDurationType('rally')}>Rally Based</button>
+          </div>
+        </div>
+        <div className="ppSubSection">
+          <strong>Duration</strong>
+          <div className="ppChipRow">
+            {(durationType==='time'?PP_TIME_OPTIONS:PP_RALLY_OPTIONS).map(v=><button key={v} type="button"
+              className={durationValue===v?'ppChipActive':'ppChip'}
+              onClick={()=>setDurationValue(v)}>{durationType==='time'?`${v}s`:v==='Custom'?v:`${v} rallies`}</button>)}
+          </div>
+        </div>
+      </div>
+
+      {engine==='open'&&<div className="ppSection">
+        <h3>Step 5 — Break Condition</h3>
+        <p className="mutedText">Opponent may terminate an Open Power Play early by winning consecutive rallies.</p>
+        <div className="ppChipRow">
+          {PP_BREAK_OPTIONS.map(b=><button key={b} type="button"
+            className={breakCondition===b?'ppChipActive':'ppChip'}
+            onClick={()=>setBreakCondition(b)}>{b}</button>)}
+        </div>
+      </div>}
+
+      <div className="ppSection">
+        <h3>Step 6 — Scoring</h3>
+        <div className="ppOptionRow">
+          <button type="button" className={scoringMode==='exclusive'?'ppOptionActive':'ppOptionBtn'} onClick={()=>setScoringMode('exclusive')}>
+            Exclusive Scoring<span>Only PP player scores during Power Play</span>
+          </button>
+          <button type="button" className={scoringMode==='bonus'?'ppOptionActive':'ppOptionBtn'} onClick={()=>setScoringMode('bonus')}>
+            Bonus Scoring<span>Both players score — PP player gets bonuses</span>
+          </button>
+          <button type="button" className={scoringMode==='custom'?'ppOptionActive':'ppOptionBtn'} onClick={()=>setScoringMode('custom')}>
+            Custom<span>Coach configures scoring</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="ppSection">
+        <h3>Step 7 — Overlays</h3>
+        <p className="mutedText">Select any overlays to layer on top of the Power Play engine.</p>
+        {Object.entries(overlaysByCategory).map(([cat,overlays])=><div key={cat} className="ppOverlayCat">
+          <strong>{cat}</strong>
+          <div className="ppChipRow">
+            {overlays.map(o=><button key={o.id} type="button"
+              className={selectedOverlays.includes(o.id)?'ppChipActive':'ppChip'}
+              onClick={()=>toggleOverlay(o.id)}>{o.label}</button>)}
+          </div>
+        </div>)}
+      </div>
+
+      <div className="ppSection">
+        <strong>Game Title (optional)</strong>
+        <input className="ppTitleInput" value={customTitle} onChange={e=>setCustomTitle(e.target.value)} placeholder="Custom Power Play title..." />
+      </div>
+
+      <button type="button" className="primaryBtn ppAddBtn" onClick={addCustom}>Add Custom Power Play to Session</button>
+    </div>}
+
+    {/* ── HISTORY LOG ── */}
+    {ppTab==='history'&&<div className="ppHistoryLog">
+      <h3>Power Play History</h3>
+      {ppHistory.length===0&&<p className="mutedText">No Power Play activity recorded yet. Add a preset or custom Power Play to session to start logging.</p>}
+      {ppHistory.map(entry=><div key={entry.id} className="ppHistoryEntry">
+        <strong>{entry.title}</strong>
+        <span>{entry.activatedAt}</span>
+        <span className="ppHistoryType">{entry.type}</span>
+      </div>)}
+      {ppHistory.length>0&&<button type="button" className="secondaryBtn" onClick={()=>setPpHistory([])}>Clear History</button>}
+    </div>}
+
+    {ppStatus&&<div className="statusBox">{ppStatus}</div>}
+  </div>;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -3349,6 +3770,7 @@ function Games({setSession,setScreen}){
   const gameClasses=[
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
+    {id:'powerplay',label:'Power Play™',category:'Power Play'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
@@ -3443,6 +3865,7 @@ function Games({setSession,setScreen}){
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
@@ -3450,9 +3873,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
-    
-
-    {activeClassId&& !['checkerboard','atl','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&& !['checkerboard','atl','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 

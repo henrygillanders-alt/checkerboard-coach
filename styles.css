@@ -4366,3 +4366,339 @@ button.mentalSkillsTile p{
   color:#9bc1ff;
   font-weight:700;
 }
+
+
+/* ── POWER PLAY™ MODULE ─────────────────────────────────────────── v100h48 ── */
+
+.ppBuilderWrap{
+  margin-top:16px;
+}
+.ppBuilderHeader{
+  background:linear-gradient(135deg,#0d1f3c 0%,#1a0a2e 100%);
+  border:2px solid #7c3aed;
+  border-radius:20px;
+  padding:20px 24px;
+  margin-bottom:16px;
+}
+.ppBuilderHeader h2{
+  color:#fff;
+  font-size:26px;
+  margin:6px 0 8px;
+}
+.ppBuilderHeader .categoryTag{
+  background:#7c3aed;
+  color:#fff;
+  display:inline-block;
+  padding:4px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.06em;
+  margin-bottom:8px;
+}
+
+/* Tab bar */
+.ppTabBar{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.ppTabActive{
+  background:#7c3aed;
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  padding:12px 22px;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
+}
+.ppTabInactive{
+  background:#12152a;
+  color:#9fb0c8;
+  border:1px solid #2f3a5a;
+  border-radius:14px;
+  padding:12px 22px;
+  font-weight:900;
+  font-size:15px;
+  cursor:pointer;
+}
+
+/* Preset grid */
+.ppPresetGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:16px;
+}
+.ppPresetCard{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:18px;
+  padding:18px 20px;
+  transition:border-color .2s;
+}
+.ppPresetSelected{
+  border-color:#7c3aed;
+  background:#0e0a1f;
+}
+.ppPresetTopRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.ppEngineTag{
+  background:#1e1040;
+  border:1px solid #7c3aed;
+  color:#c4b5fd;
+  border-radius:999px;
+  padding:4px 12px;
+  font-size:12px;
+  font-weight:900;
+}
+.ppLevelTag{
+  background:#1a2a1a;
+  border:1px solid #4ade80;
+  color:#4ade80;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+.ppPresetCard h3{
+  font-size:20px;
+  color:#fff;
+  margin:0 0 10px;
+}
+.ppPresetRationale{
+  color:#c4c9d9;
+  font-size:14px;
+  line-height:1.6;
+  margin-bottom:12px;
+}
+.ppPresetMeta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+.ppPresetMeta span{
+  background:#111827;
+  border:1px solid #2f3a5a;
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:12px;
+  color:#9bc1ff;
+  font-weight:700;
+}
+.ppPresetCoachNote{
+  background:#0a1a0e;
+  border-left:3px solid #4ade80;
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;
+  margin-bottom:10px;
+}
+.ppPresetCoachNote strong{
+  color:#4ade80;
+  font-size:12px;
+  display:block;
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.ppPresetCoachNote p{color:#c4c9d9;font-size:13px;margin:0;}
+.ppPresetPlayerNote{
+  background:#0a0f1a;
+  border-left:3px solid #9bc1ff;
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;
+  margin-bottom:10px;
+}
+.ppPresetPlayerNote strong{
+  color:#9bc1ff;
+  font-size:12px;
+  display:block;
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.ppPresetPlayerNote p{color:#c4c9d9;font-size:13px;margin:0;}
+.ppPresetScoring{
+  background:#1a1000;
+  border-left:3px solid #ffd980;
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;
+  margin-bottom:14px;
+}
+.ppPresetScoring strong{
+  color:#ffd980;
+  font-size:12px;
+  display:block;
+  margin-bottom:4px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.ppPresetScoring p{color:#c4c9d9;font-size:13px;margin:0;}
+.ppPresetActions{
+  display:flex;
+  gap:10px;
+}
+
+/* Custom builder */
+.ppCustomBuilder{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:18px;
+  padding:20px;
+}
+.ppSection{
+  margin-bottom:24px;
+  padding-bottom:20px;
+  border-bottom:1px solid #1e2a48;
+}
+.ppSection:last-of-type{border-bottom:none;}
+.ppSection h3{
+  color:#ffd980;
+  font-size:16px;
+  font-weight:900;
+  margin:0 0 12px;
+}
+.ppSubSection{
+  margin-bottom:14px;
+}
+.ppSubSection strong{
+  display:block;
+  color:#9bc1ff;
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.ppOptionRow{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px;
+}
+.ppOptionActive,.ppOptionBtn{
+  border-radius:14px;
+  padding:14px 16px;
+  cursor:pointer;
+  text-align:left;
+  font-weight:900;
+  font-size:14px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  border:none;
+}
+.ppOptionActive{
+  background:#3b1f7a;
+  color:#fff;
+  border:2px solid #7c3aed;
+}
+.ppOptionBtn{
+  background:#12152a;
+  color:#9fb0c8;
+  border:1px solid #2f3a5a;
+}
+.ppOptionActive span,.ppOptionBtn span{
+  font-size:12px;
+  font-weight:400;
+  opacity:.8;
+}
+.ppChipRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.ppChipActive,.ppChip{
+  border-radius:12px;
+  padding:10px 16px;
+  font-size:14px;
+  font-weight:900;
+  cursor:pointer;
+  border:none;
+}
+.ppChipActive{
+  background:#7c3aed;
+  color:#fff;
+}
+.ppChip{
+  background:#12152a;
+  color:#9fb0c8;
+  border:1px solid #2f3a5a;
+}
+.ppOverlayCat{
+  margin-bottom:14px;
+}
+.ppOverlayCat strong{
+  display:block;
+  color:#9bc1ff;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:8px;
+}
+.ppTitleInput{
+  background:#0a0f1a;
+  border:1px solid #2f3a5a;
+  border-radius:12px;
+  padding:12px 16px;
+  color:#fff;
+  font-size:15px;
+  width:100%;
+  margin-top:8px;
+}
+.ppTitleInput:focus{border-color:#7c3aed;outline:none;}
+.ppAddBtn{
+  width:100%;
+  padding:16px;
+  font-size:16px;
+  margin-top:8px;
+  background:#7c3aed;
+  border:none;
+  border-radius:14px;
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* History log */
+.ppHistoryLog{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:18px;
+  padding:20px;
+}
+.ppHistoryLog h3{
+  color:#ffd980;
+  margin:0 0 16px;
+}
+.ppHistoryEntry{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid #1e2a48;
+  font-size:14px;
+}
+.ppHistoryEntry strong{color:#fff;}
+.ppHistoryEntry span{color:#9fb0c8;}
+.ppHistoryType{
+  background:#1e1040;
+  border:1px solid #7c3aed;
+  color:#c4b5fd;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:11px;
+  font-weight:900;
+}
+
+@media(max-width:700px){
+  .ppPresetGrid{grid-template-columns:1fr;}
+  .ppOptionRow{grid-template-columns:1fr;}
+}
