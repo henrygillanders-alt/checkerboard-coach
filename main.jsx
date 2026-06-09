@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h53';
+const APP_VERSION='v100h54';
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -4089,6 +4089,419 @@ function PowerPlayBuilder({onAddToSession}){
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+// ─── AROUND THE BOARD BUILDER ────────────────────────────────────────────────
+
+const ATB_OVERLAYS=[
+  'Clean Winner','Opponent Off T','T Challenge','Blind Finish',
+  'Weak Side','Double Bounce','Quality Length Before Attack',
+  'Volley Finish','4 Shot Conversion','2 Shot Conversion'
+];
+
+const ATB_FLOOR_ZONES={
+  1:{label:'Zone 1',desc:'Front right',color:'#1d4ed8',short:'FR'},
+  2:{label:'Zone 2',desc:'Front left',color:'#059669',short:'FL'},
+  3:{label:'Zone 3',desc:'Back right',color:'#b45309',short:'BR'},
+  4:{label:'Zone 4',desc:'Back left',color:'#7c3aed',short:'BL'},
+};
+
+const ATB_WALL_ZONES={
+  5:{label:'Zone 5',desc:'Front wall right',color:'#dc2626',short:'FWR'},
+  6:{label:'Zone 6',desc:'Front wall left',color:'#0891b2',short:'FWL'},
+  7:{label:'Zone 7',desc:'Side wall right',color:'#65a30d',short:'SWR'},
+  8:{label:'Zone 8',desc:'Side wall left',color:'#c026d3',short:'SWL'},
+};
+
+const ATB_GAME_FAMILIES=[
+  {
+    id:'sequential',
+    title:'Sequential Around The Board',
+    subtitle:'1 → 2 → 3 → 4 in order',
+    emoji:'🔢',
+    purpose:'Develop awareness of all four floor quadrants in a structured sequence.',
+    rationale:'Sequential targeting builds systematic court awareness. The leader sets the pace and chooses the route to each zone — the follower must find their own solution to occupy the same space.',
+    task:'Leader completes zones 1 → 2 → 3 → 4 in order. Follower completes the same sequence. After completion the sequence restarts. Route to each zone is unrestricted.',
+    scoring:'Checkerboard: Win Rally +1, Zone Completion +1, Full Circuit +2.',
+    levels:['A — Coach calls zone','B — Leader calls zone aloud','C — Leader chooses silently','D — Four zones then open rally'],
+    coach:'Watch for players who hit the same shot every time to reach the zone. The constraint is occupancy, not trajectory. If a player finds only one solution, reduce the zone size or add a Checkerboard overlay.',
+    player:'Reach each zone in order. How you get there is your choice.',
+    develops:['Systematic court awareness','Zone recognition','Movement planning','Sequential memory'],
+  },
+  {
+    id:'circuit',
+    title:'Complete The Circuit',
+    subtitle:'All 4 zones — any order',
+    emoji:'🔄',
+    purpose:'Develop planning, memory and full-court awareness.',
+    rationale:'Removing the sequence requirement forces the player to track which zones have been completed. This adds a memory and planning dimension while preserving the spatial challenge.',
+    task:'Leader chooses zones freely but must complete all four (1, 2, 3, 4) before restarting. The order is their choice. Follower completes the same circuit.',
+    scoring:'Single Circuit +1, Double Circuit +2, Triple Circuit +3.',
+    levels:['Standard — all 4 zones in any order','Advanced — timed circuit under pressure','Elite — circuit against live opponent'],
+    coach:'Note whether players complete the circuit efficiently or revisit zones. Revisiting tells you about working memory and spatial planning under pressure.',
+    player:'Complete all four zones in any order. Track what you have used.',
+    develops:['Court planning','Working memory','Spatial awareness','Decision making'],
+  },
+  {
+    id:'free',
+    title:'Free Around The Board',
+    subtitle:'Leader chooses — follower matches',
+    emoji:'🆓',
+    purpose:'Reactive adaptation, recognition and decision making.',
+    rationale:'The leader has full spatial freedom. The follower must read, react and find a different route to the same destination. This is the most representative form — it mirrors tactical decision making in competition.',
+    task:'Leader chooses any zone freely. Follower uses the same zone. No sequence requirement. The game is won by completing the most zones.',
+    scoring:'Win Rally +1, Zone Completion +1.',
+    levels:['Basic — floor zones only','Intermediate — introduce wall zones','Advanced — hybrid wall-floor combinations'],
+    coach:'The follower should not copy the leader shot. Watch for copying — it means the player is in imitation mode rather than problem-solving mode. Change the overlay or add a route restriction.',
+    player:'Match the zone. Find your own route.',
+    develops:['Reactive adaptation','Opponent reading','Spatial recognition','Independence'],
+  },
+  {
+    id:'prescribed',
+    title:'Prescribed Routes',
+    subtitle:'Coach sets the sequence',
+    emoji:'📋',
+    purpose:'Specific spatial challenges targeting known weaknesses.',
+    rationale:'Prescribed routes allow the coach to target specific spatial combinations. A player who avoids the back corners can be given a route that requires repeated back-corner occupation.',
+    task:'Coach selects a route — for example 1-4-2-3. Leader follows the route. Follower follows the same route. After completion: open play.',
+    examples:['1-4-2-3','2-3-1-4','4-1-3-2','1-3-4-2','2-4-1-3','3-1-4-2'],
+    scoring:'Win Rally +1, Route Completion +2.',
+    levels:['Guided — coach sets route each circuit','Remembered — player memorises route','Pressure — route completed under match pressure'],
+    coach:'Choose routes that expose the spatial pattern you want to change. A player who always plays short can be given routes that require repeated length.',
+    player:'Follow the route. After the final zone — open play.',
+    develops:['Spatial flexibility','Route memory','Targeted awareness','Adaptability'],
+  },
+  {
+    id:'opposite',
+    title:'Opposite Zone',
+    subtitle:'Leader plays — follower plays opposite',
+    emoji:'↔',
+    purpose:'Directional adaptation, recognition and movement variation.',
+    rationale:'Playing the opposite zone forces the follower to solve a spatial problem in real time. It is an ecological constraint that promotes spatial thinking without instruction.',
+    task:'Leader plays any zone. Follower must play the linear or diagonal opposite.',
+    linear:['1 ↔ 2 (front right ↔ front left)','3 ↔ 4 (back right ↔ back left)'],
+    diagonal:['1 ↔ 3 (front right ↔ back left)','2 ↔ 4 (front left ↔ back right) — wait, 1↔4, 2↔3'],
+    scoring:'Win Rally +1, Correct Opposite Zone +2.',
+    levels:['Linear opposite only','Diagonal opposite only','Leader calls linear or diagonal','Free choice'],
+    coach:'Errors in the opposite zone reveal whether the player has a mental model of the court. Spatial errors without movement errors suggest a cognitive mapping problem.',
+    player:'Leader plays a zone. You play the opposite — linear or diagonal.',
+    develops:['Spatial reasoning','Directional flexibility','Court mapping','Reactive decision making'],
+  },
+  {
+    id:'wall',
+    title:'Wall Around The Board',
+    subtitle:'Zones 5 · 6 · 7 · 8',
+    emoji:'🧱',
+    purpose:'Wall awareness, shot variety and wall targeting.',
+    rationale:'Wall zones require different ball trajectories and shot selections. The follower only needs to use the same wall zone — not duplicate the shot. This opens up tactical variety and develops wall awareness at all levels.',
+    task:'Leader uses wall zones 5-8. Follower uses the same wall zone. Shot trajectory is completely unrestricted. Only zone occupancy matters.',
+    scoring:'Win Rally +1, Wall Zone Completion +1.',
+    levels:['Zones 5-6 (front wall) only','Introduce zones 7-8 (side walls)','All four wall zones','Wall zones combined with floor zones'],
+    coach:'Zone 5 and 6 are typically more accessible. Zones 7 and 8 require more tactical variety — boasts, reverse angles and cross-courts. Note which wall zones players avoid.',
+    player:'Use the same wall zone as the leader. Any trajectory is valid.',
+    develops:['Wall awareness','Shot variety','Spatial targeting','Tactical range'],
+  },
+  {
+    id:'hybrid',
+    title:'Hybrid Wall-Floor',
+    subtitle:'Wall + Floor combinations',
+    emoji:'🔀',
+    purpose:'Integrate front wall and floor awareness.',
+    rationale:'Hybrid combinations create the richest spatial challenge. Players must solve both the wall contact zone and the floor landing zone simultaneously. This is representative of high-level squash decision making.',
+    task:'Leader occupies a wall-floor combination — for example [5-1] means front wall right, landing zone 1. Follower occupies the same combination. Route is unrestricted.',
+    combinations:['[5-1] Front wall right → Front right floor','[6-2] Front wall left → Front left floor','[7-3] Side wall right → Back right floor','[8-4] Side wall left → Back left floor','[5-3] Front wall right → Back right floor','[6-4] Front wall left → Back left floor'],
+    scoring:'Win Rally +1, Combination Completion +2.',
+    levels:['Two combinations only','Four standard combinations','All six combinations','Free hybrid selection'],
+    coach:'This is the most advanced form. Introduce only when players are fluent in wall zones and floor zones independently.',
+    player:'Match the wall zone and the floor landing zone. Any route.',
+    develops:['Full court integration','Advanced spatial awareness','Tactical shot range','Planning and execution'],
+  },
+  {
+    id:'completecourt',
+    title:'Complete The Court',
+    subtitle:'All 8 zones — full court',
+    emoji:'⬛',
+    purpose:'Full-court awareness and advanced planning.',
+    rationale:'Completing all eight zones requires systematic coverage of the entire court. This is the highest-level Around The Board challenge — it develops comprehensive spatial awareness across both wall and floor zones.',
+    task:'Player must complete all eight zones (1-2-3-4 floor, 5-6-7-8 wall) before restarting. Any order. Both leader and follower complete the full circuit.',
+    scoring:'Full Circuit Completion +4.',
+    levels:['Floor zones only (1-4) as foundation','Add two wall zones','Full eight-zone circuit'],
+    coach:'Very few players will complete the full eight-zone circuit under pressure. Use this as an advanced development challenge rather than a standard session activity.',
+    player:'Complete all eight zones. Any order. Full court.',
+    develops:['Comprehensive court awareness','Advanced planning','Shot range','Elite spatial intelligence'],
+  },
+];
+
+const ATB_RLD_LEVELS=[
+  {level:1,label:'Coach Called',desc:'Coach calls each zone target',color:'#ef4444',dot:'●'},
+  {level:2,label:'Leader Called',desc:'Leader calls zone aloud before playing',color:'#f97316',dot:'●'},
+  {level:3,label:'Leader Selected',desc:'Leader chooses silently — no announcement',color:'#eab308',dot:'●'},
+  {level:4,label:'Under Pressure',desc:'Leader selects targets during live competitive play',color:'#86efac',dot:'●'},
+  {level:5,label:'Open Play',desc:'Zones emerge naturally from game play — no calling',color:'#4ade80',dot:'⦿'},
+];
+
+const ATB_SCORING_OPTIONS=[
+  {id:'standard',label:'Standard Rally',desc:'Win Rally = +1. Simple scoring.'},
+  {id:'checkerboard',label:'Checkerboard Scoring',desc:'Win Rally +1 · Zone Completion +1 · Full Circuit +2'},
+  {id:'challenge',label:'Challenge Scoring',desc:'Single Circuit +1 · Double Circuit +2 · Triple Circuit +3'},
+];
+
+function AroundTheBoardBuilder({onAddToSession}){
+  const [activeFamily,setActiveFamily]=useState(null);
+  const [activeTab,setActiveTab]=useState('families');
+  const [selectedLevel,setSelectedLevel]=useState(null);
+  const [scoringOption,setScoringOption]=useState('checkerboard');
+  const [rldLevel,setRldLevel]=useState(3);
+  const [selectedOverlays,setSelectedOverlays]=useState([]);
+  const [customRoute,setCustomRoute]=useState('');
+
+  function toggleOverlay(o){setSelectedOverlays(prev=>prev.includes(o)?prev.filter(x=>x!==o):[...prev,o]);}
+
+  function buildAndAdd(family){
+    const scoring=ATB_SCORING_OPTIONS.find(s=>s.id===scoringOption);
+    const rld=ATB_RLD_LEVELS.find(r=>r.level===rldLevel);
+    const lvl=selectedLevel||family.levels[0];
+    const overlayStr=selectedOverlays.length?` · Overlays: ${selectedOverlays.join(', ')}`:' · No overlays';
+    onAddToSession({
+      id:Date.now()+Math.random(),
+      title:family.title,
+      category:'Around The Board',
+      task:`${family.task}${family.id==='prescribed'&&customRoute?` Route: ${customRoute}`:''} · Level: ${lvl}`,
+      rationale:family.rationale,
+      coach:family.coach,
+      playerFocus:family.player,
+      scoring:scoring.desc+overlayStr,
+      layers:['Around The Board',...selectedOverlays],
+      rld:rld.label,
+      duration:15,
+    });
+  }
+
+  const family=ATB_GAME_FAMILIES.find(f=>f.id===activeFamily);
+
+  return <div className="atbBuilder">
+
+    {/* Header */}
+    <div className="atbHeader">
+      <div className="categoryTag" style={{background:'#0e7490',marginBottom:'10px',display:'inline-block'}}>Around The Board</div>
+      <h2>Around The Board</h2>
+      <p className="atbSubtitle">Occupy Space. Create Solutions.</p>
+      <p className="mutedText">Players learn to recognise and use different areas of the court while remaining in representative squash. The game rewards occupancy of affordance spaces — not technical execution.</p>
+    </div>
+
+    {/* Tab bar */}
+    <div className="atbTabBar">
+      {[{id:'families',label:'🎮 Game Families'},{id:'settings',label:'⚙ Settings'},{id:'court',label:'🗺 Court Map'},{id:'principles',label:'📋 Principles'}].map(t=>
+        <button key={t.id} type="button" className={activeTab===t.id?'atbTabActive':'atbTabBtn'} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
+      )}
+    </div>
+
+    {/* ── GAME FAMILIES ── */}
+    {activeTab==='families'&&<div className="atbFamilySection">
+      {!activeFamily
+        ?<div className="atbFamilyGrid">
+          {ATB_GAME_FAMILIES.map(f=><button key={f.id} type="button" className="atbFamilyCard" onClick={()=>setActiveFamily(f.id)}>
+            <span className="atbFamilyEmoji">{f.emoji}</span>
+            <strong>{f.title}</strong>
+            <span>{f.subtitle}</span>
+            <p>{f.purpose}</p>
+          </button>)}
+        </div>
+        :<div className="atbFamilyDetail">
+          <button type="button" className="secondaryBtn atbBackBtn" onClick={()=>setActiveFamily(null)}>← All Families</button>
+          <div className="atbDetailHeader">
+            <span className="atbDetailEmoji">{family.emoji}</span>
+            <div>
+              <h2>{family.title}</h2>
+              <span className="atbDetailSub">{family.subtitle}</span>
+            </div>
+          </div>
+
+          <div className="atbDetailGrid">
+            <div className="atbDetailCard atbPurpose">
+              <strong>Purpose</strong><p>{family.purpose}</p>
+            </div>
+            <div className="atbDetailCard atbRationale">
+              <strong>Rationale</strong><p>{family.rationale}</p>
+            </div>
+            <div className="atbDetailCard atbTask">
+              <strong>Task</strong><p>{family.task}</p>
+              {family.id==='prescribed'&&<div style={{marginTop:'10px'}}>
+                <strong style={{display:'block',marginBottom:'6px',color:'#9bc1ff',fontSize:'12px'}}>Example Routes</strong>
+                <div className="atbRouteChips">{(family.examples||[]).map(r=><button key={r} type="button" className={customRoute===r?'atbRouteActive':'atbRouteChip'} onClick={()=>setCustomRoute(r)}>{r}</button>)}</div>
+                <input className="atbRouteInput" value={customRoute} onChange={e=>setCustomRoute(e.target.value)} placeholder="Or type custom route e.g. 1-3-2-4"/>
+              </div>}
+              {family.combinations&&<div style={{marginTop:'10px'}}>
+                <strong style={{display:'block',marginBottom:'6px',color:'#9bc1ff',fontSize:'12px'}}>Standard Combinations</strong>
+                <div className="atbRouteChips">{family.combinations.map(c=><span key={c} className="atbComboTag">{c}</span>)}</div>
+              </div>}
+              {family.linear&&<div style={{marginTop:'10px'}}>
+                <div className="atbOppositeGrid">
+                  <div><strong style={{color:'#4ade80',fontSize:'12px'}}>Linear</strong>{family.linear.map(l=><p key={l} style={{color:'#c4c9d9',fontSize:'13px',margin:'4px 0'}}>{l}</p>)}</div>
+                </div>
+              </div>}
+            </div>
+            <div className="atbDetailCard atbCoach">
+              <strong>Coach Note</strong><p>{family.coach}</p>
+            </div>
+            <div className="atbDetailCard atbPlayer">
+              <strong>Player Instruction</strong><p>{family.player}</p>
+            </div>
+            <div className="atbDetailCard atbDevelops">
+              <strong>Develops</strong>
+              <div className="atbDevelopsPills">{family.develops.map(d=><span key={d}>{d}</span>)}</div>
+            </div>
+          </div>
+
+          <div className="atbLevelsSection">
+            <strong>Level Variations</strong>
+            <div className="atbLevelBtns">
+              {family.levels.map(l=><button key={l} type="button"
+                className={selectedLevel===l?'atbLevelActive':'atbLevelBtn'}
+                onClick={()=>setSelectedLevel(l)}>{l}</button>)}
+            </div>
+          </div>
+
+          <div className="atbRLDSection">
+            <strong>Representative Learning Demand</strong>
+            <div className="atbRLDRow">
+              {ATB_RLD_LEVELS.map(r=><button key={r.level} type="button"
+                className={'atbRLDBtn'+(rldLevel===r.level?' atbRLDActive':'')}
+                style={rldLevel===r.level?{borderColor:r.color,background:r.color+'22'}:{}}
+                onClick={()=>setRldLevel(r.level)}>
+                <span style={{color:r.color,fontSize:'18px'}}>{r.dot}</span>
+                <strong>{r.label}</strong>
+                <span>{r.desc}</span>
+              </button>)}
+            </div>
+          </div>
+
+          <div className="atbScoringSection">
+            <strong>Scoring</strong>
+            <div className="atbScoringBtns">
+              {ATB_SCORING_OPTIONS.map(s=><button key={s.id} type="button"
+                className={scoringOption===s.id?'atbScoringActive':'atbScoringBtn'}
+                onClick={()=>setScoringOption(s.id)}>
+                <strong>{s.label}</strong>
+                <span>{s.desc}</span>
+              </button>)}
+            </div>
+          </div>
+
+          <div className="atbOverlaySection">
+            <strong>Checkerboard Overlays (optional)</strong>
+            <div className="atbOverlayChips">
+              {ATB_OVERLAYS.map(o=><button key={o} type="button"
+                className={selectedOverlays.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleOverlay(o)}>{o}</button>)}
+            </div>
+          </div>
+
+          <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
+            Add {family.title} to Session
+          </button>
+        </div>
+      }
+    </div>}
+
+    {/* ── SETTINGS ── */}
+    {activeTab==='settings'&&<div className="atbSettingsPanel">
+      <h3>Global Settings</h3>
+      <div className="atbSettingSection">
+        <strong>Default Scoring Mode</strong>
+        <div className="atbScoringBtns">
+          {ATB_SCORING_OPTIONS.map(s=><button key={s.id} type="button"
+            className={scoringOption===s.id?'atbScoringActive':'atbScoringBtn'}
+            onClick={()=>setScoringOption(s.id)}>
+            <strong>{s.label}</strong>
+            <span>{s.desc}</span>
+          </button>)}
+        </div>
+      </div>
+      <div className="atbSettingSection">
+        <strong>Default RLD Level</strong>
+        <div className="atbRLDRow">
+          {ATB_RLD_LEVELS.map(r=><button key={r.level} type="button"
+            className={'atbRLDBtn'+(rldLevel===r.level?' atbRLDActive':'')}
+            style={rldLevel===r.level?{borderColor:r.color,background:r.color+'22'}:{}}
+            onClick={()=>setRldLevel(r.level)}>
+            <span style={{color:r.color,fontSize:'18px'}}>{r.dot}</span>
+            <strong>{r.label}</strong>
+            <span>{r.desc}</span>
+          </button>)}
+        </div>
+      </div>
+    </div>}
+
+    {/* ── COURT MAP ── */}
+    {activeTab==='court'&&<div className="atbCourtPanel">
+      <h3>Court Zone Map</h3>
+      <p className="mutedText">Visual reference for all 8 zones. Floor zones 1-4 in blue tones. Wall zones 5-8 in warm tones.</p>
+      <div className="atbCourtDiagram">
+        <div className="atbCourtWall">
+          <div className="atbWallLabel">Front Wall</div>
+          <div className="atbWallZones">
+            <div className="atbWallZone" style={{background:'#dc262622',borderColor:'#dc2626'}}><span>5</span><small>FW Right</small></div>
+            <div className="atbWallZone" style={{background:'#0891b222',borderColor:'#0891b2'}}><span>6</span><small>FW Left</small></div>
+          </div>
+        </div>
+        <div className="atbCourtFloor">
+          <div className="atbSideWallZone left" style={{background:'#65a30d22',borderColor:'#65a30d'}}><span style={{writingMode:'vertical-rl'}}>7 SW Right</span></div>
+          <div className="atbFloorGrid">
+            <div className="atbFloorZone" style={{background:'#1d4ed822',borderColor:'#1d4ed8'}}><span>1</span><small>Front Right</small></div>
+            <div className="atbFloorZone" style={{background:'#05966922',borderColor:'#059669'}}><span>2</span><small>Front Left</small></div>
+            <div className="atbFloorZone" style={{background:'#b4530922',borderColor:'#b45309'}}><span>3</span><small>Back Right</small></div>
+            <div className="atbFloorZone" style={{background:'#7c3aed22',borderColor:'#7c3aed'}}><span>4</span><small>Back Left</small></div>
+          </div>
+          <div className="atbSideWallZone right" style={{background:'#c026d322',borderColor:'#c026d3'}}><span style={{writingMode:'vertical-rl'}}>8 SW Left</span></div>
+        </div>
+        <div className="atbCourtBack"><div className="atbWallLabel">Back Wall / Glass</div></div>
+      </div>
+      <div className="atbZoneKey">
+        <strong>Floor Zones</strong>
+        <div className="atbZoneKeyGrid">
+          {Object.entries(ATB_FLOOR_ZONES).map(([k,v])=><div key={k} className="atbZoneKeyItem" style={{borderColor:v.color}}>
+            <span style={{color:v.color,fontWeight:900}}>{k}</span><strong>{v.desc}</strong>
+          </div>)}
+        </div>
+        <strong style={{marginTop:'12px',display:'block'}}>Wall Zones</strong>
+        <div className="atbZoneKeyGrid">
+          {Object.entries(ATB_WALL_ZONES).map(([k,v])=><div key={k} className="atbZoneKeyItem" style={{borderColor:v.color}}>
+            <span style={{color:v.color,fontWeight:900}}>{k}</span><strong>{v.desc}</strong>
+          </div>)}
+        </div>
+      </div>
+    </div>}
+
+    {/* ── PRINCIPLES ── */}
+    {activeTab==='principles'&&<div className="atbPrinciplesPanel">
+      <h3>Around The Board Principles</h3>
+      <div className="atbPrinciplesGrid">
+        {[
+          {p:'Occupancy before technique',d:'The goal is to occupy the target zone. How the player gets there is their own solution.'},
+          {p:'Space before stroke',d:'The spatial problem comes first. The stroke emerges from the movement solution.'},
+          {p:'Perception before correction',d:'If a player cannot occupy a zone consistently, check their reading of available space before correcting technique.'},
+          {p:'Variability before repetition',d:'The value of Around The Board is in the variety of solutions required. Do not reduce variability by prescribing routes unnecessarily.'},
+          {p:'Adaptation before perfection',d:'Players do not need to reproduce identical shots. They only need to achieve the same target outcome.'},
+          {p:'Discovery before instruction',d:'Let players find solutions to spatial problems through exploration. Only intervene when the player is not solving the problem at all.'},
+        ].map(item=><div key={item.p} className="atbPrincipleCard">
+          <strong>{item.p}</strong>
+          <p>{item.d}</p>
+        </div>)}
+      </div>
+      <div className="atbCoreLogic">
+        <h3>Core Game Logic — Leader-Follower Model</h3>
+        <div className="atbLogicGrid">
+          <div className="atbLogicCard"><strong>Leader</strong><p>Selects the target zone. Chooses any route, shot or trajectory to occupy it.</p></div>
+          <div className="atbLogicCard"><strong>Follower</strong><p>Must also occupy the same zone. Route is completely unrestricted. No copying required.</p></div>
+          <div className="atbLogicCard atbLogicKey"><strong>Key Rule</strong><p>Players are never required to copy trajectories or swing patterns. Only target completion matters. This preserves representative play.</p></div>
+        </div>
+      </div>
+    </div>}
+
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -4116,6 +4529,7 @@ function Games({setSession,setScreen}){
   const gameClasses=[
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
+    {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play™',category:'Power Play'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'technical',label:'Technical',category:'Technical'},
@@ -4209,6 +4623,7 @@ function Games({setSession,setScreen}){
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
@@ -4217,9 +4632,9 @@ function Games({setSession,setScreen}){
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
-    {activeClassId&&!['powerplay','saved'].includes(activeClassId)&&<div className="dbPanelBelowBuilders"><UniversalDBHandicapPanel onAddToSession={addStay}/></div>}
+    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&<div className="dbPanelBelowBuilders"><UniversalDBHandicapPanel onAddToSession={addStay}/></div>}
 
-    {activeClassId&&!['checkerboard','atl','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
