@@ -3707,12 +3707,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [playerBounces,setPlayerBounces]=useState(()=>getSavedCompetitionState().playerBounces||{});
   const [manualPlayers,setManualPlayers]=useState(()=>getSavedCompetitionState().manualPlayers||'');
   const [matchScore,setMatchScore]=useState(()=>getSavedCompetitionState().matchScore||{a:0,b:0});
+  const [matchplayMatchFormat,setMatchplayMatchFormat]=useState(()=>getSavedCompetitionState().matchplayMatchFormat||'Best of 1');
   const [scoringMode,setScoringMode]=useState(()=>getSavedCompetitionState().scoringMode||'normal');
   const [competitionMatchScores,setCompetitionMatchScores]=useState(()=>getSavedCompetitionState().competitionMatchScores||{});
   const [matchPlayers,setMatchPlayers]=useState(()=>getSavedCompetitionState().matchPlayers||{a:'Player A',b:'Player B'});
   const [matchScoring,setMatchScoring]=useState(()=>getSavedCompetitionState().matchScoring||'PAR 11');
   const [rrFixtures,setRrFixtures]=useState(()=>getSavedCompetitionState().rrFixtures||[]);
   const [rrResults,setRrResults]=useState(()=>getSavedCompetitionState().rrResults||{});
+  const [rrMatchFormat,setRrMatchFormat]=useState(()=>getSavedCompetitionState().rrMatchFormat||'Best of 1');
   const [rrBoxCount,setRrBoxCount]=useState(()=>getSavedCompetitionState().rrBoxCount||1);
   const [rrBoxes,setRrBoxes]=useState(()=>getSavedCompetitionState().rrBoxes||[]);
   const [rrBoxFixtures,setRrBoxFixtures]=useState(()=>getSavedCompetitionState().rrBoxFixtures||[]);
@@ -3853,43 +3855,68 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(Number.isNaN(n)||loserScore===''||n<0) return '';
     return n<10 ? 11 : n+2;
   }
-  function ScoreEntry({scoreId,match,onWinner}){
+  function ScoreEntry({scoreId,match,onWinner,matchFormat}){
+    const gamesNeeded=matchFormat==='Best of 5'?5:matchFormat==='Best of 3'?3:1;
     const saved=getCompetitionScore(scoreId);
-    const [local,setLocal]=useState({a:saved.a??'',b:saved.b??'',last:saved.last||''});
+    // games: array of {a:'', b:''} per game
+    const initGames=()=>{
+      if(saved.games&&saved.games.length) return saved.games;
+      return Array.from({length:gamesNeeded},()=>({a:'',b:''}));
+    };
+    const [games,setGames]=useState(initGames);
+    const [last,setLast]=useState(saved.last||'');
 
-    function changeNormal(side,value){
+    // Ensure games array length matches format
+    const displayGames=Array.from({length:gamesNeeded},(_,i)=>games[i]||{a:'',b:''});
+
+    function changeGame(gameIdx,side,value){
       const cleaned=value.replace(/[^0-9]/g,'');
-      const winnerScore=normalWinningScore(cleaned);
-      if(side==='a'){
-        setLocal({a:cleaned,b:winnerScore,last:'a'});
-      }else{
-        setLocal({a:winnerScore,b:cleaned,last:'b'});
-      }
+      setGames(prev=>{
+        const next=[...prev];
+        while(next.length<=gameIdx) next.push({a:'',b:''});
+        if(scoringMode==='normal'){
+          const winnerScore=normalWinningScore(cleaned);
+          if(side==='a') next[gameIdx]={a:cleaned,b:winnerScore};
+          else next[gameIdx]={a:winnerScore,b:cleaned};
+        } else {
+          next[gameIdx]={...next[gameIdx],[side]:cleaned};
+        }
+        return next;
+      });
+      setLast(side);
     }
 
-    function changeCustom(side,value){
-      const cleaned=value.replace(/[^0-9]/g,'');
-      setLocal(prev=>({...prev,[side]:cleaned,last:side}));
+    function calcGameWinner(g){
+      const a=Number(g.a);const b=Number(g.b);
+      if(g.a===''||g.b==='') return null;
+      if(scoringMode==='normal') return g.a!==''&&g.b!==''?(Number(g.b)<Number(g.a)?'a':'b'):null;
+      if(a===b) return null;
+      return a>b?'a':'b';
+    }
+
+    function calcMatchWinner(){
+      const needed=Math.ceil(gamesNeeded/2);
+      let winsA=0;let winsB=0;
+      for(const g of displayGames){
+        const gw=calcGameWinner(g);
+        if(gw==='a') winsA++;
+        if(gw==='b') winsB++;
+      }
+      if(winsA>=needed) return match.a;
+      if(winsB>=needed) return match.b;
+      return '';
     }
 
     function saveResult(){
-      const next={a:local.a,b:local.b,last:local.last,mode:scoringMode};
-      setCompetitionMatchScores(prev=>({...prev,[scoreId]:next}));
-      const a=Number(local.a);
-      const b=Number(local.b);
-      let winner='';
-      if(scoringMode==='normal'){
-        if(local.last==='a') winner=match.b;
-        if(local.last==='b') winner=match.a;
-      }else if(!Number.isNaN(a)&&!Number.isNaN(b)&&a!==b){
-        winner=a>b?match.a:match.b;
-      }
+      const winner=calcMatchWinner();
+      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,last,mode:scoringMode}}));
       if(winner) onWinner(winner);
     }
 
-    const saveDisabled=scoringMode==='normal'
-      ? !(local.last&&local.a!==''&&local.b!=='')
-      : !(local.a!==''&&local.b!==''&&Number(local.a)!==Number(local.b));
+    const matchWinner=calcMatchWinner();
+    const needed=Math.ceil(gamesNeeded/2);
+    let winsA=0;let winsB=0;
+    displayGames.forEach(g=>{const gw=calcGameWinner(g);if(gw==='a')winsA++;if(gw==='b')winsB++;});
 
     return <div className="cleanScoreEntry">
       <div className="cleanScoreNames">
@@ -3897,14 +3924,33 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <span>vs</span>
         <strong>{match.b}</strong>
       </div>
-      <div className="cleanScoreInputs courtside">
-        {scoringMode==='normal'
-          ?<><input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder="Loser →" onChange={e=>changeNormal('a',e.target.value)} /><span className="scoreAutoLabel">{local.a!==''?local.b:''}</span></>
-          :<><input inputMode="numeric" pattern="[0-9]*" value={local.a} placeholder={match.a} onChange={e=>changeCustom('a',e.target.value)} /><input inputMode="numeric" pattern="[0-9]*" value={local.b} placeholder={match.b} onChange={e=>changeCustom('b',e.target.value)} /></>
-        }
-      </div>
-      {scoringMode==='normal'&&<div className="scoreEntryHint">Enter the loser's score — winner score auto-fills.</div>}
-      <button type="button" className="primaryBtn saveResultBtn" disabled={saveDisabled} onClick={saveResult}>Save Result</button>
+      {gamesNeeded>1&&<div className="matchScoreSummary">
+        <span className={winsA>=needed?'matchWinnerSpan':''}>{match.a}: {winsA} game{winsA!==1?'s':''}</span>
+        <span className={winsB>=needed?'matchWinnerSpan':''}>{match.b}: {winsB} game{winsB!==1?'s':''}</span>
+      </div>}
+      {displayGames.map((g,idx)=>{
+        const gw=calcGameWinner(g);
+        // Only show next game if previous is decided (or it's game 1)
+        const prevDecided=idx===0||calcGameWinner(displayGames[idx-1])!==null;
+        // Hide games beyond what's needed
+        const matchOver=winsA>=needed||winsB>=needed;
+        const gameOver=calcGameWinner(displayGames[idx-1]||{a:'x',b:'y'})!==null||idx===0;
+        if(matchOver&&gw===null&&idx>0) return null;
+        return <div key={idx} className={`gameScoreRow${gw?' gameScoreDecided':''}`}>
+          <span className="gameLabel">Game {idx+1}</span>
+          <div className="gameScoreInputs">
+            {scoringMode==='normal'
+              ?<><input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder="Loser" onChange={e=>changeGame(idx,'a',e.target.value)} /><span className="scoreVs">→ {g.a!==''?g.b:''}</span></>
+              :<><input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder={match.a} onChange={e=>changeGame(idx,'a',e.target.value)} /><span className="scoreVs">—</span><input inputMode="numeric" pattern="[0-9]*" value={g.b} placeholder={match.b} onChange={e=>changeGame(idx,'b',e.target.value)} /></>
+            }
+          </div>
+          {gw&&<span className="gameWinnerTag">{gw==='a'?match.a:match.b} wins</span>}
+        </div>;
+      })}
+      {scoringMode==='normal'&&<div className="scoreEntryHint">Enter loser score — winner auto-fills.</div>}
+      <button type="button" className="primaryBtn saveResultBtn" disabled={!matchWinner} onClick={saveResult}>
+        {matchWinner?`Save — ${matchWinner} wins`:'Save Result'}
+      </button>
     </div>;
   }
 
@@ -4737,14 +4783,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(!competitionRestoredRef.current) return;
     try{
       localStorage.setItem(COMPETITION_STATE_KEY,JSON.stringify({
-        mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,
-        rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
+        mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,
+        rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
         monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,
         nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,
         updatedAt:new Date().toISOString()
       }));
     }catch{}
-  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
+  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
 
   useEffect(()=>{
     const projectionState={
@@ -4881,7 +4927,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                       return <div className="monradMatchCard" key={midx}>
                         <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.a)}>Win</button>}</div>
                         <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span>{match.b!=='BYE'&&<button type="button" onClick={()=>setMonradWinner(ridx,midx,match.b)}>Win</button>}</div>
-                        {match.b!=='BYE'&&<ScoreEntry scoreId={scoreKey('monrad',ridx,midx)} match={match} onWinner={winner=>setMonradWinner(ridx,midx,winner)} />}
+                        {match.b!=='BYE'&&<ScoreEntry scoreId={scoreKey('monrad',ridx,midx)} match={match} matchFormat={monradMatchFormat} onWinner={winner=>setMonradWinner(ridx,midx,winner)} />}
                       </div>;
                     })}
                   </div>
@@ -5255,6 +5301,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
         {mode==='matchplay'&&(
           <div className="matchplayPanel">
+            <div className="monradMatchFormatRow">
+              <strong>Match Format</strong>
+              <div className="monradFormatBtns">
+                {['Best of 1','Best of 3','Best of 5'].map(fmt=><button type="button" key={fmt} className={matchplayMatchFormat===fmt?'activeMonradFormat':'secondaryBtn'} onClick={()=>setMatchplayMatchFormat(fmt)}>{fmt}</button>)}
+              </div>
+            </div>
             <div className="atlOptionsGrid">
               <label>Player A
                 <select value={matchPlayers.a} onChange={e=>setMatchPlayers(prev=>({...prev,a:e.target.value}))}>
@@ -5279,21 +5331,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </select>
               </label>
             </div>
-
-            <div className="matchScoreBoard">
-              <div>
-                <strong>{matchPlayers.a}</strong>
-                <span>{matchScore.a}</span>
-                <div className="scoreButtonRow"><button className="secondaryBtn" onClick={()=>setMatchScore(prev=>({...prev,a:Math.max(0,prev.a-1)}))}>-1</button><button className="primaryBtn" onClick={()=>setMatchScore(prev=>({...prev,a:prev.a+1}))}>+1</button></div>
-              </div>
-              <div>
-                <strong>{matchPlayers.b}</strong>
-                <span>{matchScore.b}</span>
-                <div className="scoreButtonRow"><button className="secondaryBtn" onClick={()=>setMatchScore(prev=>({...prev,b:Math.max(0,prev.b-1)}))}>-1</button><button className="primaryBtn" onClick={()=>setMatchScore(prev=>({...prev,b:prev.b+1}))}>+1</button></div>
-              </div>
-            </div>
-
-            <button className="secondaryBtn" onClick={resetMatch}>Reset Match Score</button>
+            {matchPlayers.a&&matchPlayers.b&&<ScoreEntry
+              scoreId="matchplay-main"
+              match={{a:matchPlayers.a,b:matchPlayers.b}}
+              matchFormat={matchplayMatchFormat}
+              onWinner={winner=>{}}
+            />}
+            {(!matchPlayers.a||!matchPlayers.b)&&<div className="placeholder">Select both players above to enter scores.</div>}
+            <button className="secondaryBtn" style={{marginTop:'10px'}} onClick={resetMatch}>Reset Match Score</button>
           </div>
         )}
 
@@ -5302,6 +5347,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             <div className="drawHeaderCard">
               <h2>Round Robin Box Engine</h2>
               <p>Choose one or more boxes. First stage boxes feed final placing boxes: box winners play for top places, second-placed players play for the next places, and so on.</p>
+              <div className="monradMatchFormatRow">
+                <strong>Match Format</strong>
+                <div className="monradFormatBtns">
+                  {['Best of 1','Best of 3','Best of 5'].map(fmt=><button type="button" key={fmt} className={rrMatchFormat===fmt?'activeMonradFormat':'secondaryBtn'} onClick={()=>setRrMatchFormat(fmt)}>{fmt}</button>)}
+                </div>
+              </div>
               <div className="atlOptionsGrid">
                 <label>Number of boxes
                   <select value={rrBoxCount} onChange={e=>setRrBoxCount(Number(e.target.value))}>
@@ -5337,7 +5388,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                             return <div className="drawMatchBox" key={midx}>
                               <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.a,'group')}>Win</button></div>
                               <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.b,'group')}>Win</button></div>
-                              <ScoreEntry scoreId={scoreKey('rr-group',ridx,midx,bidx)} match={match} onWinner={winner=>setRrBoxWinner(bidx,ridx,midx,winner,'group')} />
+                              <ScoreEntry scoreId={scoreKey('rr-group',ridx,midx,bidx)} match={match} matchFormat={rrMatchFormat} onWinner={winner=>setRrBoxWinner(bidx,ridx,midx,winner,'group')} />
                             </div>;
                           })}
                         </div>
@@ -5372,7 +5423,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                             return <div className="drawMatchBox" key={midx}>
                               <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.a}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.a,'final')}>Win</button></div>
                               <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{match.b}</span><button type="button" onClick={()=>setRrBoxWinner(bidx,ridx,midx,match.b,'final')}>Win</button></div>
-                              <ScoreEntry scoreId={scoreKey('rr-final',ridx,midx,bidx)} match={match} onWinner={winner=>setRrBoxWinner(bidx,ridx,midx,winner,'final')} />
+                              <ScoreEntry scoreId={scoreKey('rr-final',ridx,midx,bidx)} match={match} matchFormat={rrMatchFormat} onWinner={winner=>setRrBoxWinner(bidx,ridx,midx,winner,'final')} />
                             </div>;
                           })}
                         </div>
@@ -5436,7 +5487,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 <button className="secondaryBtn dangerBtn" onClick={()=>{setMonradRounds([]);setMonradResults({});setMonradPlacingRounds([]);setMonradPlacingResults({});setMonradFinalPlaces({});}}>Reset Monrad</button>
               </div>
             </div>
-            {monradPlacingRounds.length>0&&(
+            {monradPlacingRounds.length>0&&false&&(
               <div className="monradPathwayDisplay">
                 <strong>Live Pathway</strong>
                 <div className="monradPathwayScroll">
@@ -5467,7 +5518,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                             return <div className="monradMatchCard" key={midx}>
                               <div className={winner===match.a?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{isByeName(match.a)?'BYE':match.a}</span>{!auto&&!isByeName(match.a)&&<button type="button" onClick={()=>setMonradPlaceWinner(ridx,group.id,midx,match.a)}>Win</button>}</div>
                               <div className={winner===match.b?'drawPlayerLine winnerLine':'drawPlayerLine'}><span>{isByeName(match.b)?'BYE':match.b}</span>{!auto&&!isByeName(match.b)&&<button type="button" onClick={()=>setMonradPlaceWinner(ridx,group.id,midx,match.b)}>Win</button>}</div>
-                              {!auto&&<ScoreEntry scoreId={scoreKey('monrad-place',ridx,midx,group.id)} match={match} onWinner={winner=>setMonradPlaceWinner(ridx,group.id,midx,winner)} />}
+                              {!auto&&<ScoreEntry scoreId={scoreKey('monrad-place',ridx,midx,group.id)} match={match} matchFormat={monradMatchFormat} onWinner={winner=>setMonradPlaceWinner(ridx,group.id,midx,winner)} />}
                             </div>;
                           })}
                         </div>
