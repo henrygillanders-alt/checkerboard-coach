@@ -5871,3 +5871,184 @@ button.mentalSkillsTile p{
 .tauReferences strong{display:block;color:#9bc1ff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
 .tauReferences p{color:#9fb0c8;font-size:13px;margin:0 0 6px;line-height:1.5;}
 .tauReferences em{color:#c4c9d9;font-style:italic;}
+
+
+/* ── AROUND THE BOARD MODULE ────────────────────────────────────── v100h54 ── */
+
+.atbBuilder{padding-bottom:30px;}
+.atbHeader{
+  background:linear-gradient(135deg,#0c4a6e 0%,#0e7490 50%,#0a3d54 100%);
+  border:2px solid #22d3ee;
+  border-radius:20px;
+  padding:22px 26px;
+  margin-bottom:16px;
+}
+.atbHeader h2{color:#fff;font-size:26px;margin:8px 0 4px;}
+.atbSubtitle{color:#22d3ee;font-size:16px;font-weight:800;margin:0 0 8px;display:block;}
+.atbHeader .mutedText{color:#bae6fd;font-size:14px;margin:0;}
+
+/* Tab bar */
+.atbTabBar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.atbTabActive{background:#0e7490;border:2px solid #22d3ee;color:#fff;border-radius:12px;padding:10px 18px;font-weight:900;font-size:14px;cursor:pointer;}
+.atbTabBtn{background:#0b1828;border:1px solid #2f4d72;color:#9fb0c8;border-radius:12px;padding:10px 18px;font-weight:900;font-size:14px;cursor:pointer;}
+.atbTabBtn:hover{border-color:#22d3ee;color:#fff;}
+
+/* Family grid */
+.atbFamilyGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+}
+.atbFamilyCard{
+  background:#0b1828;
+  border:2px solid #2f4d72;
+  border-radius:18px;
+  padding:20px 16px;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  transition:border-color .15s,transform .12s;
+}
+.atbFamilyCard:hover{border-color:#22d3ee;transform:translateY(-2px);}
+.atbFamilyEmoji{font-size:28px;}
+.atbFamilyCard strong{color:#fff;font-size:16px;font-weight:900;}
+.atbFamilyCard span{color:#22d3ee;font-size:13px;font-weight:700;}
+.atbFamilyCard p{color:#9fb0c8;font-size:13px;margin:0;line-height:1.5;}
+
+/* Family detail */
+.atbBackBtn{margin-bottom:16px;}
+.atbDetailHeader{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;}
+.atbDetailEmoji{font-size:40px;flex-shrink:0;}
+.atbDetailHeader h2{color:#fff;font-size:24px;margin:0 0 4px;}
+.atbDetailSub{color:#22d3ee;font-size:14px;font-weight:800;}
+
+.atbDetailGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;
+  margin-bottom:20px;
+}
+.atbDetailCard{
+  border-radius:14px;
+  padding:14px 16px;
+}
+.atbDetailCard strong{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.atbDetailCard p{font-size:13px;margin:0;line-height:1.5;}
+.atbPurpose{background:#0a2e3a;border:1px solid #22d3ee;}
+.atbPurpose strong{color:#22d3ee;}
+.atbPurpose p{color:#bae6fd;}
+.atbRationale{background:#071015;border:1px solid #5e83be;}
+.atbRationale strong{color:#9bc1ff;}
+.atbRationale p{color:#c4c9d9;}
+.atbTask{background:#0a1a0e;border:1px solid #4ade80;}
+.atbTask strong{color:#4ade80;}
+.atbTask p{color:#c4c9d9;}
+.atbCoach{background:#1a1000;border:1px solid #ffd980;}
+.atbCoach strong{color:#ffd980;}
+.atbCoach p{color:#fef3c7;}
+.atbPlayer{background:#1e1040;border:1px solid #c4b5fd;}
+.atbPlayer strong{color:#c4b5fd;}
+.atbPlayer p{color:#ede9fe;}
+.atbDevelops{background:#0b1020;border:1px solid #2a3560;}
+.atbDevelops strong{color:#9fb0c8;}
+.atbDevelopsPills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.atbDevelopsPills span{background:#0e7490;border:1px solid #22d3ee;color:#cffafe;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;}
+
+/* Route inputs */
+.atbRouteChips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.atbRouteChip{background:#071015;border:1px solid #2f4d72;color:#9bc1ff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;}
+.atbRouteActive{background:#0e7490;border-color:#22d3ee;color:#fff;}
+.atbRouteInput{background:#071015;border:1px solid #2f4d72;border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;width:100%;margin-top:4px;}
+.atbComboTag{background:#071015;border:1px solid #2f4d72;color:#9bc1ff;border-radius:8px;padding:5px 10px;font-size:12px;display:inline-block;}
+
+/* Levels */
+.atbLevelsSection{margin-bottom:16px;}
+.atbLevelsSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.atbLevelBtns{display:flex;flex-direction:column;gap:6px;}
+.atbLevelBtn{background:#0b1020;border:1px solid #2a3560;color:#9fb0c8;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;text-align:left;}
+.atbLevelActive{background:#0c4a6e;border-color:#22d3ee;color:#fff;}
+
+/* RLD */
+.atbRLDSection{margin-bottom:16px;}
+.atbRLDSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.atbRLDRow{display:flex;flex-wrap:wrap;gap:8px;}
+.atbRLDBtn{background:#0b1020;border:2px solid #2a3560;border-radius:12px;padding:10px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:100px;text-align:center;}
+.atbRLDBtn strong{color:#fff;font-size:12px;font-weight:900;}
+.atbRLDBtn span:last-child{color:#9fb0c8;font-size:11px;}
+
+/* Scoring */
+.atbScoringSection{margin-bottom:16px;}
+.atbScoringSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.atbScoringBtns{display:flex;flex-direction:column;gap:8px;}
+.atbScoringBtn{background:#0b1020;border:1px solid #2a3560;border-radius:12px;padding:12px 16px;cursor:pointer;text-align:left;}
+.atbScoringActive{background:#0c4a6e;border:2px solid #22d3ee;}
+.atbScoringBtn strong,.atbScoringActive strong{display:block;color:#fff;font-size:14px;margin-bottom:3px;}
+.atbScoringBtn span,.atbScoringActive span{color:#9fb0c8;font-size:13px;}
+.atbScoringActive span{color:#bae6fd;}
+
+/* Overlays */
+.atbOverlaySection{margin-bottom:20px;}
+.atbOverlaySection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.atbOverlayChips{display:flex;flex-wrap:wrap;gap:6px;}
+.atbOverlayChip{background:#0b1020;border:1px solid #2a3560;color:#9fb0c8;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;}
+.atbOverlayActive{background:#166534;border-color:#4ade80;color:#fff;}
+
+.atbAddBtn{width:100%;padding:16px;font-size:16px;}
+
+/* Court diagram */
+.atbCourtPanel h3{color:#22d3ee;margin:0 0 8px;}
+.atbCourtDiagram{
+  background:#050f1a;
+  border:2px solid #2f4d72;
+  border-radius:18px;
+  padding:20px;
+  margin:16px 0;
+}
+.atbCourtWall{text-align:center;margin-bottom:10px;}
+.atbWallLabel{color:#9fb0c8;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.atbWallZones{display:flex;gap:8px;justify-content:center;}
+.atbWallZone{flex:1;border:2px solid;border-radius:10px;padding:10px;text-align:center;max-width:160px;}
+.atbWallZone span{display:block;font-size:24px;font-weight:900;color:#fff;}
+.atbWallZone small{font-size:11px;color:#9fb0c8;}
+.atbCourtFloor{display:flex;gap:8px;margin:8px 0;}
+.atbSideWallZone{border:2px solid;border-radius:10px;padding:8px 6px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:11px;font-weight:700;color:#9fb0c8;min-width:36px;}
+.atbFloorGrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.atbFloorZone{border:2px solid;border-radius:12px;padding:14px;text-align:center;}
+.atbFloorZone span{display:block;font-size:28px;font-weight:900;color:#fff;}
+.atbFloorZone small{font-size:12px;color:#9fb0c8;}
+.atbCourtBack{text-align:center;margin-top:10px;}
+.atbZoneKey{margin-top:16px;}
+.atbZoneKey>strong{display:block;color:#ffd980;font-size:14px;margin-bottom:8px;}
+.atbZoneKeyGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px;}
+.atbZoneKeyItem{background:#0b1828;border:2px solid;border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;}
+.atbZoneKeyItem span{font-size:20px;}
+.atbZoneKeyItem strong{color:#fff;font-size:13px;}
+
+/* Principles */
+.atbPrinciplesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:20px;}
+.atbPrincipleCard{background:#0b1828;border:1px solid #2f4d72;border-left:3px solid #22d3ee;border-radius:0 12px 12px 0;padding:14px 16px;}
+.atbPrincipleCard strong{display:block;color:#22d3ee;font-size:14px;margin-bottom:6px;}
+.atbPrincipleCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+.atbCoreLogic{background:#071015;border:1px solid #5e83be;border-radius:16px;padding:18px 22px;}
+.atbCoreLogic h3{color:#9bc1ff;margin:0 0 14px;}
+.atbLogicGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.atbLogicCard{background:#0b1828;border:1px solid #2f4d72;border-radius:12px;padding:14px;}
+.atbLogicCard strong{display:block;color:#fff;font-size:14px;margin-bottom:6px;}
+.atbLogicCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+.atbLogicKey{border-color:#4ade80;background:#06200f;}
+.atbLogicKey strong{color:#4ade80;}
+
+/* Settings */
+.atbSettingsPanel h3{color:#22d3ee;margin:0 0 16px;}
+.atbSettingSection{margin-bottom:24px;}
+.atbSettingSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:12px;}
+
+.atbOppositeGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+@media(max-width:600px){
+  .atbFamilyGrid{grid-template-columns:1fr 1fr;}
+  .atbRLDRow{flex-direction:column;}
+  .atbFloorGrid{grid-template-columns:1fr 1fr;}
+}
