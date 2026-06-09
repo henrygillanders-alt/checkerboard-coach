@@ -5505,3 +5505,369 @@ button.mentalSkillsTile p{
 .exploreEntryModule span{font-size:18px;}
 .exploreEntryModule strong{color:#fff;font-size:13px;}
 @media(max-width:700px){.exploreEntryCard{grid-template-columns:1fr;}.exploreEntryModules{display:none;}}
+
+
+/* ── TOOLS MODULE ───────────────────────────────────────────────── v100h53 ── */
+
+/* Home tile */
+.toolsHomeCard{
+  background:linear-gradient(135deg,#1a0a2e 0%,#3b0f6e 50%,#1a0030 100%);
+  border:2px solid #a855f7;
+}
+
+/* Section nav — icon tabs */
+.toolsSectionNav{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:8px;
+  margin:16px 0;
+}
+.toolsSectionActive{
+  background:linear-gradient(135deg,#4c1d95,#7c3aed);
+  border:2px solid #a855f7;
+  color:#fff;
+  border-radius:14px;
+  padding:14px 10px;
+  font-weight:900;
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  box-shadow:0 4px 16px rgba(124,58,237,.4);
+}
+.toolsSectionActive span{font-size:22px;}
+.toolsSectionBtn{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  color:#9fb0c8;
+  border-radius:14px;
+  padding:14px 10px;
+  font-weight:700;
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  transition:border-color .15s,background .15s;
+}
+.toolsSectionBtn span{font-size:22px;}
+.toolsSectionBtn:hover{border-color:#7c3aed;background:#1a0a2e;color:#fff;}
+
+/* Quick Fix hero */
+.qfSection{padding-bottom:20px;}
+.qfHero{
+  background:linear-gradient(135deg,#1a0a2e 0%,#0d1f3c 60%,#1a0a2e 100%);
+  border:2px solid #a855f7;
+  border-radius:20px;
+  padding:24px 28px;
+  margin-bottom:20px;
+  position:relative;
+  overflow:hidden;
+}
+.qfHero::before{
+  content:'⚡';
+  position:absolute;
+  right:20px;top:16px;
+  font-size:60px;
+  opacity:.08;
+  pointer-events:none;
+}
+.qfHero h2{color:#fff;font-size:26px;margin:0 0 6px;}
+.qfHeroSub{color:#a855f7;font-size:14px;font-weight:800;margin:0 0 10px;display:block;}
+.qfHero p{color:#c4c9d9;margin:0;font-size:14px;line-height:1.6;}
+
+/* Category grid — colour-coded tiles */
+.qfCategoryGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+.qfCategoryBtn{
+  border-radius:18px;
+  padding:20px 14px;
+  cursor:pointer;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  transition:transform .12s,box-shadow .12s;
+  border:none;
+}
+.qfCategoryBtn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.qfCategoryBtn span:first-child{font-size:32px;}
+.qfCategoryBtn strong{color:#fff;font-size:14px;font-weight:900;}
+.qfCatCount{font-size:11px;font-weight:700;opacity:.8;}
+.qfCat-preparation{background:linear-gradient(135deg,#1e3a5f,#2563eb);}
+.qfCat-spacing{background:linear-gradient(135deg,#14532d,#16a34a);}
+.qfCat-balance{background:linear-gradient(135deg,#1c1917,#78350f);border:1px solid #d97706;}
+.qfCat-swing{background:linear-gradient(135deg,#4c1d95,#7c3aed);}
+.qfCat-movement{background:linear-gradient(135deg,#0c4a6e,#0284c7);}
+.qfCat-tension{background:linear-gradient(135deg,#4a044e,#a21caf);}
+.qfCat-visual{background:linear-gradient(135deg,#052e16,#15803d);}
+.qfCat-tactical{background:linear-gradient(135deg,#450a0a,#b91c1c);}
+
+/* Problem list */
+.qfProblemListHeader{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid #1e2a48;
+}
+.qfProblemListHeader strong{color:#ffd980;font-size:18px;}
+.qfProblemGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;
+}
+.qfProblemBtn{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:14px;
+  padding:16px 18px;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  text-align:left;
+  transition:border-color .15s,background .15s,transform .12s;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.qfProblemBtn::after{content:'→';color:#a855f7;font-size:16px;font-weight:900;flex-shrink:0;}
+.qfProblemBtn:hover{border-color:#a855f7;background:#1a0a2e;transform:translateX(3px);}
+
+/* Intervention card */
+.qfInterventionCard{
+  background:#0b1020;
+  border:2px solid #a855f7;
+  border-radius:20px;
+  padding:22px 24px;
+}
+.qfInterventionHeader{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:20px;
+  flex-wrap:wrap;
+}
+.qfInterventionHeader h2{color:#fff;font-size:22px;margin:0;flex:1;}
+.qfLevelTag{
+  background:#1e1040;
+  border:1px solid #7c3aed;
+  color:#c4b5fd;
+  border-radius:999px;
+  padding:4px 12px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.qfInterventionGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.qfBlock{
+  border-radius:16px;
+  padding:16px 18px;
+}
+.qfBlock strong{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:10px;
+}
+.qfBlock p{font-size:14px;margin:0;line-height:1.6;}
+.qfCause{background:#1a0a00;border:1px solid #f97316;grid-column:1/-1;}
+.qfCause strong{color:#f97316;}
+.qfCause strong::before{content:'🔍';}
+.qfCause p{color:#fdba74;}
+.qfConstraint{background:#0a1a0e;border:1px solid #4ade80;}
+.qfConstraint strong{color:#4ade80;}
+.qfConstraint strong::before{content:'🔧';}
+.qfConstraint p{color:#86efac;}
+.qfTool{background:#071015;border:1px solid #9bc1ff;}
+.qfTool strong{color:#9bc1ff;}
+.qfTool strong::before{content:'🛠';}
+.qfTool p{color:#c4c9d9;}
+.qfActivity{background:#0e0c00;border:1px solid #ffd980;grid-column:1/-1;}
+.qfActivity strong{color:#ffd980;}
+.qfActivity strong::before{content:'▶';}
+.qfActivity p{color:#fef3c7;}
+.qfProgression{background:#1e1040;border:1px solid #c4b5fd;grid-column:1/-1;}
+.qfProgression strong{color:#c4b5fd;}
+.qfProgression strong::before{content:'↗';}
+.qfProgression p{color:#ede9fe;}
+@media(max-width:600px){.qfInterventionGrid{grid-template-columns:1fr;}.qfCause,.qfActivity,.qfProgression{grid-column:1;}}
+
+
+/* Tool cards */
+.toolLibrarySection{padding-bottom:20px;}
+.toolLibraryIntro{
+  background:#071015;
+  border:1px solid #2a3560;
+  border-radius:16px;
+  padding:18px 22px;
+  margin-bottom:14px;
+}
+.toolLibraryIntro h2{color:#fff;font-size:22px;margin:0 0 8px;}
+.toolLibraryIntro p{color:#c4c9d9;font-size:14px;margin:0;line-height:1.5;}
+.toolCardStack{display:flex;flex-direction:column;gap:8px;}
+.toolCard{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:14px;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+.toolCard:hover{border-color:#7c3aed;}
+.toolCardOpen{border-color:#7c3aed;}
+.toolCardHeader{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  text-align:left;
+}
+.toolCardHeader strong{color:#fff;font-size:15px;flex:1;}
+.toolCardLevels{
+  background:#1e1040;
+  border:1px solid #7c3aed;
+  color:#c4b5fd;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:11px;
+  font-weight:900;
+}
+.toolCardChevron{color:#9fb0c8;font-size:12px;}
+.toolCardBody{padding:0 16px 16px;border-top:1px solid #1e2a48;}
+.toolCardSection{padding:10px 0;border-bottom:1px solid #1a2540;}
+.toolCardSection:last-of-type{border-bottom:none;}
+.toolCardSection strong{display:block;color:#9bc1ff;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.toolCardSection p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+.tcDoes strong{color:#4ade80!important;}
+.tcWhy strong{color:#ffd980!important;}
+.tcRemove strong{color:#f97316!important;}
+.toolProblemTags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.toolProblemTag{
+  background:#1a0a2e;
+  border:1px solid #7c3aed;
+  color:#c4b5fd;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+}
+.toolProblemTag:hover{background:#7c3aed;color:#fff;}
+
+/* Principles */
+.toolPrinciplesGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;
+}
+.toolPrincipleCard{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-left:3px solid #a855f7;
+  border-radius:0 14px 14px 0;
+  padding:16px 18px;
+}
+.toolPrincipleCard strong{display:block;color:#c4b5fd;font-size:14px;margin-bottom:8px;}
+.toolPrincipleCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+
+
+/* ── TAU SCIENCE PANEL ──────────────────────────────────────────── v100h53b ── */
+
+.tauTabBar{display:flex;gap:8px;margin:12px 0 16px;}
+.tauTabActive{background:#166534;border:2px solid #4ade80;color:#fff;border-radius:12px;padding:10px 18px;font-weight:900;font-size:14px;cursor:pointer;}
+.tauTabBtn{background:#0b1828;border:1px solid #2f4d72;color:#9fb0c8;border-radius:12px;padding:10px 18px;font-weight:900;font-size:14px;cursor:pointer;}
+
+.tauSciencePanel{padding-bottom:20px;}
+.tauScienceHero{
+  background:#071827;
+  border:1px solid #5e83be;
+  border-radius:16px;
+  padding:20px 24px;
+  margin-bottom:16px;
+}
+.tauScienceHero h3{color:#9bc1ff;font-size:18px;margin:0 0 10px;}
+.tauScienceHero p{color:#c4c9d9;font-size:14px;margin:0 0 10px;line-height:1.7;}
+.tauScienceHero p:last-child{margin-bottom:0;}
+.tauScienceHero em{color:#4ade80;font-style:italic;}
+.tauScienceHero strong{color:#fff;}
+
+.tauScienceGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;
+  margin-bottom:20px;
+}
+.tauScienceCard{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-top:3px solid #4ade80;
+  border-radius:0 0 14px 14px;
+  padding:16px 18px;
+}
+.tauScienceCard h4{color:#4ade80;font-size:14px;font-weight:900;margin:0 0 10px;}
+.tauScienceCard p{color:#c4c9d9;font-size:13px;margin:0 0 8px;line-height:1.6;}
+.tauScienceCard p:last-child{margin-bottom:0;}
+.tauScienceCard strong{color:#fff;}
+
+.tauCoachImplication{
+  background:#071015;
+  border:1px solid #ffd980;
+  border-radius:18px;
+  padding:20px 24px;
+  margin-bottom:16px;
+}
+.tauCoachImplication h3{color:#ffd980;font-size:17px;margin:0 0 14px;}
+.tauImplicationGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:12px;
+}
+.tauImplicationCard{
+  border-radius:12px;
+  padding:14px 16px;
+}
+.tauImplicationCard strong{display:block;font-size:13px;font-weight:900;margin-bottom:8px;}
+.tauImplicationCard p{font-size:13px;margin:0;line-height:1.6;}
+.tauImplProblem{background:#1a0a00;border:1px solid #f97316;}
+.tauImplProblem strong{color:#f97316;}
+.tauImplProblem p{color:#fdba74;}
+.tauImplSolution{background:#0a2415;border:1px solid #4ade80;}
+.tauImplSolution strong{color:#4ade80;}
+.tauImplSolution p{color:#86efac;}
+.tauImplPrinciple{background:#071015;border:1px solid #9bc1ff;}
+.tauImplPrinciple strong{color:#9bc1ff;}
+.tauImplPrinciple p{color:#c4c9d9;}
+
+.tauReferences{
+  background:#071015;
+  border:1px solid #2f4d72;
+  border-left:3px solid #9bc1ff;
+  border-radius:0 12px 12px 0;
+  padding:14px 18px;
+}
+.tauReferences strong{display:block;color:#9bc1ff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.tauReferences p{color:#9fb0c8;font-size:13px;margin:0 0 6px;line-height:1.5;}
+.tauReferences em{color:#c4c9d9;font-style:italic;}

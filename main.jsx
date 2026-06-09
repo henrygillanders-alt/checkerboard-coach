@@ -2594,6 +2594,8 @@ function Level0Foundations({setScreen,setSession}){
     {id:'bluedanube',label:'Blue Danube',emoji:'🎵'},
   ];
 
+  const [tauTab,setTauTab]=useState('science');
+
   const tauCards=[
     {code:'TAU-1',title:'Large Ball Tracking',purpose:'Develop basic ball awareness and tracking.',task:'Player watches and tracks a foam or large ball. No striking required initially.',constraint:'Foam ball. Coach rolls or bounces the ball slowly.',cue:'Watch the ball all the way until it stops.',simplify:'Reduce speed. Larger ball.',progress:'Add a simple tap or catch on arrival.'},
     {code:'TAU-2',title:'Variable Ball Size',purpose:'Prevent fixed timing solution. Develop adaptive tracking.',task:'Chip or strike using different ball sizes within the same session.',constraint:'Mix foam, red dot and orange dot balls randomly.',cue:'See the ball clearly before you move.',simplify:'Start with foam only.',progress:'Introduce yellow ball briefly.'},
@@ -2713,9 +2715,93 @@ function Level0Foundations({setScreen,setSession}){
         <p>Many beginner timing errors are perception-action problems rather than technical problems.</p>
         <div className="l0PrincipleCallout">"Before you coach the swing, check what the player can see."</div>
       </div>
-      <div className="l0CardStack">
-        {tauCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
+
+      <div className="tauTabBar">
+        <button type="button" className={tauTab==='science'?'tauTabActive':'tauTabBtn'} onClick={()=>setTauTab('science')}>🔬 The Science</button>
+        <button type="button" className={tauTab==='cards'?'tauTabActive':'tauTabBtn'} onClick={()=>setTauTab('cards')}>🎾 Coaching Cards</button>
       </div>
+
+      {tauTab==='science'&&<div className="tauSciencePanel">
+
+        <div className="tauScienceHero">
+          <h3>What Is Tau?</h3>
+          <p>Tau (τ) is an optic variable first described by David Lee in 1976. It refers to information available in the visual array that specifies <em>time to contact</em> — how long until a moving object arrives at the observer.</p>
+          <p>When a ball approaches, its retinal image expands. The ratio of the current retinal image size to its rate of expansion provides a direct optical specification of time to contact. Crucially, this information is available in the light <strong>without any calculation</strong> — the visual system can pick it up directly if attuned to it.</p>
+        </div>
+
+        <div className="tauScienceGrid">
+          <div className="tauScienceCard">
+            <h4>The Optical Variable τ</h4>
+            <p>τ = θ ÷ (dθ/dt)</p>
+            <p>Where θ is the retinal angle of the object and dθ/dt is its rate of change. When this ratio reaches zero, contact occurs.</p>
+            <p>Players do not calculate this. They become attuned to the optical information through experience — if that information is available and the environment supports attunement.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Optical Expansion</h4>
+            <p>As a ball approaches the eye, its retinal image grows. The rate of expansion is the key variable. A ball arriving quickly expands faster than a ball arriving slowly.</p>
+            <p>This expansion pattern is the perceptual information that underpins timing. A player who is not tracking the ball — or is tracking it too late — will not access this information reliably.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Attunement vs Instruction</h4>
+            <p>Players cannot learn tau through instruction. You cannot tell a player to use optical expansion. The skill develops through practice in environments that make the relevant information available and accessible.</p>
+            <p>This is why the coach's role is environment design — not explanation. The constraint creates the conditions. The player becomes attuned through experience.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Why Beginners Struggle</h4>
+            <p>Young and beginner players often rely on cruder perceptual information — ball visibility, apparent size, familiar flight paths — before becoming sensitive to the more precise optical expansion information that specifies time to contact.</p>
+            <p>This is not a technique problem. It is an attunement problem. Technical instruction will not solve it. Changing the information environment will.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Ball Size and Tau</h4>
+            <p>Larger balls produce a stronger, more detectable optical expansion signal. A foam ball approaching at slow speed gives a young player far more time to detect expansion and organise a movement response than a yellow dot at full pace.</p>
+            <p>Ball size reduction is therefore a principled perceptual constraint — not just a difficulty adjustment. It changes what information is available and how detectable it is.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Feed Source and Tau</h4>
+            <p>Self-drop feeds allow the player to control the timing entirely. The ball's arrival is almost fully predictable. This is the easiest perceptual condition.</p>
+            <p>Coach hand feeds introduce slight trajectory variation — the player must now read information they did not create. Wall rebound feeds add the perceptual challenge of rebound timing. Each step places increasing demands on optical attunement.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>Variability and Attunement</h4>
+            <p>Constant identical feeds allow a player to time the ball using memory and rhythm rather than optical information. They are not using tau — they are using a learned timing pattern.</p>
+            <p>Variable practice forces genuine optical pickup on every ball. The player cannot rely on pattern memory. This is slower to learn but produces genuinely attuned timing that transfers to competition.</p>
+          </div>
+          <div className="tauScienceCard">
+            <h4>The Development Timeline</h4>
+            <p>There is no fixed age at which tau becomes the primary timing cue. Attunement develops gradually through experience. Very young beginners may rely on visibility and apparent size for many months before optical expansion becomes the dominant timing information source.</p>
+            <p>Do not rush this process with technical correction. Provide rich, variable perceptual environments and let attunement develop.</p>
+          </div>
+        </div>
+
+        <div className="tauCoachImplication">
+          <h3>Coach Implication</h3>
+          <div className="tauImplicationGrid">
+            <div className="tauImplicationCard tauImplProblem">
+              <strong>If a player mis-times the ball</strong>
+              <p>Before assuming a technique problem, ask: Is this player receiving useful optical expansion information? Are they watching the ball early enough to access tau? Is the ball size and feed source appropriate for their current attunement level?</p>
+            </div>
+            <div className="tauImplicationCard tauImplSolution">
+              <strong>The perceptual-first response</strong>
+              <p>Change the ball. Change the feed source. Slow the feed. Add variability. Create a richer optical information environment. Only after these adjustments fail to improve timing should you consider a technical intervention.</p>
+            </div>
+            <div className="tauImplicationCard tauImplPrinciple">
+              <strong>The fundamental principle</strong>
+              <p>Perception and action are coupled. The quality of the movement depends on the quality of the perceptual information available. Improve the information environment first. The movement will follow.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="tauReferences">
+          <strong>Key Reference</strong>
+          <p>Lee, D.N. (1976). A theory of visual control of braking based on information about time-to-collision. <em>Perception, 5</em>(4), 437–459.</p>
+          <p>This paper introduced the tau hypothesis and remains foundational to understanding time-to-contact perception in sport.</p>
+        </div>
+
+      </div>}
+
+      {tauTab==='cards'&&<div className="l0CardStack">
+        {tauCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
+      </div>}
     </div>}
 
     {activeModule==='chipping'&&<div className="l0ModuleSection">
@@ -2936,11 +3022,10 @@ function ToolsArchitecture({setScreen}){
 
   return <div className="page toolsPage">
     <div className="pageTop">
-      <div><h1>Tools</h1><p className="mutedText">Quick Fix Intervention System</p></div>
+      <div><h1>Tools</h1><p className="mutedText">Quick Fix Intervention System · Constraint before correction</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
-    {/* Section nav */}
     <div className="toolsSectionNav">
       {sections.map(s=><button key={s.id} type="button"
         className={activeSection===s.id?'toolsSectionActive':'toolsSectionBtn'}
@@ -2952,13 +3037,14 @@ function ToolsArchitecture({setScreen}){
     {/* ── QUICK FIX SELECTOR ── */}
     {activeSection==='quickfix'&&<div className="qfSection">
       {!qfProblem&&<div className="qfIntro">
-        <div className="qfIntroBanner">
-          <h2>⚡ Quick Fix Selector</h2>
-          <p>Tap a problem category to see specific problems. Tap a problem to get the instant intervention card.</p>
+        <div className="qfHero">
+          <h2>Quick Fix Selector</h2>
+          <span className="qfHeroSub">Instant courtside interventions</span>
+          <p>Tap a category to see specific problems. Tap a problem for the instant 5-step intervention card — cause, constraint, tool, activity and progression.</p>
         </div>
         {!qfCategory
           ?<div className="qfCategoryGrid">
-            {qfCategories.map(cat=><button key={cat.id} type="button" className="qfCategoryBtn" onClick={()=>setQfCategory(cat.id)}>
+            {qfCategories.map(cat=><button key={cat.id} type="button" className={'qfCategoryBtn qfCat-'+cat.id} onClick={()=>setQfCategory(cat.id)}>
               <span>{cat.emoji}</span>
               <strong>{cat.label}</strong>
               <span className="qfCatCount">{cat.problems.length} problems</span>
