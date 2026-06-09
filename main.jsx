@@ -3858,38 +3858,49 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function ScoreEntry({scoreId,match,onWinner,matchFormat}){
     const gamesNeeded=matchFormat==='Best of 5'?5:matchFormat==='Best of 3'?3:1;
     const saved=getCompetitionScore(scoreId);
-    // games: array of {a:'', b:''} per game
     const initGames=()=>{
       if(saved.games&&saved.games.length) return saved.games;
-      return Array.from({length:gamesNeeded},()=>({a:'',b:''}));
+      return Array.from({length:gamesNeeded},()=>({a:'',b:'',loserSide:''}));
     };
     const [games,setGames]=useState(initGames);
-    const [last,setLast]=useState(saved.last||'');
 
-    // Ensure games array length matches format
-    const displayGames=Array.from({length:gamesNeeded},(_,i)=>games[i]||{a:'',b:''});
+    const displayGames=Array.from({length:gamesNeeded},(_,i)=>games[i]||{a:'',b:'',loserSide:''});
 
     function changeGame(gameIdx,side,value){
       const cleaned=value.replace(/[^0-9]/g,'');
       setGames(prev=>{
         const next=[...prev];
-        while(next.length<=gameIdx) next.push({a:'',b:''});
+        while(next.length<=gameIdx) next.push({a:'',b:'',loserSide:''});
         if(scoringMode==='normal'){
+          // whichever box the coach types in is the LOSER score
+          // winner score auto-fills to the other box
           const winnerScore=normalWinningScore(cleaned);
-          if(side==='a') next[gameIdx]={a:cleaned,b:winnerScore};
-          else next[gameIdx]={a:winnerScore,b:cleaned};
+          if(side==='a'){
+            // typed in Player A box = Player A is the loser, Player B wins
+            next[gameIdx]={a:cleaned,b:winnerScore,loserSide:'a'};
+          } else {
+            // typed in Player B box = Player B is the loser, Player A wins
+            next[gameIdx]={a:winnerScore,b:cleaned,loserSide:'b'};
+          }
         } else {
-          next[gameIdx]={...next[gameIdx],[side]:cleaned};
+          next[gameIdx]={...next[gameIdx],[side]:cleaned,loserSide:''};
         }
         return next;
       });
-      setLast(side);
     }
 
     function calcGameWinner(g){
+      if(!g||g.a===''||g.b==='') return null;
+      if(scoringMode==='normal'){
+        // loserSide tells us who lost
+        if(g.loserSide==='a') return 'b'; // A typed = A is loser, B wins
+        if(g.loserSide==='b') return 'a'; // B typed = B is loser, A wins
+        // fallback: higher score wins
+        const a=Number(g.a);const b=Number(g.b);
+        if(a===b) return null;
+        return a>b?'a':'b';
+      }
       const a=Number(g.a);const b=Number(g.b);
-      if(g.a===''||g.b==='') return null;
-      if(scoringMode==='normal') return g.a!==''&&g.b!==''?(Number(g.b)<Number(g.a)?'a':'b'):null;
       if(a===b) return null;
       return a>b?'a':'b';
     }
@@ -3909,14 +3920,21 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
     function saveResult(){
       const winner=calcMatchWinner();
-      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,last,mode:scoringMode}}));
+      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,mode:scoringMode}}));
       if(winner) onWinner(winner);
+    }
+
+    function clearEntry(){
+      setGames(Array.from({length:gamesNeeded},()=>({a:'',b:'',loserSide:''})));
+      setCompetitionMatchScores(prev=>{const next={...prev};delete next[scoreId];return next;});
+      onWinner('');
     }
 
     const matchWinner=calcMatchWinner();
     const needed=Math.ceil(gamesNeeded/2);
     let winsA=0;let winsB=0;
     displayGames.forEach(g=>{const gw=calcGameWinner(g);if(gw==='a')winsA++;if(gw==='b')winsB++;});
+    const matchOver=winsA>=needed||winsB>=needed;
 
     return <div className="cleanScoreEntry">
       <div className="cleanScoreNames">
@@ -3925,32 +3943,39 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <strong>{match.b}</strong>
       </div>
       {gamesNeeded>1&&<div className="matchScoreSummary">
-        <span className={winsA>=needed?'matchWinnerSpan':''}>{match.a}: {winsA} game{winsA!==1?'s':''}</span>
-        <span className={winsB>=needed?'matchWinnerSpan':''}>{match.b}: {winsB} game{winsB!==1?'s':''}</span>
+        <span className={winsA>=needed?'matchWinnerSpan':''}>{match.a}: {winsA}g</span>
+        <span className={winsB>=needed?'matchWinnerSpan':''}>{match.b}: {winsB}g</span>
       </div>}
+      {scoringMode==='normal'&&<div className="scoreEntryHint">Type the <strong>loser</strong> score in their box — winner score fills automatically.</div>}
       {displayGames.map((g,idx)=>{
         const gw=calcGameWinner(g);
-        // Only show next game if previous is decided (or it's game 1)
-        const prevDecided=idx===0||calcGameWinner(displayGames[idx-1])!==null;
-        // Hide games beyond what's needed
-        const matchOver=winsA>=needed||winsB>=needed;
-        const gameOver=calcGameWinner(displayGames[idx-1]||{a:'x',b:'y'})!==null||idx===0;
         if(matchOver&&gw===null&&idx>0) return null;
         return <div key={idx} className={`gameScoreRow${gw?' gameScoreDecided':''}`}>
-          <span className="gameLabel">Game {idx+1}</span>
+          {gamesNeeded>1&&<span className="gameLabel">G{idx+1}</span>}
           <div className="gameScoreInputs">
-            {scoringMode==='normal'
-              ?<><input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder="Loser" onChange={e=>changeGame(idx,'a',e.target.value)} /><span className="scoreVs">→ {g.a!==''?g.b:''}</span></>
-              :<><input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder={match.a} onChange={e=>changeGame(idx,'a',e.target.value)} /><span className="scoreVs">—</span><input inputMode="numeric" pattern="[0-9]*" value={g.b} placeholder={match.b} onChange={e=>changeGame(idx,'b',e.target.value)} /></>
-            }
+            <div className="scorePlayerBox">
+              <span className="scorePlayerName">{match.a}</span>
+              <input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder="0"
+                className={gw==='b'?'loserInput':gw==='a'?'winnerInput':''}
+                onChange={e=>changeGame(idx,'a',e.target.value)} />
+            </div>
+            <span className="scoreVs">—</span>
+            <div className="scorePlayerBox">
+              <span className="scorePlayerName">{match.b}</span>
+              <input inputMode="numeric" pattern="[0-9]*" value={g.b} placeholder="0"
+                className={gw==='a'?'loserInput':gw==='b'?'winnerInput':''}
+                onChange={e=>changeGame(idx,'b',e.target.value)} />
+            </div>
           </div>
-          {gw&&<span className="gameWinnerTag">{gw==='a'?match.a:match.b} wins</span>}
+          {gw&&<span className="gameWinnerTag">{gw==='a'?match.a:match.b} ✓</span>}
         </div>;
       })}
-      {scoringMode==='normal'&&<div className="scoreEntryHint">Enter loser score — winner auto-fills.</div>}
-      <button type="button" className="primaryBtn saveResultBtn" disabled={!matchWinner} onClick={saveResult}>
-        {matchWinner?`Save — ${matchWinner} wins`:'Save Result'}
-      </button>
+      <div className="scoreEntryActions">
+        <button type="button" className="primaryBtn saveResultBtn" disabled={!matchWinner} onClick={saveResult}>
+          {matchWinner?`Save — ${matchWinner} wins`:'Save Result'}
+        </button>
+        <button type="button" className="secondaryBtn" onClick={clearEntry}>Clear</button>
+      </div>
     </div>;
   }
 
@@ -4418,7 +4443,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function setRoundRobinWinner(roundIndex,matchIndex,winner){
-    setRrResults(prev=>({...prev,[rrKey(roundIndex,matchIndex)]:winner}));
+    if(!winner){
+      setRrResults(prev=>{const next={...prev};delete next[rrKey(roundIndex,matchIndex)];return next;});
+    } else {
+      setRrResults(prev=>({...prev,[rrKey(roundIndex,matchIndex)]:winner}));
+    }
   }
 
   function getRoundRobinStandings(){
@@ -4466,7 +4495,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   function setRrBoxWinner(boxIndex,roundIndex,matchIndex,winner,stage='group'){
     const setter=stage==='final'?setRrFinalResults:setRrBoxResults;
-    setter(prev=>({...prev,[rrBoxKey(boxIndex,roundIndex,matchIndex,stage)]:winner}));
+    if(!winner){
+      setter(prev=>{const next={...prev};delete next[rrBoxKey(boxIndex,roundIndex,matchIndex,stage)];return next;});
+    } else {
+      setter(prev=>({...prev,[rrBoxKey(boxIndex,roundIndex,matchIndex,stage)]:winner}));
+    }
   }
 
   function getBoxStandings(box,fixtures,results,boxIndex,stage='group'){
@@ -4550,7 +4583,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function setMonradWinner(roundIndex,matchIndex,winner){
-    setMonradResults(prev=>({...prev,[monradResultKey(roundIndex,matchIndex)]:winner}));
+    if(!winner){
+      setMonradResults(prev=>{const next={...prev};delete next[monradResultKey(roundIndex,matchIndex)];return next;});
+    } else {
+      setMonradResults(prev=>({...prev,[monradResultKey(roundIndex,matchIndex)]:winner}));
+    }
   }
 
   function monradPlayerScores(){
@@ -4592,7 +4629,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function setMonradPlaceWinner(roundIndex,groupId,matchIndex,winner){
-    setMonradPlacingResults(prev=>({...prev,[monradPlaceKey(roundIndex,groupId,matchIndex)]:winner}));
+    if(!winner){
+      setMonradPlacingResults(prev=>{const next={...prev};delete next[monradPlaceKey(roundIndex,groupId,matchIndex)];return next;});
+    } else {
+      setMonradPlacingResults(prev=>({...prev,[monradPlaceKey(roundIndex,groupId,matchIndex)]:winner}));
+    }
   }
 
   function parseRange(range){
@@ -4841,6 +4882,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSSL</button>
       </div>
 
+      {(mode==='matchplay'||mode==='roundRobin'||mode==='monrad')&&(
       <div className="competitionScoringModeBar">
         <strong>Competition Scoring</strong>
         <div className="scoringModeToggle">
@@ -4849,6 +4891,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         </div>
         <p className="scoringModeHint">{scoringMode==='normal'?'Enter loser score only — winner score auto-fills. Win by 2 after 10-all.':'Enter both scores manually for timed or conditioned matches.'}</p>
       </div>
+      )}
 
       <div className="competitionProjectionToggle">
         <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>setShowCompetitionProjection(!showCompetitionProjection)}>
@@ -5664,7 +5707,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           <div className="statusPanelHeader"><strong>Competition Status</strong></div>
           <div className="statusPanelGrid">
             <div className="statusPanelCard"><span>Format</span><strong>{current.title}</strong></div>
-            <div className="statusPanelCard"><span>Scoring Mode</span><strong>{scoringMode==='normal'?'Normal Scoring':'Custom / Timed'}</strong></div>
+            {(mode==='matchplay'||mode==='roundRobin'||mode==='monrad')&&<div className="statusPanelCard"><span>Scoring Mode</span><strong>{scoringMode==='normal'?'Normal Scoring':'Custom / Timed'}</strong></div>}
             {mode==='roundRobin'&&rrFixtures.length>0&&(()=>{
               const standings=getRoundRobinStandings();
               const leader=standings[0];
