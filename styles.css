@@ -4062,7 +4062,7 @@ button.mentalSkillsTile p{
 /* v100h47b Multi-game score entry */
 .gameScoreRow{
   display:flex;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
   gap:8px;
   align-items:center;
   padding:10px 0;
@@ -4312,4 +4312,57 @@ button.mentalSkillsTile p{
 .projectionTableBlock:last-child .projStandingsHeader,
 .projectionTableBlock:last-child .projStandingsRow{
   grid-template-columns:40px 1fr;
+}
+
+
+/* v100h47f Winner banner + player status cards */
+.gameWinnerBanner{
+  width:100%;
+  background:#0a2415;
+  border:1px solid #4ade80;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:14px;
+  font-weight:900;
+  color:#4ade80;
+  margin-bottom:6px;
+  text-align:center;
+}
+.gameScoreRowInner{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  width:100%;
+}
+.projPlayerStatusCard{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:10px 14px;
+  margin-bottom:8px;
+}
+.projPlayerStatusCard.projPlayerSettled{
+  border-color:#4ade80;
+  background:#06200f;
+}
+.projPlayerName{
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+  margin-bottom:4px;
+}
+.projPlayerMeta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  font-size:12px;
+  color:#9fb0c8;
+}
+.projPlayerPlace{
+  font-weight:900;
+  color:#ffd980;
+}
+.projNextOpp{
+  color:#9bc1ff;
+  font-weight:700;
 }

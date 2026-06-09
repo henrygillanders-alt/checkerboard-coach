@@ -3951,23 +3951,25 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         const gw=calcGameWinner(g);
         if(matchOver&&gw===null&&idx>0) return null;
         return <div key={idx} className={`gameScoreRow${gw?' gameScoreDecided':''}`}>
-          {gamesNeeded>1&&<span className="gameLabel">G{idx+1}</span>}
-          <div className="gameScoreInputs">
-            <div className="scorePlayerBox">
-              <span className="scorePlayerName">{match.a}</span>
-              <input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder="0"
-                className={gw==='b'?'loserInput':gw==='a'?'winnerInput':''}
-                onChange={e=>changeGame(idx,'a',e.target.value)} />
-            </div>
-            <span className="scoreVs">—</span>
-            <div className="scorePlayerBox">
-              <span className="scorePlayerName">{match.b}</span>
-              <input inputMode="numeric" pattern="[0-9]*" value={g.b} placeholder="0"
-                className={gw==='a'?'loserInput':gw==='b'?'winnerInput':''}
-                onChange={e=>changeGame(idx,'b',e.target.value)} />
+          {gw&&<div className="gameWinnerBanner">{gw==='a'?match.a:match.b} wins Game {idx+1} ✓</div>}
+          <div className="gameScoreRowInner">
+            {gamesNeeded>1&&<span className="gameLabel">G{idx+1}</span>}
+            <div className="gameScoreInputs">
+              <div className="scorePlayerBox">
+                <span className="scorePlayerName">{match.a}</span>
+                <input inputMode="numeric" pattern="[0-9]*" value={g.a} placeholder="0"
+                  className={gw==='b'?'loserInput':gw==='a'?'winnerInput':''}
+                  onChange={e=>changeGame(idx,'a',e.target.value)} />
+              </div>
+              <span className="scoreVs">—</span>
+              <div className="scorePlayerBox">
+                <span className="scorePlayerName">{match.b}</span>
+                <input inputMode="numeric" pattern="[0-9]*" value={g.b} placeholder="0"
+                  className={gw==='a'?'loserInput':gw==='b'?'winnerInput':''}
+                  onChange={e=>changeGame(idx,'b',e.target.value)} />
+              </div>
             </div>
           </div>
-          {gw&&<span className="gameWinnerTag">{gw==='a'?match.a:match.b} ✓</span>}
         </div>;
       })}
       <div className="scoreEntryActions">
@@ -5044,15 +5046,39 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>
                 <div className="projectionMonradRight">
                   <div className="projectionTableBlock">
-                    <div className="projectionTableTitle">W / L Table</div>
-                    <div className="projectionStandingsTable">
-                      <div className="projStandingsHeader"><span>Player</span><span>W</span><span>P</span></div>
-                      {Object.values(monradPlayerScores()).sort((a,b)=>b.wins-a.wins||a.name.localeCompare(b.name)).map(row=>(
-                        <div key={row.name} className="projStandingsRow">
-                          <span>{row.name}</span><span>{row.wins}</span><span>{row.played}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="projectionTableTitle">Player Status</div>
+                    {(()=>{
+                      const scores=monradPlayerScores();
+                      const placingTable=getMonradFinalTable();
+                      // Find each player's next opponent from the latest round
+                      const latestRound=monradPlacingRounds.length>0
+                        ?monradPlacingRounds[monradPlacingRounds.length-1]
+                        :null;
+                      return placingTable.map(row=>{
+                        const record=scores[row.name];
+                        let nextOpponent='—';
+                        if(latestRound){
+                          latestRound.forEach(group=>{
+                            (group.matches||[]).forEach((match,midx)=>{
+                              const ridx=monradPlacingRounds.length-1;
+                              const alreadyDone=isByeName(match.a)?true:isByeName(match.b)?true:!!monradPlacingResults[monradPlaceKey(ridx,group.id,midx)];
+                              if(!alreadyDone){
+                                if(match.a===row.name) nextOpponent=match.b;
+                                if(match.b===row.name) nextOpponent=match.a;
+                              }
+                            });
+                          });
+                        }
+                        return <div key={row.name} className={`projPlayerStatusCard${row.place!=='—'?' projPlayerSettled':''}`}>
+                          <div className="projPlayerName">{row.name}</div>
+                          <div className="projPlayerMeta">
+                            <span className="projPlayerPlace">{row.place!=='—'?`Place: ${row.place}`:'In Progress'}</span>
+                            <span>{record?.wins||0}W · {record?.played||0}P</span>
+                            {nextOpponent!=='—'&&<span className="projNextOpp">Next: {nextOpponent}</span>}
+                          </div>
+                        </div>;
+                      });
+                    })()}
                   </div>
                   <div className="projectionTableBlock">
                     <div className="projectionTableTitle">Live Placings</div>
@@ -5609,8 +5635,10 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>
               </div>
               <div className="buttonRow">
-                <button className="primaryBtn" onClick={generateMonradPlacingDraw}>Generate Placing Draw</button>
-                <button className="secondaryBtn" onClick={generateNextMonradPlacingRound}>Generate Next Placing Round</button>
+                <button className={monradPlacingRounds.length===0?'primaryBtn':'secondaryBtn'} onClick={generateMonradPlacingDraw}>Generate Placing Draw</button>
+                <button className={monradPlacingRounds.length>0?'primaryBtn':'secondaryBtn'} onClick={generateNextMonradPlacingRound}>
+                  {monradPlacingRounds.length>0?`Generate Next Round (Round ${monradPlacingRounds.length})`:'Generate Next Round'}
+                </button>
                 <button className="secondaryBtn dangerBtn" onClick={()=>{
                   setMonradRounds([]);
                   setMonradResults({});
