@@ -6262,3 +6262,92 @@ button.mentalSkillsTile p{
 .ppSummaryRow strong{color:#fff;font-size:13px;}
 .ppSummaryWin strong{color:#4ade80;}
 .ppSummaryDisrupt strong{color:#f97316;}
+
+
+/* ── RLD & CHALLENGE POINT FRAMEWORK ────────────────────────────── v100h55b ── */
+
+.rldTabBar{display:flex;gap:8px;margin:14px 0 18px;}
+.rldTabActive{background:#166534;border:2px solid #4ade80;color:#fff;border-radius:12px;padding:10px 20px;font-weight:900;font-size:14px;cursor:pointer;}
+.rldTabBtn{background:#0b1828;border:1px solid #2f4d72;color:#9fb0c8;border-radius:12px;padding:10px 20px;font-weight:900;font-size:14px;cursor:pointer;}
+
+/* Challenge Point zones */
+.cpZonesGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:20px;}
+.cpZoneCard{border-radius:16px;padding:18px 20px;border:2px solid;}
+.cpTooHard{background:#450a0a;border-color:#ef4444;}
+.cpOptimal{background:#052e16;border-color:#4ade80;}
+.cpTooEasy{background:#1c1917;border-color:#eab308;}
+.cpZoneHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:6px;}
+.cpZoneHeader strong{font-size:16px;color:#fff;}
+.cpTooHard .cpZoneHeader span{background:#7f1d1d;color:#fca5a5;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;}
+.cpOptimal .cpZoneHeader span{background:#166534;color:#4ade80;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;}
+.cpTooEasy .cpZoneHeader span{background:#78350f;color:#fde047;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;}
+.cpSymptoms,.cpAction{margin-bottom:12px;}
+.cpSymptoms strong,.cpAction strong{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.cpTooHard .cpSymptoms strong{color:#fca5a5;}.cpTooHard .cpAction strong{color:#f97316;}
+.cpOptimal .cpSymptoms strong{color:#86efac;}.cpOptimal .cpAction strong{color:#4ade80;}
+.cpTooEasy .cpSymptoms strong{color:#fde047;}.cpTooEasy .cpAction strong{color:#fb923c;}
+.cpZoneCard ul{color:#c4c9d9;font-size:13px;padding-left:16px;margin:0;}
+.cpZoneCard ul li{margin-bottom:4px;}
+.cpZoneCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+
+/* Decision rule */
+.cpDecisionRule{margin-bottom:20px;}
+.cpDecisionRule h3{color:#ffd980;margin:0 0 12px;}
+.cpDecisionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.cpDecisionCard{border-radius:14px;padding:16px;text-align:center;}
+.cpDecisionCard strong{display:block;font-size:16px;font-weight:900;margin-bottom:6px;}
+.cpDecisionCard p{font-size:13px;margin:0;}
+.cpDecReduce{background:#450a0a;border:2px solid #ef4444;}
+.cpDecReduce strong{color:#fca5a5;}.cpDecReduce p{color:#fca5a5;}
+.cpDecStay{background:#052e16;border:2px solid #4ade80;}
+.cpDecStay strong{color:#4ade80;}.cpDecStay p{color:#86efac;}
+.cpDecIncrease{background:#1c1917;border:2px solid #eab308;}
+.cpDecIncrease strong{color:#fde047;}.cpDecIncrease p{color:#fde047;}
+@media(max-width:500px){.cpDecisionGrid{grid-template-columns:1fr;}}
+
+/* Combined section */
+.cpRLDCombined h3{color:#ffd980;margin:0 0 10px;}
+.cpRLDCombined>p{color:#c4c9d9;font-size:14px;margin:0 0 14px;line-height:1.6;}
+.cpCombinedGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px;}
+.cpCombinedCard{background:#0b1828;border:1px solid #2f4d72;border-radius:12px;padding:14px 16px;}
+.cpCombinedCard strong{display:block;color:#9bc1ff;font-size:14px;margin-bottom:6px;}
+.cpCombinedCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+.cpCombinedKey{border-color:#4ade80;background:#06200f;}
+.cpCombinedKey strong{color:#4ade80;}
+.cpReference{background:#071015;border-left:3px solid #9bc1ff;border-radius:0 10px 10px 0;padding:12px 16px;margin-top:4px;}
+.cpReference strong{display:block;color:#9bc1ff;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.cpReference p{color:#9fb0c8;font-size:13px;margin:0;line-height:1.5;}
+.cpReference em{font-style:italic;color:#c4c9d9;}
+
+
+/* v100h55c — Challenge Point attribution and principle fixes */
+.cpAttributionRow{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px;}
+.cpAttributionCard{background:#0b1828;border:1px solid #2f4d72;border-top:3px solid #9bc1ff;border-radius:0 0 12px 12px;padding:14px 16px;}
+.cpAttributionCard strong{display:block;color:#9bc1ff;font-size:13px;font-weight:900;margin-bottom:6px;}
+.cpAttributionCard p{color:#c4c9d9;font-size:13px;margin:0 0 8px;line-height:1.5;}
+.cpAttributionCard p:last-child{margin-bottom:0;}
+.cpAttributionCard em{color:#fff;font-style:italic;}
+
+.cpCheckerboardRule{background:#071015;border:2px solid #ffd980;border-radius:16px;padding:18px 22px;margin-bottom:20px;}
+.cpRuleHeader{margin-bottom:12px;}
+.cpRuleHeader strong{display:block;color:#ffd980;font-size:17px;font-weight:900;margin-bottom:4px;}
+.cpRuleHeader span{color:#9fb0c8;font-size:12px;}
+.cpCheckerboardRule>p{color:#c4c9d9;font-size:14px;margin:0 0 10px;}
+.cpRulePoints{display:flex;flex-direction:column;gap:6px;}
+.cpRulePoints span{color:#86efac;font-size:14px;font-weight:700;}
+
+.cpDecIcon{font-size:20px;display:block;margin-bottom:4px;}
+
+.cpCheckerboardPrinciple{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.cpPrincipleAsk{background:#0b1828;border:1px solid #2f4d72;border-radius:12px;padding:14px 16px;}
+.cpPrincipleAsk span.cpPrincipleNo{display:block;color:#ef4444;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.cpPrincipleAsk p{color:#9fb0c8;font-size:14px;font-style:italic;margin:0;}
+.cpPrincipleYes{border-color:#4ade80;background:#052e16;}
+.cpPrincipleYes span{color:#4ade80!important;}
+.cpPrincipleYes p{color:#fff!important;font-weight:700;}
+@media(max-width:600px){.cpCheckerboardPrinciple{grid-template-columns:1fr;}}
+
+.cpUniversalNote{background:#071827;border:1px solid #5e83be;border-radius:12px;padding:14px 16px;margin:14px 0;}
+.cpUniversalNote strong{display:block;color:#9bc1ff;font-size:13px;font-weight:900;margin-bottom:8px;}
+.cpUniversalList{display:flex;flex-wrap:wrap;gap:6px;}
+.cpUniversalList span{background:#0b1828;border:1px solid #2f4d72;color:#c4c9d9;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;}

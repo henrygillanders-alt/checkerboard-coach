@@ -5,13 +5,15 @@ import'./styles.css';
 
 const APP_VERSION='v100h55';
 
-// ── REPRESENTATIVE LEARNING DEMAND (RLD) SYSTEM ──────────────────────────────
+// ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
-  {level:1,label:'Coach Called',short:'RLD 1',desc:'Coach calls every target, task or decision.',color:'#ef4444',bg:'#450a0a',textColor:'#fca5a5'},
-  {level:2,label:'Leader Called',short:'RLD 2',desc:'Leader or server calls task aloud before playing.',color:'#f97316',bg:'#431407',textColor:'#fdba74'},
-  {level:3,label:'Player Selected',short:'RLD 3',desc:'Player selects task silently — no announcement required.',color:'#eab308',bg:'#422006',textColor:'#fde047'},
-  {level:4,label:'Under Pressure',short:'RLD 4',desc:'Player selects and executes tasks during live competitive play.',color:'#86efac',bg:'#052e16',textColor:'#86efac'},
-  {level:5,label:'Open Play',short:'RLD 5',desc:'Tasks emerge naturally from play. No calling, no structure — full game representation.',color:'#4ade80',bg:'#052e16',textColor:'#4ade80',doubleDot:true},
+  {level:0,label:'Foundation',short:'RLD 0',desc:'Perceptual and movement foundations. Simplified environment, reduced uncertainty.',color:'#6b7280',bg:'#111827',textColor:'#9ca3af'},
+  {level:1,label:'Coach Controlled',short:'RLD 1',desc:'Coach calls every target, task or decision. Player solves the coach\'s problem.',color:'#ef4444',bg:'#450a0a',textColor:'#fca5a5'},
+  {level:2,label:'Player Choice',short:'RLD 2',desc:'Player selects own sequence or task. Early autonomous decision making.',color:'#f97316',bg:'#431407',textColor:'#fdba74'},
+  {level:3,label:'Interactive',short:'RLD 3',desc:'Leader-follower interaction. Behaviour emerges through continuous adaptation.',color:'#eab308',bg:'#422006',textColor:'#fde047'},
+  {level:4,label:'Pressure & Consequence',short:'RLD 4',desc:'Scoring pressure active. Risk-reward decisions and tactical choices emerge.',color:'#86efac',bg:'#052e16',textColor:'#86efac'},
+  {level:5,label:'Competitive Practice',short:'RLD 5',desc:'Competitive representative practice. High uncertainty, tactical adaptation, competitive intent.',color:'#4ade80',bg:'#052e16',textColor:'#4ade80'},
+  {level:6,label:'Match Play',short:'RLD 6',desc:'Competition itself. Maximum uncertainty, consequence, emotional pressure and opponent adaptation.',color:'#15803d',bg:'#052e16',textColor:'#4ade80',doubleDot:true},
 ];
 
 function RLDBadge({level,size='sm'}){
@@ -1824,54 +1826,214 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
   </div>;
 }
 function RLDScreen({setScreen}){
+  const [activeTab,setActiveTab]=useState('rld');
   return <div className="page rldPage">
     <div className="pageTop">
-      <div><h1>Representative Learning Demand</h1><p className="mutedText">RLD · The coaching quality spectrum</p></div>
+      <div><h1>RLD & Challenge Point Framework</h1><p className="mutedText">Representativeness · Difficulty · Coach Decision Rules</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
-    <div className="rldHero">
-      <h2>What Is RLD?</h2>
-      <p>Representative Learning Demand describes how closely a practice task resembles the perceptual and decision-making demands of real squash competition. A task with high RLD requires the player to read information, make decisions, and execute skills under conditions that match competition. A task with low RLD removes those demands — which may be useful early in learning, but limits transfer to competition.</p>
-      <div className="rldHeroPrinciple">"Move as quickly as possible to higher RLD."</div>
-      <p>The goal is not to remove all structure immediately. The goal is to reduce scaffolding progressively as the player develops the perceptual and decision-making capabilities to operate without it.</p>
+
+    <div className="rldTabBar">
+      <button type="button" className={activeTab==='rld'?'rldTabActive':'rldTabBtn'} onClick={()=>setActiveTab('rld')}>RLD Scale</button>
+      <button type="button" className={activeTab==='cp'?'rldTabActive':'rldTabBtn'} onClick={()=>setActiveTab('cp')}>Challenge Point</button>
     </div>
-    <div className="rldLevelsStack">
-      {RLD_LEVELS.map(r=><div key={r.level} className="rldLevelCard" style={{borderColor:r.color,background:r.bg}}>
-        <div className="rldLevelLeft">
-          <div className="rldLevelDotLg" style={{background:r.color}}>
-            {r.doubleDot&&<><span className="rldInnerDotLg"/><span className="rldInnerDotLg"/></>}
+
+    {activeTab==='rld'&&<div>
+      <div className="rldHero">
+        <h2>Representative Learning Design</h2>
+        <p>RLD is not a difficulty scale. It is a <strong>representativeness scale</strong>.</p>
+        <div className="rldHeroPrinciple">The question is not: "Is this difficult?" — The question is: "How much does this look and feel like real squash?"</div>
+        <p>The RLD scale describes how closely a practice task resembles the perceptual, decision-making and adaptive demands of actual competition. A task at RLD 6 is not necessarily harder than RLD 3 — it is more representative of competition.</p>
+        <p className="mutedText">Move players to higher RLD as quickly as their development allows. The goal is competition. Everything below RLD 6 is preparation.</p>
+      </div>
+
+      <div className="rldLevelsStack">
+        {RLD_LEVELS.map(r=><div key={r.level} className="rldLevelCard" style={{borderColor:r.color,background:r.bg}}>
+          <div className="rldLevelLeft">
+            <div className="rldLevelDotLg" style={{background:r.color}}>
+              {r.doubleDot&&<><span className="rldInnerDotLg"/><span className="rldInnerDotLg"/></>}
+            </div>
+            <div>
+              <strong style={{color:r.textColor}}>{r.short} — {r.label}</strong>
+              <p style={{color:r.textColor,margin:'4px 0 0',fontSize:'13px',lineHeight:'1.5'}}>{r.desc}</p>
+              <p style={{color:r.textColor,margin:'6px 0 0',fontSize:'12px',opacity:.8}}>{{
+                0:'Examples: Tau development · Ball tracking · Chipping · Arrive and Strike · Movement calibration',
+                1:'Examples: Coach calls zones · Coach sequences · Coach directs decisions',
+                2:'Examples: Player selects own sequence · Player chooses zone order · Self-directed tasks',
+                3:'Examples: Leader-Follower Around The Board · ATL/BTL with player selection · Checkerboard with player choice',
+                4:'Examples: Checkerboard challenge scoring · Power Play · Conditioned game with consequences',
+                5:'Examples: Competitive Checkerboard · Conditioned matchplay · Pressure games · Competitive Around The Board',
+                6:'Examples: Tournament match · League match · Box league · Monrad · National League · Championship',
+              }[r.level]}</p>
+            </div>
           </div>
-          <div>
-            <strong style={{color:r.textColor}}>{r.short} — {r.label}</strong>
-            <p style={{color:r.textColor}}>{r.desc}</p>
+        </div>)}
+      </div>
+
+      <div className="rldCoachNote">
+        <h3>Why RLD Matters</h3>
+        <div className="rldCoachGrid">
+          <div className="rldCoachCard">
+            <strong>Low RLD is not wrong</strong>
+            <p>RLD 0 and 1 have genuine value — particularly at Level 0 and early learning. The error is staying there too long. Beginners need simplified environments. But the goal is always to move toward RLD 6.</p>
           </div>
-        </div>
-      </div>)}
-    </div>
-    <div className="rldCoachNote">
-      <h3>Why Does This Matter?</h3>
-      <div className="rldCoachGrid">
-        <div className="rldCoachCard">
-          <strong>Low RLD is not wrong</strong>
-          <p>RLD 1 and 2 have value — particularly at Level 0 and early Level 1. Coach-called tasks give beginners the time and structure they need to develop basic attunement. The error is staying at RLD 1-2 for too long.</p>
-        </div>
-        <div className="rldCoachCard">
-          <strong>The transfer problem</strong>
-          <p>Skills practised at low RLD often fail to transfer to competition because the player never learned to make the decisions themselves. They learned to respond to the coach, not to the game.</p>
-        </div>
-        <div className="rldCoachCard">
-          <strong>The progression principle</strong>
-          <p>Once a player can execute a skill reliably at a given RLD level, the next step is to increase the RLD — not to add more repetition. Adding RLD is how the skill becomes competitive.</p>
-        </div>
-        <div className="rldCoachCard rldDoubleDotCard">
-          <div className="rldDoubleDotSymbol">
-            <span className="rldDotLgDemo"/><span className="rldInnerDotLgDemo"/><span className="rldInnerDotLgDemo"/>
+          <div className="rldCoachCard">
+            <strong>The transfer problem</strong>
+            <p>Skills practised at low RLD often fail to transfer to competition because the player never learned to make the decisions themselves. They learned to respond to the coach, not to the game.</p>
           </div>
-          <strong>The double dot — RLD 5</strong>
-          <p>The deep green double dot represents full open play — the highest RLD. The player reads the game, selects tasks and executes them without any external structure. This is competition. This is the goal.</p>
+          <div className="rldCoachCard">
+            <strong>The progression principle</strong>
+            <p>Once a player can execute reliably at a given RLD level, increase the RLD — not the repetitions. Adding representativeness is how skills become competitive.</p>
+          </div>
+          <div className="rldCoachCard rldDoubleDotCard">
+            <div className="rldDoubleDotSymbol">
+              <span className="rldDotLgDemo" style={{background:'#15803d'}}/><span className="rldInnerDotLgDemo"/><span className="rldInnerDotLgDemo"/>
+            </div>
+            <strong>RLD 6 — The Match Ball</strong>
+            <p>Dark green with two black dots — representing the double yellow dots of a competition squash ball. Competition itself. Maximum uncertainty, consequence and adaptation. Everything else exists to prepare players for this.</p>
+          </div>
         </div>
       </div>
-    </div>
+    </div>}
+
+    {activeTab==='cp'&&<div>
+      <div className="rldHero">
+        <h2>Challenge Point Framework</h2>
+        <div className="cpAttributionRow">
+          <div className="cpAttributionCard">
+            <strong>Academic Foundation</strong>
+            <p>Guadagnoli & Lee (2004) — <em>Journal of Motor Behavior</em></p>
+            <p>Learning is maximised when task difficulty is matched to performer skill so that the learner receives the greatest amount of meaningful information without becoming overwhelmed.</p>
+          </div>
+          <div className="cpAttributionCard">
+            <strong>Practical Application</strong>
+            <p>Ecological dynamics practitioners, including Rob Gray, have translated the Challenge Point Framework into practical coaching guidance.</p>
+            <p>Rather than focusing on theory, coaches monitor player success rates and adjust task difficulty accordingly.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="cpCheckerboardRule">
+        <div className="cpRuleHeader">
+          <strong>The Checkerboard 70% Rule</strong>
+          <span>Practical coaching guide · Based on Challenge Point Framework</span>
+        </div>
+        <p>Target approximately 70% success. At this level:</p>
+        <div className="cpRulePoints">
+          <span>✓ Success is frequent enough to maintain confidence</span>
+          <span>✓ Failure is frequent enough to require adaptation</span>
+          <span>✓ Attention remains high</span>
+          <span>✓ Problem solving remains active</span>
+        </div>
+        <div className="rldHeroPrinciple" style={{marginTop:'14px'}}>This is generally the optimal learning zone.</div>
+      </div>
+
+      <div className="cpZonesGrid">
+        <div className="cpZoneCard cpTooHard">
+          <div className="cpZoneHeader"><strong>Below 50% Success</strong><span>Too Difficult</span></div>
+          <div className="cpSymptoms">
+            <strong>Common Signs</strong>
+            <ul>
+              <li>Constant failure</li>
+              <li>Frustration</li>
+              <li>Loss of confidence</li>
+              <li>Reduced tactical awareness</li>
+              <li>Little evidence of adaptation</li>
+            </ul>
+          </div>
+          <div className="cpAction">
+            <strong>Coach Response — Reduce Challenge</strong>
+            <ul>
+              <li>Move down an RLD level</li>
+              <li>Simplify the task</li>
+              <li>Increase ball size</li>
+              <li>Reduce uncertainty</li>
+              <li>Reduce opponent pressure</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="cpZoneCard cpOptimal">
+          <div className="cpZoneHeader"><strong>Around 70% Success</strong><span>Optimal Challenge Point ✓</span></div>
+          <div className="cpSymptoms">
+            <strong>Common Signs</strong>
+            <ul>
+              <li>Regular success</li>
+              <li>Regular adaptation</li>
+              <li>High engagement</li>
+              <li>High concentration</li>
+              <li>Productive problem solving</li>
+            </ul>
+          </div>
+          <div className="cpAction">
+            <strong>Coach Response — Remain Here</strong>
+            <p>This is usually where learning is maximised. Do not reduce challenge because failure occurs — failure at this rate is part of the process.</p>
+          </div>
+        </div>
+
+        <div className="cpZoneCard cpTooEasy">
+          <div className="cpZoneHeader"><strong>Above 90% Success</strong><span>Too Easy</span></div>
+          <div className="cpSymptoms">
+            <strong>Common Signs</strong>
+            <ul>
+              <li>Very few errors</li>
+              <li>Little adaptation</li>
+              <li>Reduced concentration</li>
+              <li>Boredom</li>
+              <li>Automatic performance</li>
+            </ul>
+          </div>
+          <div className="cpAction">
+            <strong>Coach Response — Increase Challenge</strong>
+            <ul>
+              <li>Move up an RLD level</li>
+              <li>Add opponent interaction</li>
+              <li>Add scoring consequences</li>
+              <li>Increase variability</li>
+              <li>Increase uncertainty</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="cpDecisionRule">
+        <h3>Coach Decision Rule</h3>
+        <div className="cpDecisionGrid">
+          <div className="cpDecisionCard cpDecReduce"><span className="cpDecIcon">🔴</span><strong>Below 50%</strong><p>Reduce challenge</p></div>
+          <div className="cpDecisionCard cpDecStay"><span className="cpDecIcon">🟡</span><strong>Around 70%</strong><p>Optimal learning zone</p></div>
+          <div className="cpDecisionCard cpDecIncrease"><span className="cpDecIcon">🟢</span><strong>Above 90%</strong><p>Increase challenge</p></div>
+        </div>
+      </div>
+
+      <div className="cpRLDCombined">
+        <h3>Checkerboard Coaching Principle</h3>
+        <div className="cpCheckerboardPrinciple">
+          <div className="cpPrincipleAsk">
+            <span className="cpPrincipleNo">Do not ask:</span>
+            <p>"What is the hardest task?"</p>
+          </div>
+          <div className="cpPrincipleAsk cpPrincipleYes">
+            <span>Ask instead:</span>
+            <p>"What is the hardest task this player can successfully adapt to?"</p>
+          </div>
+        </div>
+        <div className="cpCombinedGrid" style={{marginTop:'14px'}}>
+          <div className="cpCombinedCard"><strong>RLD tells you:</strong><p>How representative is this activity? How close to competition does it feel?</p></div>
+          <div className="cpCombinedCard"><strong>Challenge Point tells you:</strong><p>Is the difficulty level right for this player right now?</p></div>
+          <div className="cpCombinedKey cpCombinedCard"><strong>The goal:</strong><p>Find the highest representative level at which meaningful adaptation can still occur. That is where learning is maximised.</p></div>
+        </div>
+        <div className="cpUniversalNote">
+          <strong>Universal guide for all Checkerboard activities</strong>
+          <div className="cpUniversalList">
+            {['Level 0','Around The Board','ATL / BTL','Checkerboard','Pressure','Matchplay','Competition'].map(a=><span key={a}>{a}</span>)}
+          </div>
+        </div>
+        <div className="cpReference">
+          <strong>Reference</strong>
+          <p>Guadagnoli, M.A., & Lee, T.D. (2004). Challenge point: A framework for conceptualizing the effects of various practice conditions in motor learning. <em>Journal of Motor Behavior, 36</em>(2), 212–224.</p>
+        </div>
+      </div>
+    </div>}
   </div>;
 }
 
@@ -1881,8 +2043,8 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeRLDTile homeBrandCard" onClick={()=>setScreen('rld')}>
         <div className="homeRLDLeft">
-          <strong>Representative Learning Demand</strong>
-          <p>Move as quickly as possible to higher RLD — tap to learn more</p>
+          <strong>RLD & Challenge Point Framework</strong>
+          <p>Representativeness scale · 70% rule · Move players toward competition</p>
         </div>
         <div className="homeRLDDots">
           {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
