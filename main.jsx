@@ -1826,17 +1826,254 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
   </div>;
 }
 function RLDScreen({setScreen}){
-  const [activeTab,setActiveTab]=useState('rld');
+  const [activeSection,setActiveSection]=useState('rld');
+
+  const rldExamples={
+    0:{
+      activities:['Tau Development','Ball Tracking','Chipping (0A–0G)','Arrive and Strike','Movement Calibration','Catch and Track'],
+      characteristics:['Simplified environment','Reduced uncertainty','Reduced opponent influence','High success rates'],
+      rationale:'Players cannot solve squash problems if they cannot yet judge time to contact, contact distance or ball flight. Level 0 develops the foundations for representative practice.',
+      cpfGuide:'When a player achieves 90%+ success on a chipping or tracking task, move to RLD 1. Do not add more repetitions — increase representativeness.',
+    },
+    1:{
+      activities:['Coach calls zone sequence 1→2→3→4','Coach directs feed to specified area','Coach calls shot type before rally','Structured feed with called targets'],
+      characteristics:['Low uncertainty','High coach control','Minimal decision making','Player solves the coach\'s problem'],
+      rationale:'Useful for introducing a task or concept. The player follows coach direction. Limited transfer to competition — use briefly before moving to RLD 2.',
+      cpfGuide:'When a player achieves 90%+ success following coach calls, move to RLD 2 and give the player the decision.',
+    },
+    2:{
+      activities:['Player selects own zone sequence','Player chooses shot type','Player-directed Around The Board','Self-selected ATL/BTL pattern'],
+      characteristics:['Increased choice','Reduced coach control','Early autonomous decision making','Player begins solving their own problem'],
+      rationale:'The player begins making their own decisions. This is a critical step toward competitive transfer — the player must learn to generate problems and solutions.',
+      cpfGuide:'When a player achieves 90%+ success on self-directed tasks, move to RLD 3 and add an opponent to interact with.',
+    },
+    3:{
+      activities:['Leader-Follower Around The Board','ATL/BTL with leader-follower','Cooperative rally with zone targets','Checkerboard with partner interaction'],
+      characteristics:['Continuous adaptation','Opponent interaction','Variable solutions required','Behaviour emerges through interaction'],
+      rationale:'Behaviour emerges through interaction with another player. The follower must read, respond and find their own solution. This is the first genuinely interactive level.',
+      cpfGuide:'When a player achieves 90%+ success in leader-follower tasks, move to RLD 4 by adding scoring consequences.',
+    },
+    4:{
+      activities:['Checkerboard challenge scoring','Power Play games','Conditioned games with point scoring','Around The Board with scoring'],
+      characteristics:['Consequences matter','Risk-reward decisions emerge','Tactical choices increase','Players solve problems while trying to win'],
+      rationale:'Scoring changes behaviour. Players begin to make risk-reward decisions. The consequence of failure now matters — which is closer to competition.',
+      cpfGuide:'When a player achieves 90%+ success in scored conditioned games, move to RLD 5 with competitive intent.',
+    },
+    5:{
+      activities:['Competitive Checkerboard','Conditioned matchplay','Pressure games','Competitive Around The Board','Invasion games'],
+      characteristics:['High uncertainty','Tactical adaptation required','Competitive intent','Closest approximation to competition below Level 6'],
+      rationale:'The activity resembles competition in most important ways. The player must adapt tactically, manage pressure and execute under competitive consequence.',
+      cpfGuide:'When a player achieves 90%+ success in competitive practice, they are ready for RLD 6 — actual competition.',
+    },
+    6:{
+      activities:['Tournament match','League match','Box league','National League','Monrad draw','Championship finals','Invasion finals'],
+      characteristics:['Maximum uncertainty','Maximum consequence','Emotional pressure','Tactical and opponent adaptation','Nothing is more representative'],
+      rationale:'Competition itself. All lower RLD levels exist to prepare players for this. The double dot represents the double yellow dots of a competition squash ball.',
+      cpfGuide:'The Challenge Point Framework still applies in competition. If a player is achieving 90%+ success in matches, they need harder competition. If below 50%, they need more time at RLD 4–5.',
+    },
+  };
+
   return <div className="page rldPage">
     <div className="pageTop">
-      <div><h1>RLD & Challenge Point Framework</h1><p className="mutedText">Representativeness · Difficulty · Coach Decision Rules</p></div>
+      <div><h1>RLD & Challenge Point</h1><p className="mutedText">Representativeness · When to move · How to progress</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
-    <div className="rldTabBar">
-      <button type="button" className={activeTab==='rld'?'rldTabActive':'rldTabBtn'} onClick={()=>setActiveTab('rld')}>RLD Scale</button>
-      <button type="button" className={activeTab==='cp'?'rldTabActive':'rldTabBtn'} onClick={()=>setActiveTab('cp')}>Challenge Point</button>
+    <div className="rldSectionNav">
+      {[{id:'rld',label:'RLD Scale',emoji:'📊'},{id:'cpf',label:'Challenge Point',emoji:'🎯'},{id:'together',label:'Using Together',emoji:'🔗'}].map(s=>
+        <button key={s.id} type="button"
+          className={activeSection===s.id?'rldNavActive':'rldNavBtn'}
+          onClick={()=>setActiveSection(s.id)}>
+          <span>{s.emoji}</span>{s.label}
+        </button>
+      )}
     </div>
+
+    {/* ── RLD SCALE ── */}
+    {activeSection==='rld'&&<div>
+      <div className="rldHero">
+        <h2>Representative Learning Design Scale</h2>
+        <p>RLD is a <strong>representativeness scale</strong> — not a difficulty ladder. It describes how closely an activity resembles the perceptual, decision-making and adaptive demands of real squash competition.</p>
+        <div className="rldHeroPrinciple">"How much does this look and feel like real squash?"</div>
+        <p className="mutedText">Move players to higher RLD as quickly as their development allows. Use the Challenge Point Framework to judge when they are ready. The goal is always RLD 6.</p>
+      </div>
+
+      <div className="rldLevelsStack">
+        {RLD_LEVELS.map(r=>{
+          const ex=rldExamples[r.level];
+          return <div key={r.level} className="rldLevelCardFull" style={{borderColor:r.color,background:r.bg}}>
+            <div className="rldLevelCardTop">
+              <div className="rldLevelDotLg" style={{background:r.color}}>
+                {r.doubleDot&&<><span className="rldInnerDotLg"/><span className="rldInnerDotLg"/></>}
+              </div>
+              <div className="rldLevelCardTitle">
+                <strong style={{color:r.textColor}}>{r.short} — {r.label}</strong>
+                <p style={{color:r.textColor,opacity:.85,fontSize:'13px',margin:'3px 0 0'}}>{r.desc}</p>
+              </div>
+            </div>
+            <div className="rldLevelCardBody">
+              <div className="rldLevelSection">
+                <span className="rldLevelSectionLabel">Examples</span>
+                <div className="rldExamplePills">
+                  {ex.activities.map(a=><span key={a} style={{borderColor:r.color+'66',color:r.textColor}}>{a}</span>)}
+                </div>
+              </div>
+              <div className="rldLevelSection">
+                <span className="rldLevelSectionLabel">Characteristics</span>
+                <div className="rldCharList">
+                  {ex.characteristics.map(c=><span key={c}>· {c}</span>)}
+                </div>
+              </div>
+              <div className="rldLevelSection rldRationale">
+                <span className="rldLevelSectionLabel">Rationale</span>
+                <p style={{color:r.textColor,opacity:.9}}>{ex.rationale}</p>
+              </div>
+              <div className="rldCPFGuide" style={{borderColor:r.color+'88',background:r.color+'11'}}>
+                <span style={{color:r.textColor,fontSize:'11px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em'}}>Challenge Point Guide</span>
+                <p style={{color:r.textColor,opacity:.9,fontSize:'13px',margin:'4px 0 0'}}>{ex.cpfGuide}</p>
+              </div>
+            </div>
+          </div>;
+        })}
+      </div>
+    </div>}
+
+    {/* ── CHALLENGE POINT ── */}
+    {activeSection==='cpf'&&<div>
+      <div className="rldHero">
+        <h2>Challenge Point Framework</h2>
+        <div className="cpAttributionRow">
+          <div className="cpAttributionCard">
+            <strong>Academic Foundation</strong>
+            <p>Guadagnoli & Lee (2004) — <em>Journal of Motor Behavior</em></p>
+            <p>Learning is maximised when task difficulty is matched to performer skill so that the learner receives the greatest amount of meaningful information without becoming overwhelmed.</p>
+          </div>
+          <div className="cpAttributionCard">
+            <strong>Practical Application</strong>
+            <p>Ecological dynamics practitioners including Rob Gray have translated the Challenge Point Framework into practical coaching guidance — monitoring success rates and adjusting task difficulty accordingly.</p>
+          </div>
+        </div>
+        <div className="rldHeroPrinciple">The Checkerboard 70% Rule: Target approximately 70% success. Success is frequent enough to maintain confidence. Failure is frequent enough to require adaptation.</div>
+      </div>
+
+      <div className="cpVisualZones">
+        <div className="cpVisualCard cpVisualHard">
+          <div className="cpVisualIcon">🔴</div>
+          <div className="cpVisualPct">Below 50%</div>
+          <div className="cpVisualLabel">Too Difficult</div>
+          <div className="cpVisualSigns">
+            <strong>Signs</strong>
+            <span>Constant failure</span><span>Frustration</span><span>Loss of confidence</span><span>No adaptation visible</span><span>Reduced tactical awareness</span>
+          </div>
+          <div className="cpVisualAction">
+            <strong>Reduce Challenge</strong>
+            <span>Move down an RLD level</span><span>Simplify the task</span><span>Increase ball size</span><span>Reduce uncertainty</span><span>Reduce opponent pressure</span>
+          </div>
+        </div>
+        <div className="cpVisualCard cpVisualOptimal">
+          <div className="cpVisualIcon">🟡</div>
+          <div className="cpVisualPct">Around 70%</div>
+          <div className="cpVisualLabel">Optimal Zone ✓</div>
+          <div className="cpVisualSigns">
+            <strong>Signs</strong>
+            <span>Regular success</span><span>Regular adaptation</span><span>High engagement</span><span>High concentration</span><span>Active problem solving</span>
+          </div>
+          <div className="cpVisualAction">
+            <strong>Stay Here</strong>
+            <span>This is where learning is maximised</span><span>Do not reduce challenge because failure occurs</span><span>Failure at this rate is part of the process</span>
+          </div>
+        </div>
+        <div className="cpVisualCard cpVisualEasy">
+          <div className="cpVisualIcon">🟢</div>
+          <div className="cpVisualPct">Above 90%</div>
+          <div className="cpVisualLabel">Too Easy</div>
+          <div className="cpVisualSigns">
+            <strong>Signs</strong>
+            <span>Very few errors</span><span>Little adaptation</span><span>Reduced concentration</span><span>Boredom</span><span>Automatic performance</span>
+          </div>
+          <div className="cpVisualAction">
+            <strong>Increase Challenge</strong>
+            <span>Move up an RLD level</span><span>Add opponent interaction</span><span>Add scoring consequences</span><span>Increase variability</span><span>Increase uncertainty</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="cpReference">
+        <strong>Reference</strong>
+        <p>Guadagnoli, M.A., & Lee, T.D. (2004). Challenge point: A framework for conceptualizing the effects of various practice conditions in motor learning. <em>Journal of Motor Behavior, 36</em>(2), 212–224.</p>
+      </div>
+    </div>}
+
+    {/* ── USING TOGETHER ── */}
+    {activeSection==='together'&&<div>
+      <div className="rldHero">
+        <h2>Using RLD and Challenge Point Together</h2>
+        <p>RLD and the Challenge Point Framework answer different questions. Together they give the coach a complete picture of what to do next.</p>
+      </div>
+
+      <div className="rldTogetherGrid">
+        <div className="rldTogetherCard rldTogetherRLD">
+          <strong>RLD asks:</strong>
+          <p>"How representative is this activity?"</p>
+          <span>How close to real squash does it feel?</span>
+        </div>
+        <div className="rldTogetherCard rldTogetherCPF">
+          <strong>Challenge Point asks:</strong>
+          <p>"Is the difficulty right for this player?"</p>
+          <span>Are they in the 70% learning zone?</span>
+        </div>
+        <div className="rldTogetherCard rldTogetherGoal">
+          <strong>The coaching goal:</strong>
+          <p>"Find the highest RLD level at which meaningful adaptation can still occur."</p>
+          <span>That is where learning is maximised.</span>
+        </div>
+      </div>
+
+      <div className="rldDecisionFlow">
+        <h3>Practical Decision Flow</h3>
+        <div className="rldFlowSteps">
+          <div className="rldFlowStep">
+            <span className="rldFlowNum">1</span>
+            <div><strong>Observe success rate</strong><p>Watch during the activity. Is the player succeeding most of the time, some of the time, or rarely?</p></div>
+          </div>
+          <div className="rldFlowArrow">↓</div>
+          <div className="rldFlowStep rldFlowRed">
+            <span className="rldFlowNum" style={{background:'#ef4444'}}>🔴</span>
+            <div><strong>Below 50% — reduce challenge</strong><p>Simplify the task, use a larger ball, reduce feed pace, or move down an RLD level.</p></div>
+          </div>
+          <div className="rldFlowArrow">↓</div>
+          <div className="rldFlowStep rldFlowYellow">
+            <span className="rldFlowNum" style={{background:'#eab308'}}>🟡</span>
+            <div><strong>Around 70% — stay here</strong><p>This is the learning zone. Keep the activity running. Observe adaptation. Do not intervene.</p></div>
+          </div>
+          <div className="rldFlowArrow">↓</div>
+          <div className="rldFlowStep rldFlowGreen">
+            <span className="rldFlowNum" style={{background:'#4ade80',color:'#000'}}>🟢</span>
+            <div><strong>Above 90% — move up</strong><p>Increase the RLD level. Add opponent pressure. Add scoring. Increase representativeness.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rldPrincipleFinal">
+        <div className="cpPrincipleAsk cpPrincipleNo" style={{marginBottom:'10px'}}>
+          <span className="cpPrincipleNo" style={{color:'#ef4444',display:'block',fontSize:'12px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'6px'}}>Do not ask:</span>
+          <p style={{color:'#9fb0c8',fontStyle:'italic',fontSize:'14px',margin:0}}>"What is the hardest task?"</p>
+        </div>
+        <div className="cpPrincipleAsk cpPrincipleYes" style={{background:'#052e16',border:'1px solid #4ade80',borderRadius:'12px',padding:'14px 16px'}}>
+          <span style={{display:'block',color:'#4ade80',fontSize:'12px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'6px'}}>Ask instead:</span>
+          <p style={{color:'#fff',fontWeight:700,fontStyle:'italic',fontSize:'14px',margin:0}}>"What is the hardest task this player can successfully adapt to?"</p>
+        </div>
+      </div>
+
+      <div className="cpUniversalNote">
+        <strong>Applies to all Checkerboard activities</strong>
+        <div className="cpUniversalList">
+          {['Level 0','Around The Board','ATL / BTL','Checkerboard','Pressure','Matchplay','Competition'].map(a=><span key={a}>{a}</span>)}
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
 
     {activeTab==='rld'&&<div>
       <div className="rldHero">
@@ -2276,6 +2513,9 @@ function buildCheckerboardGame(config){
 
 function CheckerboardEngine({onAddToSession}){
   const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const [cbDbAssign,setCbDbAssign]=useState('Both Players');
+  const [cbDbPlayer,setCbDbPlayer]=useState('');
+  const [cbDbAmount,setCbDbAmount]=useState('No DB');
   const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
   const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
   const built=buildCheckerboardGame(config);
@@ -2389,7 +2629,9 @@ return <div className="checkerboardEngine">
       </div>
     </div>}
 
-    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div><button className="primaryBtn" onClick={()=>onAddToSession(built)}>Add Checkerboard To Session</button></div>
+    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+    <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
+    <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
       </div>;
 }
 
@@ -2410,6 +2652,9 @@ function ATLBTLDirectBuilder({onAddToSession}){
   const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
   const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
   const [atlHistory,setAtlHistory]=useState([]);
+  const [atlDbAssign,setAtlDbAssign]=useState('Both Players');
+  const [atlDbPlayer,setAtlDbPlayer]=useState('');
+  const [atlDbAmount,setAtlDbAmount]=useState('No DB');
 
   const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
   function sideToCbZone(value){
@@ -2499,7 +2744,8 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button>
     </div>
 
-    <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>Add ATL / BTL To Session</button>
+    <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
+    <button className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
   </div>;
 }
 
@@ -2512,6 +2758,9 @@ function ClassicConditionedBuilder({onAddToSession}){
   const [selectedGame,setSelectedGame]=useState(null);
   const [scoringChoices,setScoringChoices]=useState({});
   const [selectedOverlays,setSelectedOverlays]=useState({});
+  const [classicDbAssign,setClassicDbAssign]=useState('Both Players');
+  const [classicDbPlayer,setClassicDbPlayer]=useState('');
+  const [classicDbAmount,setClassicDbAmount]=useState('No DB');
 
   const games=[
     {title:'Return to Sender',problem:'Opponent Awareness',shortRationale:'Discourages repeatedly hitting back to opponent position.',level:'Levels 2–5',task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',rationale:'Develops perception of opponent positioning before target selection.',coach:'Reward recognition of opponent position rather than pure shot quality.',playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',antiGaming:'No bonus if the direction change is accidental or unclear.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
@@ -2592,6 +2841,7 @@ function ClassicConditionedBuilder({onAddToSession}){
         <p className="overlayExplain">Use the same Technical / Tactical / Mental Performance overlay engine as Competition and ATL / BTL. Suggested overlays for this game: {(game.suggestedOverlays||[]).join(' · ')||'None'}.</p>
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title} />
       </div>
+      <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -3636,6 +3886,7 @@ function CustomGameBuilder({onAddToSession}){
     </div>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
+    <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayer} setDbPlayer={setNamedPlayer} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset Custom Game</button></div>
   </div>;
 }
@@ -3930,6 +4181,37 @@ function InformationAnticipationBuilder({onAddToSession}){
         <p><strong>Advanced profile:</strong> Shoulder / Trunk / Hips dominant.</p>
       </div>
     </div>
+  </div>;
+}
+
+function InlineDBSelector({dbAssign,setDbAssign,dbPlayer,setDbPlayer,dbAmount,setDbAmount}){
+  return <div className="inlineDBSelector">
+    <div className="inlineDBHeader">
+      <strong>DB Handicap</strong>
+      <span>Double bounce allowance — assign selectively</span>
+    </div>
+    <div className="inlineDBRow">
+      <div className="inlineDBGroup">
+        <span className="inlineDBLabel">Assign to</span>
+        <div className="inlineDBBtns">
+          {['Both Players','Server Only','Receiver Only','Named Player'].map(opt=><button key={opt} type="button"
+            className={dbAssign===opt?'inlineDBActive':'inlineDBBtn'}
+            onClick={()=>setDbAssign(opt)}>{opt}</button>)}
+        </div>
+        {dbAssign==='Named Player'&&<input className="inlineDBNameInput" value={dbPlayer} onChange={e=>setDbPlayer(e.target.value)} placeholder="Player name"/>}
+      </div>
+      <div className="inlineDBGroup">
+        <span className="inlineDBLabel">Allowance</span>
+        <div className="inlineDBBtns">
+          {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
+            className={dbAmount===o?'inlineDBActive':'inlineDBBtn'}
+            onClick={()=>setDbAmount(o)}>{o}</button>)}
+        </div>
+      </div>
+    </div>
+    {dbAmount!=='No DB'&&<div className="inlineDBSummary">
+      {dbAssign==='Named Player'?dbPlayer||'Named player':dbAssign}: {dbAmount}
+    </div>}
   </div>;
 }
 
@@ -5104,7 +5386,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
-    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&<div className="dbPanelBelowBuilders"><UniversalDBHandicapPanel onAddToSession={addStay}/></div>}
+    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
     {activeClassId&&!['checkerboard','atl','atb','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
