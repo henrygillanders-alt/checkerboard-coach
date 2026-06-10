@@ -4316,7 +4316,7 @@ function PowerPlayBuilder({onAddToSession}){
           </div>
           <div className="ppSummaryRow">
             <span>Per rally (sequence)</span>
-            <strong>{ppRallyPoints.map((p,i)=>`R${i+1}: +${p}`).join(' · ')}</strong>
+            <strong>{ppRallyPoints.map((p,i)=>'R'+(i+1)+': +'+ p).join(' · ')}</strong>
           </div>
           <div className="ppSummaryRow ppSummaryDisrupt">
             <span>Disruptor wins {ppDisruptorWins} in a row</span>
@@ -4324,7 +4324,8 @@ function PowerPlayBuilder({onAddToSession}){
           </div>
         </div>
         <button type="button" className="primaryBtn" style={{marginTop:'14px',width:'100%'}} onClick={()=>{
-          const scoring=`PP Window: ${ppRallies} rallies. Points: ${ppRallyPoints.map((p,i)=>`R${i+1}+${p}`).join('/')}. Completion bonus: +${ppCompletionBonus}. Total if all won: ${ppTotalIfWinAll}. Disruptor: ${ppDisruptorWins} successive wins = +${ppDisruptorBonus}. PP partial: ${ppPartialScore?'yes':'no'}.`;
+          const rallyStr=ppRallyPoints.map((p,i)=>'R'+(i+1)+'+'+p).join('/');
+          const scoring='PP Window: '+ppRallies+' rallies. Points: '+rallyStr+'. Completion bonus: +'+ppCompletionBonus+'. Total if all won: '+ppTotalIfWinAll+'. Disruptor: '+ppDisruptorWins+' successive wins = +'+ppDisruptorBonus+'. PP partial: '+(ppPartialScore?'yes':'no')+'.';
           onAddToSession({title:'Custom PP Scoring',category:'Power Play',task:scoring,scoring,duration:15});
           setPpStatus('Custom scoring added to session.');
         }}>Add This Scoring to Session</button>
