@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h56';
+const APP_VERSION='v100h57';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3340,6 +3340,379 @@ const PRESSURE_122_EXERCISES=[
   },
 ];
 
+
+// ─── TACTICAL PRESSURE MODULE ────────────────────────────────────────────────
+
+const TP_GAMES=[
+  {
+    id:'tp1',code:'PP1',
+    title:'Single Pressure Point',
+    purpose:'Recognise',
+    purposeFull:'Learn to recognise when a shot has created genuine pressure.',
+    rld:4,
+    task:'Force your opponent to contact the ball from outside the central corridor once. A Pressure Point is awarded when your shot causes the opponent to contact outside the corridor.',
+    scoring:'Win Rally +1 · Pressure Point +1',
+    coachMessage:'One Pressure Point shows the player can create pressure. The coaching question is: did you know you had created it, or did it happen by accident?',
+    coachQuestions:[
+      'What shot moved the opponent outside the corridor?',
+      'Did you know you had created pressure before they played the ball?',
+      'What position did the pressure point put you in?',
+    ],
+    characteristics:['Consequences matter','Player must track opponent position','Scoring rewards corridor awareness'],
+    rationale:'The simplest form of the game. The player must first learn to recognise when pressure exists before they can learn to sustain or convert it. Many players win rallies without ever creating genuine pressure — this game makes pressure visible and scoreable.',
+  },
+  {
+    id:'tp2',code:'PP2',
+    title:'Double Pressure Point',
+    purpose:'Sustain',
+    purposeFull:'Learn that one good shot is not enough — pressure must be sustained.',
+    rld:4,
+    task:'Force your opponent outside the corridor on two consecutive contacts. Both contacts must be outside the corridor. If the opponent returns to the corridor between contacts, the sequence resets.',
+    scoring:'Win Rally +1 · Double Pressure Point +2',
+    coachMessage:'One good shot is not pressure. Pressure is created over consecutive shots. The second shot is harder than the first because the opponent is now aware and trying to recover.',
+    coachQuestions:[
+      'What did you do after the first pressure point to prevent recovery?',
+      'Did you attack too early — before the second pressure point?',
+      'How did the opponent try to return to central control?',
+    ],
+    characteristics:['Requires consecutive pressure','Rewards patience','Punishes premature attack'],
+    rationale:'Teaches the critical lesson that most beginners and intermediate players never learn: pressure must be sustained before it becomes opportunity. A single forced shot often produces a difficult but recoverable ball — the second forced shot produces the opening.',
+  },
+  {
+    id:'tp3',code:'PP3',
+    title:'Triple Pressure Point',
+    purpose:'Build',
+    purposeFull:'Understand that pressure accumulates — three consecutive forced contacts creates maximum opportunity.',
+    rld:5,
+    task:'Force your opponent outside the corridor on three consecutive contacts. The sequence must be unbroken. Each broken sequence resets to zero.',
+    scoring:'Win Rally +1 · Triple Pressure Point +3',
+    coachMessage:'Pressure often accumulates over several shots. By the third consecutive forced contact the opponent is typically out of position, low on recovery time, and under maximum tactical stress.',
+    coachQuestions:[
+      'Which of the three shots was the most important — 1st, 2nd or 3rd?',
+      'At what point did you know three was achievable?',
+      'Where was the space after three consecutive pressure points?',
+    ],
+    characteristics:['Rewards sustained pressure building','Highest pure pressure score','Develops multi-shot tactical thinking'],
+    rationale:'The triple pressure point teaches the full pressure cycle. Most tactical opportunities in squash are created over three or more shots, not one. Players who understand this play longer, more patient rallies and attack from stronger positions.',
+  },
+  {
+    id:'tp4',code:'PP4',
+    title:'Pressure Then Finish',
+    purpose:'Patient Attack',
+    purposeFull:'Prevent premature attacking — pressure must exist before finishing bonuses are available.',
+    rld:5,
+    task:'Winner bonuses are only unlocked after a Double or Triple Pressure Point has been achieved in that rally. Attack without pressure and the winner scores normally with no bonus.',
+    scoring:'Win Rally +1 · Double Pressure Point +2 · Triple Pressure Point +3 · Clean Winner After Pressure +2',
+    coachMessage:'Build pressure before finishing. The most common error in competitive squash is attacking from a position of equal or poor pressure. This game makes early attacking tactically expensive.',
+    coachQuestions:[
+      'Did you attack before pressure existed?',
+      'When the pressure point arrived — did you recognise it immediately?',
+      'What changed in the rally after the pressure point was established?',
+    ],
+    characteristics:['Locks winner bonuses behind pressure','Rewards patience and timing','Bridges pressure and attack'],
+    rationale:'The game that most directly changes attacking behaviour. Players who consistently attack too early are forced to slow down and create pressure first. The bonus structure makes patient pressure more valuable than rushed winners.',
+  },
+  {
+    id:'tp5',code:'PP5',
+    title:'Pressure Conversion',
+    purpose:'Convert',
+    purposeFull:'Recognise when pressure has become opportunity — and convert it.',
+    rld:5,
+    task:'Build pressure, recognise the moment it becomes opportunity, and convert. The full scoring system rewards every stage of the pressure cycle.',
+    scoring:'Win Rally +1 · Double Pressure Point +2 · Triple Pressure Point +3 · Pressure + Rally Win +3 · Clean Winner After Pressure +2',
+    coachMessage:'Pressure without conversion is wasted. Conversion without pressure is lucky. The goal is to build pressure, recognise the moment, and finish with conviction.',
+    coachQuestions:[
+      'When did pressure become opportunity in that rally?',
+      'Did you recognise the opportunity early enough to attack with intent?',
+      'How often did you create pressure but fail to convert?',
+      'What space opened after the pressure point?',
+    ],
+    characteristics:['Full pressure-to-win scoring','Rewards the complete tactical cycle','Highest complexity before competition'],
+    rationale:'The complete game. Every stage of the tactical pressure cycle is scoreable: creating, sustaining, building and converting. Players who play this game consistently develop a coherent tactical framework that transfers directly to competition.',
+  },
+  {
+    id:'tp6',code:'PP6',
+    title:'Match Ball Pressure',
+    purpose:'Compete',
+    purposeFull:'Transfer the pressure framework into competition. No artificial scoring — coach tracks and analyses.',
+    rld:6,
+    task:'Play a normal competitive match. No artificial scoring system. The coach tracks pressure creation, pressure conversion, premature attacks and failed conversions. Post-match review uses the data to identify tactical patterns.',
+    scoring:'Normal competitive scoring. Coach tracks: Pressure Created · Pressure Converted · Premature Attacks · Failed Conversions',
+    coachMessage:'How many rallies were won after pressure? How often did you attack before pressure existed? How often was pressure created but not converted? The answers reveal the tactical pattern.',
+    coachQuestions:[
+      'How many rallies were won after pressure?',
+      'How often did you attack before pressure existed?',
+      'How often was pressure created but not converted?',
+      'What patterns emerged across the match?',
+      'At what score or moment did premature attacks most often occur?',
+    ],
+    characteristics:['Maximum representativeness','Coach analysis mode','Pressure framework applied to competition'],
+    rationale:'The double dot game. Nothing is more representative than competition itself. The coach uses the pressure framework as an analysis lens — the same variable used in match analysis is now used to evaluate training transfer.',
+  },
+];
+
+const TP_CORRIDOR_ZONES=[
+  {id:'T',label:'T Position',inCorridor:true,desc:'Central control. Maximum options.'},
+  {id:'mid-front',label:'Mid Front',inCorridor:true,desc:'Slight pressure. Recovery possible.'},
+  {id:'mid-back',label:'Mid Back',inCorridor:true,desc:'Slight pressure. Recovery possible.'},
+  {id:'front-corner',label:'Front Corner',inCorridor:false,desc:'Outside corridor. Pressure point.'},
+  {id:'back-corner',label:'Back Corner',inCorridor:false,desc:'Outside corridor. Pressure point.'},
+  {id:'side-wall',label:'Side Wall',inCorridor:false,desc:'Outside corridor. Pressure point.'},
+];
+
+function TacticalPressureModule({onAddToSession}){
+  const [activeSection,setActiveSection]=useState('games');
+  const [activeGame,setActiveGame]=useState(null);
+  const [showProjection,setShowProjection]=useState(false);
+  const [ppScore,setPpScore]=useState({a:0,b:0,ppA:0,ppB:0});
+
+  const game=TP_GAMES.find(g=>g.id===activeGame);
+
+  const purposeColors={
+    'Recognise':'#f97316',
+    'Sustain':'#eab308',
+    'Build':'#86efac',
+    'Patient Attack':'#4ade80',
+    'Convert':'#22d3ee',
+    'Compete':'#15803d',
+  };
+
+  return <div className="tpModule">
+    <div className="tpHeader">
+      <div className="tpHeaderLeft">
+        <div className="categoryTag" style={{background:'#0e7490',marginBottom:'8px',display:'inline-block'}}>Tactical Pressure</div>
+        <h2>Pressure Point</h2>
+        <p>Central control removed. Pressure created. Opportunity recognised. Converted.</p>
+      </div>
+    </div>
+
+    <div className="tpDistinction">
+      <div className="tpDistCard tpDistPhysical">
+        <strong>Pressure Module</strong>
+        <p>Physical load under control. Conditioning, fatigue and maintaining quality under high tempo.</p>
+      </div>
+      <div className="tpDistSeparator">vs</div>
+      <div className="tpDistCard tpDistTactical">
+        <strong>Tactical Pressure</strong>
+        <p>Removing the opponent from central control. Creating, sustaining and converting pressure.</p>
+      </div>
+    </div>
+
+    <div className="tpNavBar">
+      {[{id:'games',label:'Games',emoji:'🎮'},{id:'corridor',label:'The Corridor',emoji:'📐'},{id:'analysis',label:'Match Analysis Link',emoji:'🔍'},{id:'cpf',label:'Challenge Point',emoji:'🎯'}].map(s=>
+        <button key={s.id} type="button"
+          className={activeSection===s.id?'tpNavActive':'tpNavBtn'}
+          onClick={()=>{setActiveSection(s.id);setActiveGame(null);}}>
+          <span>{s.emoji}</span>{s.label}
+        </button>)}
+    </div>
+
+    {/* ── GAMES ── */}
+    {activeSection==='games'&&<div>
+      {!activeGame
+        ?<div className="tpGameGrid">
+          {TP_GAMES.map(g=><button key={g.id} type="button" className="tpGameTile" onClick={()=>setActiveGame(g.id)}>
+            <div className="tpGameTileTop">
+              <span className="tpGameCode" style={{background:purposeColors[g.purpose]||'#1f5dd0',color:g.rld>=5?'#000':'#fff'}}>{g.code}</span>
+              <RLDBadge level={g.rld}/>
+            </div>
+            <div className="tpPurposePill" style={{background:purposeColors[g.purpose]+'22',borderColor:purposeColors[g.purpose],color:purposeColors[g.purpose]}}>
+              {g.purpose}
+            </div>
+            <strong>{g.title}</strong>
+            <span>{g.purposeFull}</span>
+          </button>)}
+        </div>
+        :<div className="tpGameDetail">
+          <button type="button" className="secondaryBtn tpBackBtn" onClick={()=>setActiveGame(null)}>{'← All Games'}</button>
+
+          <div className="tpGameDetailHeader">
+            <span className="tpGameCodeLg" style={{background:purposeColors[game.purpose]||'#1f5dd0',color:game.rld>=5?'#000':'#fff'}}>{game.code}</span>
+            <div>
+              <div className="tpPurposePill" style={{background:purposeColors[game.purpose]+'22',borderColor:purposeColors[game.purpose],color:purposeColors[game.purpose],display:'inline-flex',marginBottom:'6px'}}>{game.purpose}</div>
+              <h2>{game.title}</h2>
+              <RLDBadge level={game.rld} size="lg"/>
+            </div>
+          </div>
+
+          <div className="tpDetailGrid">
+            <div className="tpDetailCard tpDetailTask">
+              <strong>Task</strong><p>{game.task}</p>
+            </div>
+            <div className="tpDetailCard tpDetailScoring">
+              <strong>Scoring</strong><p>{game.scoring}</p>
+            </div>
+            <div className="tpDetailCard tpDetailRationale">
+              <strong>Why This Game</strong><p>{game.rationale}</p>
+            </div>
+            <div className="tpDetailCard tpDetailCharacteristics">
+              <strong>Characteristics</strong>
+              <ul>{game.characteristics.map(c=><li key={c}>{c}</li>)}</ul>
+            </div>
+          </div>
+
+          <div className="tpCoachMessage">
+            <strong>Key Coaching Message</strong>
+            <blockquote>"{game.coachMessage}"</blockquote>
+          </div>
+
+          <div className="tpCoachQuestions">
+            <strong>Coach Questions</strong>
+            <div className="tpQuestionList">
+              {game.coachQuestions.map((q,i)=><div key={i} className="tpQuestion">
+                <span className="tpQNum">{i+1}</span>
+                <p>{q}</p>
+              </div>)}
+            </div>
+          </div>
+
+          <button type="button" className="primaryBtn tpAddBtn"
+            onClick={()=>onAddToSession({
+              title:game.title,category:'Tactical Pressure',
+              task:game.task,scoring:game.scoring,
+              rationale:game.rationale,coach:game.coachMessage,
+              rld:game.rld,duration:15,
+            })}>
+            Add to Session
+          </button>
+        </div>
+      }
+    </div>}
+
+    {/* ── THE CORRIDOR ── */}
+    {activeSection==='corridor'&&<div className="tpCorridorSection">
+      <div className="tpCorridorIntro">
+        <h2>The Central Corridor</h2>
+        <p>The corridor represents central control. It is a measurement tool — not a target zone. The objective is to force the opponent to contact the ball from <strong>outside</strong> the corridor.</p>
+        <div className="tpCorridorPrinciple">
+          Contacts inside the corridor = opponent retains options.<br/>
+          Contacts outside the corridor = Pressure Point.
+        </div>
+      </div>
+
+      <div className="tpCourtMap">
+        <div className="tpCourtLabel">Front Wall</div>
+        <div className="tpCourtFloor">
+          <div className="tpCourtLeft tpOutsideCorridor">
+            <span>Outside</span>
+            <small>Pressure Point</small>
+          </div>
+          <div className="tpCourtCorridor">
+            <div className="tpCorridorTop tpOutsideCorridor"><span>Outside</span></div>
+            <div className="tpCorridorMid tpInsideCorridor">
+              <span>Central Corridor</span>
+              <small>T and mid-court</small>
+              <div className="tpTMarker">T</div>
+            </div>
+            <div className="tpCorridorBot tpOutsideCorridor"><span>Outside</span></div>
+          </div>
+          <div className="tpCourtRight tpOutsideCorridor">
+            <span>Outside</span>
+            <small>Pressure Point</small>
+          </div>
+        </div>
+        <div className="tpCourtLabel">Back Wall</div>
+      </div>
+
+      <div className="tpCorridorNotes">
+        <div className="tpCorridorNoteCard tpNoteInside">
+          <strong>Inside Corridor — No Pressure Point</strong>
+          <ul>
+            <li>Opponent retains central control</li>
+            <li>Multiple shot options available</li>
+            <li>Recovery to T possible</li>
+            <li>Attacking opportunities remain open</li>
+          </ul>
+        </div>
+        <div className="tpCorridorNoteCard tpNoteOutside">
+          <strong>Outside Corridor — Pressure Point Awarded</strong>
+          <ul>
+            <li>Central control disrupted</li>
+            <li>Shot options reduced</li>
+            <li>Recovery to T difficult</li>
+            <li>Opponent under tactical stress</li>
+          </ul>
+        </div>
+      </div>
+    </div>}
+
+    {/* ── MATCH ANALYSIS LINK ── */}
+    {activeSection==='analysis'&&<div className="tpAnalysisSection">
+      <div className="tpAnalysisHero">
+        <h2>From Match Analysis to Practice Design</h2>
+        <p>Pressure Point is a direct bridge between the Checkerboard Match Analysis System and practice design. The same variable used to analyse performance is now used to train it.</p>
+        <div className="tpAnalysisPrinciple">
+          "The player learns to recognise, create and sustain pressure before attempting to finish the rally."
+        </div>
+      </div>
+
+      <div className="tpAnalysisGrid">
+        <div className="tpAnalysisCard tpAnalysisAnalysis">
+          <strong>In Match Analysis</strong>
+          <p>The central corridor is used to assess central control during a match. Contacts made from inside the corridor are assessed negatively — the opponent retains options. Contacts made from outside the corridor are assessed positively — central control has been disrupted.</p>
+        </div>
+        <div className="tpAnalysisCard tpAnalysisPractice">
+          <strong>In Practice Design</strong>
+          <p>The same corridor variable becomes a scoring mechanism. Players learn to recognise when they have created genuine pressure — not just when they have played a good shot. The Pressure Point reward system makes the corridor tactically significant in every rally.</p>
+        </div>
+        <div className="tpAnalysisCard tpAnalysisCore">
+          <strong>Core Coaching Message</strong>
+          <p>Build pressure before finishing. The most common tactical error in competitive squash is attacking from a position of equal or poor pressure. Players who understand the corridor learn to wait for genuine opportunity rather than forcing winners from neutral positions.</p>
+        </div>
+      </div>
+
+      <div className="tpProgressionFlow">
+        <strong>The Pressure Cycle</strong>
+        <div className="tpFlowSteps">
+          {[
+            {label:'Create',desc:'Force opponent outside corridor',color:'#f97316'},
+            {label:'Sustain',desc:'Prevent recovery — keep opponent outside',color:'#eab308'},
+            {label:'Build',desc:'Three consecutive forced contacts',color:'#86efac'},
+            {label:'Recognise',desc:'Identify when pressure has become opportunity',color:'#4ade80'},
+            {label:'Convert',desc:'Attack with conviction from a position of pressure',color:'#22d3ee'},
+          ].map((s,i)=><div key={s.label} className="tpFlowStep" style={{borderColor:s.color}}>
+            <span className="tpFlowNum" style={{background:s.color,color:s.label==='Build'||s.label==='Recognise'?'#000':'#fff'}}>{i+1}</span>
+            <div>
+              <strong style={{color:s.color}}>{s.label}</strong>
+              <p>{s.desc}</p>
+            </div>
+          </div>)}
+        </div>
+      </div>
+    </div>}
+
+    {/* ── CHALLENGE POINT ── */}
+    {activeSection==='cpf'&&<div className="tpCPFSection">
+      <div className="tpAnalysisHero">
+        <h2>Challenge Point Guide</h2>
+        <p>Use the Checkerboard 70% Rule to judge when to progress through the Pressure Point game ladder.</p>
+      </div>
+      <div className="tpCPFGrid">
+        <div className="tpCPFCard tpCPFHard">
+          <div className="tpCPFIcon">🔴</div>
+          <strong>Below 50% — Reduce Challenge</strong>
+          <p>Move back to a simpler Pressure Point game. Reduce to Single Pressure Point only. Check the player understands the corridor concept — visit The Corridor tab.</p>
+        </div>
+        <div className="tpCPFCard tpCPFOptimal">
+          <div className="tpCPFIcon">🟡</div>
+          <strong>Around 70% — Stay Here</strong>
+          <p>This is the optimal learning zone. The player is creating pressure regularly but not consistently. Adaptation is occurring. Stay at this game level.</p>
+        </div>
+        <div className="tpCPFCard tpCPFEasy">
+          <div className="tpCPFIcon">🟢</div>
+          <strong>Above 90% — Increase Challenge</strong>
+          <p>Progress to the next Pressure Point game. Add the sustain requirement, then the build requirement, then unlock the finishing bonus. Move toward Match Ball Pressure.</p>
+        </div>
+      </div>
+      <div className="tpCPFPrinciple">
+        <strong>Checkerboard Coaching Principle</strong>
+        <p>Do not ask: "What is the hardest task?" Ask: "What is the hardest Pressure Point game this player can successfully adapt to?" That is where learning is maximised.</p>
+      </div>
+    </div>}
+  </div>;
+}
+
+
 function PressureModule({setScreen}){
   const [activeTab,setActiveTab]=useState('122');
   const [activeExercise,setActiveExercise]=useState(null);
@@ -5343,10 +5716,11 @@ function Games({setSession,setScreen}){
     {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
     {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play™',category:'Power Play'},
+    {id:'pressure',label:'Pressure',category:'Pressure'},
+    {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
-    {id:'pressure',label:'Pressure',category:'Pressure'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
     {id:'rotations',label:'Rotations',category:'Rotations'},
@@ -5438,6 +5812,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='pressure'&&<PressureModule setScreen={setScreen}/>}
+    {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
@@ -5447,7 +5822,7 @@ function Games({setSession,setScreen}){
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','pressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','pressure','tacticalpressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
