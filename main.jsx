@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h55';
+const APP_VERSION='v100h56';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2096,6 +2096,7 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+      <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Pressure</h2><span className="homeTileSubtitle">Session Coaching Module</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -3209,6 +3210,262 @@ function Level0Foundations({setScreen,setSession}){
 
       <div className="l0CardStack" style={{marginTop:'16px'}}>
         {bdCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
+      </div>
+    </div>}
+  </div>;
+}
+
+
+
+// ─── PRESSURE MODULE ─────────────────────────────────────────────────────────
+
+const PRESSURE_FOCUS_PRINCIPLES=[
+  {id:'tzone',label:'T-Zone Return',desc:'After every shot, recover to the T before the next feed arrives. Do not watch your shot — move immediately.',cue:'Hit and move.'},
+  {id:'racquet',label:'Racquet Head Above Wrist',desc:'Between shots and at the moment of contact, the racquet head should be above the wrist. This organises the swing path and face control.',cue:'Check your racquet before you move.'},
+  {id:'head',label:'Head Still on Contact',desc:'Head stays level and still through contact. Do not lift the head to look where the ball is going — the flight will tell you.',cue:'See the contact, then move.'},
+  {id:'stay',label:'Stay in the Shot',desc:'Follow through fully before beginning recovery. Cutting the follow through short reduces both control and spacing.',cue:'Finish the shot, then go.'},
+  {id:'quieteye',label:'Quiet Eye',desc:'Fix gaze briefly on the contact point before and through the strike. This brief visual hold improves timing under pressure.',cue:'Find it, hold it, hit it.'},
+];
+
+const PRESSURE_122_EXERCISES=[
+  {
+    id:'p122-1',code:'P1',
+    title:'Tempo Drives',
+    subtitle:'Rhythm and racquet control under continuous feed',
+    setup:'Coach stands at the service box and volley feeds to the same wall side. Two players rotate after each shot — P1 drives then recovers to back, P2 steps in, drives, recovers to back. Coach sets the tempo.',
+    task:'Players maintain a continuous drive rhythm. Target a consistent, controlled drive landing in the back quarter of the court. Racquet head above wrist before every contact. Head still through the shot. Full follow through before moving.',
+    focusPoints:[
+      {label:'Racquet Head Above Wrist',detail:'Check racquet position as you step in. Head above wrist before the ball arrives — not after.'},
+      {label:'Head Still on Contact',detail:'Eyes find the ball early. Head stays level through contact. Do not lift to watch the drive.'},
+      {label:'Stay in the Shot',detail:'Follow through fully before stepping away. Short follow throughs reduce control and accuracy.'},
+      {label:'T-Zone Return',detail:'Rotate cleanly to the back after each drive. Do not stand and watch — move immediately.'},
+    ],
+    coachNote:'Watch the racquet head on arrival — many players drop the wrist under fatigue or feed pressure. Slow the feed tempo if racquet control breaks down. The target is consistent head-above-wrist organisation, not maximum pace.',
+    constraint:'Drive must land in the back quarter of the court. Drives landing short lose the point.',
+    rld:3,duration:'3–5 min per set',
+  },
+  {
+    id:'p122-2',code:'P2',
+    title:'Drive and Counter Drop',
+    subtitle:'Decision making — deception under feed pressure',
+    setup:'Same as P1. Coach volley feeds from service box to the wall side. Two players rotate. Player decides on each feed whether to drive or drop.',
+    task:'Player drives or drops based on their own decision each rally. Key focus: deception. Show the shape of a drop but execute a drive. Show the shape of a drive but execute a drop. All shots must travel tight to the side wall.',
+    focusPoints:[
+      {label:'Same Preparation for Both Shots',detail:'Drive and drop must use the same backswing and racquet path. The difference happens only at the moment of contact.'},
+      {label:'Show Drop — Drive',detail:'Commit to drop shape. At the last moment, add pace and depth. Opponent reads drop — gets drive.'},
+      {label:'Show Drive — Drop',detail:'Commit to drive shape. At the last moment, soften the face and take pace off. Opponent reads drive — gets drop.'},
+      {label:'Side Wall Only',detail:'All shots must travel close to the side wall. Wide drops or drives invite easy interception.'},
+    ],
+    coachNote:'If deception is absent, both shots will look different from the start and the opponent will read both. Look for early differentiation in preparation — that is the tell. The coaching target is identical preparation, not identical shots.',
+    constraint:'All shots must be side-wall tight. Drives score normally. Successful drops landing in front third earn a bonus point.',
+    rld:3,duration:'3 min per set — swap roles',
+  },
+  {
+    id:'p122-3',code:'P3',
+    title:'Drives Front and Back',
+    subtitle:'Movement range — covering both front and back court',
+    setup:'Coach on service box volley feeds. Feed varies between a short feed (front court) and a deep feed (back corner). Two players rotate.',
+    task:'Player reads the feed length and covers both front and back positions. Drive from wherever the ball lands. Recover to T after every shot.',
+    focusPoints:[
+      {label:'Read the Feed Early',detail:'Watch the coach hand and racquet face for cues to feed depth. Do not wait for the ball to reach its peak.'},
+      {label:'T-Zone Recovery',detail:'After front court shots especially — recover quickly. The next feed comes from T position and can go anywhere.'},
+      {label:'Racquet Ready on Arrival',detail:'Racquet head above wrist before arriving at the ball, whether front or back court.'},
+      {label:'Head Still',detail:'Particularly important on front court shots where the temptation is to look up early for position.'},
+    ],
+    coachNote:'Watch recovery speed after the front court shot — this is where T-zone return breaks down most. If a player is slow recovering, reduce feed tempo until the recovery pattern is established before increasing pace.',
+    constraint:'Drives must land past the service box line. Front court shots landing short of that line lose the point.',
+    rld:3,duration:'3 min per set — swap roles',
+  },
+  {
+    id:'p122-4',code:'P4',
+    title:'Drives Front and Back with Cross Court',
+    subtitle:'Three-option reading — drive, drop or boast return',
+    setup:'Coach on service box volley feeds. Feed can be short (front court), deep (back corner) or cross court. Two players rotate. The cross court feed is returned with a boast.',
+    task:'Player reads three possible feeds. Drive response to short and deep feeds. Boast response to cross court feed. Recover to T after every shot.',
+    focusPoints:[
+      {label:'Three-Option Reading',detail:'Coach can feed short, deep or cross court. Player must stay in a balanced ready position that allows movement in any direction.'},
+      {label:'Boast on Cross Court',detail:'Cross court feed is returned with a boast — not driven cross court back. This develops diagonal court awareness.'},
+      {label:'Racquet Ready Throughout',detail:'Racquet head above wrist between every shot — particularly important when covering three different feed directions.'},
+      {label:'T-Zone Recovery',detail:'Three-option exercises are the hardest for T recovery. Recovery must happen before reading the next feed direction.'},
+    ],
+    coachNote:'Introduce the cross court feed gradually. Run several sets of P3 first to establish the front-back movement pattern, then add the cross court option. Do not mix all three until the player is handling P3 cleanly.',
+    constraint:'Boast must reach the front wall via the side wall. Missed boasts that hit the side wall only lose the rally.',
+    rld:4,duration:'3 min per set — swap roles',
+  },
+  {
+    id:'p122-5',code:'P5',
+    title:'Counter Drop with Drive',
+    subtitle:'Drop quality and drive quality — 2-player rotation',
+    setup:'Coach drops or boasts from the back court (start with boast to give more time). P1 drops short. P2 counter drops. P1 drives deep. Cycle repeats continuously. 2 minutes then players switch roles.',
+    sequence:[
+      {label:'Coach',action:'Boast or drop from back court — start with boast'},
+      {label:'P1',action:'Drops short to front wall'},
+      {label:'P2',action:'Counter drops — tight to the front wall'},
+      {label:'P1',action:'Drives deep — full follow through required'},
+    ],
+    task:'Maintain the drop-counter drop-drive cycle cleanly. P1 is the drop and drive player. P2 is the counter drop player. The coaching focus is the quality of P1 drive after the counter drop exchange.',
+    focusPoints:[
+      {label:'Quality of the Drive',detail:'The counter drop pattern is the build-up. The coaching target is P1\'s drive after the counter drop. Deep? Tight? Full follow through?'},
+      {label:'Stay in the Shot — Drive',detail:'P1 must follow through fully before recovering. Short follow throughs produce half-length drives that give P2 an easy reply.'},
+      {label:'Counter Drop Tightness',detail:'P2\'s counter drop must stay tight to the front wall. A loose counter drop gives P1 a mid-court ball that removes the drive challenge.'},
+      {label:'T-Zone Recovery After Drive',detail:'P1 drives and must recover to T immediately. Do not watch the drive — the next coach feed follows quickly.'},
+    ],
+    coachNote:'Start with boast from back so P1 has enough time to organise a quality drop. Progress to drop feed when the pattern is clean. Key observation: P1\'s drive after the counter drop — look for full follow through and back corner landing.',
+    constraint:'P1\'s drive must land in the back quarter. Drives landing short lose the point for that cycle.',
+    rld:4,duration:'2 min — switch roles — repeat',
+  },
+  {
+    id:'p122-6',code:'P6',
+    title:'Counter Drop with Volley Drive',
+    subtitle:'Full pressure cycle — volley drive under movement pressure',
+    setup:'Same pattern as P5 with one addition: after P1 drives, P2 must volley the drive rather than letting it bounce. The volley drive must go deep. This adds timing and interception pressure to the full cycle.',
+    sequence:[
+      {label:'Coach',action:'Boast or drop from back court'},
+      {label:'P1',action:'Drops short to front wall'},
+      {label:'P2',action:'Counter drops — tight to front wall'},
+      {label:'P1',action:'Drives deep — full follow through'},
+      {label:'P2',action:'Volleys the drive deep — intercept before the bounce'},
+    ],
+    task:'Maintain the full five-stage cycle. P2 must commit to the volley drive and take the ball before it bounces. The volley drive must land deep. If the ball genuinely cannot be safely volleyed, P2 may drive off the back wall but this scores fewer points.',
+    focusPoints:[
+      {label:'Volley Drive Commitment',detail:'P2 must commit to the volley before the ball reaches the back wall. Waiting and deciding late means the opportunity is gone. Read P1\'s drive early and move.'},
+      {label:'Quiet Eye on Volley',detail:'Volley drives are the highest-pressure contact point in this exercise. Fix gaze on the ball early. Brief visual hold before contact. Do not swing at a general area.'},
+      {label:'Racquet Head Above Wrist — Volley',detail:'Racquet must be above wrist before the ball arrives for the volley. Late racquet preparation is the most common cause of poor volley drives.'},
+      {label:'Stay in the Shot — All Players',detail:'Every contact in this cycle requires a complete follow through: P1\'s drop, P2\'s counter drop, P1\'s drive, P2\'s volley drive.'},
+      {label:'T-Zone Recovery Throughout',detail:'Both players must recover to T after every shot. The cycle breaks down if either player stays watching their own shot.'},
+    ],
+    coachNote:'Only introduce P6 when P5 is clean. Watch for P2 guessing the volley direction rather than reading P1\'s drive. The volley drive should be a response to information — not anticipation of a habit pattern.',
+    constraint:'P2\'s volley drive must land in the back quarter. Volley drives landing short lose the cycle. Successful volley drives from below the service line earn a bonus point.',
+    rld:4,duration:'2 min — switch roles — repeat',
+  },
+];
+
+function PressureModule({setScreen}){
+  const [activeTab,setActiveTab]=useState('122');
+  const [activeExercise,setActiveExercise]=useState(null);
+  const [activeFocus,setActiveFocus]=useState(null);
+
+  const tabs=[
+    {id:'122',label:'1-2-2',sub:'Coach + 2 Players'},
+    {id:'121',label:'1-2-1',sub:'Coach + 1 Player'},
+    {id:'2p',label:'2 Players',sub:'No Coach'},
+    {id:'3p',label:'3 Players',sub:'No Coach'},
+    {id:'4p',label:'4 Players',sub:'No Coach'},
+  ];
+
+  const exercise=PRESSURE_122_EXERCISES.find(e=>e.id===activeExercise);
+
+  return <div className="page pressurePage">
+    <div className="pageTop">
+      <div><h1>Pressure</h1><p className="mutedText">Session coaching module · Progressive overload through feed frequency and decision complexity</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+
+    <div className="pressureFocusStrip">
+      <span className="pressureFocusLabel">Session Focus Principles</span>
+      <div className="pressureFocusBtns">
+        {PRESSURE_FOCUS_PRINCIPLES.map(f=><button key={f.id} type="button"
+          className={activeFocus===f.id?'pressureFocusActive':'pressureFocusBtn'}
+          onClick={()=>setActiveFocus(activeFocus===f.id?null:f.id)}>
+          {f.label}
+        </button>)}
+      </div>
+      {activeFocus&&(()=>{const f=PRESSURE_FOCUS_PRINCIPLES.find(x=>x.id===activeFocus);return <div className="pressureFocusExpanded">
+        <p>{f.desc}</p>
+        <div className="pressureFocusCue"><strong>Coach Cue</strong><blockquote>"{f.cue}"</blockquote></div>
+      </div>;})()}
+    </div>
+
+    <div className="pressureTabBar">
+      {tabs.map(t=><button key={t.id} type="button"
+        className={activeTab===t.id?'pressureTabActive':'pressureTabBtn'}
+        onClick={()=>{setActiveTab(t.id);setActiveExercise(null);}}>
+        <strong>{t.label}</strong>
+        <span>{t.sub}</span>
+      </button>)}
+    </div>
+
+    {activeTab==='122'&&<div className="pressureTabContent">
+      {!activeExercise
+        ?<div>
+          <div className="pressureTabIntro">
+            <h2>1-2-2 — Coach and Two Players</h2>
+            <p>The coach feeds continuously from the service box. Two players rotate through the exercise pattern. The coach controls feed tempo, direction and type. The players focus entirely on movement quality, shot execution and the session focus principles.</p>
+            <div className="pressureTabSetup">
+              <div className="pressureSetupItem"><strong>Coach position</strong><span>Service box — volley feeds throughout</span></div>
+              <div className="pressureSetupItem"><strong>Player rotation</strong><span>P1 plays the shot and recovers to back. P2 steps in, plays the shot, recovers to back.</span></div>
+              <div className="pressureSetupItem"><strong>Progression</strong><span>P1 through P6 in order. Only progress when the current exercise is running cleanly.</span></div>
+            </div>
+          </div>
+          <div className="pressureExerciseGrid">
+            {PRESSURE_122_EXERCISES.map(ex=><button key={ex.id} type="button"
+              className="pressureExerciseTile" onClick={()=>setActiveExercise(ex.id)}>
+              <div className="pressureExerciseTileTop">
+                <span className="pressureExerciseCode">{ex.code}</span>
+                <RLDBadge level={ex.rld}/>
+              </div>
+              <strong>{ex.title}</strong>
+              <span>{ex.subtitle}</span>
+              <p className="pressureExerciseDuration">{ex.duration}</p>
+            </button>)}
+          </div>
+        </div>
+        :<div className="pressureExerciseDetail">
+          <button type="button" className="secondaryBtn pressureBackBtn" onClick={()=>setActiveExercise(null)}>{'← All Exercises'}</button>
+          <div className="pressureExerciseHeader">
+            <div className="pressureExerciseCodeLg">{exercise.code}</div>
+            <div className="pressureExerciseHeaderText">
+              <h2>{exercise.title}</h2>
+              <p className="pressureExerciseSub">{exercise.subtitle}</p>
+              <RLDBadge level={exercise.rld} size="lg"/>
+            </div>
+          </div>
+          <div className="pressureDetailGrid">
+            <div className="pressureDetailCard pressureSetupCard">
+              <strong>Setup</strong><p>{exercise.setup}</p>
+            </div>
+            <div className="pressureDetailCard pressureTaskCard">
+              <strong>Task</strong><p>{exercise.task}</p>
+            </div>
+          </div>
+          {exercise.sequence&&<div className="pressureSequence">
+            <strong>Exercise Sequence</strong>
+            <div className="pressureSequenceSteps">
+              {exercise.sequence.map((s,i)=><div key={i} className="pressureSequenceStep">
+                <span className="pressureSeqLabel">{s.label}</span>
+                <span className="pressureSeqArrow">{'→'}</span>
+                <p>{s.action}</p>
+              </div>)}
+            </div>
+          </div>}
+          <div className="pressureFocusSection">
+            <strong>Focus Points</strong>
+            <div className="pressureFocusCards">
+              {exercise.focusPoints.map(fp=><div key={fp.label} className="pressureFocusCard">
+                <strong>{fp.label}</strong><p>{fp.detail}</p>
+              </div>)}
+            </div>
+          </div>
+          <div className="pressureCoachNote">
+            <strong>Coach Note</strong><p>{exercise.coachNote}</p>
+          </div>
+          <div className="pressureConstraint">
+            <strong>Constraint and Scoring Rule</strong><p>{exercise.constraint}</p>
+          </div>
+          <div className="pressureDuration">
+            <strong>Duration</strong><span>{exercise.duration}</span>
+          </div>
+        </div>
+      }
+    </div>}
+
+    {['121','2p','3p','4p'].includes(activeTab)&&<div className="pressureComingSoon">
+      <div className="pressureComingSoonCard">
+        <span className="categoryTag" style={{background:'#1f5dd0',marginBottom:'10px',display:'inline-block'}}>
+          {tabs.find(t=>t.id===activeTab)?.label} — {tabs.find(t=>t.id===activeTab)?.sub}
+        </span>
+        <h2>{tabs.find(t=>t.id===activeTab)?.label} Exercises</h2>
+        <p>This module is in development. Establish the 1-2-2 exercises in your coaching practice first — they form the foundation for all other pressure formats. The {tabs.find(t=>t.id===activeTab)?.label} exercises will be added here in the next build.</p>
       </div>
     </div>}
   </div>;
@@ -9387,6 +9644,7 @@ return <div>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
+      {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={go}/>}

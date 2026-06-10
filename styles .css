@@ -6351,3 +6351,544 @@ button.mentalSkillsTile p{
 .cpUniversalNote strong{display:block;color:#9bc1ff;font-size:13px;font-weight:900;margin-bottom:8px;}
 .cpUniversalList{display:flex;flex-wrap:wrap;gap:6px;}
 .cpUniversalList span{background:#0b1828;border:1px solid #2f4d72;color:#c4c9d9;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;}
+
+
+/* ── RLD & CPF REDESIGN ─────────────────────────────────────────── v100h55d ── */
+
+/* Section nav — replaces white tab bar */
+.rldSectionNav{
+  display:flex;
+  gap:10px;
+  margin:14px 0 20px;
+  flex-wrap:wrap;
+}
+.rldNavActive{
+  background:linear-gradient(135deg,#166534,#15803d);
+  border:2px solid #4ade80;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 20px;
+  font-weight:900;
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  box-shadow:0 4px 14px rgba(74,222,128,.25);
+}
+.rldNavBtn{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  color:#9fb0c8;
+  border-radius:14px;
+  padding:12px 20px;
+  font-weight:900;
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.rldNavBtn:hover{border-color:#4ade80;color:#fff;}
+
+/* RLD full level cards */
+.rldLevelCardFull{
+  border:2px solid;
+  border-radius:18px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.rldLevelCardTop{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  padding:16px 18px 14px;
+}
+.rldLevelCardTitle{flex:1;}
+.rldLevelCardTitle strong{font-size:16px;display:block;}
+.rldLevelCardBody{padding:0 18px 18px;}
+.rldLevelSection{margin-bottom:12px;}
+.rldLevelSectionLabel{
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:#9fb0c8;
+  margin-bottom:6px;
+}
+.rldExamplePills{display:flex;flex-wrap:wrap;gap:6px;}
+.rldExamplePills span{
+  border:1px solid;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:700;
+}
+.rldCharList{display:flex;flex-wrap:wrap;gap:6px;}
+.rldCharList span{color:#c4c9d9;font-size:13px;}
+.rldRationale p{font-size:13px;margin:0;line-height:1.5;}
+.rldCPFGuide{
+  border:1px solid;
+  border-radius:12px;
+  padding:12px 14px;
+  margin-top:4px;
+}
+
+/* CPF visual cards */
+.cpVisualZones{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+  margin-bottom:20px;
+}
+.cpVisualCard{
+  border-radius:18px;
+  padding:20px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.cpVisualHard{background:#450a0a;border:2px solid #ef4444;}
+.cpVisualOptimal{background:#052e16;border:2px solid #4ade80;}
+.cpVisualEasy{background:#1c1917;border:2px solid #eab308;}
+.cpVisualIcon{font-size:32px;text-align:center;}
+.cpVisualPct{
+  font-size:22px;
+  font-weight:900;
+  color:#fff;
+  text-align:center;
+}
+.cpVisualLabel{
+  font-size:14px;
+  font-weight:900;
+  text-align:center;
+  padding:6px 14px;
+  border-radius:999px;
+}
+.cpVisualHard .cpVisualLabel{background:#7f1d1d;color:#fca5a5;}
+.cpVisualOptimal .cpVisualLabel{background:#166534;color:#4ade80;}
+.cpVisualEasy .cpVisualLabel{background:#78350f;color:#fde047;}
+.cpVisualSigns,.cpVisualAction{
+  background:rgba(0,0,0,.2);
+  border-radius:12px;
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.cpVisualSigns strong,.cpVisualAction strong{
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:4px;
+  display:block;
+}
+.cpVisualHard .cpVisualSigns strong{color:#fca5a5;}
+.cpVisualHard .cpVisualAction strong{color:#f97316;}
+.cpVisualOptimal .cpVisualSigns strong{color:#86efac;}
+.cpVisualOptimal .cpVisualAction strong{color:#4ade80;}
+.cpVisualEasy .cpVisualSigns strong{color:#fde047;}
+.cpVisualEasy .cpVisualAction strong{color:#fb923c;}
+.cpVisualSigns span,.cpVisualAction span{color:#c4c9d9;font-size:13px;}
+
+/* Together section */
+.rldTogetherGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin-bottom:20px;
+}
+.rldTogetherCard{border-radius:16px;padding:18px 20px;}
+.rldTogetherRLD{background:#0a2415;border:2px solid #4ade80;}
+.rldTogetherCPF{background:#071015;border:2px solid #ffd980;}
+.rldTogetherGoal{background:#0d1f3c;border:2px solid #9bc1ff;}
+.rldTogetherCard strong{display:block;color:#fff;font-size:13px;font-weight:900;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+.rldTogetherRLD strong{color:#4ade80;}
+.rldTogetherCPF strong{color:#ffd980;}
+.rldTogetherGoal strong{color:#9bc1ff;}
+.rldTogetherCard p{color:#fff;font-size:17px;font-weight:900;font-style:italic;margin:0 0 8px;}
+.rldTogetherCard span{color:#9fb0c8;font-size:13px;}
+
+/* Decision flow */
+.rldDecisionFlow{margin-bottom:20px;}
+.rldDecisionFlow h3{color:#ffd980;margin:0 0 16px;}
+.rldFlowSteps{display:flex;flex-direction:column;gap:4px;}
+.rldFlowStep{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:14px;
+  padding:14px 16px;
+}
+.rldFlowNum{
+  width:32px;height:32px;border-radius:50%;
+  background:#1f5dd0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.rldFlowStep strong{display:block;color:#fff;font-size:15px;margin-bottom:4px;}
+.rldFlowStep p{color:#9fb0c8;font-size:13px;margin:0;line-height:1.5;}
+.rldFlowArrow{text-align:center;color:#4ade80;font-size:20px;margin:2px 0;}
+.rldFlowRed{border-color:#ef4444;background:#450a0a;}
+.rldFlowYellow{border-color:#eab308;background:#422006;}
+.rldFlowGreen{border-color:#4ade80;background:#052e16;}
+.rldPrincipleFinal{margin-bottom:20px;}
+
+
+/* ── INLINE DB SELECTOR ─────────────────────────────────────────── v100h55e ── */
+.inlineDBSelector{
+  background:#071015;
+  border:1px solid #4c1d95;
+  border-radius:14px;
+  padding:14px 16px;
+  margin:14px 0;
+}
+.inlineDBHeader{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+.inlineDBHeader strong{color:#c4b5fd;font-size:14px;font-weight:900;}
+.inlineDBHeader span{color:#9fb0c8;font-size:12px;}
+.inlineDBRow{display:flex;flex-direction:column;gap:10px;}
+.inlineDBGroup{}
+.inlineDBLabel{
+  display:block;
+  color:#9fb0c8;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:6px;
+}
+.inlineDBBtns{display:flex;flex-wrap:wrap;gap:6px;}
+.inlineDBActive{
+  background:#4c1d95;
+  border:2px solid #c4b5fd;
+  color:#fff;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+.inlineDBBtn{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  color:#9fb0c8;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.inlineDBBtn:hover{border-color:#c4b5fd;color:#fff;}
+.inlineDBNameInput{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:8px;
+  padding:8px 12px;
+  color:#fff;
+  font-size:13px;
+  margin-top:6px;
+  width:100%;
+}
+.inlineDBSummary{
+  margin-top:8px;
+  background:#1e1040;
+  border:1px solid #7c3aed;
+  border-radius:8px;
+  padding:6px 12px;
+  color:#c4b5fd;
+  font-size:13px;
+  font-weight:700;
+}
+
+
+/* ── PRESSURE MODULE ────────────────────────────────────────────── v100h56 ── */
+
+.pressurePage{padding-bottom:30px;}
+
+/* Focus strip */
+.pressureFocusStrip{
+  background:#071827;
+  border:1px solid #1f5dd0;
+  border-radius:16px;
+  padding:14px 18px;
+  margin-bottom:16px;
+}
+.pressureFocusLabel{
+  display:block;
+  color:#9bc1ff;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:10px;
+}
+.pressureFocusBtns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:0;}
+.pressureFocusActive{
+  background:#1f5dd0;
+  border:2px solid #60a5fa;
+  color:#fff;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+}
+.pressureFocusBtn{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  color:#9fb0c8;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.pressureFocusBtn:hover{border-color:#60a5fa;color:#fff;}
+.pressureFocusExpanded{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #1e3450;
+}
+.pressureFocusExpanded p{color:#c4c9d9;font-size:14px;margin:0 0 10px;line-height:1.6;}
+.pressureFocusCue{
+  background:#0a1a2e;
+  border-left:3px solid #60a5fa;
+  border-radius:0 10px 10px 0;
+  padding:10px 14px;
+}
+.pressureFocusCue strong{display:block;color:#60a5fa;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.pressureFocusCue blockquote{color:#fff;font-size:15px;font-weight:900;font-style:italic;margin:0;}
+
+/* Tab bar */
+.pressureTabBar{
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.pressureTabActive{
+  background:#1f5dd0;
+  border:2px solid #60a5fa;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 18px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  min-width:90px;
+}
+.pressureTabBtn{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  color:#9fb0c8;
+  border-radius:14px;
+  padding:12px 18px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  min-width:90px;
+}
+.pressureTabBtn:hover{border-color:#60a5fa;}
+.pressureTabActive strong,.pressureTabBtn strong{font-size:15px;}
+.pressureTabActive strong{color:#fff;}
+.pressureTabBtn strong{color:#c4c9d9;}
+.pressureTabActive span,.pressureTabBtn span{font-size:11px;}
+.pressureTabActive span{color:#bfdbfe;}
+.pressureTabBtn span{color:#6b7280;}
+
+/* Tab intro */
+.pressureTabContent{padding-bottom:10px;}
+.pressureTabIntro{
+  background:#071827;
+  border:1px solid #2f4d72;
+  border-radius:16px;
+  padding:18px 22px;
+  margin-bottom:16px;
+}
+.pressureTabIntro h2{color:#fff;font-size:20px;margin:0 0 8px;}
+.pressureTabIntro p{color:#c4c9d9;font-size:14px;margin:0 0 14px;line-height:1.6;}
+.pressureTabSetup{display:flex;flex-direction:column;gap:8px;}
+.pressureSetupItem{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  background:#0b1020;
+  border-radius:10px;
+  padding:10px 14px;
+}
+.pressureSetupItem strong{color:#60a5fa;font-size:13px;min-width:130px;flex-shrink:0;}
+.pressureSetupItem span{color:#c4c9d9;font-size:13px;line-height:1.5;}
+
+/* Exercise grid */
+.pressureExerciseGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:12px;
+}
+.pressureExerciseTile{
+  background:#0b1828;
+  border:2px solid #2f4d72;
+  border-radius:16px;
+  padding:16px 18px;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  transition:border-color .15s,transform .1s;
+}
+.pressureExerciseTile:hover{border-color:#60a5fa;transform:translateY(-2px);}
+.pressureExerciseTileTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.pressureExerciseCode{
+  background:#1f5dd0;
+  color:#fff;
+  border-radius:8px;
+  padding:4px 12px;
+  font-size:13px;
+  font-weight:900;
+}
+.pressureExerciseTile strong{color:#fff;font-size:16px;font-weight:900;}
+.pressureExerciseTile span{color:#60a5fa;font-size:13px;}
+.pressureExerciseDuration{color:#9fb0c8;font-size:12px;margin:0;}
+
+/* Exercise detail */
+.pressureBackBtn{margin-bottom:16px;}
+.pressureExerciseHeader{
+  display:flex;
+  gap:16px;
+  align-items:flex-start;
+  margin-bottom:18px;
+}
+.pressureExerciseCodeLg{
+  background:#1f5dd0;
+  color:#fff;
+  border-radius:14px;
+  padding:12px 18px;
+  font-size:22px;
+  font-weight:900;
+  flex-shrink:0;
+  align-self:flex-start;
+}
+.pressureExerciseHeaderText h2{color:#fff;font-size:22px;margin:0 0 4px;}
+.pressureExerciseSub{color:#60a5fa;font-size:14px;font-weight:700;margin:0 0 8px;}
+
+.pressureDetailGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
+.pressureDetailCard{border-radius:14px;padding:16px 18px;}
+.pressureDetailCard strong{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.pressureDetailCard p{font-size:14px;margin:0;line-height:1.6;}
+.pressureSetupCard{background:#071015;border:1px solid #1f5dd0;}
+.pressureSetupCard strong{color:#60a5fa;}
+.pressureSetupCard p{color:#c4c9d9;}
+.pressureTaskCard{background:#071827;border:1px solid #2f4d72;}
+.pressureTaskCard strong{color:#9bc1ff;}
+.pressureTaskCard p{color:#c4c9d9;}
+
+/* Sequence */
+.pressureSequence{margin-bottom:16px;}
+.pressureSequence>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.pressureSequenceSteps{display:flex;flex-direction:column;gap:6px;}
+.pressureSequenceStep{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:10px;
+  padding:10px 14px;
+}
+.pressureSeqLabel{
+  background:#1f5dd0;
+  color:#fff;
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:900;
+  min-width:60px;
+  text-align:center;
+  flex-shrink:0;
+}
+.pressureSeqArrow{color:#60a5fa;font-size:16px;flex-shrink:0;}
+.pressureSequenceStep p{color:#c4c9d9;font-size:13px;margin:0;flex:1;}
+
+/* Focus cards */
+.pressureFocusSection{margin-bottom:16px;}
+.pressureFocusSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.pressureFocusCards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px;
+}
+.pressureFocusCard{
+  background:#0a1a2e;
+  border:1px solid #1f5dd0;
+  border-left:3px solid #60a5fa;
+  border-radius:0 12px 12px 0;
+  padding:12px 14px;
+}
+.pressureFocusCard strong{display:block;color:#60a5fa;font-size:13px;font-weight:900;margin-bottom:6px;}
+.pressureFocusCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+
+/* Coach note */
+.pressureCoachNote{
+  background:#1a1000;
+  border-left:3px solid #ffd980;
+  border-radius:0 12px 12px 0;
+  padding:14px 16px;
+  margin-bottom:12px;
+}
+.pressureCoachNote strong{display:block;color:#ffd980;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.pressureCoachNote p{color:#fef3c7;font-size:14px;margin:0;line-height:1.6;}
+
+/* Constraint */
+.pressureConstraint{
+  background:#0a2415;
+  border-left:3px solid #4ade80;
+  border-radius:0 12px 12px 0;
+  padding:14px 16px;
+  margin-bottom:12px;
+}
+.pressureConstraint strong{display:block;color:#4ade80;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.pressureConstraint p{color:#86efac;font-size:14px;margin:0;line-height:1.5;}
+
+/* Duration */
+.pressureDuration{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#0b1020;
+  border:1px solid #2a3560;
+  border-radius:10px;
+  padding:10px 14px;
+  margin-bottom:16px;
+}
+.pressureDuration strong{color:#9bc1ff;font-size:13px;font-weight:900;}
+.pressureDuration span{color:#fff;font-size:14px;font-weight:700;}
+
+/* Coming soon */
+.pressureComingSoon{padding:20px 0;}
+.pressureComingSoonCard{
+  background:#071827;
+  border:1px solid #2f4d72;
+  border-radius:18px;
+  padding:24px 28px;
+}
+.pressureComingSoonCard h2{color:#fff;font-size:20px;margin:8px 0 12px;}
+.pressureComingSoonCard p{color:#c4c9d9;font-size:14px;margin:0;line-height:1.6;}
