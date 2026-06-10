@@ -1438,7 +1438,9 @@ function PlugAndPlay({setScreen,setSession}){
       coach:'Watch the quality of the receiver length. Does the receiver use length to push the server deep and reduce ATL angles? Does the server attack from poor positions? The constraint reveals decision quality under role pressure.',
       player:'Server: play ATL every shot. You have unlimited double bounce. Receiver: play freely — anywhere on the court.',
       load:'Server ATL — Receiver Anywhere'
-    },tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
+    },
+    {
+      id:'PPA01',title:'Open Power Play™',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
       develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
       why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
       what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
