@@ -5437,6 +5437,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
+    {activeClassId==='pressure'&&<PressureModule setScreen={setScreen}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
@@ -5446,7 +5447,7 @@ function Games({setSession,setScreen}){
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','pressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 

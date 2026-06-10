@@ -6739,8 +6739,8 @@ button.mentalSkillsTile p{
   gap:12px;
 }
 .pressureExerciseTile{
-  background:#0b1828;
-  border:2px solid #2f4d72;
+  background:#0b1828!important;
+  border:2px solid #2f4d72!important;
   border-radius:16px;
   padding:16px 18px;
   cursor:pointer;
@@ -6749,6 +6749,44 @@ button.mentalSkillsTile p{
   flex-direction:column;
   gap:6px;
   transition:border-color .15s,transform .1s;
+  -webkit-appearance:none;
+  appearance:none;
+  color:#fff;
+}
+.pressureFocusStrip{
+  background:#071827!important;
+  border:1px solid #1f5dd0!important;
+  border-radius:16px;
+  padding:14px 18px;
+  margin-bottom:16px;
+}
+.pressureTabActive{
+  background:#1f5dd0!important;
+  border:2px solid #60a5fa!important;
+  color:#fff!important;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.pressureTabBtn{
+  background:#0b1828!important;
+  border:1px solid #2f4d72!important;
+  color:#9fb0c8!important;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.pressureFocusActive{
+  background:#1f5dd0!important;
+  border:2px solid #60a5fa!important;
+  color:#fff!important;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.pressureFocusBtn{
+  background:#0b1828!important;
+  border:1px solid #2f4d72!important;
+  color:#9fb0c8!important;
+  -webkit-appearance:none;
+  appearance:none;
 }
 .pressureExerciseTile:hover{border-color:#60a5fa;transform:translateY(-2px);}
 .pressureExerciseTileTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
