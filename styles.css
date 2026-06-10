@@ -6093,3 +6093,172 @@ button.mentalSkillsTile p{
 .atbLayerOverlays span{background:#0e7490;color:#22d3ee;}
 .atbLayerOverlays strong{color:#22d3ee;}
 .atbLayerBlock .atbOverlayChips{padding:12px 16px;}
+
+
+/* ── RLD SYSTEM ─────────────────────────────────────────────────── v100h55 ── */
+
+/* Home RLD tile — full width like brand card */
+.homeRLDTile{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  cursor:pointer;
+  text-align:left;
+  background:#071827;
+  border:1px solid #5e83be;
+  padding:16px 24px;
+}
+.homeRLDTile:hover{border-color:#4ade80;}
+.homeRLDLeft strong{display:block;color:#fff;font-size:16px;font-weight:900;margin-bottom:4px;}
+.homeRLDLeft p{color:#9fb0c8;font-size:13px;margin:0;}
+.homeRLDDots{display:flex;gap:10px;align-items:center;flex-shrink:0;}
+.homeRLDDot{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;flex-shrink:0;
+}
+
+/* RLD badges */
+.rldBadgeSm{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:1px solid;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:11px;
+  font-weight:900;
+  margin:4px 0;
+}
+.rldDotSm{
+  width:10px;height:10px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;
+}
+.rldInnerDotSm{
+  width:3px;height:3px;border-radius:50%;
+  background:#000;position:absolute;
+}
+.rldInnerDotSm:first-child{left:1px;}
+.rldInnerDotSm:last-child{right:1px;}
+.rldBadgeLg{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:1px solid;
+  border-radius:14px;
+  padding:12px 16px;
+  margin:6px 0;
+}
+.rldDot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;
+}
+.rldInnerDot{
+  width:6px;height:6px;border-radius:50%;
+  background:#000;position:absolute;
+}
+.rldInnerDot:first-child{left:3px;}
+.rldInnerDot:last-child{right:3px;}
+.rldBadgeLg strong{display:block;font-size:14px;margin-bottom:3px;}
+.rldBadgeLg p{font-size:12px;margin:0;}
+
+/* RLD screen */
+.rldPage{padding-bottom:30px;}
+.rldHero{
+  background:#071827;
+  border:1px solid #5e83be;
+  border-radius:18px;
+  padding:22px 26px;
+  margin-bottom:20px;
+}
+.rldHero h2{color:#fff;font-size:22px;margin:0 0 10px;}
+.rldHero p{color:#c4c9d9;font-size:14px;margin:0 0 10px;line-height:1.6;}
+.rldHeroPrinciple{
+  background:#0a2415;border:1px solid #4ade80;border-radius:10px;
+  padding:12px 16px;color:#4ade80;font-weight:900;font-style:italic;
+  font-size:16px;margin:12px 0;
+}
+.rldLevelsStack{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.rldLevelCard{border:2px solid;border-radius:14px;padding:14px 18px;}
+.rldLevelLeft{display:flex;gap:14px;align-items:flex-start;}
+.rldLevelDotLg{
+  width:36px;height:36px;border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.rldInnerDotLg{
+  width:8px;height:8px;border-radius:50%;
+  background:#000;position:absolute;
+}
+.rldInnerDotLg:first-child{left:4px;}
+.rldInnerDotLg:last-child{right:4px;}
+.rldLevelLeft strong{display:block;font-size:15px;margin-bottom:4px;}
+.rldLevelLeft p{font-size:13px;margin:0;line-height:1.5;}
+.rldCoachNote{margin-top:10px;}
+.rldCoachNote h3{color:#ffd980;margin:0 0 14px;}
+.rldCoachGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;}
+.rldCoachCard{background:#0b1828;border:1px solid #2f4d72;border-radius:14px;padding:16px;}
+.rldCoachCard strong{display:block;color:#9bc1ff;font-size:14px;margin-bottom:8px;}
+.rldCoachCard p{color:#c4c9d9;font-size:13px;margin:0;line-height:1.5;}
+.rldDoubleDotCard{border-color:#4ade80;background:#052e16;}
+.rldDoubleDotCard strong{color:#4ade80;}
+.rldDoubleDotSymbol{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
+.rldDotLgDemo{width:28px;height:28px;border-radius:50%;background:#4ade80;display:inline-block;}
+.rldInnerDotLgDemo{width:7px;height:7px;border-radius:50%;background:#000;display:inline-block;}
+
+/* Plug & Play constraint bar */
+.plugPlayConstraintBar{
+  background:#071827;
+  border:1px solid #5e83be;
+  border-radius:16px;
+  padding:16px 20px;
+  margin-bottom:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.plugPlayConstraintRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.plugPlayConstraintRow>strong{color:#ffd980;font-size:14px;font-weight:900;min-width:160px;}
+.plugPlayConstraintBtns{display:flex;flex-wrap:wrap;gap:6px;}
+.plugConstraintActive{background:#1f5dd0;border:none;color:#fff;border-radius:10px;padding:8px 14px;font-weight:900;font-size:13px;cursor:pointer;}
+.plugConstraintBtn{background:#0b1828;border:1px solid #2f4d72;color:#9fb0c8;border-radius:10px;padding:8px 14px;font-weight:900;font-size:13px;cursor:pointer;}
+
+/* Custom game base selector */
+.customBaseGameSection{margin-bottom:16px;}
+.customBaseGameSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.customBaseGameGrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.customBaseActive{background:#0e7490;border:2px solid #22d3ee;color:#fff;border-radius:10px;padding:10px 16px;font-weight:900;font-size:14px;cursor:pointer;}
+.customBaseBtn{background:#0b1020;border:1px solid #2a3560;color:#9fb0c8;border-radius:10px;padding:10px 16px;font-weight:900;font-size:14px;cursor:pointer;}
+.customBaseDesc{background:#071015;border-left:3px solid #22d3ee;border-radius:0 8px 8px 0;padding:8px 12px;color:#9fb0c8;font-size:13px;}
+.constraintAssignSection{margin-bottom:16px;}
+.constraintAssignSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.constraintAssignGrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.constraintAssignActive{background:#166534;border:2px solid #4ade80;color:#fff;border-radius:10px;padding:10px 16px;font-weight:900;font-size:14px;cursor:pointer;}
+.constraintAssignBtn{background:#0b1020;border:1px solid #2a3560;color:#9fb0c8;border-radius:10px;padding:10px 16px;font-weight:900;font-size:14px;cursor:pointer;}
+.constraintAssignNote{background:#071015;border-left:3px solid #4ade80;border-radius:0 8px 8px 0;padding:8px 12px;color:#86efac;font-size:13px;}
+
+/* PP scoring builder */
+.ppScoringBuilder{background:#0b1020;border:1px solid #2a3560;border-radius:18px;padding:20px;}
+.ppScoringHero{margin-bottom:16px;}
+.ppScoringHero h3{color:#c4b5fd;font-size:18px;margin:0 0 6px;}
+.ppScoringHero p{color:#9fb0c8;font-size:13px;margin:0;}
+.ppScoringSection{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #1e2a48;}
+.ppScoringSection>strong{display:block;color:#ffd980;font-size:14px;font-weight:900;margin-bottom:10px;}
+.ppScoringHint{color:#9fb0c8;font-size:12px;margin:0 0 10px;}
+.ppRallyPointsGrid{display:flex;flex-direction:column;gap:8px;}
+.ppRallyPointRow{display:flex;align-items:center;gap:10px;background:#0b1828;border-radius:10px;padding:8px 12px;}
+.ppRallyPointRow>span:first-child{color:#9bc1ff;font-size:13px;font-weight:700;min-width:55px;}
+.ppRallyPointBtns{display:flex;gap:4px;}
+.ppRallyPtsBadge{color:#4ade80;font-size:14px;font-weight:900;min-width:30px;text-align:right;}
+.ppScoringSummary{background:#1e1040;border:2px solid #7c3aed;border-radius:14px;padding:16px 18px;}
+.ppScoringSummary>strong{display:block;color:#c4b5fd;font-size:14px;margin-bottom:12px;}
+.ppScoringSummaryGrid{display:flex;flex-direction:column;gap:8px;}
+.ppSummaryRow{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;background:#12152a;flex-wrap:wrap;gap:8px;}
+.ppSummaryRow span{color:#9fb0c8;font-size:13px;}
+.ppSummaryRow strong{color:#fff;font-size:13px;}
+.ppSummaryWin strong{color:#4ade80;}
+.ppSummaryDisrupt strong{color:#f97316;}

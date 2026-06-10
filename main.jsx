@@ -3,7 +3,29 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h54';
+const APP_VERSION='v100h55';
+
+// ── REPRESENTATIVE LEARNING DEMAND (RLD) SYSTEM ──────────────────────────────
+const RLD_LEVELS=[
+  {level:1,label:'Coach Called',short:'RLD 1',desc:'Coach calls every target, task or decision.',color:'#ef4444',bg:'#450a0a',textColor:'#fca5a5'},
+  {level:2,label:'Leader Called',short:'RLD 2',desc:'Leader or server calls task aloud before playing.',color:'#f97316',bg:'#431407',textColor:'#fdba74'},
+  {level:3,label:'Player Selected',short:'RLD 3',desc:'Player selects task silently — no announcement required.',color:'#eab308',bg:'#422006',textColor:'#fde047'},
+  {level:4,label:'Under Pressure',short:'RLD 4',desc:'Player selects and executes tasks during live competitive play.',color:'#86efac',bg:'#052e16',textColor:'#86efac'},
+  {level:5,label:'Open Play',short:'RLD 5',desc:'Tasks emerge naturally from play. No calling, no structure — full game representation.',color:'#4ade80',bg:'#052e16',textColor:'#4ade80',doubleDot:true},
+];
+
+function RLDBadge({level,size='sm'}){
+  const r=RLD_LEVELS.find(x=>x.level===level)||RLD_LEVELS[0];
+  if(size==='lg') return <div className="rldBadgeLg" style={{background:r.bg,borderColor:r.color}}>
+    <span className="rldDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDot"/><span className="rldInnerDot"/></>}</span>
+    <div><strong style={{color:r.textColor}}>{r.short} — {r.label}</strong><p style={{color:r.textColor}}>{r.desc}</p></div>
+  </div>;
+  return <span className="rldBadgeSm" style={{background:r.bg,borderColor:r.color,color:r.textColor}}>
+    <span className="rldDotSm" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>
+    {r.short}
+  </span>;
+}
+// ─────────────────────────────────────────────────────────────────────────────
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
@@ -1408,7 +1430,15 @@ function PlugAndPlay({setScreen,setSession}){
   const outcomes=['Pressure','Length','Volleys','Movement','T-Zone','Double Bounce','Power Play'];
   const games=[
     {
-      id:'PPA01',title:'Open Power Play™',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
+      id:'PNP01',title:'Server ATL — Receiver Anywhere',tags:['Pressure','Length','T-Zone'],type:'Two Player · Conditioned Game',players:'2',level:'Level 2 → Level 4',
+      develops:['Defensive patience','Attacking decision making','Length under pressure','Offence vs defence contrast'],
+      why:'Creates a clear attacker-defender contrast within a single game. The server must attack above the line with unlimited double bounce — lowering the risk threshold for attacking decisions. The receiver plays freely, developing defensive resilience and length under pressure from an attacking opponent.',
+      what:'Server must play ATL (above the line on the front wall) on every shot. Server has unlimited double bounce. Receiver can play anywhere — ATL or BTL — with no restrictions. Rotate after a set number of points or a timed rotation.',
+      score:'Win rally = +1. Server earns bonus +1 for a clean ATL winner. Receiver earns +1 for forcing a rally of 5+ shots. Normal scoring otherwise.',
+      coach:'Watch the quality of the receiver length. Does the receiver use length to push the server deep and reduce ATL angles? Does the server attack from poor positions? The constraint reveals decision quality under role pressure.',
+      player:'Server: play ATL every shot. You have unlimited double bounce. Receiver: play freely — anywhere on the court.',
+      load:'Server ATL — Receiver Anywhere'
+    },tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
       develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
       why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
       what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
@@ -1609,16 +1639,20 @@ function PlugAndPlay({setScreen,setSession}){
     }
   ];
   const filtered=active==='Power Play'?games.filter(g=>g.tags.includes('Power Play')):games.filter(g=>g.tags.includes(active)&&!g.tags.includes('Power Play'));
+  const [constraintAppliesTo,setConstraintAppliesTo]=useState('Both Players');
+  const [constraintTiming,setConstraintTiming]=useState('Whole Session');
+
   function loadGame(game){
     const card={
       title:game.title,
       category:game.tags.includes('Power Play')?'Power Play':'Plug & Play',
-      task:`${game.type} · ${game.players} · ${game.level}`,
+      task:`${game.type} · ${game.players} · ${game.level} · Constraint: ${constraintAppliesTo} · ${constraintTiming}`,
       rationale:game.why,
       coach:game.coach,
       playerFocus:game.player,
       scoring:game.score,
       whatToDo:game.what,
+      constraintAppliesTo,constraintTiming,
       antiGaming:'Keep the constraint tied to the learning purpose. Remove or reduce it if players start exploiting it.',
       suggestedOverlays:game.tags.filter(t=>['Pressure','Length','Volleys','T-Zone','Double Bounce','Movement'].includes(t))
     };
@@ -1626,7 +1660,27 @@ function PlugAndPlay({setScreen,setSession}){
   }
   return <div className="page plugPlayPage">
     <div className="pageTop"><div><h1>Plug & Play</h1><p className="mutedText">Select an outcome. Run a proven game.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="libraryStageIntro plugPlayIntro"><h2>Coach View: What do you want to improve today?</h2><p>Plug & Play organises games by coaching outcome rather than by game type. A game can appear in several categories because the same constraint can solve several coaching problems.</p></div>
+    <div className="libraryStageIntro plugPlayIntro"><h2>Coach View: What do you want to improve today?</h2><p>Plug & Play organises games by coaching outcome. A game can appear in several categories because the same constraint can solve several coaching problems.</p></div>
+
+    <div className="plugPlayConstraintBar">
+      <div className="plugPlayConstraintRow">
+        <strong>Constraint Applies To</strong>
+        <div className="plugPlayConstraintBtns">
+          {['Both Players','Server Only','Receiver Only'].map(opt=><button key={opt} type="button"
+            className={constraintAppliesTo===opt?'plugConstraintActive':'plugConstraintBtn'}
+            onClick={()=>setConstraintAppliesTo(opt)}>{opt}</button>)}
+        </div>
+      </div>
+      <div className="plugPlayConstraintRow">
+        <strong>Constraint Duration</strong>
+        <div className="plugPlayConstraintBtns">
+          {['Whole Session','Per Rotation','Per Round'].map(opt=><button key={opt} type="button"
+            className={constraintTiming===opt?'plugConstraintActive':'plugConstraintBtn'}
+            onClick={()=>setConstraintTiming(opt)}>{opt}</button>)}
+        </div>
+      </div>
+    </div>
+
     <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''}  onClick={()=>setActive(o)}>{o}</button>)}</div>
 
     {active==='Power Play'
@@ -1660,6 +1714,7 @@ function PlugAndPlay({setScreen,setSession}){
         <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
         <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.id}>
           <div className="plugPlayCardTop"><span className="categoryTag">{game.id} · {game.type}</span><span className="plugLevel">{game.level}</span></div>
+          <RLDBadge level={3}/>
       <h2>{game.title}</h2>
       <div className="plugTags">{game.tags.map(t=><span key={t}>{t}</span>)}</div>
       <p><strong>Develops</strong><br/>{game.develops.join(' · ')}</p>
@@ -1766,9 +1821,71 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
     </div>
   </div>;
 }
+function RLDScreen({setScreen}){
+  return <div className="page rldPage">
+    <div className="pageTop">
+      <div><h1>Representative Learning Demand</h1><p className="mutedText">RLD · The coaching quality spectrum</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <div className="rldHero">
+      <h2>What Is RLD?</h2>
+      <p>Representative Learning Demand describes how closely a practice task resembles the perceptual and decision-making demands of real squash competition. A task with high RLD requires the player to read information, make decisions, and execute skills under conditions that match competition. A task with low RLD removes those demands — which may be useful early in learning, but limits transfer to competition.</p>
+      <div className="rldHeroPrinciple">"Move as quickly as possible to higher RLD."</div>
+      <p>The goal is not to remove all structure immediately. The goal is to reduce scaffolding progressively as the player develops the perceptual and decision-making capabilities to operate without it.</p>
+    </div>
+    <div className="rldLevelsStack">
+      {RLD_LEVELS.map(r=><div key={r.level} className="rldLevelCard" style={{borderColor:r.color,background:r.bg}}>
+        <div className="rldLevelLeft">
+          <div className="rldLevelDotLg" style={{background:r.color}}>
+            {r.doubleDot&&<><span className="rldInnerDotLg"/><span className="rldInnerDotLg"/></>}
+          </div>
+          <div>
+            <strong style={{color:r.textColor}}>{r.short} — {r.label}</strong>
+            <p style={{color:r.textColor}}>{r.desc}</p>
+          </div>
+        </div>
+      </div>)}
+    </div>
+    <div className="rldCoachNote">
+      <h3>Why Does This Matter?</h3>
+      <div className="rldCoachGrid">
+        <div className="rldCoachCard">
+          <strong>Low RLD is not wrong</strong>
+          <p>RLD 1 and 2 have value — particularly at Level 0 and early Level 1. Coach-called tasks give beginners the time and structure they need to develop basic attunement. The error is staying at RLD 1-2 for too long.</p>
+        </div>
+        <div className="rldCoachCard">
+          <strong>The transfer problem</strong>
+          <p>Skills practised at low RLD often fail to transfer to competition because the player never learned to make the decisions themselves. They learned to respond to the coach, not to the game.</p>
+        </div>
+        <div className="rldCoachCard">
+          <strong>The progression principle</strong>
+          <p>Once a player can execute a skill reliably at a given RLD level, the next step is to increase the RLD — not to add more repetition. Adding RLD is how the skill becomes competitive.</p>
+        </div>
+        <div className="rldCoachCard rldDoubleDotCard">
+          <div className="rldDoubleDotSymbol">
+            <span className="rldDotLgDemo"/><span className="rldInnerDotLgDemo"/><span className="rldInnerDotLgDemo"/>
+          </div>
+          <strong>The double dot — RLD 5</strong>
+          <p>The deep green double dot represents full open play — the highest RLD. The player reads the game, selects tasks and executes them without any external structure. This is competition. This is the goal.</p>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
+
+      <button className="homeRLDTile homeBrandCard" onClick={()=>setScreen('rld')}>
+        <div className="homeRLDLeft">
+          <strong>Representative Learning Demand</strong>
+          <p>Move as quickly as possible to higher RLD — tap to learn more</p>
+        </div>
+        <div className="homeRLDDots">
+          {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
+        </div>
+      </button>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
@@ -2572,7 +2689,7 @@ function Level0Foundations({setScreen,setSession}){
 
   function playBlueDanube(tempo){
     if(audioObj){audioObj.pause();setAudioObj(null);setAudioPlaying(false);}
-    const url='https://upload.wikimedia.org/wikipedia/commons/4/47/On_the_Beautiful_Blue_Danube.ogg';
+    const url='https://archive.org/download/blue-danube-waltz/blue-danube-waltz.mp3';
     const rates={Slow:0.75,Standard:1.0,Fast:1.25};
     const audio=new Audio(url);
     audio.playbackRate=rates[tempo]||1.0;
@@ -3238,8 +3355,9 @@ function InvasionGamesBuilder({onAddToSession}){
 }
 
 function CustomGameBuilder({onAddToSession}){
+  const [baseGame,setBaseGame]=useState('Normal');
   const [title,setTitle]=useState('Custom Conditioned Game');
-  const [assignment,setAssignment]=useState('Server');
+  const [assignment,setAssignment]=useState('Both Players');
   const [namedPlayer,setNamedPlayer]=useState('');
   const [conditionText,setConditionText]=useState('');
   const [straightOnly,setStraightOnly]=useState('None');
@@ -3287,13 +3405,43 @@ function CustomGameBuilder({onAddToSession}){
   return <div className="gameCard customGameBuilder">
     <div className="categoryTag">Custom</div>
     <h2>Custom Game Builder</h2>
-    <p className="engineIntro">Design a game by assigning conditions to the server, receiver, both players or a named player. Nothing is selected by default.</p>
+    <p className="engineIntro">Design a game by selecting a base game, then assigning constraints to the server, receiver, both players or a named player.</p>
+
+    <div className="customBaseGameSection">
+      <strong>Base Game</strong>
+      <div className="customBaseGameGrid">
+        {['Normal','3/4 Court','Egyptian 3/4','3/4 25'].map(bg=><button key={bg} type="button"
+          className={baseGame===bg?'customBaseActive':'customBaseBtn'}
+          onClick={()=>setBaseGame(bg)}>{bg}</button>)}
+      </div>
+      <div className="customBaseDesc">
+        {{
+          'Normal':'Full court, standard rules. Both players score normally.',
+          '3/4 Court':'Court reduced to 3/4 length. Develops early attack and length awareness.',
+          'Egyptian 3/4':'3/4 court. Only the server can score. Receiver must win a rally to become server.',
+          '3/4 25':'3/4 court scoring to 25. Extended game for endurance and pattern development.',
+        }[baseGame]}
+      </div>
+    </div>
 
     <label>Game Title<input value={title} onChange={e=>setTitle(e.target.value)} /></label>
 
-    <div className="atlOptionsGrid">
-      <label>Assign Condition To<select value={assignment} onChange={e=>setAssignment(e.target.value)}><option>Server</option><option>Receiver</option><option>Both</option><option>Named Player</option></select></label>
-      {assignment==='Named Player'&&<label>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John" /></label>}
+    <div className="constraintAssignSection">
+      <strong>Assign Constraint To</strong>
+      <div className="constraintAssignGrid">
+        {['Both Players','Server Only','Receiver Only','Named Player'].map(opt=><button key={opt} type="button"
+          className={assignment===opt?'constraintAssignActive':'constraintAssignBtn'}
+          onClick={()=>setAssignment(opt)}>{opt}</button>)}
+      </div>
+      {assignment==='Named Player'&&<label style={{marginTop:'8px'}}>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John" /></label>}
+      <div className="constraintAssignNote">
+        {{
+          'Both Players':'The constraint applies equally to both server and receiver.',
+          'Server Only':'Only the server has the constraint. Receiver plays freely.',
+          'Receiver Only':'Only the receiver has the constraint. Server plays freely.',
+          'Named Player':'A specific named player has the constraint regardless of serve.',
+        }[assignment]}
+      </div>
     </div>
 
     <label>Condition Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="e.g. John must play straight / Jack has 2 crosscourts per rally / Server can only score in zone [1]" /></label>
@@ -3837,6 +3985,27 @@ function PowerPlayBuilder({onAddToSession}){
   const [selectedOverlays,setSelectedOverlays]=useState([]);
   const [customTitle,setCustomTitle]=useState('');
 
+  // PP Scoring builder state
+  const [ppRallies,setPpRallies]=useState(5);
+  const [ppRallyPoints,setPpRallyPoints]=useState([1,1,2,2,3]);
+  const [ppCompletionBonus,setPpCompletionBonus]=useState(5);
+  const [ppDisruptorWins,setPpDisruptorWins]=useState(3);
+  const [ppDisruptorBonus,setPpDisruptorBonus]=useState(3);
+  const [ppPartialScore,setPpPartialScore]=useState(true);
+
+  function updateRallyPoints(idx,val){
+    setPpRallyPoints(prev=>{const next=[...prev];next[idx]=Number(val)||0;return next;});
+  }
+  function updatePpRallies(n){
+    const num=Number(n);setPpRallies(num);
+    setPpRallyPoints(prev=>{
+      const next=[...prev];
+      while(next.length<num) next.push(1);
+      return next.slice(0,num);
+    });
+  }
+  const ppTotalIfWinAll=ppRallyPoints.reduce((a,b)=>a+b,0)+ppCompletionBonus;
+
   // PP History log
   const [ppHistory,setPpHistory]=useState(()=>{
     try{const s=localStorage.getItem('checkerboard_pp_history');return s?JSON.parse(s):[];}catch{return[];}
@@ -3908,10 +4077,10 @@ function PowerPlayBuilder({onAddToSession}){
     </div>
 
     <div className="ppTabBar">
-      {['presets','builder','history'].map(t=><button key={t} type="button"
+      {['presets','builder','scoring','history'].map(t=><button key={t} type="button"
         className={ppTab===t?'ppTabActive':'ppTabInactive'}
         onClick={()=>setPpTab(t)}>
-        {t==='presets'?'Plug & Play':t==='builder'?'Custom Builder':'History Log'}
+        {t==='presets'?'Plug & Play':t==='builder'?'Custom Builder':t==='scoring'?'Scoring Builder':'History Log'}
       </button>)}
     </div>
 
@@ -4069,6 +4238,97 @@ function PowerPlayBuilder({onAddToSession}){
       </div>
 
       <button type="button" className="primaryBtn ppAddBtn" onClick={addCustom}>Add Custom Power Play to Session</button>
+    </div>}
+
+    {/* ── SCORING BUILDER ── */}
+    {ppTab==='scoring'&&<div className="ppScoringBuilder">
+      <div className="ppScoringHero">
+        <h3>Power Play Scoring Builder</h3>
+        <p>Set exact scoring parameters for a custom Power Play window. All values are coach-configurable.</p>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>Number of Rallies in PP Window</strong>
+        <div className="ppChipRow">
+          {[1,2,3,4,5,6,7,8,10].map(n=><button key={n} type="button"
+            className={ppRallies===n?'ppChipActive':'ppChip'}
+            onClick={()=>updatePpRallies(n)}>{n}</button>)}
+        </div>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>Points Per Rally Win</strong>
+        <p className="ppScoringHint">Set points for each rally in sequence. Rally 1 is always first.</p>
+        <div className="ppRallyPointsGrid">
+          {Array.from({length:ppRallies},(_,i)=><div key={i} className="ppRallyPointRow">
+            <span>Rally {i+1}</span>
+            <div className="ppRallyPointBtns">
+              {[1,2,3,4,5].map(pts=><button key={pts} type="button"
+                className={ppRallyPoints[i]===pts?'ppChipActive':'ppChip'}
+                onClick={()=>updateRallyPoints(i,pts)}>{pts}</button>)}
+            </div>
+            <span className="ppRallyPtsBadge">+{ppRallyPoints[i]||1}</span>
+          </div>)}
+        </div>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>Completion Bonus (win all {ppRallies} rallies)</strong>
+        <div className="ppChipRow">
+          {[0,1,2,3,5,8,10].map(n=><button key={n} type="button"
+            className={ppCompletionBonus===n?'ppChipActive':'ppChip'}
+            onClick={()=>setPpCompletionBonus(n)}>{n===0?'None':'+'+n}</button>)}
+        </div>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>Disruptor — Successive Wins Required for Bonus</strong>
+        <div className="ppChipRow">
+          {[2,3,4,5].map(n=><button key={n} type="button"
+            className={ppDisruptorWins===n?'ppChipActive':'ppChip'}
+            onClick={()=>setPpDisruptorWins(n)}>{n} in a row</button>)}
+        </div>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>Disruptor Bonus Points</strong>
+        <div className="ppChipRow">
+          {[1,2,3,4,5].map(n=><button key={n} type="button"
+            className={ppDisruptorBonus===n?'ppChipActive':'ppChip'}
+            onClick={()=>setPpDisruptorBonus(n)}>{'+'+n}</button>)}
+        </div>
+      </div>
+
+      <div className="ppScoringSection">
+        <strong>PP Player Partial Score if Disrupted</strong>
+        <div className="ppChipRow">
+          <button type="button" className={ppPartialScore?'ppChipActive':'ppChip'} onClick={()=>setPpPartialScore(true)}>Keep rally points won</button>
+          <button type="button" className={!ppPartialScore?'ppChipActive':'ppChip'} onClick={()=>setPpPartialScore(false)}>Lose all points if disrupted</button>
+        </div>
+      </div>
+
+      <div className="ppScoringSummary">
+        <strong>Scoring Summary</strong>
+        <div className="ppScoringSummaryGrid">
+          <div className="ppSummaryRow ppSummaryWin">
+            <span>PP wins all {ppRallies} rallies</span>
+            <strong>{ppRallyPoints.reduce((a,b)=>a+b,0)} + {ppCompletionBonus} bonus = {ppTotalIfWinAll} points</strong>
+          </div>
+          <div className="ppSummaryRow">
+            <span>Per rally (sequence)</span>
+            <strong>{ppRallyPoints.map((p,i)=>`R${i+1}: +${p}`).join(' · ')}</strong>
+          </div>
+          <div className="ppSummaryRow ppSummaryDisrupt">
+            <span>Disruptor wins {ppDisruptorWins} in a row</span>
+            <strong>Disruptor: +{ppDisruptorBonus} · PP player: {ppPartialScore?'keeps rally points':'loses all points'}</strong>
+          </div>
+        </div>
+        <button type="button" className="primaryBtn" style={{marginTop:'14px',width:'100%'}} onClick={()=>{
+          const scoring=`PP Window: ${ppRallies} rallies. Points: ${ppRallyPoints.map((p,i)=>`R${i+1}+${p}`).join('/')}. Completion bonus: +${ppCompletionBonus}. Total if all won: ${ppTotalIfWinAll}. Disruptor: ${ppDisruptorWins} successive wins = +${ppDisruptorBonus}. PP partial: ${ppPartialScore?'yes':'no'}.`;
+          onAddToSession({title:'Custom PP Scoring',category:'Power Play',task:scoring,scoring,duration:15});
+          setPpStatus('Custom scoring added to session.');
+        }}>Add This Scoring to Session</button>
+      </div>
     </div>}
 
     {/* ── HISTORY LOG ── */}
@@ -8878,6 +9138,7 @@ return <div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
+      {screen==='rld'&&<RLDScreen setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={go}/>}
