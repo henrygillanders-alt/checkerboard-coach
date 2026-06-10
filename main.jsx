@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h57';
+const APP_VERSION='v100h57b';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3500,18 +3500,19 @@ function TacticalPressureModule({onAddToSession}){
 
     <div className="tpNavBar">
       {[{id:'games',label:'Games',emoji:'🎮'},{id:'corridor',label:'The Corridor',emoji:'📐'},{id:'analysis',label:'Match Analysis Link',emoji:'🔍'},{id:'cpf',label:'Challenge Point',emoji:'🎯'}].map(s=>
-        <button key={s.id} type="button"
+        <div key={s.id} role="button" tabIndex={0}
           className={activeSection===s.id?'tpNavActive':'tpNavBtn'}
-          onClick={()=>{setActiveSection(s.id);setActiveGame(null);}}>
+          onClick={()=>{setActiveSection(s.id);setActiveGame(null);}}
+          onKeyDown={e=>e.key==='Enter'&&(setActiveSection(s.id),setActiveGame(null))}>
           <span>{s.emoji}</span>{s.label}
-        </button>)}
+        </div>)}
     </div>
 
     {/* ── GAMES ── */}
     {activeSection==='games'&&<div>
       {!activeGame
         ?<div className="tpGameGrid">
-          {TP_GAMES.map(g=><button key={g.id} type="button" className="tpGameTile" onClick={()=>setActiveGame(g.id)}>
+          {TP_GAMES.map(g=><div key={g.id} role="button" tabIndex={0} className="tpGameTile" onClick={()=>setActiveGame(g.id)} onKeyDown={e=>e.key==='Enter'&&setActiveGame(g.id)}>
             <div className="tpGameTileTop">
               <span className="tpGameCode" style={{background:purposeColors[g.purpose]||'#1f5dd0',color:g.rld>=5?'#000':'#fff'}}>{g.code}</span>
               <RLDBadge level={g.rld}/>
@@ -3521,7 +3522,7 @@ function TacticalPressureModule({onAddToSession}){
             </div>
             <strong>{g.title}</strong>
             <span>{g.purposeFull}</span>
-          </button>)}
+          </div>)}
         </div>
         :<div className="tpGameDetail">
           <button type="button" className="secondaryBtn tpBackBtn" onClick={()=>setActiveGame(null)}>{'← All Games'}</button>
@@ -3737,11 +3738,12 @@ function PressureModule({setScreen}){
     <div className="pressureFocusStrip">
       <span className="pressureFocusLabel">Session Focus Principles</span>
       <div className="pressureFocusBtns">
-        {PRESSURE_FOCUS_PRINCIPLES.map(f=><button key={f.id} type="button"
+        {PRESSURE_FOCUS_PRINCIPLES.map(f=><div key={f.id} role="button" tabIndex={0}
           className={activeFocus===f.id?'pressureFocusActive':'pressureFocusBtn'}
-          onClick={()=>setActiveFocus(activeFocus===f.id?null:f.id)}>
+          onClick={()=>setActiveFocus(activeFocus===f.id?null:f.id)}
+          onKeyDown={e=>e.key==='Enter'&&setActiveFocus(activeFocus===f.id?null:f.id)}>
           {f.label}
-        </button>)}
+        </div>)}
       </div>
       {activeFocus&&(()=>{const f=PRESSURE_FOCUS_PRINCIPLES.find(x=>x.id===activeFocus);return <div className="pressureFocusExpanded">
         <p>{f.desc}</p>
@@ -3750,12 +3752,13 @@ function PressureModule({setScreen}){
     </div>
 
     <div className="pressureTabBar">
-      {tabs.map(t=><button key={t.id} type="button"
+      {tabs.map(t=><div key={t.id} role="button" tabIndex={0}
         className={activeTab===t.id?'pressureTabActive':'pressureTabBtn'}
-        onClick={()=>{setActiveTab(t.id);setActiveExercise(null);}}>
+        onClick={()=>{setActiveTab(t.id);setActiveExercise(null);}}
+        onKeyDown={e=>e.key==='Enter'&&(setActiveTab(t.id),setActiveExercise(null))}>
         <strong>{t.label}</strong>
         <span>{t.sub}</span>
-      </button>)}
+      </div>)}
     </div>
 
     {activeTab==='122'&&<div className="pressureTabContent">
@@ -3771,8 +3774,9 @@ function PressureModule({setScreen}){
             </div>
           </div>
           <div className="pressureExerciseGrid">
-            {PRESSURE_122_EXERCISES.map(ex=><button key={ex.id} type="button"
-              className="pressureExerciseTile" onClick={()=>setActiveExercise(ex.id)}>
+            {PRESSURE_122_EXERCISES.map(ex=><div key={ex.id} role="button" tabIndex={0}
+              className="pressureExerciseTile" onClick={()=>setActiveExercise(ex.id)}
+              onKeyDown={e=>e.key==='Enter'&&setActiveExercise(ex.id)}>
               <div className="pressureExerciseTileTop">
                 <span className="pressureExerciseCode">{ex.code}</span>
                 <RLDBadge level={ex.rld}/>
@@ -3780,7 +3784,7 @@ function PressureModule({setScreen}){
               <strong>{ex.title}</strong>
               <span>{ex.subtitle}</span>
               <p className="pressureExerciseDuration">{ex.duration}</p>
-            </button>)}
+            </div>)}
           </div>
         </div>
         :<div className="pressureExerciseDetail">
