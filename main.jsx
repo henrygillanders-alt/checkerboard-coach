@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h59b';
+const APP_VERSION='v100h59c';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2446,7 +2446,7 @@ return <div className="checkerboardEngine">
     </CollapsibleLayer>
 
     {/* DB HANDICAP */}
-    <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
+    <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -2586,7 +2586,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
-    <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
+    <UniversalDBHandicapPanel onAddToSession={addGame}/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -2692,7 +2692,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
-      <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
+      <UniversalDBHandicapPanel onAddToSession={addGame}/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -2940,7 +2940,7 @@ function TechnicalFocusBuilder({onAddToSession}){
         <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
       </CollapsibleLayer>
 
-      <InlineDBSelector dbAssign="Both Players" setDbAssign={()=>{}} dbPlayer="" setDbPlayer={()=>{}} dbAmount="No DB" setDbAmount={()=>{}}/>
+      <UniversalDBHandicapPanel onAddToSession={addAndGo}/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -4410,7 +4410,7 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </CollapsibleLayer>
 
-    <InlineDBSelector dbAssign={assignment==='Named Player'?'Named Player':assignment} setDbAssign={()=>{}} dbPlayer={namedPlayers.join(', ')} setDbPlayer={()=>{}} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
+    <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -4712,8 +4712,8 @@ function InformationAnticipationBuilder({onAddToSession}){
 
 function InlineDBSelector({dbAssign,setDbAssign,dbPlayer,setDbPlayer,dbAmount,setDbAmount}){
   return <div className="inlineDBSelector">
-    <strong className="inlineDBTitle">DB Handicap</strong>
-    <div className="inlineDBDropdowns">
+    <div className="inlineDBHeader"><strong>DB Handicap</strong><span>Double bounce allowance</span></div>
+    <div className="atlOptionsGrid" style={{marginBottom:'8px'}}>
       <label>Assign to
         <select value={dbAssign} onChange={e=>setDbAssign(e.target.value)}>
           <option>Both Players</option>
@@ -4722,12 +4722,12 @@ function InlineDBSelector({dbAssign,setDbAssign,dbPlayer,setDbPlayer,dbAmount,se
           <option>Named Player</option>
         </select>
       </label>
-      {dbAssign==='Named Player'&&<label>Player name<input value={dbPlayer} onChange={e=>setDbPlayer(e.target.value)} placeholder="e.g. John"/></label>}
       <label>Allowance
         <select value={dbAmount} onChange={e=>setDbAmount(e.target.value)}>
           {UNIVERSAL_DB_OPTIONS.map(o=><option key={o}>{o}</option>)}
         </select>
       </label>
+      {dbAssign==='Named Player'&&<label>Player name<input value={dbPlayer} onChange={e=>setDbPlayer(e.target.value)} placeholder="e.g. John"/></label>}
     </div>
     {dbAmount!=='No DB'&&<div className="inlineDBSummary">{dbAssign==='Named Player'?dbPlayer||'Named player':dbAssign}: {dbAmount}</div>}
   </div>;
@@ -5666,11 +5666,7 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </CollapsibleLayer>
 
-          <InlineDBSelector
-            dbAssign="Both Players" setDbAssign={()=>{}}
-            dbPlayer="" setDbPlayer={()=>{}}
-            dbAmount={dbHandicap==='No DB'?'No DB':dbHandicap}
-            setDbAmount={v=>setDbHandicap(v)}/>
+          <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
