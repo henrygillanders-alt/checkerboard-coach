@@ -38,6 +38,67 @@ button{-webkit-appearance:none;appearance:none;}
 .collapsibleLayerChevron{font-size:12px;flex-shrink:0;font-weight:900;}
 .collapsibleLayerBody{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);}
 
+/* Named Player attendance selector */
+.namedPlayerSection{
+  margin-top:12px;
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:12px 14px;
+}
+.namedPlayerLabel{
+  display:block;
+  color:#9bc1ff;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:10px;
+}
+.namedPlayerEmpty{
+  color:#9fb0c8;
+  font-size:13px;
+  font-style:italic;
+  margin:0;
+}
+.namedPlayerChips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.namedPlayerChip{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  color:#c4c9d9;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  user-select:none;
+}
+.namedPlayerChipActive{
+  background:#166534;
+  border:2px solid #4ade80;
+  color:#fff;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  user-select:none;
+}
+.namedPlayerSummary{
+  margin-top:10px;
+  padding:8px 12px;
+  background:#0a2415;
+  border-left:3px solid #4ade80;
+  border-radius:0 8px 8px 0;
+  color:#86efac;
+  font-size:13px;
+}
+.namedPlayerSummary strong{color:#fff;}
+
 /* Base game panel */
 .baseGamePanel{
   background:#071015;

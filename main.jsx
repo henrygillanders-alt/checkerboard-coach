@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h58';
+const APP_VERSION='v100h59';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -4271,8 +4271,9 @@ function CustomGameBuilder({onAddToSession}){
   const [baseGame,setBaseGame]=useState('Normal');
   const [title,setTitle]=useState('Custom Conditioned Game');
   const [assignment,setAssignment]=useState('Both Players');
-  const [namedPlayer,setNamedPlayer]=useState('');
+  const [namedPlayers,setNamedPlayers]=useState([]);
   const [conditionText,setConditionText]=useState('');
+  const [coachNote,setCoachNote]=useState('');
   const [straightOnly,setStraightOnly]=useState('None');
   const [crosscourtLimit,setCrosscourtLimit]=useState('None');
   const [doubleBounce,setDoubleBounce]=useState('None');
@@ -4283,13 +4284,38 @@ function CustomGameBuilder({onAddToSession}){
   const [randomMode,setRandomMode]=useState('Open');
   const [randomResult,setRandomResult]=useState('');
 
+  // Pull current session attendance — players marked present
+  const presentPlayers=useMemo(()=>{
+    try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}
+    catch{return[];}
+  },[assignment]);
+
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
-  const cbOptions=['None','[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
+  // All 8 Checkerboard zones individually selectable + pair combinations
+  const cbOptions=['None',
+    '[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]',
+    '[1-2]','[1-3]','[1-4]','[2-3]','[2-4]','[3-4]',
+    '[5-6]','[5-7]','[5-8]','[6-7]','[6-8]','[7-8]',
+    '[5-4] + [8-1]','[6-3] + [7-2]','[6-4] + [8-1]','[5-3] + [7-1]',
+    'Custom'
+  ];
   const randomBank=['Must play straight','Can only score in zone [1]','Can only score in zone [2]','Has 1 crosscourt per rally','Has 2 crosscourts per rally','Has 1 DB','Has 2 DB','Has 3 DB','Has 4 DB','Has 5 DB','Must win with a volley','Must complete a checkerboard pair before scoring','No condition'];
 
   function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}
+  function togglePlayer(name){setNamedPlayers(prev=>prev.includes(name)?prev.filter(n=>n!==name):[...prev,name]);}
+
+  // Auto-fill constraint text from customisation fields
+  useEffect(()=>{
+    const bits=[];
+    if(straightOnly!=='None') bits.push(straightOnly);
+    if(crosscourtLimit!=='None') bits.push(crosscourtLimit);
+    if(cbCode!=='None') bits.push('Checkerboard / Zone: '+cbCode);
+    if(layers.length) bits.push('Overlays: '+layers.join(', '));
+    if(bits.length) setConditionText(bits.join(' · '));
+  },[straightOnly,crosscourtLimit,cbCode,layers]);
+
   function resetCustom(){
-    setTitle('Custom Conditioned Game');setAssignment('Server');setNamedPlayer('');setConditionText('');
+    setTitle('Custom Conditioned Game');setAssignment('Both Players');setNamedPlayers([]);setConditionText('');setCoachNote('');
     setStraightOnly('None');setCrosscourtLimit('None');setDoubleBounce('None');setCbCode('None');
     setScoring('Win rally = 1. Bonus scoring set by coach.');setPlayerFocus('Read the constraint, play the rally, and adapt.');
     setLayers([]);setRandomMode('Open');setRandomResult('');
@@ -4297,20 +4323,24 @@ function CustomGameBuilder({onAddToSession}){
   function generateRandom(){
     const a=randomBank[Math.floor(Math.random()*randomBank.length)];
     const b=randomBank[Math.floor(Math.random()*randomBank.length)];
-    setRandomResult(randomMode==='Blind'?'Blind random conditions generated. Coach reveals conditions when appropriate.':`Player A: ${a} · Player B: ${b}`);
+    setRandomResult(randomMode==='Blind'?'Blind random conditions generated. Coach reveals conditions when appropriate.':'Player A: '+a+' · Player B: '+b);
   }
 
-  const assignedTo=assignment==='Named Player'?(namedPlayer||'Named Player'):assignment;
-  const structured=[conditionText||null,straightOnly!=='None'?straightOnly:null,crosscourtLimit!=='None'?crosscourtLimit:null,doubleBounce!=='None'?doubleBounce:null,cbCode!=='None'?`Checkerboard / Zone: ${cbCode}`:null,layers.length?`Overlays: ${layers.join(' · ')}`:null].filter(Boolean);
-  const activeCondition=structured.length?`${assignedTo}: ${structured.join(' · ')}`:`${assignedTo}: No condition set`;
+  const assignedTo=assignment==='Named Player'
+    ?(namedPlayers.length?namedPlayers.join(', '):'Named Player(s)')
+    :assignment;
+  const structured=[conditionText||null,doubleBounce!=='None'?'DB: '+doubleBounce:null].filter(Boolean);
+  const activeCondition=structured.length?assignedTo+': '+structured.join(' · '):assignedTo+': No condition set';
 
   function addGame(){
     onAddToSession({
       id:Date.now()+Math.random(),title,duration:8,format:'Custom',category:'Custom',family:'Custom Conditioned Game',
       level:'Coach Designed',task:activeCondition,
       rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific constraints.',
-      coach:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
-      coachFocus:'Observe whether the condition changes perception, decision-making and tactical behaviour.',
+      coach:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
+      coachFocus:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
+      coachNote,
+      baseGame,namedPlayers,assignment,
       player:playerFocus,playerFocus,scoring,layers,cbCode,crosscourtLimit,doubleBounce
     });
   }
@@ -4344,7 +4374,19 @@ function CustomGameBuilder({onAddToSession}){
             className={assignment===opt?'constraintAssignActive':'constraintAssignBtn'}
             onClick={()=>setAssignment(opt)}>{opt}</button>)}
         </div>
-        {assignment==='Named Player'&&<label style={{marginTop:'8px'}}>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John"/></label>}
+        {assignment==='Named Player'&&<div className="namedPlayerSection">
+          <strong className="namedPlayerLabel">Select players present in this session</strong>
+          {presentPlayers.length===0
+            ?<p className="namedPlayerEmpty">No players marked as present in the current session. Mark players present from the Players screen first.</p>
+            :<div className="namedPlayerChips">
+              {presentPlayers.map(name=><div key={name}
+                className={namedPlayers.includes(name)?'namedPlayerChipActive':'namedPlayerChip'}
+                onClick={()=>togglePlayer(name)} role="button" tabIndex={0}>
+                {namedPlayers.includes(name)?'✓ ':''}{name}
+              </div>)}
+            </div>}
+          {namedPlayers.length>0&&<div className="namedPlayerSummary">Constraint applies to: <strong>{namedPlayers.join(', ')}</strong></div>}
+        </div>}
       </div>
     </div>
 
@@ -4366,7 +4408,8 @@ function CustomGameBuilder({onAddToSession}){
 
     {/* CONSTRAINTS */}
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-      <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="e.g. Server must play straight · Receiver has 2 crosscourts per rally · Both players must use the Blue Danube tempo"/></label>
+      <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="Auto-filled from your selections above. Edit if needed."/></label>
+      <label style={{marginTop:'8px'}}>Coach's Note<textarea value={coachNote} onChange={e=>setCoachNote(e.target.value)} placeholder="Private notes — what to look for, what to feedback, when to progress"/></label>
       <label style={{marginTop:'8px'}}>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)}/></label>
       <div style={{marginTop:'10px'}}>
         <strong className="mutedText" style={{fontSize:'13px'}}>Random Constraint Generator</strong>
@@ -4380,7 +4423,7 @@ function CustomGameBuilder({onAddToSession}){
 
     {/* DB HANDICAP */}
     <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-      <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayer} setDbPlayer={setNamedPlayer} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
+      <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayers.join(', ')} setDbPlayer={()=>{}} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
     </CollapsibleLayer>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
