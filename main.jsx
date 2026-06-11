@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h59';
+const APP_VERSION='v100h59b';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2553,32 +2553,27 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
   return <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div>
-    <h2>ATL / BTL Full Structure Builder</h2>
-    <div className="statusBox atlDraftSavedNote">ATL / BTL draft is saved automatically while you work.</div>
+    <h2>ATL / BTL Builder</h2>
 
-    <div className="atlOptionsGrid">
-      <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
-      
-      <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label><label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
-      <label>Auto CB Zone / Sequence<input value={autoCbZone} readOnly /></label>
-      <label>Custom Override<select value={useCustomCb?'Yes':'No'} onChange={e=>setUseCustomCb(e.target.value==='Yes')}><option>No</option><option>Yes</option></select></label>
-      {useCustomCb&&<label>Custom CB Sequence<input value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="[6-3] + [6-2]"/></label>}
-      
-
-      {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-      {atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
-
-      {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-      {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>Shot 2 Method<select value={atl.method2} onChange={e=>setAtlOption('method2',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
-
-      {atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-      {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">ATL/BTL structure</span></div>
+      <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
+      <div className="atlOptionsGrid">
+        <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
+        <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
+        <label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
+        <label>Auto CB Zone<input value={autoCbZone} readOnly /></label>
+        <label>Custom Override<select value={useCustomCb?'Yes':'No'} onChange={e=>setUseCustomCb(e.target.value==='Yes')}><option>No</option><option>Yes</option></select></label>
+        {useCustomCb&&<label>Custom CB<input value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="[6-3] + [6-2]"/></label>}
+        {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+        {atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+        {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+        {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>Shot 2 Method<select value={atl.method2} onChange={e=>setAtlOption('method2',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+        {atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
+        {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
+      </div>
+      <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composedAtl.task}</p></div>
     </div>
-
-    <div className="infoBox"><strong>Side</strong><p>{side}</p></div><div className="infoBox"><strong>Effective CB Zone / Sequence</strong><p>{composedAtl.cbCode}</p></div><div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
-    <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
-    <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
-    <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
@@ -2690,25 +2685,20 @@ function ClassicConditionedBuilder({onAddToSession}){
       <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
       <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
       <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
-      <div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>
 
-      <div className="technicalScoringBox alwaysVisibleScoring conditionedOverlayChooser">
-        <strong>Universal Overlays</strong>
-        <p className="overlayExplain">Use the same Technical / Tactical / Mental Performance overlay engine as Competition and ATL / BTL. Suggested overlays for this game: {(game.suggestedOverlays||[]).join(' · ')||'None'}.</p>
-        <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-          <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-        </CollapsibleLayer>
-        <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-          <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
-        </CollapsibleLayer>
-        <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-          <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Scoring Logic overlays above to add behavioural constraints.</p>
-        </CollapsibleLayer>
-        <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-          <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
-        </CollapsibleLayer>
-      </div>
-        <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+      <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+        <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+        <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Scoring Logic overlays above to add behavioural constraints.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+        <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
+      </CollapsibleLayer>
+      <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
 }
@@ -2940,17 +2930,24 @@ function TechnicalFocusBuilder({onAddToSession}){
 
       <div className="constraintSuggestionBox"><strong>Constraint Game Suggestions</strong>{card.constraints.map(c=><div className="constraintGameCard" key={c}><h4>{c}</h4><p>{constraintGames[c]?.task||'Constraint game option.'}</p><p><strong>Rationale: </strong>{constraintGames[c]?.rationale||'Shapes the target behaviour through representative task design.'}</p></div>)}</div>
 
-      <div className="technicalScoringBox alwaysVisibleScoring"><strong>Editable Scoring / Consequence</strong><p className="overlayExplain">Choose the consequence level. This keeps coach autonomy rather than prescribing one correct solution.</p>
+      <CollapsibleLayer num="1" title="Game Logic" subtitle="Editable scoring and consequence" color="green">
         <label>Scoring protocol<select value={choice(card).name} onChange={e=>setScore(card,'name',e.target.value)}>{protocols.map(p=><option key={p[0]}>{p[0]}</option>)}</select></label>
         {choice(card).name==='Coach custom'&&<div className="customScoringGrid"><label>Custom scoring<textarea value={choice(card).customScore} onChange={e=>setScore(card,'customScore',e.target.value)} placeholder="Example: each transgression = +1 to opponent"/></label><label>Custom consequence<textarea value={choice(card).customConsequence} onChange={e=>setScore(card,'customConsequence',e.target.value)} placeholder="Example: rally continues but bonus is removed"/></label></div>}
         <div className="infoBox"><strong>Selected scoring</strong><p>{protocol(card).score}</p></div>
         <div className="infoBox"><strong>Selected consequence</strong><p>{protocol(card).consequence}</p></div>
-      </div>
+      </CollapsibleLayer>
 
-      <div className="technicalScoringBox alwaysVisibleScoring">
-        <strong>Universal Overlays</strong>
-        <OverlayFamilyTabs selectedOverlays={selectedOverlays[k(card)]||[]} onToggle={layer=>toggleTechnicalOverlay(card,layer)} context={`Technical Diagnostic · ${card.title}`} />
-      </div>
+      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="Universal overlays" color="gold">
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[k(card)]||[]} onToggle={layer=>toggleTechnicalOverlay(card,layer)} context={'Technical Diagnostic · '+card.title} />
+      </CollapsibleLayer>
+
+      <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+        <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
+      </CollapsibleLayer>
+
+      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+        <InlineDBSelector dbAssign="Both Players" setDbAssign={()=>{}} dbPlayer="" setDbPlayer={()=>{}} dbAmount="No DB" setDbAmount={()=>{}}/>
+      </CollapsibleLayer>
 
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
@@ -5568,7 +5565,12 @@ function AroundTheBoardBuilder({onAddToSession}){
     {activeTab==='families'&&<div className="atbFamilySection">
       {!activeFamily
         ?<div className="atbFamilyGrid">
-          {ATB_GAME_FAMILIES.map(f=><button key={f.id} type="button" className="atbFamilyCard" onClick={()=>setActiveFamily(f.id)}>
+          {ATB_GAME_FAMILIES.map(f=><div key={f.id} className="atbFamilyCard" onClick={()=>setActiveFamily(f.id)} role="button" tabIndex={0}>
+            <div className="atbFamilyEmoji">{f.emoji}</div>
+            <strong>{f.title}</strong>
+            <span>{f.tagline}</span>
+            <p>{f.rationale}</p>
+          </div>)}
             <span className="atbFamilyEmoji">{f.emoji}</span>
             <strong>{f.title}</strong>
             <span>{f.subtitle}</span>
@@ -5656,48 +5658,45 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </div>
 
-          <div className="atbLayersSection">
-            <div className="atbLayerBlock">
-              <div className="atbLayerHeader atbLayerGame"><span>1</span><strong>Game Logic</strong><p>What counts — changes eligibility and validity</p></div>
-              <div className="atbOverlayChips">
-                {ATB_GAME_LOGIC_OPTIONS.map(o=><button key={o} type="button"
-                  className={selectedGameLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                  onClick={()=>toggleItem(setSelectedGameLogic,o)}>{o}</button>)}
-              </div>
+          <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+            <div className="atbOverlayChips">
+              {ATB_GAME_LOGIC_OPTIONS.map(o=><button key={o} type="button"
+                className={selectedGameLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleItem(setSelectedGameLogic,o)}>{o}</button>)}
             </div>
-            <div className="atbLayerBlock">
-              <div className="atbLayerHeader atbLayerScoring"><span>2</span><strong>Scoring Logic</strong><p>How points are awarded</p></div>
-              <div className="atbOverlayChips">
-                {ATB_SCORING_LOGIC_OPTIONS.map(o=><button key={o} type="button"
-                  className={selectedScoringLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                  onClick={()=>toggleItem(setSelectedScoringLogic,o)}>{o}</button>)}
-              </div>
+          </CollapsibleLayer>
+
+          <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+            <div className="atbOverlayChips">
+              {ATB_SCORING_LOGIC_OPTIONS.map(o=><button key={o} type="button"
+                className={selectedScoringLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleItem(setSelectedScoringLogic,o)}>{o}</button>)}
             </div>
-            <div className="atbLayerBlock">
-              <div className="atbLayerHeader atbLayerConstraints"><span>3</span><strong>Constraints</strong><p>Shape behaviour without changing rules</p></div>
-              <div className="atbOverlayChips">
-                {ATB_CONSTRAINT_OPTIONS.map(o=><button key={o} type="button"
-                  className={selectedConstraints.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                  onClick={()=>toggleItem(setSelectedConstraints,o)}>{o}</button>)}
-              </div>
+          </CollapsibleLayer>
+
+          <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+            <div className="atbOverlayChips">
+              {ATB_CONSTRAINT_OPTIONS.map(o=><button key={o} type="button"
+                className={selectedConstraints.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleItem(setSelectedConstraints,o)}>{o}</button>)}
             </div>
-            <div className="atbLayerBlock">
-              <div className="atbLayerHeader atbLayerDB"><span>4</span><strong>DB Handicap</strong><p>Double bounce allowance</p></div>
-              <div className="atbOverlayChips">
-                {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
-                  className={dbHandicap===o?'atbOverlayActive':'atbOverlayChip'}
-                  onClick={()=>setDbHandicap(o)}>{o}</button>)}
-              </div>
+          </CollapsibleLayer>
+
+          <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+            <div className="atbOverlayChips">
+              {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
+                className={dbHandicap===o?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>setDbHandicap(o)}>{o}</button>)}
             </div>
-            <div className="atbLayerBlock">
-              <div className="atbLayerHeader atbLayerOverlays"><span>+</span><strong>Checkerboard Overlays</strong><p>Optional tactical overlays</p></div>
-              <div className="atbOverlayChips">
-                {ATB_OVERLAYS.map(o=><button key={o} type="button"
-                  className={selectedOverlays.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                  onClick={()=>toggleOverlay(o)}>{o}</button>)}
-              </div>
+          </CollapsibleLayer>
+
+          <CollapsibleLayer num="+" title="Checkerboard Overlays" subtitle="Optional tactical overlays" color="teal">
+            <div className="atbOverlayChips">
+              {ATB_OVERLAYS.map(o=><button key={o} type="button"
+                className={selectedOverlays.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleOverlay(o)}>{o}</button>)}
             </div>
-          </div>
+          </CollapsibleLayer>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
@@ -5895,6 +5894,7 @@ function Games({setSession,setScreen}){
     setActiveClassId(id);
     setEditingCard(null);
     setMessage('');
+    setLogicCard(null);
   }
 
   return <div className="page">
@@ -5912,7 +5912,7 @@ function Games({setSession,setScreen}){
 
     {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
 
-    {logicCard&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
+    {logicCard&&!['checkerboard','atl','atb','powerplay','pressure','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
