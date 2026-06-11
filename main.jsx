@@ -5571,11 +5571,6 @@ function AroundTheBoardBuilder({onAddToSession}){
             <span>{f.tagline}</span>
             <p>{f.rationale}</p>
           </div>)}
-            <span className="atbFamilyEmoji">{f.emoji}</span>
-            <strong>{f.title}</strong>
-            <span>{f.subtitle}</span>
-            <p>{f.purpose}</p>
-          </button>)}
         </div>
         :<div className="atbFamilyDetail">
           <button type="button" className="secondaryBtn atbBackBtn" onClick={()=>setActiveFamily(null)}>← All Families</button>
