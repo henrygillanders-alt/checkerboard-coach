@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h57b';
+const APP_VERSION='v100h58';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2379,62 +2379,79 @@ function CheckerboardEngine({onAddToSession}){
   }
 
 return <div className="checkerboardEngine">
-    <h2>Checkerboard Level Builder</h2>
-    <p className="engineIntro">Level controls challenge type, T-zone prevention and conversion window automatically.</p>
-    <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
-    <div className="engineGrid">
-      <label>Level<select value={config.level} onChange={e=>setLevel(e.target.value)}>{CHECKERBOARD_LEVELS.map(item=><option key={item.level} value={item.level}>{item.label}</option>)}</select></label>
-      <label>Delivery Mode<select value={config.deliveryMode} onChange={e=>update('deliveryMode',e.target.value)}>{DELIVERY_MODES.map(item=><option key={item}>{item}</option>)}</select></label>
-      <label>Format<select value={config.format} onChange={e=>update('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Rally Game</option></select></label>
-      <label>Duration<input type="number" min="1" value={config.duration} onChange={e=>update('duration',e.target.value)}/></label>
-    </div>
-    <div className="engineGrid"><label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{sequenceOptions.map(code=><option key={code}>{code}</option>)}</select></label></div>
-    <div className="customSeqToggle">
-      {!config.showCustomSequence&&<button className="secondaryBtn" onClick={()=>update('showCustomSequence',true)}>+ Custom Sequence</button>}
-      {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
-    </div>
-    <div className="completionBox"><strong>Completion Constraints</strong><div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div></div>
-    <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard" /></div>
-    
-    {config.deliveryMode==='Blind'&&<div className="blindCardPanel">
-      <strong>Blind Card Delivery</strong>
-      <p>Two separate decks: one hidden checkerboard challenge deck and one hidden finish challenge deck.</p>
+    <h2>Checkerboard Builder</h2>
+    <p className="engineIntro">Select a base game then open the layers you need.</p>
 
-      <div className="blindDeckGrid">
-        <div className="blindDeckBox">
-          <h3>Blind Checkerboard Challenge Deck</h3>
-          <div className="buttonRow">
-            <button className="primaryBtn" onClick={generateBlindChallengeCard}>Generate Challenge Card</button>
-            <button className="secondaryBtn" onClick={revealBlindChallengeCard}>Reveal My Challenge</button>
-            <button className="secondaryBtn" onClick={acknowledgeBlindChallengeCard}>Acknowledge & Close</button>
-          </div>
-          <div className={config.blindChallengeFace==='revealed'?'blindCard revealedCard':'blindCard'}>
-            {config.blindChallengeFace==='revealed'&&config.blindChallengeCard
-              ? <div><span>My Checkerboard Challenge</span><strong>{config.blindChallengeCard}</strong></div>
-              : <div><span>Hidden Checkerboard Card</span><strong>Tap Reveal</strong></div>}
-          </div>
-        </div>
-
-        <div className="blindDeckBox">
-          <h3>Blind Finish Challenge Deck</h3>
-          <div className="buttonRow">
-            <button className="primaryBtn" onClick={generateBlindFinishCard}>Generate Finish Card</button>
-            <button className="secondaryBtn" onClick={revealBlindFinishCard}>Reveal My Finish</button>
-            <button className="secondaryBtn" onClick={acknowledgeBlindFinishCard}>Acknowledge & Close</button>
-          </div>
-          <div className={config.blindFinishFace==='revealed'?'blindCard revealedCard':'blindCard'}>
-            {config.blindFinishFace==='revealed'&&config.blindFinishCard
-              ? <div><span>My Finish Challenge</span><strong>{config.blindFinishCard}</strong></div>
-              : <div><span>Hidden Finish Card</span><strong>Tap Reveal</strong></div>}
-          </div>
-        </div>
+    {/* BASE GAME — always visible */}
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">What players do</span></div>
+      <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
+      <div className="engineGrid">
+        <label>Level<select value={config.level} onChange={e=>setLevel(e.target.value)}>{CHECKERBOARD_LEVELS.map(item=><option key={item.level} value={item.level}>{item.label}</option>)}</select></label>
+        <label>Delivery Mode<select value={config.deliveryMode} onChange={e=>update('deliveryMode',e.target.value)}>{DELIVERY_MODES.map(item=><option key={item}>{item}</option>)}</select></label>
+        <label>Format<select value={config.format} onChange={e=>update('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Rally Game</option></select></label>
+        <label>Duration<input type="number" min="1" value={config.duration} onChange={e=>update('duration',e.target.value)}/></label>
       </div>
-    </div>}
+      <div className="engineGrid"><label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{sequenceOptions.map(code=><option key={code}>{code}</option>)}</select></label></div>
+      <div className="customSeqToggle">
+        {!config.showCustomSequence&&<button className="secondaryBtn" onClick={()=>update('showCustomSequence',true)}>+ Custom Sequence</button>}
+        {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
+      </div>
+    </div>
+
+    {/* GAME LOGIC */}
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
+
+    {/* SCORING LOGIC */}
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="quickLayers"><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/></div>
+    </CollapsibleLayer>
+
+    {/* CONSTRAINTS */}
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      {config.deliveryMode==='Blind'?<div className="blindCardPanel">
+        <p>Blind Card delivery uses two hidden decks — challenge and finish.</p>
+        <div className="blindDeckGrid">
+          <div className="blindDeckBox">
+            <h3>Blind Challenge Deck</h3>
+            <div className="buttonRow">
+              <button className="primaryBtn" onClick={generateBlindChallengeCard}>Generate</button>
+              <button className="secondaryBtn" onClick={revealBlindChallengeCard}>Reveal</button>
+              <button className="secondaryBtn" onClick={acknowledgeBlindChallengeCard}>Close</button>
+            </div>
+            <div className={config.blindChallengeFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+              {config.blindChallengeFace==='revealed'&&config.blindChallengeCard
+                ?<div><span>My Challenge</span><strong>{config.blindChallengeCard}</strong></div>
+                :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
+            </div>
+          </div>
+          <div className="blindDeckBox">
+            <h3>Blind Finish Deck</h3>
+            <div className="buttonRow">
+              <button className="primaryBtn" onClick={generateBlindFinishCard}>Generate</button>
+              <button className="secondaryBtn" onClick={revealBlindFinishCard}>Reveal</button>
+              <button className="secondaryBtn" onClick={acknowledgeBlindFinishCard}>Close</button>
+            </div>
+            <div className={config.blindFinishFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+              {config.blindFinishFace==='revealed'&&config.blindFinishCard
+                ?<div><span>My Finish</span><strong>{config.blindFinishCard}</strong></div>
+                :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
+            </div>
+          </div>
+        </div>
+      </div>:<p className="mutedText" style={{padding:'8px 0'}}>Switch Delivery Mode to Blind above to access blind card constraints.</p>}
+    </CollapsibleLayer>
+
+    {/* DB HANDICAP */}
+    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+      <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
+    </CollapsibleLayer>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
-      </div>;
+  </div>;
 }
 
 
@@ -2448,6 +2465,31 @@ const ATL_CB_ZONE_OPTIONS=[
   '[5-4] + [8-1] + [6-3]','[6-3] + [7-2] + [5-4]',
   'Custom'
 ];
+
+// ─── COLLAPSIBLE LAYER PANEL ─────────────────────────────────────────────────
+function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
+  const [open,setOpen]=useState(defaultOpen||false);
+  const colors={
+    green:{bg:'#0a1a0e',border:'#4ade80',label:'#4ade80',numBg:'#166534'},
+    gold:{bg:'#0e0c00',border:'#ffd980',label:'#ffd980',numBg:'#78350f'},
+    blue:{bg:'#071015',border:'#9bc1ff',label:'#9bc1ff',numBg:'#1e3a8a'},
+    purple:{bg:'#0b0820',border:'#c4b5fd',label:'#c4b5fd',numBg:'#4c1d95'},
+    teal:{bg:'#071015',border:'#22d3ee',label:'#22d3ee',numBg:'#0e7490'},
+  };
+  const c=colors[color]||colors.blue;
+  return <div className="collapsibleLayer" style={{borderColor:c.border,background:c.bg}}>
+    <button type="button" className="collapsibleLayerHeader" onClick={()=>setOpen(!open)}>
+      <span className="collapsibleLayerNum" style={{background:c.numBg}}>{num}</span>
+      <div className="collapsibleLayerTitle">
+        <strong style={{color:c.label}}>{title}</strong>
+        {subtitle&&<span className="collapsibleLayerSub">{subtitle}</span>}
+      </div>
+      <span className="collapsibleLayerChevron" style={{color:c.label}}>{open?'▲':'▼'}</span>
+    </button>
+    {open&&<div className="collapsibleLayerBody">{children}</div>}
+  </div>;
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function ATLBTLDirectBuilder({onAddToSession}){
   const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
@@ -2538,15 +2580,27 @@ function ATLBTLDirectBuilder({onAddToSession}){
     <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
     <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 
-    <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL" />
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
+
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
+    </CollapsibleLayer>
+
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Universal Overlays above to add ball, movement or behavioural constraints.</p>
+    </CollapsibleLayer>
+
+    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+      <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
+    </CollapsibleLayer>
 
     <div className="buttonRow">
-      <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button>
+      <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
-      <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button>
+      <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset</button>
     </div>
-
-    <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
     <button className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
   </div>;
 }
@@ -2641,10 +2695,19 @@ function ClassicConditionedBuilder({onAddToSession}){
       <div className="technicalScoringBox alwaysVisibleScoring conditionedOverlayChooser">
         <strong>Universal Overlays</strong>
         <p className="overlayExplain">Use the same Technical / Tactical / Mental Performance overlay engine as Competition and ATL / BTL. Suggested overlays for this game: {(game.suggestedOverlays||[]).join(' · ')||'None'}.</p>
-        <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title} />
-      </div>
-      <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
-      <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
+        <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+          <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+        </CollapsibleLayer>
+        <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+          <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
+        </CollapsibleLayer>
+        <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+          <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Scoring Logic overlays above to add behavioural constraints.</p>
+        </CollapsibleLayer>
+        <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+          <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
+        </CollapsibleLayer>
+        <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
 }
@@ -4254,10 +4317,11 @@ function CustomGameBuilder({onAddToSession}){
   return <div className="gameCard customGameBuilder">
     <div className="categoryTag">Custom</div>
     <h2>Custom Game Builder</h2>
-    <p className="engineIntro">Design a game by selecting a base game, then assigning constraints to the server, receiver, both players or a named player.</p>
+    <p className="engineIntro">Select a base game, then open the layers you need.</p>
 
-    <div className="customBaseGameSection">
-      <strong>Base Game</strong>
+    {/* BASE GAME — always visible */}
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">What players do</span></div>
       <div className="customBaseGameGrid">
         {['Normal','3/4 Court','Egyptian 3/4','3/4 25'].map(bg=><button key={bg} type="button"
           className={baseGame===bg?'customBaseActive':'customBaseBtn'}
@@ -4271,58 +4335,55 @@ function CustomGameBuilder({onAddToSession}){
           '3/4 25':'3/4 court scoring to 25. Extended game for endurance and pattern development.',
         }[baseGame]}
       </div>
-    </div>
-
-    <label>Game Title<input value={title} onChange={e=>setTitle(e.target.value)} /></label>
-
-    <div className="constraintAssignSection">
-      <strong>Assign Constraint To</strong>
-      <div className="constraintAssignGrid">
-        {['Both Players','Server Only','Receiver Only','Named Player'].map(opt=><button key={opt} type="button"
-          className={assignment===opt?'constraintAssignActive':'constraintAssignBtn'}
-          onClick={()=>setAssignment(opt)}>{opt}</button>)}
-      </div>
-      {assignment==='Named Player'&&<label style={{marginTop:'8px'}}>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John" /></label>}
-      <div className="constraintAssignNote">
-        {{
-          'Both Players':'The constraint applies equally to both server and receiver.',
-          'Server Only':'Only the server has the constraint. Receiver plays freely.',
-          'Receiver Only':'Only the receiver has the constraint. Server plays freely.',
-          'Named Player':'A specific named player has the constraint regardless of serve.',
-        }[assignment]}
+      <label style={{marginTop:'10px'}}>Game Title<input value={title} onChange={e=>setTitle(e.target.value)}/></label>
+      <div className="constraintAssignSection" style={{marginTop:'10px'}}>
+        <strong>Constraint Applies To</strong>
+        <div className="constraintAssignGrid">
+          {['Both Players','Server Only','Receiver Only','Named Player'].map(opt=><button key={opt} type="button"
+            className={assignment===opt?'constraintAssignActive':'constraintAssignBtn'}
+            onClick={()=>setAssignment(opt)}>{opt}</button>)}
+        </div>
+        {assignment==='Named Player'&&<label style={{marginTop:'8px'}}>Named Player<input value={namedPlayer} onChange={e=>setNamedPlayer(e.target.value)} placeholder="e.g. John"/></label>}
       </div>
     </div>
 
-    <label>Condition Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="e.g. John must play straight / Jack has 2 crosscourts per rally / Server can only score in zone [1]" /></label>
-
-    <div className="technicalScoringBox alwaysVisibleScoring">
-      <strong>Structured Conditions</strong>
+    {/* GAME LOGIC */}
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="atlOptionsGrid">
         <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
         <label>Crosscourt Allowance<select value={crosscourtLimit} onChange={e=>setCrosscourtLimit(e.target.value)}><option>None</option><option>0 crosscourts</option><option>1 crosscourt per rally</option><option>2 crosscourts per rally</option><option>3 crosscourts per rally</option><option>Unlimited</option></select></label>
-        <label>Double Bounce<select value={doubleBounce} onChange={e=>setDoubleBounce(e.target.value)}><option>None</option><option>1 double bounce</option><option>2 double bounces</option><option>3 double bounces</option><option>Unlimited double bounces</option></select></label>
-        <label>Checkerboard / Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
+        <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
       </div>
-    </div>
+      <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
 
-    <div className="technicalScoringBox alwaysVisibleScoring">
-      <strong>Universal Overlays</strong><p className="overlayExplain">No overlays are selected by default.</p>
-      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game" />
-    </div>
+    {/* SCORING LOGIC */}
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
+      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game"/>
+    </CollapsibleLayer>
 
-    <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} /></label>
-    <label>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)} /></label>
+    {/* CONSTRAINTS */}
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="e.g. Server must play straight · Receiver has 2 crosscourts per rally · Both players must use the Blue Danube tempo"/></label>
+      <label style={{marginTop:'8px'}}>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)}/></label>
+      <div style={{marginTop:'10px'}}>
+        <strong className="mutedText" style={{fontSize:'13px'}}>Random Constraint Generator</strong>
+        <div className="buttonRow" style={{marginTop:'6px'}}>
+          <label style={{minWidth:'120px'}}>Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label>
+          <button className="secondaryBtn" type="button" onClick={generateRandom}>Generate Random</button>
+        </div>
+        {randomResult&&<div className="infoBox" style={{marginTop:'8px'}}><strong>Random Result</strong><p>{randomResult}</p></div>}
+      </div>
+    </CollapsibleLayer>
 
-    <div className="technicalScoringBox">
-      <strong>Random Condition Generator</strong>
-      <label>Random Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label>
-      <button className="secondaryBtn" type="button" onClick={generateRandom}>Generate Random Conditions</button>
-      {randomResult&&<div className="infoBox"><strong>Random Result</strong><p>{randomResult}</p></div>}
-    </div>
+    {/* DB HANDICAP */}
+    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
+      <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayer} setDbPlayer={setNamedPlayer} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
+    </CollapsibleLayer>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
-    <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayer} setDbPlayer={setNamedPlayer} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
-    <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset Custom Game</button></div>
+    <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
   </div>;
 }
 
