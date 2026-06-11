@@ -2406,12 +2406,13 @@ return <div className="checkerboardEngine">
 
     {/* SCORING LOGIC */}
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="quickLayers"><OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/></div>
+      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Checkerboard pair completion = +1. Overlays in Constraints add bonus points per qualifying shot.</p></div>
     </CollapsibleLayer>
 
     {/* CONSTRAINTS */}
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-      {config.deliveryMode==='Blind'?<div className="blindCardPanel">
+      <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
+      {config.deliveryMode==='Blind'&&<div className="blindCardPanel" style={{marginTop:'12px'}}>
         <p>Blind Card delivery uses two hidden decks — challenge and finish.</p>
         <div className="blindDeckGrid">
           <div className="blindDeckBox">
@@ -2441,13 +2442,11 @@ return <div className="checkerboardEngine">
             </div>
           </div>
         </div>
-      </div>:<p className="mutedText" style={{padding:'8px 0'}}>Switch Delivery Mode to Blind above to access blind card constraints.</p>}
+      </div>}
     </CollapsibleLayer>
 
     {/* DB HANDICAP */}
-    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-      <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
-    </CollapsibleLayer>
+    <InlineDBSelector dbAssign={cbDbAssign} setDbAssign={setCbDbAssign} dbPlayer={cbDbPlayer} setDbPlayer={setCbDbPlayer} dbAmount={cbDbAmount} setDbAmount={setCbDbAmount}/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -2580,16 +2579,14 @@ function ATLBTLDirectBuilder({onAddToSession}){
     </CollapsibleLayer>
 
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
+      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Overlays add bonus points.</p></div>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-      <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Universal Overlays above to add ball, movement or behavioural constraints.</p>
+      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
-    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-      <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
-    </CollapsibleLayer>
+    <InlineDBSelector dbAssign={atlDbAssign} setDbAssign={setAtlDbAssign} dbPlayer={atlDbPlayer} setDbPlayer={setAtlDbPlayer} dbAmount={atlDbAmount} setDbAmount={setAtlDbAmount}/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -2690,14 +2687,12 @@ function ClassicConditionedBuilder({onAddToSession}){
         <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
       </CollapsibleLayer>
       <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
+        <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Completion bonus set by selected game. Overlays add bonus points.</p></div>
       </CollapsibleLayer>
       <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-        <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Use Scoring Logic overlays above to add behavioural constraints.</p>
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
-      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-        <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
-      </CollapsibleLayer>
+      <InlineDBSelector dbAssign={classicDbAssign} setDbAssign={setClassicDbAssign} dbPlayer={classicDbPlayer} setDbPlayer={setClassicDbPlayer} dbAmount={classicDbAmount} setDbAmount={setClassicDbAmount}/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -2945,10 +2940,7 @@ function TechnicalFocusBuilder({onAddToSession}){
         <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
       </CollapsibleLayer>
 
-      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-        <InlineDBSelector dbAssign="Both Players" setDbAssign={()=>{}} dbPlayer="" setDbPlayer={()=>{}} dbAmount="No DB" setDbAmount={()=>{}}/>
-      </CollapsibleLayer>
-
+      <InlineDBSelector dbAssign="Both Players" setDbAssign={()=>{}} dbPlayer="" setDbPlayer={()=>{}} dbAmount="No DB" setDbAmount={()=>{}}/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -4418,10 +4410,7 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </CollapsibleLayer>
 
-    {/* DB HANDICAP */}
-    <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-      <InlineDBSelector dbAssign={assignment} setDbAssign={setAssignment} dbPlayer={namedPlayers.join(', ')} setDbPlayer={()=>{}} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
-    </CollapsibleLayer>
+    <InlineDBSelector dbAssign={assignment==='Named Player'?'Named Player':assignment} setDbAssign={()=>{}} dbPlayer={namedPlayers.join(', ')} setDbPlayer={()=>{}} dbAmount={doubleBounce==='None'?'No DB':doubleBounce} setDbAmount={v=>setDoubleBounce(v==='No DB'?'None':v)}/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -4723,32 +4712,24 @@ function InformationAnticipationBuilder({onAddToSession}){
 
 function InlineDBSelector({dbAssign,setDbAssign,dbPlayer,setDbPlayer,dbAmount,setDbAmount}){
   return <div className="inlineDBSelector">
-    <div className="inlineDBHeader">
-      <strong>DB Handicap</strong>
-      <span>Double bounce allowance — assign selectively</span>
+    <strong className="inlineDBTitle">DB Handicap</strong>
+    <div className="inlineDBDropdowns">
+      <label>Assign to
+        <select value={dbAssign} onChange={e=>setDbAssign(e.target.value)}>
+          <option>Both Players</option>
+          <option>Server Only</option>
+          <option>Receiver Only</option>
+          <option>Named Player</option>
+        </select>
+      </label>
+      {dbAssign==='Named Player'&&<label>Player name<input value={dbPlayer} onChange={e=>setDbPlayer(e.target.value)} placeholder="e.g. John"/></label>}
+      <label>Allowance
+        <select value={dbAmount} onChange={e=>setDbAmount(e.target.value)}>
+          {UNIVERSAL_DB_OPTIONS.map(o=><option key={o}>{o}</option>)}
+        </select>
+      </label>
     </div>
-    <div className="inlineDBRow">
-      <div className="inlineDBGroup">
-        <span className="inlineDBLabel">Assign to</span>
-        <div className="inlineDBBtns">
-          {['Both Players','Server Only','Receiver Only','Named Player'].map(opt=><button key={opt} type="button"
-            className={dbAssign===opt?'inlineDBActive':'inlineDBBtn'}
-            onClick={()=>setDbAssign(opt)}>{opt}</button>)}
-        </div>
-        {dbAssign==='Named Player'&&<input className="inlineDBNameInput" value={dbPlayer} onChange={e=>setDbPlayer(e.target.value)} placeholder="Player name"/>}
-      </div>
-      <div className="inlineDBGroup">
-        <span className="inlineDBLabel">Allowance</span>
-        <div className="inlineDBBtns">
-          {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
-            className={dbAmount===o?'inlineDBActive':'inlineDBBtn'}
-            onClick={()=>setDbAmount(o)}>{o}</button>)}
-        </div>
-      </div>
-    </div>
-    {dbAmount!=='No DB'&&<div className="inlineDBSummary">
-      {dbAssign==='Named Player'?dbPlayer||'Named player':dbAssign}: {dbAmount}
-    </div>}
+    {dbAmount!=='No DB'&&<div className="inlineDBSummary">{dbAssign==='Named Player'?dbPlayer||'Named player':dbAssign}: {dbAmount}</div>}
   </div>;
 }
 
@@ -5677,14 +5658,6 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </CollapsibleLayer>
 
-          <CollapsibleLayer num="4" title="DB Handicap" subtitle="Double bounce allowance — assign selectively" color="purple">
-            <div className="atbOverlayChips">
-              {UNIVERSAL_DB_OPTIONS.map(o=><button key={o} type="button"
-                className={dbHandicap===o?'atbOverlayActive':'atbOverlayChip'}
-                onClick={()=>setDbHandicap(o)}>{o}</button>)}
-            </div>
-          </CollapsibleLayer>
-
           <CollapsibleLayer num="+" title="Checkerboard Overlays" subtitle="Optional tactical overlays" color="teal">
             <div className="atbOverlayChips">
               {ATB_OVERLAYS.map(o=><button key={o} type="button"
@@ -5692,6 +5665,12 @@ function AroundTheBoardBuilder({onAddToSession}){
                 onClick={()=>toggleOverlay(o)}>{o}</button>)}
             </div>
           </CollapsibleLayer>
+
+          <InlineDBSelector
+            dbAssign="Both Players" setDbAssign={()=>{}}
+            dbPlayer="" setDbPlayer={()=>{}}
+            dbAmount={dbHandicap==='No DB'?'No DB':dbHandicap}
+            setDbAmount={v=>setDbHandicap(v)}/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
