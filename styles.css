@@ -2,6 +2,138 @@
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
+/* ── COLLAPSIBLE LAYERS ─────────────────────────────────────────── v100h58 ── */
+
+/* Inline DB Selector v2 — simple dropdowns */
+.inlineDBSelector{background:#0b0820;border:1px solid #4c1d95;border-radius:14px;padding:14px 16px;margin:10px 0;}
+.inlineDBTitle{display:block;color:#c4b5fd;font-size:13px;font-weight:900;margin-bottom:10px;}
+.inlineDBDropdowns{display:flex;flex-wrap:wrap;gap:10px;}
+.inlineDBDropdowns label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#9fb0c8;font-weight:700;flex:1;min-width:140px;}
+.inlineDBDropdowns select{background:#12082a;border:1px solid #6d28d9;color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;}
+.inlineDBDropdowns input{background:#12082a;border:1px solid #6d28d9;color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;}
+.inlineDBSummary{margin-top:8px;padding:6px 10px;background:#1e1040;border-left:3px solid #c4b5fd;border-radius:0 8px 8px 0;color:#c4b5fd;font-size:13px;font-weight:700;}
+
+
+.collapsibleLayer{
+  border:1px solid;
+  border-radius:14px;
+  margin-bottom:8px;
+  overflow:hidden;
+}
+.collapsibleLayerHeader{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  cursor:pointer;
+  user-select:none;
+}
+.collapsibleLayerHeader:hover{filter:brightness(1.15);}
+.collapsibleLayerNum{
+  width:30px;height:30px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;
+  color:#fff;
+  flex-shrink:0;
+}
+.collapsibleLayerTitle{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.collapsibleLayerTitle strong{font-size:14px;font-weight:900;}
+.collapsibleLayerSub{font-size:12px;opacity:.7;color:#9fb0c8;}
+.collapsibleLayerChevron{font-size:12px;flex-shrink:0;font-weight:900;}
+.collapsibleLayerBody{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);}
+
+/* Named Player attendance selector */
+.namedPlayerSection{
+  margin-top:12px;
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:12px 14px;
+}
+.namedPlayerLabel{
+  display:block;
+  color:#9bc1ff;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:10px;
+}
+.namedPlayerEmpty{
+  color:#9fb0c8;
+  font-size:13px;
+  font-style:italic;
+  margin:0;
+}
+.namedPlayerChips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.namedPlayerChip{
+  background:#0b1020;
+  border:1px solid #2a3560;
+  color:#c4c9d9;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  user-select:none;
+}
+.namedPlayerChipActive{
+  background:#166534;
+  border:2px solid #4ade80;
+  color:#fff;
+  border-radius:10px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  user-select:none;
+}
+.namedPlayerSummary{
+  margin-top:10px;
+  padding:8px 12px;
+  background:#0a2415;
+  border-left:3px solid #4ade80;
+  border-radius:0 8px 8px 0;
+  color:#86efac;
+  font-size:13px;
+}
+.namedPlayerSummary strong{color:#fff;}
+
+/* Base game panel */
+.baseGamePanel{
+  background:#071015;
+  border:2px solid #5e83be;
+  border-radius:16px;
+  padding:16px 18px;
+  margin-bottom:10px;
+}
+.baseGamePanelHeader{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.baseGamePanelNum{
+  background:#1e3a8a;
+  color:#fff;
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:900;
+}
+.baseGamePanelHeader strong{color:#9bc1ff;font-size:15px;font-weight:900;}
+.baseGamePanelSub{color:#9fb0c8;font-size:12px;margin-left:auto;}
+
 /* ── PRESSURE MODULE ────────────────────────────────────────────── v100h56 ── */
 
 .pressurePage{padding-bottom:30px;}
@@ -6939,3 +7071,9 @@ button.mentalSkillsTile p{
   font-weight:700;
 }
 
+
+
+
+/* v100h60 Physical Pressure library update */
+.pressurePage .pressureTabIntro h2{letter-spacing:.01em;}
+.pressureExerciseTile .pressureExerciseDuration{font-weight:800;}

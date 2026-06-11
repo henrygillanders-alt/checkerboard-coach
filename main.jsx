@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h59c';
+const APP_VERSION='v100h60 Physical Pressure';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2096,7 +2096,7 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
-      <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Pressure</h2><span className="homeTileSubtitle">Session Coaching Module</span></button>
+      <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2><span className="homeTileSubtitle">Pressure Sessions</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -2148,7 +2148,7 @@ const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
 const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
-const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Pressure','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
+const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Physical Pressure','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
@@ -2192,7 +2192,7 @@ return <div>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
-{filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Pressure, Invasion.</div>}
+{filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Physical Pressure, Invasion.</div>}
 </div>}
 {selectedGame&&<div className="gameCard">
 <div className="categoryTag">{selectedGame.category}</div><h2>{selectedGame.title}</h2>
@@ -3767,25 +3767,160 @@ function TacticalPressureModule({onAddToSession}){
 }
 
 
+
+const PHYSICAL_PRESSURE_GAMES=[
+  {
+    id:'pp1-ghost-live',code:'PP1',title:'Ghost → Live',theme:'Fatigue → Decision',duration:'8–12 min',rld:4,
+    summary:'Player ghosts at match pace. Coach calls LIVE. The player must immediately shift from physical load to competitive decision making.',
+    setup:'Coach central with multiple balls. Player starts on the T. Use 20–30 seconds ghosting before each LIVE feed.',
+    task:'Ghost at match pace. On LIVE, split, read the feed, play the first ball functionally, then compete.',
+    scoring:'Player +1 for winning LIVE rally. Coach +1 for winning LIVE rally. First to 5.',
+    coach:'Watch split timing, first-shot quality and emotional reset after losing a LIVE rally.',
+    projection:{what:'Ghost hard. On LIVE, compete immediately.',score:'Win LIVE rallies. First to 5.',focus:'Fatigue → decision quality.'},
+    progressions:[
+      {title:'Entry',detail:'20 sec ghost. Coach feeds one predictable deep ball. Rally live.'},
+      {title:'Random Feed',detail:'25–30 sec ghost. Coach feeds short or deep.'},
+      {title:'Match Pressure',detail:'Start each LIVE rally at 9–9 or 10–10. Consequence if player loses.'},
+    ]
+  },
+  {
+    id:'pp2-closeout',code:'PP2',title:'Championship Close-Out',theme:'Closing Under Pressure',duration:'8–10 min',rld:5,
+    summary:'Player starts in a winning position and must close the game while physically loaded.',
+    setup:'Coach central with balls. Player starts on T. Use short ghost or pressure-feed entry before each point.',
+    task:'Player must protect a lead and close the game. Coach applies controlled pressure and punishes loose decisions.',
+    scoring:'Start 10–8, 10–9 or 9–9. Player must close. If coach wins, player performs selected forfeit and restarts.',
+    coach:'Look for rushing, protecting, emotional collapse or premature attacking.',
+    projection:{what:'Start ahead. Close the game under fatigue.',score:'Player must close. Coach scores for failed close-out.',focus:'Emotional control under physical pressure.'},
+    progressions:[
+      {title:'10–8 Lead',detail:'Player has margin. Must close without forcing.'},
+      {title:'10–9 Lead',detail:'One-point lead. Higher consequence.'},
+      {title:'Sudden Death',detail:'Start 10–10. Must win two consecutive close-out points.'},
+    ]
+  },
+  {
+    id:'pp3-pressure-point',code:'PP3',title:'Pressure Point',theme:'Consequence',duration:'8–10 min',rld:4,
+    summary:'A single point or short series determines the outcome. Physical pressure is maintained by consequences between points.',
+    setup:'Coach and player play short competitive points. Coach has balls ready to restart immediately.',
+    task:'Compete on a single pressure point. If player loses, apply a short physical consequence and immediately restart.',
+    scoring:'Normal rally scoring. First to 5 pressure points.',
+    coach:'Keep rest minimal. Observe whether decision quality changes when the rally matters.',
+    projection:{what:'Play the pressure point. Reset quickly.',score:'First to 5 pressure points.',focus:'Performance under consequence.'},
+    progressions:[
+      {title:'Single Point',detail:'One point at a time. Immediate restart.'},
+      {title:'Must Win Two',detail:'Player must win two pressure points in a row.'},
+      {title:'Forfeit Mode',detail:'Player forfeit after losing each pressure point.'},
+    ]
+  },
+  {
+    id:'pp4-live-call',code:'PP4',title:'Live Call Pressure',theme:'Pressure → Opportunity → Competition',duration:'8–10 min',rld:5,
+    summary:'Coach applies pressure from the central corridor with multiple balls. Player returns controlled shots back to the coach zone. Coach randomly calls LIVE. The current ball becomes fully competitive.',
+    setup:'Coach stands in/near the T corridor with multiple balls. Player starts on T. Player sends controlled shots back into the coach corridor so the coach can reapply pressure without running.',
+    task:'During pressure phase, player survives, recovers and maintains control. When coach calls LIVE, the rally becomes fully competitive and the player plays to win.',
+    scoring:'Only LIVE rallies score. Player +1 for winning LIVE. Coach +1 for winning LIVE. First to 5. If coach wins a LIVE rally, player performs chosen forfeit.',
+    coach:'The coach is the pressure generator, not the runner. If the player pulls the coach out of the corridor during pressure phase, reset and remind: controlled ball back to coach zone.',
+    projection:{what:'Control the pressure phase. When LIVE is called, play to win.',score:'LIVE rallies only. First to 5. Coach win = forfeit.',focus:'Physical pressure with control.'},
+    consequences:['5 ghost lunges','10 second ghost','3 split jumps + 2 front-corner lunges','Coach choice'],
+    progressions:[
+      {title:'1. Three Pressure Balls + LIVE',detail:'Coach feeds three pressure balls. Ball 4 is LIVE. Predictable entry version.'},
+      {title:'2. Rear Court Pressure + LIVE',detail:'Coach pressure is mainly back left/back right. LIVE called randomly.'},
+      {title:'3. Front Court Pressure + LIVE',detail:'Coach pressure is mainly front left/front right. LIVE called randomly.'},
+      {title:'4. Transition Pressure + LIVE',detail:'Coach alternates front/back transitions. LIVE called randomly.'},
+      {title:'5. Tactical LIVE',detail:'During pressure phase player may only drive or lift. On LIVE all shots become available.'},
+      {title:'6. Continuous Pressure + LIVE',detail:'No fixed pattern. Coach applies continuous pressure. LIVE can occur at any time.'},
+      {title:'7. Player-Recognised LIVE',detail:'Coach no longer calls LIVE. Player declares LIVE when they perceive a genuine opportunity. Wrong call and lost rally = coach point.'},
+    ]
+  },
+  {
+    id:'pp5-central-hub',code:'PP5',title:'Central Hub Pressure',theme:'Build → Recover → Attack',duration:'8–10 min',rld:5,
+    summary:'Coach stays near the T as the central hub. Player builds pressure by returning the rebound close to the coach, recovers, then attacks from balance.',
+    setup:'Coach near T. Player starts on T. Player hits front wall first; during build shots the rebound must return close enough to the coach for central interception.',
+    task:'Build with control, recover to T, attack from balance. The fourth shot is the first permitted attack; after that the rally can continue live.',
+    scoring:'Stage 1: complete clean build cycles. Stage 2: fourth-ball attack under control. Stage 3: player scores only if they eventually win after the fourth-ball attack.',
+    coach:'Do not chase. If the player drags the ball behind you during the build phase, stop and reset. The player must supply the control.',
+    projection:{what:'Build three shots. Recover. Fourth ball attack.',score:'Win after the permitted attack phase.',focus:'Build → Recover → Attack.'},
+    progressions:[
+      {title:'Stage 1 — Controlled Build',detail:'No open rally. Coach redirects. Player completes three build shots: front wall first, rebound close to coach, recover toward T.'},
+      {title:'Stage 2 — Build + Attack',detail:'After three build shots, player stabilises near T. Fourth shot can break the central return rule and attack anywhere.'},
+      {title:'Stage 3 — Build + Attack + Open Rally',detail:'Fourth shot is the first permitted attack. Player does not need to win exactly on shot 4. Rally continues live until won or lost.'},
+      {title:'Advanced Tactical Choice',detail:'On fourth ball player chooses short attack, deep attack, crosscourt attack, or no attack if coach is balanced.'},
+    ]
+  },
+  {
+    id:'pp6-tempo-pressure',code:'PP6',title:'Tempo Pressure',theme:'Maintaining Quality At Speed',duration:'6–10 min',rld:4,
+    summary:'Coach increases tempo while player must maintain shot quality, recovery quality and decision quality.',
+    setup:'Coach central with multiple balls. Player starts on T. Coach controls feed tempo and spacing.',
+    task:'Maintain controlled shot quality under faster feed frequency. Player must not solve pressure by hitting harder or rushing.',
+    scoring:'Player scores for quality sequences under tempo. Coach scores when control collapses or player loses recovery discipline.',
+    coach:'Increase tempo only when quality survives. The target is performance under speed, not speed alone.',
+    projection:{what:'Stay organised as tempo rises.',score:'Quality sequences score. Breakdown = coach point.',focus:'Quality at speed.'},
+    progressions:[
+      {title:'Stable Tempo',detail:'Coach keeps a steady rhythm.'},
+      {title:'Tempo Spike',detail:'Coach increases speed for 10–15 seconds.'},
+      {title:'Random Tempo',detail:'Coach changes tempo unpredictably.'},
+    ]
+  },
+];
+
+function PhysicalPressureGameDetail({game,onBack}){
+  return <div className="pressureExerciseDetail">
+    <button type="button" className="secondaryBtn pressureBackBtn" onClick={onBack}>{'← All Physical Pressure'}</button>
+    <div className="pressureExerciseHeader">
+      <div className="pressureExerciseCodeLg">{game.code}</div>
+      <div className="pressureExerciseHeaderText">
+        <h2>{game.title}</h2>
+        <p className="pressureExerciseSub">{game.theme}</p>
+        <RLDBadge level={game.rld} size="lg"/>
+      </div>
+    </div>
+    <div className="pressureDuration"><strong>Duration</strong><span>{game.duration}</span></div>
+    <div className="pressureDetailGrid">
+      <div className="pressureDetailCard pressureSetupCard"><strong>Setup</strong><p>{game.setup}</p></div>
+      <div className="pressureDetailCard pressureTaskCard"><strong>Task</strong><p>{game.task}</p></div>
+      <div className="pressureDetailCard pressureTaskCard"><strong>Scoring</strong><p>{game.scoring}</p></div>
+      <div className="pressureDetailCard pressureSetupCard"><strong>Coach Role</strong><p>{game.coach}</p></div>
+    </div>
+    <div className="pressureCoachNote"><strong>Rationale</strong><p>{game.summary}</p></div>
+    {game.consequences&&<div className="pressureConstraint"><strong>Consequences if Coach Wins LIVE Rally</strong><p>{game.consequences.join(' · ')}</p></div>}
+    <div className="pressureSequence">
+      <strong>Progressions</strong>
+      <div className="pressureSequenceSteps">
+        {game.progressions.map((p,i)=><div key={i} className="pressureSequenceStep">
+          <span className="pressureSeqLabel">{i+1}</span>
+          <span className="pressureSeqArrow">{'→'}</span>
+          <p><strong>{p.title}</strong><br/>{p.detail}</p>
+        </div>)}
+      </div>
+    </div>
+    <div className="pressureFocusSection">
+      <strong>Projection View</strong>
+      <div className="pressureFocusCards">
+        <div className="pressureFocusCard"><strong>WHAT TO DO</strong><p>{game.projection.what}</p></div>
+        <div className="pressureFocusCard"><strong>HOW TO SCORE</strong><p>{game.projection.score}</p></div>
+        <div className="pressureFocusCard"><strong>KEY FOCUS</strong><p>{game.projection.focus}</p></div>
+      </div>
+    </div>
+  </div>;
+}
+
+
+
 function PressureModule({setScreen}){
-  const [activeTab,setActiveTab]=useState('122');
   const [activeExercise,setActiveExercise]=useState(null);
   const [activeFocus,setActiveFocus]=useState(null);
-
-  const tabs=[
-    {id:'122',label:'1-2-2',sub:'Coach + 2 Players'},
-    {id:'121',label:'1-2-1',sub:'Coach + 1 Player'},
-    {id:'2p',label:'2 Players',sub:'No Coach'},
-    {id:'3p',label:'3 Players',sub:'No Coach'},
-    {id:'4p',label:'4 Players',sub:'No Coach'},
-  ];
-
-  const exercise=PRESSURE_122_EXERCISES.find(e=>e.id===activeExercise);
+  const game=PHYSICAL_PRESSURE_GAMES.find(g=>g.id===activeExercise);
 
   return <div className="page pressurePage">
     <div className="pageTop">
-      <div><h1>Pressure</h1><p className="mutedText">Session coaching module · Progressive overload through feed frequency and decision complexity</p></div>
+      <div><h1>Physical Pressure</h1><p className="mutedText">Maintain movement quality, recovery discipline, decision quality and emotional control under increasing physical load.</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+
+    <div className="pressureFocusStrip">
+      <span className="pressureFocusLabel">Physical Pressure Definition</span>
+      <div className="pressureFocusExpanded" style={{display:'block',marginTop:0,paddingTop:0,borderTop:'none'}}>
+        <p><strong>The objective is not fatigue.</strong> The objective is maintaining performance quality while fatigued.</p>
+        <div className="pressureFocusCue"><strong>Coach Cue</strong><blockquote>"Build pressure. Recover. Compete under load."</blockquote></div>
+      </div>
     </div>
 
     <div className="pressureFocusStrip">
@@ -3804,100 +3939,33 @@ function PressureModule({setScreen}){
       </div>;})()}
     </div>
 
-    <div className="pressureTabBar">
-      {tabs.map(t=><div key={t.id} role="button" tabIndex={0}
-        className={activeTab===t.id?'pressureTabActive':'pressureTabBtn'}
-        onClick={()=>{setActiveTab(t.id);setActiveExercise(null);}}
-        onKeyDown={e=>e.key==='Enter'&&(setActiveTab(t.id),setActiveExercise(null))}>
-        <strong>{t.label}</strong>
-        <span>{t.sub}</span>
-      </div>)}
-    </div>
-
-    {activeTab==='122'&&<div className="pressureTabContent">
-      {!activeExercise
-        ?<div>
-          <div className="pressureTabIntro">
-            <h2>1-2-2 — Coach and Two Players</h2>
-            <p>The coach feeds continuously from the service box. Two players rotate through the exercise pattern. The coach controls feed tempo, direction and type. The players focus entirely on movement quality, shot execution and the session focus principles.</p>
-            <div className="pressureTabSetup">
-              <div className="pressureSetupItem"><strong>Coach position</strong><span>Service box — volley feeds throughout</span></div>
-              <div className="pressureSetupItem"><strong>Player rotation</strong><span>P1 plays the shot and recovers to back. P2 steps in, plays the shot, recovers to back.</span></div>
-              <div className="pressureSetupItem"><strong>Progression</strong><span>P1 through P6 in order. Only progress when the current exercise is running cleanly.</span></div>
-            </div>
-          </div>
-          <div className="pressureExerciseGrid">
-            {PRESSURE_122_EXERCISES.map(ex=><div key={ex.id} role="button" tabIndex={0}
-              className="pressureExerciseTile" onClick={()=>setActiveExercise(ex.id)}
-              onKeyDown={e=>e.key==='Enter'&&setActiveExercise(ex.id)}>
-              <div className="pressureExerciseTileTop">
-                <span className="pressureExerciseCode">{ex.code}</span>
-                <RLDBadge level={ex.rld}/>
-              </div>
-              <strong>{ex.title}</strong>
-              <span>{ex.subtitle}</span>
-              <p className="pressureExerciseDuration">{ex.duration}</p>
-            </div>)}
+    {!activeExercise
+      ?<div>
+        <div className="pressureTabIntro">
+          <h2>Physical Pressure Library</h2>
+          <p>These sessions are coach-controlled physical pressure games. The coach should remain efficient and central where possible. The player carries the movement load and must preserve control, recovery and decision quality.</p>
+          <div className="pressureTabSetup">
+            <div className="pressureSetupItem"><strong>Core principle</strong><span>Physical load is the constraint, not the objective.</span></div>
+            <div className="pressureSetupItem"><strong>Scoring principle</strong><span>Score the quality of performance under fatigue, especially LIVE rallies and pressure conversion.</span></div>
+            <div className="pressureSetupItem"><strong>Coach role</strong><span>Generate pressure, observe quality, minimise unnecessary coach movement.</span></div>
           </div>
         </div>
-        :<div className="pressureExerciseDetail">
-          <button type="button" className="secondaryBtn pressureBackBtn" onClick={()=>setActiveExercise(null)}>{'← All Exercises'}</button>
-          <div className="pressureExerciseHeader">
-            <div className="pressureExerciseCodeLg">{exercise.code}</div>
-            <div className="pressureExerciseHeaderText">
-              <h2>{exercise.title}</h2>
-              <p className="pressureExerciseSub">{exercise.subtitle}</p>
-              <RLDBadge level={exercise.rld} size="lg"/>
+        <div className="pressureExerciseGrid">
+          {PHYSICAL_PRESSURE_GAMES.map(ex=><div key={ex.id} role="button" tabIndex={0}
+            className="pressureExerciseTile" onClick={()=>setActiveExercise(ex.id)}
+            onKeyDown={e=>e.key==='Enter'&&setActiveExercise(ex.id)}>
+            <div className="pressureExerciseTileTop">
+              <span className="pressureExerciseCode">{ex.code}</span>
+              <RLDBadge level={ex.rld}/>
             </div>
-          </div>
-          <div className="pressureDetailGrid">
-            <div className="pressureDetailCard pressureSetupCard">
-              <strong>Setup</strong><p>{exercise.setup}</p>
-            </div>
-            <div className="pressureDetailCard pressureTaskCard">
-              <strong>Task</strong><p>{exercise.task}</p>
-            </div>
-          </div>
-          {exercise.sequence&&<div className="pressureSequence">
-            <strong>Exercise Sequence</strong>
-            <div className="pressureSequenceSteps">
-              {exercise.sequence.map((s,i)=><div key={i} className="pressureSequenceStep">
-                <span className="pressureSeqLabel">{s.label}</span>
-                <span className="pressureSeqArrow">{'→'}</span>
-                <p>{s.action}</p>
-              </div>)}
-            </div>
-          </div>}
-          <div className="pressureFocusSection">
-            <strong>Focus Points</strong>
-            <div className="pressureFocusCards">
-              {exercise.focusPoints.map(fp=><div key={fp.label} className="pressureFocusCard">
-                <strong>{fp.label}</strong><p>{fp.detail}</p>
-              </div>)}
-            </div>
-          </div>
-          <div className="pressureCoachNote">
-            <strong>Coach Note</strong><p>{exercise.coachNote}</p>
-          </div>
-          <div className="pressureConstraint">
-            <strong>Constraint and Scoring Rule</strong><p>{exercise.constraint}</p>
-          </div>
-          <div className="pressureDuration">
-            <strong>Duration</strong><span>{exercise.duration}</span>
-          </div>
+            <strong>{ex.title}</strong>
+            <span>{ex.theme}</span>
+            <p className="pressureExerciseDuration">{ex.duration}</p>
+          </div>)}
         </div>
-      }
-    </div>}
-
-    {['121','2p','3p','4p'].includes(activeTab)&&<div className="pressureComingSoon">
-      <div className="pressureComingSoonCard">
-        <span className="categoryTag" style={{background:'#1f5dd0',marginBottom:'10px',display:'inline-block'}}>
-          {tabs.find(t=>t.id===activeTab)?.label} — {tabs.find(t=>t.id===activeTab)?.sub}
-        </span>
-        <h2>{tabs.find(t=>t.id===activeTab)?.label} Exercises</h2>
-        <p>This module is in development. Establish the 1-2-2 exercises in your coaching practice first — they form the foundation for all other pressure formats. The {tabs.find(t=>t.id===activeTab)?.label} exercises will be added here in the next build.</p>
       </div>
-    </div>}
+      :<PhysicalPressureGameDetail game={game} onBack={()=>setActiveExercise(null)}/>
+    }
   </div>;
 }
 
