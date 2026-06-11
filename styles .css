@@ -11,30 +11,32 @@ button{-webkit-appearance:none;appearance:none;}
   overflow:hidden;
 }
 .collapsibleLayerHeader{
-  width:100%;
   display:flex;
   align-items:center;
-  gap:10px;
-  padding:12px 14px;
-  background:none;
-  border:none;
+  gap:12px;
+  padding:14px 16px;
   cursor:pointer;
-  text-align:left;
-  -webkit-appearance:none;
+  user-select:none;
 }
+.collapsibleLayerHeader:hover{filter:brightness(1.15);}
 .collapsibleLayerNum{
-  width:28px;height:28px;
+  width:30px;height:30px;
   border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:13px;font-weight:900;
   color:#fff;
   flex-shrink:0;
 }
-.collapsibleLayerTitle{flex:1;display:flex;flex-direction:column;gap:2px;}
+.collapsibleLayerTitle{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
 .collapsibleLayerTitle strong{font-size:14px;font-weight:900;}
-.collapsibleLayerSub{font-size:12px;opacity:.7;}
-.collapsibleLayerChevron{font-size:11px;flex-shrink:0;}
-.collapsibleLayerBody{padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);}
+.collapsibleLayerSub{font-size:12px;opacity:.7;color:#9fb0c8;}
+.collapsibleLayerChevron{font-size:12px;flex-shrink:0;font-weight:900;}
+.collapsibleLayerBody{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);}
 
 /* Base game panel */
 .baseGamePanel{

@@ -2478,14 +2478,14 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
   };
   const c=colors[color]||colors.blue;
   return <div className="collapsibleLayer" style={{borderColor:c.border,background:c.bg}}>
-    <button type="button" className="collapsibleLayerHeader" onClick={()=>setOpen(!open)}>
+    <div className="collapsibleLayerHeader" onClick={()=>setOpen(!open)} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&setOpen(!open)}>
       <span className="collapsibleLayerNum" style={{background:c.numBg}}>{num}</span>
       <div className="collapsibleLayerTitle">
         <strong style={{color:c.label}}>{title}</strong>
         {subtitle&&<span className="collapsibleLayerSub">{subtitle}</span>}
       </div>
       <span className="collapsibleLayerChevron" style={{color:c.label}}>{open?'▲':'▼'}</span>
-    </button>
+    </div>
     {open&&<div className="collapsibleLayerBody">{children}</div>}
   </div>;
 }
