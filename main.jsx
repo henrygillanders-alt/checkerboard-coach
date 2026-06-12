@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h64 Editable Scoring Logic';
+const APP_VERSION='v100h65 Editable Scoring Engine';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -58,7 +58,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','4-Shot Window','2-Shot Window','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -168,7 +168,7 @@ return[
 {id:'cb-pair',title:'Checkerboard Pair Challenge',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected checkerboard pair before bonus scoring opens.',rationale:'Builds tactical linking and opponent displacement awareness.',coach:'Use the code as tactical intention, not a hoop to jump through.',layers:[],cbCode:'[6-4] + [8-1]'},
 {id:'cb-clean-finish',title:'Checkerboard Clean Finish',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected CB code and win with a clean finish bonus.',rationale:'Connects tactical construction with high-quality conversion.',coach:'The clean winner sits on top of all scoring, but only after the challenge is met.',layers:['CB Code','Clean Winner','4-Shot Window'],cbCode:'[6-3]'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
-{id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Clean Winner'],cbCode:'None'}
+{id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Weak Side','Clean Winner'],cbCode:'None'}
 ];
 }
 
@@ -864,7 +864,7 @@ function MentalOverlaySelector({context='Game'}){
       </button>)}
     </div>
     <div className="activeOverlayPanel">
-      <h3>Active Layer Rules</h3>
+      <h3>Active Overlay Rules</h3>
       {active.length===0?<p>No mental overlays selected.</p>:active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
     </div>
   </section>;
@@ -875,41 +875,24 @@ function MentalOverlaySelector({context='Game'}){
 
 
 
-
-const IDENTIFIER_OPTIONS=[
-  {name:'Eagle',category:'Animal Identifier',rule:'Awareness and information pickup. Player scans ball, opponent, space and target before acting.',coach:'Use when the player needs earlier information pickup and calmer decision making.'},
-  {name:'Golden Retriever',category:'Animal Identifier',rule:'Reset, re-engage and chase the next ball without complaint.',coach:'Use for distraction, frustration or recovery after errors.'},
-  {name:'Cat',category:'Animal Identifier',rule:'Patience, balance and timing. Wait until the useful moment appears.',coach:'Use for rushed players who force attacks too early.'},
-  {name:'Lion',category:'Animal Identifier',rule:'Recognise genuine attacking opportunity and commit with courage.',coach:'Use for hesitant players who need to take initiative.'},
-  {name:'Tiger',category:'Animal Identifier',rule:'Predatory pressure. Identify vulnerability and keep pressure on it.',coach:'Use for sustained attacking pressure.'},
-  {name:'Wolf',category:'Animal Identifier',rule:'Discipline and tactical intelligence. Stay with the plan under pressure.',coach:'Use for tactical discipline and controlled persistence.'},
-  {name:'Elephant',category:'Animal Identifier',rule:'Calm resilience and stable tempo under pressure.',coach:'Use for high-tension or over-aroused players.'},
-  {name:'Dolphin',category:'Animal Identifier',rule:'Adapt, create and solve changing problems.',coach:'Use when creativity and adaptability are the target.'},
-  {name:'Cheetah',category:'Animal Identifier',rule:'See early, move early and accelerate decisively.',coach:'Use for early movement and commitment.'},
-  {name:'Owl',category:'Animal Identifier',rule:'Observe, wait and choose with composure.',coach:'Use for players who need calm reading and better shot selection.'},
-  {name:'Fox',category:'Animal Identifier',rule:'Deception, disguise and clever manipulation of the opponent.',coach:'Use for hold, disguise and tactical manipulation.'}
-];
-
 function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
   const [family,setFamily]=useState('Tactical');
 
-  const physicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
+  const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
   const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
   const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
-  const identifierOptions=IDENTIFIER_OPTIONS;
-  const source = family==='Physical' ? physicalOptions : family==='Tactical' ? tacticalOptions : family==='Mental' ? mentalOptions : identifierOptions;
-  const allOptions=[...physicalOptions,...tacticalOptions,...mentalOptions,...identifierOptions];
-  const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Layer',rule:'Legacy layer selected.',coach:''});
+  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : mentalOptions;
+  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions];
+  const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
 
   return <div className="overlayFamilyEngine">
     <div className="overlayFamilyTabs">
-      <button type="button" className={family==='Physical'?'activeFamilyTab':''} onClick={()=>setFamily('Physical')}>🏃 Physical</button>
+      <button type="button" className={family==='Technical'?'activeFamilyTab':''} onClick={()=>setFamily('Technical')}>🔧 Technical</button>
       <button type="button" className={family==='Tactical'?'activeFamilyTab':''} onClick={()=>setFamily('Tactical')}>♟ Tactical</button>
-      <button type="button" className={family==='Mental'?'activeFamilyTab':''} onClick={()=>setFamily('Mental')}>🧠 Mental</button>
-      <button type="button" className={family==='Identifiers'?'activeFamilyTab':''} onClick={()=>setFamily('Identifiers')}>🐾 Identifiers</button>
+      <button type="button" className={family==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setFamily('Mental Performance')}>🧠 Mental Performance</button>
     </div>
 
-    <p className="overlayExplain">Select {family.toLowerCase()} layers for {context}. Layers shape behaviour without being part of the base game. DB remains separate as a skill leveller.</p>
+    <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Selected overlays continue to feed the Active Overlay Rules section and projection text.</p>
 
     <div className="mentalOverlayChips overlayFamilyChips">
       {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
@@ -918,9 +901,9 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
     </div>
 
     <div className="activeOverlayPanel">
-      <h3>Active Layer Rules</h3>
+      <h3>Active Overlay Rules</h3>
       {active.length===0
-        ? <p>No modifying layers selected.</p>
+        ? <p>No overlays selected.</p>
         : active.map(o=><div className="activeOverlayRule" key={o.name}><strong>{o.name}</strong><p>{o.rule}</p></div>)}
     </div>
   </div>;
@@ -2202,7 +2185,7 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Layers</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
+<div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
@@ -2299,7 +2282,7 @@ const CHECKERBOARD_LEVELS=[
   {level:4,label:'Level 4 — Triple + 4-shot window',challenge:'triple',window:'4-shot window',tZone:false,description:'Triple challenge with 4-shot window. T Challenge is selectable as an overlay.'},
   {level:5,label:'Level 5 — Triple + 2-shot window',challenge:'triple',window:'2-shot window',tZone:false,description:'Triple challenge with 2-shot window. T Challenge is selectable as an overlay.'}
 ];
-const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Front wall finish','Floor finish','Opponent moving forward','Opponent off balance','Opponent off T','T Challenge'];
+const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish','Opponent moving forward','Opponent off balance','Opponent off T','T Challenge'];
 const DELIVERY_MODES=['Open','Blind'];
 
 function buildCheckerboardGame(config){
@@ -2375,6 +2358,7 @@ function CheckerboardEngine({onAddToSession}){
       'Clean winner',
       'Volley finish',
       'Opposite side finish',
+      'Weak-side finish',
       'Front wall finish',
       'Floor finish',
       'Opponent moving forward',
@@ -2415,50 +2399,50 @@ return <div className="checkerboardEngine">
       </div>
     </div>
 
-    {/* MODIFYING LAYERS */}
-    <CollapsibleLayer num="Layers" title="Modifying Layers" subtitle="Optional rules, scoring and constraints — collapsed by default" color="purple">
-      <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-        <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      </CollapsibleLayer>
+    {/* GAME LOGIC */}
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <EditableScoringLogic value={scoringProfile} onChange={setScoringProfile} context="Checkerboard"/>
-      </CollapsibleLayer>
+    {/* SCORING LOGIC */}
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <EditableScoringLogic value={scoringProfile} onChange={setScoringProfile} context="Checkerboard"/>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="3" title="Constraints" subtitle="Physical, tactical, mental and identifier layers" color="blue">
-        <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
-        {config.deliveryMode==='Blind'&&<div className="blindCardPanel" style={{marginTop:'12px'}}>
-          <p>Blind Card delivery uses two hidden decks — challenge and finish.</p>
-          <div className="blindDeckGrid">
-            <div className="blindDeckBox">
-              <h3>Blind Challenge Deck</h3>
-              <div className="buttonRow">
-                <button className="primaryBtn" onClick={generateBlindChallengeCard}>Generate</button>
-                <button className="secondaryBtn" onClick={revealBlindChallengeCard}>Reveal</button>
-                <button className="secondaryBtn" onClick={acknowledgeBlindChallengeCard}>Close</button>
-              </div>
-              <div className={config.blindChallengeFace==='revealed'?'blindCard revealedCard':'blindCard'}>
-                {config.blindChallengeFace==='revealed'&&config.blindChallengeCard
-                  ?<div><span>My Challenge</span><strong>{config.blindChallengeCard}</strong></div>
-                  :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
-              </div>
+    {/* CONSTRAINTS */}
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
+      {config.deliveryMode==='Blind'&&<div className="blindCardPanel" style={{marginTop:'12px'}}>
+        <p>Blind Card delivery uses two hidden decks — challenge and finish.</p>
+        <div className="blindDeckGrid">
+          <div className="blindDeckBox">
+            <h3>Blind Challenge Deck</h3>
+            <div className="buttonRow">
+              <button className="primaryBtn" onClick={generateBlindChallengeCard}>Generate</button>
+              <button className="secondaryBtn" onClick={revealBlindChallengeCard}>Reveal</button>
+              <button className="secondaryBtn" onClick={acknowledgeBlindChallengeCard}>Close</button>
             </div>
-            <div className="blindDeckBox">
-              <h3>Blind Finish Deck</h3>
-              <div className="buttonRow">
-                <button className="primaryBtn" onClick={generateBlindFinishCard}>Generate</button>
-                <button className="secondaryBtn" onClick={revealBlindFinishCard}>Reveal</button>
-                <button className="secondaryBtn" onClick={acknowledgeBlindFinishCard}>Close</button>
-              </div>
-              <div className={config.blindFinishFace==='revealed'?'blindCard revealedCard':'blindCard'}>
-                {config.blindFinishFace==='revealed'&&config.blindFinishCard
-                  ?<div><span>My Finish</span><strong>{config.blindFinishCard}</strong></div>
-                  :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
-              </div>
+            <div className={config.blindChallengeFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+              {config.blindChallengeFace==='revealed'&&config.blindChallengeCard
+                ?<div><span>My Challenge</span><strong>{config.blindChallengeCard}</strong></div>
+                :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
             </div>
           </div>
-        </div>}
-      </CollapsibleLayer>
+          <div className="blindDeckBox">
+            <h3>Blind Finish Deck</h3>
+            <div className="buttonRow">
+              <button className="primaryBtn" onClick={generateBlindFinishCard}>Generate</button>
+              <button className="secondaryBtn" onClick={revealBlindFinishCard}>Reveal</button>
+              <button className="secondaryBtn" onClick={acknowledgeBlindFinishCard}>Close</button>
+            </div>
+            <div className={config.blindFinishFace==='revealed'?'blindCard revealedCard':'blindCard'}>
+              {config.blindFinishFace==='revealed'&&config.blindFinishCard
+                ?<div><span>My Finish</span><strong>{config.blindFinishCard}</strong></div>
+                :<div><span>Hidden Card</span><strong>Tap Reveal</strong></div>}
+            </div>
+          </div>
+        </div>
+      </div>}
     </CollapsibleLayer>
 
     {/* DB HANDICAP */}
@@ -2506,37 +2490,37 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 const DEFAULT_EDITABLE_SCORING=[
   {key:'rallyWin',label:'Rally Win',active:true,value:1},
-  {key:'singleChallenge',label:'Single Challenge',active:true,value:1},
-  {key:'pairChallenge',label:'Pair Challenge',active:true,value:2},
-  {key:'tripleChallenge',label:'Triple Challenge',active:true,value:3},
-  {key:'winAfterChallenge',label:'Win After Challenge',active:true,value:3},
-  {key:'cleanWinner',label:'Clean Winner',active:false,value:2},
+  {key:'completion',label:'Base Completion Bonus',active:true,value:1},
+  {key:'singleChallenge',label:'Single Challenge',active:false,value:1},
+  {key:'pairChallenge',label:'Pair Challenge',active:false,value:2},
+  {key:'tripleChallenge',label:'Triple Challenge',active:false,value:3},
+  {key:'winAfterChallenge',label:'Win After Challenge',active:false,value:3},
+  {key:'cleanWinner',label:'Clean Winner Bonus',active:false,value:2},
   {key:'disrupterPoints',label:'Disrupter Points',active:false,value:2},
   {key:'powerPlayBonus',label:'Power Play Bonus',active:false,value:3}
 ];
 
-function scoringProfileSummary(profile){
+function cloneScoringProfile(profile){
   const list=Array.isArray(profile)?profile:DEFAULT_EDITABLE_SCORING;
-  return list.filter(item=>item.active).map(item=>`${item.label} = ${item.value}`).join(' · ') || 'No scoring layers active';
+  return list.map(item=>({...item,value:Number(item.value||0),active:!!item.active}));
 }
-
+function scoringProfileSummary(profile){
+  const list=cloneScoringProfile(profile);
+  const active=list.filter(item=>item.active);
+  return active.length?active.map(item=>`${item.label} = ${item.value}`).join(' · '):'No scoring layers active';
+}
 function EditableScoringLogic({value,onChange,context='Game'}){
-  const profile=Array.isArray(value)?value:DEFAULT_EDITABLE_SCORING;
-  function updateItem(key,patch){
-    onChange(profile.map(item=>item.key===key?{...item,...patch}:item));
-  }
-  function adjustValue(key,delta){
-    onChange(profile.map(item=>item.key===key?{...item,value:Math.max(0,Number(item.value||0)+delta)}:item));
-  }
+  const profile=cloneScoringProfile(value);
+  function updateItem(key,patch){onChange(profile.map(item=>item.key===key?{...item,...patch}:item));}
+  function adjustValue(key,delta){onChange(profile.map(item=>item.key===key?{...item,value:Math.max(0,Number(item.value||0)+delta)}:item));}
+  function resetStandard(){onChange(cloneScoringProfile(DEFAULT_EDITABLE_SCORING));}
   const activeCount=profile.filter(item=>item.active).length;
   return <div className="editableScoringLogic">
-    <div className="editableScoringHeader">
-      <strong>Editable Scoring Logic</strong>
-      <span>{activeCount} scoring layers active</span>
-    </div>
-    <p className="editableScoringNote">Choose which scoring rules are active, then adjust the points. These values are saved with the game when added to the session.</p>
+    <div className="editableScoringHeader"><strong>Editable Scoring Logic</strong><span>{activeCount} active</span></div>
+    <p className="editableScoringNote">Select the scoring layers you want, then set the value. These values are saved with the game when added to the session.</p>
     <div className="editableScoringRows">
       {profile.map(item=><div className={item.active?'editableScoringRow activeScoringRow':'editableScoringRow'} key={item.key}>
         <button type="button" className={item.active?'scoreToggleOn':'scoreToggleOff'} onClick={()=>updateItem(item.key,{active:!item.active})}>{item.active?'✓':'+'}</button>
@@ -2548,6 +2532,7 @@ function EditableScoringLogic({value,onChange,context='Game'}){
         </div>
       </div>)}
     </div>
+    <div className="editableScoringActions"><button type="button" className="secondaryBtn" onClick={resetStandard}>Reset Standard</button></div>
     <div className="editableScoringSummary"><strong>Session Summary</strong><p>{scoringProfileSummary(profile)}</p></div>
   </div>;
 }
@@ -2638,25 +2623,23 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composedAtl.task}</p></div>
     </div>
 
-    <CollapsibleLayer num="Layers" title="Modifying Layers" subtitle="Optional rules, scoring and constraints — collapsed by default" color="purple">
-      <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-        <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      </CollapsibleLayer>
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <EditableScoringLogic value={atlScoringProfile} onChange={setAtlScoringProfile} context="ATL / BTL"/>
-      </CollapsibleLayer>
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <EditableScoringLogic value={atlScoringProfile} onChange={setAtlScoringProfile} context="ATL / BTL"/>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="3" title="Constraints" subtitle="Physical, tactical, mental and identifier layers" color="blue">
-        <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
-      </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
     <UniversalDBHandicapPanel onAddToSession={addGame}/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
-      <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Layers</button>
+      <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
       <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset</button>
     </div>
     <button className="primaryBtn" onClick={()=>addGame({...composedAtlWithScoring,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
@@ -2677,13 +2660,13 @@ function ClassicConditionedBuilder({onAddToSession}){
   const [classicDbAmount,setClassicDbAmount]=useState('No DB');
 
   const games=[
-    {title:'Return to Sender',problem:'Opponent Awareness',shortRationale:'Discourages repeatedly hitting back to opponent position.',level:'Levels 2–5',task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',rationale:'Develops perception of opponent positioning before target selection.',coach:'Reward recognition of opponent position rather than pure shot quality.',playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',antiGaming:'No bonus if the direction change is accidental or unclear.',suggestedOverlays:['Opponent Off T','Clean Winner']},
-    {title:'Opposite Side Finish',problem:'Opponent Awareness',shortRationale:'Encourages players to finish away from opponent body-line and recovery direction.',level:'Levels 3–5',task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',rationale:'Links finishing choice to opponent orientation rather than a fixed target.',coach:'Use body-line and recovery direction as the reference, not simply left/right court side.',playerFocus:'Read the opponent’s recovery direction before choosing the finish.',scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',antiGaming:'If body-line reference is unclear, no bonus.',suggestedOverlays:['Opponent Off T','Clean Winner']},
+    {title:'Return to Sender',problem:'Opponent Awareness',shortRationale:'Discourages repeatedly hitting back to opponent position.',level:'Levels 2–5',task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',rationale:'Develops perception of opponent positioning before target selection.',coach:'Reward recognition of opponent position rather than pure shot quality.',playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',antiGaming:'No bonus if the direction change is accidental or unclear.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
+    {title:'Opposite Side Finish',problem:'Opponent Awareness',shortRationale:'Encourages players to finish away from opponent body-line and recovery direction.',level:'Levels 3–5',task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',rationale:'Links finishing choice to opponent orientation rather than a fixed target.',coach:'Use body-line and recovery direction as the reference, not simply left/right court side.',playerFocus:'Read the opponent’s recovery direction before choosing the finish.',scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',antiGaming:'If body-line reference is unclear, no bonus.',suggestedOverlays:['Weak Side','Opponent Off T','Clean Winner']},
     {title:'Server Above The Line',problem:'Neutralise vs Attack',shortRationale:'Develops recognition of neutralising versus attacking situations.',level:'Levels 2–5',task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',coach:'Observe whether players attack from neutral positions or only after creating advantage.',playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',scoring:'Win rally = 1 · Correct attack recognition = +3',antiGaming:'Do not reward random attacking from neutral or defensive positions.',suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']},
     {title:'Length Before Attack',problem:'Neutralise vs Attack',shortRationale:'Prevents rushed attacking before pressure has been created.',level:'Levels 2–5',task:'Player must create length pressure before attacking short. Attack bonus opens only after the opponent is delayed, displaced or unable to recover normally.',rationale:'Encourages patient pressure construction rather than premature front-court attacks.',coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',antiGaming:'If a player hits short before any pressure is created, only the rally point is available.',suggestedOverlays:['Quality Length Before Attack','Opponent Off T','4-Shot Window','Clean Winner']},
     {title:'T-Zone Denial',problem:'T-Zone Games',shortRationale:'Rewards displacement before attack.',level:'Levels 2–5',task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',rationale:'Connects tactical pressure with recovery denial.',coach:'Use a clearly marked T-zone. Award only when the opponent is clearly outside it.',playerFocus:'Move opponent away from central recovery before attacking.',scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',antiGaming:'Opponent cannot intentionally stop recovering to manipulate the constraint.',suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']},
     {title:'Central Control Volley Finish',problem:'T-Zone Games',shortRationale:'Encourages earned volley interception from central control.',level:'Levels 3–5',task:'Bonus only applies when the winning shot is a volley played from central control.',rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',coach:'The volley should be earned, not hunted recklessly.',playerFocus:'Use central pressure to create an intercepting opportunity.',scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.',suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner']},
-    {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Volley Finish','Opponent Off T']},
+    {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Weak Side','Volley Finish','Opponent Off T']},
     {title:'Double Bounce Pressure',problem:'Adapted Rules',shortRationale:'Balances mixed standards while preserving live rally information.',level:'Mixed Standard',task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',playerFocus:'Use the extra bounce to organise better decisions, not simply to wait passively.',scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',antiGaming:'Players should not intentionally wait for a second bounce if they could safely play the first bounce unless that is the learning purpose.',suggestedOverlays:['Double Bounce']},
     {title:'Blind Finish Progression',problem:'Blind / Hidden Conditions',shortRationale:'Creates hidden tactical intention while preserving live rally decision-making.',level:'Levels 3–5',task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',rationale:'Creates tactical intention while preserving live decision-making and secrecy.',coach:'The hidden condition should shape the player’s perception, not force a bad shot.',playerFocus:'Hold the hidden intention while still responding to the live rally.',scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.',suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish']}
   ];
@@ -4356,7 +4339,7 @@ function InvasionGamesBuilder({onAddToSession}){
   const [layers,setLayers]=useState([]);
   const [cbCode,setCbCode]=useState('None');
 
-  const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','4-Shot Window','2-Shot Window','Quality Length Before Attack'];
+  const overlayOptions=['Clean Winner','Opponent Off T','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
 
   function toggleLayer(layer){
@@ -4460,7 +4443,7 @@ function CustomGameBuilder({onAddToSession}){
     catch{return[];}
   },[assignment]);
 
-  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
+  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
   // All 8 Checkerboard zones individually selectable + pair combinations
   const cbOptions=['None',
     '[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]',
@@ -4560,35 +4543,35 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </div>
 
-    {/* MODIFYING LAYERS */}
-    <CollapsibleLayer num="Layers" title="Modifying Layers" subtitle="Optional rules, scoring and constraints — collapsed by default" color="purple">
-      <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-        <div className="atlOptionsGrid">
-          <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
-          <label>Crosscourt Allowance<select value={crosscourtLimit} onChange={e=>setCrosscourtLimit(e.target.value)}><option>None</option><option>0 crosscourts</option><option>1 crosscourt per rally</option><option>2 crosscourts per rally</option><option>3 crosscourts per rally</option><option>Unlimited</option></select></label>
-          <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
-        </div>
-        <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      </CollapsibleLayer>
+    {/* GAME LOGIC */}
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="atlOptionsGrid">
+        <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
+        <label>Crosscourt Allowance<select value={crosscourtLimit} onChange={e=>setCrosscourtLimit(e.target.value)}><option>None</option><option>0 crosscourts</option><option>1 crosscourt per rally</option><option>2 crosscourts per rally</option><option>3 crosscourts per rally</option><option>Unlimited</option></select></label>
+        <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
+      </div>
+      <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
-      </CollapsibleLayer>
+    {/* SCORING LOGIC */}
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
+      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game"/>
+    </CollapsibleLayer>
 
-      <CollapsibleLayer num="3" title="Constraints" subtitle="Physical, tactical, mental and identifier layers" color="blue">
-        <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game"/>
-        <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="Auto-filled from your selections above. Edit if needed."/></label>
-        <label style={{marginTop:'8px'}}>Coach's Note<textarea value={coachNote} onChange={e=>setCoachNote(e.target.value)} placeholder="Private notes — what to look for, what to feedback, when to progress"/></label>
-        <label style={{marginTop:'8px'}}>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)}/></label>
-        <div style={{marginTop:'10px'}}>
-          <strong className="mutedText" style={{fontSize:'13px'}}>Random Constraint Generator</strong>
-          <div className="buttonRow" style={{marginTop:'6px'}}>
-            <label style={{minWidth:'120px'}}>Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label>
-            <button className="secondaryBtn" type="button" onClick={generateRandom}>Generate Random</button>
-          </div>
-          {randomResult&&<div className="infoBox" style={{marginTop:'8px'}}><strong>Random Result</strong><p>{randomResult}</p></div>}
+    {/* CONSTRAINTS */}
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="Auto-filled from your selections above. Edit if needed."/></label>
+      <label style={{marginTop:'8px'}}>Coach's Note<textarea value={coachNote} onChange={e=>setCoachNote(e.target.value)} placeholder="Private notes — what to look for, what to feedback, when to progress"/></label>
+      <label style={{marginTop:'8px'}}>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)}/></label>
+      <div style={{marginTop:'10px'}}>
+        <strong className="mutedText" style={{fontSize:'13px'}}>Random Constraint Generator</strong>
+        <div className="buttonRow" style={{marginTop:'6px'}}>
+          <label style={{minWidth:'120px'}}>Mode<select value={randomMode} onChange={e=>setRandomMode(e.target.value)}><option>Open</option><option>Blind</option></select></label>
+          <button className="secondaryBtn" type="button" onClick={generateRandom}>Generate Random</button>
         </div>
-      </CollapsibleLayer>
+        {randomResult&&<div className="infoBox" style={{marginTop:'8px'}}><strong>Random Result</strong><p>{randomResult}</p></div>}
+      </div>
     </CollapsibleLayer>
 
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
@@ -5500,7 +5483,7 @@ function PowerPlayBuilder({onAddToSession}){
 
 const ATB_OVERLAYS=[
   'Clean Winner','Opponent Off T','T Challenge','Blind Finish',
-  'Quality Length Before Attack',
+  'Weak Side','Double Bounce','Quality Length Before Attack',
   'Volley Finish','4 Shot Conversion','2 Shot Conversion'
 ];
 
@@ -6444,7 +6427,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
 
 
-  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','4-Shot Window','2-Shot Window','Quality Length Before Attack'];
+  const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
 
   function toggleLayer(layer){
