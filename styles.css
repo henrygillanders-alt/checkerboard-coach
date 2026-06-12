@@ -1,4 +1,4 @@
-/* v100h63 Modifying Layers Clean-up */
+/* v100h64 Editable Scoring Logic */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7093,3 +7093,25 @@ button.mentalSkillsTile p{
 .pressureExerciseDetailCard p{color:#c4c9d9;font-size:13px;line-height:1.5;margin:6px 0;}
 .pressureMiniChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .pressureMiniChips span{background:#071015;border:1px solid #35567e;color:#dce8ff;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;}
+
+/* v100h64 Editable Scoring Logic UI */
+.editableScoringLogic{background:#100c02;border:1px solid #ffd980;border-radius:14px;padding:14px;margin:8px 0;}
+.editableScoringHeader{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;}
+.editableScoringHeader strong{color:#ffd980;font-size:16px;font-weight:1000;}
+.editableScoringHeader span{background:#78350f;color:#fff;border:1px solid #ffd980;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900;}
+.editableScoringNote{color:#fef3c7;font-size:13px;line-height:1.45;margin:0 0 12px;}
+.editableScoringRows{display:flex;flex-direction:column;gap:8px;}
+.editableScoringRow{display:grid;grid-template-columns:46px 1fr 150px;gap:10px;align-items:center;background:#0b1020;border:1px solid #2a3560;border-radius:12px;padding:10px;}
+.editableScoringRow.activeScoringRow{border-color:#ffd980;background:#1a1000;}
+.scoreToggleOn,.scoreToggleOff{width:38px;height:38px;border-radius:10px;font-weight:1000;cursor:pointer;}
+.scoreToggleOn{background:#166534;border:2px solid #4ade80;color:#fff;}
+.scoreToggleOff{background:#081320;border:1px solid #35567e;color:#cbd5e1;}
+.scoreRuleName strong{display:block;color:#fff;font-size:14px;font-weight:900;}
+.scoreRuleName span{display:block;color:#9fb0c8;font-size:12px;margin-top:3px;}
+.scoreStepper{display:grid;grid-template-columns:38px 1fr 38px;gap:6px;align-items:center;}
+.scoreStepper button{background:#78350f;border:1px solid #ffd980;color:#fff;border-radius:8px;font-weight:1000;height:38px;cursor:pointer;}
+.scoreStepper input{width:100%;height:38px;background:#081320;border:1px solid #ffd980;border-radius:8px;color:#fff;text-align:center;font-size:17px;font-weight:1000;padding:4px;}
+.editableScoringSummary{margin-top:12px;background:#0b1828;border-left:3px solid #ffd980;border-radius:0 10px 10px 0;padding:10px 12px;}
+.editableScoringSummary strong{display:block;color:#ffd980;font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.editableScoringSummary p{color:#fff;font-size:13px;font-weight:800;line-height:1.45;margin:0;}
+@media(max-width:700px){.editableScoringRow{grid-template-columns:40px 1fr;}.scoreStepper{grid-column:1/-1;}.editableScoringHeader{align-items:flex-start;}.editableScoringHeader span{width:100%;text-align:center;}}

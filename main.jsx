@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h63 Modifying Layers Clean-up';
+const APP_VERSION='v100h64 Editable Scoring Logic';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2330,12 +2330,14 @@ function buildCheckerboardGame(config){
 
 function CheckerboardEngine({onAddToSession}){
   const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const [scoringProfile,setScoringProfile]=useState(DEFAULT_EDITABLE_SCORING);
   const [cbDbAssign,setCbDbAssign]=useState('Both Players');
   const [cbDbPlayer,setCbDbPlayer]=useState('');
   const [cbDbAmount,setCbDbAmount]=useState('No DB');
   const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
   const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
   const built=buildCheckerboardGame(config);
+  const builtWithScoring={...built,scoring:scoringProfileSummary(scoringProfile),scoringProfile};
   function update(field,value){setConfig(prev=>({...prev,[field]:value}));}
   function setLevel(value){
     const next=CHECKERBOARD_LEVELS.find(item=>item.level===Number(value));
@@ -2420,7 +2422,7 @@ return <div className="checkerboardEngine">
       </CollapsibleLayer>
 
       <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Checkerboard pair completion = +1. Selected scoring layers add bonus points per qualifying shot.</p></div>
+        <EditableScoringLogic value={scoringProfile} onChange={setScoringProfile} context="Checkerboard"/>
       </CollapsibleLayer>
 
       <CollapsibleLayer num="3" title="Constraints" subtitle="Physical, tactical, mental and identifier layers" color="blue">
@@ -2462,8 +2464,8 @@ return <div className="checkerboardEngine">
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
-    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
+    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{builtWithScoring.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{builtWithScoring.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{builtWithScoring.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{builtWithScoring.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{builtWithScoring.coach}</p></div><div className="chips">{builtWithScoring.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+    <button className="primaryBtn" onClick={()=>onAddToSession({...builtWithScoring,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
   </div>;
 }
 
@@ -2504,10 +2506,57 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+const DEFAULT_EDITABLE_SCORING=[
+  {key:'rallyWin',label:'Rally Win',active:true,value:1},
+  {key:'singleChallenge',label:'Single Challenge',active:true,value:1},
+  {key:'pairChallenge',label:'Pair Challenge',active:true,value:2},
+  {key:'tripleChallenge',label:'Triple Challenge',active:true,value:3},
+  {key:'winAfterChallenge',label:'Win After Challenge',active:true,value:3},
+  {key:'cleanWinner',label:'Clean Winner',active:false,value:2},
+  {key:'disrupterPoints',label:'Disrupter Points',active:false,value:2},
+  {key:'powerPlayBonus',label:'Power Play Bonus',active:false,value:3}
+];
+
+function scoringProfileSummary(profile){
+  const list=Array.isArray(profile)?profile:DEFAULT_EDITABLE_SCORING;
+  return list.filter(item=>item.active).map(item=>`${item.label} = ${item.value}`).join(' · ') || 'No scoring layers active';
+}
+
+function EditableScoringLogic({value,onChange,context='Game'}){
+  const profile=Array.isArray(value)?value:DEFAULT_EDITABLE_SCORING;
+  function updateItem(key,patch){
+    onChange(profile.map(item=>item.key===key?{...item,...patch}:item));
+  }
+  function adjustValue(key,delta){
+    onChange(profile.map(item=>item.key===key?{...item,value:Math.max(0,Number(item.value||0)+delta)}:item));
+  }
+  const activeCount=profile.filter(item=>item.active).length;
+  return <div className="editableScoringLogic">
+    <div className="editableScoringHeader">
+      <strong>Editable Scoring Logic</strong>
+      <span>{activeCount} scoring layers active</span>
+    </div>
+    <p className="editableScoringNote">Choose which scoring rules are active, then adjust the points. These values are saved with the game when added to the session.</p>
+    <div className="editableScoringRows">
+      {profile.map(item=><div className={item.active?'editableScoringRow activeScoringRow':'editableScoringRow'} key={item.key}>
+        <button type="button" className={item.active?'scoreToggleOn':'scoreToggleOff'} onClick={()=>updateItem(item.key,{active:!item.active})}>{item.active?'✓':'+'}</button>
+        <div className="scoreRuleName"><strong>{item.label}</strong><span>{item.active?`Active in ${context}`:'Inactive'}</span></div>
+        <div className="scoreStepper">
+          <button type="button" onClick={()=>adjustValue(item.key,-1)}>-</button>
+          <input type="number" min="0" value={item.value} onChange={e=>updateItem(item.key,{value:Number(e.target.value||0)})}/>
+          <button type="button" onClick={()=>adjustValue(item.key,1)}>+</button>
+        </div>
+      </div>)}
+    </div>
+    <div className="editableScoringSummary"><strong>Session Summary</strong><p>{scoringProfileSummary(profile)}</p></div>
+  </div>;
+}
+
 function ATLBTLDirectBuilder({onAddToSession}){
   const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
   const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
   const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
+  const [atlScoringProfile,setAtlScoringProfile]=useState(DEFAULT_EDITABLE_SCORING);
   const [atlHistory,setAtlHistory]=useState([]);
   const [atlDbAssign,setAtlDbAssign]=useState('Both Players');
   const [atlDbPlayer,setAtlDbPlayer]=useState('');
@@ -2523,6 +2572,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
   }
   const autoCbZone=sideToCbZone(side);
   const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
+  const composedAtlWithScoring={...composedAtl,scoring:scoringProfileSummary(atlScoringProfile),scoringProfile:atlScoringProfile};
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers}));
   },[atl,side,useCustomCb,customCbZone,manualLayers]);
@@ -2594,7 +2644,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
       </CollapsibleLayer>
 
       <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Selected scoring layers add bonus points.</p></div>
+        <EditableScoringLogic value={atlScoringProfile} onChange={setAtlScoringProfile} context="ATL / BTL"/>
       </CollapsibleLayer>
 
       <CollapsibleLayer num="3" title="Constraints" subtitle="Physical, tactical, mental and identifier layers" color="blue">
@@ -2609,7 +2659,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Layers</button>
       <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset</button>
     </div>
-    <button className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
+    <button className="primaryBtn" onClick={()=>addGame({...composedAtlWithScoring,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
   </div>;
 }
 
