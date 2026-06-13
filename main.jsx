@@ -2395,7 +2395,7 @@ function buildCheckerboardGame(config){
 }
 
 function CheckerboardEngine({onAddToSession}){
-  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[],finishConfig:emptyFinishConfig()});
   const [scoringProfile,setScoringProfile]=useState(DEFAULT_EDITABLE_SCORING);
   const [cbDbAssign,setCbDbAssign]=useState('Both Players');
   const [cbDbPlayer,setCbDbPlayer]=useState('');
@@ -2403,7 +2403,16 @@ function CheckerboardEngine({onAddToSession}){
   const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
   const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
   const built=buildCheckerboardGame(config);
-  const builtWithScoring={...built,scoring:scoringProfileSummary(scoringProfile),scoringProfile};
+  const cbFinishReq=finishRequirementSummary(config.finishConfig);
+  const cbFinishBonus=finishBonusSummary(config.finishConfig);
+  const builtWithScoring={
+    ...built,
+    task:[built.task,cbFinishReq].filter(Boolean).join(' '),
+    scoring:[scoringProfileSummary(scoringProfile),cbFinishBonus?`Finish bonuses: ${cbFinishBonus}`:''].filter(Boolean).join(' · '),
+    scoringProfile,
+    finishConfig:normaliseFinishConfig(config.finishConfig),
+    layers:[...new Set([...(built.layers||[]),...finishLayers(config.finishConfig)])]
+  };
   function update(field,value){setConfig(prev=>({...prev,[field]:value}));}
   function setLevel(value){
     const next=CHECKERBOARD_LEVELS.find(item=>item.level===Number(value));
@@ -2485,6 +2494,7 @@ return <div className="checkerboardEngine">
     {/* GAME LOGIC */}
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <FinishRequirementBuilder value={config.finishConfig} onChange={cfg=>update('finishConfig',cfg)}/>
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}
@@ -2774,6 +2784,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
   const [atlDbAssign,setAtlDbAssign]=useState('Both Players');
   const [atlDbPlayer,setAtlDbPlayer]=useState('');
   const [atlDbAmount,setAtlDbAmount]=useState('No DB');
+  const [atlFinishCfg,setAtlFinishCfg]=useState(()=>emptyFinishConfig());
 
   const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
   function sideToCbZone(value){
@@ -2785,7 +2796,16 @@ function ATLBTLDirectBuilder({onAddToSession}){
   }
   const autoCbZone=sideToCbZone(side);
   const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
-  const composedAtlWithScoring={...composedAtl,scoring:scoringProfileSummary(atlScoringProfile),scoringProfile:atlScoringProfile};
+  const atlFinishReq=finishRequirementSummary(atlFinishCfg);
+  const atlFinishBonus=finishBonusSummary(atlFinishCfg);
+  const composedAtlWithScoring={
+    ...composedAtl,
+    task:[composedAtl.task,atlFinishReq].filter(Boolean).join(' '),
+    scoring:[scoringProfileSummary(atlScoringProfile),atlFinishBonus?`Finish bonuses: ${atlFinishBonus}`:''].filter(Boolean).join(' · '),
+    scoringProfile:atlScoringProfile,
+    finishConfig:normaliseFinishConfig(atlFinishCfg),
+    layers:[...new Set([...(composedAtl.layers||[]),...finishLayers(atlFinishCfg)])]
+  };
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers}));
   },[atl,side,useCustomCb,customCbZone,manualLayers]);
@@ -2853,6 +2873,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <FinishRequirementBuilder value={atlFinishCfg} onChange={setAtlFinishCfg}/>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
@@ -4664,6 +4685,7 @@ function CustomGameBuilder({onAddToSession}){
   const [layers,setLayers]=useState([]);
   const [randomMode,setRandomMode]=useState('Open');
   const [randomResult,setRandomResult]=useState('');
+  const [finishCfg,setFinishCfg]=useState(()=>emptyFinishConfig());
 
   // Pull current session attendance — players marked present
   const presentPlayers=useMemo(()=>{
@@ -4714,15 +4736,21 @@ function CustomGameBuilder({onAddToSession}){
   const activeCondition=structured.length?assignedTo+': '+structured.join(' · '):assignedTo+': No condition set';
 
   function addGame(){
+    const finishReq=finishRequirementSummary(finishCfg);
+    const finishBonus=finishBonusSummary(finishCfg);
     onAddToSession({
       id:Date.now()+Math.random(),title,duration:8,format:'Custom',category:'Custom',family:'Custom Conditioned Game',
-      level:'Coach Designed',task:activeCondition,
+      level:'Coach Designed',task:[activeCondition,finishReq].filter(Boolean).join(' '),
       rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific constraints.',
       coach:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
       coachFocus:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
       coachNote,
       baseGame,namedPlayers,assignment,
-      player:playerFocus,playerFocus,scoring,layers,cbCode,crosscourtLimit,doubleBounce
+      player:playerFocus,playerFocus,
+      scoring:[scoring,finishBonus?`Finish bonuses: ${finishBonus}`:''].filter(Boolean).join(' · '),
+      finishConfig:normaliseFinishConfig(finishCfg),
+      layers:[...new Set([...layers,...finishLayers(finishCfg)])],
+      cbCode,crosscourtLimit,doubleBounce
     });
   }
 
@@ -4779,6 +4807,7 @@ function CustomGameBuilder({onAddToSession}){
         <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
       </div>
       <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <FinishRequirementBuilder value={finishCfg} onChange={setFinishCfg}/>
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}
