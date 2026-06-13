@@ -7334,3 +7334,10 @@ button.mentalSkillsTile p{
   .finishModeToggle{flex-direction:column}
 }
 
+/* v100h66b — New Game Card layout polish */
+.universalGameEditor{border:1px solid #486b9a;box-shadow:0 0 0 1px rgba(31,93,208,.15)}
+.universalGameEditor h2{margin:6px 0 2px}
+.editorTopRow{display:grid;grid-template-columns:2fr 1.2fr 0.8fr;gap:12px}
+.editorTopRow label{margin:0}
+@media(max-width:760px){.editorTopRow{grid-template-columns:1fr}}
+.editorSectionHead{padding-top:6px;border-top:1px solid rgba(255,255,255,.08)}

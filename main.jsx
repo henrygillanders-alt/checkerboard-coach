@@ -6281,9 +6281,11 @@ function UniversalGameEditor({game,onSave,onCancel}){
     <h2>Capture A Game Card</h2>
     <p className="engineIntro">Capture a coaching idea courtside. It saves into the Games Library, persists, and survives reload.</p>
 
-    <label>Game Name<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Crosscourt Drop Pressure"/></label>
-    <label>Category<select value={category} onChange={e=>setCategory(e.target.value)}>{categoryOptions.map(c=><option key={c}>{c}</option>)}</select></label>
-    <label>Duration (minutes)<input type="number" min="1" value={duration} onChange={e=>setDuration(Number(e.target.value||0))}/></label>
+    <div className="editorTopRow">
+      <label>Game Name<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Crosscourt Drop Pressure"/></label>
+      <label>Category<select value={category} onChange={e=>setCategory(e.target.value)}>{categoryOptions.map(c=><option key={c}>{c}</option>)}</select></label>
+      <label>Duration (minutes)<input type="number" min="1" value={duration} onChange={e=>setDuration(Number(e.target.value||0))}/></label>
+    </div>
     <label>Task<textarea value={task} onChange={e=>setTask(e.target.value)} placeholder="What players do — the rules and the representative task."/></label>
     <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} placeholder="How points are awarded."/></label>
     <label>Rationale<textarea value={rationale} onChange={e=>setRationale(e.target.value)} placeholder="Why this task — the affordances and behaviours it develops."/></label>
@@ -6424,6 +6426,9 @@ function Games({setSession,setScreen}){
       </div>
     </div>}
 
+    {editingCard
+      ? <UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>
+      : <>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
         <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>selectClass(gameClass.id)}>
@@ -6436,8 +6441,6 @@ function Games({setSession,setScreen}){
 
     {logicCard&&!['checkerboard','atl','atb','powerplay','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
-    {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
-
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
@@ -6449,8 +6452,6 @@ function Games({setSession,setScreen}){
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
-
-    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
     {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
@@ -6479,6 +6480,7 @@ function Games({setSession,setScreen}){
         </div>)}
       </div>
     </div>}
+      </>}
   </div>;
 }
 
