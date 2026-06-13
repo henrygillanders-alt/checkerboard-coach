@@ -7250,3 +7250,87 @@ button.mentalSkillsTile p{
   .scoreStepper input{flex:1;}
   .editableScoringHeader{align-items:flex-start;flex-direction:column;}
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   v100h66 — Session Flow & Finish Logic Build
+   Palette: panel #101b2a / border #35567e / gold #ffd980 / blue #1f5dd0
+───────────────────────────────────────────────────────────────────────── */
+
+/* Part 1 — Added To Session confirmation */
+.addedConfirm{
+  background:linear-gradient(135deg,#0a2e1a,#07111f);
+  border:1px solid #4ade80;border-radius:18px;padding:18px;margin-bottom:18px;
+}
+.addedConfirmTick{color:#86efac;font-size:22px;font-weight:900;margin-bottom:4px}
+.addedConfirm p{color:#cfe9d7;margin:0 0 12px}
+
+/* Part 1 — Session management */
+.sessionManageBar{
+  display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;
+  background:#101b2a;border:1px solid #35567e;border-radius:16px;padding:14px;margin-bottom:14px;
+}
+.sessionNameField{flex:1 1 240px;display:flex;flex-direction:column;gap:6px;color:#9fb0c8;font-weight:800;font-size:13px}
+.sessionNameField input{background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:15px}
+.sessionTopActions{margin-bottom:18px}
+.sessionItemCard{background:#101b2a;border:1px solid #35567e;border-radius:18px;padding:16px;margin-bottom:14px}
+.sessionItemTop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.sessionItemNum{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:999px;background:#1f5dd0;color:white;
+  font-weight:900;font-size:13px;margin-right:10px;
+}
+.sessionItemTop strong{font-size:17px}
+.sessionItemMeta{display:block;color:#9fb0c8;font-weight:700;font-size:13px;margin-top:4px}
+.sessionItemMove{display:flex;gap:6px;flex-shrink:0}
+.sessionItemMove button{width:42px;height:38px;padding:0;font-size:15px}
+.sessionItemMove button:disabled{opacity:.35}
+.sessionItemActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.savedSessionList{display:grid;gap:12px}
+.savedSessionRow{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  background:#091625;border:1px solid #2f4d72;border-radius:14px;padding:14px;
+}
+.savedSessionRow strong{font-size:16px}
+
+/* Part 2 — Universal Game Card editor */
+.universalGameEditor{display:grid;gap:12px}
+.universalGameEditor label{display:flex;flex-direction:column;gap:6px;color:#9fb0c8;font-weight:800;font-size:13px}
+.universalGameEditor input,.universalGameEditor select,.universalGameEditor textarea{
+  background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;font-size:15px;
+}
+.universalGameEditor textarea{min-height:70px;resize:vertical}
+.editorSectionHead{color:#ffd980;font-weight:900;font-size:14px;letter-spacing:.3px;text-transform:uppercase;margin-top:8px}
+
+/* Parts 4–7 — Finish requirement builder */
+.finishReqBuilder{background:#091625;border:1px solid #2f4d72;border-radius:14px;padding:14px;margin-top:12px}
+.finishReqHead{display:flex;flex-direction:column;margin-bottom:10px}
+.finishReqHead strong{color:#ffd980;font-size:15px}
+.finishReqHead span{color:#9fb0c8;font-size:12px;margin-top:2px}
+.finishModeToggle{display:flex;gap:10px;margin-bottom:8px}
+.finishModeBtn{flex:1;background:#081320;border:1px solid #35567e;color:white;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}
+.finishModeActive{background:#1f5dd0;border-color:#8ab6ff}
+.finishModeHint{color:#9fb0c8;font-size:13px;margin:0 0 12px}
+.finishReqGrid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.finishReqBtn{background:#12253d;border:1px solid #486b9a;color:white;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}
+.finishReqOn{background:#166534;border-color:#4ade80}
+.finishDeckPanel{margin-top:14px;background:#07111f;border:1px solid #5e83be;border-radius:16px;padding:14px}
+.finishDeckHead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.finishDeckHead strong{color:#ffd980}
+.finishDeckHead span{color:#9fb0c8;font-size:12px;font-weight:700}
+.finishBonusSection{margin-top:16px}
+.finishBonusRows{display:grid;gap:8px;margin-top:8px}
+.finishBonusRow{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+  background:#081320;border:1px solid #35567e;border-radius:12px;padding:8px 12px;
+}
+.finishBonusOn{border-color:#ffd980}
+.finishBonusName{font-weight:800}
+.finishBonusOn .finishBonusName{color:#ffd980}
+.finishSummaryBox{margin-top:14px;background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:12px;color:#dce8ff}
+.finishSummaryBox p{margin:4px 0}
+.finishSummaryBox strong{color:#ffd980}
+@media(max-width:600px){
+  .finishBonusRow{grid-template-columns:auto 1fr auto}
+  .finishModeToggle{flex-direction:column}
+}
+
