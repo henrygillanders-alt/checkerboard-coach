@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h66 Session Flow & Finish Logic';
+const APP_VERSION='v100h62 Pressure Consolidation & Recovery Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -41,7 +41,6 @@ const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
 const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
-const SAVED_SESSIONS_KEY='checkerboard_saved_sessions_v100h66';
 
 const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
@@ -732,6 +731,8 @@ function DoubleBounceTool({setScreen}){
   return <div className="page doubleBounceToolPage">
     <div className="pageTop">
       <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
+    <MentalOverlaySelector context="Double Bounce"/>
+
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
     <section className="doubleBounceHero">
@@ -2202,124 +2203,40 @@ return <div>
 </div>;
 }
 
-function Sessions({session,setSession,setScreen}){
-  const [sessionHistory,setSessionHistory]=useState([]);
-  const [sessionName,setSessionName]=useState(()=>{try{return localStorage.getItem('checkerboard_current_session_name')||'';}catch{return '';}});
-  const [savedSessions,setSavedSessions]=useState(()=>{try{return JSON.parse(localStorage.getItem(SAVED_SESSIONS_KEY))||[];}catch{return [];}});
-  const [editingIndex,setEditingIndex]=useState(null);
-  const [message,setMessage]=useState('');
+function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
+function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
+function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
+function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
+function startRotationProjection(index){
+  startCoachProjectionSession(session,index);
+}
+function stopRotationProjection(){
+  stopCoachProjectionSession();
+}
 
-  useEffect(()=>{try{localStorage.setItem('checkerboard_current_session_name',sessionName);}catch{}},[sessionName]);
-  useEffect(()=>{try{localStorage.setItem(SAVED_SESSIONS_KEY,JSON.stringify(savedSessions));}catch{}},[savedSessions]);
-
-  function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}
-  function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
-  const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
-
-  function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));if(editingIndex===index)setEditingIndex(null);}
-  function move(index,dir){
-    const target=index+dir;
-    if(target<0||target>=session.length)return;
-    saveSessionSnapshot();
-    const updated=clone(session);
-    const [item]=updated.splice(index,1);
-    updated.splice(target,0,item);
-    setSession(updated);
-  }
-  function startEdit(index){setEditingIndex(index);window.scrollTo({top:0,behavior:'smooth'});}
-  function saveEdit(card){
-    if(editingIndex===null)return;
-    saveSessionSnapshot();
-    const updated=clone(session);
-    updated[editingIndex]={...updated[editingIndex],...card};
-    setSession(updated);
-    setEditingIndex(null);
-    setMessage('Game updated.');
-  }
-  function startRotationProjection(index){startCoachProjectionSession(session,index);}
-  function stopRotationProjection(){stopCoachProjectionSession();}
-
-  function saveNamedSession(){
-    const name=(sessionName||'').trim();
-    if(!name){setMessage('Give the session a name before saving.');return;}
-    if(!session.length){setMessage('Add at least one game before saving the session.');return;}
-    const record={id:Date.now()+Math.random(),name,savedAt:new Date().toISOString(),games:clone(session)};
-    setSavedSessions(prev=>{
-      const exists=prev.findIndex(s=>s.name.toLowerCase()===name.toLowerCase());
-      if(exists>=0){const next=[...prev];next[exists]=record;return next;}
-      return [...prev,record];
-    });
-    setMessage(`Session "${name}" saved.`);
-  }
-  function loadNamedSession(record){
-    saveSessionSnapshot();
-    setSession(clone(record.games||[]));
-    setSessionName(record.name||'');
-    setMessage(`Session "${record.name}" loaded.`);
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  function deleteNamedSession(id){setSavedSessions(prev=>prev.filter(s=>s.id!==id));}
-
-  return <div className="page">
-    <div className="pageTop">
-      <div><h1>Session Builder</h1><p className="mutedText">Manage and order the games in this session. Add games from the Games Library.</p></div>
-      <button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button>
-    </div>
-
-    {editingIndex!==null&&<UniversalGameEditor key={`session-edit-${editingIndex}`} game={session[editingIndex]} onSave={saveEdit} onCancel={()=>setEditingIndex(null)}/>}
-
-    <div className="sessionManageBar">
-      <label className="sessionNameField">Session Name<input value={sessionName} onChange={e=>setSessionName(e.target.value)} placeholder="e.g. Tuesday Squad — Pressure Block"/></label>
-      <div className="totalBox">Total: {total} mins · {session.length} game{session.length===1?'':'s'}</div>
-    </div>
-    <div className="buttonRow sessionTopActions">
-      <button className="primaryBtn" onClick={saveNamedSession}>Save Session</button>
-      <button className="secondaryBtn" onClick={()=>setScreen('projection')}>Projection</button>
-      <button className="secondaryBtn" onClick={()=>setScreen('live')}>Live Session</button>
-      <button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button>
-      <button className="secondaryBtn dangerBtn" onClick={()=>{saveSessionSnapshot();setSession([]);}}>Clear Session</button>
-    </div>
-
-    {message&&<div className="statusBox">{message}</div>}
-
-    <h2>Games In Session</h2>
-    {session.length===0&&<div className="placeholder">No games yet. Tap Open Games Library, build a game, then Add To Session.</div>}
-    {session.map((game,index)=>{
-      const finishReq=finishRequirementSummary(game.finishConfig);
-      const finishBonus=finishBonusSummary(game.finishConfig);
-      return <div className="sessionItemCard" key={game.id||index}>
-        <div className="sessionItemTop">
-          <div><span className="sessionItemNum">{index+1}</span><strong>{game.title}</strong><span className="sessionItemMeta">{game.duration} min · {game.format||'King of Court'}{game.category?` · ${game.category}`:''}</span></div>
-          <div className="sessionItemMove">
-            <button className="secondaryBtn" onClick={()=>move(index,-1)} disabled={index===0} aria-label="Move up">▲</button>
-            <button className="secondaryBtn" onClick={()=>move(index,1)} disabled={index===session.length-1} aria-label="Move down">▼</button>
-          </div>
-        </div>
-        {game.task&&<div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>}
-        {(game.scoring||finishBonus)&&<div className="infoBox"><strong>Scoring</strong><p>{game.scoring||'Base scoring applies.'}{finishBonus&&!(game.scoring||'').includes(finishBonus)?` · Finish bonuses: ${finishBonus}`:''}</p></div>}
-        {finishReq&&<div className="infoBox"><strong>Finish</strong><p>{finishReq}</p></div>}
-        {safeLayersForSession(game).length>0&&<div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>}
-        <div className="sessionItemActions">
-          <button className="secondaryBtn" onClick={()=>startEdit(index)}>Edit</button>
-          <button className="secondaryBtn dangerBtn" onClick={()=>remove(index)}>Delete</button>
-          <button className="secondaryBtn" onClick={()=>startRotationProjection(index)}>Project This</button>
-          <button className="secondaryBtn" onClick={stopRotationProjection}>Stop Projector</button>
-        </div>
-      </div>;
-    })}
-
-    <h2>Saved Sessions</h2>
-    {savedSessions.length===0&&<div className="placeholder">No saved sessions yet. Name the session above and tap Save Session.</div>}
-    {savedSessions.length>0&&<div className="savedSessionList">
-      {savedSessions.map(record=><div className="savedSessionRow" key={record.id}>
-        <div><strong>{record.name}</strong><span className="sessionItemMeta">{(record.games||[]).length} game{(record.games||[]).length===1?'':'s'} · {(record.games||[]).reduce((s,g)=>s+Number(g.duration||0),0)} mins</span></div>
-        <div className="buttonRow">
-          <button className="primaryBtn" onClick={()=>loadNamedSession(record)}>Load Session</button>
-          <button className="secondaryBtn dangerBtn" onClick={()=>deleteNamedSession(record.id)}>Delete</button>
-        </div>
-      </div>)}
-    </div>}
-  </div>;
+function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
+function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+return <div className="page">
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
+<GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
+<h2>Session Rotations</h2>
+{session.length===0&&<div className="placeholder">No rotations added yet. Choose a game above and tap Add To Session.</div>}
+{session.map((game,index)=><div className="rotationCard" key={game.id||index}>
+<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
+<div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
+<div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
+<div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
+<div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
+<div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+<div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
+<div className="actionRow">
+<button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
+<button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
+<button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
+</div>
+</div>)}
+</div>;
 }
 
 
@@ -2395,24 +2312,13 @@ function buildCheckerboardGame(config){
 }
 
 function CheckerboardEngine({onAddToSession}){
-  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[],finishConfig:emptyFinishConfig()});
-  const [scoringProfile,setScoringProfile]=useState(DEFAULT_EDITABLE_SCORING);
+  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
   const [cbDbAssign,setCbDbAssign]=useState('Both Players');
   const [cbDbPlayer,setCbDbPlayer]=useState('');
   const [cbDbAmount,setCbDbAmount]=useState('No DB');
   const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
   const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
   const built=buildCheckerboardGame(config);
-  const cbFinishReq=finishRequirementSummary(config.finishConfig);
-  const cbFinishBonus=finishBonusSummary(config.finishConfig);
-  const builtWithScoring={
-    ...built,
-    task:[built.task,cbFinishReq].filter(Boolean).join(' '),
-    scoring:[scoringProfileSummary(scoringProfile),cbFinishBonus?`Finish bonuses: ${cbFinishBonus}`:''].filter(Boolean).join(' · '),
-    scoringProfile,
-    finishConfig:normaliseFinishConfig(config.finishConfig),
-    layers:[...new Set([...(built.layers||[]),...finishLayers(config.finishConfig)])]
-  };
   function update(field,value){setConfig(prev=>({...prev,[field]:value}));}
   function setLevel(value){
     const next=CHECKERBOARD_LEVELS.find(item=>item.level===Number(value));
@@ -2494,12 +2400,11 @@ return <div className="checkerboardEngine">
     {/* GAME LOGIC */}
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      <FinishRequirementBuilder value={config.finishConfig} onChange={cfg=>update('finishConfig',cfg)}/>
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <EditableScoringLogic value={scoringProfile} onChange={setScoringProfile} context="Checkerboard"/>
+      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Checkerboard pair completion = +1. Overlays in Constraints add bonus points per qualifying shot.</p></div>
     </CollapsibleLayer>
 
     {/* CONSTRAINTS */}
@@ -2541,8 +2446,8 @@ return <div className="checkerboardEngine">
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
-    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{builtWithScoring.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{builtWithScoring.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{builtWithScoring.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{builtWithScoring.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{builtWithScoring.coach}</p></div><div className="chips">{builtWithScoring.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    <button className="primaryBtn" onClick={()=>onAddToSession({...builtWithScoring,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
+    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+    <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
   </div>;
 }
 
@@ -2583,208 +2488,14 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-
-const DEFAULT_EDITABLE_SCORING=[
-  {key:'rallyWin',label:'Rally Win',active:true,value:1},
-  {key:'completion',label:'Base Completion Bonus',active:true,value:1},
-  {key:'singleChallenge',label:'Single Challenge',active:false,value:1},
-  {key:'pairChallenge',label:'Pair Challenge',active:false,value:2},
-  {key:'tripleChallenge',label:'Triple Challenge',active:false,value:3},
-  {key:'winAfterChallenge',label:'Win After Challenge',active:false,value:3},
-  {key:'cleanWinner',label:'Clean Winner Bonus',active:false,value:2},
-  {key:'disrupterPoints',label:'Disrupter Points',active:false,value:2},
-  {key:'powerPlayBonus',label:'Power Play Bonus',active:false,value:3}
-];
-
-function cloneScoringProfile(profile){
-  const list=Array.isArray(profile)?profile:DEFAULT_EDITABLE_SCORING;
-  return list.map(item=>({...item,value:Number(item.value||0),active:!!item.active}));
-}
-function scoringProfileSummary(profile){
-  const list=cloneScoringProfile(profile);
-  const active=list.filter(item=>item.active);
-  return active.length?active.map(item=>`${item.label} = ${item.value}`).join(' · '):'No scoring layers active';
-}
-function EditableScoringLogic({value,onChange,context='Game'}){
-  const profile=cloneScoringProfile(value);
-  function updateItem(key,patch){onChange(profile.map(item=>item.key===key?{...item,...patch}:item));}
-  function adjustValue(key,delta){onChange(profile.map(item=>item.key===key?{...item,value:Math.max(0,Number(item.value||0)+delta)}:item));}
-  function resetStandard(){onChange(cloneScoringProfile(DEFAULT_EDITABLE_SCORING));}
-  const activeCount=profile.filter(item=>item.active).length;
-  return <div className="editableScoringLogic">
-    <div className="editableScoringHeader"><strong>Editable Scoring Logic</strong><span>{activeCount} active</span></div>
-    <p className="editableScoringNote">Select the scoring layers you want, then set the value. These values are saved with the game when added to the session.</p>
-    <div className="editableScoringRows">
-      {profile.map(item=><div className={item.active?'editableScoringRow activeScoringRow':'editableScoringRow'} key={item.key}>
-        <button type="button" className={item.active?'scoreToggleOn':'scoreToggleOff'} onClick={()=>updateItem(item.key,{active:!item.active})}>{item.active?'✓':'+'}</button>
-        <div className="scoreRuleName"><strong>{item.label}</strong><span>{item.active?`Active in ${context}`:'Inactive'}</span></div>
-        <div className="scoreStepper">
-          <button type="button" onClick={()=>adjustValue(item.key,-1)}>-</button>
-          <input type="number" min="0" value={item.value} onChange={e=>updateItem(item.key,{value:Number(e.target.value||0)})}/>
-          <button type="button" onClick={()=>adjustValue(item.key,1)}>+</button>
-        </div>
-      </div>)}
-    </div>
-    <div className="editableScoringActions"><button type="button" className="secondaryBtn" onClick={resetStandard}>Reset Standard</button></div>
-    <div className="editableScoringSummary"><strong>Session Summary</strong><p>{scoringProfileSummary(profile)}</p></div>
-  </div>;
-}
-
-// ─── FINISH SHOT SYSTEM (Parts 4–7) ──────────────────────────────────────────
-const FINISH_TYPES=[
-  'Clean Winner','Volley Finish','Volley Boast Finish','Straight Drop Finish',
-  'Crosscourt Drop Finish','Penetrating Drive Finish','Crosscourt Finish',
-  'Lob Finish','Kill Finish','Boast Finish'
-];
-const FINISH_MODES=['Open','Blind'];
-// Default editable bonus values. Switched off until the coach activates them.
-const DEFAULT_FINISH_BONUSES={
-  'Clean Winner':{value:3,active:false},
-  'Volley Finish':{value:2,active:false},
-  'Volley Boast Finish':{value:3,active:false},
-  'Straight Drop Finish':{value:1,active:false},
-  'Crosscourt Drop Finish':{value:2,active:false},
-  'Penetrating Drive Finish':{value:2,active:false},
-  'Crosscourt Finish':{value:2,active:false},
-  'Lob Finish':{value:1,active:false},
-  'Kill Finish':{value:2,active:false},
-  'Boast Finish':{value:1,active:false}
-};
-function emptyFinishConfig(){
-  return {requirements:[],mode:'Open',bonuses:clone(DEFAULT_FINISH_BONUSES)};
-}
-function normaliseFinishConfig(cfg){
-  cfg=cfg||{};
-  return {
-    requirements:Array.isArray(cfg.requirements)?cfg.requirements.filter(r=>FINISH_TYPES.includes(r)):[],
-    mode:FINISH_MODES.includes(cfg.mode)?cfg.mode:'Open',
-    bonuses:{...clone(DEFAULT_FINISH_BONUSES),...(cfg.bonuses&&typeof cfg.bonuses==='object'?cfg.bonuses:{})}
-  };
-}
-function finishHasContent(cfg){
-  cfg=normaliseFinishConfig(cfg);
-  return cfg.requirements.length>0 || cfg.mode==='Blind' || Object.values(cfg.bonuses).some(b=>b&&b.active);
-}
-function finishRequirementSummary(cfg){
-  cfg=normaliseFinishConfig(cfg);
-  if(!finishHasContent(cfg)) return '';
-  const reqText=cfg.mode==='Blind'
-    ? 'Blind finish — requirement hidden, drawn from the finish deck. Opponent does not know the finish.'
-    : (cfg.requirements.length?`Finish requirement: ${cfg.requirements.join(' · ')}. Both players know the finish.`:'Open finish — no specific finish set.');
-  return reqText;
-}
-function finishBonusSummary(cfg){
-  cfg=normaliseFinishConfig(cfg);
-  const active=FINISH_TYPES.filter(t=>cfg.bonuses[t]&&cfg.bonuses[t].active);
-  return active.length?active.map(t=>`${t} = +${cfg.bonuses[t].value}`).join(' · '):'';
-}
-function finishLayers(cfg){
-  cfg=normaliseFinishConfig(cfg);
-  const layers=[];
-  if(cfg.mode==='Blind') layers.push('Blind Finish');
-  cfg.requirements.forEach(r=>layers.push(r));
-  return layers;
-}
-
-// Parts 4–7: selectable finish requirements, Open/Blind mode, blind deck, editable bonuses.
-function FinishRequirementBuilder({value,onChange}){
-  const cfg=normaliseFinishConfig(value);
-  const [deck,setDeck]=useState(()=>[...FINISH_TYPES]);
-  const [drawn,setDrawn]=useState(null);
-  const [face,setFace]=useState('closed');
-
-  function toggleRequirement(t){
-    const next=cfg.requirements.includes(t)?cfg.requirements.filter(x=>x!==t):[...cfg.requirements,t];
-    onChange({...cfg,requirements:next});
-  }
-  function setMode(m){onChange({...cfg,mode:m});}
-  function toggleBonus(t){onChange({...cfg,bonuses:{...cfg.bonuses,[t]:{...cfg.bonuses[t],active:!cfg.bonuses[t].active}}});}
-  function setBonusValue(t,v){onChange({...cfg,bonuses:{...cfg.bonuses,[t]:{...cfg.bonuses[t],value:Math.max(0,Number(v||0))}}});}
-  function adjustBonus(t,delta){setBonusValue(t,Number(cfg.bonuses[t].value||0)+delta);}
-
-  // Blind deck: draw without replacement until exhausted, then refill on reset.
-  function drawCard(){
-    let remaining=deck.length?deck:[...FINISH_TYPES];
-    const idx=Math.floor(Math.random()*remaining.length);
-    const card=remaining[idx];
-    setDrawn(card);
-    setFace('closed');
-    setDeck(remaining.filter((_,i)=>i!==idx));
-  }
-  function revealCard(){ if(!drawn) drawCard(); setFace('revealed'); }
-  function resetDeck(){ setDeck([...FINISH_TYPES]); setDrawn(null); setFace('closed'); }
-
-  const reqSummary=finishRequirementSummary(cfg);
-  const bonusSummary=finishBonusSummary(cfg);
-
-  return <div className="finishReqBuilder">
-    <div className="finishReqHead"><strong>Finish Requirement</strong><span>Define the shot that must finish the rally</span></div>
-
-    {/* Part 5: Open / Blind mode */}
-    <div className="finishModeToggle">
-      {FINISH_MODES.map(m=><button type="button" key={m} className={cfg.mode===m?'finishModeBtn finishModeActive':'finishModeBtn'} onClick={()=>setMode(m)}>{m} Finish</button>)}
-    </div>
-    <p className="finishModeHint">{cfg.mode==='Blind'
-      ? 'Blind: the finish requirement is hidden and drawn from the deck below. The opponent never knows the finish — poker-style uncertainty.'
-      : 'Open: both players know the finish requirement before the rally.'}</p>
-
-    {/* Part 4: Finish requirement multi-select */}
-    <div className="finishReqGrid">
-      {FINISH_TYPES.map(t=><button type="button" key={t}
-        className={cfg.requirements.includes(t)?'finishReqBtn finishReqOn':'finishReqBtn'}
-        onClick={()=>toggleRequirement(t)}>{cfg.requirements.includes(t)?'✓ ':'+ '}{t}</button>)}
-    </div>
-
-    {/* Part 6: Blind finish deck — same visual style as Checkerboard blind cards */}
-    {cfg.mode==='Blind'&&<div className="finishDeckPanel">
-      <div className="finishDeckHead"><strong>Blind Finish Deck</strong><span>{deck.length} of {FINISH_TYPES.length} cards remaining</span></div>
-      <div className="buttonRow">
-        <button type="button" className="primaryBtn" onClick={drawCard}>Draw Finish Card</button>
-        <button type="button" className="secondaryBtn" onClick={revealCard}>Reveal Card</button>
-        <button type="button" className="secondaryBtn" onClick={resetDeck}>Reset Deck</button>
-      </div>
-      <div className={face==='revealed'?'blindCard revealedCard':'blindCard'}>
-        {face==='revealed'&&drawn
-          ?<div><span>Your Finish</span><strong>{drawn}</strong></div>
-          :<div><span>Hidden Finish</span><strong>{drawn?'Tap Reveal':'Draw a card'}</strong></div>}
-      </div>
-      {deck.length===0&&<p className="finishModeHint">Deck exhausted — every finish has been drawn. Reset Deck to reshuffle all {FINISH_TYPES.length} finishes.</p>}
-    </div>}
-
-    {/* Part 7: Finish shot scoring */}
-    <div className="finishBonusSection">
-      <div className="finishReqHead"><strong>Finish Bonus Scoring</strong><span>Switch on the finishes that attract bonus points</span></div>
-      <div className="finishBonusRows">
-        {FINISH_TYPES.map(t=><div className={cfg.bonuses[t].active?'finishBonusRow finishBonusOn':'finishBonusRow'} key={t}>
-          <button type="button" className={cfg.bonuses[t].active?'scoreToggleOn':'scoreToggleOff'} onClick={()=>toggleBonus(t)}>{cfg.bonuses[t].active?'✓':'+'}</button>
-          <span className="finishBonusName">{t}</span>
-          <div className="scoreStepper">
-            <button type="button" onClick={()=>adjustBonus(t,-1)}>-</button>
-            <input type="number" min="0" value={cfg.bonuses[t].value} onChange={e=>setBonusValue(t,e.target.value)}/>
-            <button type="button" onClick={()=>adjustBonus(t,1)}>+</button>
-          </div>
-        </div>)}
-      </div>
-    </div>
-
-    {(reqSummary||bonusSummary)&&<div className="finishSummaryBox">
-      {reqSummary&&<p><strong>Finish:</strong> {reqSummary}</p>}
-      {bonusSummary&&<p><strong>Finish bonuses:</strong> {bonusSummary}</p>}
-    </div>}
-  </div>;
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
 function ATLBTLDirectBuilder({onAddToSession}){
   const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
   const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
   const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
-  const [atlScoringProfile,setAtlScoringProfile]=useState(DEFAULT_EDITABLE_SCORING);
   const [atlHistory,setAtlHistory]=useState([]);
   const [atlDbAssign,setAtlDbAssign]=useState('Both Players');
   const [atlDbPlayer,setAtlDbPlayer]=useState('');
   const [atlDbAmount,setAtlDbAmount]=useState('No DB');
-  const [atlFinishCfg,setAtlFinishCfg]=useState(()=>emptyFinishConfig());
 
   const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
   function sideToCbZone(value){
@@ -2796,16 +2507,6 @@ function ATLBTLDirectBuilder({onAddToSession}){
   }
   const autoCbZone=sideToCbZone(side);
   const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
-  const atlFinishReq=finishRequirementSummary(atlFinishCfg);
-  const atlFinishBonus=finishBonusSummary(atlFinishCfg);
-  const composedAtlWithScoring={
-    ...composedAtl,
-    task:[composedAtl.task,atlFinishReq].filter(Boolean).join(' '),
-    scoring:[scoringProfileSummary(atlScoringProfile),atlFinishBonus?`Finish bonuses: ${atlFinishBonus}`:''].filter(Boolean).join(' · '),
-    scoringProfile:atlScoringProfile,
-    finishConfig:normaliseFinishConfig(atlFinishCfg),
-    layers:[...new Set([...(composedAtl.layers||[]),...finishLayers(atlFinishCfg)])]
-  };
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers}));
   },[atl,side,useCustomCb,customCbZone,manualLayers]);
@@ -2873,11 +2574,10 @@ function ATLBTLDirectBuilder({onAddToSession}){
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      <FinishRequirementBuilder value={atlFinishCfg} onChange={setAtlFinishCfg}/>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <EditableScoringLogic value={atlScoringProfile} onChange={setAtlScoringProfile} context="ATL / BTL"/>
+      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Overlays add bonus points.</p></div>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
@@ -2891,7 +2591,7 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
       <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset</button>
     </div>
-    <button className="primaryBtn" onClick={()=>addGame({...composedAtlWithScoring,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
+    <button className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
   </div>;
 }
 
@@ -4685,7 +4385,6 @@ function CustomGameBuilder({onAddToSession}){
   const [layers,setLayers]=useState([]);
   const [randomMode,setRandomMode]=useState('Open');
   const [randomResult,setRandomResult]=useState('');
-  const [finishCfg,setFinishCfg]=useState(()=>emptyFinishConfig());
 
   // Pull current session attendance — players marked present
   const presentPlayers=useMemo(()=>{
@@ -4736,21 +4435,15 @@ function CustomGameBuilder({onAddToSession}){
   const activeCondition=structured.length?assignedTo+': '+structured.join(' · '):assignedTo+': No condition set';
 
   function addGame(){
-    const finishReq=finishRequirementSummary(finishCfg);
-    const finishBonus=finishBonusSummary(finishCfg);
     onAddToSession({
       id:Date.now()+Math.random(),title,duration:8,format:'Custom',category:'Custom',family:'Custom Conditioned Game',
-      level:'Coach Designed',task:[activeCondition,finishReq].filter(Boolean).join(' '),
+      level:'Coach Designed',task:activeCondition,
       rationale:'Coach-designed conditioned game using selected constraints, overlays, checkerboard zones and player-specific constraints.',
       coach:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
       coachFocus:coachNote||'Observe whether the constraint changes perception, decision-making and tactical behaviour.',
       coachNote,
       baseGame,namedPlayers,assignment,
-      player:playerFocus,playerFocus,
-      scoring:[scoring,finishBonus?`Finish bonuses: ${finishBonus}`:''].filter(Boolean).join(' · '),
-      finishConfig:normaliseFinishConfig(finishCfg),
-      layers:[...new Set([...layers,...finishLayers(finishCfg)])],
-      cbCode,crosscourtLimit,doubleBounce
+      player:playerFocus,playerFocus,scoring,layers,cbCode,crosscourtLimit,doubleBounce
     });
   }
 
@@ -4807,7 +4500,6 @@ function CustomGameBuilder({onAddToSession}){
         <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
       </div>
       <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
-      <FinishRequirementBuilder value={finishCfg} onChange={setFinishCfg}/>
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}
@@ -4887,7 +4579,6 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
   const [requiredAction,setRequiredAction]=useState('none');
   const [consequence,setConsequence]=useState('plus2');
   const [qualities,setQualities]=useState([]);
-  const [finishCfg,setFinishCfg]=useState(()=>normaliseFinishConfig(baseGame?.finishConfig));
   const find=(arr,id)=>arr.find(x=>x.id===id)||arr[0];
   const activeTriggers=triggers.map(id=>find(triggerOptions,id));
   const selectedAction=find(actions,requiredAction);
@@ -4904,19 +4595,16 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     ...activeQualities.map(q=>q.player)
   ].filter(Boolean);
   const coachLogic=`Triggers: ${triggerText}. Required Action: ${selectedAction.name}. Consequence: ${selectedConsequence.text}${activeQualities.length?' Quality: '+activeQualities.map(q=>q.name).join(' · '):''}`;
-  const finishReqText=finishRequirementSummary(finishCfg);
-  const finishBonusText=finishBonusSummary(finishCfg);
   function buildGame(){
     return {
       ...baseGame,
       id:Date.now()+Math.random(),
       title:`${baseGame.title||'Game'} + Game Logic`,
-      task:`${baseGame.task||baseGame.description||'Play the base game.'} Added Game Logic: ${coachLogic}${finishReqText?' '+finishReqText:''}`,
-      scoring:`${baseGame.scoring||'Base scoring applies.'} Added Game Logic: ${selectedConsequence.text}${activeQualities.length?' Quality bonuses: '+activeQualities.map(q=>q.name).join(' · '):''}${finishBonusText?' Finish bonuses: '+finishBonusText:''}`,
+      task:`${baseGame.task||baseGame.description||'Play the base game.'} Added Game Logic: ${coachLogic}`,
+      scoring:`${baseGame.scoring||'Base scoring applies.'} Added Game Logic: ${selectedConsequence.text}${activeQualities.length?' Quality bonuses: '+activeQualities.map(q=>q.name).join(' · '):''}`,
       coach:`${baseGame.coach||''} Game Logic: ${coachLogic}`,
-      playerView:[...playerRules,finishReqText].filter(Boolean).join(' '),
-      finishConfig:normaliseFinishConfig(finishCfg),
-      layers:[...new Set([...(baseGame.layers||[]),'Game Logic',...activeTriggers.map(t=>t.name),...(requiredAction!=='none'?[selectedAction.name]:[]),selectedConsequence.name,...activeQualities.map(q=>q.name),...finishLayers(finishCfg)])]
+      playerView:playerRules.join(' '),
+      layers:[...(baseGame.layers||[]),'Game Logic',...activeTriggers.map(t=>t.name),...(requiredAction!=='none'?[selectedAction.name]:[]),selectedConsequence.name,...activeQualities.map(q=>q.name)]
     };
   }
   return <div className="inlineLogicPanel gameCard">
@@ -4930,8 +4618,6 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     <label>Consequence<select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
     <h4>Quality Modifiers</h4>
     <div className="qualityGrid">{qualityOptions.map(q=><button type="button" key={q.id} className={qualities.includes(q.id)?'activeQualityBtn':''} onClick={()=>toggleQuality(q.id)}>{qualities.includes(q.id)?'✓ ':'+ '}{q.name}</button>)}</div>
-    <h4>Finish Shot Requirement</h4>
-    <FinishRequirementBuilder value={finishCfg} onChange={setFinishCfg}/>
     <div className="dualViewGrid"><div className="overlayCoachOutput"><strong>Coach View</strong><p>{coachLogic}</p></div><div className="overlayCoachOutput playerViewCard"><strong>Player View</strong><ol>{playerRules.map((r,i)=><li key={i}>{r}</li>)}</ol></div></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
@@ -6192,117 +5878,6 @@ function AroundTheBoardBuilder({onAddToSession}){
 }
 
 
-// ─── UNIVERSAL GAME CARD SYSTEM (Part 2) ─────────────────────────────────────
-// Normalises any game-like object into a stable Games Library card shape so saved
-// cards persist correctly and survive reload.
-function normaliseGameCard(card){
-  card=card||{};
-  return {
-    ...card,
-    id:card.id||Date.now()+Math.random(),
-    title:card.title||card.name||'Untitled Game',
-    category:card.category||'Custom',
-    duration:Number(card.duration)||8,
-    format:card.format||'King of Court',
-    task:card.task||card.description||'',
-    scoring:card.scoring||'',
-    rationale:card.rationale||'',
-    coach:card.coach||card.coachFocus||'',
-    coachFocus:card.coachFocus||card.coach||'',
-    playerFocus:card.playerFocus||card.player||'',
-    layers:Array.isArray(card.layers)?[...new Set(card.layers)]:[],
-    cbCode:card.cbCode||'None',
-    dbAssign:card.dbAssign||'Both Players',
-    dbPlayer:card.dbPlayer||'',
-    dbAmount:card.dbAmount||'No DB',
-    finishConfig:normaliseFinishConfig(card.finishConfig)
-  };
-}
-function emptyUniversalGame(category){
-  return normaliseGameCard({
-    id:Date.now()+Math.random(),
-    title:'',
-    category:category||'Custom',
-    duration:8,
-    task:'',
-    scoring:'Rally Win = 1',
-    rationale:'',
-    coach:'',
-    playerFocus:'',
-    layers:[],
-    finishConfig:emptyFinishConfig()
-  });
-}
-
-// Part 2: courtside capture form for a new or edited Games Library card.
-function UniversalGameEditor({game,onSave,onCancel}){
-  const seed=normaliseGameCard(game);
-  const [title,setTitle]=useState(seed.title);
-  const [category,setCategory]=useState(seed.category);
-  const [task,setTask]=useState(seed.task);
-  const [scoring,setScoring]=useState(seed.scoring);
-  const [rationale,setRationale]=useState(seed.rationale);
-  const [coach,setCoach]=useState(seed.coachFocus);
-  const [duration,setDuration]=useState(seed.duration);
-  const [layers,setLayers]=useState(seed.layers);
-  const [dbAssign,setDbAssign]=useState(seed.dbAssign);
-  const [dbPlayer,setDbPlayer]=useState(seed.dbPlayer);
-  const [dbAmount,setDbAmount]=useState(seed.dbAmount);
-  const [finishCfg,setFinishCfg]=useState(()=>normaliseFinishConfig(seed.finishConfig));
-
-  const categoryOptions=['ATL / BTL','Checkerboard','Around The Board','Power Play','Tactical Pressure','Classic Conditioned','Technical','Volley & Intercept','Information & Anticipation','Double Bounce','Custom'];
-
-  function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
-
-  function handleSave(){
-    const finishReqText=finishRequirementSummary(finishCfg);
-    const finishBonusText=finishBonusSummary(finishCfg);
-    const dbText=dbAmount!=='No DB'?`${dbAssign==='Named Player'?(dbPlayer||'Named player'):dbAssign}: ${dbAmount}`:'No DB';
-    const card=normaliseGameCard({
-      id:seed.id,
-      title:title.trim()||'Untitled Game',
-      category,
-      duration,
-      task:[task.trim(),finishReqText].filter(Boolean).join(' '),
-      scoring:[scoring.trim(),finishBonusText?`Finish bonuses: ${finishBonusText}`:''].filter(Boolean).join(' · '),
-      rationale:rationale.trim(),
-      coach:coach.trim(),
-      coachFocus:coach.trim(),
-      layers:[...new Set([...layers,...finishLayers(finishCfg)])],
-      dbAssign,dbPlayer,dbAmount,
-      dbHandicap:dbText,
-      finishConfig:normaliseFinishConfig(finishCfg)
-    });
-    onSave(card);
-  }
-
-  return <div className="gameCard universalGameEditor">
-    <div className="categoryTag">New Game Card</div>
-    <h2>Capture A Game Card</h2>
-    <p className="engineIntro">Capture a coaching idea courtside. It saves into the Games Library, persists, and survives reload.</p>
-
-    <div className="editorTopRow">
-      <label>Game Name<input value={title} onChange={e=>setTitle(e.target.value)} placeholder="e.g. Crosscourt Drop Pressure"/></label>
-      <label>Category<select value={category} onChange={e=>setCategory(e.target.value)}>{categoryOptions.map(c=><option key={c}>{c}</option>)}</select></label>
-      <label>Duration (minutes)<input type="number" min="1" value={duration} onChange={e=>setDuration(Number(e.target.value||0))}/></label>
-    </div>
-    <label>Task<textarea value={task} onChange={e=>setTask(e.target.value)} placeholder="What players do — the rules and the representative task."/></label>
-    <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)} placeholder="How points are awarded."/></label>
-    <label>Rationale<textarea value={rationale} onChange={e=>setRationale(e.target.value)} placeholder="Why this task — the affordances and behaviours it develops."/></label>
-    <label>Coach Focus<textarea value={coach} onChange={e=>setCoach(e.target.value)} placeholder="What to watch for and coach."/></label>
-
-    <div className="editorSectionHead">Modifying Layers</div>
-    <div className="quickLayers">{ALL_LAYERS.map(layer=><button type="button" key={layer} className={layers.includes(layer)?'activeLayer':''} onClick={()=>toggleLayer(layer)}>{layers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
-    <FinishRequirementBuilder value={finishCfg} onChange={setFinishCfg}/>
-
-    <div className="editorSectionHead">DB Settings</div>
-    <InlineDBSelector dbAssign={dbAssign} setDbAssign={setDbAssign} dbPlayer={dbPlayer} setDbPlayer={setDbPlayer} dbAmount={dbAmount} setDbAmount={setDbAmount}/>
-
-    <div className="buttonRow"><button className="primaryBtn" onClick={handleSave}>Save To Games Library</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
-  </div>;
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -6313,7 +5888,6 @@ function Games({setSession,setScreen}){
     }catch{return[];}
   });
   const [editingCard,setEditingCard]=useState(null);
-  const [justAdded,setJustAdded]=useState(null);
   const [logicCard,setLogicCard]=useState(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}});
 
   useEffect(()=>{
@@ -6362,9 +5936,7 @@ function Games({setSession,setScreen}){
     let finalGame=safeGame;
     try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
     setSession(prev=>[...prev,finalGame]);
-    setMessage('');
-    setJustAdded(finalGame.title||'Game');
-    window.scrollTo({top:0,behavior:'smooth'});
+    setMessage(`${game.title||'Game'} added to current session.`);
   }
 
   function saveCard(card){
@@ -6405,30 +5977,13 @@ function Games({setSession,setScreen}){
     setEditingCard(null);
     setMessage('');
     setLogicCard(null);
-    setJustAdded(null);
   }
 
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <div className="buttonRow">
-        <button className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session Builder</button>
-        <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
-      </div>
+      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
     </div>
-
-    {justAdded&&<div className="addedConfirm">
-      <div className="addedConfirmTick">✓ Added To Session</div>
-      <p>{justAdded} is now in the current session.</p>
-      <div className="buttonRow">
-        <button className="secondaryBtn" onClick={()=>setJustAdded(null)}>Add Another Game</button>
-        <button className="primaryBtn" onClick={()=>setScreen('sessions')}>View Session Builder</button>
-      </div>
-    </div>}
-
-    {editingCard
-      ? <UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>
-      : <>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
         <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>selectClass(gameClass.id)}>
@@ -6441,6 +5996,8 @@ function Games({setSession,setScreen}){
 
     {logicCard&&!['checkerboard','atl','atb','powerplay','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
+    {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
+
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
@@ -6452,6 +6009,8 @@ function Games({setSession,setScreen}){
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
+
+    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
     {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
@@ -6468,11 +6027,9 @@ function Games({setSession,setScreen}){
           <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
           {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
           <div className="actionRow">
-            <button className="primaryBtn" onClick={()=>addStay(card)}>Add To Session</button>
-            <button className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session Builder</button>
-            <button onClick={()=>setLogicCard(card)}>Add Logic</button>
-            <button onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
+            <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
             <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
+            <button onClick={()=>setLogicCard(card)}>Add Logic</button><button onClick={()=>addStay(card)}>Add To Session</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
             <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
@@ -6480,7 +6037,6 @@ function Games({setSession,setScreen}){
         </div>)}
       </div>
     </div>}
-      </>}
   </div>;
 }
 
@@ -10649,7 +10205,7 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h66</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h62</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
