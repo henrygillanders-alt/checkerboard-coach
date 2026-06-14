@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h69 Attendance Seeding & Junior Ladder Build';
+const APP_VERSION='v100h70 Attendance Ladder & Ranked Court Allocation Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -34,6 +34,8 @@ const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
 const COMPETITION_STATE_KEY='checkerboardCompetitionStateV100h43';
 
 const PLAYER_KEY='checkerboard_master_v54_players';
+const ATTENDANCE_HISTORY_KEY='checkerboard_attendance_history_v100h70';
+const ATTENDANCE_DATE_KEY='checkerboard_attendance_current_date_v100h70';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
 const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v97';
@@ -121,6 +123,29 @@ function snakeSeedPlayers(players,teamCount){
     teams[teamIndex].push(playerDisplayName(player));
   });
   return teams;
+}
+
+function getRankedCourtSizes(total,courtCount){
+  const courts=Math.max(1,Number(courtCount)||1);
+  const count=Math.max(0,Number(total)||0);
+  const base=Math.floor(count/courts);
+  const extra=count%courts;
+  const sizes=Array.from({length:courts},()=>base);
+  for(let i=0;i<extra;i++){
+    const idx=courts===1?0:Math.min(i+1,courts-1); // court 1 stays smaller; court 2 receives first extra
+    sizes[idx]+=1;
+  }
+  return sizes;
+}
+function rankedBlockCourtAllocation(players,courtCount){
+  const list=[...(players||[])].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||playerDisplayName(a).localeCompare(playerDisplayName(b)));
+  const sizes=getRankedCourtSizes(list.length,courtCount);
+  let cursor=0;
+  return sizes.map(size=>{
+    const group=list.slice(cursor,cursor+size).map(playerDisplayName);
+    cursor+=size;
+    return group;
+  });
 }
 
 
@@ -2088,7 +2113,6 @@ return <div className="homeGrid homeGridV99h52">
       </button>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
-      <button className="homeCard juniorLadderHomeCard homeTitleOnly" onClick={()=>setScreen('juniorLadder')}><h2>Junior Ladder</h2><span className="homeTileSubtitle">Programme ranking & seeding</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
@@ -6060,105 +6084,71 @@ const[form,setForm]=useState(EMPTY_PLAYER);
 const[guestName,setGuestName]=useState('');
 const[guestEstimate,setGuestEstimate]=useState('Level 3 guest');
 const[guestRanking,setGuestRanking]=useState('');
+const today=new Date().toISOString().slice(0,10);
+const[sessionDate,setSessionDate]=useState(()=>{try{return localStorage.getItem(ATTENDANCE_DATE_KEY)||today}catch{return today}});
+const[attendanceHistory,setAttendanceHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem(ATTENDANCE_HISTORY_KEY)||'[]')}catch{return[]}});
+useEffect(()=>{try{localStorage.setItem(ATTENDANCE_HISTORY_KEY,JSON.stringify(attendanceHistory));}catch{}},[attendanceHistory]);
+useEffect(()=>{try{localStorage.setItem(ATTENDANCE_DATE_KEY,sessionDate);}catch{}},[sessionDate]);
 function saveSnapshot(){setHistory([...history,players]);}
 function undo(){if(history.length===0)return;setPlayers(history[history.length-1]);setHistory(history.slice(0,-1));}
 function updateCategory(category){const found=LEVELS.find(level=>level.label===category);setForm({...form,category,level:found?found.level:1});}
-function savePlayer(){if(!form.name.trim())return;saveSnapshot();if(editing!==null){const updated=[...players];updated[editing]={...form,name:form.name.trim()};setPlayers(updated);}else setPlayers([...players,{...form,name:form.name.trim()}]);setForm(EMPTY_PLAYER);setEditing(null);setShowForm(false);}
+function savePlayer(){if(!form.name.trim())return;saveSnapshot();const clean={...form,name:form.name.trim(),present:!!form.present};if(editing!==null){const updated=[...players];updated[editing]=clean;setPlayers(updated);}else setPlayers([...players,{...clean,present:false}]);setForm(EMPTY_PLAYER);setEditing(null);setShowForm(false);}
 function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({...EMPTY_PLAYER,...clean});setEditing(index);setShowForm(true);window.scrollTo(0,0);}
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
+function startNewAttendanceDate(nextDate=sessionDate){saveSnapshot();setSessionDate(nextDate);setPlayers(players.filter(p=>p.playerType!=='Guest Player').map(p=>({...p,present:false})));}
+function saveAttendanceRecord(){
+  const record={id:Date.now(),date:sessionDate,createdAt:new Date().toISOString(),players:players.map(p=>({name:p.name,playerType:p.playerType,category:p.category,level:p.level,juniorRanking:p.juniorRanking||p.ranking||'',present:!!p.present}))};
+  setAttendanceHistory(prev=>[record,...prev.filter(r=>r.date!==sessionDate)].slice(0,200));
+  alert(`Attendance saved for ${sessionDate}: ${record.players.filter(p=>p.present).length} present / ${record.players.length-record.players.filter(p=>p.present).length} absent.`);
+}
 function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;const guestRank=String(guestRanking||'').trim();saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:guestRank,ranking:guestRank,guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');setGuestRanking('');}
 function exportPlayers(){
-  const backup={
-    type:'checkerboard-players-backup',
-    version:'v99h29',
-    exportedAt:new Date().toISOString(),
-    players
-  };
+  const backup={type:'checkerboard-players-backup',version:'v100h70',exportedAt:new Date().toISOString(),players,attendanceHistory};
   const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
   a.download=`checkerboard-players-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 function importPlayersFile(event){
-  const file=event.target.files&&event.target.files[0];
-  if(!file) return;
+  const file=event.target.files&&event.target.files[0]; if(!file) return;
   const reader=new FileReader();
-  reader.onload=()=>{
-    try{
-      const parsed=JSON.parse(String(reader.result||'{}'));
-      const incoming=Array.isArray(parsed)?parsed:(Array.isArray(parsed.players)?parsed.players:[]);
-      if(!incoming.length){
-        alert('No players found in this file.');
-        return;
-      }
-      const cleaned=incoming.map(player=>({
-        ...EMPTY_PLAYER,
-        ...player,
-        name:String(player.name||player.fullName||player.playerName||'').trim()
-      })).filter(player=>player.name);
-      if(!cleaned.length){
-        alert('No valid player names found.');
-        return;
-      }
-      const existingNames=new Set(players.map(player=>String(player.name||'').trim().toLowerCase()));
-      const merged=[...players];
-      cleaned.forEach(player=>{
-        const key=player.name.toLowerCase();
-        const idx=merged.findIndex(existing=>String(existing.name||'').trim().toLowerCase()===key);
-        if(idx>=0){
-          merged[idx]={...merged[idx],...player};
-        }else{
-          merged.push(player);
-        }
-      });
-      saveSnapshot();
-      setPlayers(merged);
-      alert(`Imported ${cleaned.length} players. Existing matching names were updated.`);
-    }catch(error){
-      alert('Import failed. Please use a Checkerboard JSON player backup file.');
-    }finally{
-      event.target.value='';
-    }
-  };
+  reader.onload=()=>{try{const parsed=JSON.parse(String(reader.result||'{}')); const incoming=Array.isArray(parsed)?parsed:(Array.isArray(parsed.players)?parsed.players:[]);
+      if(!incoming.length){alert('No players found in this file.');return;}
+      const cleaned=incoming.map(player=>({...EMPTY_PLAYER,...player,name:String(player.name||player.fullName||player.playerName||'').trim(),present:false})).filter(player=>player.name);
+      const merged=[...players]; cleaned.forEach(player=>{const key=player.name.toLowerCase(); const idx=merged.findIndex(existing=>String(existing.name||'').trim().toLowerCase()===key); if(idx>=0) merged[idx]={...merged[idx],...player}; else merged.push(player);});
+      saveSnapshot(); setPlayers(merged); if(Array.isArray(parsed.attendanceHistory)) setAttendanceHistory(parsed.attendanceHistory); alert(`Imported ${cleaned.length} players. Existing matching names were updated.`);
+    }catch(error){alert('Import failed. Please use a Checkerboard JSON player backup file.');}finally{event.target.value='';}};
   reader.readAsText(file);
 }
-
 const sorted=sortPlayers(players);
+const presentCount=players.filter(player=>player.present).length;
+const lastRecord=attendanceHistory.find(r=>r.date===sessionDate);
 return <div className="page">
-<div className="pageTop"><h1>Players</h1><div className="buttonRow playerBackupControls">
+<div className="pageTop"><h1>Attendance</h1><div className="buttonRow playerBackupControls">
 <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
 <button className="secondaryBtn" onClick={exportPlayers}>Export Players</button>
 <label className="secondaryBtn importPlayersLabel">Import Players<input type="file" accept=".json,application/json" onChange={importPlayersFile}/></label>
 <button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button>
 </div></div>
+<div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button></div></div>
+{lastRecord&&<div className="hintBox"><strong>Saved record for this date:</strong> {lastRecord.players.filter(p=>p.present).length} present · {lastRecord.players.filter(p=>!p.present).length} absent · saved {new Date(lastRecord.createdAt).toLocaleString()}</div>}
 {showForm&&<div className="formCard"><h3>{editing!==null?'Edit Player':'Add Player'}</h3>
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
 <select value={form.category} onChange={e=>updateCategory(e.target.value)}>{LEVELS.map(level=><option key={level.label}>{level.label}</option>)}<option>Guest</option></select>
-{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}
-<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/>
-<div className="buttonRow"><button className="primaryBtn" onClick={savePlayer}>{editing!==null?'Update Player':'Save Player'}</button><button className="secondaryBtn" onClick={()=>{setShowForm(false);setEditing(null);setForm(EMPTY_PLAYER);}}>Cancel</button></div>
-</div>}
-<div className="attendanceSummary"><strong>Present today:</strong> {players.filter(player=>player.present).length}<span>Competition auto-uses marked-present players.</span></div>
-<div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow">
-<input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/>
-<select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select>
-<input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/>
-<button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in snake teams and competitions. Lower number = stronger seed.</p></div>
+{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/>
+<div className="buttonRow"><button className="primaryBtn" onClick={savePlayer}>{editing!==null?'Update Player':'Save Player'}</button><button className="secondaryBtn" onClick={()=>{setShowForm(false);setEditing(null);setForm(EMPTY_PLAYER);}}>Cancel</button></div></div>}
+<div className="attendanceSummary"><strong>Present for {sessionDate}:</strong> {presentCount}<span>All unmarked players are recorded as absent when attendance is saved.</span></div>
+<div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow"><input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/><select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select><input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/><button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in ranked court allocation. Lower number = stronger seed.</p></div>
 {players.length===0&&<div className="placeholder">No players added yet. Add players or guests above.</div>}
-<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><h3>{player.name}</h3>
-<div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div>
-<div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div>
-<div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Mark Present'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div>
-</div>)}</div>
+<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><h3>{player.name}</h3><div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div><div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div><div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Absent'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div></div>)}</div>
+<div className="gameCard"><h2>Attendance History</h2>{attendanceHistory.length?<div className="attendanceHistoryList">{attendanceHistory.slice(0,8).map(r=><div key={r.id||r.date}><strong>{r.date}</strong><span>{r.players.filter(p=>p.present).length} present · {r.players.filter(p=>!p.present).length} absent</span></div>)}</div>:<p className="mutedText">No saved attendance records yet.</p>}</div>
 </div>;
 }
+
 
 
 
@@ -6870,20 +6860,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
-    const seeded=snakeSeedPlayers(source,count);
+    const seeded=rankedBlockCourtAllocation(source,count);
     const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:teamNameFromPlayers(teamPlayers,index),
       seedOrder:index+1,
       players:teamPlayers.map(playerDisplayName)
     }));
-    // v100h69: keep true snake seeding tied to court order.
-    // Previous random court allocation broke the visible snake pattern.
-    // Example with 4 courts: C1 = 1,8,9,16 · C2 = 2,7,10,15 · C3 = 3,6,11,14 · C4 = 4,5,12,13.
-    const nextTeams=baseTeams.map((team,index)=>({
+    const courtOrder=shuffleInvasionArray(baseTeams.map(team=>team.id));
+    const nextTeams=baseTeams.map(team=>({
       ...team,
-      court:`Court ${index+1}`
-    }));
+      court:`Court ${courtOrder.indexOf(team.id)+1}`
+    })).sort((a,b)=>Number(String(a.court).replace(/\D/g,''))-Number(String(b.court).replace(/\D/g,'')));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
     const fair=getInvasionFairRows(nextTeams);
@@ -7756,7 +7744,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
             <div className="invasionSetupBox">
               <strong>Teams / Courts Setup</strong>
-              <p>Players are pulled from Attendance. Choose number of courts above, then generate teams.</p>
+              <p>Players are pulled from Attendance. Choose number of courts above, then generate ranked court groups. Court 1 is biased to the smaller group and Court 2 receives the first extra player.</p>
               <div className="buttonRow"><button type="button" className="primaryBtn" onClick={generateInvasionTeams}>Generate Teams From Attendance</button>{competitionUndo&&<button type="button" className="secondaryBtn undoBtn" onClick={undoCompetitionChange}>Undo {competitionUndo.label}</button>}</div>
 
               {invasionTeams.length>0&&(
@@ -9470,14 +9458,26 @@ function LiveSessionDelivery({session=[],setScreen}){
 }
 
 
+function JuniorLadder({players=[],setPlayers=()=>{}}){
+  const [showAll,setShowAll]=useState(false);
+  const ladderPlayers=useMemo(()=>[...(players||[])].filter(p=>p&&p.name&&(showAll||p.playerType!=='Guest Player')).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[players,showAll]);
+  function updateRank(name,newRank){const clean=Math.max(1,Number(newRank)||1);setPlayers(prev=>(prev||[]).map(p=>p.name===name?{...p,juniorRanking:String(clean),ranking:String(clean)}:p));}
+  function normalizeRanks(){const ordered=[...ladderPlayers];setPlayers(prev=>(prev||[]).map(p=>{const idx=ordered.findIndex(x=>x.name===p.name);return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;}));}
+  function move(name,dir){const ordered=[...ladderPlayers];const idx=ordered.findIndex(p=>p.name===name);const swap=idx+dir;if(idx<0||swap<0||swap>=ordered.length)return;const a=ordered[idx],b=ordered[swap];const aRank=playerSeedValue(a),bRank=playerSeedValue(b);setPlayers(prev=>(prev||[]).map(p=>{if(p.name===a.name)return{...p,juniorRanking:String(bRank),ranking:String(bRank)};if(p.name===b.name)return{...p,juniorRanking:String(aRank),ranking:String(aRank)};return p;}));}
+  const presentCount=(players||[]).filter(p=>p&&p.present).length;
+  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Ladder allocation uses ranked blocks, not snake seeding.</span></div><div className="buttonRow"><button className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{ladderPlayers.length?ladderPlayers.map((p,idx)=><div key={p.name} className="juniorLadderRow"><div className="ladderRankBadge">#{playerSeedValue(p)>=9000?'—':playerSeedValue(p)}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="number" min="1" value={playerSeedValue(p)>=9000?'':playerSeedValue(p)} onChange={e=>updateRank(p.name,e.target.value)}/></label></div><div className="ladderMoveBtns"><button className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div></div>):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
+}
+
 function PlayerHub({players,setPlayers,session,setSession}){
-  const [tab,setTab]=useState('players');
+  const [tab,setTab]=useState('attendance');
   return <div className="page playerHubPage">
     <div className="playerHubTabs">
-      <button className={tab==='players'?'activeTab':''} onClick={()=>setTab('players')}>Players</button>
+      <button className={tab==='attendance'?'activeTab':''} onClick={()=>setTab('attendance')}>Attendance</button>
+      <button className={tab==='ladder'?'activeTab':''} onClick={()=>setTab('ladder')}>Ladder</button>
       <button className={tab==='storage'?'activeTab':''} onClick={()=>setTab('storage')}>Storage & Backup</button>
     </div>
-    {tab==='players'&&<Players players={players} setPlayers={setPlayers}/>}
+    {tab==='attendance'&&<Players players={players} setPlayers={setPlayers}/>}
+    {tab==='ladder'&&<JuniorLadder players={players} setPlayers={setPlayers}/>}
     {tab==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
   </div>;
 }
@@ -10247,20 +10247,18 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
   const[deal,setDeal]=useState(null);
   const[playerCount,setPlayerCount]=useState(4);
   const[courtCount,setCourtCount]=useState(3);
-  const rankedAttendance=useMemo(()=>[...(attendancePlayers||[])].filter(p=>p&&p.name).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[attendancePlayers]);
-  const seededAttendanceCourts=useMemo(()=>rankedAttendance.length?snakeSeedPlayers(rankedAttendance,Math.max(1,Math.min(6,Number(courtCount)||3))):[],[rankedAttendance,courtCount]);
+  const rankedAttendance=useMemo(()=>[...(attendancePlayers||[])].filter(p=>p&&p.name&&p.present).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[attendancePlayers]);
+  const rankedAttendanceCourts=useMemo(()=>rankedAttendance.length?rankedBlockCourtAllocation(rankedAttendance,Math.max(1,Math.min(6,Number(courtCount)||3))):[],[rankedAttendance,courtCount]);
   function makeDeal(){
     if(game.format==='King of Court'){
       const deck=btsRangeVals(game.deck||[4,8]);
-      const named=seededAttendanceCourts.length
-        ? seededAttendanceCourts.flatMap((courtPlayers,courtIndex)=>(courtPlayers||[]).map(name=>({name,court:`Court ${courtIndex+1}`})))
-        : Array.from({length:playerCount},(_,i)=>({name:`Player ${i+1}`,court:'Court 1'}));
-      const players=named.map(item=>{
+      const source=rankedAttendanceCourts.length?rankedAttendanceCourts.flat().map((name,i)=>({label:name,court:`Court ${rankedAttendanceCourts.findIndex(c=>c.includes(name))+1}`})):Array.from({length:playerCount},(_,i)=>({label:`Player ${i+1}`,court:'Court'}));
+      const players=source.map(item=>{
         const card=btsPick(deck);
         const target=game.id==='blind-race'||game.id==='koc-cumulative'?card*3:card;
-        return {label:seededAttendanceCourts.length?`${item.court} · ${item.name}`:item.name,card,target,court:item.court,name:item.name};
+        return {...item,card,target};
       });
-      setDeal({players,suit:BTS_SUITS[game.suit],koc:true,usingAttendance:!!seededAttendanceCourts.length,courts:seededAttendanceCourts});
+      setDeal({players,suit:BTS_SUITS[game.suit],koc:true});
       return;
     }
     if(game.pairs){
@@ -10279,8 +10277,8 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
     <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
     <p>{game.blurb}</p>
     <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
-    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance, seeded by Junior Programme Ranking.</p><div className="buttonRow">{[2,3,4,5,6].map(n=><button key={n} className={courtCount===n?'activeLayer':''} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{seededAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present players found. Using generic player labels.</p><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
-    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={p.label} label={p.label} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, targets are tied to attendance names for this rotation only. Card × 3 targets. Hand the device to each player; card auto-hides after 3 seconds.</p>{deal.usingAttendance&&<div className="hintBox"><strong>Attendance-linked targets:</strong> each hidden target is tied to the named player shown on the card. Re-deal after the next promotion/relegation.</div>}<div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="Player A" value={deal.a} suit={deal.suit}/><BTSRevealCard label="Player B" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
+    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance. Allocation is ranked blocks, not snake seeding.</p><div className="buttonRow">{[2,3,4,5,6].map(n=><button key={n} className={courtCount===n?'activeLayer':''} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{rankedAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present attendance players found. Use generic player labels.</p><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
+    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={`${p.court}-${p.label}`} label={`${p.court?`${p.court} · `:''}${p.label}`} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are card × 3 targets tied to named Attendance players for this rotation. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="Player A" value={deal.a} suit={deal.suit}/><BTSRevealCard label="Player B" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
     {open&&<div className="btsMoreInfo">
       <div className="infoBox"><strong>Setup</strong><p>{game.setup}</p></div>
       <div className="infoBox"><strong>Step-by-step</strong><ol>{game.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
@@ -10320,56 +10318,8 @@ function BlindTargetScoreModule({setScreen,players=[]}){
       </div>
       {form&&<div className="hintBox"><strong>Form Card note:</strong> public tendency stats change bluffing economics. Use with advanced players.</div>}
     </div>
-    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={(players||[]).filter(p=>p&&p.present)}/>)}</div></section>)}
+    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players}/>)}</div></section>)}
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
-  </div>;
-}
-
-
-function JuniorLadder({players=[],setPlayers=()=>{},setScreen}){
-  const [showAll,setShowAll]=useState(false);
-  const ladderPlayers=useMemo(()=>{
-    return [...(players||[])].filter(p=>p&&p.name&&(showAll||p.playerType!=='Guest Player')).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name)));
-  },[players,showAll]);
-  function updateRank(name,newRank){
-    const clean=Math.max(1,Number(newRank)||1);
-    setPlayers(prev=>(prev||[]).map(p=>p.name===name?{...p,juniorRanking:String(clean),ranking:String(clean)}:p));
-  }
-  function normalizeRanks(){
-    const ordered=[...ladderPlayers];
-    setPlayers(prev=>(prev||[]).map(p=>{
-      const idx=ordered.findIndex(x=>x.name===p.name);
-      return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;
-    }));
-  }
-  function move(name,dir){
-    const ordered=[...ladderPlayers];
-    const idx=ordered.findIndex(p=>p.name===name);
-    const swap=idx+dir;
-    if(idx<0||swap<0||swap>=ordered.length) return;
-    const a=ordered[idx], b=ordered[swap];
-    const aRank=playerSeedValue(a), bRank=playerSeedValue(b);
-    setPlayers(prev=>(prev||[]).map(p=>{
-      if(p.name===a.name) return {...p,juniorRanking:String(bRank),ranking:String(bRank)};
-      if(p.name===b.name) return {...p,juniorRanking:String(aRank),ranking:String(aRank)};
-      return p;
-    }));
-  }
-  const presentCount=(players||[]).filter(p=>p&&p.present).length;
-  return <div className="page juniorLadderPage">
-    <div className="pageTop"><div><h1>Junior Programme Ladder</h1><p className="mutedText">Programme ranking feeds attendance seeding, competition courts and Blind Race target assignment.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="juniorLadderHero"><strong>Lower rank number = stronger seed.</strong><span>Use this ladder to keep the programme order current. Attendance and KOC snake seeding should follow this order unless manually adjusted.</span></div>
-    <div className="buttonRow"><button className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button><button className="secondaryBtn" onClick={()=>setScreen('players')}>Open Players</button></div>
-    <div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for snake seeding and Blind Race.</div>
-    <div className="juniorLadderList">
-      {ladderPlayers.length?ladderPlayers.map((p,idx)=><div key={p.name} className="juniorLadderRow">
-        <div className="ladderRankBadge">#{playerSeedValue(p)>=9000?'—':playerSeedValue(p)}</div>
-        <div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present today':'Not present'}{p.playerType==='Guest Player'?' · Guest':''}</span></div>
-        <div className="ladderRankEdit"><label>Rank <input type="number" min="1" value={playerSeedValue(p)>=9000?'':playerSeedValue(p)} onChange={e=>updateRank(p.name,e.target.value)}/></label></div>
-        <div className="ladderMoveBtns"><button className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div>
-      </div>):<div className="gameCard"><p>No programme players yet. Add players in the Players module.</p></div>}
-    </div>
-    <div className="gameCard"><h2>How this feeds seeding</h2><p>The Competition module uses Junior Programme Ranking to snake seed attendance players across courts. Example with 4 courts: Court 1 = 1,8,9,16 · Court 2 = 2,7,10,15 · Court 3 = 3,6,11,14 · Court 4 = 4,5,12,13.</p></div>
   </div>;
 }
 
@@ -10411,14 +10361,13 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h69</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h70</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
-      {screen==='juniorLadder'&&<JuniorLadder players={players} setPlayers={setPlayers} setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
