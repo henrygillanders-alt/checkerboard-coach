@@ -1,4 +1,4 @@
-/* v100h70 Attendance Ladder & Ranked Court Allocation Build */
+/* v100h71 Solo Practice Exploration vs Installation Build */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7169,3 +7169,82 @@ button.mentalSkillsTile p{
 
 /* v100h70 Attendance Ladder + Ranked Court Allocation */
 .attendanceControlPanel{background:#0c1a2c;border:1px solid #5e83be;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}.attendanceControlPanel strong{display:block;color:#ffd980;margin-bottom:6px}.attendanceControlPanel input{background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px 12px;color:#fff}.attendanceControlPanel span{display:block;color:#9fb0c8;font-size:13px;margin-top:6px}.attendanceHistoryList{display:flex;flex-direction:column;gap:8px}.attendanceHistoryList div{background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.attendanceHistoryList strong{color:#ffd980}.attendanceHistoryList span{color:#dce8ff}.juniorLadderHero{background:#062923;border:1px solid #14b8a6;border-radius:18px;padding:18px 22px;margin-bottom:16px;color:#ccfbf1}.juniorLadderHero strong{display:block;color:#5eead4;font-size:16px;margin-bottom:6px}.juniorLadderHero span{color:#d1fae5;line-height:1.5}.juniorLadderList{display:flex;flex-direction:column;gap:10px;margin-top:16px}.juniorLadderRow{display:grid;grid-template-columns:72px 1fr 120px 110px;gap:12px;align-items:center;background:#0b1828;border:1px solid #35567e;border-radius:16px;padding:12px 14px}.ladderRankBadge{background:#0f766e;border:1px solid #5eead4;color:#fff;border-radius:12px;padding:10px 8px;font-size:18px;font-weight:900;text-align:center}.ladderPlayerInfo strong{display:block;color:#fff;font-size:16px}.ladderPlayerInfo span{display:block;color:#9fb0c8;font-size:13px;margin-top:4px}.ladderRankEdit label{display:flex;flex-direction:column;gap:4px;color:#ffd980;font-size:12px;font-weight:900}.ladderRankEdit input{background:#081320;border:1px solid #35567e;border-radius:10px;padding:8px;color:white;width:100%}.ladderMoveBtns{display:flex;gap:6px;justify-content:flex-end}.ladderMoveBtns button{padding:8px 12px}.btsCourtPreview{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0}.btsCourtPreview div{background:#081320;border:1px solid #35567e;border-radius:10px;padding:10px}.btsCourtPreview strong{display:block;color:#ffd980;margin-bottom:4px}.btsCourtPreview span{display:block;color:#dce8ff;font-size:13px;line-height:1.4}@media(max-width:900px){.attendanceControlPanel{align-items:flex-start}.juniorLadderRow{grid-template-columns:60px 1fr}.ladderRankEdit,.ladderMoveBtns{grid-column:1/-1}.ladderMoveBtns{justify-content:flex-start}}
+
+/* v100h71 Solo Practice: Exploration vs Installation */
+.soloPracticeHomeCard{
+  background:linear-gradient(135deg,#334155,#0f172a)!important;
+  color:white!important;
+  border:0!important;
+  min-height:180px!important;
+  padding:28px!important;
+  border-radius:22px!important;
+  text-align:left!important;
+}
+.soloPracticeHomeCard h2{font-size:42px!important;margin:0 0 14px 0!important;color:white!important;line-height:1.05!important;}
+.soloPracticeHomeCard .homeTileSubtitle{display:block;color:#e2e8f0!important;font-size:18px!important;font-weight:800!important;margin-top:8px!important;}
+.soloPracticePage{padding-bottom:34px;}
+.soloHero{
+  background:linear-gradient(135deg,#0f172a,#172554);
+  border:2px solid #5e83be;
+  border-radius:24px;
+  padding:26px 30px;
+  margin-bottom:22px;
+}
+.soloEyebrow{display:block;color:#ffd980;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;}
+.soloHero h2{font-size:30px;line-height:1.12;margin:0 0 12px 0;color:white;}
+.soloHero p{color:#dce8ff;font-size:16px;line-height:1.6;max-width:920px;}
+.soloRldNote{margin-top:14px;background:#081320;border-left:4px solid #ffd980;border-radius:0 12px 12px 0;padding:12px 16px;color:#dce8ff;line-height:1.5;}
+.soloRldNote strong{color:#ffd980;}
+.soloSection{background:#101b2a;border:1px solid #35567e;border-radius:22px;padding:22px 24px;margin-bottom:18px;}
+.soloSection h2{color:#ffd980;font-size:24px;margin:0 0 12px 0;}
+.soloSection p{color:#dce8ff;font-size:15px;line-height:1.65;margin:0 0 12px 0;}
+.soloCardGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+.soloInfoCard,.soloCompareCard,.soloListCard,.soloLevelCard{background:#081320;border:1px solid #35567e;border-radius:16px;padding:16px;}
+.soloInfoCard h3,.soloListCard h3,.soloPathGrid h3{color:#9bc1ff;margin:0 0 8px 0;font-size:17px;}
+.soloInfoCard p{color:#cbd5e1;font-size:14px;line-height:1.55;margin:0;}
+.soloCompareGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0;}
+.soloCompareCard strong{display:block;font-size:15px;font-weight:900;margin-bottom:8px;}
+.soloCompareCard p{font-size:14px;line-height:1.55;margin:0;color:#cbd5e1;}
+.soloCompareCard.traditional{border-color:#f97316;background:#1c1917;}
+.soloCompareCard.traditional strong{color:#fdba74;}
+.soloCompareCard.cla{border-color:#4ade80;background:#052e16;}
+.soloCompareCard.cla strong{color:#86efac;}
+.soloCompareCard.warning{border-color:#ef4444;background:#450a0a;}
+.soloCompareCard.warning strong{color:#fca5a5;}
+.soloCompareCard.success{border-color:#4ade80;background:#052e16;}
+.soloCompareCard.success strong{color:#86efac;}
+.soloKeyQuestion,.soloFinalQuestion{background:#0c1a2c;border:2px solid #ffd980;border-radius:16px;padding:16px 18px;color:#fff;font-size:18px;font-weight:900;text-align:center;margin-top:14px;}
+.soloPillar{position:relative;overflow:hidden;}
+.soloPillarLabel{display:inline-block;background:#ffd980;color:#0f172a;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;}
+.soloQuote{background:#081320;border-left:4px solid #ffd980;border-radius:0 14px 14px 0;padding:16px 18px;color:white;font-size:18px;font-weight:900;font-style:italic;margin:14px 0 0 0;line-height:1.5;}
+.soloGrooveBox{background:#071827;border:2px solid #5e83be;border-radius:16px;padding:18px;margin:14px 0;}
+.soloGrooveBox strong{display:block;color:#ffd980;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.soloGrooveBox p{color:white;font-size:24px;font-weight:900;margin:0 0 6px 0;}
+.soloGrooveBox small{color:#9fb0c8;font-size:14px;line-height:1.5;}
+.soloDiagramMini{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;background:#081320;border:1px solid #35567e;border-radius:16px;padding:14px;margin-top:12px;}
+.soloDiagramMini span{background:#12253d;border:1px solid #486b9a;border-radius:999px;color:white;padding:8px 12px;font-weight:900;font-size:13px;}
+.soloDiagramMini b{color:#ffd980;font-size:20px;}
+.soloReflectionBox{background:#1a1000;border:2px solid #ffd980;border-radius:16px;padding:18px;margin-top:14px;}
+.soloReflectionBox strong{display:block;color:#ffd980;font-size:14px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.soloReflectionBox p{color:#fef3c7;font-size:17px;font-weight:900;font-style:italic;margin:0;}
+.soloTyson{background:linear-gradient(135deg,#111827,#1f2937);border-color:#ffd980;text-align:center;}
+.soloTyson blockquote{font-size:30px;line-height:1.25;color:white;font-weight:900;font-style:italic;margin:14px auto;max-width:850px;}
+.soloTyson p{color:#ffd980;font-size:18px;font-weight:900;margin:0;}
+.soloPathGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.soloFlow{background:#081320;border:1px solid #35567e;border-radius:18px;padding:16px;}
+.soloFlowRisk{border-color:#ef4444;}
+.soloFlowAdaptive{border-color:#4ade80;}
+.soloFlowStep{display:flex;align-items:center;gap:12px;background:#0b1828;border:1px solid #2f4d72;border-radius:12px;padding:10px 12px;}
+.soloFlowStep span{width:28px;height:28px;border-radius:999px;background:#1f5dd0;color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;}
+.soloFlowStep strong{color:white;font-size:14px;}
+.soloFlowArrow{text-align:center;color:#ffd980;font-size:18px;font-weight:900;margin:5px 0;}
+.soloListCard h3{color:#ffd980;}
+.soloListCard ul{margin:10px 0 0 18px;padding:0;color:#cbd5e1;line-height:1.7;font-size:14px;}
+.soloLevelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+.soloLevelCard strong{display:block;color:#ffd980;font-size:18px;margin-bottom:6px;}
+.soloLevelCard span{display:inline-block;background:#1f5dd0;color:white;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px;margin-bottom:8px;}
+.soloLevelCard p{font-size:14px;margin:0;color:#cbd5e1;}
+.soloPosition{background:linear-gradient(135deg,#052e16,#0f172a);border:2px solid #4ade80;}
+.soloPosition h2{color:#86efac;}
+.soloPosition strong{display:block;color:white;font-size:20px;margin:16px 0;text-align:center;}
+@media(max-width:900px){.soloHero h2{font-size:24px}.soloTyson blockquote{font-size:22px}.soloDiagramMini{justify-content:flex-start}.soloPracticeHomeCard h2{font-size:34px!important}}

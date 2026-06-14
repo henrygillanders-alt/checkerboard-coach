@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h70 Attendance Ladder & Ranked Court Allocation Build';
+const APP_VERSION='v100h71 Solo Practice Exploration vs Installation Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2122,6 +2122,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score™</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard visionHomeCard homeTitleOnly" onClick={()=>setScreen('visionPerception')}><h2>Vision & Perception</h2><span className="homeTileSubtitle">Opponent Information Pickup</span></button>
+      <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -10324,6 +10325,130 @@ function BlindTargetScoreModule({setScreen,players=[]}){
 }
 
 
+const SOLO_GOOD_CARDS=[
+  {title:'Exploration',text:'Players can discover how pace, cut, height, spin, angle and trajectory change the ball. The question becomes: what happens if I do this?'},
+  {title:'Confidence',text:'Solo practice can build familiarity, ownership and comfort with the racquet-ball relationship. Confidence matters, but it must later be tested against reality.'},
+  {title:'Ball Familiarity',text:'Players learn bounce, rebound, timing and the feel of different contacts without needing constant instruction.'},
+  {title:'Self-Organisation',text:'Players may find useful solutions independently. The coach does not always need to prescribe the answer.'},
+];
+const SOLO_CONTINUUM=[
+  {side:'Healthy solo practice',items:['Curiosity','Experimentation','Discovery','Variation','Questions about ball behaviour','Confidence with humility']},
+  {side:'Risky solo practice',items:['Perfection seeking','Excessive grooving','Movement prescription','One solution repeated','Confidence without reality testing','Deep attractor dependency']},
+];
+const SOLO_LEVEL_GUIDE=[
+  {level:'Level 0–1',amount:'High value',purpose:'Ball-racquet relationship, chipping, bounce/rebound familiarity, simple exploration and confidence building.'},
+  {level:'Level 2–3',amount:'Mixed use',purpose:'Solo practice remains useful, but must be blended with representative tasks, opponent information and decision making.'},
+  {level:'Level 4–5',amount:'Limited isolated use',purpose:'Greater emphasis shifts to opponents, anticipation, pressure, tactical adaptation and representative learning design.'},
+];
+function SoloFlow({type}){
+  const solo=type==='solo';
+  const steps=solo
+    ? ['Repetition','One solution','Deep attractor','High confidence','Pressure','Return to deepest attractor','Adaptability reduced']
+    : ['Exploration','Variability','Multiple attractors','Calibrated confidence','Pressure','Adaptive search','Flexible performance'];
+  return <div className={solo?'soloFlow soloFlowRisk':'soloFlow soloFlowAdaptive'}>{steps.map((step,i)=><React.Fragment key={step}><div className="soloFlowStep"><span>{i+1}</span><strong>{step}</strong></div>{i<steps.length-1&&<div className="soloFlowArrow">↓</div>}</React.Fragment>)}</div>;
+}
+function SoloPracticeModule({setScreen}){
+  return <div className="page soloPracticePage">
+    <div className="pageTop"><div><h1>Solo Practice</h1><p className="mutedText">Exploration vs Installation · Confidence, attractors and adaptability</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+
+    <div className="soloHero">
+      <span className="soloEyebrow">FOUNDATIONAL COMMENTARY</span>
+      <h2>Solo practice is not the enemy. The question is what kind of learning it creates.</h2>
+      <p>Traditional coaching often treats solo practice as a way to groove technique. Checkerboard asks whether the player is exploring possibilities or installing solutions that reality may later reject.</p>
+      <RLDBadge level={1} size="lg"/>
+      <div className="soloRldNote"><strong>RLD position:</strong> Solo practice usually sits around RLD 0–1. Low representativeness does not mean low value. It means limited direct transfer to competitive performance.</div>
+    </div>
+
+    <section className="soloSection">
+      <h2>The Great Debate</h2>
+      <div className="soloCompareGrid">
+        <div className="soloCompareCard traditional"><strong>Traditional emphasis</strong><p>Technique development · grooving · automation · consistency · repeatable swing shape.</p></div>
+        <div className="soloCompareCard cla"><strong>CLA emphasis</strong><p>Exploration · variability · adaptation · representative learning · adaptable performance.</p></div>
+      </div>
+      <div className="soloKeyQuestion">Are we exploring possibilities, or installing solutions?</div>
+    </section>
+
+    <section className="soloSection">
+      <h2>What Solo Practice Does Well</h2>
+      <div className="soloCardGrid">{SOLO_GOOD_CARDS.map(c=><div className="soloInfoCard" key={c.title}><h3>{c.title}</h3><p>{c.text}</p></div>)}</div>
+    </section>
+
+    <section className="soloSection soloPillar">
+      <span className="soloPillarLabel">Pillar 1</span>
+      <h2>The Confidence Illusion</h2>
+      <p>Solo practice can create confidence because the environment is cooperative. The player controls the feed, timing, spacing, pace and intention. Success rates can become very high.</p>
+      <div className="soloCompareGrid">
+        <div className="soloCompareCard warning"><strong>False confidence</strong><p>“I can repeat this movement.” Confidence is built in a controlled environment and may collapse when the game goes live.</p></div>
+        <div className="soloCompareCard success"><strong>Robust confidence</strong><p>“I can adapt when things change.” Confidence is calibrated by pressure, opponents and changing information.</p></div>
+      </div>
+      <blockquote className="soloQuote">Confidence built in a controlled environment may not survive an uncontrolled environment.</blockquote>
+    </section>
+
+    <section className="soloSection soloPillar">
+      <span className="soloPillarLabel">Pillar 2</span>
+      <h2>The Grooving Question</h2>
+      <p>Traditional coaches often say: groove the swing, groove the shot, groove the technique. The issue is not whether grooving occurs. It clearly does. The question is whether grooving should be the objective.</p>
+      <div className="soloGrooveBox">
+        <strong>Checkerboard asks:</strong>
+        <p>Stable for what environment?</p>
+        <small>A movement can become highly stable in solo practice while becoming less adaptable in competition.</small>
+      </div>
+      <div className="soloDiagramMini"><span>Grooving</span><b>→</b><span>Stability</span><b>→</b><span>Reduced exploration</span><b>→</b><span>Reduced adaptability risk</span></div>
+    </section>
+
+    <section className="soloSection soloPillar">
+      <span className="soloPillarLabel">Pillar 3</span>
+      <h2>Deep Attractor Formation</h2>
+      <p>Every repetition strengthens a solution. That can be useful. The danger appears when one solution becomes so stable that the player cannot access alternatives when the environment changes.</p>
+      <div className="soloCompareGrid">
+        <div className="soloCompareCard success"><strong>Benefit</strong><p>Consistency, repeatability, confidence and a reliable starting point.</p></div>
+        <div className="soloCompareCard warning"><strong>Risk</strong><p>A deep attractor may become resistant to change when competition demands a different solution.</p></div>
+      </div>
+      <div className="soloReflectionBox"><strong>Learning or limiting?</strong><p>If a player grooves a solution that competition later rejects, has the practice created an adaptable skill or a limiting constraint?</p></div>
+    </section>
+
+    <section className="soloSection soloPillar">
+      <span className="soloPillarLabel">Pillar 4</span>
+      <h2>Pressure Reveals The Attractor</h2>
+      <p>Pressure does not simply cause mistakes. Pressure reveals what is most deeply stabilised. Under pressure, players return home. The question is: where is home?</p>
+      <div className="soloCompareGrid">
+        <div className="soloCompareCard traditional"><strong>Traditional interpretation</strong><p>Pressure causes the player to break down or forget the technique.</p></div>
+        <div className="soloCompareCard cla"><strong>CLA interpretation</strong><p>The player did not revert. The player returned to the deepest attractor state.</p></div>
+      </div>
+    </section>
+
+    <section className="soloSection soloTyson">
+      <h2>The Tyson Principle</h2>
+      <blockquote>“Everybody has a plan until they get punched in the mouth.”</blockquote>
+      <p>Checkerboard interpretation: everybody has perfect technique until they encounter a live opponent.</p>
+    </section>
+
+    <section className="soloSection">
+      <h2>Two Practice Pathways</h2>
+      <div className="soloPathGrid"><div><h3>Installation pathway</h3><SoloFlow type="solo"/></div><div><h3>Exploration pathway</h3><SoloFlow type="adaptive"/></div></div>
+    </section>
+
+    <section className="soloSection">
+      <h2>Solo Practice Continuum</h2>
+      <p>Solo practice is not good or bad. It exists on a continuum from exploration to installation.</p>
+      <div className="soloCompareGrid">{SOLO_CONTINUUM.map(col=><div className="soloListCard" key={col.side}><h3>{col.side}</h3><ul>{col.items.map(i=><li key={i}>{i}</li>)}</ul></div>)}</div>
+    </section>
+
+    <section className="soloSection">
+      <h2>Practical Guidelines</h2>
+      <div className="soloLevelGrid">{SOLO_LEVEL_GUIDE.map(g=><div className="soloLevelCard" key={g.level}><strong>{g.level}</strong><span>{g.amount}</span><p>{g.purpose}</p></div>)}</div>
+    </section>
+
+    <section className="soloSection soloPosition">
+      <h2>The Checkerboard Position</h2>
+      <p>Solo practice is valuable. Solo practice is not the enemy. The danger is not repetition itself. The danger is creating confidence in solutions that reality may later reject. The danger is creating attractor states that become difficult to adapt under pressure.</p>
+      <strong>The goal is not perfect repetition. The goal is adaptable performance.</strong>
+      <div className="soloFinalQuestion">When your player practises alone, are they exploring possibilities, or installing solutions that reality may later reject?</div>
+    </section>
+  </div>;
+}
+
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[backStack,setBackStack]=useState([]);
@@ -10361,12 +10486,13 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h70</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h71</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
+      {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
