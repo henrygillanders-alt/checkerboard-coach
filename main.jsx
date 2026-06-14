@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h62 Pressure Consolidation & Recovery Build';
+const APP_VERSION='v100h68 Blind Race + Vision Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2095,6 +2095,8 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score™</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
+      <button className="homeCard visionHomeCard homeTitleOnly" onClick={()=>setScreen('visionPerception')}><h2>Vision & Perception</h2><span className="homeTileSubtitle">Opponent Information Pickup</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -5829,6 +5831,15 @@ function AroundTheBoardBuilder({onAddToSession}){
             <div className="atbWallZone" style={{background:'#0891b222',borderColor:'#0891b2'}}><span>6</span><small>Top Right</small></div>
             <div className="atbWallZone" style={{background:'#c026d322',borderColor:'#c026d3'}}><span>8</span><small>Bottom Left</small></div>
             <div className="atbWallZone" style={{background:'#65a30d22',borderColor:'#65a30d'}}><span>7</span><small>Bottom Right</small></div>
+          </div>
+        </div>
+        <div className="atbIntegratedFloor">
+          <div className="atbWallLabel">Floor Zones — 1 to 4</div>
+          <div className="atbFloorGrid">
+            <div className="atbFloorZone" style={{background:'#1f5dd022',borderColor:'#1f5dd0'}}><span>1</span><small>Front Left</small></div>
+            <div className="atbFloorZone" style={{background:'#22d3ee22',borderColor:'#22d3ee'}}><span>2</span><small>Front Right</small></div>
+            <div className="atbFloorZone" style={{background:'#4ade8022',borderColor:'#4ade80'}}><span>4</span><small>Back Left</small></div>
+            <div className="atbFloorZone" style={{background:'#ffd98022',borderColor:'#ffd980'}}><span>3</span><small>Back Right</small></div>
           </div>
         </div>
       </div>
@@ -10168,6 +10179,144 @@ function OverlayBuilderStandalone({setScreen,setSession}){
 }
 
 
+
+
+/* ── VISION & PERCEPTION MODULE — v100h68 ─────────────────────────────── */
+const VISION_ACTIVITIES=[
+  {title:'Two-Colour Racquet',rld:'RLD 3',section:'Visual Search',purpose:'Guide gaze back toward the opponent at or before contact.',setup:'Use a racquet with two clearly different colours or add temporary coloured tape/markers to opposite sides of the frame.',task:'During live or semi-live rallies, coach randomly asks what colour was visible when the opponent struck the ball.',rationale:'The coloured racquet is not the cue. It is an attentional guide that helps the player search in the right general area so they can begin detecting specifying information from the whole opponent-racquet scene.',fade:'Fade questioning as soon as the player naturally looks back towards the opponent. Reintroduce only if gaze regresses to ball/front-wall watching.',risk:'If overused, the colour or racquet may become the exclusive cue and narrow attention away from earlier body cues such as shoulders, trunk, preparation, racquet path and weight transfer.'},
+  {title:'White Ball on White Court',rld:'RLD 4',section:'Opponent Information',purpose:'Reduce dependency on late ball flight and increase use of opponent body cues.',setup:'Use a white ball on a white or light court only where safe and appropriate. Start with controlled rallies before competitive versions.',task:'Players rally or compete while the reduced ball contrast forces earlier information pickup from the opponent.',rationale:'Less visible ball flight increases the value of shoulder rotation, racquet preparation, swing speed and contact information.',fade:'Return to normal ball once players are searching earlier and reading the opponent more reliably. Reintroduce briefly if visual search collapses back to late ball tracking.',risk:'Do not use where safety or confidence is compromised. The aim is better information pickup, not making the task artificially impossible.'},
+  {title:'Quiet Eye Contact Windows',rld:'RLD 2–4',section:'Quiet Eye',purpose:'Stabilise gaze at opponent contact and own contact without freezing movement.',setup:'Use cooperative, conditioned or live rallies depending on level.',task:'Player identifies the opponent contact window, then stabilises gaze through their own contact before recovering vision back to the opponent.',rationale:'Quiet Eye is treated as functional information pickup, not staring. The gaze must support action.',fade:'Reduce verbal reminders and allow the gaze routine to self-organise inside normal play.',risk:'Avoid making players rigid. Stable eyes should improve movement freedom, not reduce it.'},
+  {title:'Opponent-Racquet Scene Reading',rld:'RLD 4–5',section:'Anticipation',purpose:'Expand attention from one cue to the full movement scene.',setup:'Use rallies where opponent can vary drive, drop, boast, cross-court or hold.',task:'Between points, ask what information specified the shot: shoulder, trunk, racquet face, racquet path, swing amplitude, timing or body position.',rationale:'The target behaviour is not cue guessing. It is perception of specifying information from the whole opponent-racquet system.',fade:'Move from coach questioning to player self-report and then to normal play.',risk:'Too many questions can make players analytical. Use intermittent, short debriefs.'}
+];
+function VisionPerceptionModule({setScreen}){
+  const sections=['Visual Search','Opponent Information','Quiet Eye','Anticipation'];
+  return <div className="page visionPage">
+    <div className="pageTop"><div><h1>Vision & Perception</h1><p className="mutedText">Opponent information pickup · visual search · anticipation · constraint fading</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="visionHero"><strong>See the opponent-racquet scene, not just the ball.</strong><span>The objective is better information pickup in representative squash environments.</span></div>
+    <div className="visionPrincipleGrid">
+      <div><strong>Search Location</strong><p>First help the player look back towards the opponent.</p></div>
+      <div><strong>Search Content</strong><p>Then broaden attention to shoulders, trunk, racquet path, racquet face, timing and movement.</p></div>
+      <div><strong>Constraint Fading</strong><p>Constraints are scaffolding, not the building. Fade once the behaviour emerges.</p></div>
+    </div>
+    <div className="visionWarning"><strong>Important Coach Note</strong><p>The coloured racquet is not the cue. It is a guide to the cue. Once the player searches in the right area, attention must broaden to specifying information from the whole opponent-racquet scene.</p></div>
+    {sections.map(sec=><section key={sec} className="visionSection"><h2>{sec}</h2><div className="visionGrid">{VISION_ACTIVITIES.filter(a=>a.section===sec).map(a=><div key={a.title} className="visionCard"><div className="rldBadgeSm"><span className="rldDotSm" style={{background:'#22c55e'}}/> {a.rld}</div><h3>{a.title}</h3><p>{a.purpose}</p><div className="infoBox"><strong>Setup</strong><p>{a.setup}</p></div><div className="infoBox"><strong>Activity</strong><p>{a.task}</p></div><div className="infoBox"><strong>Rationale</strong><p>{a.rationale}</p></div><div className="visionFadeBox"><strong>When to fade</strong><p>{a.fade}</p></div><div className="visionRiskBox"><strong>What could go wrong?</strong><p>{a.risk}</p></div></div>)}</div></section>)}
+  </div>;
+}
+
+/* ── BLIND TARGET SCORE™ — INFORMATIONAL PRESSURE FAMILY ─────────────────── */
+const BTS_THEME={ink:'#10161c',panel:'#161f28',panel2:'#1d2832',line:'#2b3947',felt:'#1f7a52',feltLo:'#13301f',gold:'#d4a13b',goldLo:'#3a2f14',text:'#e8edf2',dim:'#92a2b1',red:'#c0473b',white:'#f4f7fa'};
+const BTS_SUITS={hidden:'♠',slow:'♦',reset:'♥',betfold:'♠',stake:'♦',identity:'♣',image:'♥',siege:'♣'};
+const BTS_DECKS=[
+  {id:'3-5',label:'3–5',range:[3,5]},
+  {id:'4-8',label:'4–8',range:[4,8]},
+  {id:'4-9',label:'4–9 default',range:[4,9]},
+  {id:'3-11',label:'3–11',range:[3,11]},
+  {id:'custom',label:'Custom',range:null}
+];
+const BTS_GAMES=[
+  {id:'mini',group:'Junior',title:'Blind Target Mini',tier:'Junior',level:'Levels 0–1',format:'1 v 1',deck:[3,5],mechanism:'Hidden information',suit:'hidden',arb:'App',blurb:'Short, frequent hidden-target games. Entry point for the family.',setup:'Deck 3–5. App-arbitrated. One court, two players. Keep games short and rotate quickly.',steps:['Player A receives a hidden target.','Player B receives a hidden target.','Scores are public; targets are hidden.','Rally winner scores 1.','Game ends when a player reaches or passes their target.','Reveal targets, redraw, repeat.'],scoring:'Rally winner +1. First to reach or pass hidden target wins.',coachMsg:'Every rally could finish the game.',obs:['Who keeps full effort when the score looks low','Who relaxes too early','First reactions to a sudden ending']},
+  {id:'base',group:'Tier 1',title:'Blind Target',tier:'Tier 1',level:'Level 2+',format:'1 v 1',deck:[4,9],mechanism:'Hidden information',suit:'hidden',arb:'Player declared',blurb:'The foundation game. Hidden endpoints turn every rally into a possible match ball.',setup:'Deck 4–9. Player-declared. Standard rally scoring.',steps:['Each player privately views and remembers their own hidden target.','Play normal rally scoring.','Rally winner scores 1.','On reaching target, the player declares and reveals the card.','Game ends. Redraw for the next game.'],scoring:'Rally winner +1. First to reach target declares and wins. Playing past target without declaring forfeits.',coachMsg:'Do not wait for match ball. Every rally might already be match ball.',obs:['Who sustains attention across the whole game','Who builds a between-rally reset routine unprompted','Who discovers the score-versus-silence layer']},
+  {id:'hold',group:'Tier 2',title:'Declare or Hold',tier:'Tier 2',level:'Level 3+',format:'1 v 1',deck:[4,9],mechanism:'Slow-playing',suit:'slow',arb:'Player declared',blurb:'Reach your target and choose: take the win, or hold and chase target +2 for double while risking everything.',setup:'Deck 4–9. Requires a session-points context to give the gamble meaning.',steps:['Both players receive hidden targets.','Play normal rally scoring.','When a player reaches target, they choose Declare or Hold.','Declare: reveal, win, score 1 session point.','Hold: keep playing; new target becomes original target +2.','Reach target +2 first: Hold Win, score 2 session points.','If the opponent reaches their target first, the holding player loses the opportunity.'],scoring:'Declare = 1 session point. Hold Win = 2 session points. Beaten while holding = 0.',coachMsg:'Do you take the win, or risk it for more?',obs:['Risk appetite under pressure','Who holds too long','Emotional control after a hold fails']},
+  {id:'drift',group:'Tier 2',title:'Live Drift',tier:'Tier 2',level:'Level 3+',format:'1 v 1',deck:[4,9],mechanism:'Information reset',suit:'reset',arb:'Player declared',blurb:'Mid-game, each player draws a second target and secretly keeps one. Everything inferred may now be wrong.',setup:'Deck 4–9. Default trigger: first player reaches 4.',steps:['Both players receive hidden targets.','Play normal rally scoring.','When the trigger is reached, Live Drift activates.','Each player receives a second hidden target.','Each privately keeps one target; the discard is never shown.','Play continues; first to the kept target wins.','Reveal at end.'],scoring:'Rally winner +1. First to reach the kept target wins.',coachMsg:'Information changes. Stay calm and adapt.',obs:['Adaptability when reads are invalidated','Who tilts after the reset','Who re-reads rather than clings to old information']},
+  {id:'gambler',group:'Tier 3',title:'Raise & Fold — The Gambler™',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:[4,9],mechanism:'Bet · Call · Fold',suit:'betfold',arb:'Player declared',flagship:true,blurb:'The full poker triad simplified. Each player has two Raise Tokens; a raise makes the next rally worth double and the opponent must call or fold.',setup:'Deck 4–9. 2 Raise Tokens per player. No button system. Either player may raise before a rally if they still have a token.',steps:['Both players receive hidden targets and 2 Raise Tokens.','Before any rally, either player may declare Raise by using one token.','Opponent chooses Call or Fold.','If Call: play the rally; winner scores 2 and the token is spent.','If Fold: rally is not played; raiser scores 1 and the token is returned.','If no raise: play a normal rally; winner scores 1.','Game ends when a player reaches or passes target.'],scoring:'Normal rally +1. Called raise +2 to the winner. Fold +1 to the raiser.',coachMsg:'Raise, call or fold. The decision is the pressure.',obs:['Who folds well','Who cannot fold','Who over-raises','What a raise tells the opponent']},
+  {id:'powerplay',group:'Tier 3',title:'Blind Power Play',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:[4,9],mechanism:'Stake inflation',suit:'stake',arb:'Player declared',blurb:'Self-trigger a Power Play to make the next rally count double without knowing if it just ended the game.',setup:'Deck 4–9. Reuses Power Play™ token logic. Self-triggered only.',steps:['Both players receive hidden targets.','Players receive Power Play tokens.','Play normal rally scoring.','A player may self-trigger Power Play before a rally.','The Power Play rally is worth double; winner scores 2.','Game ends when a player reaches or passes target.'],scoring:'Rally winner +1. Power Play rally winner +2.',coachMsg:'When is the right moment to commit?',obs:['Timing of commitment','Who burns tokens early','Reaction when a double rally overshoots the target']},
+  {id:'difference',group:'Tier 3',title:'Blind Difference',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:null,mechanism:'Identity uncertainty',suit:'identity',arb:'App',pairs:[[4,7],[4,8],[5,9],[3,6],[5,8]],blurb:'A known pair of targets, dealt blind. You hold one — but not which.',setup:'App-required. Pair selected at random with minimum gap 3. Players are told the pair, not their own target.',steps:['The app selects a target pair, for example 4 and 8.','Players are told the pair.','Player A secretly receives one target; Player B the other.','Neither player knows which target they hold.','Play normal rally scoring; app tracks both targets.','App ends the game when the correct hidden target is reached.','Reveal at end.'],scoring:'Rally winner +1. App ends game when a player reaches their unknown target.',coachMsg:'Can you compete without knowing whether you are favourite or underdog?',obs:['Tolerance of total uncertainty','Behaviour at the Certainty Cliff','Who plays the same regardless of standing']},
+  {id:'blind-race',group:'King of Court',title:'Blind Race™',tier:'KOC Flagship',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Venue-wide hidden finish',suit:'hidden',arb:'Coach / App assisted',flagship:true,blurb:'Checkerboard KOC version. First player anywhere in the venue to reach a hidden target triggers the rotation end phase.',setup:'2–6 courts. 3–5 players per court. Each player draws 4–8 and multiplies by 3. Targets are active for this rotation only. Default targets therefore range 12–24.',steps:['At the start of the rotation, every player on every court receives a hidden target.','Card 4–8 is multiplied by 3: 4→12, 5→15, 6→18, 7→21, 8→24.','Players score normal rally wins on their own court.','First player anywhere in the venue to reach target calls TARGET.','Coach presses Target Achieved and calls Final Rally.','All courts play one final rally, then stop.','Targets reveal. The player who achieved target wins their court regardless of current court score.','Blind Race winner starts the next rotation with +3 carry-over points.','All other movement follows normal Checkerboard promotion/relegation by court score.','If multiple players achieved target, play Blind Race tie-break: first to 3, win by 2 at 2–2, sudden death at 4–4.'],scoring:'Normal court scoring during the rotation. Hidden target achieved = court win + promotion +3 carry-over into next rotation. Tie-break maximum 5–4.',coachMsg:'Someone, somewhere, may be one rally from ending the rotation.',obs:['Do players stop playing the clock?','Do lower courts stay more engaged?','Does the +3 carry-over feel meaningful but not excessive?','Is card ×3 too short or too long for your group?']},
+  {id:'koc-cumulative',group:'King of Court',title:'KOC Cumulative',tier:'Group',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Table image',suit:'image',arb:'Either',blurb:'One hidden session target each. Over the session, reputations form.',setup:'Deck 4–8. One draw per player at session start. Target = card × 3 total rally wins.',steps:['Each player draws once at session start. Target = card × 3.','Example: card 5 means target of 15 rally wins.','Normal KOC continues across the whole session.','Every rally win adds to the player’s session tally.','On reaching target, player reveals and earns a session point.','Coach may redraw all or keep going depending on session design.'],scoring:'Cumulative rally wins across the session. Reaching hidden total = 1 session point.',coachMsg:'Nobody knows who is close.',obs:['Reputations forming','Who plays the long game','Who responds to reputation rather than live information']},
+  {id:'court-blind-target',group:'King of Court',title:'Court Blind Target™',tier:'Future / Optional',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Shared unknown endpoint',suit:'image',arb:'Coach / App assisted',blurb:'A future variant: each court has one hidden target that no player on that court knows. Coach taps a court card to reveal the target privately.',setup:'Parked for future build. Useful when coach wants the court, rather than the player, to have the unknown finish line.',steps:['Coach deals one hidden target per court.','Players do not know the court target.','Court score accumulates normally.','When court target is reached, the app/coach reveals and triggers the chosen rotation rule.'],scoring:'Future scoring overlay. Not active in this release.',coachMsg:'The court has a secret finish line.',obs:['Does shared uncertainty change court behaviour?','Do players stop playing the time block?']}
+];
+function btsRangeVals(range){const out=[];for(let i=range[0];i<=range[1];i++)out.push(i);return out;}
+function btsPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function BTSCardFace({value,hidden,suit='♠'}){
+  const red=suit==='♦'||suit==='♥';
+  if(hidden)return <div className="btsCardFace btsCardBack"><div/></div>;
+  return <div className="btsCardFace" style={{color:red?BTS_THEME.red:'#101820'}}><span>{value}<small>{suit}</small></span><b>{suit}</b><em>{value}<small>{suit}</small></em></div>;
+}
+function BTSRevealCard({label,value,suit}){
+  const[show,setShow]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>()=>clearTimeout(ref.current),[]);
+  function reveal(){setShow(true);clearTimeout(ref.current);ref.current=setTimeout(()=>setShow(false),3000);}
+  return <div className="btsRevealCard"><strong>{label}</strong><button onClick={reveal} className="btsCardBtn"><BTSCardFace value={value} suit={suit} hidden={!show}/></button><small>{show?'Auto-hides in 3 seconds':'Tap to reveal'}</small></div>;
+}
+function BTSGameCard({game,mode,deckRange,mirrorBlock}){
+  const[open,setOpen]=useState(false);
+  const[deal,setDeal]=useState(null);
+  const[playerCount,setPlayerCount]=useState(4);
+  function makeDeal(){
+    if(game.format==='King of Court'){
+      const deck=btsRangeVals(game.deck||[4,8]);
+      const players=Array.from({length:playerCount},(_,i)=>{
+        const card=btsPick(deck);
+        const target=game.id==='blind-race'||game.id==='koc-cumulative'?card*3:card;
+        return {label:`Player ${i+1}`,card,target};
+      });
+      setDeal({players,suit:BTS_SUITS[game.suit],koc:true});
+      return;
+    }
+    if(game.pairs){
+      const pair=btsPick(game.pairs);
+      const order=Math.random()<.5?pair:[pair[1],pair[0]];
+      setDeal({a:order[0],b:order[1],pair:[...pair].sort((x,y)=>x-y),suit:BTS_SUITS[game.suit]});
+      return;
+    }
+    const deck=btsRangeVals(game.deck||deckRange);
+    let a=btsPick(deck), b=btsPick(deck);
+    if(mirrorBlock){let guard=0;while(b===a&&guard++<20)b=btsPick(deck);}
+    setDeal({a,b,suit:BTS_SUITS[game.suit]});
+  }
+  return <div className={'btsGameCard '+(game.flagship?'btsFlagship':'')}>
+    {game.flagship&&<span className="btsFlag">★ FLAGSHIP</span>}
+    <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
+    <p>{game.blurb}</p>
+    <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
+    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div><p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
+    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={p.label} label={p.label} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are card × 3 targets. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="Player A" value={deal.a} suit={deal.suit}/><BTSRevealCard label="Player B" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
+    {open&&<div className="btsMoreInfo">
+      <div className="infoBox"><strong>Setup</strong><p>{game.setup}</p></div>
+      <div className="infoBox"><strong>Step-by-step</strong><ol>{game.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
+      <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
+      <div className="pressureCoachNote"><strong>Coach Message</strong><p>“{game.coachMsg}”</p></div>
+      <div className="infoBox"><strong>Coaching observations</strong><ul>{game.obs.map((o,i)=><li key={i}>{o}</li>)}</ul></div>
+      <div className="infoBox"><strong>Arbitration</strong><p>{game.arb}</p></div>
+    </div>}
+  </div>;
+}
+function BlindTargetScoreModule({setScreen}){
+  const[mode,setMode]=useState('coach');
+  const[deck,setDeck]=useState('4-9');
+  const[customLo,setCustomLo]=useState(4);
+  const[customHi,setCustomHi]=useState(9);
+  const[mirror,setMirror]=useState(false);
+  const[revealFirst,setRevealFirst]=useState(false);
+  const[form,setForm]=useState(false);
+  const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
+  const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
+  return <div className="page btsPage">
+    <div className="pageTop"><div><h1>Blind Target Score™</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
+    <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
+    <div className="gameCard btsConfig">
+      <h2>Delivery Mode</h2>
+      <div className="btsModeGrid">
+        {[['coach','Coach Led','Default: instructions, scoring and More Info only. Coach runs the activity courtside.'],['assisted','Assisted','App manages hidden target reveal and deck mechanics. Coach manages game flow.'],['engine','Full Engine','Advanced label for future scoring, declarations, holds, raises, folds and Form Card statistics.']].map(m=><button key={m[0]} className={mode===m[0]?'activeMode':''} onClick={()=>setMode(m[0])}><strong>{m[1]}</strong><span>{m[2]}</span></button>)}
+      </div>
+      <h2>Configuration</h2>
+      <div className="btsDeckRow">{BTS_DECKS.map(d=><button key={d.id} className={deck===d.id?'activeLayer':''} onClick={()=>setDeck(d.id)}>{d.label}</button>)}</div>
+      {deck==='custom'&&<div className="btsCustomDeck"><label>Min <input type="number" value={customLo} onChange={e=>setCustomLo(+e.target.value)}/></label><label>Max <input type="number" value={customHi} onChange={e=>setCustomHi(+e.target.value)}/></label></div>}
+      <div className="btsToggleRow">
+        <button className={mirror?'activeLayer':''} onClick={()=>setMirror(!mirror)}>Mirror Block {mirror?'ON':'OFF'}</button>
+        <button className={revealFirst?'activeLayer':''} onClick={()=>setRevealFirst(!revealFirst)}>Reveal on First Ball {revealFirst?'ON':'OFF'}</button>
+        <button className={form?'activeLayer':''} onClick={()=>setForm(!form)}>Form Card {form?'ON':'OFF'}</button>
+      </div>
+      {form&&<div className="hintBox"><strong>Form Card note:</strong> public tendency stats change bluffing economics. Use with advanced players.</div>}
+    </div>
+    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror}/>)}</div></section>)}
+    <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
+  </div>;
+}
+
+
 function App(){
 const[screen,setScreen]=useState('home');
 const[backStack,setBackStack]=useState([]);
@@ -10205,10 +10354,12 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h62</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h68</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
+      {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go}/>}
+      {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
