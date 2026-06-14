@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h68 Blind Race + Vision Build';
+const APP_VERSION='v100h69 Attendance Seeding & Junior Ladder Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2088,6 +2088,7 @@ return <div className="homeGrid homeGridV99h52">
       </button>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
+      <button className="homeCard juniorLadderHomeCard homeTitleOnly" onClick={()=>setScreen('juniorLadder')}><h2>Junior Ladder</h2><span className="homeTileSubtitle">Programme ranking & seeding</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
@@ -6876,11 +6877,13 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       seedOrder:index+1,
       players:teamPlayers.map(playerDisplayName)
     }));
-    const courtOrder=shuffleInvasionArray(baseTeams.map(team=>team.id));
-    const nextTeams=baseTeams.map(team=>({
+    // v100h69: keep true snake seeding tied to court order.
+    // Previous random court allocation broke the visible snake pattern.
+    // Example with 4 courts: C1 = 1,8,9,16 · C2 = 2,7,10,15 · C3 = 3,6,11,14 · C4 = 4,5,12,13.
+    const nextTeams=baseTeams.map((team,index)=>({
       ...team,
-      court:`Court ${courtOrder.indexOf(team.id)+1}`
-    })).sort((a,b)=>Number(String(a.court).replace(/\D/g,''))-Number(String(b.court).replace(/\D/g,'')));
+      court:`Court ${index+1}`
+    }));
     setInvasionTeams(nextTeams);
     setInvasionTeamPoints({});
     const fair=getInvasionFairRows(nextTeams);
@@ -10239,19 +10242,25 @@ function BTSRevealCard({label,value,suit}){
   function reveal(){setShow(true);clearTimeout(ref.current);ref.current=setTimeout(()=>setShow(false),3000);}
   return <div className="btsRevealCard"><strong>{label}</strong><button onClick={reveal} className="btsCardBtn"><BTSCardFace value={value} suit={suit} hidden={!show}/></button><small>{show?'Auto-hides in 3 seconds':'Tap to reveal'}</small></div>;
 }
-function BTSGameCard({game,mode,deckRange,mirrorBlock}){
+function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
   const[open,setOpen]=useState(false);
   const[deal,setDeal]=useState(null);
   const[playerCount,setPlayerCount]=useState(4);
+  const[courtCount,setCourtCount]=useState(3);
+  const rankedAttendance=useMemo(()=>[...(attendancePlayers||[])].filter(p=>p&&p.name).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[attendancePlayers]);
+  const seededAttendanceCourts=useMemo(()=>rankedAttendance.length?snakeSeedPlayers(rankedAttendance,Math.max(1,Math.min(6,Number(courtCount)||3))):[],[rankedAttendance,courtCount]);
   function makeDeal(){
     if(game.format==='King of Court'){
       const deck=btsRangeVals(game.deck||[4,8]);
-      const players=Array.from({length:playerCount},(_,i)=>{
+      const named=seededAttendanceCourts.length
+        ? seededAttendanceCourts.flatMap((courtPlayers,courtIndex)=>(courtPlayers||[]).map(name=>({name,court:`Court ${courtIndex+1}`})))
+        : Array.from({length:playerCount},(_,i)=>({name:`Player ${i+1}`,court:'Court 1'}));
+      const players=named.map(item=>{
         const card=btsPick(deck);
         const target=game.id==='blind-race'||game.id==='koc-cumulative'?card*3:card;
-        return {label:`Player ${i+1}`,card,target};
+        return {label:seededAttendanceCourts.length?`${item.court} · ${item.name}`:item.name,card,target,court:item.court,name:item.name};
       });
-      setDeal({players,suit:BTS_SUITS[game.suit],koc:true});
+      setDeal({players,suit:BTS_SUITS[game.suit],koc:true,usingAttendance:!!seededAttendanceCourts.length,courts:seededAttendanceCourts});
       return;
     }
     if(game.pairs){
@@ -10270,8 +10279,8 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock}){
     <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
     <p>{game.blurb}</p>
     <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
-    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div><p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
-    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={p.label} label={p.label} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are card × 3 targets. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="Player A" value={deal.a} suit={deal.suit}/><BTSRevealCard label="Player B" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
+    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance, seeded by Junior Programme Ranking.</p><div className="buttonRow">{[2,3,4,5,6].map(n=><button key={n} className={courtCount===n?'activeLayer':''} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{seededAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present players found. Using generic player labels.</p><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
+    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={p.label} label={p.label} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, targets are tied to attendance names for this rotation only. Card × 3 targets. Hand the device to each player; card auto-hides after 3 seconds.</p>{deal.usingAttendance&&<div className="hintBox"><strong>Attendance-linked targets:</strong> each hidden target is tied to the named player shown on the card. Re-deal after the next promotion/relegation.</div>}<div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="Player A" value={deal.a} suit={deal.suit}/><BTSRevealCard label="Player B" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
     {open&&<div className="btsMoreInfo">
       <div className="infoBox"><strong>Setup</strong><p>{game.setup}</p></div>
       <div className="infoBox"><strong>Step-by-step</strong><ol>{game.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
@@ -10282,7 +10291,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock}){
     </div>}
   </div>;
 }
-function BlindTargetScoreModule({setScreen}){
+function BlindTargetScoreModule({setScreen,players=[]}){
   const[mode,setMode]=useState('coach');
   const[deck,setDeck]=useState('4-9');
   const[customLo,setCustomLo]=useState(4);
@@ -10311,8 +10320,56 @@ function BlindTargetScoreModule({setScreen}){
       </div>
       {form&&<div className="hintBox"><strong>Form Card note:</strong> public tendency stats change bluffing economics. Use with advanced players.</div>}
     </div>
-    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror}/>)}</div></section>)}
+    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={(players||[]).filter(p=>p&&p.present)}/>)}</div></section>)}
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
+  </div>;
+}
+
+
+function JuniorLadder({players=[],setPlayers=()=>{},setScreen}){
+  const [showAll,setShowAll]=useState(false);
+  const ladderPlayers=useMemo(()=>{
+    return [...(players||[])].filter(p=>p&&p.name&&(showAll||p.playerType!=='Guest Player')).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name)));
+  },[players,showAll]);
+  function updateRank(name,newRank){
+    const clean=Math.max(1,Number(newRank)||1);
+    setPlayers(prev=>(prev||[]).map(p=>p.name===name?{...p,juniorRanking:String(clean),ranking:String(clean)}:p));
+  }
+  function normalizeRanks(){
+    const ordered=[...ladderPlayers];
+    setPlayers(prev=>(prev||[]).map(p=>{
+      const idx=ordered.findIndex(x=>x.name===p.name);
+      return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;
+    }));
+  }
+  function move(name,dir){
+    const ordered=[...ladderPlayers];
+    const idx=ordered.findIndex(p=>p.name===name);
+    const swap=idx+dir;
+    if(idx<0||swap<0||swap>=ordered.length) return;
+    const a=ordered[idx], b=ordered[swap];
+    const aRank=playerSeedValue(a), bRank=playerSeedValue(b);
+    setPlayers(prev=>(prev||[]).map(p=>{
+      if(p.name===a.name) return {...p,juniorRanking:String(bRank),ranking:String(bRank)};
+      if(p.name===b.name) return {...p,juniorRanking:String(aRank),ranking:String(aRank)};
+      return p;
+    }));
+  }
+  const presentCount=(players||[]).filter(p=>p&&p.present).length;
+  return <div className="page juniorLadderPage">
+    <div className="pageTop"><div><h1>Junior Programme Ladder</h1><p className="mutedText">Programme ranking feeds attendance seeding, competition courts and Blind Race target assignment.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="juniorLadderHero"><strong>Lower rank number = stronger seed.</strong><span>Use this ladder to keep the programme order current. Attendance and KOC snake seeding should follow this order unless manually adjusted.</span></div>
+    <div className="buttonRow"><button className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button><button className="secondaryBtn" onClick={()=>setScreen('players')}>Open Players</button></div>
+    <div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for snake seeding and Blind Race.</div>
+    <div className="juniorLadderList">
+      {ladderPlayers.length?ladderPlayers.map((p,idx)=><div key={p.name} className="juniorLadderRow">
+        <div className="ladderRankBadge">#{playerSeedValue(p)>=9000?'—':playerSeedValue(p)}</div>
+        <div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present today':'Not present'}{p.playerType==='Guest Player'?' · Guest':''}</span></div>
+        <div className="ladderRankEdit"><label>Rank <input type="number" min="1" value={playerSeedValue(p)>=9000?'':playerSeedValue(p)} onChange={e=>updateRank(p.name,e.target.value)}/></label></div>
+        <div className="ladderMoveBtns"><button className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div>
+      </div>):<div className="gameCard"><p>No programme players yet. Add players in the Players module.</p></div>}
+    </div>
+    <div className="gameCard"><h2>How this feeds seeding</h2><p>The Competition module uses Junior Programme Ranking to snake seed attendance players across courts. Example with 4 courts: Court 1 = 1,8,9,16 · Court 2 = 2,7,10,15 · Court 3 = 3,6,11,14 · Court 4 = 4,5,12,13.</p></div>
   </div>;
 }
 
@@ -10354,13 +10411,14 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h68</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h69</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
-      {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go}/>}
+      {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
+      {screen==='juniorLadder'&&<JuniorLadder players={players} setPlayers={setPlayers} setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}

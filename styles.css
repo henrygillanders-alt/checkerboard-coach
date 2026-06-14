@@ -1,4 +1,4 @@
-/* v100h68 Blind Race + Vision Build */
+/* v100h69 Attendance Seeding & Junior Ladder Build */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7079,7 +7079,7 @@ button.mentalSkillsTile p{
 .pressureExerciseTile .pressureExerciseDuration{font-weight:800;}
 
 
-/* v100h68 Blind Race + Vision Build */
+/* v100h69 Attendance Seeding & Junior Ladder Build */
 .pressureFormatBar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px 0;background:#071827;border:1px solid #2f4d72;border-radius:16px;padding:12px 14px;}
 .pressureFormatBtn,.pressureFormatActive{border-radius:999px;padding:9px 14px;font-size:13px;font-weight:900;cursor:pointer;-webkit-appearance:none;appearance:none;}
 .pressureFormatBtn{background:#0b1828;border:1px solid #2f4d72;color:#9fb0c8;}
@@ -7131,7 +7131,7 @@ button.mentalSkillsTile p{
 @media(max-width:900px){.btsPressureFamilies,.btsModeGrid{grid-template-columns:1fr}.btsGrid{grid-template-columns:1fr}}
 
 
-/* v100h68 Blind Race + Vision Build */
+/* v100h69 Attendance Seeding & Junior Ladder Build */
 .pressureHomeCard{background:linear-gradient(135deg,#0b3b72,#071827)!important;color:white!important;border:1px solid #5e83be!important;box-shadow:0 18px 45px rgba(31,93,208,.18)!important;}
 .pressureHomeCard h2,.pressureHomeCard .homeTileSubtitle{color:white!important;text-shadow:0 3px 12px rgba(0,0,0,.55)!important;}
 .visionHomeCard{background:linear-gradient(135deg,#0ea5e9,#0f172a)!important;color:white!important;min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important;box-shadow:0 18px 45px rgba(14,165,233,.18)!important;}
@@ -7165,3 +7165,12 @@ button.mentalSkillsTile p{
 .visionRiskBox{background:#2a1208;border-left:3px solid #f97316;border-radius:0 12px 12px 0;padding:12px 14px;margin:10px 0;}
 .visionRiskBox strong{color:#fdba74;display:block;margin-bottom:5px;}.visionRiskBox p{color:#fed7aa;margin:0;}
 @media(max-width:900px){.visionPrincipleGrid{grid-template-columns:1fr}.visionGrid{grid-template-columns:1fr}}
+
+
+/* v100h69 Junior Ladder + Attendance-linked Blind Race */
+.juniorLadderHomeCard{background:linear-gradient(135deg,#0f766e,#042f2e)!important;color:white!important;min-height:180px!important;padding:28px!important;border-radius:22px!important;border:0!important;text-align:left!important}
+.juniorLadderHomeCard h2{font-size:42px!important;margin:0 0 18px 0!important;color:white!important}
+.juniorLadderHomeCard .homeTileSubtitle{display:block;color:#ccfbf1!important;font-size:18px!important;font-weight:800!important}
+.juniorLadderHero{background:#062923;border:1px solid #14b8a6;border-radius:18px;padding:18px 22px;margin-bottom:16px;color:#ccfbf1}
+.juniorLadderHero strong{display:block;color:#5eead4;font-size:16px;margin-bottom:6px}.juniorLadderHero span{color:#d1fae5;line-height:1.5}.juniorLadderList{display:flex;flex-direction:column;gap:10px;margin-top:16px}.juniorLadderRow{display:grid;grid-template-columns:72px 1fr 120px 110px;gap:12px;align-items:center;background:#0b1828;border:1px solid #35567e;border-radius:16px;padding:12px 14px}.ladderRankBadge{background:#0f766e;border:1px solid #5eead4;color:#fff;border-radius:12px;padding:10px 8px;font-size:18px;font-weight:900;text-align:center}.ladderPlayerInfo strong{display:block;color:#fff;font-size:16px}.ladderPlayerInfo span{display:block;color:#9fb0c8;font-size:13px;margin-top:4px}.ladderRankEdit label{display:flex;flex-direction:column;gap:4px;color:#ffd980;font-size:12px;font-weight:900}.ladderRankEdit input{background:#081320;border:1px solid #35567e;border-radius:10px;padding:8px;color:white;width:100%}.ladderMoveBtns{display:flex;gap:6px;justify-content:flex-end}.ladderMoveBtns button{padding:8px 12px}.btsCourtPreview{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0}.btsCourtPreview div{background:#081320;border:1px solid #35567e;border-radius:10px;padding:10px}.btsCourtPreview strong{display:block;color:#ffd980;margin-bottom:4px}.btsCourtPreview span{display:block;color:#dce8ff;font-size:13px;line-height:1.4}
+@media(max-width:900px){.juniorLadderRow{grid-template-columns:60px 1fr}.ladderRankEdit,.ladderMoveBtns{grid-column:1/-1}.ladderMoveBtns{justify-content:flex-start}.juniorLadderHomeCard h2{font-size:32px!important}}
