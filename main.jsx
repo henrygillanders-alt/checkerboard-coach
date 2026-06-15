@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h72 Tactical Intentions Diversity Overlay Build';
+const APP_VERSION='v100h73 Pattern Lab Full Library Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2138,7 +2138,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard visionHomeCard homeTitleOnly" onClick={()=>setScreen('visionPerception')}><h2>Vision & Perception</h2><span className="homeTileSubtitle">Opponent Information Pickup</span></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Tactical Intentions</h2><span className="homeTileSubtitle">Patterns of Play Revisited</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -5961,7 +5961,7 @@ function Games({setSession,setScreen}){
     {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play',category:'Power Play'},
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
-    {id:'tacticalIntentions',label:'Tactical Intentions',category:'Tactical Intentions'},
+    {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
@@ -10366,6 +10366,7 @@ function SoloFlow({type}){
   return <div className={solo?'soloFlow soloFlowRisk':'soloFlow soloFlowAdaptive'}>{steps.map((step,i)=><React.Fragment key={step}><div className="soloFlowStep"><span>{i+1}</span><strong>{step}</strong></div>{i<steps.length-1&&<div className="soloFlowArrow">↓</div>}</React.Fragment>)}</div>;
 }
 
+
 const TACTICAL_INTENTION_GAMES=[
   {title:'Pressure Before Attack',rld:'4',quick:'Maintain [6-3] or [5-4] until opponent leaves T-zone. Attack only when pressure creates opportunity.',logic:'Build rear-court pressure using working length or lob length. Once opponent is off T, attack to [8-1], [7-2] or a coach-selected front zone.',score:'Win rally = 1 · Opponent Off T before attack = +1 · Attack winner = +2 · Clean winner bonus may sit on top.',constraints:['No Repeat','Height Change','Volley Attack Optional','Quality Length First'],coach:'Pressure creates opportunity. Do not attack because you can; attack because the game has offered it.'},
   {title:'Width Before Attack',rld:'4',quick:'Use one straight route and one crosscourt route before the attack bonus is live.',logic:'Player must combine [6-3] or [5-4] with [7-2] or [8-1] before attacking. Sequence is not prescribed; the width requirement is the constraint.',score:'Rally = 1 · Straight + Cross completed = +1 · Win after attack = +2.',constraints:['Straight + Cross','No Repeat','Blind Finish','4-Shot Window'],coach:'Stretch first. Exploit second. Preserve tactical sense rather than alternating mechanically.'},
@@ -10374,26 +10375,129 @@ const TACTICAL_INTENTION_GAMES=[
   {title:'Deception & Affordance Recognition',rld:'5',quick:'Players must genuinely hold two options before committing. Opponent reads preparation cues, not just the ball.',logic:'Back player may drive, lob or straight drop from similar preparation. Front player must read opponent-racquet scene and respond. No Repeat prevents comfort patterns.',score:'Rally = 1 · Successful disguise = +1 · Win after three different families = +2.',constraints:['DIS','NR','Three Shot Families','Random Diversity Card'],coach:'Perceive, do not predict. The player should prepare options and let information select the solution.'}
 ];
 
+function makePattern({id,level,title,attack='Any',rld='3',back,front,recovery,followup='',flags=[],docRef='',intention='Pressure Before Attack'}){
+  const constraints=[...flags];
+  if(level>=2&&!constraints.includes('V+')) constraints.unshift('V+');
+  if(level===1&&!constraints.includes('V-')) constraints.unshift('V-');
+  return {
+    id,level,title,attack,rld,back,front,recovery,followup,flags:constraints,docRef,intention,
+    quick:`${back} → ${front} → ${recovery}${followup?` → ${followup}`:''}`,
+    logic:`Back court player solves ${back}. Front player attacks with ${front}. Recovering player responds with ${recovery}${followup?`, then the attacker resets with ${followup}`:''}. The objective is to preserve the tactical intention while varying solution families.`,
+    score:'Rally = 1 · Complete pattern challenge = +1 · Win after challenge = +2 · Clean winner may sit on top.',
+    coach:'Run it as a problem, not a recital. If the player becomes predictable, add a Diversity Constraint.'
+  };
+}
+
+const PATTERN_LAB_READY_GAMES=[
+  // Level I — fixed exposure library, bounce only
+  makePattern({id:'L1-01',level:1,title:'L1-01 Straight Drive · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6] X cross drive',docRef:'L1 #1'}),
+  makePattern({id:'L1-02',level:1,title:'L1-02 Straight Drive · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] W straight drive',docRef:'L1 #2'}),
+  makePattern({id:'L1-03',level:1,title:'L1-03 Straight Drive · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6] X cross drive',docRef:'L1 #3'}),
+  makePattern({id:'L1-04',level:1,title:'L1-04 Straight Drive · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W straight drive',docRef:'L1 #4'}),
+  makePattern({id:'L1-05',level:1,title:'L1-05 Straight Lob · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6] X cross drive',docRef:'L1 #5'}),
+  makePattern({id:'L1-06',level:1,title:'L1-06 Straight Lob · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] W straight drive',docRef:'L1 #6'}),
+  makePattern({id:'L1-07',level:1,title:'L1-07 Straight Lob · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6] X cross drive',docRef:'L1 #7'}),
+  makePattern({id:'L1-08',level:1,title:'L1-08 Straight Lob · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W straight drive',docRef:'L1 #8'}),
+  makePattern({id:'L1-09',level:1,title:'L1-09 Straight Drive · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6] L-X cross lob',docRef:'L1 #9'}),
+  makePattern({id:'L1-10',level:1,title:'L1-10 Straight Drive · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] L straight lob',docRef:'L1 #10'}),
+  makePattern({id:'L1-11',level:1,title:'L1-11 Straight Drive · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6] L-X cross lob',docRef:'L1 #11'}),
+  makePattern({id:'L1-12',level:1,title:'L1-12 Straight Drive · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L straight lob',docRef:'L1 #12'}),
+  makePattern({id:'L1-13',level:1,title:'L1-13 Straight Lob · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6] L-X cross lob',docRef:'L1 #13'}),
+  makePattern({id:'L1-14',level:1,title:'L1-14 Straight Lob · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] L straight lob',docRef:'L1 #14'}),
+  makePattern({id:'L1-15',level:1,title:'L1-15 Straight Lob · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6] L-X cross lob',docRef:'L1 #15'}),
+  makePattern({id:'L1-16',level:1,title:'L1-16 Straight Lob · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L straight lob',docRef:'L1 #16'}),
+
+  // Level II — direction choice and short/long recovery
+  makePattern({id:'L2-01',level:2,title:'L2-01 Drive Choice · Cross Drop · Straight Drop · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #1',flags:['Direction Choice']}),
+  makePattern({id:'L2-02',level:2,title:'L2-02 Drive Choice · Boast · Straight Drop · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #2',flags:['Direction Choice']}),
+  makePattern({id:'L2-03',level:2,title:'L2-03 Drive Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #3',flags:['Direction Choice']}),
+  makePattern({id:'L2-04',level:2,title:'L2-04 Drive Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #4',flags:['Direction Choice']}),
+  makePattern({id:'L2-05',level:2,title:'L2-05 Lob Choice · Cross Drop · Straight Drop · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #5',flags:['Height Change']}),
+  makePattern({id:'L2-06',level:2,title:'L2-06 Lob Choice · Boast · Straight Drop · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #6',flags:['Height Change']}),
+  makePattern({id:'L2-07',level:2,title:'L2-07 Lob Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #7',flags:['Height Change']}),
+  makePattern({id:'L2-08',level:2,title:'L2-08 Lob Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #8',flags:['Height Change']}),
+  makePattern({id:'L2-09',level:2,title:'L2-09 Lob Choice · Cross Drop · Drop Counter · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #9',flags:['Height Change']}),
+  makePattern({id:'L2-10',level:2,title:'L2-10 Lob Choice · Boast · Drop Counter · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #10',flags:['Height Change']}),
+  makePattern({id:'L2-11',level:2,title:'L2-11 Drive Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #11',flags:['Height Change']}),
+  makePattern({id:'L2-12',level:2,title:'L2-12 Drive Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #12',flags:['Height Change']}),
+  makePattern({id:'L2-13',level:2,title:'L2-13 Drive Choice · Cross Drop · Drop Counter · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #13',flags:['Height Change']}),
+  makePattern({id:'L2-14',level:2,title:'L2-14 Drive Choice · Boast · Drop Counter · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #14',flags:['Height Change']}),
+  makePattern({id:'L2-15',level:2,title:'L2-15 Lob Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #15',flags:['Height Change']}),
+  makePattern({id:'L2-16',level:2,title:'L2-16 Lob Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #16',flags:['Height Change']}),
+  makePattern({id:'L2-17',level:2,title:'L2-17 Drive Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] W or X drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #17',flags:['Any Short Attack']}),
+  makePattern({id:'L2-18',level:2,title:'L2-18 Lob Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #18',flags:['Any Short Attack']}),
+  makePattern({id:'L2-19',level:2,title:'L2-19 Drive Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] W or X drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #19',flags:['Any Short Attack']}),
+  makePattern({id:'L2-20',level:2,title:'L2-20 Lob Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #20',flags:['Any Short Attack']}),
+
+  // Level III — disguise and two-option recovery
+  makePattern({id:'L3-01',level:3,title:'L3-01 Lob Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #1',flags:['DIS']}),
+  makePattern({id:'L3-02',level:3,title:'L3-02 Lob Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #2',flags:['DIS']}),
+  makePattern({id:'L3-03',level:3,title:'L3-03 Drive Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #3',flags:['DIS']}),
+  makePattern({id:'L3-04',level:3,title:'L3-04 Drive Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #4',flags:['DIS']}),
+  makePattern({id:'L3-05',level:3,title:'L3-05 Lob Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #5',flags:['DIS','Height Change']}),
+  makePattern({id:'L3-06',level:3,title:'L3-06 Lob Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #6',flags:['DIS','Height Change']}),
+  makePattern({id:'L3-07',level:3,title:'L3-07 Drive Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #7',flags:['DIS','Height Change']}),
+  makePattern({id:'L3-08',level:3,title:'L3-08 Drive Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #8',flags:['DIS','Height Change']}),
+
+  // Level IV — short/long decision and no-repeat representative set
+  makePattern({id:'L4-01',level:4,title:'L4-01 Drive Choice · Cross Drop · Straight Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6] X cross drive',docRef:'L4 #1-2',flags:['DIS','NR','Short/Long Decision']}),
+  makePattern({id:'L4-02',level:4,title:'L4-02 Drive Choice · Cross Drop · Straight Drop or Straight Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6]/[5] W straight drive',docRef:'L4 #3-4',flags:['DIS','NR','Short/Long Decision']}),
+  makePattern({id:'L4-03',level:4,title:'L4-03 Drive Choice · Boast · Straight Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6] X cross drive',docRef:'L4 #5-6',flags:['DIS','NR','Short/Long Decision']}),
+  makePattern({id:'L4-04',level:4,title:'L4-04 Drive Choice · Boast · Straight Drop or Straight Drive',attack:'Boast',rld:'5',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6]/[5] W straight drive',docRef:'L4 #7-8',flags:['DIS','NR','Short/Long Decision']}),
+  makePattern({id:'L4-05',level:4,title:'L4-05 Lob Choice · Cross Drop · Straight Drop or Cross Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6] L-X cross lob',docRef:'L4 #21-24',flags:['DIS','NR','Height Change']}),
+  makePattern({id:'L4-06',level:4,title:'L4-06 Lob Choice · Boast · Straight Drop or Straight Lob',attack:'Boast',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6]/[5] L straight lob',docRef:'L4 #25-32',flags:['DIS','NR','Height Change']}),
+  makePattern({id:'L4-07',level:4,title:'L4-07 Drive Choice · Cross Drop · Any Drop or Long',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #33-36',flags:['DIS','NR','Three Shot Families']}),
+  makePattern({id:'L4-08',level:4,title:'L4-08 Lob Choice · Boast · Any Drop or Long',attack:'Boast',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #39-40',flags:['DIS','NR','Three Shot Families']}),
+
+  // Level V — full option set from back, early attack available
+  makePattern({id:'L5-01',level:5,title:'L5-01 Drive/Cross/Back Drop · Boast · Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6] X cross drive',docRef:'L5 #1-2',flags:['DIS','NR','Back Court Attack']}),
+  makePattern({id:'L5-02',level:5,title:'L5-02 Drive/Cross/Back Drop · Cross Drop · Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] F-X cross drop',recovery:'[2]/[1] F drop OR [6] X cross drive',docRef:'L5 #3-4',flags:['DIS','NR','Back Court Attack']}),
+  makePattern({id:'L5-03',level:5,title:'L5-03 Lob/Cross Lob/Back Drop · Boast · Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] L/L-X lob OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6]/[5] W/X drive',docRef:'L5 #5-8',flags:['DIS','NR','Back Court Attack']}),
+  makePattern({id:'L5-04',level:5,title:'L5-04 Drive/Cross/Back Drop · Boast · Drop or Lob',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6]/[5] L/L-X lob',docRef:'L5 #9-16',flags:['DIS','NR','Back Court Attack','Height Change']}),
+  makePattern({id:'L5-05',level:5,title:'L5-05 Drive/Cross/Back Drop · Boast · Any Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any drive',docRef:'L5 #17-20',flags:['DIS','NR','Three Shot Families','Back Court Attack']}),
+  makePattern({id:'L5-06',level:5,title:'L5-06 Lob/Cross Lob/Back Drop · Cross Drop · Any Drop or Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] L/L-X lob OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] F-X cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any lob',docRef:'L5 #25-28',flags:['DIS','NR','Three Shot Families','Back Court Attack']}),
+];
+
+const PATTERN_LEVEL_META={
+  1:{label:'Level I',subtitle:'Fixed pattern',note:'Zone and flight fixed. Player solves movement first. V- must bounce.'},
+  2:{label:'Level II',subtitle:'Direction choice',note:'Back player chooses straight or cross. Recovery begins short/long choice. V+ available.'},
+  3:{label:'Level III',subtitle:'Two options + disguise',note:'Players hold two options. DIS active: opponent reads preparation, not only ball flight.'},
+  4:{label:'Level IV',subtitle:'Short/long decision',note:'Recovery chooses attack short or reset long. NR prevents repeat attractor locking.'},
+  5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
+};
+
 function TacticalIntentionsModule({setScreen,setSession}){
-  const [selected,setSelected]=useState(TACTICAL_INTENTION_GAMES[0]);
+  const [selected,setSelected]=useState(PATTERN_LAB_READY_GAMES[0]);
   const [mode,setMode]=useState('ready');
+  const [levelFilter,setLevelFilter]=useState('All');
+  const [attackFilter,setAttackFilter]=useState('All');
   const [random,setRandom]=useState(null);
+  const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
+  const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   function addGame(game){
-    const card={title:`Tactical Intentions — ${game.title}`,category:'Tactical Intentions',task:game.quick,description:game.logic,scoring:game.score,layers:game.constraints,rld:game.rld,coach:game.coach};
+    const card={title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',task:game.quick,description:game.logic,scoring:game.score,layers:game.flags,rld:game.rld,coach:game.coach};
     if(setSession)setSession(prev=>({...prev,rotations:[...(prev?.rotations||[]),card]}));
   }
   const active=random||selected;
+  const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
   return <div className="page tacticalIntentionsPage">
-    <div className="pageTop"><div><h1>Tactical Intentions</h1><p className="mutedText">Patterns of Play revisited through Checkerboard CLA design</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="tiHero"><h2>Preserve the tactical wisdom. Remove the prescription.</h2><p>Traditional patterns prescribe sequences. Tactical Intentions give players a problem to solve, then use diversity constraints to stop them defaulting to their deepest attractor state.</p></div>
-    <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const g=TACTICAL_INTENTION_GAMES[Math.floor(Math.random()*TACTICAL_INTENTION_GAMES.length)];setRandom(g);setSelected(g);}}>⚡ Random Game</button></div>
-    {mode==='ready'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className={selected.title===game.title?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.title}</strong><span>{game.quick}</span><small>RLD {game.rld}</small></button>)}</div>}
-    <div className="tiDetail gameCard"><div className="categoryTag">Ready Made Game</div><h2>{active.title}</h2><RLDBadge level={Number(active.rld)} size="lg"/>
-      <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Diversity Constraints</h3><div className="chipRow">{active.constraints.map(c=><span key={c}>{c}</span>)}</div></section></div>
-      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="secondaryBtn" onClick={()=>setScreen('technical')}>Open Universal Overlays</button></div>
+    <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
+    <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);}}>⚡ Random Pattern</button></div>
+
+    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
+
+    {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');}}><strong>{game.title}</strong><span>{game.quick}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
+
+    <div className="tiDetail gameCard"><div className="categoryTag">Plug & Play Pattern</div><h2>{active.title}</h2><RLDBadge level={Number(active.rld)} size="lg"/>
+      <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{active.docRef}</span></div>
+      <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Constraints / Flags</h3><div className="chipRow">{active.flags.map(c=><span key={c}>{c}</span>)}</div></section></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{active.quick}</p><small>{meta.note}</small></div>
+      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
     </div>
-    {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Tactical Intention</h2><p>Use the existing Game Logic, Scoring Logic, Constraints and DB panels. Add Diversity Constraints as overlays rather than rewriting the game.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
-    <div className="gameCard"><h2>CLA Rationale</h2><p>Patterns of Play become representative when the player must recognise the tactical problem and select from multiple functional solutions. Diversity constraints protect variability by preventing the strongest attractor from becoming the only answer.</p></div>
+
+    {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Pattern Lab Game</h2><p>Start with any plug-and-play card, then modify with the existing Game Logic, Scoring Logic, Constraints and DB panels. Diversity Constraints are overlays, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
+    <div className="gameCard"><h2>CLA Rationale</h2><p>The large game library preserves coach usability: there is always another exercise ready. The CLA upgrade is that each pattern now includes flight constraints, disguise, no-repeat and diversity overlays so players cannot simply default to their strongest attractor state.</p></div>
   </div>;
 }
 
