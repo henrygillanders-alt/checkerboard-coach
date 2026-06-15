@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h71 Solo Practice Exploration vs Installation Build';
+const APP_VERSION='v100h72 Tactical Intentions Diversity Overlay Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -606,6 +606,17 @@ const MENTAL_PERFORMANCE_OVERLAYS = [
   {category:'🧠 Agency', title:'Ownership Reset', rule:'Player selects their own reset strategy after pressure or error: breath, cue, visual target or animal lens.', coach:'Primary animal: Golden Retriever. Secondary animal: Elephant. Coach observes self-selected regulation without dependency.', pairings:['Reset Within 3 Seconds','Calming Breath','Centering Breath']},
   {category:'🧠 Agency', title:'Reflection Prompt', rule:'Player answers: what did I see, what did I choose, what will I try next?', coach:'Primary animal: Owl. Secondary animal: Eagle. Coach uses this to develop awareness, ownership and agency.', pairings:['Self Diagnose Error','Tactical Adjustment Challenge','Pattern Recognition']}
 ]
+
+const DIVERSITY_OVERLAYS=[
+  {category:'Diversity Constraints',title:'No Repeat (NR)',rule:'Player may not use the same shot family twice consecutively before earning the bonus.',coach:'Prevents dominant attractor states from becoming the default answer. Watch whether the player can access a second functional solution under pressure.',pairings:['Tactical Intentions','Checkerboard','Pressure Games','Shots']},
+  {category:'Diversity Constraints',title:'Straight + Cross',rule:'Player must use one straight route and one crosscourt route before attack bonus is live.',coach:'Forces width exploration while preserving tactical purpose. The player should stretch then exploit, not alternate mechanically.',pairings:['Width Before Attack','Around The Board','Checkerboard Pair Challenge']},
+  {category:'Diversity Constraints',title:'Height Change',rule:'Player must use one drive/working length and one lob/lofted solution before attack bonus is live.',coach:'Develops vertical variability and stops hard-flat hitting from becoming the only route to pressure.',pairings:['Pressure Before Attack','Shots','Quality Length Before Attack']},
+  {category:'Diversity Constraints',title:'Front + Back',rule:'Player must use one front-court action and one rear-court action before attack bonus is live.',coach:'Creates depth change and encourages players to manipulate recovery, not just hit to favourite zones.',pairings:['Front–Back Manipulation','Double Bounce','Opponent Off T']},
+  {category:'Diversity Constraints',title:'Three Shot Families',rule:'Player must use three different shot families before the scoring bonus becomes available.',coach:'Expands the solution landscape. Useful when players are settling into one comfortable pattern.',pairings:['Deception','Random Diversity Card','Blind Finish']},
+  {category:'Diversity Constraints',title:'Opposite Solution',rule:'The solution used to win or create advantage in the previous rally cannot be used as the first solution in the next rally.',coach:'Stops players repeating a successful habit without re-reading the current information.',pairings:['Counter Attack Recognition','Mental Performance','Pattern Recognition']},
+  {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
+];
+
 function UniversalOverlays({setScreen}){
   const [family,setFamily]=useState('Tactical');
   const [selected,setSelected]=useState(null);
@@ -616,7 +627,9 @@ function UniversalOverlays({setScreen}){
       ? TECHNICAL_OVERLAYS.map(o=>({
           category:o.category,title:o.title,rule:o.rule,coach:o.process,pairings:o.pairings||[], technical:o
         }))
-      : MENTAL_PERFORMANCE_OVERLAYS;
+      : family==='Diversity'
+        ? DIVERSITY_OVERLAYS
+        : MENTAL_PERFORMANCE_OVERLAYS;
 
   const categories=['All',...Array.from(new Set(data.map(o=>o.category)))];
   const [category,setCategory]=useState('All');
@@ -664,6 +677,7 @@ function UniversalOverlays({setScreen}){
     {family==='Tactical'&&<div className="universalInfoNote"><strong>Tactical Overlays</strong><span>Use these to shape decisions, advantage recognition and tactical behaviours inside games.</span></div>}
     {family==='Technical'&&<div className="universalInfoNote"><strong>Technical Overlays</strong><span>Use these as observable perception–action constraints, not isolated technique commands.</span></div>}
     {family==='Mental Performance'&&<div className="universalInfoNote visionFirstNote"><strong>Vision First Mental Performance</strong><span>In squash, mental performance begins with information pickup: see → understand → act. Use the diagnostic cards to select an animal, breathing tool and overlay package.</span></div>}
+    {family==='Diversity'&&<div className="universalInfoNote diversityInfoNote"><strong>Diversity Constraints</strong><span>Use these overlays to prevent players defaulting to dominant attractor states. They create exploration without prescribing a fixed sequence.</span></div>}
 
     <div className="overlayCategoryTabs">{categories.map(cat=><button key={cat} className={category===cat?'activeTab':''} onClick={()=>{setCategory(cat);setSelected(null);}}>{cat}</button>)}</div>
 
@@ -694,6 +708,7 @@ function UniversalOverlays({setScreen}){
       <button className={family==='Technical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Technical')}>🔧<span>Technical</span></button>
       <button className={family==='Tactical'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Tactical')}>♟<span>Tactical</span></button>
       <button className={family==='Mental Performance'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Mental Performance')}>🧠<span>Mental Performance</span></button>
+      <button className={family==='Diversity'?'activeBottomOverlayTab':''} onClick={()=>setFamily('Diversity')}>🔀<span>Diversity</span></button>
     </div>
   </div>;
 }
@@ -1465,34 +1480,34 @@ function PlugAndPlay({setScreen,setSession}){
       load:'Server ATL — Receiver Anywhere'
     },
     {
-      id:'PPA01',title:'Open Power Play™',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
+      id:'PPA01',title:'Open Power Play',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
       develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
       why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
       what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
       score:'Win rally = +1. Successful Power Play (win the rally) = +3 (1 rally point + 2 PP bonus). Failed Power Play = 0. Each player receives 2 tokens per rotation (coach configurable).',
       coach:'Watch when players choose to activate. Early activation under pressure is different to activation from a position of control. The timing decision is your coaching point.',
       player:'Announce Power Play before the rally. Win it for +3. Lose it for 0. Choose your moment.',
-      load:'Open Power Play™'
+      load:'Open Power Play'
     },
     {
-      id:'PPA02',title:'Blind Power Play™',tags:['Power Play','Decision Making','Anticipation'],type:'King of Court · Blind Power Play',players:'3–8',level:'Junior Elite → Professional',
+      id:'PPA02',title:'Blind Power Play',tags:['Power Play','Decision Making','Anticipation'],type:'King of Court · Blind Power Play',players:'3–8',level:'Junior Elite → Professional',
       develops:['Tactical judgement','Opportunity recognition','Risk management','Decision making under uncertainty'],
       why:'Unlike Open Power Play, the challenge is not public pressure but selecting the perfect moment to gamble without anyone knowing. Opponents must also remain alert — they cannot see the Power Play but they can feel it in the rally outcome.',
       what:'King of Court. Winner stays. Loser rotates. Before any rally a player secretly activates a token. Opponent does not know. Power Play applies to that rally only. Token consumed after the rally regardless of outcome.',
       score:'Win rally = +1. Successful Blind Power Play (win the rally) = +3. Failed Blind Power Play = 0. Each player receives 3 tokens per rotation (coach configurable).',
       coach:'Post-session debrief: when did each player activate? Was it the right moment? Blind PP reveals tactical timing judgement without the pressure of public declaration.',
       player:'Secretly activate before a rally. Win it for +3. No-one knows when your token is active.',
-      load:'Blind Power Play™'
+      load:'Blind Power Play'
     },
     {
-      id:'PPA03',title:'Pressure Power Play™',tags:['Power Play','Pressure','Movement'],type:'King of Court · Pressure Power Play',players:'3–8',level:'Intermediate → Professional',
+      id:'PPA03',title:'Pressure Power Play',tags:['Power Play','Pressure','Movement'],type:'King of Court · Pressure Power Play',players:'3–8',level:'Intermediate → Professional',
       develops:['Competitive resilience','Confidence','Momentum management','Commitment under pressure'],
       why:'The player publicly commits to winning three consecutive rallies across opponents. The sequence continues across rotations — making it a true test of sustained performance under pressure and against different opponents.',
       what:'King of Court. Winner stays. Loser rotates. Player announces "Pressure Power Play". Objective: win 3 consecutive rallies. Sequence continues across opponents — e.g. beat Player A, beat Player B, beat Player C. Lose any rally before three consecutive wins and the sequence ends, token consumed, no bonus.',
       score:'Each rally win = +1. Complete three consecutive wins = +6 bonus. Total available = 9 points. Each player receives 2 tokens per rotation (coach configurable).',
       coach:'Three consecutive wins across different opponents is genuinely difficult. Watch for players who activate when they have momentum vs players who activate defensively. The public commitment is the pressure tool.',
       player:'Announce Pressure Power Play. Win 3 rallies in a row — across any opponents. Rally 1 = +1, Rally 2 = +1, Rally 3 = +1 + 6 bonus = 9 total.',
-      load:'Pressure Power Play™'
+      load:'Pressure Power Play'
     },
     {
       id:'PPA04',title:'Power Play Duel™',tags:['Power Play','Pressure','T-Zone'],type:'King of Court · Duel',players:'3–8',level:'Intermediate → Professional',
@@ -1713,7 +1728,7 @@ function PlugAndPlay({setScreen,setSession}){
     {active==='Power Play'
       ?<div className="ppPlugPlaySection">
         <div className="ppPlugPlayIntro">
-          <span className="ppEngineTag" style={{marginBottom:'10px',display:'inline-block'}}>⚡ Power Play™</span>
+          <span className="ppEngineTag" style={{marginBottom:'10px',display:'inline-block'}}>⚡ Power Play</span>
           <h2>Power Play Games</h2>
           <p className="mutedText">Tactical decision-making games built around the question: <em>"When should I commit?"</em> All games use King of Court format. Select a game to add to session.</p>
         </div>
@@ -1734,7 +1749,7 @@ function PlugAndPlay({setScreen,setSession}){
         </div>)}</div>
         <div className="ppPlugPlayBuilderLink">
           <p className="mutedText">Want to customise a Power Play game?</p>
-          <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Open Power Play™ Builder in Games Library</button>
+          <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Open Power Play Builder in Games Library</button>
         </div>
       </div>
       :<>
@@ -2120,9 +2135,10 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
-      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score™</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard visionHomeCard homeTitleOnly" onClick={()=>setScreen('visionPerception')}><h2>Vision & Perception</h2><span className="homeTileSubtitle">Opponent Information Pickup</span></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Tactical Intentions</h2><span className="homeTileSubtitle">Patterns of Play Revisited</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
@@ -5129,11 +5145,11 @@ function PowerPlayBuilder({onAddToSession}){
       const found=PP_OVERLAYS.find(o=>o.id===id);
       return found?found.label:id;
     });
-    const title=isPreset?config.title:(customTitle.trim()||`Power Play™ ${engine==='open'?'Open':'Blind'}`);
+    const title=isPreset?config.title:(customTitle.trim()||`Power Play ${engine==='open'?'Open':'Blind'}`);
     const durationLabel=config.durationType==='time'
       ?`${config.durationValue}s`
       :`${config.durationValue} ${config.durationValue===1?'rally':'rallies'}`;
-    const task=`${engine==='blind'?'BLIND ':''}Power Play™ · ${config.format||format} · ${config.tokens} token${config.tokens!==1?'s':''} · ${durationLabel}${overlayLabels.length?' · Overlays: '+overlayLabels.join(', '):''}`;
+    const task=`${engine==='blind'?'BLIND ':''}Power Play · ${config.format||format} · ${config.tokens} token${config.tokens!==1?'s':''} · ${durationLabel}${overlayLabels.length?' · Overlays: '+overlayLabels.join(', '):''}`;
     const scoring=config.scoring||`${scoringMode==='exclusive'?'Exclusive scoring — only PP player scores during Power Play.':scoringMode==='bonus'?'Bonus scoring — both players score, PP player gets bonuses.':'Custom scoring.'} Break: ${config.breakCondition||breakCondition}.`;
     return {
       id:Date.now()+Math.random(),
@@ -5145,7 +5161,7 @@ function PowerPlayBuilder({onAddToSession}){
       coach:config.coach||'',
       player:config.player||'',
       duration:15,
-      layers:['Power Play™',...overlayLabels],
+      layers:['Power Play',...overlayLabels],
       ppConfig:{...config,overlays:config.overlays||selectedOverlays,engine:config.engine||engine,format:config.format||format,tokenVisibility:config.tokenVisibility||tokenVisibility},
       level:config.level||'All levels'
     };
@@ -5176,8 +5192,8 @@ function PowerPlayBuilder({onAddToSession}){
 
   return <div className="ppBuilderWrap">
     <div className="ppBuilderHeader">
-      <div className="categoryTag">Power Play™</div>
-      <h2>Power Play™ Builder</h2>
+      <div className="categoryTag">Power Play</div>
+      <h2>Power Play Builder</h2>
       <p className="mutedText">A tactical scoring modifier that creates high-value windows requiring timing, risk, and commitment decisions. Works with all Checkerboard game systems.</p>
     </div>
 
@@ -5943,8 +5959,9 @@ function Games({setSession,setScreen}){
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
     {id:'atb',label:'Around The Board',category:'Around The Board'},
-    {id:'powerplay',label:'Power Play™',category:'Power Play'},
+    {id:'powerplay',label:'Power Play',category:'Power Play'},
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
+    {id:'tacticalIntentions',label:'Tactical Intentions',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
@@ -6019,7 +6036,7 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button className="primaryBtn" onClick={()=>setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'))}>+ New Game Card</button>
+      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game Card</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -6040,6 +6057,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
+    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
@@ -6049,7 +6067,7 @@ function Games({setSession,setScreen}){
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -9462,11 +9480,11 @@ function LiveSessionDelivery({session=[],setScreen}){
 function JuniorLadder({players=[],setPlayers=()=>{}}){
   const [showAll,setShowAll]=useState(false);
   const ladderPlayers=useMemo(()=>[...(players||[])].filter(p=>p&&p.name&&(showAll||p.playerType!=='Guest Player')).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[players,showAll]);
-  function updateRank(name,newRank){const clean=Math.max(1,Number(newRank)||1);setPlayers(prev=>(prev||[]).map(p=>p.name===name?{...p,juniorRanking:String(clean),ranking:String(clean)}:p));}
+  function updateRank(name,newRank){setPlayers(prev=>(prev||[]).map(p=>{if(p.name!==name)return p; if(newRank==='')return {...p,juniorRanking:'',ranking:''}; const n=String(newRank).replace(/[^0-9]/g,''); return {...p,juniorRanking:n,ranking:n};}));}
   function normalizeRanks(){const ordered=[...ladderPlayers];setPlayers(prev=>(prev||[]).map(p=>{const idx=ordered.findIndex(x=>x.name===p.name);return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;}));}
-  function move(name,dir){const ordered=[...ladderPlayers];const idx=ordered.findIndex(p=>p.name===name);const swap=idx+dir;if(idx<0||swap<0||swap>=ordered.length)return;const a=ordered[idx],b=ordered[swap];const aRank=playerSeedValue(a),bRank=playerSeedValue(b);setPlayers(prev=>(prev||[]).map(p=>{if(p.name===a.name)return{...p,juniorRanking:String(bRank),ranking:String(bRank)};if(p.name===b.name)return{...p,juniorRanking:String(aRank),ranking:String(aRank)};return p;}));}
+  function move(name,dir){const ordered=[...ladderPlayers];const idx=ordered.findIndex(p=>p.name===name);const swap=idx+dir;if(idx<0||swap<0||swap>=ordered.length)return;const moved=ordered.splice(idx,1)[0];ordered.splice(swap,0,moved);setPlayers(prev=>(prev||[]).map(p=>{const newIdx=ordered.findIndex(x=>x.name===p.name);return newIdx>=0?{...p,juniorRanking:String(newIdx+1),ranking:String(newIdx+1)}:p;}));}
   const presentCount=(players||[]).filter(p=>p&&p.present).length;
-  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Ladder allocation uses ranked blocks, not snake seeding.</span></div><div className="buttonRow"><button className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{ladderPlayers.length?ladderPlayers.map((p,idx)=><div key={p.name} className="juniorLadderRow"><div className="ladderRankBadge">#{playerSeedValue(p)>=9000?'—':playerSeedValue(p)}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="number" min="1" value={playerSeedValue(p)>=9000?'':playerSeedValue(p)} onChange={e=>updateRank(p.name,e.target.value)}/></label></div><div className="ladderMoveBtns"><button className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div></div>):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
+  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Ladder allocation uses ranked blocks, not snake seeding.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{ladderPlayers.length?ladderPlayers.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} className="juniorLadderRow"><div className="ladderRankBadge">#{rawRank===''?'—':rawRank}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div><div className="ladderMoveBtns"><button type="button" className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button type="button" className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
 }
 
 function PlayerHub({players,setPlayers,session,setSession}){
@@ -10223,9 +10241,9 @@ const BTS_GAMES=[
   {id:'hold',group:'Tier 2',title:'Declare or Hold',tier:'Tier 2',level:'Level 3+',format:'1 v 1',deck:[4,9],mechanism:'Slow-playing',suit:'slow',arb:'Player declared',blurb:'Reach your target and choose: take the win, or hold and chase target +2 for double while risking everything.',setup:'Deck 4–9. Requires a session-points context to give the gamble meaning.',steps:['Both players receive hidden targets.','Play normal rally scoring.','When a player reaches target, they choose Declare or Hold.','Declare: reveal, win, score 1 session point.','Hold: keep playing; new target becomes original target +2.','Reach target +2 first: Hold Win, score 2 session points.','If the opponent reaches their target first, the holding player loses the opportunity.'],scoring:'Declare = 1 session point. Hold Win = 2 session points. Beaten while holding = 0.',coachMsg:'Do you take the win, or risk it for more?',obs:['Risk appetite under pressure','Who holds too long','Emotional control after a hold fails']},
   {id:'drift',group:'Tier 2',title:'Live Drift',tier:'Tier 2',level:'Level 3+',format:'1 v 1',deck:[4,9],mechanism:'Information reset',suit:'reset',arb:'Player declared',blurb:'Mid-game, each player draws a second target and secretly keeps one. Everything inferred may now be wrong.',setup:'Deck 4–9. Default trigger: first player reaches 4.',steps:['Both players receive hidden targets.','Play normal rally scoring.','When the trigger is reached, Live Drift activates.','Each player receives a second hidden target.','Each privately keeps one target; the discard is never shown.','Play continues; first to the kept target wins.','Reveal at end.'],scoring:'Rally winner +1. First to reach the kept target wins.',coachMsg:'Information changes. Stay calm and adapt.',obs:['Adaptability when reads are invalidated','Who tilts after the reset','Who re-reads rather than clings to old information']},
   {id:'gambler',group:'Tier 3',title:'Raise & Fold — The Gambler™',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:[4,9],mechanism:'Bet · Call · Fold',suit:'betfold',arb:'Player declared',flagship:true,blurb:'The full poker triad simplified. Each player has two Raise Tokens; a raise makes the next rally worth double and the opponent must call or fold.',setup:'Deck 4–9. 2 Raise Tokens per player. No button system. Either player may raise before a rally if they still have a token.',steps:['Both players receive hidden targets and 2 Raise Tokens.','Before any rally, either player may declare Raise by using one token.','Opponent chooses Call or Fold.','If Call: play the rally; winner scores 2 and the token is spent.','If Fold: rally is not played; raiser scores 1 and the token is returned.','If no raise: play a normal rally; winner scores 1.','Game ends when a player reaches or passes target.'],scoring:'Normal rally +1. Called raise +2 to the winner. Fold +1 to the raiser.',coachMsg:'Raise, call or fold. The decision is the pressure.',obs:['Who folds well','Who cannot fold','Who over-raises','What a raise tells the opponent']},
-  {id:'powerplay',group:'Tier 3',title:'Blind Power Play',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:[4,9],mechanism:'Stake inflation',suit:'stake',arb:'Player declared',blurb:'Self-trigger a Power Play to make the next rally count double without knowing if it just ended the game.',setup:'Deck 4–9. Reuses Power Play™ token logic. Self-triggered only.',steps:['Both players receive hidden targets.','Players receive Power Play tokens.','Play normal rally scoring.','A player may self-trigger Power Play before a rally.','The Power Play rally is worth double; winner scores 2.','Game ends when a player reaches or passes target.'],scoring:'Rally winner +1. Power Play rally winner +2.',coachMsg:'When is the right moment to commit?',obs:['Timing of commitment','Who burns tokens early','Reaction when a double rally overshoots the target']},
+  {id:'powerplay',group:'Tier 3',title:'Blind Power Play',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:[4,9],mechanism:'Stake inflation',suit:'stake',arb:'Player declared',blurb:'Self-trigger a Power Play to make the next rally count double without knowing if it just ended the game.',setup:'Deck 4–9. Reuses Power Play token logic. Self-triggered only.',steps:['Both players receive hidden targets.','Players receive Power Play tokens.','Play normal rally scoring.','A player may self-trigger Power Play before a rally.','The Power Play rally is worth double; winner scores 2.','Game ends when a player reaches or passes target.'],scoring:'Rally winner +1. Power Play rally winner +2.',coachMsg:'When is the right moment to commit?',obs:['Timing of commitment','Who burns tokens early','Reaction when a double rally overshoots the target']},
   {id:'difference',group:'Tier 3',title:'Blind Difference',tier:'Tier 3',level:'Level 4+',format:'1 v 1',deck:null,mechanism:'Identity uncertainty',suit:'identity',arb:'App',pairs:[[4,7],[4,8],[5,9],[3,6],[5,8]],blurb:'A known pair of targets, dealt blind. You hold one — but not which.',setup:'App-required. Pair selected at random with minimum gap 3. Players are told the pair, not their own target.',steps:['The app selects a target pair, for example 4 and 8.','Players are told the pair.','Player A secretly receives one target; Player B the other.','Neither player knows which target they hold.','Play normal rally scoring; app tracks both targets.','App ends the game when the correct hidden target is reached.','Reveal at end.'],scoring:'Rally winner +1. App ends game when a player reaches their unknown target.',coachMsg:'Can you compete without knowing whether you are favourite or underdog?',obs:['Tolerance of total uncertainty','Behaviour at the Certainty Cliff','Who plays the same regardless of standing']},
-  {id:'blind-race',group:'King of Court',title:'Blind Race™',tier:'KOC Flagship',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Venue-wide hidden finish',suit:'hidden',arb:'Coach / App assisted',flagship:true,blurb:'Checkerboard KOC version. First player anywhere in the venue to reach a hidden target triggers the rotation end phase.',setup:'2–6 courts. 3–5 players per court. Each player draws 4–8 and multiplies by 3. Targets are active for this rotation only. Default targets therefore range 12–24.',steps:['At the start of the rotation, every player on every court receives a hidden target.','Card 4–8 is multiplied by 3: 4→12, 5→15, 6→18, 7→21, 8→24.','Players score normal rally wins on their own court.','First player anywhere in the venue to reach target calls TARGET.','Coach presses Target Achieved and calls Final Rally.','All courts play one final rally, then stop.','Targets reveal. The player who achieved target wins their court regardless of current court score.','Blind Race winner starts the next rotation with +3 carry-over points.','All other movement follows normal Checkerboard promotion/relegation by court score.','If multiple players achieved target, play Blind Race tie-break: first to 3, win by 2 at 2–2, sudden death at 4–4.'],scoring:'Normal court scoring during the rotation. Hidden target achieved = court win + promotion +3 carry-over into next rotation. Tie-break maximum 5–4.',coachMsg:'Someone, somewhere, may be one rally from ending the rotation.',obs:['Do players stop playing the clock?','Do lower courts stay more engaged?','Does the +3 carry-over feel meaningful but not excessive?','Is card ×3 too short or too long for your group?']},
+  {id:'blind-race',group:'King of Court',title:'Blind Race',tier:'KOC Flagship',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Venue-wide hidden finish',suit:'hidden',arb:'Coach / App assisted',flagship:true,blurb:'Checkerboard KOC version. First player anywhere in the venue to reach a hidden target triggers the rotation end phase.',setup:'2–6 courts. 3–5 players per court. Each player draws 4–8 and multiplies by 3. Targets are active for this rotation only. Default targets therefore range 12–24.',steps:['At the start of the rotation, every player on every court receives a hidden target.','Card 4–8 is multiplied by 3: 4→12, 5→15, 6→18, 7→21, 8→24.','Players score normal rally wins on their own court.','First player anywhere in the venue to reach target calls TARGET.','Coach presses Target Achieved and calls Final Rally.','All courts play one final rally, then stop.','Targets reveal. The player who achieved target wins their court regardless of current court score.','Blind Race winner starts the next rotation with +3 carry-over points.','All other movement follows normal Checkerboard promotion/relegation by court score.','If multiple players achieved target, play Blind Race tie-break: first to 3, win by 2 at 2–2, sudden death at 4–4.'],scoring:'Normal court scoring during the rotation. Hidden target achieved = court win + promotion +3 carry-over into next rotation. Tie-break maximum 5–4.',coachMsg:'Someone, somewhere, may be one rally from ending the rotation.',obs:['Do players stop playing the clock?','Do lower courts stay more engaged?','Does the +3 carry-over feel meaningful but not excessive?','Is card ×3 too short or too long for your group?']},
   {id:'koc-cumulative',group:'King of Court',title:'KOC Cumulative',tier:'Group',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Table image',suit:'image',arb:'Either',blurb:'One hidden session target each. Over the session, reputations form.',setup:'Deck 4–8. One draw per player at session start. Target = card × 3 total rally wins.',steps:['Each player draws once at session start. Target = card × 3.','Example: card 5 means target of 15 rally wins.','Normal KOC continues across the whole session.','Every rally win adds to the player’s session tally.','On reaching target, player reveals and earns a session point.','Coach may redraw all or keep going depending on session design.'],scoring:'Cumulative rally wins across the session. Reaching hidden total = 1 session point.',coachMsg:'Nobody knows who is close.',obs:['Reputations forming','Who plays the long game','Who responds to reputation rather than live information']},
   {id:'court-blind-target',group:'King of Court',title:'Court Blind Target™',tier:'Future / Optional',level:'Group',format:'King of Court',deck:[4,8],mechanism:'Shared unknown endpoint',suit:'image',arb:'Coach / App assisted',blurb:'A future variant: each court has one hidden target that no player on that court knows. Coach taps a court card to reveal the target privately.',setup:'Parked for future build. Useful when coach wants the court, rather than the player, to have the unknown finish line.',steps:['Coach deals one hidden target per court.','Players do not know the court target.','Court score accumulates normally.','When court target is reached, the app/coach reveals and triggers the chosen rotation rule.'],scoring:'Future scoring overlay. Not active in this release.',coachMsg:'The court has a secret finish line.',obs:['Does shared uncertainty change court behaviour?','Do players stop playing the time block?']}
 ];
@@ -10301,7 +10319,7 @@ function BlindTargetScoreModule({setScreen,players=[]}){
   const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
   const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
   return <div className="page btsPage">
-    <div className="pageTop"><div><h1>Blind Target Score™</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Blind Target Score</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
     <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
     <div className="gameCard btsConfig">
@@ -10347,6 +10365,38 @@ function SoloFlow({type}){
     : ['Exploration','Variability','Multiple attractors','Calibrated confidence','Pressure','Adaptive search','Flexible performance'];
   return <div className={solo?'soloFlow soloFlowRisk':'soloFlow soloFlowAdaptive'}>{steps.map((step,i)=><React.Fragment key={step}><div className="soloFlowStep"><span>{i+1}</span><strong>{step}</strong></div>{i<steps.length-1&&<div className="soloFlowArrow">↓</div>}</React.Fragment>)}</div>;
 }
+
+const TACTICAL_INTENTION_GAMES=[
+  {title:'Pressure Before Attack',rld:'4',quick:'Maintain [6-3] or [5-4] until opponent leaves T-zone. Attack only when pressure creates opportunity.',logic:'Build rear-court pressure using working length or lob length. Once opponent is off T, attack to [8-1], [7-2] or a coach-selected front zone.',score:'Win rally = 1 · Opponent Off T before attack = +1 · Attack winner = +2 · Clean winner bonus may sit on top.',constraints:['No Repeat','Height Change','Volley Attack Optional','Quality Length First'],coach:'Pressure creates opportunity. Do not attack because you can; attack because the game has offered it.'},
+  {title:'Width Before Attack',rld:'4',quick:'Use one straight route and one crosscourt route before the attack bonus is live.',logic:'Player must combine [6-3] or [5-4] with [7-2] or [8-1] before attacking. Sequence is not prescribed; the width requirement is the constraint.',score:'Rally = 1 · Straight + Cross completed = +1 · Win after attack = +2.',constraints:['Straight + Cross','No Repeat','Blind Finish','4-Shot Window'],coach:'Stretch first. Exploit second. Preserve tactical sense rather than alternating mechanically.'},
+  {title:'Front–Back Manipulation',rld:'4',quick:'Create a front-court action and then re-establish back-court pressure before attacking.',logic:'Use [8-1] or [7-2] to pull forward, then [6-3] or [5-4] to send back. Attack when recovery is poor.',score:'Rally = 1 · Front + Back achieved = +1 · Win after depth change = +2.',constraints:['Front + Back','DB Optional','Opponent Off T','No Volley / Volley Choice'],coach:'Make the opponent solve depth changes. The pattern is the tactical problem, not a fixed shot list.'},
+  {title:'Counter Attack Recognition',rld:'5',quick:'After an opponent attack, player scores bonus for recognising whether to counter short or reset long.',logic:'Rally begins with pressure. One player attacks. Recovering player chooses counter attack [1]-[4] or reset [5]/[6] based on ball quality and opponent recovery.',score:'Rally = 1 · Correct counter/read = +1 · Counter attack winner = +2.',constraints:['Disguise Active','Short/Long Decision','No Repeat','Random Diversity Card'],coach:'Recognise the second affordance. The first attack is not the end of the tactical problem.'},
+  {title:'Deception & Affordance Recognition',rld:'5',quick:'Players must genuinely hold two options before committing. Opponent reads preparation cues, not just the ball.',logic:'Back player may drive, lob or straight drop from similar preparation. Front player must read opponent-racquet scene and respond. No Repeat prevents comfort patterns.',score:'Rally = 1 · Successful disguise = +1 · Win after three different families = +2.',constraints:['DIS','NR','Three Shot Families','Random Diversity Card'],coach:'Perceive, do not predict. The player should prepare options and let information select the solution.'}
+];
+
+function TacticalIntentionsModule({setScreen,setSession}){
+  const [selected,setSelected]=useState(TACTICAL_INTENTION_GAMES[0]);
+  const [mode,setMode]=useState('ready');
+  const [random,setRandom]=useState(null);
+  function addGame(game){
+    const card={title:`Tactical Intentions — ${game.title}`,category:'Tactical Intentions',task:game.quick,description:game.logic,scoring:game.score,layers:game.constraints,rld:game.rld,coach:game.coach};
+    if(setSession)setSession(prev=>({...prev,rotations:[...(prev?.rotations||[]),card]}));
+  }
+  const active=random||selected;
+  return <div className="page tacticalIntentionsPage">
+    <div className="pageTop"><div><h1>Tactical Intentions</h1><p className="mutedText">Patterns of Play revisited through Checkerboard CLA design</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="tiHero"><h2>Preserve the tactical wisdom. Remove the prescription.</h2><p>Traditional patterns prescribe sequences. Tactical Intentions give players a problem to solve, then use diversity constraints to stop them defaulting to their deepest attractor state.</p></div>
+    <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const g=TACTICAL_INTENTION_GAMES[Math.floor(Math.random()*TACTICAL_INTENTION_GAMES.length)];setRandom(g);setSelected(g);}}>⚡ Random Game</button></div>
+    {mode==='ready'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className={selected.title===game.title?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.title}</strong><span>{game.quick}</span><small>RLD {game.rld}</small></button>)}</div>}
+    <div className="tiDetail gameCard"><div className="categoryTag">Ready Made Game</div><h2>{active.title}</h2><RLDBadge level={Number(active.rld)} size="lg"/>
+      <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Diversity Constraints</h3><div className="chipRow">{active.constraints.map(c=><span key={c}>{c}</span>)}</div></section></div>
+      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="secondaryBtn" onClick={()=>setScreen('technical')}>Open Universal Overlays</button></div>
+    </div>
+    {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Tactical Intention</h2><p>Use the existing Game Logic, Scoring Logic, Constraints and DB panels. Add Diversity Constraints as overlays rather than rewriting the game.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
+    <div className="gameCard"><h2>CLA Rationale</h2><p>Patterns of Play become representative when the player must recognise the tactical problem and select from multiple functional solutions. Diversity constraints protect variability by preventing the strongest attractor from becoming the only answer.</p></div>
+  </div>;
+}
+
 function SoloPracticeModule({setScreen}){
   return <div className="page soloPracticePage">
     <div className="pageTop"><div><h1>Solo Practice</h1><p className="mutedText">Exploration vs Installation · Confidence, attractors and adaptability</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
@@ -10492,6 +10542,7 @@ return <div>
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
+      {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
