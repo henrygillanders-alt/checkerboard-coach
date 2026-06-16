@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h84 Seeding Protocol Fix Build';
+const APP_VERSION='v100h81 Session Player Display Workflow Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -326,6 +326,27 @@ function buildPlayerDisplayUrl(game){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerGame=${encoded}`;
 }
+
+function ModifierScoringEditor({game,index,onToggleLayer,onScoreChange}){
+  const activeLayers=safeLayersForSession(game);
+  const rows=Array.from(new Set(ALL_LAYERS.filter(layer=>layer&&layer!=='CB Code')));
+  return <div className="modifierScoringPanel modifierScoringPanelAlways">
+    <div className="modifierScoringHeader"><div><h3>Modifier Scoring</h3><p>Turn modifiers on/off and assign the bonus players can earn. “Constraint only” keeps the rule active without adding points.</p></div><span>{activeLayers.filter(layer=>layer!=='CB Code').length} active</span></div>
+    <div className="modifierScoreGrid modifierScoreGridFull">
+      {rows.map(layer=>{
+        const active=activeLayers.includes(layer);
+        const score=(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer);
+        return <div className={active?'modifierScoreRow modifierScoreRowActive':'modifierScoreRow'} key={layer}>
+          <button type="button" className={active?'modifierToggle modifierToggleActive':'modifierToggle'} onClick={()=>onToggleLayer(index,layer)}>{active?'✓ Active':'+ Add'}</button>
+          <strong>{layer}</strong>
+          <select value={score} onChange={e=>onScoreChange(index,layer,e.target.value)}>
+            {MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}
+          </select>
+        </div>})}
+    </div>
+  </div>;
+}
+
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
@@ -2439,8 +2460,9 @@ function stopRotationProjection(){
 }
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
-function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
+function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+function toggleModifierLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(updated[index].layers.includes(layer)){updated[index].layers=updated[index].layers.filter(item=>item!==layer);}else{updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);}setSession(updated);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
@@ -2454,9 +2476,8 @@ return <div className="page sessionBuilderPage">
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
 <div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p><p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText||'No DB handicap allocated.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
-<div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-{editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
-<div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
+<div className="chips activeModifierChips">{safeLayersForSession(game).filter(layer=>layer!=='CB Code').map(layer=><span className="badge" key={layer}>{modifierScoreLabel(layer,(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer))}</span>)}</div>
+<ModifierScoringEditor game={game} index={index} onToggleLayer={toggleModifierLayer} onScoreChange={updateModifierScore}/>
 <div className="actionRow">
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 <button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
@@ -6581,24 +6602,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
 
-  function playerObjectForName(name){
-    return (players||[]).find(p=>p.name===name || p.fullName===name || p.playerName===name);
-  }
-
-  function seededCompetitionSource(){
-    const source=playerNames.map(name=>playerObjectForName(name)||name);
-    return [...source].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||playerDisplayName(a).localeCompare(playerDisplayName(b)));
-  }
-
-  function seededCompetitionNames(){
-    return seededCompetitionSource().map(playerDisplayName);
-  }
-
-  function snakeBoxesFromSeededPlayers(boxCount){
-    const count=Math.max(1,Number(boxCount)||1);
-    return snakeSeedPlayers(seededCompetitionSource(),count);
-  }
-
   function rankForTeamName(name){
     const player=players.find(p=>p.name===name || p.fullName===name || p.playerName===name);
     if(player) return playerSeedValue(player);
@@ -7147,9 +7150,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
-    // Invasion teams use snake seeding so team strength is balanced.
-    // Example 16 / 4: Team 1 = 1,8,9,16 · Team 2 = 2,7,10,15 etc.
-    const seeded=snakeSeedPlayers(source,count);
+    const seeded=rankedBlockCourtAllocation(source,count);
     const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:teamNameFromPlayers(teamPlayers,index),
@@ -7285,7 +7286,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateRoundRobin(){
-    const names=seededCompetitionNames();
+    const names=[...playerNames];
     const rounds=buildRoundRobinRounds(names);
     setRrFixtures(rounds);
     setRrResults({});
@@ -7330,10 +7331,10 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function distributeRoundRobinBoxes(){
-    const names=seededCompetitionNames();
+    const names=[...playerNames];
     const count=Math.max(1,Math.min(Number(rrBoxCount)||1,Math.max(1,names.length)));
-    const seededBoxes=snakeBoxesFromSeededPlayers(count);
-    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:seededBoxes[idx]||[]}));
+    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:[]}));
+    names.forEach((name,idx)=>boxes[idx%count].players.push(name));
     setRrBoxes(boxes);
     setRrBoxFixtures(boxes.map(box=>buildRoundRobinRounds(box.players)));
     setRrBoxResults({});
@@ -7428,7 +7429,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateMonradFirstRound(){
-    const seeded=seedToPowerOfTwo(seededCompetitionNames());
+    const seeded=seedToPowerOfTwo([...playerNames]);
     const matches=makeSeededMatches(seeded);
     setMonradRounds([matches]);
     setMonradResults({});
@@ -7464,7 +7465,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateMonradPlacingDraw(){
-    const names=seedToPowerOfTwo(seededCompetitionNames());
+    const names=seedToPowerOfTwo([...playerNames]);
     if(names.length<2){
       setMonradPlacingRounds([]);
       setMonradPlacingResults({});

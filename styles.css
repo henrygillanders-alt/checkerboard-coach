@@ -1,4 +1,4 @@
-/* v100h84 Seeding Protocol Fix Build */
+/* v100h78 Consolidated Session + Game Card Fix Build */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7430,3 +7430,19 @@ button.mentalSkillsTile p{
 .playerViewMini strong{
   letter-spacing:.03em;
 }
+
+/* v100h85 Modifier Scoring Refactor */
+.modifierScoringPanelAlways{border:2px solid #ffd980;background:#120f08;margin:16px 0 18px 0;}
+.modifierScoringHeader{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px;}
+.modifierScoringHeader h3{margin:0 0 6px 0;color:#ffd980;font-size:20px;}
+.modifierScoringHeader p{margin:0;color:#fef3c7;line-height:1.5;}
+.modifierScoringHeader span{background:#ffd980;color:#0f172a;border-radius:999px;padding:8px 12px;font-weight:900;white-space:nowrap;}
+.modifierScoreGridFull{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;}
+.modifierScoreRow{display:grid;grid-template-columns:82px 1fr 120px;gap:8px;align-items:center;background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px;}
+.modifierScoreRowActive{background:#0a2415;border-color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.16);}
+.modifierScoreRow strong{font-size:13px;color:#fff;line-height:1.2;}
+.modifierScoreRow select{background:#07111f;border:1px solid #5e83be;border-radius:10px;color:#fff;padding:9px;font-weight:900;}
+.modifierToggle{border:1px solid #486b9a;background:#12253d;color:#dce8ff;border-radius:10px;padding:9px 8px;font-weight:900;font-size:12px;}
+.modifierToggleActive{background:#16a34a;border-color:#86efac;color:#fff;}
+.activeModifierChips .badge{background:#1d4ed8;border:1px solid #93c5fd;}
+@media(max-width:700px){.modifierScoreRow{grid-template-columns:1fr;}.modifierScoringHeader{flex-direction:column}.modifierScoringHeader span{align-self:flex-start}}
