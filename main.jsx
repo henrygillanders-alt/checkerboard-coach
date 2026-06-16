@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h78 Consolidated Session + Game Card Fix Build';
+const APP_VERSION='v100h79 Player Display Separation Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -238,6 +238,66 @@ function stopCoachProjectionSession(){
       invasionGameStarted:false
     }));
   }catch{}
+}
+
+
+function getPlayerDisplayFields(game){
+  const item=normaliseGameCard(game||{});
+  const title=item.title||'Player Display';
+  const what=item.task||item.description||'Play the selected game.';
+  const score=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
+  const focus=item.playerFocus||item.coach||'Solve the game problem.';
+  const layers=safeLayersForSession(item);
+  return {item,title,what,score,focus,layers};
+}
+function encodePlayerGame(game){
+  try{
+    const json=JSON.stringify(normaliseGameCard(game));
+    return btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }catch{return '';}
+}
+function decodePlayerGameFromUrl(){
+  try{
+    const params=new URLSearchParams(window.location.search||'');
+    const raw=params.get('playerGame')||'';
+    if(!raw)return null;
+    const pad='='.repeat((4-raw.length%4)%4);
+    const b64=(raw+pad).replace(/-/g,'+').replace(/_/g,'/');
+    return normaliseGameCard(JSON.parse(decodeURIComponent(escape(atob(b64)))));
+  }catch{return null;}
+}
+function buildPlayerDisplayUrl(game){
+  const encoded=encodePlayerGame(game);
+  if(!encoded)return '';
+  const base=window.location.origin+window.location.pathname;
+  return `${base}?playerGame=${encoded}`;
+}
+function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
+  const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
+  const {title,what,score,focus,layers}=getPlayerDisplayFields(chosen);
+  const hasSession=Array.isArray(session)&&session.length>0&&!game;
+  return <div className="playerDisplayShell">
+    <div className="playerDisplayTop">
+      <span>PLAYER DISPLAY</span>
+      <h1>{title}</h1>
+      {hasSession&&<select value={selectedIndex} onChange={e=>onSelect&&onSelect(Number(e.target.value))}>
+        {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
+      </select>}
+    </div>
+    <div className="playerDisplayGrid">
+      <section><h2>WHAT TO DO</h2><p>{what}</p></section>
+      <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
+      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
+    </div>
+    {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
+  </div>;
+}
+function PlayerDisplayView({session,setScreen,sharedGame=null}){
+  const [selectedIndex,setSelectedIndex]=useState(0);
+  return <div className="playerDisplayPage">
+    {!sharedGame&&<div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={()=>setScreen('sessions')}>Session Builder</button></div>}
+    <PlayerDisplayCard game={sharedGame} session={session} selectedIndex={selectedIndex} onSelect={setSelectedIndex}/>
+  </div>;
 }
 
 function ProjectionView({session,setScreen,players=[]}){
@@ -2142,6 +2202,7 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
       <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
+      <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
 
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
       <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
@@ -2271,12 +2332,15 @@ return <div className="page">
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
+<div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="actionRow">
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 <button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
+<button className="primaryBtn" onClick={()=>setScreen('playerDisplay')}>PLAYER VIEW</button>
+<button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Player display link copied. Open it on the phone connected to the screen.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
 <button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
 </div>
 </div>)}
@@ -10670,7 +10734,9 @@ function SoloPracticeModule({setScreen}){
 
 
 function App(){
-const[screen,setScreen]=useState('home');
+const[sharedPlayerGame]=useState(()=>decodePlayerGameFromUrl());
+const initialPlayerDisplay=!!sharedPlayerGame;
+const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
 const[backStack,setBackStack]=useState([]);
 function go(next){
   if(!next||next===screen) return;
@@ -10698,12 +10764,14 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
+if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
 <header className="hero">
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
     <button className="homeBtn" onClick={()=>go('home')}>HOME</button>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
+    <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
   <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h78</h1><p>Sessions · Games · Players · Competition</p></div>
@@ -10723,6 +10791,7 @@ return <div>
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={go}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
       {screen==='projection'&&<ProjectionView session={session} setScreen={go} players={players}/>}
+      {screen==='playerDisplay'&&<PlayerDisplayView session={session} setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
