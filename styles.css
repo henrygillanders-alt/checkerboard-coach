@@ -7488,3 +7488,47 @@ button.mentalSkillsTile p{
   border:2px solid #67e8f9;
 }
 .perceptionModifierGrid button.activePerceptionModifier span{color:#ecfeff;}
+
+/* v106 Perception custom modifier scoring */
+.perceptionCustomScoring{
+  margin-top:14px;
+  background:#081320;
+  border:1px solid #35567e;
+  border-radius:14px;
+  padding:14px;
+}
+.perceptionCustomScoring label{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  color:#ffd980;
+  font-weight:900;
+}
+.perceptionCustomScoring textarea,
+.perceptionCustomScoring input{
+  width:100%;
+  background:#07111f;
+  border:1px solid #486b9a;
+  border-radius:12px;
+  padding:10px 12px;
+  color:white;
+  font-size:14px;
+}
+.perceptionCustomScoring textarea{min-height:92px;resize:vertical;}
+.perceptionScoreEditorGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.perceptionScoreEditorGrid label{
+  background:#0b1828;
+  border:1px solid #2f4d72;
+  border-radius:12px;
+  padding:10px;
+}
+.perceptionScoreEditorGrid span{
+  color:#9bc1ff;
+  font-size:12px;
+  font-weight:900;
+}

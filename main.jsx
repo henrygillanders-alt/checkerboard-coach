@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v105 Perception Modifier Lock Build';
+const APP_VERSION='v106 Perception Custom Modifier Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2267,10 +2267,14 @@ function perceptionModifierHelp(layer){
     'Quality Length Before Attack':'Attack bonus only becomes live after quality length pressure.'
   }[layer]||'Modifier available for this Perception activity.';
 }
-function perceptionScoringWithModifiers(game,modifiers=[]){
+function perceptionScoringWithModifiers(game,modifiers=[],modifierScores={}){
   const base=game?.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.';
-  const extra=scoringLogicForLayers(modifiers,{});
-  return extra?`${base} · ${extra}`:base;
+  const unique=Array.from(new Set(modifiers||[]));
+  const custom=unique.map(layer=>{
+    const score=(modifierScores&&modifierScores[layer])||defaultModifierScore(layer);
+    return score?`${layer}: ${score}`:layer;
+  }).filter(Boolean).join(' · ');
+  return custom?`${base} · ${custom}`:base;
 }
 
 function perceptionGames(){
@@ -2339,6 +2343,8 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const [phase,setPhase]=useState('All');
   const [selected,setSelected]=useState(null);
   const [selectedModifiers,setSelectedModifiers]=useState([]);
+  const [modifierScores,setModifierScores]=useState({});
+  const [customBaseScoring,setCustomBaseScoring]=useState('');
   const [status,setStatus]=useState('');
   const earlyGames=useMemo(()=>perceptionGames(),[]);
   const currentSection=PERCEPTION_SECTIONS.find(s=>s.id===section)||PERCEPTION_SECTIONS[0];
@@ -2346,13 +2352,35 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const phases=['All',...Array.from(new Set(games.map(g=>g.phase).filter(Boolean)))];
   const shown=phase==='All'?games:games.filter(g=>g.phase===phase);
   const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
-  useEffect(()=>{setSelectedModifiers(Array.from(new Set(active?.layers||[])));},[active?.id,active?.title]);
+  useEffect(()=>{
+    const baseLayers=Array.from(new Set(active?.layers||[]));
+    setSelectedModifiers(baseLayers);
+    setCustomBaseScoring(active?.scoring||'');
+    setModifierScores(Object.fromEntries(baseLayers.map(layer=>[layer,defaultModifierScore(layer)])));
+  },[active?.id,active?.title]);
   const allPerceptionModifiers=[...PERCEPTION_STANDARD_MODIFIERS,...PERCEPTION_SPECIFIC_MODIFIERS];
   function togglePerceptionModifier(layer){
-    setSelectedModifiers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);
+    setSelectedModifiers(prev=>{
+      const next=prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer];
+      setModifierScores(scores=>{
+        const out={...scores};
+        if(next.includes(layer)&&!out[layer]) out[layer]=defaultModifierScore(layer);
+        return out;
+      });
+      return next;
+    });
   }
   function applyPerceptionPreset(name){
-    setSelectedModifiers(Array.from(new Set([...(active?.layers||[]),...(PERCEPTION_MODIFIER_PRESETS[name]||[])])));
+    const next=Array.from(new Set([...(active?.layers||[]),...(PERCEPTION_MODIFIER_PRESETS[name]||[])]));
+    setSelectedModifiers(next);
+    setModifierScores(scores=>{
+      const out={...scores};
+      next.forEach(layer=>{if(!out[layer]) out[layer]=defaultModifierScore(layer);});
+      return out;
+    });
+  }
+  function updatePerceptionModifierScore(layer,value){
+    setModifierScores(prev=>({...prev,[layer]:value}));
   }
 
   function addGame(game){
@@ -2368,9 +2396,9 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       rationale:game.rationale,
       coach:game.coach,
       playerFocus:game.playerFocus||game.focus,
-      scoring:perceptionScoringWithModifiers(game,selectedModifiers),
+      scoring:perceptionScoringWithModifiers({...game,scoring:customBaseScoring||game.scoring},selectedModifiers,modifierScores),
       layers:Array.from(new Set([...(game.layers||['Opponent Information']),...selectedModifiers])),
-      modifierScores:Object.fromEntries(Array.from(new Set([...(game.layers||[]),...selectedModifiers])).map(layer=>[layer,defaultModifierScore(layer)])),
+      modifierScores:Object.fromEntries(Array.from(new Set([...(game.layers||[]),...selectedModifiers])).map(layer=>[layer,modifierScores[layer]||defaultModifierScore(layer)])),
       cbCode:game.cbCode||'None',
       rld:game.rld??currentSection.rld
     });
@@ -2408,13 +2436,17 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="perceptionDetailTop"><span className="perceptionCode">{active.code}</span><div><h2>{active.title}</h2><p>{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div></div>
         <RLDBadge level={active.rld??currentSection.rld} size="lg"/>
         <section><h3>Task / Rules</h3><p>{active.task}</p></section>
-        <section><h3>Scoring / Observation</h3><p>{perceptionScoringWithModifiers(active,selectedModifiers)}</p></section>
+        <section><h3>Scoring / Observation</h3><p>{perceptionScoringWithModifiers({...active,scoring:customBaseScoring||active.scoring},selectedModifiers,modifierScores)}</p></section>
         <section><h3>Rationale</h3><p>{active.rationale}</p></section>
         <section><h3>Coach Help</h3><p>{active.coach}</p></section>
         <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
         <section className="perceptionModifierPanel"><h3>Modifiers</h3><p>Use standard Checkerboard modifiers or Perception-specific modifiers. They will travel with the game into Session Builder and Projection.</p>
           <div className="perceptionPresetRow">{Object.keys(PERCEPTION_MODIFIER_PRESETS).map(name=><button key={name} onClick={()=>applyPerceptionPreset(name)}>{name}</button>)}</div>
-          <div className="perceptionModifierGrid">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activePerceptionModifier':''} onClick={()=>togglePerceptionModifier(layer)}><strong>{layer}</strong><span>{perceptionModifierHelp(layer)}</span><small>{defaultModifierScore(layer)}</small></button>)}</div>
+          <div className="perceptionModifierGrid">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activePerceptionModifier':''} onClick={()=>togglePerceptionModifier(layer)}><strong>{layer}</strong><span>{perceptionModifierHelp(layer)}</span><small>{modifierScores[layer]||defaultModifierScore(layer)}</small></button>)}</div>
+          <div className="perceptionCustomScoring">
+            <label><strong>Base scoring</strong><textarea value={customBaseScoring} onChange={e=>setCustomBaseScoring(e.target.value)} placeholder="Edit the scoring for this activity"/></label>
+            {selectedModifiers.length>0&&<div className="perceptionScoreEditorGrid">{selectedModifiers.map(layer=><label key={layer}><span>{layer}</span><input value={modifierScores[layer]||''} onChange={e=>updatePerceptionModifierScore(layer,e.target.value)} placeholder={defaultModifierScore(layer)}/></label>)}</div>}
+          </div>
         </section>
         <div className="chips">{Array.from(new Set([...(active.layers||['Opponent Information']),...selectedModifiers])).map(x=><span className="badge" key={x}>{x}</span>)}</div>
         <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
