@@ -7290,7 +7290,7 @@ button.mentalSkillsTile p{
 @media(max-width:900px){.playerDisplayTop h1{font-size:38px}.playerDisplayGrid{grid-template-columns:1fr}.playerDisplayGrid p{font-size:24px}.playerDisplayGrid h2,.playerDisplayRules h2{font-size:22px}.playerDisplayShell{padding:18px}.playerDisplayRules span{font-size:18px}}
 
 
-/* v100h80 Session Builder + Player Display Workflow */
+/* v100h81 Session Builder + Player Display Workflow */
 .sessionBuilderIntro{background:#0c1a2c;border:1px solid #5e83be;border-radius:16px;padding:16px 18px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:#dce8ff}
 .sessionBuilderIntro strong{color:#ffd980;font-size:16px;font-weight:900;margin-right:8px}
 .sessionBuilderIntro span{background:#1f5dd0;color:#fff;border-radius:999px;padding:6px 12px;font-weight:900}
@@ -7304,3 +7304,9 @@ button.mentalSkillsTile p{
 .sessionAllGameCard .buttonRow{margin-top:12px}
 .sessionAllGameCard .playerViewMini{margin-top:12px}
 @media(max-width:900px){.sessionLibraryToolbar{grid-template-columns:1fr}.sessionAllGameGrid{grid-template-columns:1fr}}
+
+/* v100h81 Session action buttons + player display detail */
+.sessionActionButtons{margin-top:14px;align-items:center;}
+.playerDisplayGrid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+.playerDisplayGrid section h2{letter-spacing:.05em;}
+.playerViewMini p{margin:8px 0;}

@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h80 Session Player Display Workflow Build';
+const APP_VERSION='v100h81 Session Player Display Workflow Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -245,10 +245,12 @@ function getPlayerDisplayFields(game){
   const item=normaliseGameCard(game||{});
   const title=item.title||'Player Display';
   const what=item.task||item.description||'Play the selected game.';
-  const score=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
+  const scoringLogic=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
   const focus=item.playerFocus||item.coach||'Solve the game problem.';
   const layers=safeLayersForSession(item);
-  return {item,title,what,score,focus,layers};
+  const dbText=item.playerView || item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.coach : '');
+  const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
+  return {item,title,what,score:scoringLogic,focus,layers,dbText,constraintText};
 }
 function encodePlayerGame(game){
   try{
@@ -274,7 +276,7 @@ function buildPlayerDisplayUrl(game){
 }
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
-  const {title,what,score,focus,layers}=getPlayerDisplayFields(chosen);
+  const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
   return <div className="playerDisplayShell">
     <div className="playerDisplayTop">
@@ -288,6 +290,9 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section><h2>WHAT TO DO</h2><p>{what}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
+      <section><h2>SCORING LOGIC</h2><p>{score}</p></section>
+      <section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>
+      <section><h2>DB ALLOCATIONS</h2><p>{dbText||'No DB handicap allocated.'}</p></section>
     </div>
     {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
   </div>;
@@ -2246,7 +2251,7 @@ function GamesLibrary({setScreen,setSession}){
 }
 
 
-function GameSelector({onAddToSession,addButtonText='Add To Session'}){
+function GameSelector({onAddToSession,addButtonText='Add To Session',setScreen}){
 const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
@@ -2270,7 +2275,7 @@ return <div>
 {showConditions&&category&&<GameConstraintsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
-{category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame}/>}  
+{category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -2394,7 +2399,7 @@ return <div className="page sessionBuilderPage">
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
-<div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p></div>
+<div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p><p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText||'No DB handicap allocated.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
@@ -2658,7 +2663,7 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ATLBTLDirectBuilder({onAddToSession}){
+function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
   const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
   const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
@@ -2754,14 +2759,18 @@ function ATLBTLDirectBuilder({onAddToSession}){
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
-    <UniversalDBHandicapPanel onAddToSession={addGame}/>
+    <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button>
       <button className="secondaryBtn" onClick={resetAtlBuilder}>Reset</button>
     </div>
-    <button className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
+    <div className="buttonRow sessionActionButtons">
+      <button type="button" className="primaryBtn" onClick={()=>addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'})}>Add ATL / BTL To Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{addGame({...composedAtl,dbHandicap:atlDbAmount!=='No DB'?atlDbAssign+': '+atlDbAmount:'No DB'}); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
+    </div>
   </div>;
 }
 
@@ -2860,7 +2869,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
-      <UniversalDBHandicapPanel onAddToSession={addGame}/>
+      <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -5016,7 +5025,7 @@ function InlineDBSelector({dbAssign,setDbAssign,dbPlayer,setDbPlayer,dbAmount,se
   </div>;
 }
 
-function UniversalDBHandicapPanel({onAddToSession}){
+function UniversalDBHandicapPanel({onAddToSession,setScreen}){
   const dbOptions=UNIVERSAL_DB_OPTIONS;
   const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').enabled||false;}catch{return false;}});
   const [allocations,setAllocations]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations||{};}catch{return {};}});
@@ -5058,7 +5067,7 @@ function UniversalDBHandicapPanel({onAddToSession}){
         {presentPlayers.map(name=><div className="dbAllocationRow" key={name}><span>{name}</span><select value={allocations[name]||'No DB'} onChange={e=>setDb(name,e.target.value)}>{dbOptions.map(opt=><option key={opt}>{opt}</option>)}</select></div>)}
       </div>
       <div className="dbSummaryBox"><strong>Active DB Rules</strong><p>{activeSummary()}</p></div>
-      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addDbCard();}} disabled={!presentPlayers.length}>Add DB Handicap To Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearDb();}}>Clear DB Handicap</button></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addDbCard();}} disabled={!presentPlayers.length}>Add DB Handicap To Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addDbCard(); if(setScreen)setScreen('sessions');}} disabled={!presentPlayers.length}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();if(setScreen)setScreen('sessions');}}>View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearDb();}}>Clear DB Handicap</button></div>
     </>}
   </div>;
 }
@@ -6239,7 +6248,7 @@ function Games({setSession,setScreen}){
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
@@ -6270,7 +6279,7 @@ function Games({setSession,setScreen}){
           <div className="actionRow">
             <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
             <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
-            <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button>
+            <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);setScreen('sessions');}}>Add + View Session</button><button type="button" onClick={()=>setScreen('sessions')}>View Session</button><button type="button" onClick={()=>setScreen('playerDisplay')}>Player View</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
             <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
