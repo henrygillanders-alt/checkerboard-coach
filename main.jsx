@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v106 Perception Custom Modifier Build';
+const APP_VERSION='v107 Perception Modifying Constraints Standard Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2440,14 +2440,12 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <section><h3>Rationale</h3><p>{active.rationale}</p></section>
         <section><h3>Coach Help</h3><p>{active.coach}</p></section>
         <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
-        <section className="perceptionModifierPanel"><h3>Modifiers</h3><p>Use standard Checkerboard modifiers or Perception-specific modifiers. They will travel with the game into Session Builder and Projection.</p>
-          <div className="perceptionPresetRow">{Object.keys(PERCEPTION_MODIFIER_PRESETS).map(name=><button key={name} onClick={()=>applyPerceptionPreset(name)}>{name}</button>)}</div>
-          <div className="perceptionModifierGrid">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activePerceptionModifier':''} onClick={()=>togglePerceptionModifier(layer)}><strong>{layer}</strong><span>{perceptionModifierHelp(layer)}</span><small>{modifierScores[layer]||defaultModifierScore(layer)}</small></button>)}</div>
-          <div className="perceptionCustomScoring">
-            <label><strong>Base scoring</strong><textarea value={customBaseScoring} onChange={e=>setCustomBaseScoring(e.target.value)} placeholder="Edit the scoring for this activity"/></label>
-            {selectedModifiers.length>0&&<div className="perceptionScoreEditorGrid">{selectedModifiers.map(layer=><label key={layer}><span>{layer}</span><input value={modifierScores[layer]||''} onChange={e=>updatePerceptionModifierScore(layer,e.target.value)} placeholder={defaultModifierScore(layer)}/></label>)}</div>}
-          </div>
+        <section className="overlayPanel"><strong>Modifying Constraints</strong><p className="overlayExplain">Select any constraints for this PERCEPTION™ activity. These use the same format as the rest of the app and travel with the game into Session Builder and Projection.</p>
+          <div className="buttonRow">{Object.keys(PERCEPTION_MODIFIER_PRESETS).map(name=><button key={name} className="secondaryBtn" onClick={()=>applyPerceptionPreset(name)}>{name}</button>)}</div>
+          <div className="quickLayers">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activeLayer':''} onClick={()=>togglePerceptionModifier(layer)} title={perceptionModifierHelp(layer)}>{layer}</button>)}</div>
         </section>
+        <div className="technicalScoringBox alwaysVisibleScoring"><strong>Base Scoring</strong><label><textarea value={customBaseScoring} onChange={e=>setCustomBaseScoring(e.target.value)} placeholder={active.scoring||"Win rally = 1. Apply selected modifier bonuses."}/></label></div>
+        <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Select the points value for every active modifying constraint. Choose “constraint only” when the rule changes behaviour but should not add points.</p>{editableModifierLayers(selectedModifiers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints above, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(selectedModifiers).map(layer=><label key={layer}><span>{layer}</span><select value={modifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
         <div className="chips">{Array.from(new Set([...(active.layers||['Opponent Information']),...selectedModifiers])).map(x=><span className="badge" key={x}>{x}</span>)}</div>
         <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
         {status&&<div className="statusBox">{status}</div>}
