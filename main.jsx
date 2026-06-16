@@ -241,6 +241,45 @@ function stopCoachProjectionSession(){
 }
 
 
+
+const CONSTRAINT_BONUS_POINTS={
+  'Clean Winner':'+2',
+  'Opponent Off T':'+1',
+  'T Challenge':'+1',
+  'Blind Finish':'+2',
+  'Volley Finish':'+2',
+  'Weak Side':'+1',
+  '4-Shot Window':'+3 if converted inside 4 shots',
+  '2-Shot Window':'+3 if converted inside 2 shots',
+  'Quality Length Before Attack':'+2',
+  'Quiet Eye':'focus constraint',
+  'Opponent Information':'focus constraint',
+  'Early Cue Search':'focus constraint',
+  'Double Bounce':'handicap constraint',
+  'DB Handicap':'handicap constraint',
+  'No Repeat':'diversity constraint',
+  'Straight + Cross':'+2 diversity bonus',
+  'Height Change':'+2 diversity bonus',
+  'Front + Back':'+2 diversity bonus',
+  'Three Shot Families':'+3 diversity bonus',
+  'Opposite Solution':'+2 diversity bonus',
+  'Random Diversity Card':'+2 if achieved'
+};
+function activeDbSummaryFromStorage(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}');
+    if(!saved||!saved.enabled||!saved.allocations)return '';
+    const entries=Object.entries(saved.allocations).filter(([name,value])=>name&&value&&value!=='No DB');
+    if(!entries.length)return '';
+    return entries.map(([name,value])=>`${name}: ${value}`).join(' · ');
+  }catch{return '';}
+}
+function scoringLogicForLayers(layers=[]){
+  const active=(layers||[]).filter(Boolean);
+  const parts=active.map(layer=>CONSTRAINT_BONUS_POINTS[layer]?`${layer}: ${CONSTRAINT_BONUS_POINTS[layer]}`:null).filter(Boolean);
+  return parts.length?parts.join(' · '):'';
+}
+
 function getPlayerDisplayFields(game){
   const item=normaliseGameCard(game||{});
   const title=item.title||'Player Display';
@@ -248,9 +287,12 @@ function getPlayerDisplayFields(game){
   const scoringLogic=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
   const focus=item.playerFocus||item.coach||'Solve the game problem.';
   const layers=safeLayersForSession(item);
-  const dbText=item.playerView || item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.coach : '');
+  const storedDb=activeDbSummaryFromStorage();
+  const dbText=item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb;
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
-  return {item,title,what,score:scoringLogic,focus,layers,dbText,constraintText};
+  const layerScoring=scoringLogicForLayers(layers);
+  const score=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
+  return {item,title,what,score,focus,layers,dbText,constraintText,layerScoring};
 }
 function encodePlayerGame(game){
   try{

@@ -7310,3 +7310,64 @@ button.mentalSkillsTile p{
 .playerDisplayGrid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
 .playerDisplayGrid section h2{letter-spacing:.05em;}
 .playerViewMini p{margin:8px 0;}
+
+/* v100h82 Session/player view visual hierarchy */
+.sessionActionButtons,
+.sessionAllGameCard .buttonRow,
+.rotationCard .actionRow{
+  align-items:center;
+  gap:12px;
+  margin-top:14px;
+}
+.sessionAllGameCard .buttonRow .primaryBtn:first-child,
+.sessionActionButtons .primaryBtn:first-child{
+  background:#1f5dd0!important;
+  border:2px solid #8ab6ff!important;
+  box-shadow:0 0 0 2px rgba(31,93,208,.18);
+}
+.sessionAllGameCard .buttonRow .primaryBtn:nth-child(2),
+.sessionActionButtons .secondaryBtn:nth-child(2){
+  background:#f59e0b!important;
+  border:2px solid #ffd980!important;
+  color:#111827!important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.18);
+}
+.sessionAllGameCard .buttonRow .secondaryBtn,
+.sessionActionButtons .secondaryBtn,
+.rotationCard .actionRow .secondaryBtn{
+  background:#10233b;
+  border:1px solid #7ea6e8;
+  color:#eef4ff;
+}
+.sessionAllGameCard .buttonRow button,
+.sessionActionButtons button,
+.rotationCard .actionRow button{
+  min-height:46px;
+}
+.playerViewMini{
+  border:2px solid #22d3ee;
+  background:#082233;
+  border-radius:14px;
+  padding:16px 18px;
+  margin:14px 0;
+  line-height:1.45;
+}
+.playerViewMini h3{
+  color:#67e8f9;
+  font-size:18px;
+  margin:0 0 10px 0;
+}
+.playerViewMini strong{
+  color:#eef4ff;
+  letter-spacing:.04em;
+}
+.playerDisplayGrid section{
+  border:2px solid #2e5f96;
+}
+.playerDisplayGrid section h2{
+  color:#ffd980;
+}
+.playerDisplayGrid section p{
+  font-size:26px;
+  line-height:1.35;
+}
