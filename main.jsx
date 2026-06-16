@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h86 Modifier Scoring Build';
+const APP_VERSION='v102 Perception Phase 1 Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -188,6 +188,7 @@ return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / B
 
 function standardGames(){
 return[
+...perceptionGames(),
 {id:'length-before-attack',title:'Length Before Attack',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Player must create length pressure before attacking short.',rationale:'Encourages patient pressure construction rather than rushed attacks.',coach:'Watch whether players attack only after the opponent is displaced, late or off balance.',layers:['Quality Length Before Attack'],cbCode:'None'},
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 {id:'cb-pair',title:'Checkerboard Pair Challenge',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected checkerboard pair before bonus scoring opens.',rationale:'Builds tactical linking and opponent displacement awareness.',coach:'Use the code as tactical intention, not a hoop to jump through.',layers:[],cbCode:'[6-4] + [8-1]'},
@@ -2230,6 +2231,124 @@ function RLDScreen({setScreen}){
   </div>;
 }
 
+
+// ── PERCEPTION™ MODULE · v102 PHASE 1 ───────────────────────────────────────
+const PERCEPTION_SECTIONS=[
+  {id:'early-read',title:'EARLY READ™',subtitle:'Developing earlier information pickup and anticipation.',focus:'Organisation → Directional commitment → Functional advantage',rld:3},
+  {id:'quiet-eye',title:'QUIET EYE™',subtitle:'Visual attention, gaze control and head stability.',focus:'Where and when to look.',rld:1},
+  {id:'tracking',title:'TRACKING™',subtitle:'Ball tracking, time-to-contact and chipping progressions.',focus:'Seeing ball flight and calibrating interception.',rld:0},
+  {id:'interception',title:'INTERCEPTION™',subtitle:'Using information to gain time.',focus:'Early take, volley, T interception and court control.',rld:3},
+  {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4}
+];
+
+function perceptionGames(){
+  return [
+    {id:'per-er1',code:'ER1',module:'Early Read',phase:'Synchronisation',title:'Contact Sync',category:'Perception',duration:6,format:'Cooperative Rally',rld:2,gate:'Opponent contact',task:'Players rally. The worker lands from the split as the opponent strikes the ball. The split must be non-directional: no pre-lean left or right.',scoring:'Count clean grounded splits at opponent contact. Late, airborne, flat-footed or pre-lean = no score.',rationale:'Synchronises visual pickup with body organisation. The player learns to be grounded and loaded at the instant information becomes available.',coach:'Watch the opponent contact sound. Feet should be grounded, balanced and ready to push immediately after contact.',playerFocus:'Land loaded as they strike.',layers:['Quiet Eye','Opponent Information'],cbCode:'None'},
+    {id:'per-er2',code:'ER2',module:'Early Read',phase:'Synchronisation',title:'ATL Contact Sync',category:'Perception',duration:6,format:'ATL',rld:2,gate:'Opponent contact',task:'Play ATL with all shots above the high-tin line. Worker lands from the split as opponent strikes.',scoring:'Clean split at contact = 1. Late or pre-lean = 0.',rationale:'The high-tin line slows the information problem down without removing the opponent. This gives the player time to organise perception and movement.',coach:'Keep the rally alive and the task simple. Do not coach technique; coach timing and organisation.',playerFocus:'High line gives time: organise at contact.',layers:['Quiet Eye','Early Cue Search'],cbCode:'None'},
+    {id:'per-er3',code:'ER3',module:'Early Read',phase:'Synchronisation',title:'Two Choice Sync',category:'Perception',duration:7,format:'Back Corner Feed',rld:3,gate:'Opponent contact',task:'Feeder plays from a back corner with a real straight or crosscourt choice. Worker starts around the T and lands from split as feeder strikes. No directional commitment before contact.',scoring:'Clean non-directional split = 1. Pre-lean, late split or guessed lean = 0.',rationale:'Adds genuine unresolved choice while keeping the focus on organisation rather than prediction.',coach:'The split must prepare both options. If the split already points one way, commitment has happened too early.',playerFocus:'Ready for both, not leaning to one.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er4',code:'ER4',module:'Early Read',phase:'Synchronisation',title:'Back Wall Boast Sync',category:'Perception',duration:7,format:'Recovery Read',rld:3,gate:'Receiver contact',task:'Server plays a back wall boast, creating a loose short ball. Receiver may play straight or cross. Server recovers and lands from split as receiver strikes.',scoring:'Clean grounded split at receiver contact = 1. Late, flat or pre-lean = 0.',rationale:'A foundation recovery-read game: poor length creates urgency, forcing the player to recover, organise and read to stay in the rally.',coach:'This is not a trick shot drill. It represents the common problem of leaving a loose ball and needing anticipation to survive.',playerFocus:'Recover first, land loaded on their hit.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er5',code:'ER5',module:'Early Read',phase:'Early Commitment',title:'Beat Bounce',category:'Perception',duration:7,format:'Rear Court Read',rld:3,gate:'Before bounce',task:'Feeder plays from a back corner with a real straight or cross choice. Worker lands from split at contact and initiates directional movement before the ball bounces.',scoring:'Early and correct = 1. Wrong-foot = -1 or no score. No-commit before bounce = 0.',rationale:'The player begins directional movement before certainty. Earliness only counts when it is correct.',coach:'Separate split from commitment: first organise, then move directionally before bounce.',playerFocus:'Split, read, commit before bounce.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er6',code:'ER6',module:'Early Read',phase:'Early Commitment',title:'Beat Bounce ATL',category:'Perception',duration:7,format:'ATL',rld:3,gate:'Before bounce',task:'ATL rally above the high-tin line. Player must make directional movement before bounce while maintaining rally control.',scoring:'Correct directional movement before bounce = 1. Wrong-foot/no-commit = 0.',rationale:'Combines early commitment with a slower, more forgiving rally shape.',coach:'Use this when players need more time to learn the read without losing the live task.',playerFocus:'Move before bounce without guessing.',layers:['Early Cue Search','Quality Length Before Attack'],cbCode:'None'},
+    {id:'per-er7',code:'ER7',module:'Early Read',phase:'Early Commitment',title:'Back Wall Boast Read',category:'Perception',duration:8,format:'Recovery Read',rld:3,gate:'Before bounce',task:'Server plays back wall boast. Receiver plays straight or cross. Server recovers, lands from split at receiver contact and commits direction before bounce.',scoring:'Early correct read = 1. Wrong-foot = 0 or -1. No-commit = 0. Optional bonus for staying in rally after the read.',rationale:'The clearest early-stage anticipation problem: a loose short ball creates urgency and the player must recover, organise and commit.',coach:'Do not remove the pressure. The value is the urgency created by the loose ball.',playerFocus:'Recover, read, commit early.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er8',code:'ER8',module:'Early Read',phase:'Early Commitment',title:'Move Before Front Wall',category:'Perception',duration:8,format:'ATL / Length Rally',rld:3,gate:'Before front wall',task:'In ATL or length rally, worker must initiate directional movement before the ball reaches the front wall.',scoring:'Correct directional movement before front wall = 1. Wrong-foot/no-commit = 0.',rationale:'Reduces dependence on later ball flight information and encourages reading opponent preparation and early flight.',coach:'Only reward movement that is both early and directionally useful. Guessing is not anticipation.',playerFocus:'Read before the rebound tells you.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er9',code:'ER9',module:'Early Read',phase:'Reading Advance Information',title:'Three Option Read',category:'Perception',duration:8,format:'Back Corner Feed',rld:4,gate:'Before front wall',task:'Feeder in a back corner may play straight, crosscourt or boast. Worker lands from split at contact and commits before front wall.',scoring:'Early correct = 1. Wrong-foot and no-commit are recorded separately.',rationale:'Adds an extra option so the player must search for more reliable advance information.',coach:'After errors, ask briefly: “What told you?” Do not make verbal prediction the task.',playerFocus:'Find the reliable cue.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er10',code:'ER10',module:'Early Read',phase:'Reading Advance Information',title:'Front Court Read',category:'Perception',duration:8,format:'Front Court Feed',rld:4,gate:'Before front wall',task:'Opponent at the front may drive, drop or lob. Worker reads racquet face and preparation, then commits before front wall.',scoring:'Early correct = 1. Wrong-foot/no-commit recorded.',rationale:'Develops pickup from closer, faster information where time is compressed.',coach:'Emphasise racket face, body shape and opponent balance, but keep instruction external.',playerFocus:'See the face, organise early.',layers:['Quiet Eye','Opponent Information'],cbCode:'None'},
+    {id:'per-er11',code:'ER11',module:'Early Read',phase:'Reading Advance Information',title:'Disguise Game',category:'Perception',duration:8,format:'Live Choice',rld:4,gate:'Before front wall',task:'Opponent may hold, delay or show one shot and play another. Worker attempts to maintain early but reliable commitment.',scoring:'Track clean reads, wrong-foots and no-commits. Do not reward early guessing.',rationale:'Teaches players to distinguish reliable from unreliable cues. Anticipation must survive disguise.',coach:'The aim is calibration: when is the cue reliable enough to move?',playerFocus:'Do not buy the fake cue.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er12',code:'ER12',module:'Early Read',phase:'Functional Anticipation',title:'Read & Take High',category:'Perception',duration:8,format:'Front / Midcourt Read',rld:4,gate:'Before front wall',task:'Worker must commit early, then try to contact the ball above service-line height when appropriate.',scoring:'Early correct read = 1. Bonus if contact is above service-line height. Wrong-foot/no-commit recorded.',rationale:'Shows whether early pickup bought time and contact height, not just whether the player survived.',coach:'Use painted lines and clear height references. Avoid subjective “good shot” ratings.',playerFocus:'Use the read to take it higher.',layers:['Volley Finish','Opponent Information'],cbCode:'None'},
+    {id:'per-er13',code:'ER13',module:'Early Read',phase:'Functional Anticipation',title:'Read & Volley',category:'Perception',duration:8,format:'T Interception',rld:4,gate:'Before ball passes T',task:'Worker starts around the T. Opponent plays with straight/cross choice. Worker reads early and looks to volley when the affordance appears.',scoring:'Volley in front of short line = bonus. Wrong-foot/no-commit recorded.',rationale:'Connects anticipation directly to court control and time gain.',coach:'Do not reward reckless hunting. The volley should emerge from early pickup and balanced position.',playerFocus:'See early, step in, volley.',layers:['Volley Finish','Opponent Information'],cbCode:'None'},
+    {id:'per-er14',code:'ER14',module:'Early Read',phase:'Functional Anticipation',title:'T Interception',category:'Perception',duration:8,format:'Central Intercept',rld:4,gate:'Before ball passes T',task:'Player uses early pickup from opponent preparation to intercept around the T before the ball travels past central space.',scoring:'Interception before ball passes T = 1. Wrong-foot/no-commit recorded.',rationale:'Trains the classic squash affordance: information pickup creates central interception.',coach:'Keep the player balanced. The aim is not lunging early; it is reading early enough to own the middle.',playerFocus:'Own the middle by seeing early.',layers:['Opponent Off T','Volley Finish'],cbCode:'None'},
+    {id:'per-er15',code:'ER15',module:'Early Read',phase:'Functional Anticipation',title:'Read & Attack',category:'Perception',duration:8,format:'Live Rally',rld:4,gate:'Before front wall',task:'Player commits early and uses the time gained to attack when available: volley, early drop, attacking drive or front-court pressure.',scoring:'Early correct read + attacking take = bonus. Wrong-foot/no-commit recorded.',rationale:'Turns anticipation into pressure rather than a laboratory read.',coach:'Attack only when the read has created genuine advantage.',playerFocus:'Read early, attack the opportunity.',layers:['Clean Winner','Volley Finish','Opponent Off T'],cbCode:'None'},
+    {id:'per-er16',code:'ER16',module:'Early Read',phase:'Transfer',title:'Conditioned Matchplay',category:'Perception',duration:8,format:'Conditioned Game',rld:5,gate:'Natural',task:'Play normal scoring with one observation focus: split timing, wrong-foots, no-commits and early interceptions.',scoring:'Normal scoring. Coach/opponent records wrong-foots, no-commits, volleys and early takes.',rationale:'Allows anticipation to become less explicit while still tracking whether perception-action behaviour is changing.',coach:'Do not interrupt every rally. Observe patterns across the block.',playerFocus:'Play normally; see earlier.',layers:['Opponent Information'],cbCode:'None'},
+    {id:'per-er17',code:'ER17',module:'Early Read',phase:'Transfer',title:'Open Matchplay',category:'Perception',duration:8,format:'Matchplay',rld:6,gate:'Natural',task:'Open matchplay. No anticipation rule. Coach tracks transfer of earlier organisation, commitment and interception.',scoring:'Normal scoring. Optional observation: wrong-foot %, early interceptions, volley opportunities.',rationale:'The final test is whether the behaviour survives match uncertainty without explicit prompts.',coach:'Look for changed behaviour, not perfect compliance.',playerFocus:'Compete and let the read emerge.',layers:['Opponent Information'],cbCode:'None'}
+  ];
+}
+
+function perceptionPlaceholderCards(section){
+  const maps={
+    'quiet-eye':['Contact Point Quiet Eye','Receiver Quiet Eye','Front Wall Quiet Eye','Head Stability','Quiet Eye Under Pressure','Quiet Eye Matchplay'],
+    tracking:['Stationary Chipping','Moving Chipping','Self Feed','Hand Feed','Racquet Feed','Variable Ball Size','Tau Games'],
+    interception:['Early Take','Volley Recognition','Short-Line Interception','Front Court Pickup','T Interception','Volley Attack'],
+    deception:['Racquet Face Reading','Shoulder Reading','Hold Recognition','Disguise Recognition','Deception Matchplay']
+  };
+  return (maps[section]||[]).map((title,i)=>({title,code:title.split(/\s+/).map(x=>x[0]).join('').slice(0,3).toUpperCase()+String(i+1),phase:'Build next',rld:i<2?1:i<4?3:4,task:'Content shell ready for the next perception build phase.',rationale:'This belongs in PERCEPTION™ because it shapes information pickup before movement and decision-making.',coach:'Develop as a perception-action game rather than an isolated visual drill.',playerFocus:'See earlier, organise better.'}));
+}
+
+function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
+  const [section,setSection]=useState('early-read');
+  const [phase,setPhase]=useState('All');
+  const [selected,setSelected]=useState(null);
+  const [status,setStatus]=useState('');
+  const earlyGames=useMemo(()=>perceptionGames(),[]);
+  const currentSection=PERCEPTION_SECTIONS.find(s=>s.id===section)||PERCEPTION_SECTIONS[0];
+  const games=section==='early-read'?earlyGames:perceptionPlaceholderCards(section);
+  const phases=['All',...Array.from(new Set(games.map(g=>g.phase).filter(Boolean)))];
+  const shown=phase==='All'?games:games.filter(g=>g.phase===phase);
+  const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
+
+  function addGame(game){
+    const card=normaliseGameCard({
+      ...clone(game),
+      id:Date.now()+Math.random(),
+      category:'Perception',
+      title:`${game.code?game.code+' · ':''}${game.title}`,
+      module:section==='early-read'?'Early Read':currentSection.title,
+      duration:game.duration||8,
+      format:game.format||'Perception Game',
+      task:game.task,
+      rationale:game.rationale,
+      coach:game.coach,
+      playerFocus:game.playerFocus||game.focus,
+      scoring:game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
+      layers:game.layers||['Opponent Information'],
+      cbCode:game.cbCode||'None',
+      rld:game.rld??currentSection.rld
+    });
+    if(typeof onAddToSession==='function'){onAddToSession(card);setStatus(`${card.title} added to session.`);return;}
+    if(typeof setSession==='function'){setSession(prev=>appendToSessionState(prev,card));setStatus(`${card.title} added to session.`);return;}
+    setStatus('Session connection not available.');
+  }
+
+  return <div className={embedded?'perceptionModule perceptionEmbedded':'page perceptionModule'}>
+    {!embedded&&<div className="pageTop"><div><h1>PERCEPTION™</h1><p className="mutedText">Seeing the Game Earlier</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    <div className="perceptionHero"><span>PERCEPTION-ACTION COUPLING</span><h2>Seeing the Game Earlier</h2><p>Players are rarely late because they are physically slow. They are late because they pick up information late, organise late and commit late.</p><strong>Central question: What information is the player using, and how early are they using it?</strong></div>
+    <div className="perceptionSectionGrid">
+      {PERCEPTION_SECTIONS.map(sec=><button key={sec.id} className={section===sec.id?'perceptionSectionCard activePerceptionSection':'perceptionSectionCard'} onClick={()=>{setSection(sec.id);setPhase('All');setSelected(null);}}>
+        <RLDBadge level={sec.rld}/><strong>{sec.title}</strong><span>{sec.subtitle}</span><small>{sec.focus}</small>
+      </button>)}
+    </div>
+    <div className="perceptionPrincipleGrid">
+      <div><strong>1 · Information Pickup</strong><p>Invisible. The player detects useful information from opponent, ball, space and context.</p></div>
+      <div><strong>2 · Organisation</strong><p>Observable. The player lands from the split as opponent strikes — grounded, loaded, non-directional.</p></div>
+      <div><strong>3 · Directional Commitment</strong><p>The first visible expression of anticipation: movement toward the side or space the ball is going.</p></div>
+      <div><strong>4 · Functional Advantage</strong><p>The read buys time: earlier contact, higher contact point, volley or attacking opportunity.</p></div>
+    </div>
+    <div className="perceptionWorkArea">
+      <div className="perceptionSidebar">
+        <h3>{currentSection.title}</h3><p>{currentSection.subtitle}</p>
+        <div className="perceptionPhaseButtons">{phases.map(ph=><button key={ph} className={phase===ph?'activePerceptionPhase':''} onClick={()=>{setPhase(ph);setSelected(null);}}>{ph}</button>)}</div>
+        {section!=='early-read'&&<div className="perceptionBuildNote"><strong>Phase 2 shell</strong><p>This section is positioned here now so Quiet Eye, Tracking, Interception and Deception are integrated under the same PERCEPTION™ pillar rather than scattered across the app.</p></div>}
+      </div>
+      <div className="perceptionGameList">
+        {shown.map(game=><button key={game.id||game.title} className={active?.title===game.title?'perceptionGameTile activePerceptionGame':'perceptionGameTile'} onClick={()=>setSelected(game)}>
+          <div><span>{game.code}</span><RLDBadge level={game.rld??currentSection.rld}/></div><strong>{game.title}</strong><small>{game.phase}</small><p>{game.task}</p>
+        </button>)}
+      </div>
+      {active&&<div className="perceptionDetail">
+        <div className="perceptionDetailTop"><span className="perceptionCode">{active.code}</span><div><h2>{active.title}</h2><p>{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div></div>
+        <RLDBadge level={active.rld??currentSection.rld} size="lg"/>
+        <section><h3>Task / Rules</h3><p>{active.task}</p></section>
+        <section><h3>Scoring / Observation</h3><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></section>
+        <section><h3>Rationale</h3><p>{active.rationale}</p></section>
+        <section><h3>Coach Help</h3><p>{active.coach}</p></section>
+        <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
+        <div className="chips">{(active.layers||['Opponent Information']).map(x=><span className="badge" key={x}>{x}</span>)}</div>
+        <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
+        {status&&<div className="statusBox">{status}</div>}
+      </div>}
+    </div>
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
@@ -2254,6 +2373,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard visionHomeCard homeTitleOnly" onClick={()=>setScreen('visionPerception')}><h2>Vision & Perception</h2><span className="homeTileSubtitle">Opponent Information Pickup</span></button>
+      <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
 
@@ -2308,7 +2428,7 @@ const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
 const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
-const cats=['ATL / BTL','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
+const cats=['ATL / BTL','Perception','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
@@ -2326,6 +2446,7 @@ return <div>
 {category&&<div className="conditionsAttachBar"><div><strong>Base game:</strong> {conditionsBaseGame}<br/><span className="mutedText">Design the base game, then add tactical, behaviour or handicap constraints from this same page.</span></div><button className="primaryBtn" onClick={()=>setShowConditions(v=>!v)}>{showConditions?'Hide Conditions':'Add Game Constraints'}</button></div>}
 {showConditions&&category&&<GameConstraintsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
+{category==='Perception'&&<PerceptionModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
@@ -2350,7 +2471,7 @@ return <div>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(composedAtl);}}>{addButtonText}</button>
 </div>}
-{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
+{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&category!=='Perception'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
 {filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Tactical Pressure, Invasion.</div>}
 </div>}
@@ -10909,12 +11030,13 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h86</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v102</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
+      {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
