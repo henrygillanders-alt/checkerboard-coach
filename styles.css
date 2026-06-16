@@ -7371,3 +7371,62 @@ button.mentalSkillsTile p{
   font-size:26px;
   line-height:1.35;
 }
+
+/* v100h83 Modifier scoring editor */
+.modifierScoringPanel{
+  background:#081a2b;
+  border:2px solid #22d3ee;
+  border-radius:16px;
+  padding:16px 18px;
+  margin:14px 0;
+}
+.modifierScoringPanel h3{
+  margin:0 0 6px 0;
+  color:#67e8f9;
+  font-size:18px;
+}
+.modifierScoringPanel p{
+  margin:0 0 12px 0;
+  color:#cbd5e1;
+  line-height:1.45;
+}
+.modifierScoreGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px;
+}
+.modifierScoreGrid label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:#07111f;
+  border:1px solid #35567e;
+  border-radius:12px;
+  padding:10px 12px;
+  color:white;
+  font-weight:900;
+}
+.modifierScoreGrid label span{
+  flex:1;
+}
+.modifierScoreGrid select{
+  min-width:150px;
+  background:#081320;
+  border:1px solid #60a5fa;
+  border-radius:10px;
+  padding:8px 10px;
+  color:white;
+  font-weight:900;
+}
+.sessionAllGameCard .buttonRow .primaryBtn:first-child,
+.sessionAllGameCard .buttonRow .primaryBtn{
+  font-weight:900;
+}
+.sessionAllGameCard .buttonRow .primaryBtn:nth-child(2){
+  background:#f59e0b;
+  color:#111827;
+}
+.playerViewMini strong{
+  letter-spacing:.03em;
+}

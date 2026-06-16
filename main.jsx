@@ -252,19 +252,29 @@ const CONSTRAINT_BONUS_POINTS={
   '4-Shot Window':'+3 if converted inside 4 shots',
   '2-Shot Window':'+3 if converted inside 2 shots',
   'Quality Length Before Attack':'+2',
-  'Quiet Eye':'focus constraint',
-  'Opponent Information':'focus constraint',
-  'Early Cue Search':'focus constraint',
-  'Double Bounce':'handicap constraint',
-  'DB Handicap':'handicap constraint',
-  'No Repeat':'diversity constraint',
-  'Straight + Cross':'+2 diversity bonus',
-  'Height Change':'+2 diversity bonus',
-  'Front + Back':'+2 diversity bonus',
-  'Three Shot Families':'+3 diversity bonus',
-  'Opposite Solution':'+2 diversity bonus',
-  'Random Diversity Card':'+2 if achieved'
+  'Quiet Eye':'constraint only',
+  'Opponent Information':'constraint only',
+  'Early Cue Search':'constraint only',
+  'Double Bounce':'constraint only',
+  'DB Handicap':'constraint only',
+  'No Repeat':'+1',
+  'Straight + Cross':'+2',
+  'Height Change':'+2',
+  'Front + Back':'+2',
+  'Three Shot Families':'+3',
+  'Opposite Solution':'+2',
+  'Random Diversity Card':'+2'
 };
+const MODIFIER_SCORE_CHOICES=['constraint only','+1','+2','+3','+4','+5'];
+function defaultModifierScore(layer){return CONSTRAINT_BONUS_POINTS[layer]||'constraint only';}
+function modifierScoreLabel(layer,value){
+  const clean=value||defaultModifierScore(layer);
+  if(clean==='constraint only'||clean==='focus constraint'||clean==='handicap constraint'||clean==='diversity constraint')return `${layer}: constraint only`;
+  return `${layer}: ${clean}`;
+}
+function editableModifierLayers(layers=[]){
+  return (layers||[]).filter(layer=>layer&&layer!=='CB Code');
+}
 function activeDbSummaryFromStorage(){
   try{
     const saved=JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}');
@@ -274,9 +284,9 @@ function activeDbSummaryFromStorage(){
     return entries.map(([name,value])=>`${name}: ${value}`).join(' · ');
   }catch{return '';}
 }
-function scoringLogicForLayers(layers=[]){
-  const active=(layers||[]).filter(Boolean);
-  const parts=active.map(layer=>CONSTRAINT_BONUS_POINTS[layer]?`${layer}: ${CONSTRAINT_BONUS_POINTS[layer]}`:null).filter(Boolean);
+function scoringLogicForLayers(layers=[],modifierScores={}){
+  const active=editableModifierLayers(layers);
+  const parts=active.map(layer=>modifierScoreLabel(layer,modifierScores?.[layer])).filter(Boolean);
   return parts.length?parts.join(' · '):'';
 }
 
@@ -290,7 +300,7 @@ function getPlayerDisplayFields(game){
   const storedDb=activeDbSummaryFromStorage();
   const dbText=item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb;
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
-  const layerScoring=scoringLogicForLayers(layers);
+  const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
   const score=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
   return {item,title,what,score,focus,layers,dbText,constraintText,layerScoring};
 }
@@ -2428,7 +2438,8 @@ function stopRotationProjection(){
   stopCoachProjectionSession();
 }
 
-function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
+function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
+function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
@@ -2444,6 +2455,7 @@ return <div className="page sessionBuilderPage">
 <div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p><p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText||'No DB handicap allocated.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+{editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="actionRow">
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
@@ -6124,6 +6136,7 @@ function normaliseGameCard(card={}){
     scoring:card.scoring||card.score||'Base scoring applies unless modified by the coach.',
     playerFocus:card.playerFocus||card.focus||'Solve the game problem, not a fixed technical shape.',
     layers,
+    modifierScores:{...Object.fromEntries(layers.map(layer=>[layer,defaultModifierScore(layer)])),...(card.modifierScores||{})},
     cbCode:card.cbCode||'None',
     rld:card.rld||card.rldLevel||'',
     ...card
