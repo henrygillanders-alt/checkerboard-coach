@@ -331,6 +331,84 @@ function buildPlayerDisplayUrl(game){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerGame=${encoded}`;
 }
+
+function encodePlayerCompetition(state){
+  try{
+    const compact={...state,sharedType:'competitionPlayerView'};
+    const json=JSON.stringify(compact);
+    return btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }catch{return '';}
+}
+function decodePlayerCompetitionFromUrl(){
+  try{
+    const params=new URLSearchParams(window.location.search||'');
+    const raw=params.get('playerCompetition')||'';
+    if(!raw)return null;
+    const pad='='.repeat((4-raw.length%4)%4);
+    const b64=(raw+pad).replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  }catch{return null;}
+}
+function buildPlayerCompetitionUrl(state){
+  const encoded=encodePlayerCompetition(state);
+  if(!encoded)return '';
+  const base=window.location.origin+window.location.pathname;
+  return `${base}?playerCompetition=${encoded}`;
+}
+function CompetitionPlayerDisplayCard({competition}){
+  if(!competition){
+    return <div className="playerDisplayShell"><div className="playerDisplayTop"><span>PLAYER DISPLAY</span><h1>No competition loaded</h1></div></div>;
+  }
+  const mode=competition.mode||'competition';
+  const title=competition.title||'Competition';
+  const playerNames=competition.playerNames||[];
+  const playerBounces=competition.playerBounces||{};
+  const layers=competition.competitionLayers||[];
+  const cbCode=competition.competitionCbCode||'None';
+  const matchSummary=mode==='matchplay'
+    ?`${competition.matchPlayers?.a||'P1'} ${competition.matchScore?.a||0} - ${competition.matchScore?.b||0} ${competition.matchPlayers?.b||'P2'} · ${competition.matchScoring||''}`
+    :mode==='invasion'
+      ?`Invasion · ${competition.invasionFormat==='lives'?'Lives Format':'Points Format'} · Round ${(competition.invasionPlayerRound||0)+1}`
+      :mode==='roundRobin'
+        ?`Round Robin · ${(competition.rrFixtures||[]).length} rounds`
+        :mode==='monrad'
+          ?`Monrad · ${(competition.monradRounds||[]).length} rounds`
+          :mode==='nsl'
+            ?`NSSL · Period ${competition.nslActivePeriod||1}`
+            :'Competition';
+  function invasionTeamStartLives(team){
+    const selected=Number(competition?.invasionStartingLives||competition?.invasionLives)||5;
+    const exact=Number(competition?.invasionFairLivesByTeam?.[team?.id] ?? competition?.invasionFairLivesByTeam?.[team?.name]);
+    const base=Number.isFinite(exact)&&exact>0?exact:selected;
+    const carry=Number(competition?.invasionCarryLives?.[team?.id]||competition?.invasionCarryLives?.[team?.name]||0);
+    return base+carry;
+  }
+  return <div className="playerDisplayShell competitionPlayerDisplayShell">
+    <div className="playerDisplayTop">
+      <span>COMPETITION PLAYER DISPLAY</span>
+      <h1>{title}</h1>
+      <p>{matchSummary}</p>
+    </div>
+    <div className="playerDisplayGrid">
+      <section><h2>WHAT TO DO</h2><p>{competition.purpose||'Follow the competition format shown by the coach.'}</p></section>
+      <section><h2>HOW TO SCORE</h2><p>{competition.rules&&competition.rules.length?competition.rules.slice(0,3).join(' · '):'Use the displayed competition scoring.'}</p></section>
+      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{competition.tactical||'Compete clearly and adapt.'}</p></section>
+      <section><h2>ACTIVE CONSTRAINTS</h2><p>{layers.length?layers.join(' · '):'No active overlays.'}</p></section>
+      <section><h2>CHECKERBOARD / SPATIAL</h2><p>{cbCode}</p></section>
+      <section><h2>DB ALLOCATIONS</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No DB handicap allocated.'}</p></section>
+    </div>
+    {mode==='matchplay'&&<div className="playerDisplayRules"><h2>LIVE SCORE</h2><div><span>{competition.matchPlayers?.a||'P1'}: {competition.matchScore?.a||0}</span><span>{competition.matchPlayers?.b||'P2'}: {competition.matchScore?.b||0}</span></div></div>}
+    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
+    {mode==='nsl'&&<div className="playerDisplayRules"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
+  </div>;
+}
+function CompetitionPlayerDisplayView({competition,setScreen}){
+  return <div className="playerDisplayPage competitionPlayerDisplayPage">
+    <CompetitionPlayerDisplayCard competition={competition}/>
+  </div>;
+}
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
@@ -7925,6 +8003,70 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   const current=modeInfo[mode];
 
+  function getCompetitionProjectionState(){
+    return {
+      mode,
+      title:current.title,
+      tactical:current.tactical,
+      purpose:current.purpose,
+      rules:current.rules,
+      invasionFormat,
+      invasionStartingLives,
+      invasionTeams,
+      invasionTeamLives,
+      invasionTeamPoints,
+      invasionPlayerPoints,
+      invasionInvaderOverrides,
+      invasionCarryLives,
+      invasionFinishLives,
+      invasionFairBaseTotal:getInvasionFairBaseTotal(),
+      invasionFairLivesByTeam:getInvasionFairLivesMap(invasionTeams),
+      invasionPlayerRound,
+      invasionCourtRound,
+      invasionGameStarted,
+      invasionCourtAssignmentMode,
+      invasionCourtAssignments,
+      invasionRotationStep,
+      activeInvasionCourt,
+      invasionEliminated,
+      competitionLayers,
+      competitionCbCode,
+      playerBounces,
+      playerNames,
+      matchScore,
+      matchPlayers,
+      matchScoring,
+      rrFixtures,
+      rrResults,
+      rrBoxFixtures,
+      rrFinalFixtures,
+      monradRounds,
+      monradResults,
+      monradPlacingRounds,
+      monradPlacingResults,
+      monradFinalPlaces,
+      nslTeams,
+      nslPlayersPerTeam,
+      nslPeriod1,
+      nslPeriod2,
+      nslPeriod3,
+      nslOvertime,
+      nslScores,
+      nslActivePeriod,
+      nslRoundSeconds,
+      nslPowerPlayTeam,
+      nslPowerPlaySeconds,
+      nslPowerPlayActive,
+      updatedAt:new Date().toISOString()
+    };
+  }
+  function copyCompetitionPlayerLink(){
+    const state=getCompetitionProjectionState();
+    try{localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));}catch{}
+    const url=buildPlayerCompetitionUrl(state);
+    if(navigator.clipboard&&url){navigator.clipboard.writeText(url);}
+    alert(url?'Competition player link copied. Open it on the second device.':'Could not create competition player link.');
+  }
 
   useEffect(()=>{competitionRestoredRef.current=true;},[]);
   useEffect(()=>{
@@ -7941,35 +8083,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
 
   useEffect(()=>{
-    const projectionState={
-      mode,
-      title:current.title,
-      tactical:current.tactical,
-      purpose:current.purpose,
-      rules:current.rules,
-      invasionFormat,
-      competitionLayers,
-      competitionCbCode,
-      playerBounces,
-      playerNames,
-      matchScore,
-      matchPlayers,
-      matchScoring,
-      rrFixtures,
-      nslTeams,
-      nslPlayersPerTeam,
-      nslPeriod1,
-      nslPeriod2,
-      nslPeriod3,
-      nslOvertime,
-      nslScores,
-      nslActivePeriod,
-      nslRoundSeconds,
-      nslPowerPlayTeam,
-      nslPowerPlaySeconds,
-      nslPowerPlayActive,
-      updatedAt:new Date().toISOString()
-    };
+    const projectionState=getCompetitionProjectionState();
     try{
       localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(projectionState));
     }catch{}
@@ -8004,6 +8118,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>setShowCompetitionProjection(!showCompetitionProjection)}>
           {showCompetitionProjection?'Hide Player Projection':'Show Player Projection'}
         </button>
+        <button type="button" className="secondaryBtn" onClick={copyCompetitionPlayerLink}>Copy Competition Player Link</button>
       </div>
 
       {showCompetitionProjection&&(
@@ -11095,7 +11210,8 @@ function SoloPracticeModule({setScreen}){
 
 function App(){
 const[sharedPlayerGame]=useState(()=>decodePlayerGameFromUrl());
-const initialPlayerDisplay=!!sharedPlayerGame;
+const[sharedPlayerCompetition]=useState(()=>decodePlayerCompetitionFromUrl());
+const initialPlayerDisplay=!!sharedPlayerGame||!!sharedPlayerCompetition;
 const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
 const[backStack,setBackStack]=useState([]);
 function go(next){
@@ -11124,6 +11240,7 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
+if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
 <header className="hero">
@@ -11134,7 +11251,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v102</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v108</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}

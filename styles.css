@@ -1,4 +1,4 @@
-/* v103 Perception terminology standard: P1/P2/P3/P4 */
+/* v108 Player View Competition Share Link */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7532,3 +7532,10 @@ button.mentalSkillsTile p{
   font-size:12px;
   font-weight:900;
 }
+
+
+/* v108 Competition Player Link / Shared second-device display */
+.competitionProjectionToggle{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 18px 0;}
+.competitionPlayerDisplayShell .playerDisplayTop p{font-size:22px;font-weight:800;color:#dce8ff;margin:8px 0 0 0;}
+.competitionPlayerDisplayShell .playerDisplayRules span{display:inline-flex;margin:6px;padding:10px 14px;border-radius:999px;background:#1f5dd0;color:#fff;font-weight:900;}
+.competitionPlayerDisplayPage{background:#020814;min-height:100vh;}
