@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h81 Session Player Display Workflow Build';
+const APP_VERSION='v100h84 Seeding Protocol Fix Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -6581,6 +6581,24 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const manualNames=manualPlayers.split('\n').map(name=>name.trim()).filter(Boolean);
   const playerNames=automaticNames.length?automaticNames:manualNames;
 
+  function playerObjectForName(name){
+    return (players||[]).find(p=>p.name===name || p.fullName===name || p.playerName===name);
+  }
+
+  function seededCompetitionSource(){
+    const source=playerNames.map(name=>playerObjectForName(name)||name);
+    return [...source].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||playerDisplayName(a).localeCompare(playerDisplayName(b)));
+  }
+
+  function seededCompetitionNames(){
+    return seededCompetitionSource().map(playerDisplayName);
+  }
+
+  function snakeBoxesFromSeededPlayers(boxCount){
+    const count=Math.max(1,Number(boxCount)||1);
+    return snakeSeedPlayers(seededCompetitionSource(),count);
+  }
+
   function rankForTeamName(name){
     const player=players.find(p=>p.name===name || p.fullName===name || p.playerName===name);
     if(player) return playerSeedValue(player);
@@ -7129,7 +7147,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
-    const seeded=rankedBlockCourtAllocation(source,count);
+    // Invasion teams use snake seeding so team strength is balanced.
+    // Example 16 / 4: Team 1 = 1,8,9,16 · Team 2 = 2,7,10,15 etc.
+    const seeded=snakeSeedPlayers(source,count);
     const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:teamNameFromPlayers(teamPlayers,index),
@@ -7265,7 +7285,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateRoundRobin(){
-    const names=[...playerNames];
+    const names=seededCompetitionNames();
     const rounds=buildRoundRobinRounds(names);
     setRrFixtures(rounds);
     setRrResults({});
@@ -7310,10 +7330,10 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function distributeRoundRobinBoxes(){
-    const names=[...playerNames];
+    const names=seededCompetitionNames();
     const count=Math.max(1,Math.min(Number(rrBoxCount)||1,Math.max(1,names.length)));
-    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:[]}));
-    names.forEach((name,idx)=>boxes[idx%count].players.push(name));
+    const seededBoxes=snakeBoxesFromSeededPlayers(count);
+    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:seededBoxes[idx]||[]}));
     setRrBoxes(boxes);
     setRrBoxFixtures(boxes.map(box=>buildRoundRobinRounds(box.players)));
     setRrBoxResults({});
@@ -7408,7 +7428,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateMonradFirstRound(){
-    const seeded=seedToPowerOfTwo([...playerNames]);
+    const seeded=seedToPowerOfTwo(seededCompetitionNames());
     const matches=makeSeededMatches(seeded);
     setMonradRounds([matches]);
     setMonradResults({});
@@ -7444,7 +7464,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateMonradPlacingDraw(){
-    const names=seedToPowerOfTwo([...playerNames]);
+    const names=seedToPowerOfTwo(seededCompetitionNames());
     if(names.length<2){
       setMonradPlacingRounds([]);
       setMonradPlacingResults({});
