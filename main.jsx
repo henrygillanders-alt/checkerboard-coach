@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h76 Pattern Lab Session Hotfix';
+const APP_VERSION='v100h73 Pattern Lab Full Library Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -80,12 +80,6 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 
 function safeLayersForSession(game){
   return Array.isArray(game?.layers)?game.layers:[];
-}
-
-function sessionArray(value){
-  if(Array.isArray(value)) return value;
-  if(value&&Array.isArray(value.rotations)) return value.rotations;
-  return [];
 }
 
 function gcd(a,b){a=Math.abs(Number(a)||0);b=Math.abs(Number(b)||0);while(b){const t=b;b=a%b;a=t;}return a||1;}
@@ -2253,26 +2247,26 @@ return <div>
 </div>;
 }
 
-function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const[showInlinePicker,setShowInlinePicker]=useState(false);const sessionList=sessionArray(session);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(sessionList)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(sessionArray(last));setSessionHistory(sessionHistory.slice(0,-1));}
-const total=sessionList.reduce((sum,game)=>sum+Number(game.duration||0),0);
-function addGame(game){saveSessionSnapshot();setSession(prev=>[...sessionArray(prev),game]);}
-function remove(index){saveSessionSnapshot();setSession(sessionList.filter((_,i)=>i!==index));}
-function duplicate(index){saveSessionSnapshot();const copy=clone(sessionList[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...sessionList.slice(0,index+1),copy,...sessionList.slice(index+1)]);}
+function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
+function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
+function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
+function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
 function startRotationProjection(index){
-  startCoachProjectionSession(sessionList,index);
+  startCoachProjectionSession(session,index);
 }
 function stopRotationProjection(){
   stopCoachProjectionSession();
 }
 
-function addLayer(index,layer){saveSessionSnapshot();const updated=clone(sessionList);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
-function updateCb(index,code){saveSessionSnapshot();const updated=clone(sessionList);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
+function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 return <div className="page">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="secondaryBtn" onClick={()=>setShowInlinePicker(v=>!v)}>{showInlinePicker?'Hide Add Games':'Add Games Here'}</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
-{showInlinePicker&&<div className="sessionInlinePicker"><GameSelector onAddToSession={(game)=>{addGame(game);setShowInlinePicker(false);}} addButtonText="Add To Session"/></div>}
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
+<GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
 <h2>Session Rotations</h2>
-{sessionList.length===0&&<div className="placeholder">No rotations added yet. Use Open Games Library, Pattern Lab, or Add Games Here to build the session.</div>}
-{sessionList.map((game,index)=><div className={game._newFromPatternLab?'rotationCard patternSessionHighlight':'rotationCard'} key={game.id||index}>
+{session.length===0&&<div className="placeholder">No rotations added yet. Choose a game above and tap Add To Session.</div>}
+{session.map((game,index)=><div className="rotationCard" key={game.id||index}>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
@@ -6042,7 +6036,7 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId('custom');setLogicCard(null);setMessage('');setEditingCard(emptyUniversalGame('Custom Coach Game'));}}>+ New Game Card</button>
+      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game Card</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -6063,7 +6057,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
-    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession} session={session}/>}
+    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
@@ -10472,49 +10466,23 @@ const PATTERN_LEVEL_META={
   5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
 };
 
-function TacticalIntentionsModule({setScreen,setSession,session}){
+function TacticalIntentionsModule({setScreen,setSession}){
   const [selected,setSelected]=useState(PATTERN_LAB_READY_GAMES[0]);
   const [mode,setMode]=useState('ready');
   const [levelFilter,setLevelFilter]=useState('All');
   const [attackFilter,setAttackFilter]=useState('All');
   const [random,setRandom]=useState(null);
-  const [addStatus,setAddStatus]=useState('');
-  const sessionCount=sessionArray(session).length;
-  const sessionTotal=sessionArray(session).reduce((sum,g)=>sum+Number(g.duration||0),0);
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
-  function buildSessionCard(game){
-    return {
-      id:Date.now()+Math.random(),
-      title:`Pattern Lab — ${game.title}`,
-      category:'Tactical Intentions',
-      format:'Pattern Lab',
-      duration:8,
-      task:game.quick,
-      description:game.logic,
-      rationale:'CLA revisited pattern of play: preserve tactical intention while varying solution families and preventing dominant attractor defaults.',
-      scoring:game.score,
-      layers:game.flags,
-      rld:game.rld,
-      coach:game.coach,
-      playerFocus:'Solve the tactical problem. Do not simply repeat your favourite shot family.',
-      cbCode:'None',
-      _newFromPatternLab:true
-    };
-  }
-  function addGame(game,{view=false}={}){
-    if(!setSession){setAddStatus('Session connection not available.');return;}
-    const card=buildSessionCard(game);
-    setSession(prev=>[...sessionArray(prev).map(g=>({...g,_newFromPatternLab:false})),card]);
-    setAddStatus(`Added to session: ${game.title}`);
-    if(view) setScreen('sessions');
+  function addGame(game){
+    const card={title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',task:game.quick,description:game.logic,scoring:game.score,layers:game.flags,rld:game.rld,coach:game.coach};
+    if(setSession)setSession(prev=>({...prev,rotations:[...(prev?.rotations||[]),card]}));
   }
   const active=random||selected;
   const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
   return <div className="page tacticalIntentionsPage">
     <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
-    <div className="tiSessionStrip"><div><strong>Current Session</strong><span>{sessionCount} games · {sessionTotal} mins</span>{addStatus&&<em>{addStatus}</em>}</div><button className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);}}>⚡ Random Pattern</button></div>
 
     {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
@@ -10525,7 +10493,7 @@ function TacticalIntentionsModule({setScreen,setSession,session}){
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{active.docRef}</span></div>
       <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Constraints / Flags</h3><div className="chipRow">{active.flags.map(c=><span key={c}>{c}</span>)}</div></section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{active.quick}</p><small>{meta.note}</small></div>
-      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="primaryBtn" onClick={()=>addGame(active,{view:true})}>Add + View Session</button><button className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button><button className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
+      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
     </div>
 
     {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Pattern Lab Game</h2><p>Start with any plug-and-play card, then modify with the existing Game Logic, Scoring Logic, Constraints and DB panels. Diversity Constraints are overlays, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
@@ -10651,7 +10619,7 @@ function goBack(){
   });
 }
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
-const[session,setSession]=useState(()=>{try{return sessionArray(JSON.parse(localStorage.getItem(SESSION_KEY))||[])}catch{return[]}});
+const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY))||[]}catch{return[]}});
 const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   try{
     const direct=localStorage.getItem('checkerboardInvasionFormat');
@@ -10662,7 +10630,7 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   return 'lives';
 });
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
-useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(sessionArray(session)));},[session]);
+useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 return <div>
 <header className="hero">
@@ -10672,13 +10640,13 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h75</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h71</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
-      {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession} session={session}/>}
+      {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
