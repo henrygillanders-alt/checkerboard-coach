@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h81 Session Player Display Workflow Build';
+const APP_VERSION='v100h86 Modifier Scoring Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -326,27 +326,6 @@ function buildPlayerDisplayUrl(game){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerGame=${encoded}`;
 }
-
-function ModifierScoringEditor({game,index,onToggleLayer,onScoreChange}){
-  const activeLayers=safeLayersForSession(game);
-  const rows=Array.from(new Set(ALL_LAYERS.filter(layer=>layer&&layer!=='CB Code')));
-  return <div className="modifierScoringPanel modifierScoringPanelAlways">
-    <div className="modifierScoringHeader"><div><h3>Modifier Scoring</h3><p>Turn modifiers on/off and assign the bonus players can earn. “Constraint only” keeps the rule active without adding points.</p></div><span>{activeLayers.filter(layer=>layer!=='CB Code').length} active</span></div>
-    <div className="modifierScoreGrid modifierScoreGridFull">
-      {rows.map(layer=>{
-        const active=activeLayers.includes(layer);
-        const score=(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer);
-        return <div className={active?'modifierScoreRow modifierScoreRowActive':'modifierScoreRow'} key={layer}>
-          <button type="button" className={active?'modifierToggle modifierToggleActive':'modifierToggle'} onClick={()=>onToggleLayer(index,layer)}>{active?'✓ Active':'+ Add'}</button>
-          <strong>{layer}</strong>
-          <select value={score} onChange={e=>onScoreChange(index,layer,e.target.value)}>
-            {MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}
-          </select>
-        </div>})}
-    </div>
-  </div>;
-}
-
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
@@ -2460,9 +2439,8 @@ function stopRotationProjection(){
 }
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
-function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
+function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
-function toggleModifierLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(updated[index].layers.includes(layer)){updated[index].layers=updated[index].layers.filter(item=>item!==layer);}else{updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);}setSession(updated);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
@@ -2476,8 +2454,9 @@ return <div className="page sessionBuilderPage">
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
 <div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p><p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText||'No DB handicap allocated.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
-<div className="chips activeModifierChips">{safeLayersForSession(game).filter(layer=>layer!=='CB Code').map(layer=><span className="badge" key={layer}>{modifierScoreLabel(layer,(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer))}</span>)}</div>
-<ModifierScoringEditor game={game} index={index} onToggleLayer={toggleModifierLayer} onScoreChange={updateModifierScore}/>
+<div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
+{editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
+<div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="actionRow">
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 <button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
@@ -2742,6 +2721,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   const savedAtlDraft=(()=>{try{const saved=localStorage.getItem(GAME_LIBRARY_ATL_DRAFT_KEY);return saved?JSON.parse(saved):null;}catch{return null;}})();
   const [atl,setAtl]=useState(savedAtlDraft?.atl||DEFAULT_ATL); const [side,setSide]=useState(savedAtlDraft?.side||'Right side'); const [useCustomCb,setUseCustomCb]=useState(!!savedAtlDraft?.useCustomCb); const [customCbZone,setCustomCbZone]=useState(savedAtlDraft?.customCbZone||'');
   const [manualLayers,setManualLayers]=useState(savedAtlDraft?.manualLayers||[]);
+  const [builderModifierScores,setBuilderModifierScores]=useState(savedAtlDraft?.modifierScores||{});
   const [atlHistory,setAtlHistory]=useState([]);
   const [atlDbAssign,setAtlDbAssign]=useState('Both Players');
   const [atlDbPlayer,setAtlDbPlayer]=useState('');
@@ -2756,13 +2736,13 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     return '[6-3] + [6-2]';
   }
   const autoCbZone=sideToCbZone(side);
-  const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers:[...new Set([...manualLayers])]};},[builtAtl,manualLayers,side,useCustomCb,customCbZone,autoCbZone]);
+  const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;const layers=[...new Set([...manualLayers])];return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side,useCustomCb,customCbZone,autoCbZone]);
   useEffect(()=>{
-    localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers}));
-  },[atl,side,useCustomCb,customCbZone,manualLayers]);
+    localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers,modifierScores:builderModifierScores}));
+  },[atl,side,useCustomCb,customCbZone,manualLayers,builderModifierScores]);
 
   function saveAtlSnapshot(){
-    setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);
+    setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers),modifierScores:clone(builderModifierScores)}]);
   }
 
   function setAtlOption(key,value){
@@ -2791,11 +2771,18 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     if(!last)return;
     setAtl(last.atl);
     setManualLayers(last.manualLayers);
+    setBuilderModifierScores(last.modifierScores||{});
     setAtlHistory(atlHistory.slice(0,-1));
   }
 
+  function updateBuilderModifierScore(layer,value){
+    setBuilderModifierScores(prev=>({...prev,[layer]:value}));
+  }
+
   function addGame(game){
-    onAddToSession({...clone(game),id:Date.now()+Math.random()});
+    const layers=safeLayersForSession(game);
+    const withScores={...clone(game),modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...(game.modifierScores||{}),...builderModifierScores}};
+    onAddToSession({...withScores,id:Date.now()+Math.random()});
   }
 
   return <div className="gameCard">
@@ -2828,6 +2815,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
 
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
       <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Overlays add bonus points.</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Select the points value for every active modifying constraint. Choose “constraint only” when the rule changes behaviour but should not add points.</p>{editableModifierLayers(composedAtl.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composedAtl.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composedAtl.modifierScores&&composedAtl.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
@@ -10921,7 +10909,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h78</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h86</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
