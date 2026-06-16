@@ -1,9 +1,10 @@
+/* v109 Competition Player Display Link for second device */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v107 Perception Modifying Constraints Standard Build';
+const APP_VERSION='v102 Perception Phase 1 Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -60,7 +61,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','DB Handicap'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -253,10 +254,6 @@ const CONSTRAINT_BONUS_POINTS={
   '4-Shot Window':'+3 if converted inside 4 shots',
   '2-Shot Window':'+3 if converted inside 2 shots',
   'Quality Length Before Attack':'+2',
-  'Contact Sync':'+1',
-  'Early Read':'+1',
-  'Early Take':'+1',
-  'High Contact':'+1',
   'Quiet Eye':'constraint only',
   'Opponent Information':'constraint only',
   'Early Cue Search':'constraint only',
@@ -355,60 +352,6 @@ function buildPlayerCompetitionUrl(state){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerCompetition=${encoded}`;
 }
-function CompetitionPlayerDisplayCard({competition}){
-  if(!competition){
-    return <div className="playerDisplayShell"><div className="playerDisplayTop"><span>PLAYER DISPLAY</span><h1>No competition loaded</h1></div></div>;
-  }
-  const mode=competition.mode||'competition';
-  const title=competition.title||'Competition';
-  const playerNames=competition.playerNames||[];
-  const playerBounces=competition.playerBounces||{};
-  const layers=competition.competitionLayers||[];
-  const cbCode=competition.competitionCbCode||'None';
-  const matchSummary=mode==='matchplay'
-    ?`${competition.matchPlayers?.a||'P1'} ${competition.matchScore?.a||0} - ${competition.matchScore?.b||0} ${competition.matchPlayers?.b||'P2'} · ${competition.matchScoring||''}`
-    :mode==='invasion'
-      ?`Invasion · ${competition.invasionFormat==='lives'?'Lives Format':'Points Format'} · Round ${(competition.invasionPlayerRound||0)+1}`
-      :mode==='roundRobin'
-        ?`Round Robin · ${(competition.rrFixtures||[]).length} rounds`
-        :mode==='monrad'
-          ?`Monrad · ${(competition.monradRounds||[]).length} rounds`
-          :mode==='nsl'
-            ?`NSSL · Period ${competition.nslActivePeriod||1}`
-            :'Competition';
-  function invasionTeamStartLives(team){
-    const selected=Number(competition?.invasionStartingLives||competition?.invasionLives)||5;
-    const exact=Number(competition?.invasionFairLivesByTeam?.[team?.id] ?? competition?.invasionFairLivesByTeam?.[team?.name]);
-    const base=Number.isFinite(exact)&&exact>0?exact:selected;
-    const carry=Number(competition?.invasionCarryLives?.[team?.id]||competition?.invasionCarryLives?.[team?.name]||0);
-    return base+carry;
-  }
-  return <div className="playerDisplayShell competitionPlayerDisplayShell">
-    <div className="playerDisplayTop">
-      <span>COMPETITION PLAYER DISPLAY</span>
-      <h1>{title}</h1>
-      <p>{matchSummary}</p>
-    </div>
-    <div className="playerDisplayGrid">
-      <section><h2>WHAT TO DO</h2><p>{competition.purpose||'Follow the competition format shown by the coach.'}</p></section>
-      <section><h2>HOW TO SCORE</h2><p>{competition.rules&&competition.rules.length?competition.rules.slice(0,3).join(' · '):'Use the displayed competition scoring.'}</p></section>
-      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{competition.tactical||'Compete clearly and adapt.'}</p></section>
-      <section><h2>ACTIVE CONSTRAINTS</h2><p>{layers.length?layers.join(' · '):'No active overlays.'}</p></section>
-      <section><h2>CHECKERBOARD / SPATIAL</h2><p>{cbCode}</p></section>
-      <section><h2>DB ALLOCATIONS</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No DB handicap allocated.'}</p></section>
-    </div>
-    {mode==='matchplay'&&<div className="playerDisplayRules"><h2>LIVE SCORE</h2><div><span>{competition.matchPlayers?.a||'P1'}: {competition.matchScore?.a||0}</span><span>{competition.matchPlayers?.b||'P2'}: {competition.matchScore?.b||0}</span></div></div>}
-    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
-    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
-    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
-    {mode==='nsl'&&<div className="playerDisplayRules"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
-  </div>;
-}
-function CompetitionPlayerDisplayView({competition,setScreen}){
-  return <div className="playerDisplayPage competitionPlayerDisplayPage">
-    <CompetitionPlayerDisplayCard competition={competition}/>
-  </div>;
-}
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
@@ -437,6 +380,61 @@ function PlayerDisplayView({session,setScreen,sharedGame=null}){
   return <div className="playerDisplayPage">
     {!sharedGame&&<div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={()=>setScreen('sessions')}>Session Builder</button></div>}
     <PlayerDisplayCard game={sharedGame} session={session} selectedIndex={selectedIndex} onSelect={setSelectedIndex}/>
+  </div>;
+}
+
+function CompetitionPlayerDisplayCard({competition}){
+  if(!competition){
+    return <div className="playerDisplayShell"><div className="playerDisplayTop"><span>PLAYER DISPLAY</span><h1>No competition loaded</h1></div></div>;
+  }
+  const mode=competition.mode||'competition';
+  const title=competition.title||'Competition';
+  const playerNames=competition.playerNames||[];
+  const playerBounces=competition.playerBounces||{};
+  const layers=competition.competitionLayers||[];
+  const cbCode=competition.competitionCbCode||'None';
+  const summary=mode==='matchplay'
+    ?`${competition.matchPlayers?.a||'P1'} ${competition.matchScore?.a||0} - ${competition.matchScore?.b||0} ${competition.matchPlayers?.b||'P2'} · ${competition.matchScoring||''}`
+    :mode==='invasion'
+      ?`Invasion · ${competition.invasionFormat==='lives'?'Lives Format':'Points Format'} · Round ${(competition.invasionPlayerRound||0)+1}`
+      :mode==='roundRobin'
+        ?`Round Robin · ${(competition.rrFixtures||[]).length} rounds`
+        :mode==='monrad'
+          ?`Monrad · ${(competition.monradRounds||[]).length} rounds`
+          :mode==='nsl'
+            ?`NSSL · Period ${competition.nslActivePeriod||1}`
+            :'Competition display';
+  function invasionTeamStartLives(team){
+    const selected=Number(competition?.invasionStartingLives||competition?.invasionLives)||5;
+    const exact=Number(competition?.invasionFairLivesByTeam?.[team?.id] ?? competition?.invasionFairLivesByTeam?.[team?.name]);
+    if(Number.isFinite(exact)&&exact>0)return exact;
+    const carry=Number(competition?.invasionCarryLives?.[team?.id]||competition?.invasionCarryLives?.[team?.name]||0);
+    return Math.max(0,selected+carry);
+  }
+  return <div className="playerDisplayShell competitionPlayerDisplayShell">
+    <div className="playerDisplayTop">
+      <span>COMPETITION PLAYER DISPLAY</span>
+      <h1>{title}</h1>
+      <p className="competitionPlayerSummary">{summary}</p>
+    </div>
+    <div className="playerDisplayGrid">
+      <section><h2>WHAT TO DO</h2><p>{competition.purpose||'Follow the competition format shown by the coach.'}</p></section>
+      <section><h2>HOW TO SCORE</h2><p>{competition.rules&&competition.rules.length?competition.rules.slice(0,3).join(' · '):'Use the displayed competition scoring.'}</p></section>
+      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{competition.tactical||'Compete clearly and adapt.'}</p></section>
+      <section><h2>CHECKERBOARD</h2><p>{cbCode}</p></section>
+      <section><h2>CONSTRAINTS</h2><p>{layers.length?layers.join(' · '):'No extra constraints selected.'}</p></section>
+      <section><h2>PLAYERS / DB</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No players selected.'}</p></section>
+    </div>
+    {mode==='matchplay'&&<div className="playerDisplayRules"><h2>LIVE SCORE</h2><div><span>{competition.matchPlayers?.a||'P1'}: {competition.matchScore?.a||0}</span><span>{competition.matchPlayers?.b||'P2'}: {competition.matchScore?.b||0}</span></div></div>}
+    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
+    {mode==='nsl'&&<div className="playerDisplayRules"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
+  </div>;
+}
+function CompetitionPlayerDisplayView({competition,setScreen}){
+  return <div className="playerDisplayPage competitionPlayerDisplayPage">
+    <CompetitionPlayerDisplayCard competition={competition}/>
   </div>;
 }
 
@@ -2323,38 +2321,6 @@ const PERCEPTION_SECTIONS=[
   {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4}
 ];
 
-const PERCEPTION_STANDARD_MODIFIERS=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','Quality Length Before Attack'];
-const PERCEPTION_SPECIFIC_MODIFIERS=['Contact Sync','Early Read','Early Take','High Contact'];
-const PERCEPTION_MODIFIER_PRESETS={
-  'Perception Core':['Contact Sync','Early Read','High Contact'],
-  'Early Advantage':['Early Read','Early Take','High Contact'],
-  'Attack Conversion':['Early Read','Volley Finish','Clean Winner'],
-  'Control Before Attack':['Quality Length Before Attack','Opponent Off T','T Challenge']
-};
-function perceptionModifierHelp(layer){
-  return {
-    'Contact Sync':'Bonus when P1 lands from the split-step as P2 contacts the ball.',
-    'Early Read':'Bonus when P1 commits before the chosen gate: bounce, short line or front wall.',
-    'Early Take':'Bonus when P1 takes the ball before the short line.',
-    'High Contact':'Bonus when P1 contacts above service-line height.',
-    'Clean Winner':'Clean winner sits on top of the normal scoring.',
-    'Opponent Off T':'Bonus when P1 acts while P2 is not recovered to the T.',
-    'T Challenge':'Bonus for using information to gain or hold central control.',
-    'Volley Finish':'Bonus for converting the read into a volley finish.',
-    'Weak Side':'Bonus for recognising and using the opponent’s weaker side.',
-    'Quality Length Before Attack':'Attack bonus only becomes live after quality length pressure.'
-  }[layer]||'Modifier available for this Perception activity.';
-}
-function perceptionScoringWithModifiers(game,modifiers=[],modifierScores={}){
-  const base=game?.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.';
-  const unique=Array.from(new Set(modifiers||[]));
-  const custom=unique.map(layer=>{
-    const score=(modifierScores&&modifierScores[layer])||defaultModifierScore(layer);
-    return score?`${layer}: ${score}`:layer;
-  }).filter(Boolean).join(' · ');
-  return custom?`${base} · ${custom}`:base;
-}
-
 function perceptionGames(){
   return [
     {id:'per-er1',code:'ER1',module:'Early Read',phase:'Synchronisation',title:'Contact Sync',category:'Perception',duration:6,format:'Cooperative Rally',rld:2,gate:'Opponent contact',task:'Players rally. P1 lands from the split as the opponent strikes the ball. The split must be non-directional: no pre-lean left or right.',scoring:'Count clean grounded splits at opponent contact. Late, airborne, flat-footed or pre-lean = no score.',rationale:'Synchronises visual pickup with body organisation. The player learns to be grounded and loaded at the instant information becomes available.',coach:'Watch the opponent contact sound. Feet should be grounded, balanced and ready to push immediately after contact.',playerFocus:'Land loaded as they strike.',layers:['Quiet Eye','Opponent Information'],cbCode:'None'},
@@ -2420,9 +2386,6 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const [section,setSection]=useState('early-read');
   const [phase,setPhase]=useState('All');
   const [selected,setSelected]=useState(null);
-  const [selectedModifiers,setSelectedModifiers]=useState([]);
-  const [modifierScores,setModifierScores]=useState({});
-  const [customBaseScoring,setCustomBaseScoring]=useState('');
   const [status,setStatus]=useState('');
   const earlyGames=useMemo(()=>perceptionGames(),[]);
   const currentSection=PERCEPTION_SECTIONS.find(s=>s.id===section)||PERCEPTION_SECTIONS[0];
@@ -2430,36 +2393,6 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const phases=['All',...Array.from(new Set(games.map(g=>g.phase).filter(Boolean)))];
   const shown=phase==='All'?games:games.filter(g=>g.phase===phase);
   const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
-  useEffect(()=>{
-    const baseLayers=Array.from(new Set(active?.layers||[]));
-    setSelectedModifiers(baseLayers);
-    setCustomBaseScoring(active?.scoring||'');
-    setModifierScores(Object.fromEntries(baseLayers.map(layer=>[layer,defaultModifierScore(layer)])));
-  },[active?.id,active?.title]);
-  const allPerceptionModifiers=[...PERCEPTION_STANDARD_MODIFIERS,...PERCEPTION_SPECIFIC_MODIFIERS];
-  function togglePerceptionModifier(layer){
-    setSelectedModifiers(prev=>{
-      const next=prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer];
-      setModifierScores(scores=>{
-        const out={...scores};
-        if(next.includes(layer)&&!out[layer]) out[layer]=defaultModifierScore(layer);
-        return out;
-      });
-      return next;
-    });
-  }
-  function applyPerceptionPreset(name){
-    const next=Array.from(new Set([...(active?.layers||[]),...(PERCEPTION_MODIFIER_PRESETS[name]||[])]));
-    setSelectedModifiers(next);
-    setModifierScores(scores=>{
-      const out={...scores};
-      next.forEach(layer=>{if(!out[layer]) out[layer]=defaultModifierScore(layer);});
-      return out;
-    });
-  }
-  function updatePerceptionModifierScore(layer,value){
-    setModifierScores(prev=>({...prev,[layer]:value}));
-  }
 
   function addGame(game){
     const card=normaliseGameCard({
@@ -2474,9 +2407,8 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       rationale:game.rationale,
       coach:game.coach,
       playerFocus:game.playerFocus||game.focus,
-      scoring:perceptionScoringWithModifiers({...game,scoring:customBaseScoring||game.scoring},selectedModifiers,modifierScores),
-      layers:Array.from(new Set([...(game.layers||['Opponent Information']),...selectedModifiers])),
-      modifierScores:Object.fromEntries(Array.from(new Set([...(game.layers||[]),...selectedModifiers])).map(layer=>[layer,modifierScores[layer]||defaultModifierScore(layer)])),
+      scoring:game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
+      layers:game.layers||['Opponent Information'],
       cbCode:game.cbCode||'None',
       rld:game.rld??currentSection.rld
     });
@@ -2514,17 +2446,11 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="perceptionDetailTop"><span className="perceptionCode">{active.code}</span><div><h2>{active.title}</h2><p>{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div></div>
         <RLDBadge level={active.rld??currentSection.rld} size="lg"/>
         <section><h3>Task / Rules</h3><p>{active.task}</p></section>
-        <section><h3>Scoring / Observation</h3><p>{perceptionScoringWithModifiers({...active,scoring:customBaseScoring||active.scoring},selectedModifiers,modifierScores)}</p></section>
+        <section><h3>Scoring / Observation</h3><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></section>
         <section><h3>Rationale</h3><p>{active.rationale}</p></section>
         <section><h3>Coach Help</h3><p>{active.coach}</p></section>
         <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
-        <section className="overlayPanel"><strong>Modifying Constraints</strong><p className="overlayExplain">Select any constraints for this PERCEPTION™ activity. These use the same format as the rest of the app and travel with the game into Session Builder and Projection.</p>
-          <div className="buttonRow">{Object.keys(PERCEPTION_MODIFIER_PRESETS).map(name=><button key={name} className="secondaryBtn" onClick={()=>applyPerceptionPreset(name)}>{name}</button>)}</div>
-          <div className="quickLayers">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activeLayer':''} onClick={()=>togglePerceptionModifier(layer)} title={perceptionModifierHelp(layer)}>{layer}</button>)}</div>
-        </section>
-        <div className="technicalScoringBox alwaysVisibleScoring"><strong>Base Scoring</strong><label><textarea value={customBaseScoring} onChange={e=>setCustomBaseScoring(e.target.value)} placeholder={active.scoring||"Win rally = 1. Apply selected modifier bonuses."}/></label></div>
-        <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Select the points value for every active modifying constraint. Choose “constraint only” when the rule changes behaviour but should not add points.</p>{editableModifierLayers(selectedModifiers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints above, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(selectedModifiers).map(layer=><label key={layer}><span>{layer}</span><select value={modifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
-        <div className="chips">{Array.from(new Set([...(active.layers||['Opponent Information']),...selectedModifiers])).map(x=><span className="badge" key={x}>{x}</span>)}</div>
+        <div className="chips">{(active.layers||['Opponent Information']).map(x=><span className="badge" key={x}>{x}</span>)}</div>
         <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
@@ -8019,8 +7945,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       invasionInvaderOverrides,
       invasionCarryLives,
       invasionFinishLives,
-      invasionFairBaseTotal:getInvasionFairBaseTotal(),
-      invasionFairLivesByTeam:getInvasionFairLivesMap(invasionTeams),
       invasionPlayerRound,
       invasionCourtRound,
       invasionGameStarted,
@@ -8083,11 +8007,10 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
 
   useEffect(()=>{
-    const projectionState=getCompetitionProjectionState();
     try{
-      localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(projectionState));
+      localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(getCompetitionProjectionState()));
     }catch{}
-  },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,current.title,current.tactical,current.purpose]);
+  },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrBoxFixtures,rrFinalFixtures,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,invasionTeams,invasionTeamPoints,invasionPlayerPoints,invasionCarryLives,invasionFinishLives,invasionPlayerRound,invasionCourtRound,invasionGameStarted,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,current.title,current.tactical,current.purpose]);
 
 
   return (
@@ -11251,7 +11174,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v108</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v109</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}

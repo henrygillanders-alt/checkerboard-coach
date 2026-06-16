@@ -1,4 +1,4 @@
-/* v108 Player View Competition Share Link */
+/* v103 Perception terminology standard: P1/P2/P3/P4 */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7443,99 +7443,7 @@ button.mentalSkillsTile p{
 @media(max-width:1000px){.perceptionWorkArea{grid-template-columns:1fr}.perceptionGameList{max-height:none}.perceptionSectionGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.perceptionSectionGrid{grid-template-columns:1fr}.perceptionHero h2{font-size:26px}.perceptionDetailTop{flex-direction:column}.perceptionPrincipleGrid{grid-template-columns:1fr}}
 
-/* v105 Perception modifier lock */
-.perceptionModifierPanel{
-  background:#061f24;
-  border:1px solid #22d3ee;
-  border-radius:16px;
-  padding:16px 18px;
-  margin:14px 0;
-}
-.perceptionModifierPanel h3{color:#67e8f9;margin:0 0 8px 0;}
-.perceptionModifierPanel p{color:#c4c9d9;margin:0 0 12px 0;line-height:1.5;}
-.perceptionPresetRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-.perceptionPresetRow button{
-  background:#0e7490;
-  border:1px solid #67e8f9;
-  color:white;
-  border-radius:999px;
-  padding:8px 12px;
-  font-weight:900;
-  cursor:pointer;
-}
-.perceptionModifierGrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:10px;
-}
-.perceptionModifierGrid button{
-  background:#081320;
-  border:1px solid #35567e;
-  color:white;
-  border-radius:14px;
-  padding:12px 14px;
-  text-align:left;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
-}
-.perceptionModifierGrid button strong{color:#fff;font-size:13px;}
-.perceptionModifierGrid button span{color:#9fb0c8;font-size:12px;line-height:1.35;}
-.perceptionModifierGrid button small{color:#ffd980;font-weight:900;font-size:11px;}
-.perceptionModifierGrid button.activePerceptionModifier{
-  background:#0e7490;
-  border:2px solid #67e8f9;
-}
-.perceptionModifierGrid button.activePerceptionModifier span{color:#ecfeff;}
-
-/* v106 Perception custom modifier scoring */
-.perceptionCustomScoring{
-  margin-top:14px;
-  background:#081320;
-  border:1px solid #35567e;
-  border-radius:14px;
-  padding:14px;
-}
-.perceptionCustomScoring label{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  color:#ffd980;
-  font-weight:900;
-}
-.perceptionCustomScoring textarea,
-.perceptionCustomScoring input{
-  width:100%;
-  background:#07111f;
-  border:1px solid #486b9a;
-  border-radius:12px;
-  padding:10px 12px;
-  color:white;
-  font-size:14px;
-}
-.perceptionCustomScoring textarea{min-height:92px;resize:vertical;}
-.perceptionScoreEditorGrid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:10px;
-  margin-top:12px;
-}
-.perceptionScoreEditorGrid label{
-  background:#0b1828;
-  border:1px solid #2f4d72;
-  border-radius:12px;
-  padding:10px;
-}
-.perceptionScoreEditorGrid span{
-  color:#9bc1ff;
-  font-size:12px;
-  font-weight:900;
-}
-
-
-/* v108 Competition Player Link / Shared second-device display */
-.competitionProjectionToggle{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 18px 0;}
-.competitionPlayerDisplayShell .playerDisplayTop p{font-size:22px;font-weight:800;color:#dce8ff;margin:8px 0 0 0;}
-.competitionPlayerDisplayShell .playerDisplayRules span{display:inline-flex;margin:6px;padding:10px 14px;border-radius:999px;background:#1f5dd0;color:#fff;font-weight:900;}
-.competitionPlayerDisplayPage{background:#020814;min-height:100vh;}
+/* v109 Competition player display link */
+.competitionPlayerSummary{color:#cffafe;font-size:22px;font-weight:900;margin:12px 0 0 0;}
+.competitionPlayerDisplayShell .playerDisplayRules span{max-width:100%;white-space:normal;border-radius:18px;}
+.competitionProjectionToggle{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
