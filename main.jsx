@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h79 Player Display Separation Build';
+const APP_VERSION='v100h80 Session Player Display Workflow Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2305,10 +2305,71 @@ return <div>
 <div className="chips">{selectedGame.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(selectedGame);}}>{addButtonText}</button>
 </div>}
+
 </div>;
 }
 
-function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+function SessionAllGamesLibrary({onAddToSession,setScreen}){
+  const [query,setQuery]=useState('');
+  const [category,setCategory]=useState('All');
+  const [lastAdded,setLastAdded]=useState('');
+  const baseGames=useMemo(()=>standardGames().map((g,i)=>normaliseGameCard({...g,id:g.id||`std-${i}`})),[]);
+  const patternGames=useMemo(()=>{
+    try{
+      return (PATTERN_LAB_READY_GAMES||[]).map(g=>normaliseGameCard({
+        id:`pattern-${g.id}`,
+        title:`Pattern Lab — ${g.title}`,
+        category:'Tactical Intentions',
+        format:'Pattern Lab',
+        duration:8,
+        task:g.quick,
+        description:g.logic,
+        rationale:g.logic,
+        scoring:g.score,
+        layers:g.flags||[],
+        rld:g.rld,
+        coach:g.coach,
+        playerFocus:'Recognise the affordance and choose a functional solution.'
+      }));
+    }catch{return [];}
+  },[]);
+  const allGames=useMemo(()=>[...baseGames,...patternGames], [baseGames,patternGames]);
+  const categories=useMemo(()=>['All',...Array.from(new Set(allGames.map(g=>g.category||'Game'))).sort()], [allGames]);
+  const visible=allGames.filter(g=>{
+    const q=query.trim().toLowerCase();
+    const okCat=category==='All'||(g.category||'Game')===category;
+    const hay=[g.title,g.task,g.description,g.rationale,g.coach,(g.layers||[]).join(' ')].join(' ').toLowerCase();
+    return okCat&&(!q||hay.includes(q));
+  });
+  function add(game,view=false){
+    const card=normaliseGameCard({...game,id:Date.now()+Math.random()});
+    onAddToSession(card);
+    setLastAdded(card.title||'Game added');
+    if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
+  }
+  function viewSession(){if(setScreen)setScreen('sessions');}
+  return <div className="sessionAllGamesLibrary">
+    <div className="libraryNotice"><strong>All Games Library</strong><span>Full list opened from Session Builder. Search, filter, add, then view the current session.</span></div>
+    <div className="sessionLibraryToolbar">
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search all games, Pattern Lab cards, overlays…" />
+      <select value={category} onChange={e=>setCategory(e.target.value)}>{categories.map(c=><option key={c}>{c}</option>)}</select>
+      <button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button>
+    </div>
+    {lastAdded&&<div className="statusBox">Added: {lastAdded}</div>}
+    <div className="sessionAllGameGrid">
+      {visible.map((game,index)=><div className="sessionAllGameCard gameCard" key={`${game.id}-${index}`}>
+        <div className="libraryCardTop"><div><div className="categoryTag">{game.category||'Game'}</div><h3>{game.title}</h3></div>{game.rld!==undefined&&<RLDBadge level={Number(game.rld)} />}</div>
+        <p><strong>Task: </strong>{game.task||game.description||'Run the game.'}</p>
+        {game.scoring&&<p><strong>Scoring: </strong>{game.scoring}</p>}
+        <div className="playerViewMini"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p></div>
+        <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();add(game,false);}}>Add To Session</button><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();add(game,true);}}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button><button type="button" className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Player display link copied. Open it on the phone connected to the screen.':'Could not create player display link.');}}>Copy Player Link</button></div>
+      </div>)}
+    </div>
+    {visible.length===0&&<div className="placeholder">No games match this search.</div>}
+  </div>;
+}
+
+function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
@@ -2322,11 +2383,12 @@ function stopRotationProjection(){
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
-return <div className="page">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
-<GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
+return <div className="page sessionBuilderPage">
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
+<div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
+{showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
 <h2>Session Rotations</h2>
-{session.length===0&&<div className="placeholder">No rotations added yet. Choose a game above and tap Add To Session.</div>}
+{session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index}>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
