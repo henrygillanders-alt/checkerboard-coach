@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v102 Perception Phase 1 Build';
+const APP_VERSION='v105 Perception Modifier Lock Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -60,7 +60,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','DB Handicap'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -253,6 +253,10 @@ const CONSTRAINT_BONUS_POINTS={
   '4-Shot Window':'+3 if converted inside 4 shots',
   '2-Shot Window':'+3 if converted inside 2 shots',
   'Quality Length Before Attack':'+2',
+  'Contact Sync':'+1',
+  'Early Read':'+1',
+  'Early Take':'+1',
+  'High Contact':'+1',
   'Quiet Eye':'constraint only',
   'Opponent Information':'constraint only',
   'Early Cue Search':'constraint only',
@@ -2241,6 +2245,34 @@ const PERCEPTION_SECTIONS=[
   {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4}
 ];
 
+const PERCEPTION_STANDARD_MODIFIERS=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','Weak Side','Quality Length Before Attack'];
+const PERCEPTION_SPECIFIC_MODIFIERS=['Contact Sync','Early Read','Early Take','High Contact'];
+const PERCEPTION_MODIFIER_PRESETS={
+  'Perception Core':['Contact Sync','Early Read','High Contact'],
+  'Early Advantage':['Early Read','Early Take','High Contact'],
+  'Attack Conversion':['Early Read','Volley Finish','Clean Winner'],
+  'Control Before Attack':['Quality Length Before Attack','Opponent Off T','T Challenge']
+};
+function perceptionModifierHelp(layer){
+  return {
+    'Contact Sync':'Bonus when P1 lands from the split-step as P2 contacts the ball.',
+    'Early Read':'Bonus when P1 commits before the chosen gate: bounce, short line or front wall.',
+    'Early Take':'Bonus when P1 takes the ball before the short line.',
+    'High Contact':'Bonus when P1 contacts above service-line height.',
+    'Clean Winner':'Clean winner sits on top of the normal scoring.',
+    'Opponent Off T':'Bonus when P1 acts while P2 is not recovered to the T.',
+    'T Challenge':'Bonus for using information to gain or hold central control.',
+    'Volley Finish':'Bonus for converting the read into a volley finish.',
+    'Weak Side':'Bonus for recognising and using the opponent’s weaker side.',
+    'Quality Length Before Attack':'Attack bonus only becomes live after quality length pressure.'
+  }[layer]||'Modifier available for this Perception activity.';
+}
+function perceptionScoringWithModifiers(game,modifiers=[]){
+  const base=game?.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.';
+  const extra=scoringLogicForLayers(modifiers,{});
+  return extra?`${base} · ${extra}`:base;
+}
+
 function perceptionGames(){
   return [
     {id:'per-er1',code:'ER1',module:'Early Read',phase:'Synchronisation',title:'Contact Sync',category:'Perception',duration:6,format:'Cooperative Rally',rld:2,gate:'Opponent contact',task:'Players rally. P1 lands from the split as the opponent strikes the ball. The split must be non-directional: no pre-lean left or right.',scoring:'Count clean grounded splits at opponent contact. Late, airborne, flat-footed or pre-lean = no score.',rationale:'Synchronises visual pickup with body organisation. The player learns to be grounded and loaded at the instant information becomes available.',coach:'Watch the opponent contact sound. Feet should be grounded, balanced and ready to push immediately after contact.',playerFocus:'Land loaded as they strike.',layers:['Quiet Eye','Opponent Information'],cbCode:'None'},
@@ -2306,6 +2338,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const [section,setSection]=useState('early-read');
   const [phase,setPhase]=useState('All');
   const [selected,setSelected]=useState(null);
+  const [selectedModifiers,setSelectedModifiers]=useState([]);
   const [status,setStatus]=useState('');
   const earlyGames=useMemo(()=>perceptionGames(),[]);
   const currentSection=PERCEPTION_SECTIONS.find(s=>s.id===section)||PERCEPTION_SECTIONS[0];
@@ -2313,6 +2346,14 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const phases=['All',...Array.from(new Set(games.map(g=>g.phase).filter(Boolean)))];
   const shown=phase==='All'?games:games.filter(g=>g.phase===phase);
   const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
+  useEffect(()=>{setSelectedModifiers(Array.from(new Set(active?.layers||[])));},[active?.id,active?.title]);
+  const allPerceptionModifiers=[...PERCEPTION_STANDARD_MODIFIERS,...PERCEPTION_SPECIFIC_MODIFIERS];
+  function togglePerceptionModifier(layer){
+    setSelectedModifiers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);
+  }
+  function applyPerceptionPreset(name){
+    setSelectedModifiers(Array.from(new Set([...(active?.layers||[]),...(PERCEPTION_MODIFIER_PRESETS[name]||[])])));
+  }
 
   function addGame(game){
     const card=normaliseGameCard({
@@ -2327,8 +2368,9 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       rationale:game.rationale,
       coach:game.coach,
       playerFocus:game.playerFocus||game.focus,
-      scoring:game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
-      layers:game.layers||['Opponent Information'],
+      scoring:perceptionScoringWithModifiers(game,selectedModifiers),
+      layers:Array.from(new Set([...(game.layers||['Opponent Information']),...selectedModifiers])),
+      modifierScores:Object.fromEntries(Array.from(new Set([...(game.layers||[]),...selectedModifiers])).map(layer=>[layer,defaultModifierScore(layer)])),
       cbCode:game.cbCode||'None',
       rld:game.rld??currentSection.rld
     });
@@ -2366,11 +2408,15 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="perceptionDetailTop"><span className="perceptionCode">{active.code}</span><div><h2>{active.title}</h2><p>{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div></div>
         <RLDBadge level={active.rld??currentSection.rld} size="lg"/>
         <section><h3>Task / Rules</h3><p>{active.task}</p></section>
-        <section><h3>Scoring / Observation</h3><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></section>
+        <section><h3>Scoring / Observation</h3><p>{perceptionScoringWithModifiers(active,selectedModifiers)}</p></section>
         <section><h3>Rationale</h3><p>{active.rationale}</p></section>
         <section><h3>Coach Help</h3><p>{active.coach}</p></section>
         <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
-        <div className="chips">{(active.layers||['Opponent Information']).map(x=><span className="badge" key={x}>{x}</span>)}</div>
+        <section className="perceptionModifierPanel"><h3>Modifiers</h3><p>Use standard Checkerboard modifiers or Perception-specific modifiers. They will travel with the game into Session Builder and Projection.</p>
+          <div className="perceptionPresetRow">{Object.keys(PERCEPTION_MODIFIER_PRESETS).map(name=><button key={name} onClick={()=>applyPerceptionPreset(name)}>{name}</button>)}</div>
+          <div className="perceptionModifierGrid">{allPerceptionModifiers.map(layer=><button key={layer} className={selectedModifiers.includes(layer)?'activePerceptionModifier':''} onClick={()=>togglePerceptionModifier(layer)}><strong>{layer}</strong><span>{perceptionModifierHelp(layer)}</span><small>{defaultModifierScore(layer)}</small></button>)}</div>
+        </section>
+        <div className="chips">{Array.from(new Set([...(active.layers||['Opponent Information']),...selectedModifiers])).map(x=><span className="badge" key={x}>{x}</span>)}</div>
         <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
