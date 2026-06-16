@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h73 Pattern Lab Full Library Build';
+const APP_VERSION='v100h78 Consolidated Session + Game Card Fix Build';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2230,7 +2230,7 @@ return <div>
 <div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
 <div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
-<button className="primaryBtn" onClick={()=>addGame(composedAtl)}>{addButtonText}</button>
+<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(composedAtl);}}>{addButtonText}</button>
 </div>}
 {category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
@@ -2242,14 +2242,14 @@ return <div>
 <div className="infoBox"><strong>Rationale</strong><p>{selectedGame.rationale}</p></div>
 <div className="infoBox"><strong>Coach Help</strong><p>{selectedGame.coach}</p></div>
 <div className="chips">{selectedGame.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<button className="primaryBtn" onClick={()=>addGame(selectedGame)}>{addButtonText}</button>
+<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(selectedGame);}}>{addButtonText}</button>
 </div>}
 </div>;
 }
 
 function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
-function addGame(game){saveSessionSnapshot();setSession(prev=>[...prev,game]);}
+function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
 function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
 function startRotationProjection(index){
@@ -4924,7 +4924,7 @@ function UniversalDBHandicapPanel({onAddToSession}){
   return <div className="universalDbPanel">
     <div className="universalDbHeader">
       <div><strong>DB Handicap · All Games</strong><p>Uses players marked Present today. Design the game first, then allocate double-bounce allowances to the players who are actually on court.</p></div>
-      <button className={enabled?'primaryBtn':'secondaryBtn'} onClick={()=>setEnabled(!enabled)}>{enabled?'DB Handicap On':'Enable DB Handicap'}</button>
+      <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'DB Handicap On':'Enable DB Handicap'}</button>
     </div>
     {enabled&&<>
       <div className="statusBox"><strong>Present Players</strong><p>{presentPlayers.length?`${presentPlayers.length} present player${presentPlayers.length===1?'':'s'} loaded from Players / Attendance.`:'No present players found. Mark players Present in Players before assigning DB handicaps.'}</p></div>
@@ -4932,7 +4932,7 @@ function UniversalDBHandicapPanel({onAddToSession}){
         {presentPlayers.map(name=><div className="dbAllocationRow" key={name}><span>{name}</span><select value={allocations[name]||'No DB'} onChange={e=>setDb(name,e.target.value)}>{dbOptions.map(opt=><option key={opt}>{opt}</option>)}</select></div>)}
       </div>
       <div className="dbSummaryBox"><strong>Active DB Rules</strong><p>{activeSummary()}</p></div>
-      <div className="buttonRow"><button className="primaryBtn" onClick={addDbCard} disabled={!presentPlayers.length}>Add DB Handicap To Session</button><button className="secondaryBtn" onClick={clearDb}>Clear DB Handicap</button></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addDbCard();}} disabled={!presentPlayers.length}>Add DB Handicap To Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearDb();}}>Clear DB Handicap</button></div>
     </>}
   </div>;
 }
@@ -5931,6 +5931,70 @@ function AroundTheBoardBuilder({onAddToSession}){
 }
 
 
+function normaliseGameCard(card={}){
+  const now=Date.now()+Math.random();
+  const layers=Array.isArray(card.layers)?card.layers:(card.layers?[card.layers]:[]);
+  const title=card.title||card.name||'Custom Game';
+  return {
+    id:card.id||now,
+    title,
+    category:card.category||card.type||'Custom',
+    duration:card.duration||8,
+    format:card.format||card.category||'Coach Card',
+    task:card.task||card.description||card.quick||'Run the selected game.',
+    rationale:card.rationale||card.description||card.logic||'Use the task constraints to shape player behaviour.',
+    coach:card.coach||card.coachMsg||card.focus||'Set the constraint clearly, then observe the solution.',
+    scoring:card.scoring||card.score||'Base scoring applies unless modified by the coach.',
+    playerFocus:card.playerFocus||card.focus||'Solve the game problem, not a fixed technical shape.',
+    layers,
+    cbCode:card.cbCode||'None',
+    rld:card.rld||card.rldLevel||'',
+    ...card
+  };
+}
+
+function emptyUniversalGame(category='Custom'){
+  return normaliseGameCard({
+    id:Date.now()+Math.random(),
+    title:'New Coach Game',
+    category,
+    duration:8,
+    format:'Coach Card',
+    task:'Describe what players must do.',
+    rationale:'Describe why this game helps.',
+    coach:'Give one clear coach cue.',
+    scoring:'Win rally = 1. Add any bonus scoring here.',
+    layers:[]
+  });
+}
+
+function appendToSessionState(prev,card){
+  const base=Array.isArray(prev)?prev:(prev&&Array.isArray(prev.rotations)?prev.rotations:[]);
+  return [...base,normaliseGameCard(card)];
+}
+
+function UniversalGameEditor({game,onSave,onCancel}){
+  const [draft,setDraft]=useState(()=>normaliseGameCard(game));
+  function update(key,value){setDraft(prev=>({...prev,[key]:value}));}
+  function updateLayers(value){setDraft(prev=>({...prev,layers:value.split(',').map(x=>x.trim()).filter(Boolean)}));}
+  return <div className="universalEditor customGameBuilder">
+    <h2>{draft.id===game.id?'Edit Game Card':'New Game Card'}</h2>
+    <div className="editorGrid">
+      <label>Title<input value={draft.title||''} onChange={e=>update('title',e.target.value)}/></label>
+      <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
+      <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
+      <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
+      <label className="wide">Task<textarea value={draft.task||''} onChange={e=>update('task',e.target.value)}/></label>
+      <label className="wide">Rationale<textarea value={draft.rationale||''} onChange={e=>update('rationale',e.target.value)}/></label>
+      <label className="wide">Coach Focus<textarea value={draft.coach||''} onChange={e=>update('coach',e.target.value)}/></label>
+      <label className="wide">Scoring<textarea value={draft.scoring||''} onChange={e=>update('scoring',e.target.value)}/></label>
+      <label className="wide">Layers / Overlays<input value={(draft.layers||[]).join(', ')} onChange={e=>updateLayers(e.target.value)} placeholder="Clean Winner, Opponent Off T"/></label>
+    </div>
+    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>onSave(normaliseGameCard(draft))}>Save Game Card</button><button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -5977,20 +6041,16 @@ function Games({setSession,setScreen}){
   const visibleCards=activeClassId==='saved'?savedCards:savedCards.filter(card=>card.category===activeCategory);
 
   function addAndGo(game){
-    const safeGame={...game,id:game.id||Date.now()+Math.random()};
-    let finalGame=safeGame;
-    try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
+    const finalGame=normaliseGameCard({...game,id:game.id||Date.now()+Math.random()});
     setLogicCard(finalGame);
-    setMessage('Base game built and held on this page. Add Game Logic below, or add the base game only.');
-    window.scrollTo({top:0,behavior:'smooth'});
+    setSession(prev=>appendToSessionState(prev,finalGame));
+    setMessage(`${finalGame.title||'Game'} added to current session. Use Add Logic if you want to build a variant.`);
   }
 
   function addStay(game){
-    const safeGame={...game,id:game.id||Date.now()+Math.random()};
-    let finalGame=safeGame;
-    try{ finalGame={...normaliseGameCard(safeGame),...safeGame}; }catch{ finalGame=safeGame; }
-    setSession(prev=>[...prev,finalGame]);
-    setMessage(`${game.title||'Game'} added to current session.`);
+    const finalGame=normaliseGameCard({...game,id:game.id||Date.now()+Math.random()});
+    setSession(prev=>appendToSessionState(prev,finalGame));
+    setMessage(`${finalGame.title||'Game'} added to current session.`);
   }
 
   function saveCard(card){
@@ -6084,7 +6144,7 @@ function Games({setSession,setScreen}){
           <div className="actionRow">
             <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
             <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
-            <button onClick={()=>setLogicCard(card)}>Add Logic</button><button onClick={()=>addStay(card)}>Add To Session</button>
+            <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
             <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
@@ -10474,15 +10534,21 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const [random,setRandom]=useState(null);
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
-  function addGame(game){
-    const card={title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',task:game.quick,description:game.logic,scoring:game.score,layers:game.flags,rld:game.rld,coach:game.coach};
-    if(setSession)setSession(prev=>({...prev,rotations:[...(prev?.rotations||[]),card]}));
+  const [lastAdded,setLastAdded]=useState('');
+  function addGame(game,view=false){
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:game.logic,rationale:game.logic,scoring:game.score,layers:game.flags,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    if(setSession)setSession(prev=>appendToSessionState(prev,card));
+    setLastAdded(card.title);
+    if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
   }
+  function viewSession(){if(setScreen)setScreen('sessions');}
+  const sessionCount=(()=>{try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');return Array.isArray(saved)?saved.length:(Array.isArray(saved.rotations)?saved.rotations.length:0);}catch{return 0;}})();
   const active=random||selected;
   const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
   return <div className="page tacticalIntentionsPage">
     <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
+    <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);}}>⚡ Random Pattern</button></div>
 
     {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
@@ -10493,7 +10559,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{active.docRef}</span></div>
       <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Constraints / Flags</h3><div className="chipRow">{active.flags.map(c=><span key={c}>{c}</span>)}</div></section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{active.quick}</p><small>{meta.note}</small></div>
-      <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button><button className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(active,false);}}>Add To Session</button><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(active,true);}}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button><button type="button" className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
     </div>
 
     {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Pattern Lab Game</h2><p>Start with any plug-and-play card, then modify with the existing Game Logic, Scoring Logic, Constraints and DB panels. Diversity Constraints are overlays, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
@@ -10640,7 +10706,7 @@ return <div>
     <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h71</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v100h78</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}

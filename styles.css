@@ -1,4 +1,4 @@
-/* v100h71 Solo Practice Exploration vs Installation Build */
+/* v100h78 Consolidated Session + Game Card Fix Build */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7269,3 +7269,12 @@ button.mentalSkillsTile p{
 .patternSequence p{color:white;font-weight:900;line-height:1.5;margin:0 0 8px 0}
 .patternSequence small{display:block;color:#9fb0c8;line-height:1.5}
 @media(max-width:900px){.patternFilterBar{align-items:flex-start}.patternFilterBar label{width:100%;justify-content:space-between}.patternFilterBar span{margin-left:0}}
+
+
+/* v100h78 consolidated session UX */
+.currentSessionPanel{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:12px 14px;margin:14px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.currentSessionPanel strong{color:#ffd980}
+.currentSessionPanel span{color:#dce8ff;font-weight:800}
+.currentSessionPanel em{color:#9fb0c8;font-style:normal}
+.currentSessionPanel button{margin-left:auto}
+@media(max-width:700px){.currentSessionPanel button{margin-left:0;width:100%}}
