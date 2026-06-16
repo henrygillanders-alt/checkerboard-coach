@@ -3,7 +3,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v100h75 Pattern Lab View Session';
+const APP_VERSION='v100h76 Pattern Lab Session Hotfix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2253,7 +2253,7 @@ return <div>
 </div>;
 }
 
-function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const sessionList=sessionArray(session);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(sessionList)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(sessionArray(last));setSessionHistory(sessionHistory.slice(0,-1));}
+function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const[showInlinePicker,setShowInlinePicker]=useState(false);const sessionList=sessionArray(session);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(sessionList)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(sessionArray(last));setSessionHistory(sessionHistory.slice(0,-1));}
 const total=sessionList.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>[...sessionArray(prev),game]);}
 function remove(index){saveSessionSnapshot();setSession(sessionList.filter((_,i)=>i!==index));}
@@ -2268,10 +2268,10 @@ function stopRotationProjection(){
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(sessionList);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(sessionList);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 return <div className="page">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
-<GameSelector onAddToSession={addGame} addButtonText="Add To Session"/>
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="secondaryBtn" onClick={()=>setShowInlinePicker(v=>!v)}>{showInlinePicker?'Hide Add Games':'Add Games Here'}</button><button className="primaryBtn" onClick={()=>setScreen('games')}>Open Games Library</button></div></div>
+{showInlinePicker&&<div className="sessionInlinePicker"><GameSelector onAddToSession={(game)=>{addGame(game);setShowInlinePicker(false);}} addButtonText="Add To Session"/></div>}
 <h2>Session Rotations</h2>
-{sessionList.length===0&&<div className="placeholder">No rotations added yet. Choose a game above and tap Add To Session.</div>}
+{sessionList.length===0&&<div className="placeholder">No rotations added yet. Use Open Games Library, Pattern Lab, or Add Games Here to build the session.</div>}
 {sessionList.map((game,index)=><div className={game._newFromPatternLab?'rotationCard patternSessionHighlight':'rotationCard'} key={game.id||index}>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
@@ -6042,7 +6042,7 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game Card</button>
+      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId('custom');setLogicCard(null);setMessage('');setEditingCard(emptyUniversalGame('Custom Coach Game'));}}>+ New Game Card</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -6063,7 +6063,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
-    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
+    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession} session={session}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
