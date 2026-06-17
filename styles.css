@@ -7454,7 +7454,7 @@ button.mentalSkillsTile p{
 .competitionShareBox p{margin:0 0 10px;color:#9fb0c8;font-size:13px;}
 .competitionShareBox textarea{width:100%;min-height:74px;background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px;color:white;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;}
 
-/* v111 Perception controls relocation + universal action bar */
+/* v112 Perception universal game logic format fix */
 .universalPerceptionGameCard{
   border:1px solid #22d3ee;
 }
@@ -7530,4 +7530,16 @@ button.mentalSkillsTile p{
 }
 .playerViewPerceptionPreview{
   margin-top:14px;
+}
+
+
+/* v112 Perception now uses universal Game Logic / Scoring Logic / Constraints format */
+.universalPerceptionGameCard .collapsibleLayer{margin:14px 0;}
+.universalPerceptionGameCard .perceptionConstraintButtons button.activeLayer{
+  background:#1f5dd0!important;
+  border:2px solid #8ab6ff!important;
+  color:white!important;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons button{
+  min-height:44px;
 }

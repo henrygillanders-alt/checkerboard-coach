@@ -4,7 +4,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v111 Perception Controls Relocation + Action Bar Fix';
+const APP_VERSION='v112 Perception Universal Game Logic Format Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -61,7 +61,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','DB Handicap'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -2506,10 +2506,25 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="infoBox"><strong>RATIONALE</strong><p>{active.rationale}</p></div>
         <div className="infoBox"><strong>COACH HELP</strong><p>{active.coach}</p></div>
         <div className="cbBox"><strong>Checkerboard Code</strong><select value={activeCbCode} onChange={e=>updatePerceptionCb(active,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
-        <div className="constraintPanelHeader"><strong>Modifying Constraints</strong><span>Use the same recognisable modifier system as every other game.</span></div>
-        <div className="chips perceptionActiveChips">{activeLayers.map(x=><span className="badge" key={x}>{x}</span>)}</div>
-        <div className="quickLayers perceptionConstraintButtons">{ALL_LAYERS.filter(layer=>!activeLayers.includes(layer)).map(layer=><button key={layer} onClick={()=>togglePerceptionLayer(active,layer)}>+ {layer}</button>)}</div>
-        {editableModifierLayers(activeLayers).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(activeLayers).map(layer=><label key={layer}><span>{layer}</span><select value={activeModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(active,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
+
+        <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={true}>
+          <div className="infoBox"><strong>Valid Attempt</strong><p>{active.task}</p></div>
+          <div className="infoBox"><strong>Eligibility Gate</strong><p>{active.gate||'Use the gate named in the activity. Count the action only when P1 completes the required organisation or directional commitment at that gate.'}</p></div>
+          <div className="infoBox"><strong>Invalid / No Score</strong><p>Late action, wrong-foot, no-commit, pre-lean or forced action outside the task rule does not count unless the coach has set a custom consequence.</p></div>
+        </CollapsibleLayer>
+
+        <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={true}>
+          <div className="infoBox"><strong>Default Scoring</strong><p>{active.scoring||'Base rally scoring applies. Selected modifying constraints may add bonus points or act as constraint-only rules.'}</p></div>
+          {editableModifierLayers(activeLayers).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(activeLayers).map(layer=><label key={layer}><span>{layer}</span><select value={activeModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(active,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
+          {editableModifierLayers(activeLayers).length===0&&<div className="modifierScoreEmpty">No scoring modifiers selected. Add modifiers in Constraints.</div>}
+        </CollapsibleLayer>
+
+        <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={true}>
+          <div className="constraintPanelHeader"><strong>Active Modifying Constraints</strong><span>Tap any selected constraint to switch it off. Tap again to switch it on. Same behaviour as other game builders.</span></div>
+          <div className="quickLayers perceptionConstraintButtons">{Array.from(new Set(ALL_LAYERS)).map(layer=><button key={layer} className={activeLayers.includes(layer)?'activeLayer':''} onClick={()=>togglePerceptionLayer(active,layer)}>{activeLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+          <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
+        </CollapsibleLayer>
+
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="primaryBtn" onClick={()=>startPerceptionProjection(active)}>START PROJECTOR</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button><button className="secondaryBtn dangerBtn" onClick={stopPerceptionProjection}>STOP PROJECTOR</button></div></div>
         {status&&<div className="statusBox">{status}</div>}
