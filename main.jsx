@@ -7109,6 +7109,40 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
     const displayGames=Array.from({length:gamesNeeded},(_,i)=>games[i]||{a:'',b:'',loserSide:''});
 
+    function calcGameWinner(g){
+      if(!g||g.a===''||g.b==='') return null;
+      if(scoringMode==='normal'){
+        // loserSide tells us who lost
+        if(g.loserSide==='a') return 'b'; // A typed = A is loser, B wins
+        if(g.loserSide==='b') return 'a'; // B typed = B is loser, A wins
+        // fallback: higher score wins
+        const a=Number(g.a);const b=Number(g.b);
+        if(a===b) return null;
+        return a>b?'a':'b';
+      }
+      const a=Number(g.a);const b=Number(g.b);
+      if(a===b) return null;
+      return a>b?'a':'b';
+    }
+
+    function calculateWinsFrom(gamesList){
+      let a=0;let b=0;
+      (gamesList||[]).forEach(g=>{
+        const gw=calcGameWinner(g);
+        if(gw==='a') a++;
+        if(gw==='b') b++;
+      });
+      return {a,b};
+    }
+
+    function writeMatchplayProjection(nextScore,nextCompetitionScores,nextResult){
+      if(scoreId!=='matchplay-main') return;
+      try{
+        const state={...getCompetitionProjectionState(),matchScore:nextScore,competitionMatchScores:nextCompetitionScores,matchplayResult:nextResult,updatedAt:new Date().toISOString()};
+        localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));
+      }catch{}
+    }
+
     function changeGame(gameIdx,side,value){
       const cleaned=value.replace(/[^0-9]/g,'');
       setGames(prev=>{
@@ -7128,24 +7162,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         } else {
           next[gameIdx]={...next[gameIdx],[side]:cleaned,loserSide:''};
         }
+        if(scoreId==='matchplay-main'){
+          const live=calculateWinsFrom(next);
+          setMatchScore(live);
+        }
         return next;
       });
-    }
-
-    function calcGameWinner(g){
-      if(!g||g.a===''||g.b==='') return null;
-      if(scoringMode==='normal'){
-        // loserSide tells us who lost
-        if(g.loserSide==='a') return 'b'; // A typed = A is loser, B wins
-        if(g.loserSide==='b') return 'a'; // B typed = B is loser, A wins
-        // fallback: higher score wins
-        const a=Number(g.a);const b=Number(g.b);
-        if(a===b) return null;
-        return a>b?'a':'b';
-      }
-      const a=Number(g.a);const b=Number(g.b);
-      if(a===b) return null;
-      return a>b?'a':'b';
     }
 
     function calcMatchWinner(){
@@ -7163,15 +7185,27 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
     function saveResult(){
       const winner=calcMatchWinner();
-      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,mode:scoringMode,winner,winsA,winsB,updatedAt:new Date().toISOString()}}));
-      if(scoreId==='matchplay-main'){ setMatchScore({a:winsA,b:winsB}); }
+      const result={games:displayGames,mode:scoringMode,winner,winsA,winsB,matchText:`${match.a} ${winsA} - ${winsB} ${match.b}`,updatedAt:new Date().toISOString()};
+      const nextScore={a:winsA,b:winsB};
+      const nextCompetitionScores={...competitionMatchScores,[scoreId]:result};
+      setCompetitionMatchScores(nextCompetitionScores);
+      if(scoreId==='matchplay-main'){
+        setMatchScore(nextScore);
+        writeMatchplayProjection(nextScore,nextCompetitionScores,result);
+      }
       if(winner) onWinner(winner);
     }
 
     function clearEntry(){
-      setGames(Array.from({length:gamesNeeded},()=>({a:'',b:'',loserSide:''})));
-      setCompetitionMatchScores(prev=>{const next={...prev};delete next[scoreId];return next;});
-      if(scoreId==='matchplay-main'){ setMatchScore({a:0,b:0}); }
+      const blank=Array.from({length:gamesNeeded},()=>({a:'',b:'',loserSide:''}));
+      setGames(blank);
+      const nextCompetitionScores={...competitionMatchScores};
+      delete nextCompetitionScores[scoreId];
+      setCompetitionMatchScores(nextCompetitionScores);
+      if(scoreId==='matchplay-main'){
+        setMatchScore({a:0,b:0});
+        writeMatchplayProjection({a:0,b:0},nextCompetitionScores,null);
+      }
       onWinner('');
     }
 
@@ -8134,6 +8168,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       playerBounces,
       playerNames,
       matchScore,
+      matchplayMatchFormat,
+      competitionMatchScores,
+      matchplayResult: competitionMatchScores?.['matchplay-main']||null,
       matchPlayers,
       matchScoring,
       rrFixtures,
@@ -9573,7 +9610,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             <div className="projectionLabel">CURRENT STATUS</div>
             <div className="projectionText">
               {competitionProjection.mode==='matchplay'
-                ?`${competitionProjection.matchPlayers?.a||'P1'} ${competitionProjection.matchScore?.a||0} - ${competitionProjection.matchScore?.b||0} ${competitionProjection.matchPlayers?.b||'P2'} · ${competitionProjection.matchScoring||''}`
+                ?`${competitionProjection.matchplayResult?.matchText || `${competitionProjection.matchPlayers?.a||'P1'} ${competitionProjection.matchScore?.a||0} - ${competitionProjection.matchScore?.b||0} ${competitionProjection.matchPlayers?.b||'P2'}`} · ${competitionProjection.matchScoring||''}`
                 :competitionProjection.mode==='invasion'
                   ?`Invasion · ${competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'}`
                   :competitionProjection.mode==='roundRobin'
@@ -9583,6 +9620,15 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                       :'Competition active'}
             </div>
           </div>
+
+          {competitionProjection.mode==='matchplay'&&<div className="projectionSection matchplayDrawProjection">
+            <div className="projectionLabel">DRAW / MATCH SCORES</div>
+            <div className="projectionText">
+              {competitionProjection.matchplayResult?.games&&competitionProjection.matchplayResult.games.length
+                ?competitionProjection.matchplayResult.games.filter(g=>g&&g.a!==''&&g.b!=='').map((g,i)=>`G${i+1}: ${competitionProjection.matchPlayers?.a||'P1'} ${g.a} - ${g.b} ${competitionProjection.matchPlayers?.b||'P2'}`).join(' · ')
+                :'Enter and save a match result to show games here.'}
+            </div>
+          </div>}
 
           <div className="projectionSection">
             <div className="projectionLabel">TACTICAL FOCUS</div>

@@ -7772,3 +7772,6 @@ button.mentalSkillsTile p{
   .playerDisplayGrid,.projectionGrid,.competitionDisplayLayout{grid-template-columns:1fr;}
   .competitionDisplayDraw{grid-column:auto;grid-row:auto;}
 }
+
+/* v118 Matchplay score sync */
+.matchplayDrawProjection .projectionText{font-size:24px;}
