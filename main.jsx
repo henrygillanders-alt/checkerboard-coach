@@ -4,7 +4,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v102 Perception Phase 1 Build';
+const APP_VERSION='v111 Perception Controls Relocation + Action Bar Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -61,7 +61,7 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','DB Handicap'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','DB Handicap'];
 const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
 
 const ATL_LISTS={
@@ -257,6 +257,10 @@ const CONSTRAINT_BONUS_POINTS={
   'Quiet Eye':'constraint only',
   'Opponent Information':'constraint only',
   'Early Cue Search':'constraint only',
+  'Contact Sync':'+1',
+  'Early Read':'+1',
+  'Early Take':'+1',
+  'High Contact':'+1',
   'Double Bounce':'constraint only',
   'DB Handicap':'constraint only',
   'No Repeat':'+1',
@@ -2313,6 +2317,8 @@ function RLDScreen({setScreen}){
 
 
 // ── PERCEPTION™ MODULE · v104 PHASE 2 COMPLETE ─────────────────────────────────
+const PERCEPTION_ACTION_LAYERS=['Contact Sync','Early Read','Early Take','High Contact'];
+
 const PERCEPTION_SECTIONS=[
   {id:'early-read',title:'EARLY READ™',subtitle:'Developing earlier information pickup and anticipation.',focus:'Organisation → Directional commitment → Functional advantage',rld:3},
   {id:'quiet-eye',title:'QUIET EYE™',subtitle:'Visual attention, gaze control and head stability.',focus:'Where and when to look.',rld:1},
@@ -2387,15 +2393,48 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const [phase,setPhase]=useState('All');
   const [selected,setSelected]=useState(null);
   const [status,setStatus]=useState('');
+  const [gameConfigs,setGameConfigs]=useState({});
   const earlyGames=useMemo(()=>perceptionGames(),[]);
   const currentSection=PERCEPTION_SECTIONS.find(s=>s.id===section)||PERCEPTION_SECTIONS[0];
   const games=section==='early-read'?earlyGames:perceptionPlaceholderCards(section);
   const phases=['All',...Array.from(new Set(games.map(g=>g.phase).filter(Boolean)))];
   const shown=phase==='All'?games:games.filter(g=>g.phase===phase);
   const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
+  const activeKey=active?.id||active?.title||'perception-active';
+  const activeConfig=gameConfigs[activeKey]||{};
+  const activeLayers=activeConfig.layers||active?.layers||['Opponent Information'];
+  const activeModifierScores=activeConfig.modifierScores||{};
+  const activeCbCode=activeConfig.cbCode||active?.cbCode||'None';
 
-  function addGame(game){
-    const card=normaliseGameCard({
+  function updatePerceptionConfig(game,patch){
+    const key=game?.id||game?.title||'perception-active';
+    setGameConfigs(prev=>({...prev,[key]:{...(prev[key]||{}),...patch}}));
+  }
+  function togglePerceptionLayer(game,layer){
+    const key=game?.id||game?.title||'perception-active';
+    const current=(gameConfigs[key]?.layers)||game?.layers||['Opponent Information'];
+    const next=current.includes(layer)?current.filter(x=>x!==layer):[...current,layer];
+    const scores={...((gameConfigs[key]&&gameConfigs[key].modifierScores)||{})};
+    if(!scores[layer])scores[layer]=defaultModifierScore(layer);
+    updatePerceptionConfig(game,{layers:next,modifierScores:scores});
+  }
+  function updatePerceptionModifierScore(game,layer,value){
+    const key=game?.id||game?.title||'perception-active';
+    const scores={...((gameConfigs[key]&&gameConfigs[key].modifierScores)||{}),[layer]:value};
+    updatePerceptionConfig(game,{modifierScores:scores});
+  }
+  function updatePerceptionCb(game,code){
+    const key=game?.id||game?.title||'perception-active';
+    const current=(gameConfigs[key]?.layers)||game?.layers||['Opponent Information'];
+    let next=current.filter(layer=>layer!=='CB Code');
+    if(code!=='None')next=[...next,'CB Code'];
+    updatePerceptionConfig(game,{cbCode:code,layers:next});
+  }
+  function configuredPerceptionGame(game){
+    const key=game?.id||game?.title||'perception-active';
+    const cfg=gameConfigs[key]||{};
+    const layers=cfg.layers||game.layers||['Opponent Information'];
+    return normaliseGameCard({
       ...clone(game),
       id:Date.now()+Math.random(),
       category:'Perception',
@@ -2408,13 +2447,30 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       coach:game.coach,
       playerFocus:game.playerFocus||game.focus,
       scoring:game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
-      layers:game.layers||['Opponent Information'],
-      cbCode:game.cbCode||'None',
+      layers,
+      modifierScores:cfg.modifierScores||{},
+      cbCode:cfg.cbCode||game.cbCode||'None',
       rld:game.rld??currentSection.rld
     });
+  }
+  function addGame(game){
+    const card=configuredPerceptionGame(game);
     if(typeof onAddToSession==='function'){onAddToSession(card);setStatus(`${card.title} added to session.`);return;}
     if(typeof setSession==='function'){setSession(prev=>appendToSessionState(prev,card));setStatus(`${card.title} added to session.`);return;}
     setStatus('Session connection not available.');
+  }
+  function startPerceptionProjection(game){
+    const card=configuredPerceptionGame(game);
+    startCoachProjectionSession([card],0);
+    setStatus(`${card.title} sent to projector.`);
+  }
+  function stopPerceptionProjection(){stopCoachProjectionSession();setStatus('Projector stopped.');}
+  function copyPerceptionPlayerLink(game){
+    const card=configuredPerceptionGame(game);
+    const url=buildPlayerDisplayUrl(card);
+    if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} 
+    setStatus(url?'Player link copied.':'Could not create player link.');
+    alert(url?'Player display link copied. Open it on the second device.':'Could not create player display link.');
   }
 
   return <div className={embedded?'perceptionModule perceptionEmbedded':'page perceptionModule'}>
@@ -2442,16 +2498,20 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
           <div><span>{game.code}</span><RLDBadge level={game.rld??currentSection.rld}/></div><strong>{game.title}</strong><small>{game.phase}</small><p>{game.task}</p>
         </button>)}
       </div>
-      {active&&<div className="perceptionDetail">
-        <div className="perceptionDetailTop"><span className="perceptionCode">{active.code}</span><div><h2>{active.title}</h2><p>{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div></div>
-        <RLDBadge level={active.rld??currentSection.rld} size="lg"/>
-        <section><h3>Task / Rules</h3><p>{active.task}</p></section>
-        <section><h3>Scoring / Observation</h3><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></section>
-        <section><h3>Rationale</h3><p>{active.rationale}</p></section>
-        <section><h3>Coach Help</h3><p>{active.coach}</p></section>
-        <section className="perceptionPlayerCue"><h3>Player Cue</h3><blockquote>{active.playerFocus||'See earlier, organise better.'}</blockquote></section>
-        <div className="chips">{(active.layers||['Opponent Information']).map(x=><span className="badge" key={x}>{x}</span>)}</div>
-        <div className="buttonRow"><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}</div>
+      {active&&<div className="perceptionDetail gameCard universalPerceptionGameCard">
+        <div className="libraryCardTop"><div><div className="categoryTag">PERCEPTION</div><h2>{active.title}</h2><p className="mutedText">{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div><RLDBadge level={active.rld??currentSection.rld} size="lg"/></div>
+        <div className="infoBox"><strong>WHAT TO DO</strong><p>{active.task}</p></div>
+        <div className="infoBox"><strong>HOW TO SCORE</strong><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></div>
+        <div className="infoBox"><strong>KEY FOCUS</strong><p>{active.playerFocus||'See earlier, organise better.'}</p></div>
+        <div className="infoBox"><strong>RATIONALE</strong><p>{active.rationale}</p></div>
+        <div className="infoBox"><strong>COACH HELP</strong><p>{active.coach}</p></div>
+        <div className="cbBox"><strong>Checkerboard Code</strong><select value={activeCbCode} onChange={e=>updatePerceptionCb(active,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
+        <div className="constraintPanelHeader"><strong>Modifying Constraints</strong><span>Use the same recognisable modifier system as every other game.</span></div>
+        <div className="chips perceptionActiveChips">{activeLayers.map(x=><span className="badge" key={x}>{x}</span>)}</div>
+        <div className="quickLayers perceptionConstraintButtons">{ALL_LAYERS.filter(layer=>!activeLayers.includes(layer)).map(layer=><button key={layer} onClick={()=>togglePerceptionLayer(active,layer)}>+ {layer}</button>)}</div>
+        {editableModifierLayers(activeLayers).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(activeLayers).map(layer=><label key={layer}><span>{layer}</span><select value={activeModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(active,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
+        <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
+        <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="primaryBtn" onClick={()=>startPerceptionProjection(active)}>START PROJECTOR</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button><button className="secondaryBtn dangerBtn" onClick={stopPerceptionProjection}>STOP PROJECTOR</button></div></div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
     </div>
@@ -2681,18 +2741,20 @@ return <div className="page sessionBuilderPage">
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
+{game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<>
 <div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p><p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText||'No DB handicap allocated.'}</p></div>
 <div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
 {editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
-<div className="actionRow">
+<div className="gameActionBar"><strong>Game Actions</strong><div>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 <button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
 <button className="primaryBtn" onClick={()=>setScreen('playerDisplay')}>PLAYER VIEW</button>
 <button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Player display link copied. Open it on the phone connected to the screen.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
 <button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
-</div>
+</div></div>
+</>}
 </div>)}
 </div>;
 }

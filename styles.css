@@ -7453,3 +7453,81 @@ button.mentalSkillsTile p{
 .competitionShareBox strong{display:block;color:#ffd980;margin-bottom:6px;}
 .competitionShareBox p{margin:0 0 10px;color:#9fb0c8;font-size:13px;}
 .competitionShareBox textarea{width:100%;min-height:74px;background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px;color:white;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;}
+
+/* v111 Perception controls relocation + universal action bar */
+.universalPerceptionGameCard{
+  border:1px solid #22d3ee;
+}
+.constraintPanelHeader{
+  background:#071827;
+  border:1px solid #2f4d72;
+  border-radius:14px;
+  padding:12px 14px;
+  margin:14px 0 10px;
+}
+.constraintPanelHeader strong{
+  display:block;
+  color:#ffd980;
+  font-size:13px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  margin-bottom:4px;
+}
+.constraintPanelHeader span{
+  color:#c4c9d9;
+  font-size:13px;
+}
+.perceptionConstraintButtons{
+  margin:10px 0 14px;
+}
+.perceptionActiveChips{
+  margin:10px 0;
+}
+.gameActionBar{
+  background:#06111f;
+  border:2px solid #ffd980;
+  border-radius:16px;
+  padding:14px;
+  margin:16px 0 0;
+}
+.gameActionBar>strong{
+  display:block;
+  color:#ffd980;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:10px;
+}
+.gameActionBar>div{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+.gameActionBar button{
+  border-radius:12px;
+  padding:12px 16px;
+  font-weight:900;
+}
+.sessionReadOnlyPanel{
+  background:#071827;
+  border:1px solid #2f4d72;
+  border-left:4px solid #22d3ee;
+  border-radius:0 14px 14px 0;
+  padding:14px 16px;
+  margin:14px 0;
+}
+.sessionReadOnlyPanel strong{
+  color:#22d3ee;
+}
+.sessionReadOnlyPanel p{
+  color:#c4c9d9;
+  font-size:14px;
+  line-height:1.5;
+  margin:8px 0 0;
+}
+.playerViewPerceptionPreview{
+  margin-top:14px;
+}
