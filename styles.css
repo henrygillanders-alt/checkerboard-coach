@@ -7447,3 +7447,9 @@ button.mentalSkillsTile p{
 .competitionPlayerSummary{color:#cffafe;font-size:22px;font-weight:900;margin:12px 0 0 0;}
 .competitionPlayerDisplayShell .playerDisplayRules span{max-width:100%;white-space:normal;border-radius:18px;}
 .competitionProjectionToggle{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* v110 Competition player link box */
+.competitionShareBox{background:#0c1a2c;border:1px solid #5e83be;border-radius:14px;padding:14px;margin:12px 0 16px;color:#dce8ff;}
+.competitionShareBox strong{display:block;color:#ffd980;margin-bottom:6px;}
+.competitionShareBox p{margin:0 0 10px;color:#9fb0c8;font-size:13px;}
+.competitionShareBox textarea{width:100%;min-height:74px;background:#081320;border:1px solid #35567e;border-radius:12px;padding:10px;color:white;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;}

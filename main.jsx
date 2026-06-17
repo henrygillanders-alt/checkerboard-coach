@@ -1,4 +1,4 @@
-/* v109 Competition Player Display Link for second device */
+/* v110 Competition player link visible + clipboard fallback */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -7984,12 +7984,20 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       updatedAt:new Date().toISOString()
     };
   }
+  function getCompetitionPlayerLink(){
+    const state=getCompetitionProjectionState();
+    return buildPlayerCompetitionUrl(state);
+  }
   function copyCompetitionPlayerLink(){
     const state=getCompetitionProjectionState();
     try{localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));}catch{}
     const url=buildPlayerCompetitionUrl(state);
-    if(navigator.clipboard&&url){navigator.clipboard.writeText(url);}
-    alert(url?'Competition player link copied. Open it on the second device.':'Could not create competition player link.');
+    if(!url){ alert('Could not create competition player link.'); return; }
+    try{
+      if(navigator.clipboard){ navigator.clipboard.writeText(url); }
+    }catch{}
+    // Always show the link as a fallback because iPad/Safari may block clipboard writes.
+    window.prompt('Competition player link — copy this and open it on the second device:', url);
   }
 
   useEffect(()=>{competitionRestoredRef.current=true;},[]);
@@ -8017,6 +8025,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     <div className="page">
       <div className="pageTop">
         <h1>Competition</h1>
+        <div className="buttonRow"><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
       </div>
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
@@ -8041,7 +8050,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>setShowCompetitionProjection(!showCompetitionProjection)}>
           {showCompetitionProjection?'Hide Player Projection':'Show Player Projection'}
         </button>
-        <button type="button" className="secondaryBtn" onClick={copyCompetitionPlayerLink}>Copy Competition Player Link</button>
+        <button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button>
+      </div>
+      <div className="competitionShareBox">
+        <strong>Player View Link</strong>
+        <p>Use this on the second device to show the current competition draw / fixtures / invasion courts.</p>
+        <textarea readOnly value={getCompetitionPlayerLink()} onFocus={e=>e.target.select()} />
       </div>
 
       {showCompetitionProjection&&(
@@ -11174,7 +11188,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v109</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v110</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
