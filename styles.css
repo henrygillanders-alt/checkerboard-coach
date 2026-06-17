@@ -7603,3 +7603,13 @@ button.mentalSkillsTile p{
 @media(max-width:600px){
   .universalPerceptionGameCard .perceptionConstraintButtons{grid-template-columns:1fr!important;}
 }
+
+/* v114 Perception edit logic + DB allocation fix */
+.perceptionLogicEditor{display:grid;grid-template-columns:1fr;gap:12px;}
+.perceptionLogicEditor label{display:flex;flex-direction:column;gap:6px;color:#ffd980;font-weight:900;}
+.perceptionLogicEditor label span{font-size:13px;letter-spacing:.02em;}
+.perceptionLogicEditor textarea,.perceptionLogicEditor input{width:100%;background:#081320;border:1px solid #35567e;border-radius:12px;padding:12px;color:white;line-height:1.5;}
+.perceptionLogicEditor textarea{min-height:96px;resize:vertical;}
+.perceptionConstraintActions{margin:10px 0;}
+.universalPerceptionGameCard .universalDbPanel{margin-top:14px;border:2px solid #ffd980;background:#071015;}
+.universalPerceptionGameCard .playerViewPerceptionPreview .dbPreviewEmpty{display:none;}

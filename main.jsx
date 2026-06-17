@@ -4,7 +4,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v113 Perception Constraint Layout + No Default Modifiers Fix';
+const APP_VERSION='v114 Perception Logic + DB + Player View Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -304,7 +304,8 @@ function getPlayerDisplayFields(game){
   const focus=item.playerFocus||item.coach||'Solve the game problem.';
   const layers=safeLayersForSession(item);
   const storedDb=activeDbSummaryFromStorage();
-  const dbText=item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb;
+  const dbActive=layers.includes('DB Handicap')||layers.includes('Double Bounce')||String(item.title||'').toLowerCase().includes('db handicap');
+  const dbText=dbActive ? (item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb) : '';
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
   const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
   const score=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
@@ -374,7 +375,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
       <section><h2>SCORING LOGIC</h2><p>{score}</p></section>
       <section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>
-      <section><h2>DB ALLOCATIONS</h2><p>{dbText||'No DB handicap allocated.'}</p></section>
+      {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
     {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
   </div>;
@@ -2405,6 +2406,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const activeLayers=(activeConfig.layers!==undefined)?activeConfig.layers:[];
   const activeModifierScores=activeConfig.modifierScores||{};
   const activeCbCode=activeConfig.cbCode||active?.cbCode||'None';
+  const activeCustom=activeConfig.custom||{};
 
   function updatePerceptionConfig(game,patch){
     const key=game?.id||game?.title||'perception-active';
@@ -2423,6 +2425,19 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     const scores={...((gameConfigs[key]&&gameConfigs[key].modifierScores)||{}),[layer]:value};
     updatePerceptionConfig(game,{modifierScores:scores});
   }
+  function updatePerceptionCustom(game,field,value){
+    const key=game?.id||game?.title||'perception-active';
+    const current=((gameConfigs[key]&&gameConfigs[key].custom)||{});
+    updatePerceptionConfig(game,{custom:{...current,[field]:value}});
+  }
+  function resetPerceptionCustom(game){
+    const key=game?.id||game?.title||'perception-active';
+    const current=gameConfigs[key]||{};
+    setGameConfigs(prev=>({...prev,[key]:{...current,custom:{}}}));
+  }
+  function clearPerceptionLayers(game){
+    updatePerceptionConfig(game,{layers:[],modifierScores:{}});
+  }
   function updatePerceptionCb(game,code){
     const key=game?.id||game?.title||'perception-active';
     const current=(gameConfigs[key]?.layers!==undefined)?gameConfigs[key].layers:[];
@@ -2434,6 +2449,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     const key=game?.id||game?.title||'perception-active';
     const cfg=gameConfigs[key]||{};
     const layers=(cfg.layers!==undefined)?cfg.layers:[];
+    const custom=cfg.custom||{};
     return normaliseGameCard({
       ...clone(game),
       id:Date.now()+Math.random(),
@@ -2442,11 +2458,13 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       module:section==='early-read'?'Early Read':currentSection.title,
       duration:game.duration||8,
       format:game.format||'Perception Game',
-      task:game.task,
-      rationale:game.rationale,
-      coach:game.coach,
-      playerFocus:game.playerFocus||game.focus,
-      scoring:game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
+      task:custom.task||game.task,
+      rationale:custom.rationale||game.rationale,
+      coach:custom.coach||game.coach,
+      playerFocus:custom.playerFocus||game.playerFocus||game.focus,
+      scoring:custom.scoring||game.scoring||'Coach observes objective events: clean read, wrong-foot, no-commit and functional advantage.',
+      gate:custom.gate||game.gate,
+      invalidRule:custom.invalidRule,
       layers,
       modifierScores:cfg.modifierScores||{},
       cbCode:cfg.cbCode||game.cbCode||'None',
@@ -2500,21 +2518,26 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       </div>
       {active&&<div className="perceptionDetail gameCard universalPerceptionGameCard">
         <div className="libraryCardTop"><div><div className="categoryTag">PERCEPTION</div><h2>{active.title}</h2><p className="mutedText">{active.phase} · {active.format||'Perception Game'} · {active.duration||8} mins</p></div><RLDBadge level={active.rld??currentSection.rld} size="lg"/></div>
-        <div className="infoBox"><strong>WHAT TO DO</strong><p>{active.task}</p></div>
-        <div className="infoBox"><strong>HOW TO SCORE</strong><p>{active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></div>
-        <div className="infoBox"><strong>KEY FOCUS</strong><p>{active.playerFocus||'See earlier, organise better.'}</p></div>
-        <div className="infoBox"><strong>RATIONALE</strong><p>{active.rationale}</p></div>
-        <div className="infoBox"><strong>COACH HELP</strong><p>{active.coach}</p></div>
+        <div className="infoBox"><strong>WHAT TO DO</strong><p>{activeCustom.task||active.task}</p></div>
+        <div className="infoBox"><strong>HOW TO SCORE</strong><p>{activeCustom.scoring||active.scoring||'Observe clean read, wrong-foot, no-commit and functional advantage.'}</p></div>
+        <div className="infoBox"><strong>KEY FOCUS</strong><p>{activeCustom.playerFocus||active.playerFocus||'See earlier, organise better.'}</p></div>
+        <div className="infoBox"><strong>RATIONALE</strong><p>{activeCustom.rationale||active.rationale}</p></div>
+        <div className="infoBox"><strong>COACH HELP</strong><p>{activeCustom.coach||active.coach}</p></div>
         <div className="cbBox"><strong>Checkerboard Code</strong><select value={activeCbCode} onChange={e=>updatePerceptionCb(active,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 
         <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={true}>
-          <div className="infoBox"><strong>Valid Attempt</strong><p>{active.task}</p></div>
-          <div className="infoBox"><strong>Eligibility Gate</strong><p>{active.gate||'Use the gate named in the activity. Count the action only when P1 completes the required organisation or directional commitment at that gate.'}</p></div>
-          <div className="infoBox"><strong>Invalid / No Score</strong><p>Late action, wrong-foot, no-commit, pre-lean or forced action outside the task rule does not count unless the coach has set a custom consequence.</p></div>
+          <div className="perceptionLogicEditor">
+            <label><span>Valid Attempt</span><textarea value={activeCustom.task||active.task||''} onChange={e=>updatePerceptionCustom(active,'task',e.target.value)} /></label>
+            <label><span>Eligibility Gate</span><input value={activeCustom.gate||active.gate||''} placeholder="e.g. opponent contact / before bounce / before front wall" onChange={e=>updatePerceptionCustom(active,'gate',e.target.value)} /></label>
+            <label><span>Invalid / No Score</span><textarea value={activeCustom.invalidRule||'Late action, wrong-foot, no-commit, pre-lean or forced action outside the task rule does not count unless the coach has set a custom consequence.'} onChange={e=>updatePerceptionCustom(active,'invalidRule',e.target.value)} /></label>
+            <button className="secondaryBtn" type="button" onClick={()=>resetPerceptionCustom(active)}>Reset Game Text</button>
+          </div>
         </CollapsibleLayer>
 
         <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={true}>
-          <div className="infoBox"><strong>Default Scoring</strong><p>{active.scoring||'Base rally scoring applies. Selected modifying constraints may add bonus points or act as constraint-only rules.'}</p></div>
+          <div className="perceptionLogicEditor">
+            <label><span>Default Scoring</span><textarea value={activeCustom.scoring||active.scoring||'Base rally scoring applies. Selected modifying constraints may add bonus points or act as constraint-only rules.'} onChange={e=>updatePerceptionCustom(active,'scoring',e.target.value)} /></label>
+          </div>
           {editableModifierLayers(activeLayers).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(activeLayers).map(layer=><label key={layer}><span>{layer}</span><select value={activeModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(active,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
           {editableModifierLayers(activeLayers).length===0&&<div className="modifierScoreEmpty">No scoring modifiers selected. Add modifiers in Constraints.</div>}
         </CollapsibleLayer>
@@ -2522,7 +2545,9 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={true}>
           <div className="constraintPanelHeader"><strong>Active Modifying Constraints</strong><span>Tap any selected constraint to switch it off. Tap again to switch it on. Same behaviour as other game builders.</span></div>
           <div className="quickLayers perceptionConstraintButtons">{Array.from(new Set(ALL_LAYERS)).map(layer=><button key={layer} className={activeLayers.includes(layer)?'activeLayer':''} onClick={()=>togglePerceptionLayer(active,layer)}>{activeLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+          <div className="buttonRow perceptionConstraintActions"><button type="button" className="secondaryBtn" onClick={()=>clearPerceptionLayers(active)}>Clear Constraints</button></div>
           <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
+          {(activeLayers.includes('DB Handicap')||activeLayers.includes('Double Bounce'))&&<UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>}
         </CollapsibleLayer>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
