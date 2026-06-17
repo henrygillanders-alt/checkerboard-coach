@@ -7659,3 +7659,116 @@ button.mentalSkillsTile p{
 .perceptionCustomOverride[open] summary{margin-bottom:10px;}
 .perceptionConstraintButtons{display:flex;flex-wrap:wrap;gap:10px;max-height:none;}
 .universalPerceptionGameCard .universalDbPanel{margin-top:16px;}
+
+/* v117 External Display Fit + Competition Draw View */
+.playerDisplayPage,
+.projectionPage{
+  min-height:100vh;
+  height:100vh;
+  overflow:hidden;
+  padding:clamp(8px,1.2vw,18px);
+}
+.playerDisplayControls{display:none!important;}
+.playerDisplayShell{
+  max-width:none;
+  width:100%;
+  min-height:0;
+  height:calc(100vh - clamp(16px,2.4vw,36px));
+  display:flex;
+  flex-direction:column;
+  padding:clamp(14px,1.8vw,24px);
+  border-radius:clamp(16px,2vw,26px);
+}
+.playerDisplayTop{
+  padding-bottom:clamp(8px,1vw,14px);
+  margin-bottom:clamp(10px,1.1vw,16px);
+  flex:0 0 auto;
+}
+.playerDisplayTop span{font-size:clamp(11px,1vw,15px);margin-bottom:4px;}
+.playerDisplayTop h1{font-size:clamp(28px,4.2vw,56px);line-height:1.02;}
+.competitionPlayerSummary{font-size:clamp(16px,2vw,28px);margin:6px 0 0;}
+.playerDisplayGrid{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(8px,1vw,16px);
+}
+.playerDisplayGrid section,
+.playerDisplayRules{
+  padding:clamp(12px,1.3vw,20px);
+  border-radius:clamp(14px,1.6vw,22px);
+  overflow:hidden;
+}
+.playerDisplayGrid h2,
+.playerDisplayRules h2{
+  font-size:clamp(16px,1.7vw,28px);
+  margin:0 0 8px;
+}
+.playerDisplayGrid p{
+  font-size:clamp(16px,2vw,28px);
+  line-height:1.22;
+  font-weight:850;
+}
+.playerDisplayFocus{grid-column:auto;}
+.playerDisplayRules{margin-top:clamp(8px,1vw,14px);flex:0 0 auto;}
+.playerDisplayRules div{gap:8px;}
+.playerDisplayRules span{font-size:clamp(14px,1.6vw,22px);padding:8px 12px;border-radius:14px;}
+.competitionDisplayLayout{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:1.25fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:clamp(10px,1.1vw,16px);
+}
+.competitionDisplayLayout section{
+  background:#0c1f34;
+  border:2px solid #2e5f96;
+  border-radius:clamp(14px,1.6vw,22px);
+  padding:clamp(14px,1.5vw,24px);
+  overflow:hidden;
+}
+.competitionDisplayLayout h2{
+  color:#ffd980;
+  font-size:clamp(16px,1.5vw,24px);
+  margin:0 0 10px;
+  letter-spacing:.06em;
+}
+.competitionDisplayHero strong,
+.competitionDisplayNext strong{
+  display:block;
+  color:#fff;
+  font-size:clamp(28px,4.4vw,62px);
+  line-height:1.05;
+}
+.competitionDisplayHero em{color:#9fb0c8;font-size:.55em;font-style:normal;}
+.competitionDisplayHero p,
+.competitionDisplayNext p,
+.competitionDisplayRulesCompact p{
+  color:#eef4ff;
+  font-size:clamp(18px,2.2vw,32px);
+  font-weight:900;
+  margin:10px 0 0;
+}
+.competitionDisplayHero small{display:block;color:#cbd5e1;font-size:clamp(14px,1.4vw,20px);margin-top:10px;font-weight:800;}
+.competitionDisplayDraw{grid-row:1 / span 2;grid-column:2;}
+.competitionDisplayDraw ol{margin:0;padding-left:1.2em;color:#fff;font-size:clamp(18px,2.2vw,32px);font-weight:900;line-height:1.35;}
+.competitionDisplayDraw li{margin-bottom:10px;}
+.competitionDisplayRulesCompact{grid-column:1;}
+.compactFixtureStrip{max-height:26vh;overflow:hidden;}
+.projectionPage .projectionTop{margin-bottom:clamp(8px,1vw,14px);}
+.projectionPage .projectionTop h1{font-size:clamp(30px,5vw,60px);}
+.projectionGrid{height:auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,1.2vw,18px);}
+.projectionPanel{padding:clamp(14px,1.6vw,24px);min-height:0!important;}
+.projectionPanel h2,.projectionBonus h2{font-size:clamp(18px,2vw,30px);}
+.projectionPanel p{font-size:clamp(18px,2.4vw,34px);line-height:1.18;}
+.projectionFocus{grid-column:auto;}
+.projectionBonus{padding:clamp(14px,1.5vw,22px);margin-top:clamp(10px,1vw,16px);}
+.projectionChips span{font-size:clamp(14px,1.6vw,22px);padding:8px 12px;}
+@media(max-width:900px){
+  .playerDisplayPage,.projectionPage{height:auto;min-height:100vh;overflow:auto;}
+  .playerDisplayShell{height:auto;}
+  .playerDisplayGrid,.projectionGrid,.competitionDisplayLayout{grid-template-columns:1fr;}
+  .competitionDisplayDraw{grid-column:auto;grid-row:auto;}
+}

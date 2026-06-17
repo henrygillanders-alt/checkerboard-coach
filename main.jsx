@@ -1,4 +1,4 @@
-/* v110 Competition player link visible + clipboard fallback */
+/* v117 Competition Display View + Score Sync + External Fit */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -399,8 +399,33 @@ function CompetitionPlayerDisplayCard({competition}){
   const playerBounces=competition.playerBounces||{};
   const layers=competition.competitionLayers||[];
   const cbCode=competition.competitionCbCode||'None';
+  const matchA=competition.matchPlayers?.a||'P1';
+  const matchB=competition.matchPlayers?.b||'P2';
+  const savedMatch=competition.competitionMatchScores?.['matchplay-main'];
+  function gameWinner(g){
+    if(!g||g.a===''||g.b==='')return null;
+    if(g.loserSide==='a')return 'b';
+    if(g.loserSide==='b')return 'a';
+    const a=Number(g.a),b=Number(g.b);
+    if(!Number.isFinite(a)||!Number.isFinite(b)||a===b)return null;
+    return a>b?'a':'b';
+  }
+  function matchSummary(){
+    const games=(savedMatch?.games||[]).filter(g=>g&&g.a!==''&&g.b!=='');
+    let winsA=Number(competition.matchScore?.a||0),winsB=Number(competition.matchScore?.b||0);
+    if(games.length){winsA=0;winsB=0;games.forEach(g=>{const w=gameWinner(g);if(w==='a')winsA++;if(w==='b')winsB++;});}
+    const winner=winsA>winsB?matchA:winsB>winsA?matchB:'';
+    const scores=games.length?games.map(g=>`${g.a}-${g.b}`).join(', '):'No saved game scores yet';
+    return {winsA,winsB,winner,scores,games};
+  }
+  const ms=matchSummary();
+  const waitingPlayers=playerNames.filter(name=>name!==matchA&&name!==matchB);
+  const nextOpponent=waitingPlayers[0]||'';
+  const nextMatch=mode==='matchplay'
+    ?(ms.winner&&nextOpponent?`${ms.winner} vs ${nextOpponent}`:(!ms.winner?`${matchA} vs ${matchB}`:'Next opponent not selected'))
+    :'';
   const summary=mode==='matchplay'
-    ?`${competition.matchPlayers?.a||'P1'} ${competition.matchScore?.a||0} - ${competition.matchScore?.b||0} ${competition.matchPlayers?.b||'P2'} · ${competition.matchScoring||''}`
+    ?`${matchA} ${ms.winsA} - ${ms.winsB} ${matchB}`
     :mode==='invasion'
       ?`Invasion · ${competition.invasionFormat==='lives'?'Lives Format':'Points Format'} · Round ${(competition.invasionPlayerRound||0)+1}`
       :mode==='roundRobin'
@@ -417,25 +442,50 @@ function CompetitionPlayerDisplayCard({competition}){
     const carry=Number(competition?.invasionCarryLives?.[team?.id]||competition?.invasionCarryLives?.[team?.name]||0);
     return Math.max(0,selected+carry);
   }
-  return <div className="playerDisplayShell competitionPlayerDisplayShell">
+  return <div className="playerDisplayShell competitionPlayerDisplayShell compactCompetitionDisplay">
     <div className="playerDisplayTop">
       <span>COMPETITION PLAYER DISPLAY</span>
       <h1>{title}</h1>
       <p className="competitionPlayerSummary">{summary}</p>
     </div>
-    <div className="playerDisplayGrid">
+    {mode==='matchplay'&&<div className="competitionDisplayLayout">
+      <section className="competitionDisplayHero">
+        <h2>CURRENT MATCH</h2>
+        <strong>{matchA} <em>vs</em> {matchB}</strong>
+        <p>{matchA} {ms.winsA} — {ms.winsB} {matchB}</p>
+        <small>Games: {ms.scores}</small>
+      </section>
+      <section className="competitionDisplayNext">
+        <h2>NEXT UP</h2>
+        <strong>{nextMatch||'Awaiting next match'}</strong>
+        <p>{waitingPlayers.length?`Waiting: ${waitingPlayers.join(' · ')}`:'No waiting players listed'}</p>
+      </section>
+      <section className="competitionDisplayDraw">
+        <h2>DRAW / RESULTS</h2>
+        <ol>
+          <li>{ms.winner?`${ms.winner} def ${ms.winner===matchA?matchB:matchA} ${ms.winsA}-${ms.winsB}`:`${matchA} vs ${matchB} — in progress`}</li>
+          {nextOpponent&&<li>Next: {(ms.winner||'Winner')} vs {nextOpponent}</li>}
+          {waitingPlayers.slice(1).map((name,idx)=><li key={name}>Waiting {idx+2}: {name}</li>)}
+        </ol>
+      </section>
+      <section className="competitionDisplayRulesCompact">
+        <h2>FORMAT</h2>
+        <p>{competition.matchScoring||'PAR 11'} · {competition.scoringMode==='custom'?'Custom / Timed':'Normal scoring'}</p>
+        <p>{layers.length?`Constraints: ${layers.join(' · ')}`:'No extra constraints'}</p>
+      </section>
+    </div>}
+    {mode!=='matchplay'&&<div className="playerDisplayGrid">
       <section><h2>WHAT TO DO</h2><p>{competition.purpose||'Follow the competition format shown by the coach.'}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{competition.rules&&competition.rules.length?competition.rules.slice(0,3).join(' · '):'Use the displayed competition scoring.'}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{competition.tactical||'Compete clearly and adapt.'}</p></section>
       <section><h2>CHECKERBOARD</h2><p>{cbCode}</p></section>
       <section><h2>CONSTRAINTS</h2><p>{layers.length?layers.join(' · '):'No extra constraints selected.'}</p></section>
       <section><h2>PLAYERS / DB</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No players selected.'}</p></section>
-    </div>
-    {mode==='matchplay'&&<div className="playerDisplayRules"><h2>LIVE SCORE</h2><div><span>{competition.matchPlayers?.a||'P1'}: {competition.matchScore?.a||0}</span><span>{competition.matchPlayers?.b||'P2'}: {competition.matchScore?.b||0}</span></div></div>}
-    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
-    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>Round {idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
-    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
-    {mode==='nsl'&&<div className="playerDisplayRules"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
+    </div>}
+    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
+    {mode==='nsl'&&<div className="playerDisplayRules compactFixtureStrip"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
   </div>;
 }
 function CompetitionPlayerDisplayView({competition,setScreen}){
@@ -7113,13 +7163,15 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
     function saveResult(){
       const winner=calcMatchWinner();
-      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,mode:scoringMode}}));
+      setCompetitionMatchScores(prev=>({...prev,[scoreId]:{games:displayGames,mode:scoringMode,winner,winsA,winsB,updatedAt:new Date().toISOString()}}));
+      if(scoreId==='matchplay-main'){ setMatchScore({a:winsA,b:winsB}); }
       if(winner) onWinner(winner);
     }
 
     function clearEntry(){
       setGames(Array.from({length:gamesNeeded},()=>({a:'',b:'',loserSide:''})));
       setCompetitionMatchScores(prev=>{const next={...prev};delete next[scoreId];return next;});
+      if(scoreId==='matchplay-main'){ setMatchScore({a:0,b:0}); }
       onWinner('');
     }
 
