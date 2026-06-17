@@ -1,4 +1,4 @@
-/* v103 Perception terminology standard: P1/P2/P3/P4 */
+/* v115 Perception clean constraints + no default active modifiers */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
 button{-webkit-appearance:none;appearance:none;}
@@ -7613,3 +7613,49 @@ button.mentalSkillsTile p{
 .perceptionConstraintActions{margin:10px 0;}
 .universalPerceptionGameCard .universalDbPanel{margin-top:14px;border:2px solid #ffd980;background:#071015;}
 .universalPerceptionGameCard .playerViewPerceptionPreview .dbPreviewEmpty{display:none;}
+
+
+/* v115 Perception constraint clean-up: compact grid, no side-column stretch, active only when selected */
+.universalPerceptionGameCard .perceptionConstraintButtons{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr))!important;
+  gap:8px!important;
+  max-width:100%!important;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons button{
+  width:100%!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
+  white-space:normal!important;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons button:not(.activeLayer){
+  background:#12253d!important;
+  border:1px solid #486b9a!important;
+  color:#eef4ff!important;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons button.activeLayer{
+  background:#1f5dd0!important;
+  border:2px solid #8ab6ff!important;
+  color:#fff!important;
+}
+.universalPerceptionGameCard .modifierScoreEmpty{
+  background:#081320;
+  border:1px dashed #35567e;
+  border-radius:12px;
+  padding:12px 14px;
+  color:#cbd5e1;
+  font-weight:800;
+}
+.universalPerceptionGameCard .playerViewPerceptionPreview p:last-child{
+  margin-bottom:0;
+}
+
+
+/* v116 Perception universal logic panels */
+.perceptionLogicSummary{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:12px;}
+.perceptionLogicChips{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0;}
+.perceptionCustomOverride{margin-top:12px;background:#071015;border:1px solid #35567e;border-radius:12px;padding:10px 14px;color:#dce8ff;}
+.perceptionCustomOverride summary{cursor:pointer;color:#ffd980;font-weight:900;}
+.perceptionCustomOverride[open] summary{margin-bottom:10px;}
+.perceptionConstraintButtons{display:flex;flex-wrap:wrap;gap:10px;max-height:none;}
+.universalPerceptionGameCard .universalDbPanel{margin-top:16px;}
