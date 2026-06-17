@@ -7533,7 +7533,7 @@ button.mentalSkillsTile p{
 }
 
 
-/* v112 Perception now uses universal Game Logic / Scoring Logic / Constraints format */
+/* v113 Perception universal full-width layout + no cramped side-column */
 .universalPerceptionGameCard .collapsibleLayer{margin:14px 0;}
 .universalPerceptionGameCard .perceptionConstraintButtons button.activeLayer{
   background:#1f5dd0!important;
@@ -7542,4 +7542,64 @@ button.mentalSkillsTile p{
 }
 .universalPerceptionGameCard .perceptionConstraintButtons button{
   min-height:44px;
+}
+
+
+/* v113 Perception layout correction: full-width universal game card, compact constraints */
+.perceptionWorkArea{
+  display:grid!important;
+  grid-template-columns:260px 1fr!important;
+  gap:14px!important;
+  align-items:start!important;
+}
+.perceptionGameList{
+  grid-column:1 / -1!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr))!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding-right:0!important;
+  order:2;
+}
+.perceptionDetail{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  order:3;
+}
+.perceptionSidebar{
+  grid-column:1 / -1!important;
+}
+.perceptionPhaseButtons{
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+}
+.perceptionPhaseButtons button{
+  min-width:140px;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important;
+  gap:8px!important;
+}
+.universalPerceptionGameCard .perceptionConstraintButtons button{
+  min-height:42px!important;
+  padding:9px 12px!important;
+  text-align:left!important;
+}
+.universalPerceptionGameCard .modifierScoreGrid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;
+  gap:10px!important;
+}
+.universalPerceptionGameCard .playerViewPerceptionPreview{
+  max-width:none!important;
+}
+@media(max-width:900px){
+  .perceptionWorkArea{grid-template-columns:1fr!important;}
+  .perceptionGameList{grid-template-columns:1fr!important;}
+  .universalPerceptionGameCard .perceptionConstraintButtons{grid-template-columns:1fr 1fr!important;}
+}
+@media(max-width:600px){
+  .universalPerceptionGameCard .perceptionConstraintButtons{grid-template-columns:1fr!important;}
 }

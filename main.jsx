@@ -4,7 +4,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v112 Perception Universal Game Logic Format Fix';
+const APP_VERSION='v113 Perception Constraint Layout + No Default Modifiers Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2402,7 +2402,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   const active=selected&&shown.find(g=>g.id===selected.id||g.title===selected.title)?selected:shown[0];
   const activeKey=active?.id||active?.title||'perception-active';
   const activeConfig=gameConfigs[activeKey]||{};
-  const activeLayers=activeConfig.layers||active?.layers||['Opponent Information'];
+  const activeLayers=(activeConfig.layers!==undefined)?activeConfig.layers:[];
   const activeModifierScores=activeConfig.modifierScores||{};
   const activeCbCode=activeConfig.cbCode||active?.cbCode||'None';
 
@@ -2412,7 +2412,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   }
   function togglePerceptionLayer(game,layer){
     const key=game?.id||game?.title||'perception-active';
-    const current=(gameConfigs[key]?.layers)||game?.layers||['Opponent Information'];
+    const current=(gameConfigs[key]?.layers!==undefined)?gameConfigs[key].layers:[];
     const next=current.includes(layer)?current.filter(x=>x!==layer):[...current,layer];
     const scores={...((gameConfigs[key]&&gameConfigs[key].modifierScores)||{})};
     if(!scores[layer])scores[layer]=defaultModifierScore(layer);
@@ -2425,7 +2425,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   }
   function updatePerceptionCb(game,code){
     const key=game?.id||game?.title||'perception-active';
-    const current=(gameConfigs[key]?.layers)||game?.layers||['Opponent Information'];
+    const current=(gameConfigs[key]?.layers!==undefined)?gameConfigs[key].layers:[];
     let next=current.filter(layer=>layer!=='CB Code');
     if(code!=='None')next=[...next,'CB Code'];
     updatePerceptionConfig(game,{cbCode:code,layers:next});
@@ -2433,7 +2433,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   function configuredPerceptionGame(game){
     const key=game?.id||game?.title||'perception-active';
     const cfg=gameConfigs[key]||{};
-    const layers=cfg.layers||game.layers||['Opponent Information'];
+    const layers=(cfg.layers!==undefined)?cfg.layers:[];
     return normaliseGameCard({
       ...clone(game),
       id:Date.now()+Math.random(),
