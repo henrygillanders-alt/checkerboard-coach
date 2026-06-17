@@ -7775,3 +7775,157 @@ button.mentalSkillsTile p{
 
 /* v118 Matchplay score sync */
 .matchplayDrawProjection .projectionText{font-size:24px;}
+
+/* v119 Universal Player View Compact Fit
+   Applies to all second-device / Player View display modes: session, game, competition and projection.
+   Goal: keep key information visible on iPhone-sized screens with minimal scrolling. */
+.playerDisplayPage,
+.projectionPage{
+  height:100vh!important;
+  min-height:100vh!important;
+  overflow:hidden!important;
+  padding:clamp(4px,1vw,12px)!important;
+}
+.playerDisplayShell{
+  height:calc(100vh - clamp(8px,2vw,24px))!important;
+  padding:clamp(8px,1.2vw,16px)!important;
+  border-width:2px!important;
+  border-radius:clamp(12px,1.5vw,20px)!important;
+  box-shadow:none!important;
+}
+.playerDisplayTop{
+  padding-bottom:clamp(5px,.8vw,10px)!important;
+  margin-bottom:clamp(6px,.9vw,12px)!important;
+}
+.playerDisplayTop span{
+  font-size:clamp(9px,.9vw,12px)!important;
+  margin-bottom:2px!important;
+  letter-spacing:.10em!important;
+}
+.playerDisplayTop h1{
+  font-size:clamp(22px,3.4vw,46px)!important;
+  line-height:1!important;
+}
+.playerDisplayTop select{
+  margin-top:6px!important;
+  padding:6px 9px!important;
+  font-size:clamp(12px,1.2vw,16px)!important;
+}
+.competitionPlayerSummary{
+  font-size:clamp(13px,1.6vw,22px)!important;
+  margin:3px 0 0!important;
+}
+.playerDisplayGrid{
+  gap:clamp(5px,.8vw,10px)!important;
+}
+.playerDisplayGrid section,
+.playerDisplayRules,
+.competitionDisplayLayout section{
+  padding:clamp(7px,1vw,14px)!important;
+  border-width:1px!important;
+  border-radius:clamp(9px,1.2vw,16px)!important;
+}
+.playerDisplayGrid h2,
+.playerDisplayRules h2,
+.competitionDisplayLayout h2{
+  font-size:clamp(12px,1.2vw,20px)!important;
+  margin:0 0 4px!important;
+  letter-spacing:.04em!important;
+}
+.playerDisplayGrid p{
+  font-size:clamp(13px,1.55vw,22px)!important;
+  line-height:1.12!important;
+}
+.playerDisplayRules{
+  margin-top:clamp(4px,.8vw,8px)!important;
+}
+.playerDisplayRules div{gap:5px!important;}
+.playerDisplayRules span{
+  font-size:clamp(11px,1.2vw,16px)!important;
+  padding:5px 8px!important;
+  border-radius:10px!important;
+}
+/* Remove duplicate scoring block in Player View; HOW TO SCORE already contains scoring. */
+.playerDisplayGrid section:nth-child(4){display:none!important;}
+.playerDisplayGrid section:nth-child(1),
+.playerDisplayGrid section:nth-child(2),
+.playerDisplayGrid section:nth-child(3),
+.playerDisplayGrid section:nth-child(5),
+.playerDisplayGrid section:nth-child(6){min-height:0!important;}
+.competitionDisplayLayout{
+  gap:clamp(5px,.8vw,10px)!important;
+}
+.competitionDisplayHero strong,
+.competitionDisplayNext strong{
+  font-size:clamp(21px,3.2vw,48px)!important;
+  line-height:1!important;
+}
+.competitionDisplayHero p,
+.competitionDisplayNext p,
+.competitionDisplayRulesCompact p{
+  font-size:clamp(13px,1.6vw,22px)!important;
+  line-height:1.1!important;
+  margin:4px 0 0!important;
+}
+.competitionDisplayHero small{
+  font-size:clamp(11px,1.1vw,16px)!important;
+  margin-top:4px!important;
+}
+.competitionDisplayDraw ol{
+  font-size:clamp(13px,1.6vw,22px)!important;
+  line-height:1.18!important;
+}
+.competitionDisplayDraw li{margin-bottom:4px!important;}
+.projectionPage .projectionTop{margin-bottom:clamp(4px,.8vw,10px)!important;}
+.projectionPage .projectionTop h1{font-size:clamp(24px,4vw,48px)!important;}
+.projectionGrid{gap:clamp(5px,.8vw,10px)!important;}
+.projectionPanel{padding:clamp(8px,1vw,14px)!important;border-radius:clamp(10px,1.3vw,18px)!important;}
+.projectionPanel h2,.projectionBonus h2{font-size:clamp(13px,1.4vw,22px)!important;margin-bottom:5px!important;}
+.projectionPanel p{font-size:clamp(14px,1.8vw,26px)!important;line-height:1.1!important;}
+.projectionBonus{padding:clamp(8px,1vw,14px)!important;margin-top:clamp(5px,.8vw,10px)!important;}
+.projectionChips span{font-size:clamp(11px,1.2vw,16px)!important;padding:5px 8px!important;}
+
+@media(max-width:900px){
+  .playerDisplayPage,.projectionPage{
+    height:100vh!important;
+    min-height:100vh!important;
+    overflow:hidden!important;
+    padding:4px!important;
+  }
+  .playerDisplayShell{
+    height:calc(100vh - 8px)!important;
+    padding:7px!important;
+  }
+  .playerDisplayTop h1{font-size:22px!important;}
+  .playerDisplayTop span{font-size:9px!important;}
+  .competitionPlayerSummary{font-size:12px!important;}
+  .playerDisplayGrid{
+    grid-template-columns:1fr!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+  .playerDisplayGrid section,
+  .playerDisplayRules{
+    padding:6px 8px!important;
+    border-radius:10px!important;
+  }
+  .playerDisplayGrid h2,.playerDisplayRules h2{font-size:11px!important;margin-bottom:2px!important;}
+  .playerDisplayGrid p{font-size:13px!important;line-height:1.08!important;}
+  .playerDisplayRules span{font-size:10px!important;padding:4px 6px!important;}
+  .competitionDisplayLayout{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto 1fr auto!important;
+    gap:5px!important;
+    overflow:hidden!important;
+  }
+  .competitionDisplayDraw{grid-column:auto!important;grid-row:auto!important;}
+  .competitionDisplayLayout section{padding:6px 8px!important;border-radius:10px!important;}
+  .competitionDisplayLayout h2{font-size:11px!important;margin-bottom:2px!important;}
+  .competitionDisplayHero strong,.competitionDisplayNext strong{font-size:20px!important;}
+  .competitionDisplayHero p,.competitionDisplayNext p,.competitionDisplayRulesCompact p{font-size:13px!important;line-height:1.05!important;margin-top:2px!important;}
+  .competitionDisplayHero small{font-size:10px!important;margin-top:2px!important;}
+  .competitionDisplayDraw ol{font-size:12px!important;line-height:1.08!important;}
+  .competitionDisplayDraw li{margin-bottom:2px!important;}
+  .compactFixtureStrip{max-height:18vh!important;}
+  .projectionGrid{grid-template-columns:1fr!important;gap:5px!important;}
+}
