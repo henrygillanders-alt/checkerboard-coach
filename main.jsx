@@ -1,10 +1,48 @@
-/* v127 Competition Player View Snapshot Fix */
+/* v128 Supabase Live Player View Sync */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-const APP_VERSION='v116 Perception Universal Logic Panels';
+
+// ── LIVE PLAYER VIEW SYNC (Supabase REST; no extra package required) ─────────
+const SUPABASE_URL=(import.meta?.env?.VITE_SUPABASE_URL||'https://pjohecwpciwexvtmvkdz.supabase.co').replace(/\/$/,'');
+const SUPABASE_ANON_KEY=import.meta?.env?.VITE_SUPABASE_ANON_KEY||'sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
+const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
+function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
+function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
+function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';}}
+function buildLivePlayerViewUrl(roomId){const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(roomId)}`;}
+async function writeLivePlayerRoom(roomId,mode,payload){
+  if(!roomId||!liveSyncReady()) return false;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?on_conflict=room_id`,{
+      method:'POST',
+      headers:{
+        apikey:SUPABASE_ANON_KEY,
+        Authorization:`Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type':'application/json',
+        Prefer:'resolution=merge-duplicates,return=minimal'
+      },
+      body:JSON.stringify([{room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()}])
+    });
+    return res.ok;
+  }catch(err){console.warn('Live sync write failed',err);return false;}
+}
+async function readLivePlayerRoom(roomId){
+  if(!roomId||!liveSyncReady()) return null;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1`,{
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`}
+    });
+    if(!res.ok) return null;
+    const rows=await res.json();
+    return rows?.[0]||null;
+  }catch(err){console.warn('Live sync read failed',err);return null;}
+}
+
+
+const APP_VERSION='v128 Supabase Live Sync';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7063,6 +7101,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }
   });
   const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
+  const [liveRoomId,setLiveRoomId]=useState(()=>{try{return localStorage.getItem(LIVE_ROOM_KEY)||'';}catch{return ''}});
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
   const [invasionEliminated,setInvasionEliminated]=useState('');
@@ -8347,13 +8386,27 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function copyCompetitionPlayerLink(){
     const state=getCompetitionProjectionState();
     try{localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));}catch{}
-    const url=buildUniversalPlayerViewUrl({type:'competition',competition:state});
-    if(!url){ alert('Could not create competition player link.'); return; }
+    const room=liveRoomId||makeLiveRoomId();
+    if(!liveRoomId){setLiveRoomId(room);try{localStorage.setItem(LIVE_ROOM_KEY,room);}catch{}}
+    writeLivePlayerRoom(room,'competition',state);
+    const url=buildLivePlayerViewUrl(room);
     try{
       if(navigator.clipboard){ navigator.clipboard.writeText(url); }
     }catch{}
-    window.prompt('Competition player link — copy this and open it on the second device:', url);
+    window.prompt('LIVE competition player link — open this on the second device:', url);
   }
+
+  useEffect(()=>{
+    if(!liveRoomId) return;
+    const handle=setTimeout(()=>{
+      try{
+        const state=getCompetitionProjectionState();
+        localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));
+        writeLivePlayerRoom(liveRoomId,'competition',state);
+      }catch{}
+    },350);
+    return ()=>clearTimeout(handle);
+  });
 
   function getCompetitionDashboard(){
     const totalPlayers=playerNames.length;
@@ -11553,11 +11606,29 @@ function SoloPracticeModule({setScreen}){
 
 
 function App(){
+const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
+const[livePayload,setLivePayload]=useState(null);
+const[liveStatus,setLiveStatus]=useState(liveRoomParam?'Connecting live display…':'');
 const[sharedPlayerPayload]=useState(()=>decodePlayerPayloadFromUrl());
 const[sharedPlayerGame]=useState(()=>sharedPlayerPayload?.type==='game'?normaliseGameCard(sharedPlayerPayload.game):decodePlayerGameFromUrl());
 const[sharedPlayerCompetition]=useState(()=>sharedPlayerPayload?.type==='competition'?(sharedPlayerPayload.competition||sharedPlayerPayload):decodePlayerCompetitionFromUrl());
-const initialPlayerDisplay=!!sharedPlayerGame||!!sharedPlayerCompetition;
+const liveCompetition=livePayload?.type==='competition'?(livePayload.competition||livePayload):null;
+const liveGame=livePayload?.type==='game'?normaliseGameCard(livePayload.game):null;
+const initialPlayerDisplay=!!liveRoomParam||!!sharedPlayerGame||!!sharedPlayerCompetition;
 const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
+useEffect(()=>{
+  if(!liveRoomParam) return;
+  let cancelled=false;
+  async function load(){
+    const row=await readLivePlayerRoom(liveRoomParam);
+    if(cancelled) return;
+    if(row?.payload){setLivePayload(row.payload);setLiveStatus('Live');}
+    else setLiveStatus('Waiting for coach device…');
+  }
+  load();
+  const id=setInterval(load,2000);
+  return ()=>{cancelled=true;clearInterval(id);};
+},[liveRoomParam]);
 const[backStack,setBackStack]=useState([]);
 function go(next){
   if(!next||next===screen) return;
@@ -11585,6 +11656,9 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
+if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
+if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
+if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
@@ -11596,7 +11670,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v126</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v128</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
