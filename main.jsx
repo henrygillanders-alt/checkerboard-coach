@@ -1,4 +1,4 @@
-/* v117 Competition Display View + Score Sync + External Fit */
+/* v121 Monrad live placing + competition player view */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -431,7 +431,7 @@ function CompetitionPlayerDisplayCard({competition}){
       :mode==='roundRobin'
         ?`Round Robin · ${(competition.rrFixtures||[]).length} rounds`
         :mode==='monrad'
-          ?`Monrad · ${(competition.monradRounds||[]).length} rounds`
+          ?`Monrad · ${Math.max((competition.monradRounds||[]).length,(competition.monradPlacingRounds||[]).length)} rounds`
           :mode==='nsl'
             ?`NSSL · Period ${competition.nslActivePeriod||1}`
             :'Competition display';
@@ -441,6 +441,73 @@ function CompetitionPlayerDisplayCard({competition}){
     if(Number.isFinite(exact)&&exact>0)return exact;
     const carry=Number(competition?.invasionCarryLives?.[team?.id]||competition?.invasionCarryLives?.[team?.name]||0);
     return Math.max(0,selected+carry);
+  }
+  function monradKey(roundIndex,matchIndex){return `m-${roundIndex}-${matchIndex}`;}
+  function monradWinner(roundIndex,matchIndex,match){
+    if(!match)return '';
+    if(match.b==='BYE')return match.a;
+    return competition.monradResults?.[monradKey(roundIndex,matchIndex)]||'';
+  }
+  function monradActiveRoundIndex(){
+    const rounds=competition.monradRounds||[];
+    if(!rounds.length)return -1;
+    const open=rounds.findIndex((round,ridx)=>round.some((match,midx)=>!monradWinner(ridx,midx,match)));
+    return open>=0?open:rounds.length-1;
+  }
+  function monradStats(){
+    const rows={};
+    (competition.playerNames||[]).forEach(name=>{rows[name]={name,wins:0,played:0};});
+    (competition.monradRounds||[]).forEach((round,ridx)=>round.forEach((match,midx)=>{
+      const winner=monradWinner(ridx,midx,match);
+      [match.a,match.b].forEach(name=>{if(name&&!String(name).startsWith('BYE')&&!rows[name])rows[name]={name,wins:0,played:0};});
+      if(winner){
+        if(rows[match.a]&&!String(match.a).startsWith('BYE'))rows[match.a].played+=1;
+        if(rows[match.b]&&!String(match.b).startsWith('BYE'))rows[match.b].played+=1;
+        if(rows[winner])rows[winner].wins+=1;
+      }
+    }));
+    return Object.values(rows).sort((a,b)=>b.wins-a.wins||a.played-b.played||String(a.name).localeCompare(String(b.name)));
+  }
+  function monradCompletedCount(){
+    let done=0,total=0;
+    (competition.monradRounds||[]).forEach((round,ridx)=>round.forEach((match,midx)=>{total+=1;if(monradWinner(ridx,midx,match))done+=1;}));
+    (competition.monradPlacingRounds||[]).forEach((round,ridx)=>round.forEach(group=>(group.matches||[]).forEach((match,midx)=>{
+      total+=1;
+      const auto=String(match.a).startsWith('BYE')?match.b:String(match.b).startsWith('BYE')?match.a:null;
+      if(auto||competition.monradPlacingResults?.[`place-${ridx}-${group.id}-${midx}`])done+=1;
+    })));
+    return {done,total};
+  }
+  function monradPlacingWinner(roundIndex,group,matchIndex,match){
+    if(!match)return '';
+    if(String(match.a).startsWith('BYE'))return match.b;
+    if(String(match.b).startsWith('BYE'))return match.a;
+    return competition.monradPlacingResults?.[`place-${roundIndex}-${group.id}-${matchIndex}`]||'';
+  }
+  function monradLivePlacings(){
+    const rows={};
+    (competition.playerNames||[]).forEach(name=>{rows[name]={name,place:'—',status:'In progress'};});
+    (competition.monradFinalPlaces?Object.entries(competition.monradFinalPlaces):[]).forEach(([name,place])=>{
+      rows[name]={name,place,status:'Settled'};
+    });
+    (competition.monradPlacingRounds||[]).forEach((round,ridx)=>round.forEach(group=>{
+      const parts=String(group.range||'').split('-').map(n=>Number(n));
+      const start=parts[0]||1; const end=parts[1]||start;
+      if((group.players||[]).length===1){
+        const name=(group.players||[]).find(p=>!String(p).startsWith('BYE'));
+        if(name) rows[name]={name,place:start,status:'Settled'};
+      }
+      if((group.players||[]).length===2){
+        const match=(group.matches||[])[0];
+        const winner=monradPlacingWinner(ridx,group,0,match);
+        if(winner){
+          const loser=winner===match.a?match.b:match.a;
+          if(!String(winner).startsWith('BYE')) rows[winner]={name:winner,place:start,status:'Settled'};
+          if(!String(loser).startsWith('BYE')) rows[loser]={name:loser,place:end,status:'Settled'};
+        }
+      }
+    }));
+    return Object.values(rows).sort((a,b)=>(Number(a.place)||999)-(Number(b.place)||999)||String(a.name).localeCompare(String(b.name)));
   }
   return <div className="playerDisplayShell competitionPlayerDisplayShell compactCompetitionDisplay">
     <div className="playerDisplayTop">
@@ -483,7 +550,41 @@ function CompetitionPlayerDisplayCard({competition}){
       <section><h2>PLAYERS / DB</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No players selected.'}</p></section>
     </div>}
     {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
-    {mode==='monrad'&&competition.monradRounds&&competition.monradRounds.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>MONRAD ROUNDS</h2><div>{competition.monradRounds.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode==='monrad'&&((competition.monradRounds&&competition.monradRounds.length>0)||(competition.monradPlacingRounds&&competition.monradPlacingRounds.length>0))&&(()=>{
+      const hasPlacing=(competition.monradPlacingRounds||[]).length>0;
+      const counts=monradCompletedCount();
+      const activeIdx=hasPlacing?(competition.monradPlacingRounds.length-1):monradActiveRoundIndex();
+      const round=hasPlacing?(competition.monradPlacingRounds[activeIdx]||[]):((competition.monradRounds||[])[activeIdx]||[]);
+      const livePlacings=monradLivePlacings().slice(0,10);
+      return <div className="competitionDisplayLayout monradPlayerCompactBoard">
+        <section className="competitionDisplayHero">
+          <h2>{hasPlacing?`MONRAD PLACING ROUND ${activeIdx+1}`:`MONRAD ROUND ${activeIdx+1}`}</h2>
+          <strong>{counts.done} / {counts.total} matches complete</strong>
+          <p>{hasPlacing?'Final placings pathway':'Main Monrad draw'}</p>
+        </section>
+        <section className="competitionDisplayDraw monradCourtBoard">
+          <h2>COURT BOARD</h2>
+          {hasPlacing?round.flatMap(group=>(group.matches||[]).map((match,midx)=>{
+            const winner=monradPlacingWinner(activeIdx,group,midx,match);
+            const result=winner?`${winner} won`:'Next / in progress';
+            return <div key={`${group.id}-${midx}`} className={winner?'compactCourtRow completeCourtRow':'compactCourtRow'}>
+              <b>{group.range}</b><span>{match.a} v {match.b}</span><em>{result}</em>
+            </div>;
+          })):round.map((match,midx)=>{
+            const winner=monradWinner(activeIdx,midx,match);
+            const saved=competition.competitionMatchScores?.[`monrad-${activeIdx}-${midx}-`];
+            const result=saved?.matchText || (winner?`${winner} won`:'Next / in progress');
+            return <div key={midx} className={winner?'compactCourtRow completeCourtRow':'compactCourtRow'}>
+              <b>Court {midx+1}</b><span>{match.a} v {match.b}</span><em>{result}</em>
+            </div>;
+          })}
+        </section>
+        <section className="competitionDisplayNext">
+          <h2>LIVE PLACINGS</h2>
+          {livePlacings.map(row=><p key={row.name}><strong>{row.place!=='—'?`${row.place}. `:''}{row.name}</strong> · {row.status}</p>)}
+        </section>
+      </div>;
+    })()}
     {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
     {mode==='nsl'&&<div className="playerDisplayRules compactFixtureStrip"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
   </div>;
@@ -8213,6 +8314,39 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     window.prompt('Competition player link — copy this and open it on the second device:', url);
   }
 
+  function getCompetitionDashboard(){
+    const totalPlayers=playerNames.length;
+    const courtCount=mode==='invasion'?Number(invasionCourts||invasionTeams.length||0):mode==='nsl'?Number(nslTeams||0):Math.max(1,Math.ceil(totalPlayers/2));
+    if(mode==='matchplay'){
+      const saved=competitionMatchScores?.['matchplay-main'];
+      const done=saved?.winner?1:0;
+      return {type:'Matchplay',round:'Main Match',players:totalPlayers,courts:1,complete:done,total:1,extra:done?`${saved.winner} won`:'Match in progress'};
+    }
+    if(mode==='roundRobin'){
+      const total=(rrFixtures||[]).reduce((sum,round)=>sum+(round||[]).length,0);
+      const complete=Object.values(rrResults||{}).filter(Boolean).length;
+      const active=(rrFixtures||[]).findIndex((round,ridx)=>(round||[]).some((_,midx)=>!rrResults[`rr-${ridx}-${midx}`]));
+      return {type:'Round Robin',round:active>=0?`Round ${active+1}`:'Complete',players:totalPlayers,courts:courtCount,complete,total,extra:`${(rrFixtures||[]).length} rounds`};
+    }
+    if(mode==='monrad'){
+      let total=0,complete=0,active=-1;
+      (monradRounds||[]).forEach((round,ridx)=>{
+        let open=false;
+        (round||[]).forEach((match,midx)=>{total+=1;const winner=match.b==='BYE'?match.a:monradResults[monradResultKey(ridx,midx)];if(winner)complete+=1;else open=true;});
+        if(open&&active<0)active=ridx;
+      });
+      if(active<0&&monradRounds.length)active=monradRounds.length-1;
+      return {type:'Monrad',round:active>=0?`Round ${active+1}`:'Not Started',players:totalPlayers,courts:courtCount,complete,total,extra:`${(monradRounds||[]).length} rounds created`};
+    }
+    if(mode==='invasion'){
+      return {type:'Invasion',round:`Rotation ${invasionRotationStep||1}`,players:totalPlayers,courts:Number(invasionCourts||invasionTeams.length||0),complete:invasionTeams.length,total:Number(invasionCourts||invasionTeams.length||0),extra:invasionFormat==='lives'?'Lives format':'Points format'};
+    }
+    if(mode==='nsl'){
+      return {type:'NSSL',round:`Period ${nslActivePeriod}`,players:totalPlayers,courts:Number(nslTeams||0),complete:0,total:Number(nslTeams||0),extra:`${nslFormatTime(nslRoundSeconds)} remaining`};
+    }
+    return {type:'Competition',round:'Setup',players:totalPlayers,courts:courtCount,complete:0,total:0,extra:'Ready'};
+  }
+
   useEffect(()=>{competitionRestoredRef.current=true;},[]);
   useEffect(()=>{
     if(!competitionRestoredRef.current) return;
@@ -8247,6 +8381,16 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={mode==='monrad'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('monrad')}>Monrad</button>
         <button type="button" className={mode==='nsl'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('nsl')}>NSSL</button>
       </div>
+
+      {(()=>{const dash=getCompetitionDashboard();return <div className="competitionDashboardV120">
+        <div className="competitionDashHeader"><strong>{dash.type}</strong><span>{dash.round}</span></div>
+        <div className="competitionDashGrid">
+          <div><b>{dash.players}</b><span>Players</span></div>
+          <div><b>{dash.courts}</b><span>Courts</span></div>
+          <div><b>{dash.complete}/{dash.total||0}</b><span>Complete</span></div>
+          <div><b>{dash.extra}</b><span>Status</span></div>
+        </div>
+      </div>;})()}
 
       {(mode==='matchplay'||mode==='roundRobin'||mode==='monrad')&&(
       <div className="competitionScoringModeBar">

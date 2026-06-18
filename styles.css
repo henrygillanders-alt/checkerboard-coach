@@ -1,3 +1,4 @@
+/* v121 Monrad player-view polish */
 /* v115 Perception clean constraints + no default active modifiers */
 
 *{box-sizing:border-box} body{margin:0;background:#07111f;color:#eef4ff;font-family:Inter,system-ui,sans-serif} button,input,select,textarea{font:inherit}
@@ -7928,4 +7929,37 @@ button.mentalSkillsTile p{
   .competitionDisplayDraw li{margin-bottom:2px!important;}
   .compactFixtureStrip{max-height:18vh!important;}
   .projectionGrid{grid-template-columns:1fr!important;gap:5px!important;}
+}
+
+/* v120 Competition Dashboard + Monrad Player View Polish */
+.competitionDashboardV120{
+  background:#071827;
+  border:2px solid #22d3ee;
+  border-radius:18px;
+  padding:14px 16px;
+  margin:12px 0 16px;
+}
+.competitionDashHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+.competitionDashHeader strong{color:#22d3ee;font-size:16px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;}
+.competitionDashHeader span{background:#0e7490;color:white;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:900;}
+.competitionDashGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.competitionDashGrid div{background:#0b1020;border:1px solid #2a3560;border-radius:12px;padding:10px 12px;min-height:64px;}
+.competitionDashGrid b{display:block;color:#fff;font-size:20px;font-weight:900;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.competitionDashGrid span{display:block;color:#9fb0c8;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
+.monradPlayerCompactBoard{margin-top:10px;}
+.monradCourtBoard{grid-column:1 / -1;}
+.compactCourtRow{display:grid;grid-template-columns:72px 1fr auto;gap:8px;align-items:center;background:#0b1020;border:1px solid #2a3560;border-radius:10px;padding:8px 10px;margin:5px 0;}
+.compactCourtRow b{color:#22d3ee;font-size:12px;}
+.compactCourtRow span{color:white;font-size:14px;font-weight:900;}
+.compactCourtRow em{color:#ffd980;font-size:12px;font-style:normal;font-weight:900;}
+.completeCourtRow{border-color:#4ade80;background:#052e1622;}
+@media(max-width:900px){
+  .competitionDashGrid{grid-template-columns:repeat(2,1fr);}
+  .compactCourtRow{grid-template-columns:1fr;gap:2px;}
 }
