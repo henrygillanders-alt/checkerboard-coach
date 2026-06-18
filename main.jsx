@@ -1,4 +1,4 @@
-/* v129 Live Coach Write Trigger + Hidden Player Link */
+/* v130 Live Sync Write Fix: publishable key headers + robust upsert */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -13,36 +13,49 @@ function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL
 function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
 function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';}}
 function buildLivePlayerViewUrl(roomId){const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(roomId)}`;}
+function supabaseRestHeaders(extra={}){
+  const headers={apikey:SUPABASE_ANON_KEY,...extra};
+  // New Supabase publishable keys start with sb_publishable_ and should not be sent as a Bearer JWT.
+  // Legacy anon keys start with eyJ and may be sent as Authorization Bearer.
+  if(String(SUPABASE_ANON_KEY||'').startsWith('eyJ')) headers.Authorization=`Bearer ${SUPABASE_ANON_KEY}`;
+  return headers;
+}
 async function writeLivePlayerRoom(roomId,mode,payload){
   if(!roomId||!liveSyncReady()) return false;
+  const row={room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()};
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?on_conflict=room_id`,{
       method:'POST',
-      headers:{
-        apikey:SUPABASE_ANON_KEY,
-        Authorization:`Bearer ${SUPABASE_ANON_KEY}`,
+      headers:supabaseRestHeaders({
         'Content-Type':'application/json',
-        Prefer:'resolution=merge-duplicates,return=minimal'
-      },
-      body:JSON.stringify([{room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()}])
+        Prefer:'resolution=merge-duplicates,return=representation'
+      }),
+      body:JSON.stringify(row)
     });
-    return res.ok;
-  }catch(err){console.warn('Live sync write failed',err);return false;}
+    if(!res.ok){
+      const txt=await res.text().catch(()=>'');
+      try{localStorage.setItem('checkerboardLiveLastError',`${res.status} ${txt}`);}catch{}
+      console.warn('Live sync write failed',res.status,txt);
+      return false;
+    }
+    try{localStorage.setItem('checkerboardLiveLastWrite',JSON.stringify({roomId,mode,at:new Date().toISOString()}));}catch{}
+    return true;
+  }catch(err){console.warn('Live sync write failed',err);try{localStorage.setItem('checkerboardLiveLastError',String(err));}catch{}return false;}
 }
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1`,{
-      headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`}
+      headers:supabaseRestHeaders()
     });
-    if(!res.ok) return null;
+    if(!res.ok){console.warn('Live sync read failed',res.status,await res.text().catch(()=>''));return null;}
     const rows=await res.json();
     return rows?.[0]||null;
   }catch(err){console.warn('Live sync read failed',err);return null;}
 }
 
 
-const APP_VERSION='v128 Supabase Live Sync';
+const APP_VERSION='v130 Live Sync Write Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
