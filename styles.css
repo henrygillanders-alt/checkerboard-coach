@@ -7965,7 +7965,7 @@ button.mentalSkillsTile p{
 }
 
 
-/* v122 Competition-only player display + compact hard-sync view */
+/* v123 Live Player View Auto Refresh + Placings Display Fix */
 .competitionOnlyDisplay{padding:22px 26px!important;max-width:1180px;margin:0 auto;}
 .competitionOnlyTop{padding-bottom:12px!important;margin-bottom:12px!important;}
 .competitionOnlyTop h1{font-size:46px!important;margin:6px 0!important;line-height:1!important;}
@@ -7994,3 +7994,19 @@ button.mentalSkillsTile p{
   .compactCourtRow{grid-template-columns:74px 1fr;}
   .compactCourtRow em{grid-column:2;text-align:left;}
 }
+
+
+/* v123 Player View live placings clipping fix */
+.livePlacingsPanel{overflow:hidden!important;}
+.livePlacingsPanel h2{
+  line-height:1.15!important;
+  padding-top:1px!important;
+  padding-bottom:2px!important;
+  white-space:nowrap!important;
+}
+.livePlacingsPanel p{
+  line-height:1.12!important;
+  margin:3px 0!important;
+  padding-bottom:3px!important;
+}
+.competitionPlayerDisplayPage .competitionOnlyGrid section:empty{display:none!important;}

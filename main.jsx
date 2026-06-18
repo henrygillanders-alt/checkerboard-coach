@@ -1,4 +1,4 @@
-/* v121 Monrad live placing + competition player view */
+/* v123 Live Player View Auto Refresh + Placings Display Fix */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -516,7 +516,7 @@ function CompetitionPlayerDisplayCard({competition}){
       return <div className="competitionDisplayLayout competitionOnlyGrid monradPlayerCompactBoard">
         <section className="competitionDisplayHero"><h2>{hasPlacing?`PLACING ROUND ${activeIdx+1}`:`MONRAD ROUND ${activeIdx+1}`}</h2><strong>{counts.done} / {counts.total} complete</strong><p>{hasPlacing?'Final placing pathways':'Main draw'}</p></section>
         <section className="competitionDisplayDraw monradCourtBoard"><h2>COURT BOARD</h2>{courtRows.map((row,idx)=><div key={idx} className={row.done?'compactCourtRow completeCourtRow':'compactCourtRow'}><b>{row.label}</b><span>{row.match}</span><em>{row.status}</em></div>)}</section>
-        <section className="competitionDisplayNext"><h2>LIVE PLACINGS</h2>{livePlacings.map(row=><p key={row.name}><strong>{row.place!=='—'?`${row.place}. `:''}{row.name}</strong> · {row.status}</p>)}</section>
+        {livePlacings.length>0&&<section className="competitionDisplayNext livePlacingsPanel"><h2>LIVE PLACINGS</h2>{livePlacings.map(row=><p key={row.name}><strong>{row.place!=='—'?`${row.place}. `:''}{row.name}</strong> · {row.status}</p>)}</section>}
       </div>;
     })()}
 
@@ -532,8 +532,24 @@ function CompetitionPlayerDisplayCard({competition}){
   </div>;
 }
 function CompetitionPlayerDisplayView({competition,setScreen}){
+  const [liveCompetition,setLiveCompetition]=useState(competition);
+  useEffect(()=>{
+    setLiveCompetition(competition);
+    function refreshCompetitionDisplay(){
+      try{
+        const saved=localStorage.getItem('checkerboardCompetitionProjection');
+        if(saved){
+          const parsed=JSON.parse(saved);
+          if(parsed&&parsed.mode){ setLiveCompetition(parsed); }
+        }
+      }catch{}
+    }
+    refreshCompetitionDisplay();
+    const timer=setInterval(refreshCompetitionDisplay,1500);
+    return ()=>clearInterval(timer);
+  },[competition]);
   return <div className="playerDisplayPage competitionPlayerDisplayPage">
-    <CompetitionPlayerDisplayCard competition={competition}/>
+    <CompetitionPlayerDisplayCard competition={liveCompetition}/>
   </div>;
 }
 
