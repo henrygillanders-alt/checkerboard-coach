@@ -1,4 +1,4 @@
-/* v130 Live Sync Write Fix: publishable key headers + robust upsert */
+/* v131 Live Sync Auth Header Fix: send apikey + Authorization for Supabase REST */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -14,11 +14,14 @@ function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().
 function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';}}
 function buildLivePlayerViewUrl(roomId){const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(roomId)}`;}
 function supabaseRestHeaders(extra={}){
-  const headers={apikey:SUPABASE_ANON_KEY,...extra};
-  // New Supabase publishable keys start with sb_publishable_ and should not be sent as a Bearer JWT.
-  // Legacy anon keys start with eyJ and may be sent as Authorization Bearer.
-  if(String(SUPABASE_ANON_KEY||'').startsWith('eyJ')) headers.Authorization=`Bearer ${SUPABASE_ANON_KEY}`;
-  return headers;
+  // Supabase REST expects both apikey and Authorization for browser writes with RLS.
+  // This works for the new sb_publishable_ keys as well as legacy eyJ anon keys.
+  const key=String(SUPABASE_ANON_KEY||'').trim();
+  return {
+    apikey:key,
+    Authorization:`Bearer ${key}`,
+    ...extra
+  };
 }
 async function writeLivePlayerRoom(roomId,mode,payload){
   if(!roomId||!liveSyncReady()) return false;
@@ -55,7 +58,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v130 Live Sync Write Fix';
+const APP_VERSION='v131 Live Sync Auth Header Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -8411,7 +8414,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     try{
       if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; }
     }catch{}
-    if(copied){ alert(ok?'Live player link copied. Open it on the second device.':'Player link copied, but live sync did not confirm. Check Supabase/connection.'); }
+    if(copied){ alert(ok?'Live player link copied. Open it on the second device.':'Player link copied, but live sync did not confirm. Supabase write failed. Check table/API policy or reload after deploy.'); }
     else{ window.prompt('LIVE competition player link — open this on the second device:', url); }
   }
 
