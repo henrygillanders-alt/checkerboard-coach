@@ -1,4 +1,4 @@
-/* v128 Supabase Live Player View Sync */
+/* v129 Live Coach Write Trigger + Hidden Player Link */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -8383,17 +8383,23 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const state=getCompetitionProjectionState();
     return buildUniversalPlayerViewUrl({type:'competition',competition:state});
   }
-  function copyCompetitionPlayerLink(){
+  async function publishCompetitionLiveState(roomOverride){
     const state=getCompetitionProjectionState();
     try{localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));}catch{}
-    const room=liveRoomId||makeLiveRoomId();
+    const room=roomOverride||liveRoomId||makeLiveRoomId();
     if(!liveRoomId){setLiveRoomId(room);try{localStorage.setItem(LIVE_ROOM_KEY,room);}catch{}}
-    writeLivePlayerRoom(room,'competition',state);
+    const ok=await writeLivePlayerRoom(room,'competition',state);
+    return {room,state,ok};
+  }
+  async function copyCompetitionPlayerLink(){
+    const {room,ok}=await publishCompetitionLiveState();
     const url=buildLivePlayerViewUrl(room);
+    let copied=false;
     try{
-      if(navigator.clipboard){ navigator.clipboard.writeText(url); }
+      if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; }
     }catch{}
-    window.prompt('LIVE competition player link — open this on the second device:', url);
+    if(copied){ alert(ok?'Live player link copied. Open it on the second device.':'Player link copied, but live sync did not confirm. Check Supabase/connection.'); }
+    else{ window.prompt('LIVE competition player link — open this on the second device:', url); }
   }
 
   useEffect(()=>{
@@ -8498,15 +8504,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       )}
 
       <div className="competitionProjectionToggle">
-        <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>setShowCompetitionProjection(!showCompetitionProjection)}>
+        <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>{setShowCompetitionProjection(!showCompetitionProjection);publishCompetitionLiveState();}}>
           {showCompetitionProjection?'Hide Player Projection':'Show Player Projection'}
         </button>
         <button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button>
       </div>
-      <div className="competitionShareBox">
-        <strong>Player View Link</strong>
-        <p>Use this on the second device to show the current competition draw / fixtures / invasion courts.</p>
-        <textarea readOnly value={getCompetitionPlayerLink()} onFocus={e=>e.target.select()} />
+      <div className="competitionLiveStatusBox">
+        <strong>Live Player View</strong>
+        <span>{liveRoomId?'🟢 Live room ready':'Tap Copy Player Link to create a live room for the second device.'}</span>
       </div>
 
       {showCompetitionProjection&&(
@@ -11670,7 +11675,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v128</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v129</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
