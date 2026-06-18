@@ -1,4 +1,4 @@
-/* v123 Live Player View Auto Refresh + Placings Display Fix */
+/* v124 Compact Player Link Payload + Blank Page Guard */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -335,9 +335,31 @@ function buildPlayerDisplayUrl(game){
   return `${base}?playerGame=${encoded}`;
 }
 
+function compactCompetitionForLink(state={}){
+  // Keep the player-link payload small enough for iPad/Safari/Netlify.
+  // The full coach state remains in localStorage; the copied link carries only display data.
+  const mode=state.mode||'competition';
+  const base={sharedType:'competitionPlayerView',mode,title:state.title||'Competition',updatedAt:state.updatedAt||new Date().toISOString()};
+  if(mode==='matchplay'){
+    return {...base,playerNames:state.playerNames||[],matchPlayers:state.matchPlayers||{},matchScore:state.matchScore||{},competitionMatchScores:state.competitionMatchScores||{}};
+  }
+  if(mode==='monrad'){
+    return {...base,playerNames:state.playerNames||[],monradRounds:state.monradRounds||[],monradResults:state.monradResults||{},monradPlacingRounds:state.monradPlacingRounds||[],monradPlacingResults:state.monradPlacingResults||{},monradFinalPlaces:state.monradFinalPlaces||{}};
+  }
+  if(mode==='roundRobin'){
+    return {...base,playerNames:state.playerNames||[],rrFixtures:state.rrFixtures||[],rrResults:state.rrResults||{}};
+  }
+  if(mode==='invasion'){
+    return {...base,playerNames:state.playerNames||[],invasionFormat:state.invasionFormat,invasionStartingLives:state.invasionStartingLives,invasionLives:state.invasionLives,invasionTeams:state.invasionTeams||[],invasionTeamPoints:state.invasionTeamPoints||{},invasionPlayerPoints:state.invasionPlayerPoints||{},invasionCarryLives:state.invasionCarryLives||{},invasionFairLivesByTeam:state.invasionFairLivesByTeam||{},invasionPlayerRound:state.invasionPlayerRound||0,invasionCourtRound:state.invasionCourtRound||0,invasionRotationStep:state.invasionRotationStep||1,invasionGameStarted:!!state.invasionGameStarted,invasionCourts:state.invasionCourts};
+  }
+  if(mode==='nsl'){
+    return {...base,nslTeams:state.nslTeams,nslPlayersPerTeam:state.nslPlayersPerTeam,nslScores:state.nslScores||{},nslActivePeriod:state.nslActivePeriod||1,nslRoundSeconds:state.nslRoundSeconds||0};
+  }
+  return {...base,playerNames:state.playerNames||[]};
+}
 function encodePlayerCompetition(state){
   try{
-    const compact={...state,sharedType:'competitionPlayerView'};
+    const compact=compactCompetitionForLink(state);
     const json=JSON.stringify(compact);
     return btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }catch{return '';}
@@ -346,17 +368,27 @@ function decodePlayerCompetitionFromUrl(){
   try{
     const params=new URLSearchParams(window.location.search||'');
     const raw=params.get('playerCompetition')||'';
+    if(!raw&&params.get('competitionDisplay')==='1'){
+      const saved=localStorage.getItem('checkerboardCompetitionProjection');
+      return saved?JSON.parse(saved):{mode:'empty',title:'Competition Player View',message:'No competition data is available on this device yet.'};
+    }
     if(!raw)return null;
+    if(raw==='live'){
+      const saved=localStorage.getItem('checkerboardCompetitionProjection');
+      return saved?JSON.parse(saved):{mode:'empty',title:'Competition Player View',message:'No competition data is available on this device yet.'};
+    }
     const pad='='.repeat((4-raw.length%4)%4);
     const b64=(raw+pad).replace(/-/g,'+').replace(/_/g,'/');
     return JSON.parse(decodeURIComponent(escape(atob(b64))));
-  }catch{return null;}
+  }catch{
+    return {mode:'empty',title:'Competition Player View',message:'This player link could not be opened. Please copy a fresh Player Link from Competition.'};
+  }
 }
 function buildPlayerCompetitionUrl(state){
-  const encoded=encodePlayerCompetition(state);
-  if(!encoded)return '';
+  // v125: use a stable live player link instead of embedding the competition payload in the URL.
+  // The active display data is stored in checkerboardCompetitionProjection and the Player View refreshes from it.
   const base=window.location.origin+window.location.pathname;
-  return `${base}?playerCompetition=${encoded}`;
+  return `${base}?playerCompetition=live`;
 }
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
@@ -395,6 +427,11 @@ function CompetitionPlayerDisplayCard({competition}){
   }
   const mode=competition.mode||'competition';
   const title=competition.title||'Competition';
+  if(mode==='empty'){
+    return <div className="playerDisplayShell competitionOnlyDisplay compactCompetitionDisplay">
+      <div className="playerDisplayTop competitionOnlyTop"><span>COMPETITION DISPLAY</span><h1>{title}</h1><p className="competitionPlayerSummary">{competition.message||'No competition data available.'}</p></div>
+    </div>;
+  }
   const playerNames=competition.playerNames||[];
   const matchA=competition.matchPlayers?.a||'P1';
   const matchB=competition.matchPlayers?.b||'P2';
@@ -8375,7 +8412,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       </div>
       <div className="competitionShareBox">
         <strong>Player View Link</strong>
-        <p>Use this on the second device to show the current competition draw / fixtures / invasion courts.</p>
+        <p>Use this stable live link for Player View. Keep it open; it refreshes from the active competition display state.</p>
         <textarea readOnly value={getCompetitionPlayerLink()} onFocus={e=>e.target.select()} />
       </div>
 
