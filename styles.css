@@ -7965,5 +7965,16 @@ button.mentalSkillsTile p{
 }
 
 
-/* v126 Universal Player View Export note */
+/* v127 Competition Player View Snapshot Fix */
 .competitionShareBox textarea{font-size:13px;line-height:1.25;min-height:90px;}
+
+
+/* v127 Monrad player display clarity */
+.monradPlayerCompactBoard .competitionDisplayHero small{
+  color:#9fb0c8!important;
+  font-size:clamp(10px,1.05vw,14px)!important;
+  font-weight:800!important;
+}
+.monradPlayerCompactBoard .competitionDisplayNext p{
+  margin:3px 0!important;
+}

@@ -1,4 +1,4 @@
-/* v126 Universal Player View Export */
+/* v127 Competition Player View Snapshot Fix */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -330,7 +330,7 @@ function decodePlayerGameFromUrl(){
 }
 function encodePlayerPayload(payload){
   try{
-    const json=JSON.stringify({...payload,sharedType:'universalPlayerView',v:126});
+    const json=JSON.stringify({...payload,sharedType:'universalPlayerView',v:127});
     return btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   }catch{return '';}
 }
@@ -574,33 +574,54 @@ function CompetitionPlayerDisplayCard({competition}){
       const counts=monradCompletedCount();
       const activeIdx=hasPlacing?(competition.monradPlacingRounds.length-1):monradActiveRoundIndex();
       const round=hasPlacing?(competition.monradPlacingRounds[activeIdx]||[]):((competition.monradRounds||[])[activeIdx]||[]);
-      const livePlacings=monradLivePlacings().slice(0,10);
+      const exportedTable=Array.isArray(competition.monradFinalTable)?competition.monradFinalTable:[];
+      const liveRows=exportedTable.length?exportedTable:monradLivePlacings();
+      const settledRows=liveRows.filter(row=>row.place&&row.place!=='—');
+      function savedMainResult(match,midx){
+        const key=`monrad-${activeIdx}-${midx}-`;
+        const saved=competition.competitionMatchScores?.[key];
+        const winner=monradWinner(activeIdx,midx,match);
+        if(saved?.matchText)return saved.matchText;
+        if(winner)return `${winner} won`;
+        return 'Next / in progress';
+      }
+      function savedPlaceResult(group,match,midx){
+        const key=`monrad-place-${activeIdx}-${midx}-${group.id}`;
+        const saved=competition.competitionMatchScores?.[key];
+        const winner=monradPlacingWinner(activeIdx,group,midx,match);
+        if(saved?.matchText)return saved.matchText;
+        if(winner)return `${winner} won`;
+        return 'Next / in progress';
+      }
       return <div className="competitionDisplayLayout monradPlayerCompactBoard">
         <section className="competitionDisplayHero">
           <h2>{hasPlacing?`MONRAD PLACING ROUND ${activeIdx+1}`:`MONRAD ROUND ${activeIdx+1}`}</h2>
           <strong>{counts.done} / {counts.total} matches complete</strong>
           <p>{hasPlacing?'Final placings pathway':'Main Monrad draw'}</p>
+          <small>Snapshot view. Copy a fresh Player Link after entering new results.</small>
         </section>
         <section className="competitionDisplayDraw monradCourtBoard">
           <h2>COURT BOARD</h2>
           {hasPlacing?round.flatMap(group=>(group.matches||[]).map((match,midx)=>{
-            const winner=monradPlacingWinner(activeIdx,group,midx,match);
-            const result=winner?`${winner} won`:'Next / in progress';
-            return <div key={`${group.id}-${midx}`} className={winner?'compactCourtRow completeCourtRow':'compactCourtRow'}>
+            const result=savedPlaceResult(group,match,midx);
+            const complete=!/Next \/ in progress/i.test(result);
+            return <div key={`${group.id}-${midx}`} className={complete?'compactCourtRow completeCourtRow':'compactCourtRow'}>
               <b>{group.range}</b><span>{match.a} v {match.b}</span><em>{result}</em>
             </div>;
           })):round.map((match,midx)=>{
-            const winner=monradWinner(activeIdx,midx,match);
-            const saved=competition.competitionMatchScores?.[`monrad-${activeIdx}-${midx}-`];
-            const result=saved?.matchText || (winner?`${winner} won`:'Next / in progress');
-            return <div key={midx} className={winner?'compactCourtRow completeCourtRow':'compactCourtRow'}>
+            const result=savedMainResult(match,midx);
+            const complete=!/Next \/ in progress/i.test(result);
+            return <div key={midx} className={complete?'compactCourtRow completeCourtRow':'compactCourtRow'}>
               <b>Court {midx+1}</b><span>{match.a} v {match.b}</span><em>{result}</em>
             </div>;
           })}
         </section>
         <section className="competitionDisplayNext">
-          <h2>LIVE PLACINGS</h2>
-          {livePlacings.map(row=><p key={row.name}><strong>{row.place!=='—'?`${row.place}. `:''}{row.name}</strong> · {row.status}</p>)}
+          <h2>{settledRows.length?'PLACINGS SETTLED':'RESULTS / STATUS'}</h2>
+          {settledRows.length?settledRows.slice(0,8).map(row=><p key={row.name}><strong>{row.place}. {row.name}</strong> · settled</p>):<>
+            <p><strong>Placings pending</strong></p>
+            <p>Final placings appear after each pathway is complete.</p>
+          </>}
         </section>
       </div>;
     })()}
@@ -8302,6 +8323,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       monradPlacingRounds,
       monradPlacingResults,
       monradFinalPlaces,
+      monradFinalTable:getMonradFinalTable(),
+      competitionDashboard:getCompetitionDashboard(),
       nslTeams,
       nslPlayersPerTeam,
       nslPeriod1,
