@@ -7963,3 +7963,34 @@ button.mentalSkillsTile p{
   .competitionDashGrid{grid-template-columns:repeat(2,1fr);}
   .compactCourtRow{grid-template-columns:1fr;gap:2px;}
 }
+
+
+/* v122 Competition-only player display + compact hard-sync view */
+.competitionOnlyDisplay{padding:22px 26px!important;max-width:1180px;margin:0 auto;}
+.competitionOnlyTop{padding-bottom:12px!important;margin-bottom:12px!important;}
+.competitionOnlyTop h1{font-size:46px!important;margin:6px 0!important;line-height:1!important;}
+.competitionOnlyTop span{font-size:13px!important;letter-spacing:.18em!important;}
+.competitionOnlyTop .competitionPlayerSummary{font-size:24px!important;margin:6px 0 0!important;color:#ffd980!important;font-weight:900!important;}
+.competitionOnlyGrid{display:grid!important;grid-template-columns:1.05fr 1.35fr 1fr!important;gap:14px!important;align-items:stretch!important;}
+.competitionOnlyGrid section{margin:0!important;padding:16px 18px!important;border-radius:18px!important;min-height:auto!important;}
+.competitionOnlyGrid h2{font-size:15px!important;margin:0 0 10px!important;color:#ffd980!important;letter-spacing:.08em;text-transform:uppercase;}
+.competitionOnlyGrid strong{font-size:26px!important;line-height:1.1!important;color:#fff!important;}
+.competitionOnlyGrid p,.competitionOnlyGrid li{font-size:18px!important;line-height:1.3!important;margin:7px 0!important;}
+.competitionOnlyGrid small{font-size:15px!important;color:#cbd5e1!important;}
+.compactCourtRow{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;background:#071524;border:1px solid #35567e;border-radius:12px;padding:9px 11px;margin:7px 0;}
+.compactCourtRow b{color:#ffd980;font-size:14px;}
+.compactCourtRow span{color:white;font-size:17px;font-weight:900;}
+.compactCourtRow em{font-style:normal;color:#9bc1ff;font-size:14px;font-weight:900;text-align:right;}
+.completeCourtRow{border-color:#22c55e;background:#052e16;}
+.completeCourtRow em{color:#86efac;}
+.monradPlayerCompactBoard .competitionDisplayNext p{border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:5px;}
+@media(max-width:900px){
+  .competitionOnlyDisplay{padding:14px!important;}
+  .competitionOnlyTop h1{font-size:34px!important;}
+  .competitionOnlyGrid{grid-template-columns:1fr!important;gap:10px!important;}
+  .competitionOnlyGrid section{padding:12px 14px!important;}
+  .competitionOnlyGrid strong{font-size:22px!important;}
+  .competitionOnlyGrid p,.competitionOnlyGrid li{font-size:16px!important;}
+  .compactCourtRow{grid-template-columns:74px 1fr;}
+  .compactCourtRow em{grid-column:2;text-align:left;}
+}
