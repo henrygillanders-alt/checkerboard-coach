@@ -69,7 +69,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v135 Competition Payload Export Fix';
+const APP_VERSION='v137 Peak Week + Competition Display Batch';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -688,9 +688,9 @@ function CompetitionPlayerDisplayCard({competition}){
             </div>;
           })}
         </section>
-        <section className="competitionDisplayNext">
+        <section className="competitionDisplayNext monradPlacingsCompact">
           <h2>{settledRows.length?'PLACINGS SETTLED':'RESULTS / STATUS'}</h2>
-          {settledRows.length?settledRows.slice(0,8).map(row=><p key={row.name}><strong>{row.place}. {row.name}</strong> · settled</p>):<>
+          {settledRows.length?<div className="monradPlacingsGrid">{settledRows.slice(0,12).map(row=><div key={row.name} className="monradPlacingPill"><b>{row.place}.</b><span>{row.name}</span></div>)}</div>:<>
             <p><strong>Placings pending</strong></p>
             <p>Final placings appear after each pathway is complete.</p>
           </>}
@@ -2843,6 +2843,80 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   </div>;
 }
 
+
+const PEAK_WEEK_SESSIONS=[
+  {id:'pw-s1',day:'Day -8',weekday:'Friday',title:'Session 1 · Last Full Sharpener',load:100,rld:'RLD 4–5',objective:'Full competitive sharpness with enough volume to feel ready.',activities:['Neural Tabata court activation','Invasion game','ATL / BTL decision block','Checkerboard pressure finish','Short matchplay'],duration:90,notes:'Last full session. Keep intensity high but stop before fatigue accumulates.'},
+  {id:'pw-s2',day:'Day -7',weekday:'Saturday',title:'Session 2 · Sharpen & Chase',load:85,rld:'RLD 4–5',objective:'Chase, compete and recover without heavy conditioning load.',activities:['Court Tabata burst','Pressure games','Double Bounce survival / attack','Length Before Attack','Short matchplay'],duration:90,notes:'Still competitive. Slight volume reduction. High quality movement only.'},
+  {id:'pw-s3',day:'Day -6',weekday:'Sunday',title:'Session 3 · Speed & Decisions',load:70,rld:'RLD 4',objective:'Speed of information pickup and decision clarity.',activities:['Serve / Return burst','ATL / BTL above high tin','Blind Finish','Checkerboard 2-shot / 4-shot windows','Conditioned matchplay'],duration:90,notes:'Decision speed over physical grind. More rest between intense bursts.'},
+  {id:'pw-s4',day:'Day -5',weekday:'Monday',title:'Session 4 · Pressure & Finish',load:60,rld:'RLD 4–5',objective:'Pressure rehearsal, confidence and clean finishing.',activities:['Neural Tabata short activation','Pressure point games','Quality Length Before Attack','Volley Finish / Clean Winner','Success finish block'],duration:90,notes:'Finish on success. No technical rebuilding.'},
+  {id:'pw-s5',day:'Day -3',weekday:'Wednesday',title:'Session 5 · Final Primer',load:45,rld:'RLD 3–4',objective:'Fresh, fast and confident. Short intense exposure only.',activities:['Very short Court or Bike Tabata','Serve / Return rhythm','Light Invasion','Short competitive games','Confidence finish'],duration:90,notes:'Low volume. Stop while sharp. Leave players wanting more.'}
+];
+const PEAK_TABATA_OPTIONS=['Front Court Burst','Four Corner Burst','Volley Burst','Serve Return Burst','Drive Burst'];
+function formatPeakDate(baseDate,offset){
+  if(!baseDate)return '';
+  const d=new Date(baseDate+'T12:00:00');
+  if(Number.isNaN(d.getTime()))return '';
+  d.setDate(d.getDate()+offset);
+  return d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
+}
+function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
+  const [tab,setTab]=useState('planner');
+  const [tournamentDate,setTournamentDate]=useState('');
+  const [courtTabata,setCourtTabata]=useState({option:'Front Court Burst',work:20,rest:10,rounds:4,players:4});
+  const [bikeTabata,setBikeTabata]=useState({work:20,rest:40,rounds:4});
+  const [status,setStatus]=useState('');
+  function addCard(card){
+    const finalCard=normaliseGameCard({...card,id:Date.now()+Math.random(),category:'Peak Week',format:card.format||'Peak Week',layers:card.layers||['Peak Week'],rld:card.rld||4});
+    if(typeof onAddToSession==='function')onAddToSession(finalCard);
+    else if(typeof setSession==='function')setSession(prev=>appendToSessionState(prev,finalCard));
+    setStatus(`${finalCard.title} added to Session Builder.`);
+  }
+  function addPeakSession(s){
+    addCard({
+      title:s.title,
+      duration:s.duration,
+      format:'Peak Week Template',
+      task:`${s.objective} Activities: ${s.activities.join(' · ')}.`,
+      scoring:`Load ${s.load}%. Use competitive scoring from selected games. Keep quality high and stop if movement quality drops.`,
+      rationale:`Peak week taper: volume falls, intensity remains, representativeness rises, functional difficulty eases late week. ${s.rld}.`,
+      coach:s.notes,
+      playerFocus:'Fast · sharp · confident · fresh',
+      layers:['Peak Week','Competition Readiness','Neural Priming'],
+      rld:Number(String(s.rld).match(/\d/)?.[0]||4)
+    });
+  }
+  function addTabata(type='court'){
+    const isCourt=type==='court';
+    const cfg=isCourt?courtTabata:bikeTabata;
+    addCard({
+      title:isCourt?`Neural Tabata · ${cfg.option}`:'Neural Tabata · Spin Bike',
+      duration:Math.ceil(((Number(cfg.work)+Number(cfg.rest))*Number(cfg.rounds)* (isCourt?Number(cfg.players||1):1))/60),
+      format:isCourt?'Court Tabata':'Spin Bike Tabata',
+      task:isCourt?`Group rotation: P1 works ${cfg.work}s, then P2, P3, P4 etc. ${cfg.option}. Rest players stay ready. Complete ${cfg.rounds} rounds.`:`${cfg.work}s hard / ${cfg.rest}s easy for ${cfg.rounds} rounds on spin bike.`,
+      scoring:'No conditioning score. Quality only: explosive, clean, non-fatiguing. Stop if speed or movement quality drops.',
+      rationale:'Short neural activation: explosive readiness without fatigue.',
+      coach:'This is priming, not punishment conditioning. Keep it sharp and short.',
+      playerFocus:'Explode, reset, stay fresh.',
+      layers:['Neural Priming','Peak Week'],
+      rld:2
+    });
+  }
+  const plannerRows=PEAK_WEEK_SESSIONS.map((s,idx)=>({...s,date:formatPeakDate(tournamentDate,[-8,-7,-6,-5,-3][idx])}));
+  return <div className={embedded?'peakWeekEmbedded':'page peakWeekPage'}>
+    {!embedded&&<div className="pageTop"><div><h1>⚡ PEAK WEEK™</h1><p className="mutedText">Competition readiness · neural priming · pressure preparation · taper planning</p></div><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div>}
+    <div className="peakWeekHero"><span>PRE-COMPETITION PREPARATION</span><h2>Volume falls. Intensity remains. Representativeness rises.</h2><p>Player arrives fast, sharp, confident and fresh.</p></div>
+    <div className="peakWeekTabs">
+      {['planner','tabata','templates','activation','notes'].map(id=><button key={id} className={tab===id?'activePeakTab':''} onClick={()=>setTab(id)}>{id==='planner'?'Peak Week Planner':id==='tabata'?'Neural Tabata':id==='templates'?'Session Templates':id==='activation'?'Optional Friday Activation':'Coach Notes'}</button>)}
+    </div>
+    {tab==='planner'&&<div className="peakWeekSection"><h2>Peak Week Planner</h2><label className="peakDateInput">Tournament Date<input type="date" value={tournamentDate} onChange={e=>setTournamentDate(e.target.value)}/></label><div className="peakPlannerGrid">{plannerRows.map(s=><div className="peakPlannerCard" key={s.id}><div><strong>{s.day}</strong><span>{s.date||s.weekday}</span></div><h3>{s.title}</h3><div className="peakLoadBar"><i style={{width:`${s.load}%`}}/></div><p><b>{s.load}% load</b> · {s.rld}</p><p>{s.objective}</p><button className="primaryBtn" onClick={()=>addPeakSession(s)}>Add Peak Week Session</button></div>)}</div></div>}
+    {tab==='tabata'&&<div className="peakWeekSection"><h2>⚡⚡ Neural Tabata</h2><p className="mutedText">Short explosive activation. Not conditioning.</p><div className="peakTwoCol"><div className="peakPanel"><h3>Court Tabata</h3><label>Option<select value={courtTabata.option} onChange={e=>setCourtTabata({...courtTabata,option:e.target.value})}>{PEAK_TABATA_OPTIONS.map(o=><option key={o}>{o}</option>)}</select></label><label>Work seconds<input type="number" value={courtTabata.work} onChange={e=>setCourtTabata({...courtTabata,work:e.target.value})}/></label><label>Rest seconds<input type="number" value={courtTabata.rest} onChange={e=>setCourtTabata({...courtTabata,rest:e.target.value})}/></label><label>Rounds<input type="number" value={courtTabata.rounds} onChange={e=>setCourtTabata({...courtTabata,rounds:e.target.value})}/></label><label>Players<input type="number" min="2" max="6" value={courtTabata.players} onChange={e=>setCourtTabata({...courtTabata,players:e.target.value})}/></label><div className="peakRotationPreview">{Array.from({length:Number(courtTabata.players)||4}).map((_,i)=><span key={i}>P{i+1} {courtTabata.work}s</span>)}</div><button className="primaryBtn" onClick={()=>addTabata('court')}>Add Court Tabata</button></div><div className="peakPanel"><h3>Spin Bike Tabata</h3><label>Work seconds<input type="number" value={bikeTabata.work} onChange={e=>setBikeTabata({...bikeTabata,work:e.target.value})}/></label><label>Recovery seconds<input type="number" value={bikeTabata.rest} onChange={e=>setBikeTabata({...bikeTabata,rest:e.target.value})}/></label><label>Rounds<input type="number" value={bikeTabata.rounds} onChange={e=>setBikeTabata({...bikeTabata,rounds:e.target.value})}/></label><p>Default: 20 sec hard / 40 sec easy / 4 rounds.</p><button className="primaryBtn" onClick={()=>addTabata('bike')}>Add Spin Bike Tabata</button></div></div></div>}
+    {tab==='templates'&&<div className="peakWeekSection"><h2>5 Session Templates</h2><div className="peakTemplateList">{PEAK_WEEK_SESSIONS.map(s=><div className="peakTemplateCard" key={s.id}><div className="peakTemplateTop"><h3>{s.title}</h3><span>{s.load}%</span></div><p><strong>Objective:</strong> {s.objective}</p><p><strong>RLD:</strong> {s.rld}</p><ol>{s.activities.map(a=><li key={a}>{a}</li>)}</ol><p><strong>Coach note:</strong> {s.notes}</p><div className="buttonRow"><button className="primaryBtn" onClick={()=>addPeakSession(s)}>Add to Session Builder</button><button className="secondaryBtn" onClick={()=>addPeakSession({...s,title:s.title+' + duplicate'})}>Duplicate</button></div></div>)}</div></div>}
+    {tab==='activation'&&<div className="peakWeekSection"><h2>Optional Friday Activation</h2><div className="peakPanel optionalPeak"><span className="categoryTag">Optional</span><h3>20–30 min bridge session</h3><p>Use only when competition starts Saturday and there is a Wednesday → Saturday gap.</p><ul><li>Neural Tabata</li><li>Light Invasion</li><li>Short Hit</li><li>Ghosting</li></ul><button className="primaryBtn" onClick={()=>addCard({title:'Optional Friday Activation',duration:25,format:'Peak Week Activation',task:'Neural Tabata, light invasion, short hit and controlled ghosting. Keep it fresh and short.',scoring:'No fatigue score. Stop while sharp.',rationale:'Bridges the gap into Saturday without adding training load.',coach:'Use only if the player needs activation, not extra work.',playerFocus:'Feel sharp and leave fresh.',layers:['Peak Week','Optional Activation'],rld:3})}>Add Optional Activation</button></div></div>}
+    {tab==='notes'&&<div className="peakWeekSection"><h2>Coach Notes</h2><div className="peakRules"><h3>Peak Week Rules</h3><ol><li>No technical rebuilding</li><li>No punishment conditioning</li><li>No excessive volume</li><li>Keep competitive</li><li>Finish on success</li><li>Stop while sharp</li></ol><div className="warningBox"><strong>Warning:</strong> If movement quality drops, reduce volume immediately.</div><h3>Fresh beats fit. Sharp beats tired.</h3></div></div>}
+    {status&&<div className="statusBox">{status}</div>}
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
@@ -2867,6 +2941,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
+      <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
 
@@ -2911,7 +2986,7 @@ function GamesLibrary({setScreen,setSession}){
       </div>
     </div>}
     {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
-    {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+    {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
   </div>;
 }
 
@@ -2921,7 +2996,7 @@ const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
 const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
-const cats=['ATL / BTL','Perception','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
+const cats=['ATL / BTL','Perception','Peak Week','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
 const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
 const games=standardGames();
@@ -2940,6 +3015,7 @@ return <div>
 {showConditions&&category&&<GameConstraintsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
 {!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
 {category==='Perception'&&<PerceptionModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
+{category==='Peak Week'&&<PeakWeekModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
@@ -2964,7 +3040,7 @@ return <div>
 <div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
 <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(composedAtl);}}>{addButtonText}</button>
 </div>}
-{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&category!=='Perception'&&<div className="gameList">
+{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&category!=='Perception'&&category!=='Peak Week'&&<div className="gameList">
 {filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
 {filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Tactical Pressure, Invasion.</div>}
 </div>}
@@ -3004,7 +3080,8 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
       }));
     }catch{return [];}
   },[]);
-  const allGames=useMemo(()=>[...baseGames,...patternGames], [baseGames,patternGames]);
+  const peakGames=useMemo(()=>PEAK_WEEK_SESSIONS.map(s=>normaliseGameCard({id:s.id,title:s.title,category:'Peak Week',format:'Peak Week Template',duration:s.duration,task:`${s.objective} Activities: ${s.activities.join(' · ')}.`,rationale:`Peak week taper. ${s.rld}.`,coach:s.notes,scoring:`Load ${s.load}%. Keep intensity high and volume controlled.`,playerFocus:'Fast · sharp · confident · fresh',layers:['Peak Week','Competition Readiness'],rld:4})),[]);
+  const allGames=useMemo(()=>[...baseGames,...patternGames,...peakGames], [baseGames,patternGames,peakGames]);
   const categories=useMemo(()=>['All',...Array.from(new Set(allGames.map(g=>g.category||'Game'))).sort()], [allGames]);
   const visible=allGames.filter(g=>{
     const q=query.trim().toLowerCase();
@@ -11717,6 +11794,7 @@ return <div>
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
+      {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}

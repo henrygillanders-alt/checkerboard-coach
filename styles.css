@@ -7999,3 +7999,42 @@ button.mentalSkillsTile p{
 .optionalCompetitionInfo{margin-top:.35rem;}
 .optionalCompetitionInfo:empty{display:none;}
 .compactCompetitionDisplay .playerDisplayGrid.optionalCompetitionInfo{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}
+
+/* v137 Peak Week + Competition Display Batch */
+.peakWeekHomeCard,.peakWeekEntryCard{background:linear-gradient(135deg,#7c2d12,#f59e0b 55%,#fde68a)!important;color:#111827!important;border-color:#fbbf24!important;}
+.peakWeekHomeCard h2,.peakWeekHomeCard .homeTileSubtitle{color:#111827!important;}
+.peakWeekPage,.peakWeekEmbedded{max-width:1180px;margin:0 auto;}
+.peakWeekHero{background:linear-gradient(135deg,#1f1307,#3b2207);border:2px solid #f59e0b;border-radius:18px;padding:18px;margin:0 0 16px;box-shadow:0 0 22px #f59e0b22;}
+.peakWeekHero span{color:#fbbf24;font-weight:1000;letter-spacing:.16em;font-size:12px;}
+.peakWeekHero h2{color:#fff;margin:8px 0 6px;font-size:clamp(22px,3vw,34px);}
+.peakWeekHero p{color:#fde68a;font-weight:900;margin:0;}
+.peakWeekTabs{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 18px;}
+.peakWeekTabs button{background:#101a2d;border:1px solid #334155;color:#fff;border-radius:14px;padding:11px 14px;font-weight:1000;}
+.peakWeekTabs button.activePeakTab{background:#f59e0b;color:#111827;border-color:#fde68a;}
+.peakWeekSection{background:#071827;border:1px solid #334155;border-radius:18px;padding:18px;margin:14px 0;}
+.peakWeekSection h2{color:#fbbf24;margin-top:0;}
+.peakDateInput{display:grid;gap:6px;color:#bfdbfe;font-weight:900;max-width:320px;margin-bottom:14px;}
+.peakDateInput input,.peakPanel input,.peakPanel select{background:#0b1020;border:1px solid #3b82f6;border-radius:10px;color:#fff;padding:10px;font-weight:800;}
+.peakPlannerGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+.peakPlannerCard,.peakTemplateCard,.peakPanel,.peakRules{background:#0b1020;border:1px solid #334155;border-radius:16px;padding:14px;}
+.peakPlannerCard>div:first-child{display:flex;justify-content:space-between;color:#fbbf24;font-weight:1000;}
+.peakPlannerCard h3,.peakTemplateCard h3,.peakPanel h3{color:#fff;margin:8px 0;}
+.peakLoadBar{height:12px;background:#111827;border:1px solid #334155;border-radius:999px;overflow:hidden;margin:10px 0;}
+.peakLoadBar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#eab308,#f59e0b);border-radius:999px;}
+.peakTwoCol{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.peakPanel label{display:grid;gap:5px;margin:8px 0;color:#bfdbfe;font-weight:900;}
+.peakRotationPreview{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+.peakRotationPreview span{background:#1e3a8a;border:1px solid #60a5fa;color:#fff;border-radius:999px;padding:7px 10px;font-weight:900;}
+.peakTemplateList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+.peakTemplateTop{display:flex;justify-content:space-between;align-items:start;gap:10px;}
+.peakTemplateTop span{background:#f59e0b;color:#111827;border-radius:999px;padding:8px 10px;font-weight:1000;}
+.peakTemplateCard ol,.peakRules ol{margin:8px 0 12px;padding-left:22px;}
+.peakTemplateCard li,.peakRules li{margin:3px 0;}
+.warningBox{border:1px solid #f59e0b;background:#451a0322;border-radius:12px;padding:12px;margin:12px 0;color:#fde68a;}
+.optionalPeak .categoryTag{background:#f59e0b!important;color:#111827!important;}
+.monradPlacingsCompact{padding-bottom:10px!important;}
+.monradPlacingsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;margin-top:5px;}
+.monradPlacingPill{display:flex;align-items:center;gap:6px;min-width:0;background:#081525;border:1px solid #2a3560;border-radius:10px;padding:6px 8px;}
+.monradPlacingPill b{color:#ffd980;font-size:clamp(13px,2.6vw,17px);line-height:1;}
+.monradPlacingPill span{color:white;font-weight:1000;font-size:clamp(13px,2.6vw,17px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:430px){.monradPlacingsGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.monradPlacingPill{padding:5px 6px}.competitionPlayerDisplayShell .competitionDisplayNext{padding:8px!important}.competitionPlayerDisplayShell .competitionDisplayNext h2{font-size:13px!important;margin-bottom:5px!important}}
