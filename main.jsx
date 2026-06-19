@@ -625,14 +625,21 @@ function CompetitionPlayerDisplayCard({competition}){
         <p>{layers.length?`Constraints: ${layers.join(' · ')}`:'No extra constraints'}</p>
       </section>
     </div>}
-    {mode!=='matchplay'&&<div className="playerDisplayGrid">
-      <section><h2>WHAT TO DO</h2><p>{competition.purpose||'Follow the competition format shown by the coach.'}</p></section>
-      <section><h2>HOW TO SCORE</h2><p>{competition.rules&&competition.rules.length?competition.rules.slice(0,3).join(' · '):'Use the displayed competition scoring.'}</p></section>
-      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{competition.tactical||'Compete clearly and adapt.'}</p></section>
-      <section><h2>CHECKERBOARD</h2><p>{cbCode}</p></section>
-      <section><h2>CONSTRAINTS</h2><p>{layers.length?layers.join(' · '):'No extra constraints selected.'}</p></section>
-      <section><h2>PLAYERS / DB</h2><p>{playerNames.length?playerNames.map(name=>`${name}: ${playerBounces[name]||'No DB'}`).join(' · '):'No players selected.'}</p></section>
-    </div>}
+    {mode!=='matchplay'&&(()=>{
+      const dbRows=playerNames.filter(name=>{
+        const value=playerBounces[name];
+        return value && value!=='No DB' && value!=='0 DB' && value!=='0';
+      });
+      const showCb=cbCode && cbCode!=='None';
+      const showLayers=layers.length>0;
+      const showDb=dbRows.length>0;
+      if(!showCb&&!showLayers&&!showDb)return null;
+      return <div className="playerDisplayGrid optionalCompetitionInfo">
+        {showCb&&<section><h2>CHECKERBOARD</h2><p>{cbCode}</p></section>}
+        {showLayers&&<section><h2>ACTIVE CONSTRAINTS</h2><p>{layers.join(' · ')}</p></section>}
+        {showDb&&<section><h2>DB ALLOCATIONS</h2><p>{dbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p></section>}
+      </div>;
+    })()}
     {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
     {mode==='monrad'&&((competition.monradRounds&&competition.monradRounds.length>0)||(competition.monradPlacingRounds&&competition.monradPlacingRounds.length>0))&&(()=>{
       const hasPlacing=(competition.monradPlacingRounds||[]).length>0;
@@ -11703,7 +11710,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v135</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v136</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
