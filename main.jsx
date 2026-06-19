@@ -1,3 +1,4 @@
+// v141 universal display/session cleanup build
 /* v135 Competition Payload Export Fix */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
@@ -69,7 +70,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v140 Competition + Invasion Display Cleanup';
+const APP_VERSION='v141 Competition + Invasion Display Cleanup';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -128,7 +129,17 @@ const ANIMAL_PAIRINGS=[
 
 const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact'];
 const PERCEPTION_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact'];
-const CB_CODES=['None','[6-3]','[7-3]','[5-4]','[8-4]','[6-4]','[8-1]','[5-3]','[7-2]','[6-4] + [8-1]','[5-3] + [7-2]','[6-3] + [8-1]','[5-4] + [7-2]'];
+const CB_CODES=[
+  'None',
+  '[5-1]','[5-2]','[5-3]','[5-4]',
+  '[6-1]','[6-2]','[6-3]','[6-4]',
+  '[7-1]','[7-2]','[7-3]','[7-4]',
+  '[8-1]','[8-2]','[8-3]','[8-4]',
+  '[5-4] + [8-1]','[6-3] + [7-2]','[6-4] + [8-1]','[5-3] + [7-2]',
+  '[5-4] + [6-3]','[8-1] + [7-2]','[5-1] + [6-2]','[5-2] + [6-1]',
+  '[7-3] + [8-4]','[7-4] + [8-3]','[5-4] + [8-1] + [6-3]',
+  '[6-3] + [7-2] + [5-4]','[6-4] + [8-1] + [5-3]','Custom'
+];
 
 const ATL_LISTS={
 btlCount:['0 BTL shots','1 BTL shot','2 BTL shots','3 BTL shots'],
@@ -136,7 +147,7 @@ side:['Both sides','Right side only','Left side only'],
 consecutive:['No','Yes'],
 shotChoice:['Any shot','Straight drop','Crosscourt drop','Boast','Drive','Kill'],
 method:['Players choice','Must be volley','No volley'],
-cbRef:['None','[8-1]','[7-2]','[6-4]','[5-3]','[5-4]','[6-3]']
+cbRef:CB_CODES
 };
 
 const DEFAULT_ATL={btlCount:'0 BTL shots',side:'Both sides',consecutive:'No',shot1:'Any shot',shot2:'Any shot',shot3:'Any shot',method1:'Players choice',method2:'Players choice',method3:'Players choice',cbRef:'None'};
@@ -458,7 +469,6 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section><h2>WHAT TO DO</h2><p>{what}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
-      <section><h2>SCORING LOGIC</h2><p>{score}</p></section>
       {layers.length===0&&constraintText&&constraintText!=='No extra constraints selected.'&&<section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>}
       {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
@@ -869,7 +879,7 @@ function ProjectionView({session,setScreen,players=[]}){
     }
     function projTeamPlayerLine(team,name){
       const role=projPlayerRole(team,name);
-      return <div key={name} className={role==='invading'?'projectorPlayerLine activeInvader':role==='next invader'?'projectorPlayerLine nextInvader':'projectorPlayerLine'}>
+      return <div key={name} className={role==='invading'?'player displayPlayerLine activeInvader':role==='next invader'?'player displayPlayerLine nextInvader':'player displayPlayerLine'}>
         <span>{name} <em className="playerDbInline">{competitionProjection.playerBounces?.[name]||'No DB'}</em></span>{role&&<strong>{role}</strong>}
       </div>;
     }
@@ -913,7 +923,7 @@ function ProjectionView({session,setScreen,players=[]}){
 
     {
       const teamScores=[...teams].map(team=>({team,score:projTeamPoints(team)})).sort((a,b)=>b.score-a.score);
-      return <div className="projectionPage invasionOnlyProjector invasionPointsCleanView">
+      return <div className="projectionPage invasionOnlyPlayer Display invasionPointsCleanView">
         <div className="projectionTop">
           <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
           <div>
@@ -958,7 +968,7 @@ function ProjectionView({session,setScreen,players=[]}){
       </div>;
     }
 
-    return <div className="projectionPage invasionOnlyProjector">
+    return <div className="projectionPage invasionOnlyPlayer Display">
       <div className="projectionTop">
         <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
         <div>
@@ -967,8 +977,8 @@ function ProjectionView({session,setScreen,players=[]}){
         </div>
       </div>
 
-      <div className="invasionProjectorBoard invasionCleanBoard">
-        <div className="invasionProjectorHeader">
+      <div className="invasionPlayer DisplayBoard invasionCleanBoard">
+        <div className="invasionPlayer DisplayHeader">
           <span>PLAYER DISPLAY</span>
           <h1>Invasion Game</h1>
           <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Snake seeded teams · Random court allocation</p>
@@ -2920,7 +2930,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
-        <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="primaryBtn" onClick={()=>startPerceptionProjection(active)}>START PROJECTOR</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button><button className="secondaryBtn dangerBtn" onClick={stopPerceptionProjection}>STOP PROJECTOR</button></div></div>
+        <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="primaryBtn" onClick={()=>startPerceptionProjection(active)}>SHOW PLAYER DISPLAY</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button><button className="secondaryBtn dangerBtn" onClick={stopPerceptionProjection}>HIDE PLAYER DISPLAY</button></div></div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
     </div>
@@ -3216,6 +3226,8 @@ function stopRotationProjection(){
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
 function updateModifierScore(index,layer,value){saveSessionSnapshot();const updated=clone(session);updated[index].modifierScores={...(updated[index].modifierScores||{}),[layer]:value};setSession(updated);}
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
+function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
+function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
@@ -3223,7 +3235,7 @@ return <div className="page sessionBuilderPage">
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index}>
-<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration} min · {game.format}</strong><h3>{game.title}</h3></div><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div>
+<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
@@ -3235,10 +3247,10 @@ return <div className="page sessionBuilderPage">
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="gameActionBar"><strong>Game Actions</strong><div>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
-<button className="primaryBtn" onClick={()=>startRotationProjection(index)}>START PROJECTOR</button>
+<button className="primaryBtn" onClick={()=>startRotationProjection(index)}>SHOW PLAYER DISPLAY</button>
 <button className="primaryBtn" onClick={()=>setScreen('playerDisplay')}>PLAYER VIEW</button>
 <button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Player display link copied. Open it on the phone connected to the screen.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
-<button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>STOP PROJECTOR</button>
+<button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>HIDE PLAYER DISPLAY</button>
 </div></div>
 </>}
 </div>)}
@@ -5881,19 +5893,8 @@ function UniversalDBHandicapPanel({onAddToSession,setScreen}){
   function clearDb(){setEnabled(false);setAllocations({});}
   function activeSummary(){return presentPlayers.length?presentPlayers.map(name=>`${name}: ${allocations[name]||'No DB'}`).join(' · '):'No present players selected';}
   function addDbCard(){
-    if(!onAddToSession)return;
-    onAddToSession({
-      id:Date.now()+Math.random(),
-      title:'DB Handicap Allocation',
-      category:'Universal Overlay',
-      duration:0,
-      task:'Apply present-player double-bounce handicaps to the selected game.',
-      scoring:'Base game scoring remains unchanged. DB handicap only changes each player’s allowed bounce allocation.',
-      rationale:'Levels mixed-standard groups while keeping the rally live and representative.',
-      coach:'Apply these DB allocations across the current game or rotation: '+activeSummary(),
-      layers:['DB Handicap','Double Bounce'],
-      playerView:'DB handicap allocations: '+activeSummary()
-    });
+    localStorage.setItem(DB_HANDICAP_KEY,JSON.stringify({enabled:true,playersText:'',allocations,source:'presentPlayers'}));
+    alert('DB handicap saved as a modifier. It will attach to the selected game/rotation, not become its own session rotation.');
   }
 
   return <div className="universalDbPanel">
@@ -5907,7 +5908,7 @@ function UniversalDBHandicapPanel({onAddToSession,setScreen}){
         {presentPlayers.map(name=><div className="dbAllocationRow" key={name}><span>{name}</span><select value={allocations[name]||'No DB'} onChange={e=>setDb(name,e.target.value)}>{dbOptions.map(opt=><option key={opt}>{opt}</option>)}</select></div>)}
       </div>
       <div className="dbSummaryBox"><strong>Active DB Rules</strong><p>{activeSummary()}</p></div>
-      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addDbCard();}} disabled={!presentPlayers.length}>Add DB Handicap To Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addDbCard(); if(setScreen)setScreen('sessions');}} disabled={!presentPlayers.length}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();if(setScreen)setScreen('sessions');}}>View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearDb();}}>Clear DB Handicap</button></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addDbCard();}} disabled={!presentPlayers.length}>Save DB Handicap</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addDbCard(); if(setScreen)setScreen('sessions');}} disabled={!presentPlayers.length}>Save + View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();if(setScreen)setScreen('sessions');}}>View Session</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearDb();}}>Clear DB Handicap</button></div>
     </>}
   </div>;
 }
@@ -7118,8 +7119,8 @@ function Games({setSession,setScreen}){
           <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
           {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
           <div className="actionRow">
-            <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>START PROJECTOR</button>
-            <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>STOP PROJECTOR</button>
+            <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>SHOW PLAYER DISPLAY</button>
+            <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>HIDE PLAYER DISPLAY</button>
             <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);setScreen('sessions');}}>Add + View Session</button><button type="button" onClick={()=>setScreen('sessions')}>View Session</button><button type="button" onClick={()=>setScreen('playerDisplay')}>Player View</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
@@ -7808,7 +7809,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     },50);
   }
 
-  function startInvasionProjector(){
+  function startInvasionPlayer Display(){
     const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
     buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
@@ -7848,7 +7849,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }catch{}
   }
 
-  function stopInvasionProjector(){
+  function stopInvasionPlayer Display(){
     setInvasionGameStarted(false);
     setShowInvasionDashboard(false);
     setShowProjection(false);
@@ -8948,8 +8949,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                   :'Starts the live points competition and updates Player Display.'}</p>
               </div>
               <div className="invasionStartButtons">
-                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START GAME / PLAYER DISPLAY</button>
-                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionProjector}>STOP / END GAME</button>
+                <button type="button" className="primaryBtn" onClick={startInvasionPlayer Display}>START GAME / PLAYER DISPLAY</button>
+                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayer Display}>STOP / END GAME</button>
               </div>
             </div>
 
@@ -9826,34 +9827,34 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
     ?players.filter(player=>player.present)
     :[];
 
-  function projectorTeamBaseLives(team,competitionProjection){
+  function player displayTeamBaseLives(team,competitionProjection){
     const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
     if(selected>0) return selected;
     const playerCount=(team.players||[]).length||1;
     const baseTotal=competitionProjection?.invasionFairBaseTotal||playerCount;
     return Math.max(1,Math.floor(baseTotal/playerCount));
   }
-  function projectorTeamCarry(team,competitionProjection){
+  function player displayTeamCarry(team,competitionProjection){
     return competitionProjection?.invasionCarryLives?.[team.id]||0;
   }
-  function projectorTeamStartLives(team,competitionProjection){
-    return projectorTeamBaseLives(team,competitionProjection)+projectorTeamCarry(team,competitionProjection);
+  function player displayTeamStartLives(team,competitionProjection){
+    return player displayTeamBaseLives(team,competitionProjection)+player displayTeamCarry(team,competitionProjection);
   }
 
-  function projectorCurrentInvader(team,competitionProjection){
+  function player displayCurrentInvader(team,competitionProjection){
     const players=(team&&team.players)||[];
     if(!players.length) return 'Waiting';
     const round=competitionProjection?.invasionPlayerRound||0;
     return players[round % players.length];
   }
 
-  function projectorDefendingTeamForCourt(idx,competitionProjection){
+  function player displayDefendingTeamForCourt(idx,competitionProjection){
     const teams=competitionProjection?.invasionTeams||[];
     if(!teams.length) return null;
     return teams[idx % teams.length];
   }
 
-  function projectorInvadingTeamForCourt(idx,competitionProjection){
+  function player displayInvadingTeamForCourt(idx,competitionProjection){
     const teams=competitionProjection?.invasionTeams||[];
     if(!teams.length) return null;
     const n=teams.length;
@@ -9950,29 +9951,29 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 
         {competitionProjection&&<>
           {competitionProjection.mode==='invasion'&&(
-            <div className="invasionProjectorBoard">
-              <div className="invasionProjectorHeader">
+            <div className="invasionPlayer DisplayBoard">
+              <div className="invasionPlayer DisplayHeader">
                 <span>LIVE COMPETITION BOARD</span>
                 <h1>Invasion Game</h1>
                 <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Rotation {competitionProjection.invasionRotationStep||0}</p>
               </div>
 
-              <div className="finalProjectorSummary">
+              <div className="finalPlayer DisplaySummary">
                 <div><b>Player rotation</b><strong>{(competitionProjection.invasionPlayerRound||0)+1}</strong></div>
                 <div><b>Court rotation</b><strong>{(competitionProjection.invasionCourtRound||0)+1}</strong></div>
                 <div><b>Mode</b><strong>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random courts':'Fixed courts'}</strong></div>
               </div>
 
               {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
-                <div className="finalProjectorCourts">
+                <div className="finalPlayer DisplayCourts">
                   {competitionProjection.invasionTeams.map((_,idx)=>{
-                    const defending=projectorDefendingTeamForCourt(idx,competitionProjection);
-                    const invading=projectorInvadingTeamForCourt(idx,competitionProjection);
-                    const start=invading?projectorTeamStartLives(invading,competitionProjection):0;
+                    const defending=player displayDefendingTeamForCourt(idx,competitionProjection);
+                    const invading=player displayInvadingTeamForCourt(idx,competitionProjection);
+                    const start=invading?player displayTeamStartLives(invading,competitionProjection):0;
                     const finish=invading?competitionProjection.invasionFinishLives?.[invading.id]:undefined;
-                    return <div className="finalProjectorCourtCard" key={`proj-final-${idx}`}>
+                    return <div className="finalPlayer DisplayCourtCard" key={`proj-final-${idx}`}>
                       <h2>Court {idx+1}</h2>
-                      <p><b>Invader:</b> {invading?projectorCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
+                      <p><b>Invader:</b> {invading?player displayCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
                       <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
                       <div className="finalLifeNumbers">
                         <span>Starts with</span><strong>{start}</strong>
@@ -9984,13 +9985,13 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
               )}
 
               {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
-                <div className="finalProjectorNextStarts">
+                <div className="finalPlayer DisplayNextStarts">
                   <b>Next lives</b>
-                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>)}
+                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {player displayTeamStartLives(team,competitionProjection)}</span>)}
                 </div>
               )}
 
-              <div className="invasionProjectorRules">
+              <div className="invasionPlayer DisplayRules">
                 <strong>Essential Rules</strong>
                 <div className="rulePillGrid">
                   <span>{competitionProjection.invasionFormat==='lives'?'Defenders serve':'Invader serves'}</span>
@@ -9998,30 +9999,30 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                   <span>{competitionProjection.invasionCourtAssignmentMode==='random'?'Random court selection':'Fixed court rotation'}</span>
                   <span>Double-bounce handicaps shown below</span>
                 </div>
-                <div className="projectorBaseLivesGrid">
+                <div className="player displayBaseLivesGrid">
                   {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=>(
                     <div key={team.id}>
                       <b>{team.name}</b>
-                      <p>Base lives/player: {projectorTeamBaseLives(team,competitionProjection)}</p>
-                      <p>Carry-over: {projectorTeamCarry(team,competitionProjection)}</p>
-                      <p>Next start: {projectorTeamStartLives(team,competitionProjection)}</p>
+                      <p>Base lives/player: {player displayTeamBaseLives(team,competitionProjection)}</p>
+                      <p>Carry-over: {player displayTeamCarry(team,competitionProjection)}</p>
+                      <p>Next start: {player displayTeamStartLives(team,competitionProjection)}</p>
                     </div>
                   )):<p>No teams generated yet.</p>}
                 </div>
-                <div className="projectorDbStrip">
+                <div className="player displayDbStrip">
                   <b>Double-bounce:</b>
                   {competitionProjection.playerNames&&competitionProjection.playerNames.length?competitionProjection.playerNames.map(name=><span key={name}>{name}: {competitionProjection.playerBounces?.[name]||'No DB'}</span>):<span>No players selected</span>}
                 </div>
               </div>
 
-              <div className="invasionProjectorCourts">
+              <div className="invasionPlayer DisplayCourts">
                 <strong>Live Courts</strong>
-                <div className="projectorCourtGrid">
+                <div className="player displayCourtGrid">
                   {competitionProjection.invasionCourtAssignments&&competitionProjection.invasionCourtAssignments.length?competitionProjection.invasionCourtAssignments.map(assign=>{
                     const invadingTeam=(competitionProjection.invasionTeams||[]).find(team=>team.id===assign.invadingTeamId);
-                    const startLives=invadingTeam?projectorTeamStartLives(invadingTeam,competitionProjection):competitionProjection.invasionStartingLives||0;
+                    const startLives=invadingTeam?player displayTeamStartLives(invadingTeam,competitionProjection):competitionProjection.invasionStartingLives||0;
                     const posted=competitionProjection.invasionFinishLives?.[assign.invadingTeamId];
-                    return <div className="projectorCourtLiveCard" key={`${assign.court}-${assign.invadingTeamId}`}>
+                    return <div className="player displayCourtLiveCard" key={`${assign.court}-${assign.invadingTeamId}`}>
                       <h3>Court {assign.court}</h3>
                       <p><b>Invader:</b> {assign.invader} · {assign.invadingTeamName}</p>
                       <p><b>Defending team:</b> {assign.defendingTeamName}</p>
@@ -10038,7 +10039,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                 <div className="nextInvasionStarts">
                   <strong>Next Invasion Start Lives</strong>
                   <div>
-                    {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {projectorTeamStartLives(team,competitionProjection)}</span>):<span>No teams yet</span>}
+                    {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {player displayTeamStartLives(team,competitionProjection)}</span>):<span>No teams yet</span>}
                   </div>
                 </div>
               )}
@@ -10139,10 +10140,10 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             </div>
 
             {competitionProjection.invasionFormat==='lives'&&(
-              <div className="projectorTeamGrid">
+              <div className="player displayTeamGrid">
                 {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length
                   ?competitionProjection.invasionTeams.map(team=>(
-                    <div className="projectorTeamCard" key={team.id}>
+                    <div className="player displayTeamCard" key={team.id}>
                       <h3>{team.name} · Court {team.court}</h3>
                       <p>{team.players&&team.players.length?team.players.join(' · '):'Waiting for players'}</p>
                       <strong>{competitionProjection.invasionTeamLives?.[team.id] ?? competitionProjection.invasionStartingLives ?? 0} lives</strong>
@@ -10154,10 +10155,10 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             )}
 
             {competitionProjection.invasionFormat==='points'&&(
-              <div className="projectorTeamGrid">
+              <div className="player displayTeamGrid">
                 {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length
                   ?competitionProjection.invasionTeams.map(team=>(
-                    <div className="projectorTeamCard" key={team.id}>
+                    <div className="player displayTeamCard" key={team.id}>
                       <h3>{team.name} · Court {team.court}</h3>
                       <p>{team.players&&team.players.length?team.players.join(' · '):'Waiting for players'}</p>
                       <strong>{competitionProjection.invasionTeamPoints?.[team.id]||0} points</strong>
@@ -10169,15 +10170,15 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             )}
 
             {competitionProjection.invasionFormat==='points'&&competitionProjection.invasionPlayerPoints&&Object.keys(competitionProjection.invasionPlayerPoints).length>0&&(
-              <div className="projectorPlayerScores">
+              <div className="player displayPlayerScores">
                 {Object.entries(competitionProjection.invasionPlayerPoints).map(([name,score])=><span key={name}>{name}: {score}</span>)}
               </div>
             )}
 
             {competitionProjection.invasionCourtAssignments&&competitionProjection.invasionCourtAssignments.length>0&&(
-              <div className="projectorCourtAssignments">
+              <div className="player displayCourtAssignments">
                 {competitionProjection.invasionCourtAssignments.map(assign=>(
-                  <div className="projectorCourtCard" key={`${assign.court}-${assign.defendingTeamId}`}>
+                  <div className="player displayCourtCard" key={`${assign.court}-${assign.defendingTeamId}`}>
                     <h3>Court {assign.court}</h3>
                     <p><strong>Defending:</strong> {assign.defendingTeamName}</p>
                     <p><strong>Invader:</strong> {assign.invader} · {assign.invadingTeamName}</p>
@@ -10188,7 +10189,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
             )}
 
             {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
-              <div className="projectorFairLivesTable">
+              <div className="player displayFairLivesTable">
                 <strong>Fair Lives / Carry-Over</strong>
                 {competitionProjection.invasionTeams.map(team=>{
                   const players=(team.players||[]).length||1;
@@ -10649,8 +10650,8 @@ function LiveSessionDelivery({session=[],setScreen}){
         <button className="primaryBtn" onClick={()=>setIsRunning(!isRunning)}>{isRunning?'Pause':'Start'}</button>
         <button className="secondaryBtn" onClick={()=>setTimerSeconds(0)}>Reset Timer</button>
         <button className="primaryBtn" onClick={nextItem}>Next</button>
-        <button className="primaryBtn" onClick={()=>startCoachProjectionSession(session,activeIndex)}>START PROJECTOR</button>
-        <button className="secondaryBtn dangerBtn" onClick={stopCoachProjectionSession}>STOP PROJECTOR</button>
+        <button className="primaryBtn" onClick={()=>startCoachProjectionSession(session,activeIndex)}>SHOW PLAYER DISPLAY</button>
+        <button className="secondaryBtn dangerBtn" onClick={stopCoachProjectionSession}>HIDE PLAYER DISPLAY</button>
       </div>
       <div className="infoBox"><strong>What To Run</strong><p>{active.task||active.description||'Run the selected activity.'}</p></div>
       {active.scoring&&<div className="infoBox"><strong>Scoring</strong><p>{active.scoring}</p></div>}

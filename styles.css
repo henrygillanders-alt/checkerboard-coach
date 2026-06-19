@@ -8180,3 +8180,16 @@ button.mentalSkillsTile p{
 .compactFixtureStrip{margin-top:8px;}
 @media(max-width:700px){.competitionRuleGrid{grid-template-columns:1fr 1fr}.invasionCourtGrid{grid-template-columns:1fr 1fr}.competitionDisplayLayout{gap:8px}.competitionDisplayHero,.competitionDisplayNext,.competitionDisplayDraw,.competitionDisplayRulesUnified{padding:9px 10px}.compactCourtRow{grid-template-columns:auto 1fr;gap:5px}.compactCourtRow em{grid-column:1/-1}}
 @media(max-width:430px){.competitionRuleGrid{grid-template-columns:1fr}.invasionCourtGrid{grid-template-columns:1fr}.competitionPlayerDisplayShell .playerDisplayTop h1{font-size:22px}.competitionPlayerSummary{font-size:12px}}
+
+
+/* v141 session timing + compact display cleanup */
+.rotationControls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.rotationControls label{display:flex;gap:6px;align-items:center;font-weight:800;color:#cfe3ff}
+.rotationControls input{width:72px;padding:8px 10px;border-radius:10px;background:#071426;color:#fff;border:1px solid rgba(120,170,255,.45);font-weight:900}
+.playerDisplayGrid section:empty{display:none}
+.invasionPlayerCompactDisplay .competitionRuleGrid{margin-top:8px}
+.invasionCourtGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.invasionCourtCard{padding:12px 14px;border:1px solid rgba(91,220,255,.35);border-radius:14px;background:rgba(10,31,52,.72)}
+.monradPlacingsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
+.monradPlacingPill{font-size:.95rem;line-height:1.15;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(120,170,255,.25)}
+@media(max-width:700px){.rotationTop{align-items:flex-start}.rotationControls{justify-content:flex-start}.monradPlacingsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.monradPlacingPill{font-size:.85rem;padding:6px 8px}}
