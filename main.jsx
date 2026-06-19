@@ -9827,34 +9827,34 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
     ?players.filter(player=>player.present)
     :[];
 
-  function player displayTeamBaseLives(team,competitionProjection){
+  function playerDisplayTeamBaseLives(team,competitionProjection){
     const selected=Number(competitionProjection?.invasionStartingLives||competitionProjection?.invasionLives);
     if(selected>0) return selected;
     const playerCount=(team.players||[]).length||1;
     const baseTotal=competitionProjection?.invasionFairBaseTotal||playerCount;
     return Math.max(1,Math.floor(baseTotal/playerCount));
   }
-  function player displayTeamCarry(team,competitionProjection){
+  function playerDisplayTeamCarry(team,competitionProjection){
     return competitionProjection?.invasionCarryLives?.[team.id]||0;
   }
-  function player displayTeamStartLives(team,competitionProjection){
-    return player displayTeamBaseLives(team,competitionProjection)+player displayTeamCarry(team,competitionProjection);
+  function playerDisplayTeamStartLives(team,competitionProjection){
+    return playerDisplayTeamBaseLives(team,competitionProjection)+playerDisplayTeamCarry(team,competitionProjection);
   }
 
-  function player displayCurrentInvader(team,competitionProjection){
+  function playerDisplayCurrentInvader(team,competitionProjection){
     const players=(team&&team.players)||[];
     if(!players.length) return 'Waiting';
     const round=competitionProjection?.invasionPlayerRound||0;
     return players[round % players.length];
   }
 
-  function player displayDefendingTeamForCourt(idx,competitionProjection){
+  function playerDisplayDefendingTeamForCourt(idx,competitionProjection){
     const teams=competitionProjection?.invasionTeams||[];
     if(!teams.length) return null;
     return teams[idx % teams.length];
   }
 
-  function player displayInvadingTeamForCourt(idx,competitionProjection){
+  function playerDisplayInvadingTeamForCourt(idx,competitionProjection){
     const teams=competitionProjection?.invasionTeams||[];
     if(!teams.length) return null;
     const n=teams.length;
@@ -9967,13 +9967,13 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
               {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
                 <div className="finalPlayer DisplayCourts">
                   {competitionProjection.invasionTeams.map((_,idx)=>{
-                    const defending=player displayDefendingTeamForCourt(idx,competitionProjection);
-                    const invading=player displayInvadingTeamForCourt(idx,competitionProjection);
-                    const start=invading?player displayTeamStartLives(invading,competitionProjection):0;
+                    const defending=playerDisplayDefendingTeamForCourt(idx,competitionProjection);
+                    const invading=playerDisplayInvadingTeamForCourt(idx,competitionProjection);
+                    const start=invading?playerDisplayTeamStartLives(invading,competitionProjection):0;
                     const finish=invading?competitionProjection.invasionFinishLives?.[invading.id]:undefined;
                     return <div className="finalPlayer DisplayCourtCard" key={`proj-final-${idx}`}>
                       <h2>Court {idx+1}</h2>
-                      <p><b>Invader:</b> {invading?player displayCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
+                      <p><b>Invader:</b> {invading?playerDisplayCurrentInvader(invading,competitionProjection):'Waiting'} · {invading?.name||''}</p>
                       <p><b>Defending team:</b> {defending?.name||'Waiting'}</p>
                       <div className="finalLifeNumbers">
                         <span>Starts with</span><strong>{start}</strong>
@@ -9987,7 +9987,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
               {competitionProjection.invasionFormat==='lives'&&competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length>0&&(
                 <div className="finalPlayer DisplayNextStarts">
                   <b>Next lives</b>
-                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {player displayTeamStartLives(team,competitionProjection)}</span>)}
+                  {competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {playerDisplayTeamStartLives(team,competitionProjection)}</span>)}
                 </div>
               )}
 
@@ -10003,9 +10003,9 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                   {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=>(
                     <div key={team.id}>
                       <b>{team.name}</b>
-                      <p>Base lives/player: {player displayTeamBaseLives(team,competitionProjection)}</p>
-                      <p>Carry-over: {player displayTeamCarry(team,competitionProjection)}</p>
-                      <p>Next start: {player displayTeamStartLives(team,competitionProjection)}</p>
+                      <p>Base lives/player: {playerDisplayTeamBaseLives(team,competitionProjection)}</p>
+                      <p>Carry-over: {playerDisplayTeamCarry(team,competitionProjection)}</p>
+                      <p>Next start: {playerDisplayTeamStartLives(team,competitionProjection)}</p>
                     </div>
                   )):<p>No teams generated yet.</p>}
                 </div>
@@ -10020,7 +10020,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                 <div className="player displayCourtGrid">
                   {competitionProjection.invasionCourtAssignments&&competitionProjection.invasionCourtAssignments.length?competitionProjection.invasionCourtAssignments.map(assign=>{
                     const invadingTeam=(competitionProjection.invasionTeams||[]).find(team=>team.id===assign.invadingTeamId);
-                    const startLives=invadingTeam?player displayTeamStartLives(invadingTeam,competitionProjection):competitionProjection.invasionStartingLives||0;
+                    const startLives=invadingTeam?playerDisplayTeamStartLives(invadingTeam,competitionProjection):competitionProjection.invasionStartingLives||0;
                     const posted=competitionProjection.invasionFinishLives?.[assign.invadingTeamId];
                     return <div className="player displayCourtLiveCard" key={`${assign.court}-${assign.invadingTeamId}`}>
                       <h3>Court {assign.court}</h3>
@@ -10039,7 +10039,7 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
                 <div className="nextInvasionStarts">
                   <strong>Next Invasion Start Lives</strong>
                   <div>
-                    {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {player displayTeamStartLives(team,competitionProjection)}</span>):<span>No teams yet</span>}
+                    {competitionProjection.invasionTeams&&competitionProjection.invasionTeams.length?competitionProjection.invasionTeams.map(team=><span key={team.id}>{team.name}: {playerDisplayTeamStartLives(team,competitionProjection)}</span>):<span>No teams yet</span>}
                   </div>
                 </div>
               )}
