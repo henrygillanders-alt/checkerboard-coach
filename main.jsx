@@ -12,8 +12,15 @@ const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
 function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
 function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
-function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';}}
-function buildLivePlayerViewUrl(roomId){const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(roomId)}`;}
+function getPersistentLiveRoomId(){
+  try{
+    let room=localStorage.getItem(LIVE_ROOM_KEY);
+    if(!room){room=makeLiveRoomId();localStorage.setItem(LIVE_ROOM_KEY,room);}
+    return room;
+  }catch{return 'cb-checkerboard-live';}
+}
+function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';} }
+function buildLivePlayerViewUrl(roomId){const room=roomId||getPersistentLiveRoomId();const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(room)}`;}
 function supabaseRestHeaders(extra={}){
   // Supabase REST expects both apikey and Authorization for browser writes with RLS.
   // This works for the new sb_publishable_ keys as well as legacy eyJ anon keys.
@@ -70,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v141 Competition + Invasion Display Cleanup';
+const APP_VERSION='v143 Persistent Player Display URL';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -427,7 +434,16 @@ function buildUniversalPlayerViewUrl(payload){
   return `${base}?pv=${encoded}`;
 }
 function buildPlayerDisplayUrl(game){
-  return buildUniversalPlayerViewUrl({type:'game',game:normaliseGameCard(game)});
+  const room=getPersistentLiveRoomId();
+  const clean=normaliseGameCard(game);
+  writeLivePlayerRoom(room,'game',{type:'game',game:clean,title:clean?.title||'Game',updatedAt:new Date().toISOString()});
+  return buildLivePlayerViewUrl(room);
+}
+async function copyLiveGameLink(game){
+  const room=getPersistentLiveRoomId();
+  const clean=normaliseGameCard(game);
+  const ok=await writeLivePlayerRoom(room,'game',{type:'game',game:clean,title:clean?.title||'Game',updatedAt:new Date().toISOString()});
+  return {url:buildLivePlayerViewUrl(room),ok};
 }
 
 function encodePlayerCompetition(state){
@@ -3218,9 +3234,18 @@ function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!
 function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
 function startRotationProjection(index){
   startCoachProjectionSession(session,index);
+  const game=session[index]||session[0];
+  if(game) copyLiveGameLink(game);
 }
 function stopRotationProjection(){
   stopCoachProjectionSession();
+}
+async function pushSessionPlayerDisplay(index=0){
+  const game=session[index]||session[0];
+  if(!game){alert('No session game to push to Player Display.');return;}
+  const {url,ok}=await copyLiveGameLink(game);
+  try{if(navigator.clipboard) await navigator.clipboard.writeText(url);}catch{}
+  alert(ok?'Player Display updated. Same link remains active on the second device.':'Player Display link copied, but live sync did not confirm.');
 }
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
@@ -3229,7 +3254,7 @@ function updateCb(index,code){saveSessionSnapshot();const updated=clone(session)
 function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
 function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
 return <div className="page sessionBuilderPage">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>setScreen('playerDisplay')}>Player Display</button></div></div>
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
 {showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
 <h2>Session Rotations</h2>
@@ -3247,10 +3272,8 @@ return <div className="page sessionBuilderPage">
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="gameActionBar"><strong>Game Actions</strong><div>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
-<button className="primaryBtn" onClick={()=>startRotationProjection(index)}>SHOW PLAYER DISPLAY</button>
-<button className="primaryBtn" onClick={()=>setScreen('playerDisplay')}>PLAYER VIEW</button>
-<button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Player display link copied. Open it on the phone connected to the screen.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
-<button className="secondaryBtn dangerBtn" onClick={stopRotationProjection}>HIDE PLAYER DISPLAY</button>
+<button className="primaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>PUSH PLAYER DISPLAY</button>
+<button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Persistent Player Display link copied. This same link updates when you push any game/session/competition.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
 </div></div>
 </>}
 </div>)}
@@ -7310,7 +7333,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }
   });
   const [showInvasionDashboard,setShowInvasionDashboard]=useState(false);
-  const [liveRoomId,setLiveRoomId]=useState(()=>{try{return localStorage.getItem(LIVE_ROOM_KEY)||'';}catch{return ''}});
+  const [liveRoomId,setLiveRoomId]=useState(()=>getPersistentLiveRoomId());
   const [activeInvasionCourt,setActiveInvasionCourt]=useState(1);
   const [invasionRotationStep,setInvasionRotationStep]=useState(0);
   const [invasionEliminated,setInvasionEliminated]=useState('');
