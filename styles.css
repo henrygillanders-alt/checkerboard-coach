@@ -8154,3 +8154,29 @@ button.mentalSkillsTile p{
   .invasionCourtCard strong{font-size:15px!important;}
   .invasionCourtCard span,.invasionCourtCard em{font-size:12px!important;line-height:1.05!important;}
 }
+
+
+/* v140 Competition + Invasion Display Cleanup */
+.competitionDisplayRulesUnified{background:#071827;border:1px solid #2f4d72;border-radius:14px;padding:10px 12px;margin:8px 0;}
+.competitionDisplayRulesUnified h2{margin:0 0 6px 0;color:#ffd980;font-size:14px;font-weight:900;letter-spacing:.04em;}
+.competitionDisplayRulesUnified p{margin:0 0 8px 0;color:#e5edf8;font-size:13px;line-height:1.35;font-weight:800;}
+.competitionRuleGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}
+.competitionRuleGrid span{background:#0b1020;border:1px solid #35567e;border-radius:8px;padding:6px 8px;color:#dce8ff;font-size:12px;line-height:1.25;font-weight:800;}
+.competitionActiveExtras{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px 0;}
+.competitionActiveExtras span{background:#102844;border:1px solid #5e83be;border-radius:999px;padding:6px 10px;color:#dce8ff;font-size:12px;font-weight:900;}
+.competitionActiveExtras b{color:#ffd980;margin-right:4px;}
+.competitionLeagueDisplay,.competitionNsslDisplay{margin-top:8px;}
+.invasionPlayerTightV140{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px;}
+.invasionPlayerTightV140 .invasionDisplayInfo{padding:10px 12px;border-radius:14px;margin:0;}
+.invasionPlayerTightV140 .invasionDisplayInfo h2,.invasionCourtCards h2{font-size:14px;margin:0 0 6px 0;color:#ffd980;}
+.invasionPlayerTightV140 .invasionDisplayInfo p{font-size:13px;margin:0 0 6px 0;font-weight:900;}
+.invasionCourtCards{background:#071827;border:1px solid #2f4d72;border-radius:14px;padding:10px 12px;margin:0;}
+.invasionCourtGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.invasionCourtCard{background:#0b1020;border:1px solid #35567e;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-height:0;}
+.invasionCourtCard b{color:#ffd980;font-size:12px;text-transform:uppercase;}
+.invasionCourtCard strong{font-size:15px;color:#fff;line-height:1.1;}
+.invasionCourtCard span{font-size:12px;color:#dce8ff;line-height:1.25;}
+.invasionCourtCard em{font-size:12px;color:#86efac;font-style:normal;font-weight:900;line-height:1.25;}
+.compactFixtureStrip{margin-top:8px;}
+@media(max-width:700px){.competitionRuleGrid{grid-template-columns:1fr 1fr}.invasionCourtGrid{grid-template-columns:1fr 1fr}.competitionDisplayLayout{gap:8px}.competitionDisplayHero,.competitionDisplayNext,.competitionDisplayDraw,.competitionDisplayRulesUnified{padding:9px 10px}.compactCourtRow{grid-template-columns:auto 1fr;gap:5px}.compactCourtRow em{grid-column:1/-1}}
+@media(max-width:430px){.competitionRuleGrid{grid-template-columns:1fr}.invasionCourtGrid{grid-template-columns:1fr}.competitionPlayerDisplayShell .playerDisplayTop h1{font-size:22px}.competitionPlayerSummary{font-size:12px}}

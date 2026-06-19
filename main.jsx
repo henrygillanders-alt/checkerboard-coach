@@ -69,7 +69,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v137 Peak Week + Competition Display Batch';
+const APP_VERSION='v140 Competition + Invasion Display Cleanup';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -519,6 +519,66 @@ function CompetitionPlayerDisplayCard({competition}){
           :mode==='nsl'
             ?`NSSL · Period ${competition.nslActivePeriod||1}`
             :'Competition display';
+
+  const activeDbRows=playerNames.filter(name=>{
+    const value=playerBounces[name];
+    return value && value!=='No DB' && value!=='0 DB' && value!=='0';
+  });
+  const modeRules={
+    invasion:[
+      'Invader puts ball out = -1 life',
+      'Invader hits into balcony = -3 lives',
+      'Stop when one invader loses all lives',
+      'Rotate courts / invaders using the selected format'
+    ],
+    roundRobin:[
+      'Each player plays the scheduled opponents in the box / league.',
+      'Record match result after each match.',
+      'Rank by wins, then points / game difference where available.'
+    ],
+    monrad:[
+      'Players are paired by current pathway / record.',
+      'Enter each result to progress the next round or placing pathway.',
+      'Final placings show only when the pathway is complete.'
+    ],
+    matchplay:[
+      'Play the current match and save the result.',
+      'Winner progresses to the next scheduled opponent where available.'
+    ],
+    nsl:[
+      'Team / ladder competition using periods and score pressure.',
+      'Update team scores during each period.',
+      'Power play and overtime rules apply when selected.'
+    ]
+  };
+  const modeScoring={
+    invasion: competition.invasionFormat==='lives'
+      ? 'Lives format: invader loses lives under pressure. Out = -1. Balcony = -3. Stop when one invader reaches 0 lives.'
+      : 'Points format: teams score through successful invasion rotations and court outcomes.',
+    roundRobin:'Win match = match win. Standings update from saved match results.',
+    monrad:'Save each match result. Current round, completed results and placing pathways update from saved results.',
+    matchplay:`${competition.matchScoring||'PAR 11'} · ${competition.scoringMode==='custom'?'Custom / Timed':'Normal scoring'}`,
+    nsl:'Team score accumulates across periods. Period / power play status shown live.'
+  };
+  function CompetitionRulesPanel({compact=false}){
+    const rules=modeRules[mode]||['Follow the selected competition format.'];
+    return <section className={compact?'competitionDisplayRulesUnified compact':'competitionDisplayRulesUnified'}>
+      <h2>RULES / SCORING FORMAT</h2>
+      <p>{modeScoring[mode]||'Follow the selected competition scoring format.'}</p>
+      <div className="competitionRuleGrid">{rules.map(rule=><span key={rule}>{rule}</span>)}</div>
+    </section>;
+  }
+  function ActiveExtrasPanel(){
+    const showCb=cbCode && cbCode!=='None';
+    const showLayers=layers.length>0;
+    const showDb=activeDbRows.length>0;
+    if(!showCb&&!showLayers&&!showDb)return null;
+    return <section className="competitionActiveExtras">
+      {showCb&&<span><b>CB</b> {cbCode}</span>}
+      {showLayers&&<span><b>Modifiers</b> {layers.join(' · ')}</span>}
+      {showDb&&<span><b>DB</b> {activeDbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</span>}
+    </section>;
+  }
   function invasionTeamStartLives(team){
     const selected=Number(competition?.invasionStartingLives||competition?.invasionLives)||5;
     const exact=Number(competition?.invasionFairLivesByTeam?.[team?.id] ?? competition?.invasionFairLivesByTeam?.[team?.name]);
@@ -619,28 +679,17 @@ function CompetitionPlayerDisplayCard({competition}){
           {waitingPlayers.slice(1).map((name,idx)=><li key={name}>Waiting {idx+2}: {name}</li>)}
         </ol>
       </section>
-      <section className="competitionDisplayRulesCompact">
-        <h2>FORMAT</h2>
-        <p>{competition.matchScoring||'PAR 11'} · {competition.scoringMode==='custom'?'Custom / Timed':'Normal scoring'}</p>
-        <p>{layers.length?`Constraints: ${layers.join(' · ')}`:'No extra constraints'}</p>
-      </section>
+      <CompetitionRulesPanel compact/>
+      <ActiveExtrasPanel/>
     </div>}
-    {mode!=='matchplay'&&(()=>{
-      const dbRows=playerNames.filter(name=>{
-        const value=playerBounces[name];
-        return value && value!=='No DB' && value!=='0 DB' && value!=='0';
-      });
-      const showCb=cbCode && cbCode!=='None';
-      const showLayers=layers.length>0;
-      const showDb=dbRows.length>0;
-      if(!showCb&&!showLayers&&!showDb)return null;
-      return <div className="playerDisplayGrid optionalCompetitionInfo">
-        {showCb&&<section><h2>CHECKERBOARD</h2><p>{cbCode}</p></section>}
-        {showLayers&&<section><h2>ACTIVE CONSTRAINTS</h2><p>{layers.join(' · ')}</p></section>}
-        {showDb&&<section><h2>DB ALLOCATIONS</h2><p>{dbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p></section>}
-      </div>;
-    })()}
-    {mode==='roundRobin'&&competition.rrFixtures&&competition.rrFixtures.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>ROUND ROBIN FIXTURES</h2><div>{competition.rrFixtures.slice(0,4).map((round,idx)=><span key={idx}>R{idx+1}: {round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span>)}</div></div>}
+    {mode!=='matchplay'&&<><CompetitionRulesPanel/><ActiveExtrasPanel/></>}
+    {mode==='roundRobin'&&<div className="competitionDisplayLayout competitionLeagueDisplay">
+      <section className="competitionDisplayDraw"><h2>BOX / ROUND ROBIN FIXTURES</h2>
+        {(competition.rrFixtures&&competition.rrFixtures.length?competition.rrFixtures:competition.rrBoxFixtures?.[0]||[]).slice(0,4).map((round,idx)=><div key={idx} className="compactCourtRow"><b>R{idx+1}</b><span>{round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span><em>Schedule</em></div>)}
+        {!(competition.rrFixtures&&competition.rrFixtures.length)&&!(competition.rrBoxFixtures&&competition.rrBoxFixtures.length)&&<p>No fixtures generated yet.</p>}
+      </section>
+      <section className="competitionDisplayNext"><h2>STANDINGS</h2><p>Standings update from saved match results.</p><p>{(competition.playerNames||[]).slice(0,10).join(' · ')||'No players selected'}</p></section>
+    </div>}
     {mode==='monrad'&&((competition.monradRounds&&competition.monradRounds.length>0)||(competition.monradPlacingRounds&&competition.monradPlacingRounds.length>0))&&(()=>{
       const hasPlacing=(competition.monradPlacingRounds||[]).length>0;
       const counts=monradCompletedCount();
@@ -698,45 +747,42 @@ function CompetitionPlayerDisplayCard({competition}){
       </div>;
     })()}
     {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&(()=>{
-      const dbRows=playerNames.filter(name=>{
-        const value=playerBounces[name];
-        return value && value!=='No DB' && value!=='0 DB' && value!=='0';
-      });
       const formatLabel=competition.invasionFormat==='lives'?'Lives Format':'Points Format';
-      const scoringLine=competition.invasionFormat==='lives'
-        ?'Invaders try to stay alive. Lives reduce under pressure; carry-over lives continue into the next court.'
-        :'Teams score points through successful invasion rotations and court outcomes.';
-      return <div className="invasionPlayerCompactDisplay">
+      return <div className="invasionPlayerCompactDisplay invasionPlayerTightV140">
         <section className="invasionDisplayInfo invasionRulesBox">
-          <h2>RULES / FORMAT</h2>
+          <h2>INVASION RULES</h2>
           <p>{formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</p>
-          <small>{competition.invasionRotation||'Rotate courts after each invasion phase.'}</small>
+          <div className="competitionRuleGrid">
+            <span>Invader puts ball out = -1 life</span>
+            <span>Invader hits into balcony = -3 lives</span>
+            <span>Stop when one invader loses all lives</span>
+            <span>{competition.invasionRotation||'Rotate courts / invaders using the selected format.'}</span>
+          </div>
         </section>
-        <section className="invasionDisplayInfo invasionScoringBox">
-          <h2>HOW TO SCORE</h2>
-          <p>{scoringLine}</p>
-        </section>
-        {dbRows.length>0&&<section className="invasionDisplayInfo invasionDbBadgeBox">
-          <h2>DB</h2>
-          <p>{dbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p>
-        </section>}
+        {activeDbRows.length>0&&<section className="invasionDisplayInfo invasionDbBadgeBox"><h2>ACTIVE DB</h2><p>{activeDbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p></section>}
         <section className="invasionCourtCards">
           <h2>INVASION COURTS</h2>
           <div className="invasionCourtGrid">{competition.invasionTeams.map(team=>{
-            const dbTeam=(team.players||[]).filter(name=>dbRows.includes(name)).map(name=>`${name} ${playerBounces[name]}`).join(' · ');
+            const dbTeam=(team.players||[]).filter(name=>activeDbRows.includes(name)).map(name=>`${name} ${playerBounces[name]}`).join(' · ');
             const points=Number(competition.invasionTeamPoints?.[team.id]||competition.invasionTeamPoints?.[team.name]||0);
             const lives=invasionTeamStartLives(team);
+            const invaderList=[...(team.players||[])];
+            const currentInvader=competition.invasionInvaderOverrides?.[team.id]||competition.invasionInvaderOverrides?.[team.name]||invaderList[(competition.invasionPlayerRound||0)%Math.max(1,invaderList.length)]||'Waiting';
             return <article key={team.id||team.name} className="invasionCourtCard">
-              <b>Court {team.court||'—'}</b>
+              <b>{team.court||'Court'}</b>
               <strong>{team.name}</strong>
               <span>{(team.players||[]).join(' · ')}</span>
-              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`}{dbTeam?` · ${dbTeam}`:''}</em>
+              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`} · Invader: {currentInvader}{dbTeam?` · ${dbTeam}`:''}</em>
             </article>;
           })}</div>
         </section>
       </div>;
     })()}
-    {mode==='nsl'&&<div className="playerDisplayRules compactFixtureStrip"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
+    {mode==='nsl'&&<div className="competitionDisplayLayout competitionNsslDisplay">
+      <section className="competitionDisplayHero"><h2>NSSL STATUS</h2><strong>Period {competition.nslActivePeriod||1}</strong><p>{competition.nslRoundSeconds||0}s remaining</p></section>
+      <section className="competitionDisplayDraw"><h2>TEAMS / FORMAT</h2><p>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</p><p>Power play: {competition.nslPowerPlayActive?competition.nslPowerPlayTeam||'Active':'Inactive'}</p></section>
+      <section className="competitionDisplayNext"><h2>SCORING</h2><p>Team score accumulates across periods. Power play and overtime shown when active.</p></section>
+    </div>}
   </div>;
 }
 function CompetitionPlayerDisplayView({competition,setScreen}){
@@ -923,7 +969,7 @@ function ProjectionView({session,setScreen,players=[]}){
 
       <div className="invasionProjectorBoard invasionCleanBoard">
         <div className="invasionProjectorHeader">
-          <span>PLAYER PROJECTION</span>
+          <span>PLAYER DISPLAY</span>
           <h1>Invasion Game</h1>
           <p>{competitionProjection.invasionFormat==='lives'?'Lives Format':'Points Format'} · Snake seeded teams · Random court allocation</p>
         </div>
@@ -2786,9 +2832,9 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
   function startPerceptionProjection(game){
     const card=configuredPerceptionGame(game);
     startCoachProjectionSession([card],0);
-    setStatus(`${card.title} sent to projector.`);
+    setStatus(`${card.title} sent to Player Display.`);
   }
-  function stopPerceptionProjection(){stopCoachProjectionSession();setStatus('Projector stopped.');}
+  function stopPerceptionProjection(){stopCoachProjectionSession();setStatus('Player Display stopped.');}
   function copyPerceptionPlayerLink(game){
     const card=configuredPerceptionGame(game);
     const url=buildPlayerDisplayUrl(card);
@@ -7008,12 +7054,12 @@ function Games({setSession,setScreen}){
   function startGameCardProjection(card){
     const clean=normaliseGameCard(card);
     startCoachProjectionSession([clean],0);
-    setMessage(`${clean.title||'Game'} sent to projector.`);
+    setMessage(`${clean.title||'Game'} sent to Player Display.`);
   }
 
   function stopGameCardProjection(){
     stopCoachProjectionSession();
-    setMessage('Projector stopped.');
+    setMessage('Player Display stopped.');
   }
 
   function selectClass(id){
@@ -8504,8 +8550,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       matchScoring,
       rrFixtures,
       rrResults,
+      rrBoxes,
       rrBoxFixtures,
+      rrBoxResults,
+      rrFinalBoxes,
       rrFinalFixtures,
+      rrFinalResults,
       monradRounds,
       monradResults,
       monradPlacingRounds,
@@ -8655,7 +8705,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
       <div className="competitionProjectionToggle">
         <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>{setShowCompetitionProjection(!showCompetitionProjection);publishCompetitionLiveState();}}>
-          {showCompetitionProjection?'Hide Player Projection':'Show Player Projection'}
+          {showCompetitionProjection?'Hide Player Display':'Show Player Display'}
         </button>
         <button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button>
       </div>
@@ -8667,7 +8717,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       {showCompetitionProjection&&(
         <div className="competitionProjectionView">
           <div className="projectionHeaderBar">
-            <span>PLAYER PROJECTION</span>
+            <span>PLAYER DISPLAY</span>
             <h1>{current.title}</h1>
             <p>{mode==='matchplay'
               ?`${matchPlayers.a||'P1'} ${matchScore.a} - ${matchScore.b} ${matchPlayers.b||'P2'}`
@@ -8894,11 +8944,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               <div>
                 <strong>{invasionGameStarted?'Game live':'Ready to start'}</strong>
                 <p>{invasionFormat==='lives'
-                  ?'Starts the live carry-over lives competition and updates the projector.'
-                  :'Starts the live points competition and updates the projector.'}</p>
+                  ?'Starts the live carry-over lives competition and updates Player Display.'
+                  :'Starts the live points competition and updates Player Display.'}</p>
               </div>
               <div className="invasionStartButtons">
-                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START GAME / PROJECTOR</button>
+                <button type="button" className="primaryBtn" onClick={startInvasionProjector}>START GAME / PLAYER DISPLAY</button>
                 <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionProjector}>STOP / END GAME</button>
               </div>
             </div>
@@ -9603,7 +9653,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         </div>
 
         <div className="technicalScoringBox alwaysVisibleScoring">
-          <strong>Competition Overlays</strong>
+          <strong>Modifier Overlays</strong>
           <OverlayFamilyTabs selectedOverlays={competitionLayers} onToggle={toggleLayer} context="Competition" />
 
           <label>Checkerboard Code / Sequence
