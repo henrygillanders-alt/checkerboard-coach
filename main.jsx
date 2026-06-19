@@ -7849,7 +7849,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }catch{}
   }
 
-  function stopInvasionPlayer Display(){
+  function stopInvasionPlayerDisplay(){
     setInvasionGameStarted(false);
     setShowInvasionDashboard(false);
     setShowProjection(false);
@@ -8950,7 +8950,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               </div>
               <div className="invasionStartButtons">
                 <button type="button" className="primaryBtn" onClick={startInvasionPlayerDisplay}>START GAME / PLAYER DISPLAY</button>
-                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayer Display}>STOP / END GAME</button>
+                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayerDisplay}>STOP / END GAME</button>
               </div>
             </div>
 
