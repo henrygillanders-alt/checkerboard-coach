@@ -7809,7 +7809,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     },50);
   }
 
-  function startInvasionPlayer Display(){
+  function startInvasionPlayerDisplay(){
     const activeTeams=invasionTeams.length?invasionTeams:generateInvasionTeams();
     buildSimultaneousInvasionCourts(invasionRotationStep,false,activeTeams);
     setInvasionGameStarted(true);
@@ -8949,7 +8949,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                   :'Starts the live points competition and updates Player Display.'}</p>
               </div>
               <div className="invasionStartButtons">
-                <button type="button" className="primaryBtn" onClick={startInvasionPlayer Display}>START GAME / PLAYER DISPLAY</button>
+                <button type="button" className="primaryBtn" onClick={startInvasionPlayerDisplay}>START GAME / PLAYER DISPLAY</button>
                 <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayer Display}>STOP / END GAME</button>
               </div>
             </div>
