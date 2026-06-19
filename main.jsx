@@ -1,4 +1,4 @@
-/* v132 Live Sync Diagnostic + multi-header Supabase REST write */
+/* v133 Live Sync Fixed Key Fallback */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -6,8 +6,8 @@ import'./styles.css';
 
 
 // ── LIVE PLAYER VIEW SYNC (Supabase REST; no extra package required) ─────────
-const SUPABASE_URL=(import.meta?.env?.VITE_SUPABASE_URL||'https://pjohecwpciwexvtmvkdz.supabase.co').replace(/\/$/,'');
-const SUPABASE_ANON_KEY=import.meta?.env?.VITE_SUPABASE_ANON_KEY||'sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
+const SUPABASE_URL='https://pjohecwpciwexvtmvkdz.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
 function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
 function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
@@ -67,7 +67,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v132 Live Sync Diagnostic';
+const APP_VERSION='v133 Live Sync Fixed Key';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
