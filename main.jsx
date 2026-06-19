@@ -459,7 +459,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
       <section><h2>SCORING LOGIC</h2><p>{score}</p></section>
-      <section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>
+      {layers.length===0&&constraintText&&constraintText!=='No extra constraints selected.'&&<section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>}
       {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
     {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
@@ -697,7 +697,45 @@ function CompetitionPlayerDisplayCard({competition}){
         </section>
       </div>;
     })()}
-    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&<div className="playerDisplayRules compactFixtureStrip"><h2>INVASION COURTS</h2><div>{competition.invasionTeams.map(team=><span key={team.id||team.name}>Court {team.court||'—'} · {team.name}: {(team.players||[]).join(', ')} · {competition.invasionFormat==='lives'?`Start lives ${invasionTeamStartLives(team)}`:`Points ${competition.invasionTeamPoints?.[team.id]||0}`}</span>)}</div></div>}
+    {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&(()=>{
+      const dbRows=playerNames.filter(name=>{
+        const value=playerBounces[name];
+        return value && value!=='No DB' && value!=='0 DB' && value!=='0';
+      });
+      const formatLabel=competition.invasionFormat==='lives'?'Lives Format':'Points Format';
+      const scoringLine=competition.invasionFormat==='lives'
+        ?'Invaders try to stay alive. Lives reduce under pressure; carry-over lives continue into the next court.'
+        :'Teams score points through successful invasion rotations and court outcomes.';
+      return <div className="invasionPlayerCompactDisplay">
+        <section className="invasionDisplayInfo invasionRulesBox">
+          <h2>RULES / FORMAT</h2>
+          <p>{formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</p>
+          <small>{competition.invasionRotation||'Rotate courts after each invasion phase.'}</small>
+        </section>
+        <section className="invasionDisplayInfo invasionScoringBox">
+          <h2>HOW TO SCORE</h2>
+          <p>{scoringLine}</p>
+        </section>
+        {dbRows.length>0&&<section className="invasionDisplayInfo invasionDbBadgeBox">
+          <h2>DB</h2>
+          <p>{dbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p>
+        </section>}
+        <section className="invasionCourtCards">
+          <h2>INVASION COURTS</h2>
+          <div className="invasionCourtGrid">{competition.invasionTeams.map(team=>{
+            const dbTeam=(team.players||[]).filter(name=>dbRows.includes(name)).map(name=>`${name} ${playerBounces[name]}`).join(' · ');
+            const points=Number(competition.invasionTeamPoints?.[team.id]||competition.invasionTeamPoints?.[team.name]||0);
+            const lives=invasionTeamStartLives(team);
+            return <article key={team.id||team.name} className="invasionCourtCard">
+              <b>Court {team.court||'—'}</b>
+              <strong>{team.name}</strong>
+              <span>{(team.players||[]).join(' · ')}</span>
+              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`}{dbTeam?` · ${dbTeam}`:''}</em>
+            </article>;
+          })}</div>
+        </section>
+      </div>;
+    })()}
     {mode==='nsl'&&<div className="playerDisplayRules compactFixtureStrip"><h2>NSSL</h2><div><span>Teams: {competition.nslTeams} · Players/team: {competition.nslPlayersPerTeam}</span><span>Period {competition.nslActivePeriod||1} · {competition.nslRoundSeconds||0}s remaining</span></div></div>}
   </div>;
 }

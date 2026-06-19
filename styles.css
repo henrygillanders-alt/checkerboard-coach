@@ -8038,3 +8038,119 @@ button.mentalSkillsTile p{
 .monradPlacingPill b{color:#ffd980;font-size:clamp(13px,2.6vw,17px);line-height:1;}
 .monradPlacingPill span{color:white;font-weight:1000;font-size:clamp(13px,2.6vw,17px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 @media(max-width:430px){.monradPlacingsGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.monradPlacingPill{padding:5px 6px}.competitionPlayerDisplayShell .competitionDisplayNext{padding:8px!important}.competitionPlayerDisplayShell .competitionDisplayNext h2{font-size:13px!important;margin-bottom:5px!important}}
+
+
+/* v139 Invasion Player Display compact board + duplicate display cleanup */
+.competitionPlayerDisplayShell .playerDisplayGrid.optionalCompetitionInfo:has(section:only-child){
+  max-height:18vh;
+}
+.invasionPlayerCompactDisplay{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:clamp(6px,1vw,12px);
+  overflow:hidden;
+}
+.invasionDisplayInfo,
+.invasionCourtCards{
+  background:#0c1f34;
+  border:1px solid #2e5f96;
+  border-radius:clamp(9px,1.2vw,16px);
+  padding:clamp(7px,1vw,14px);
+  overflow:hidden;
+}
+.invasionDisplayInfo h2,
+.invasionCourtCards h2{
+  color:#ffd980;
+  font-size:clamp(12px,1.2vw,20px);
+  margin:0 0 4px;
+  letter-spacing:.05em;
+}
+.invasionDisplayInfo p{
+  color:#fff;
+  font-size:clamp(13px,1.55vw,22px);
+  font-weight:900;
+  line-height:1.12;
+  margin:0;
+}
+.invasionDisplayInfo small{
+  display:block;
+  color:#cbd5e1;
+  font-size:clamp(10px,1.05vw,14px);
+  font-weight:800;
+  line-height:1.15;
+  margin-top:3px;
+}
+.invasionDbBadgeBox{
+  grid-column:1/-1;
+  padding-top:5px!important;
+  padding-bottom:5px!important;
+}
+.invasionDbBadgeBox p{
+  display:inline-block;
+  background:#1f5dd0;
+  border:1px solid #8ab6ff;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:clamp(11px,1.2vw,16px)!important;
+}
+.invasionCourtCards{grid-column:1/-1;min-height:0;}
+.invasionCourtGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:clamp(6px,1vw,10px);
+  height:calc(100% - 22px);
+  overflow:hidden;
+}
+.invasionCourtCard{
+  background:#071827;
+  border:2px solid #22d3ee;
+  border-radius:clamp(10px,1.3vw,16px);
+  padding:clamp(7px,1vw,12px);
+  min-width:0;
+}
+.invasionCourtCard b{
+  display:block;
+  color:#67e8f9;
+  font-size:clamp(12px,1.3vw,18px);
+  margin-bottom:2px;
+}
+.invasionCourtCard strong{
+  display:block;
+  color:#fff;
+  font-size:clamp(16px,2vw,26px);
+  line-height:1.05;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.invasionCourtCard span{
+  display:block;
+  color:#dbeafe;
+  font-size:clamp(12px,1.4vw,18px);
+  font-weight:850;
+  line-height:1.12;
+  margin-top:4px;
+}
+.invasionCourtCard em{
+  display:block;
+  color:#ffd980;
+  font-style:normal;
+  font-size:clamp(12px,1.4vw,18px);
+  font-weight:1000;
+  margin-top:4px;
+}
+@media(max-width:700px){
+  .invasionPlayerCompactDisplay{grid-template-columns:1fr;grid-template-rows:auto auto auto 1fr;gap:5px;}
+  .invasionDisplayInfo,.invasionCourtCards{padding:6px 8px!important;border-radius:10px!important;}
+  .invasionDisplayInfo h2,.invasionCourtCards h2{font-size:11px!important;margin-bottom:2px!important;}
+  .invasionDisplayInfo p{font-size:13px!important;line-height:1.05!important;}
+  .invasionDisplayInfo small{font-size:10px!important;line-height:1.05!important;}
+  .invasionCourtGrid{grid-template-columns:1fr;height:auto;gap:5px;}
+  .invasionCourtCard{padding:6px 8px!important;border-radius:10px!important;}
+  .invasionCourtCard b{font-size:12px!important;}
+  .invasionCourtCard strong{font-size:15px!important;}
+  .invasionCourtCard span,.invasionCourtCard em{font-size:12px!important;line-height:1.05!important;}
+}
