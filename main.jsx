@@ -1,4 +1,4 @@
-/* v133 Live Sync Fixed Key Fallback */
+/* v134 Live Sync API Key Query Fallback */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -25,39 +25,41 @@ function supabaseRestHeaders(extra={}){
 }
 async function writeLivePlayerRoom(roomId,mode,payload){
   if(!roomId||!liveSyncReady()) return false;
-  const row={room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()};
-  const endpoint=`${SUPABASE_URL}/rest/v1/live_sessions?on_conflict=room_id`;
   const key=String(SUPABASE_ANON_KEY||'').trim();
-  const attempts=[
-    {name:'apikey+authorization',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}},
-    {name:'apikey-only',headers:{apikey:key,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}},
-    {name:'authorization-only',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=representation'}},
-  ];
-  let lastError='No attempt made';
-  for(const attempt of attempts){
-    try{
-      const res=await fetch(endpoint,{method:'POST',headers:attempt.headers,body:JSON.stringify(row)});
-      if(res.ok){
-        let returned=null;
-        try{returned=await res.json();}catch{}
-        try{localStorage.setItem('checkerboardLiveLastWrite',JSON.stringify({roomId,mode,attempt:attempt.name,returned,at:new Date().toISOString()}));localStorage.removeItem('checkerboardLiveLastError');}catch{}
-        return true;
-      }
-      const txt=await res.text().catch(()=>'');
-      lastError=`${attempt.name}: HTTP ${res.status} ${txt}`;
-      console.warn('Live sync write failed',lastError);
-    }catch(err){
-      lastError=`${attempt.name}: ${err?.message||String(err)}`;
-      console.warn('Live sync write failed',lastError);
+  const row={room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()};
+  // v134: send the key three ways: apikey header, bearer header, and apikey URL param.
+  // This removes the previous misleading fallback where the last failed attempt had no apikey header.
+  const endpoint=`${SUPABASE_URL}/rest/v1/live_sessions?on_conflict=room_id&apikey=${encodeURIComponent(key)}`;
+  const headers={
+    apikey:key,
+    Authorization:`Bearer ${key}`,
+    'Content-Type':'application/json',
+    Prefer:'resolution=merge-duplicates,return=representation'
+  };
+  try{
+    const res=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify(row)});
+    if(res.ok){
+      let returned=null;
+      try{returned=await res.json();}catch{}
+      try{localStorage.setItem('checkerboardLiveLastWrite',JSON.stringify({roomId,mode,attempt:'apikey-header-and-query',returned,at:new Date().toISOString()}));localStorage.removeItem('checkerboardLiveLastError');}catch{}
+      return true;
     }
+    const txt=await res.text().catch(()=>'');
+    const lastError=`apikey-header-and-query: HTTP ${res.status} ${txt}`;
+    console.warn('Live sync write failed',lastError);
+    try{localStorage.setItem('checkerboardLiveLastError',lastError);}catch{}
+    return false;
+  }catch(err){
+    const lastError=`apikey-header-and-query: ${err?.message||String(err)}`;
+    console.warn('Live sync write failed',lastError);
+    try{localStorage.setItem('checkerboardLiveLastError',lastError);}catch{}
+    return false;
   }
-  try{localStorage.setItem('checkerboardLiveLastError',lastError);}catch{}
-  return false;
 }
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
   try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1`,{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1&apikey=${encodeURIComponent(String(SUPABASE_ANON_KEY||'').trim())}`,{
       headers:supabaseRestHeaders()
     });
     if(!res.ok){console.warn('Live sync read failed',res.status,await res.text().catch(()=>''));return null;}
