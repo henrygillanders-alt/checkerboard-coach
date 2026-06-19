@@ -1,4 +1,4 @@
-/* v134 Live Sync API Key Query Fallback */
+/* v135 Competition Payload Export Fix */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
@@ -69,7 +69,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v133 Live Sync Fixed Key';
+const APP_VERSION='v135 Competition Payload Export Fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -8415,7 +8415,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     try{localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));}catch{}
     const room=roomOverride||liveRoomId||makeLiveRoomId();
     if(!liveRoomId){setLiveRoomId(room);try{localStorage.setItem(LIVE_ROOM_KEY,room);}catch{}}
-    const ok=await writeLivePlayerRoom(room,'competition',state);
+    const livePayload={type:'competition',competition:state,title:state?.title||state?.current?.title||state?.mode||'Competition',updatedAt:new Date().toISOString()};
+    const ok=await writeLivePlayerRoom(room,'competition',livePayload);
     return {room,state,ok};
   }
   async function copyCompetitionPlayerLink(){
@@ -8435,7 +8436,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       try{
         const state=getCompetitionProjectionState();
         localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(state));
-        writeLivePlayerRoom(liveRoomId,'competition',state);
+        writeLivePlayerRoom(liveRoomId,'competition',{type:'competition',competition:state,title:state?.title||state?.current?.title||state?.mode||'Competition',updatedAt:new Date().toISOString()});
       }catch{}
     },350);
     return ()=>clearTimeout(handle);
@@ -11644,7 +11645,7 @@ const[liveStatus,setLiveStatus]=useState(liveRoomParam?'Connecting live display�
 const[sharedPlayerPayload]=useState(()=>decodePlayerPayloadFromUrl());
 const[sharedPlayerGame]=useState(()=>sharedPlayerPayload?.type==='game'?normaliseGameCard(sharedPlayerPayload.game):decodePlayerGameFromUrl());
 const[sharedPlayerCompetition]=useState(()=>sharedPlayerPayload?.type==='competition'?(sharedPlayerPayload.competition||sharedPlayerPayload):decodePlayerCompetitionFromUrl());
-const liveCompetition=livePayload?.type==='competition'?(livePayload.competition||livePayload):null;
+const liveCompetition=livePayload?.type==='competition'?(livePayload.competition||livePayload):((livePayload?.mode&&['matchplay','roundRobin','monrad','invasion','nsl'].includes(livePayload.mode))?livePayload:null);
 const liveGame=livePayload?.type==='game'?normaliseGameCard(livePayload.game):null;
 const initialPlayerDisplay=!!liveRoomParam||!!sharedPlayerGame||!!sharedPlayerCompetition;
 const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
@@ -11702,7 +11703,7 @@ return <div>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v129</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v135</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
