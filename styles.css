@@ -8193,3 +8193,18 @@ button.mentalSkillsTile p{
 .monradPlacingsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px}
 .monradPlacingPill{font-size:.95rem;line-height:1.15;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(120,170,255,.25)}
 @media(max-width:700px){.rotationTop{align-items:flex-start}.rotationControls{justify-content:flex-start}.monradPlacingsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.monradPlacingPill{font-size:.85rem;padding:6px 8px}}
+
+
+/* v142 cleanup: use available Player Display space and keep text readable */
+.playerDisplayGrid p{font-size:clamp(18px,2.45vw,34px)!important;line-height:1.16!important;}
+.playerDisplayGrid h2,.playerDisplayRules h2{font-size:clamp(15px,1.55vw,24px)!important;}
+.playerDisplayGrid section{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;}
+@media(max-width:900px){
+  .playerDisplayGrid p{font-size:clamp(18px,4.3vw,26px)!important;line-height:1.14!important;}
+  .playerDisplayGrid h2,.playerDisplayRules h2{font-size:clamp(13px,3.1vw,18px)!important;}
+  .playerDisplayGrid{grid-template-columns:1fr!important;}
+  .playerDisplayGrid section{min-height:clamp(96px,20vh,180px)!important;}
+  .playerDisplayGrid section:only-child,.playerDisplayGrid section:nth-child(1):nth-last-child(1){min-height:60vh!important;}
+}
+/* v142: Projector home tile is removed; keep any old projector card hidden if reached through stale markup. */
+.projectionHomeCard{display:none!important;}

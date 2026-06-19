@@ -1,4 +1,4 @@
-// v141 universal display/session cleanup build
+// v142 game-builder/scoring/player-display cleanup build
 /* v135 Competition Payload Export Fix */
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
@@ -3040,7 +3040,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
 
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
-      <button className="homeCard projectionHomeCard homeTitleOnly" onClick={()=>setScreen('projection')}><h2>Project</h2></button>
+      
       <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
 
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
@@ -3269,12 +3269,21 @@ const CHECKERBOARD_CHALLENGES=[
 ];
 
 const CHECKERBOARD_PAIR_OPTIONS=[
+  '[5-4] + [8-1]',
   '[6-4] + [8-1]',
+  '[6-3] + [7-2]',
   '[5-3] + [7-2]',
-  '[6-3] + [8-1]',
+  '[5-4] + [6-3]',
+  '[8-1] + [7-2]',
+  '[5-1] + [6-2]',
+  '[5-2] + [6-1]',
+  '[7-3] + [8-4]',
+  '[7-4] + [8-3]',
   '[5-4] + [7-2]',
+  '[6-3] + [8-1]',
   '[6-3] + [5-4]',
-  '[7-2] + [8-1]'
+  '[7-2] + [8-1]',
+  'Custom'
 ];
 
 const CHECKERBOARD_TRIPLE_OPTIONS=[
@@ -3330,7 +3339,8 @@ function buildCheckerboardGame(config){
 }
 
 function CheckerboardEngine({onAddToSession}){
-  const[config,setConfig]=useState({level:2,sequence:'[6-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const[config,setConfig]=useState({level:2,sequence:'[5-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const [checkerboardModifierScores,setCheckerboardModifierScores]=useState({});
   const [cbDbAssign,setCbDbAssign]=useState('Both Players');
   const [cbDbPlayer,setCbDbPlayer]=useState('');
   const [cbDbAmount,setCbDbAmount]=useState('No DB');
@@ -3345,6 +3355,8 @@ function CheckerboardEngine({onAddToSession}){
   }
   function toggleCompletion(item){setConfig(prev=>{const current=prev.completionConstraints||[];return {...prev,completionConstraints:current.includes(item)?current.filter(x=>x!==item):[...current,item]};});}
   function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
+  function updateCheckerboardModifierScore(layer,value){setCheckerboardModifierScores(prev=>({...prev,[layer]:value}));}
+  const checkerboardScoringLayers=editableModifierLayers([...(built.layers||[]),...(config.completionConstraints||[])]);
   
   function generateBlindChallengeCard(){
     let card='';
@@ -3422,7 +3434,8 @@ return <div className="checkerboardEngine">
 
     {/* SCORING LOGIC */}
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Checkerboard pair completion = +1. Overlays in Constraints add bonus points per qualifying shot.</p></div>
+      <div className="infoBox"><strong>Default Scoring</strong><p>{built.scoring}</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Set bonus values for active checkerboard modifying constraints. Use “constraint only” when the rule shapes behaviour but should not add points.</p>{checkerboardScoringLayers.length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add Game Logic or Constraints, then set points here.</div>:<div className="modifierScoreGrid">{checkerboardScoringLayers.map(layer=><label key={layer}><span>{layer}</span><select value={checkerboardModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updateCheckerboardModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
     </CollapsibleLayer>
 
     {/* CONSTRAINTS */}
@@ -3465,7 +3478,7 @@ return <div className="checkerboardEngine">
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    <button className="primaryBtn" onClick={()=>onAddToSession({...built,dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
+    <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
   </div>;
 }
 
