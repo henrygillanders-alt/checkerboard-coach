@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v144 Universal Modifier Engine + Player Identifiers';
+const APP_VERSION='v145 Standard Modifier Engine + Custom Animal + Projection Retired';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -191,9 +191,18 @@ function playerRoleModelLabel(player){
   const preset=ROLE_MODELS.find(r=>r.name===player.roleModel);
   return preset?`${preset.name} — ${preset.trait}`:'';
 }
+function resolvePlayerAnimal(player){
+  if(!player) return null;
+  if(player.animal==='__custom__'){
+    const n=String(player.customAnimal||'').trim();
+    if(!n) return null;
+    return {emoji:'🐾',name:n,trait:String(player.customAnimalTrait||'').trim()};
+  }
+  return findAnimal(player.animal);
+}
 function PlayerIdTags({player,showTrait=false}){
   if(!player) return null;
-  const animal=findAnimal(player.animal);
+  const animal=resolvePlayerAnimal(player);
   const role=playerRoleModelLabel(player);
   if(!animal&&!role) return null;
   return <span className="playerIdTags">
@@ -202,7 +211,7 @@ function PlayerIdTags({player,showTrait=false}){
   </span>;
 }
 
-const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false,animal:'',roleModel:'',customRoleModel:'',customRoleModelTrait:''};
+const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false,animal:'',customAnimal:'',customAnimalTrait:'',roleModel:'',customRoleModel:'',customRoleModelTrait:''};
 
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
 
@@ -1237,20 +1246,19 @@ const DIVERSITY_OVERLAYS=[
   {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
 ];
 
-// ── v144 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
-// Single engine replacing the old overlay systems. Fixed panel order everywhere:
-// 1) Game Logic  2) Constraints  3) Scoring  4) Double Bounce.
-const MODIFIER_CONSTRAINTS={
-  technical:['Volley only','No boast','Weak side','Straight only','No back wall'],
-  tactical:['Length before attack','Opponent off T','Blind finish','Central control','Target zones'],
-  mental:['Pressure point','One chance only','Bonus under pressure','Clutch point','Comeback point']
-};
-const DEFAULT_MODIFIER_SCORING={'Volley only':2,'Blind finish':3,'Length before attack':1,'Opponent off T':2,'Pressure point':5};
-function defaultScoreFor(label){return DEFAULT_MODIFIER_SCORING[label]!=null?DEFAULT_MODIFIER_SCORING[label]:1;}
+// ── v145 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
+// Single engine. Fixed panel order everywhere: Game Logic · Constraints · Scoring · Double Bounce.
+// Constraints reuse the real standard overlay library (OverlayFamilyTabs) — same as the Games Library.
+function parseBonusValue(name){
+  const raw=CONSTRAINT_BONUS_POINTS[name];
+  if(!raw) return '';
+  const m=String(raw).match(/-?\d+/);
+  return m?Number(m[0]):'';
+}
 function emptyModifierConfig(){
   return {
     logic:{winCondition:'',survival:'',conversionWindow:'',bankReset:'',timeLimit:'',invasion:{ballOut:-1,balcony:-3,stopRule:'Stop when one player loses all lives',enabled:false}},
-    constraints:{technical:[],tactical:[],mental:[]},
+    constraints:[],
     scoring:{},
     doubleBounce:{mode:'off',countFrom:5,byPlayer:'',showOnPlayerView:true}
   };
@@ -1265,61 +1273,58 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine'}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game'}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
   function commit(next){if(isControlled)onChange(next);else setInternal(next);}
-  const [open,setOpen]=useState('logic');
+  const [open,setOpen]=useState('constraints');
+  const [showLogicEdit,setShowLogicEdit]=useState(false);
   function toggle(panel){setOpen(open===panel?'':panel);}
   function setLogic(patch){commit({...config,logic:{...config.logic,...patch}});}
   function setInvasion(patch){commit({...config,logic:{...config.logic,invasion:{...config.logic.invasion,...patch}}});}
-  function toggleConstraint(group,label){
-    const active=config.constraints[group]||[];
-    const on=active.includes(label);
-    const nextActive=on?active.filter(x=>x!==label):[...active,label];
+  const constraints=config.constraints||[];
+  function toggleConstraint(name){
+    const on=constraints.includes(name);
+    const nextActive=on?constraints.filter(x=>x!==name):[...constraints,name];
     const nextScoring={...config.scoring};
-    if(on){delete nextScoring[label];}else if(nextScoring[label]==null){nextScoring[label]=defaultScoreFor(label);}
-    commit({...config,constraints:{...config.constraints,[group]:nextActive},scoring:nextScoring});
+    if(on){delete nextScoring[name];}else if(nextScoring[name]==null){nextScoring[name]=parseBonusValue(name);}
+    commit({...config,constraints:nextActive,scoring:nextScoring});
   }
-  function setScore(label,val){commit({...config,scoring:{...config.scoring,[label]:val===''?'':Number(val)}});}
+  function setScore(name,val){commit({...config,scoring:{...config.scoring,[name]:val===''?'':Number(val)}});}
   function setDB(patch){commit({...config,doubleBounce:{...config.doubleBounce,...patch}});}
-  const activeConstraints=[...config.constraints.technical,...config.constraints.tactical,...config.constraints.mental];
-  const groupLabels={technical:'Technical',tactical:'Tactical',mental:'Mental Performance'};
   return <div className="modifierEngine">
     {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
 
-    <MEPanel title="1. Game Logic" subtitle="Win, survival, windows, time, invasion penalties" open={open==='logic'} onToggle={()=>toggle('logic')}>
-      <label className="meField">Win condition<input value={config.logic.winCondition} onChange={e=>setLogic({winCondition:e.target.value})} placeholder="e.g. First to clean finish after the challenge is met"/></label>
-      <label className="meField">Survival rule<input value={config.logic.survival} onChange={e=>setLogic({survival:e.target.value})} placeholder="e.g. Lose a life on an unforced error"/></label>
-      <label className="meField">Conversion window<input value={config.logic.conversionWindow} onChange={e=>setLogic({conversionWindow:e.target.value})} placeholder="e.g. 4-shot window to convert"/></label>
-      <label className="meField">Bank / reset<input value={config.logic.bankReset} onChange={e=>setLogic({bankReset:e.target.value})} placeholder="e.g. Bank points at 5, reset on error"/></label>
-      <label className="meField">Time limit<input value={config.logic.timeLimit} onChange={e=>setLogic({timeLimit:e.target.value})} placeholder="e.g. 8 minutes"/></label>
-      <div className="meInvasionBlock">
-        <label className="meCheck"><input type="checkbox" checked={!!config.logic.invasion.enabled} onChange={e=>setInvasion({enabled:e.target.checked})}/> Invasion penalty rules</label>
-        {config.logic.invasion.enabled&&<div className="meInvasionRows">
-          <label className="meField meFieldInline">Ball out<input type="number" value={config.logic.invasion.ballOut} onChange={e=>setInvasion({ballOut:Number(e.target.value)})}/></label>
-          <label className="meField meFieldInline">Balcony<input type="number" value={config.logic.invasion.balcony} onChange={e=>setInvasion({balcony:Number(e.target.value)})}/></label>
-          <label className="meField">Stop rule<input value={config.logic.invasion.stopRule} onChange={e=>setInvasion({stopRule:e.target.value})}/></label>
-        </div>}
-      </div>
+    <MEPanel title="1. Game Logic" subtitle="Standard play rules — add your own only if needed" open={open==='logic'} onToggle={()=>toggle('logic')}>
+      <p className="mutedText">Standard game logic applies by default (win conditions, survival, conversion windows). Open the editor only to override for this game.</p>
+      <button type="button" className="meAddOwnBtn" onClick={()=>setShowLogicEdit(!showLogicEdit)}>{showLogicEdit?'− Hide custom game logic':'+ Add your own game logic'}</button>
+      {showLogicEdit&&<div className="meLogicEdit">
+        <label className="meField">Win condition<input value={config.logic.winCondition} onChange={e=>setLogic({winCondition:e.target.value})} placeholder="e.g. First to clean finish after the challenge is met"/></label>
+        <label className="meField">Survival rule<input value={config.logic.survival} onChange={e=>setLogic({survival:e.target.value})} placeholder="e.g. Lose a life on an unforced error"/></label>
+        <label className="meField">Conversion window<input value={config.logic.conversionWindow} onChange={e=>setLogic({conversionWindow:e.target.value})} placeholder="e.g. 4-shot window to convert"/></label>
+        <label className="meField">Bank / reset<input value={config.logic.bankReset} onChange={e=>setLogic({bankReset:e.target.value})} placeholder="e.g. Bank at 5, reset on error"/></label>
+        <label className="meField">Time limit<input value={config.logic.timeLimit} onChange={e=>setLogic({timeLimit:e.target.value})} placeholder="e.g. 8 minutes"/></label>
+        <div className="meInvasionBlock">
+          <label className="meCheck"><input type="checkbox" checked={!!config.logic.invasion.enabled} onChange={e=>setInvasion({enabled:e.target.checked})}/> Invasion penalty rules</label>
+          {config.logic.invasion.enabled&&<div className="meInvasionRows">
+            <label className="meField meFieldInline">Ball out<input type="number" value={config.logic.invasion.ballOut} onChange={e=>setInvasion({ballOut:Number(e.target.value)})}/></label>
+            <label className="meField meFieldInline">Balcony<input type="number" value={config.logic.invasion.balcony} onChange={e=>setInvasion({balcony:Number(e.target.value)})}/></label>
+            <label className="meField">Stop rule<input value={config.logic.invasion.stopRule} onChange={e=>setInvasion({stopRule:e.target.value})}/></label>
+          </div>}
+        </div>
+      </div>}
     </MEPanel>
 
-    <MEPanel title="2. Constraints" subtitle="Technical · Tactical · Mental Performance" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
-      {['technical','tactical','mental'].map(group=><div className="meConstraintGroup" key={group}>
-        <h4>{groupLabels[group]}</h4>
-        <div className="meChipRow">{MODIFIER_CONSTRAINTS[group].map(label=>{
-          const on=(config.constraints[group]||[]).includes(label);
-          return <button type="button" key={label} className={on?'meChip meChipOn':'meChip'} onClick={()=>toggleConstraint(group,label)}>{label}</button>;
-        })}</div>
-      </div>)}
+    <MEPanel title="2. Constraints" subtitle="Standard overlay library — Technical · Tactical · Mental" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
+      <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
     </MEPanel>
 
-    <MEPanel title="3. Scoring" subtitle="Assign an editable value to each active constraint" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
-      {activeConstraints.length===0?<p className="mutedText">Activate constraints above to assign scoring values.</p>:
-        <div className="meScoreList">{activeConstraints.map(label=><div className="meScoreRow" key={label}>
-          <span className="meScoreLabel">{label}</span>
-          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[label]??defaultScoreFor(label)} onChange={e=>setScore(label,e.target.value)}/></div>
+    <MEPanel title="3. Scoring" subtitle="Editable value for each active constraint" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
+      {constraints.length===0?<p className="mutedText">Select constraints above to assign scoring values.</p>:
+        <div className="meScoreList">{constraints.map(name=><div className="meScoreRow" key={name}>
+          <span className="meScoreLabel">{name}</span>
+          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[name]??parseBonusValue(name)} onChange={e=>setScore(name,e.target.value)}/></div>
         </div>)}</div>}
     </MEPanel>
 
@@ -3091,7 +3096,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
-        <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="primaryBtn" onClick={()=>startPerceptionProjection(active)}>SHOW PLAYER DISPLAY</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button><button className="secondaryBtn dangerBtn" onClick={stopPerceptionProjection}>HIDE PLAYER DISPLAY</button></div></div>
+        <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
     </div>
@@ -7300,8 +7305,6 @@ function Games({setSession,setScreen}){
           <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
           {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
           <div className="actionRow">
-            <button className="primaryBtn" onClick={()=>startGameCardProjection(card)}>SHOW PLAYER DISPLAY</button>
-            <button className="secondaryBtn dangerBtn" onClick={stopGameCardProjection}>HIDE PLAYER DISPLAY</button>
             <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);setScreen('sessions');}}>Add + View Session</button><button type="button" onClick={()=>setScreen('sessions')}>View Session</button><button type="button" onClick={()=>setScreen('playerDisplay')}>Player View</button>
             <button onClick={()=>setEditingCard(card)}>Edit</button>
             <button onClick={()=>duplicateCard(card)}>Duplicate</button>
@@ -7379,8 +7382,9 @@ return <div className="page">
 {form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/>
 <div className="playerIdentityFields">
 <label className="playerIdentityLabel">Animal Identity
-<select value={form.animal||''} onChange={e=>setForm({...form,animal:e.target.value})}><option value="">No animal set</option>{PLAYER_ANIMALS.map(a=><option key={a.name} value={a.name}>{a.emoji} {a.name} — {a.trait}</option>)}</select>
+<select value={form.animal||''} onChange={e=>setForm({...form,animal:e.target.value})}><option value="">No animal set</option>{PLAYER_ANIMALS.map(a=><option key={a.name} value={a.name}>{a.emoji} {a.name} — {a.trait}</option>)}<option value="__custom__">🐾 Custom animal…</option></select>
 </label>
+{form.animal==='__custom__'&&<div className="playerIdentityCustomRow"><input placeholder="Animal (e.g. Rottweiler)" value={form.customAnimal||''} onChange={e=>setForm({...form,customAnimal:e.target.value})}/><input placeholder="Trait (e.g. guarding, relentless)" value={form.customAnimalTrait||''} onChange={e=>setForm({...form,customAnimalTrait:e.target.value})}/></div>}
 <label className="playerIdentityLabel">Role Model Identity
 <select value={form.roleModel||''} onChange={e=>setForm({...form,roleModel:e.target.value})}><option value="">No role model set</option>{ROLE_MODELS.map(r=><option key={r.name} value={r.name}>{r.name} — {r.trait}</option>)}<option value="__custom__">Custom role model…</option></select>
 </label>
@@ -12062,7 +12066,6 @@ return <div>
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
     <button className="homeBtn" onClick={()=>go('home')}>HOME</button>
-    <button className="homeBtn navProjectBtn" onClick={()=>go('projection')}>PROJECT</button>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
@@ -12084,7 +12087,6 @@ return <div>
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={go}/>} 
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={go}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
-      {screen==='projection'&&<ProjectionView session={session} setScreen={go} players={players}/>}
       {screen==='playerDisplay'&&<PlayerDisplayView session={session} setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
