@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v149 Merged Game Builder + Diversity Tab';
+const APP_VERSION='v151 Custom Constraints';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -104,6 +104,8 @@ function RLDBadge({level,size='sm'}){
 // ─────────────────────────────────────────────────────────────────────────────
 const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
+const TIN_HEIGHT_OPTIONS=['No Tin Mod','L0 — 30cm above service line','L1 — Service line','L2 — 65cm from tin','L3 — 30cm from tin','L4 — 15cm from tin','L5 — Tin'];
+const TIN_HEIGHT_KEY='checkerboard_universal_tin_height_v149';
 const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
 const COMPETITION_STATE_KEY='checkerboardCompetitionStateV100h43';
 
@@ -1275,13 +1277,16 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
   function commit(next){if(isControlled)onChange(next);else setInternal(next);}
   const [open,setOpen]=useState('constraints');
   const [showLogicEdit,setShowLogicEdit]=useState(false);
+  const [showConstraintEdit,setShowConstraintEdit]=useState(false);
+  const [customConstraintText,setCustomConstraintText]=useState('');
+  const standardConstraintNames=useMemo(()=>new Set([...TECHNICAL_OVERLAYS.map(o=>o.title),...TACTICAL_OVERLAYS.map(o=>o.title),...UNIVERSAL_MENTAL_OVERLAYS.map(o=>o.name),...DIVERSITY_OVERLAYS.map(o=>o.title)]),[]);
   function toggle(panel){setOpen(open===panel?'':panel);}
   function setLogic(patch){commit({...config,logic:{...config.logic,...patch}});}
   function setInvasion(patch){commit({...config,logic:{...config.logic,invasion:{...config.logic.invasion,...patch}}});}
@@ -1303,7 +1308,17 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
   }
   const scored=[...gameLogic,...constraints];
   function setScore(name,val){commit({...config,scoring:{...config.scoring,[name]:val===''?'':Number(val)}});}
-  function setDB(patch){commit({...config,doubleBounce:{...config.doubleBounce,...patch}});}
+  function addCustomConstraint(){
+    const name=customConstraintText.trim();
+    if(!name){return;}
+    if(!constraints.includes(name)){
+      const nextScoring={...config.scoring};
+      if(nextScoring[name]==null){nextScoring[name]=parseBonusValue(name);}
+      commit({...config,constraints:[...constraints,name],scoring:nextScoring});
+    }
+    setCustomConstraintText('');
+  }
+  const customConstraints=constraints.filter(c=>!standardConstraintNames.has(c));
   return <div className="modifierEngine">
     {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
 
@@ -1331,8 +1346,14 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       </div>}
     </MEPanel>
 
-    <MEPanel title="2. Constraints" subtitle="Standard overlay library — Technical · Tactical · Mental" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
+    <MEPanel title="2. Constraints" subtitle="Standard overlay library — Technical · Tactical · Mental · Diversity" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
+      <button type="button" className="meAddOwnBtn" onClick={()=>setShowConstraintEdit(!showConstraintEdit)}>{showConstraintEdit?'− Hide custom constraint':'+ Add your own constraint'}</button>
+      {showConstraintEdit&&<div className="meLogicEdit">
+        <label className="meField">Custom constraint<input value={customConstraintText} onChange={e=>setCustomConstraintText(e.target.value)} placeholder="e.g. Recover through central lane" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustomConstraint();}}}/></label>
+        <button type="button" className="meChip meChipOn" onClick={addCustomConstraint}>+ Add constraint</button>
+        {customConstraints.length>0&&<div className="meChipRow">{customConstraints.map(c=><button type="button" key={c} className="meChip meChipOn" onClick={()=>toggleConstraint(c)}>{c} ✕</button>)}</div>}
+      </div>}
     </MEPanel>
 
     <MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
@@ -1345,6 +1366,10 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
 
     {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
       <UniversalDBHandicapPanel/>
+    </MEPanel>}
+
+    {!hideTinHeight&&<MEPanel title="5. Tin Height" subtitle="Per-player tin — a leveller between standards" open={open==='tin'} onToggle={()=>toggle('tin')}>
+      <UniversalTinHeightPanel/>
     </MEPanel>}
   </div>;
 }
@@ -6110,6 +6135,42 @@ function UniversalDBHandicapPanel({onAddToSession,setScreen}){
   </div>;
 }
 
+function UniversalTinHeightPanel({setScreen}){
+  const tinOptions=TIN_HEIGHT_OPTIONS;
+  const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(TIN_HEIGHT_KEY)||'{}').enabled||false;}catch{return false;}});
+  const [allocations,setAllocations]=useState(()=>{try{return JSON.parse(localStorage.getItem(TIN_HEIGHT_KEY)||'{}').allocations||{};}catch{return {};}});
+  const presentPlayers=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(player=>player&&player.present&&player.name).map(player=>player.name);}catch{return[];}},[enabled]);
+
+  useEffect(()=>{
+    const valid=new Set(presentPlayers);
+    const cleaned=Object.fromEntries(Object.entries(allocations).filter(([name])=>valid.has(name)));
+    localStorage.setItem(TIN_HEIGHT_KEY,JSON.stringify({enabled,allocations:cleaned,source:'presentPlayers'}));
+  },[enabled,allocations,presentPlayers]);
+
+  function setTin(name,value){setAllocations(prev=>({...prev,[name]:value}));}
+  function clearTin(){setEnabled(false);setAllocations({});}
+  function activeSummary(){return presentPlayers.length?presentPlayers.map(name=>`${name}: ${allocations[name]||'No Tin Mod'}`).join(' · '):'No present players selected';}
+  function saveTin(){
+    localStorage.setItem(TIN_HEIGHT_KEY,JSON.stringify({enabled:true,allocations,source:'presentPlayers'}));
+    alert('Tin height saved as a leveller. It attaches to the selected game/rotation alongside DB handicap.');
+  }
+
+  return <div className="universalDbPanel">
+    <div className="universalDbHeader">
+      <div><strong>Tin Height · All Games</strong><p>Uses players marked Present today. Raise the tin for stronger players to level a game without changing the task. Higher tin = harder.</p></div>
+      <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Tin Height On':'Enable Tin Height'}</button>
+    </div>
+    {enabled&&<>
+      <div className="statusBox"><strong>Present Players</strong><p>{presentPlayers.length?`${presentPlayers.length} present player${presentPlayers.length===1?'':'s'} loaded from Players / Attendance.`:'No present players found. Mark players Present in Players before assigning tin heights.'}</p></div>
+      <div className="dbAllocationGrid">
+        {presentPlayers.map(name=><div className="dbAllocationRow" key={name}><span>{name}</span><select value={allocations[name]||'No Tin Mod'} onChange={e=>setTin(name,e.target.value)}>{tinOptions.map(opt=><option key={opt}>{opt}</option>)}</select></div>)}
+      </div>
+      <div className="dbSummaryBox"><strong>Active Tin Rules</strong><p>{activeSummary()}</p></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();saveTin();}} disabled={!presentPlayers.length}>Save Tin Height</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearTin();}}>Clear Tin Height</button></div>
+    </>}
+  </div>;
+}
+
 // ─── POWER PLAY™ BUILDER ─────────────────────────────────────────────────────
 
 const PP_OVERLAYS=[
@@ -7164,6 +7225,7 @@ function UniversalGameEditor({game,onSave,onCancel}){
       <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
       <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
       <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
+      <label>Court Area<select value={draft.courtFormat||'Full court'} onChange={e=>update('courtFormat',e.target.value)}>{['Full court','3/4 Court','Egyptian 3/4','3/4 25','Front 3/4','Back 3/4','Half court'].map(c=><option key={c}>{c}</option>)}</select></label>
       <label className="wide">Task<textarea value={draft.task||''} onChange={e=>update('task',e.target.value)}/></label>
       <label className="wide">Rationale<textarea value={draft.rationale||''} onChange={e=>update('rationale',e.target.value)}/></label>
       <label className="wide">Coach Focus<textarea value={draft.coach||''} onChange={e=>update('coach',e.target.value)}/></label>
