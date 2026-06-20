@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v152 Game Logic Architecture + Per-Tab Custom Constraints';
+const APP_VERSION='v153 Tin Height In All Builders';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3161,6 +3161,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         </CollapsibleLayer>
 
         <UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>
+        <UniversalTinHeightPanel/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -3345,6 +3346,7 @@ return <div>
 {category==='Peak Week'&&<PeakWeekModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
+<UniversalTinHeightPanel/>
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -3719,6 +3721,7 @@ return <div className="checkerboardEngine">
 
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
+    <UniversalTinHeightPanel/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -3868,6 +3871,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     </CollapsibleLayer>
 
     <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
+    <UniversalTinHeightPanel/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -3978,6 +3982,7 @@ function ClassicConditionedBuilder({onAddToSession}){
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
       <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
+      <UniversalTinHeightPanel/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -4226,6 +4231,7 @@ function TechnicalFocusBuilder({onAddToSession}){
       </CollapsibleLayer>
 
       <UniversalDBHandicapPanel onAddToSession={addAndGo}/>
+      <UniversalTinHeightPanel/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -5811,6 +5817,7 @@ function CustomGameBuilder({onAddToSession}){
     </CollapsibleLayer>
 
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
+    <UniversalTinHeightPanel/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -7092,6 +7099,7 @@ function AroundTheBoardBuilder({onAddToSession}){
           </CollapsibleLayer>
 
           <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
+          <UniversalTinHeightPanel/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
