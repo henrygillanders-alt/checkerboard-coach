@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v145 Standard Modifier Engine + Custom Animal + Projection Retired';
+const APP_VERSION='v146 Configurable Modifier Engine + DB Handicap + New Competition';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1257,6 +1257,7 @@ function parseBonusValue(name){
 }
 function emptyModifierConfig(){
   return {
+    gameLogic:[],
     logic:{winCondition:'',survival:'',conversionWindow:'',bankReset:'',timeLimit:'',invasion:{ballOut:-1,balcony:-3,stopRule:'Stop when one player loses all lives',enabled:false}},
     constraints:[],
     scoring:{},
@@ -1284,6 +1285,14 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
   function setLogic(patch){commit({...config,logic:{...config.logic,...patch}});}
   function setInvasion(patch){commit({...config,logic:{...config.logic,invasion:{...config.logic.invasion,...patch}}});}
   const constraints=config.constraints||[];
+  const gameLogic=config.gameLogic||[];
+  function toggleGameLogic(name){
+    const on=gameLogic.includes(name);
+    const nextActive=on?gameLogic.filter(x=>x!==name):[...gameLogic,name];
+    const nextScoring={...config.scoring};
+    if(on){delete nextScoring[name];}else if(nextScoring[name]==null){nextScoring[name]=parseBonusValue(name);}
+    commit({...config,gameLogic:nextActive,scoring:nextScoring});
+  }
   function toggleConstraint(name){
     const on=constraints.includes(name);
     const nextActive=on?constraints.filter(x=>x!==name):[...constraints,name];
@@ -1291,13 +1300,18 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
     if(on){delete nextScoring[name];}else if(nextScoring[name]==null){nextScoring[name]=parseBonusValue(name);}
     commit({...config,constraints:nextActive,scoring:nextScoring});
   }
+  const scored=[...gameLogic,...constraints];
   function setScore(name,val){commit({...config,scoring:{...config.scoring,[name]:val===''?'':Number(val)}});}
   function setDB(patch){commit({...config,doubleBounce:{...config.doubleBounce,...patch}});}
   return <div className="modifierEngine">
     {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
 
-    <MEPanel title="1. Game Logic" subtitle="Standard play rules — add your own only if needed" open={open==='logic'} onToggle={()=>toggle('logic')}>
-      <p className="mutedText">Standard game logic applies by default (win conditions, survival, conversion windows). Open the editor only to override for this game.</p>
+    <MEPanel title="1. Game Logic" subtitle="What counts — eligibility and validity" open={open==='logic'} onToggle={()=>toggle('logic')}>
+      <p className="mutedText">Tap the modifiers that count for this game. Each one is configurable and feeds the Scoring panel.</p>
+      <div className="meChipRow">{COMPLETION_CONSTRAINTS.map(name=>{
+        const on=gameLogic.includes(name);
+        return <button type="button" key={name} className={on?'meChip meChipOn':'meChip'} onClick={()=>toggleGameLogic(name)}>{on?'✓ ':'+ '}{name}</button>;
+      })}</div>
       <button type="button" className="meAddOwnBtn" onClick={()=>setShowLogicEdit(!showLogicEdit)}>{showLogicEdit?'− Hide custom game logic':'+ Add your own game logic'}</button>
       {showLogicEdit&&<div className="meLogicEdit">
         <label className="meField">Win condition<input value={config.logic.winCondition} onChange={e=>setLogic({winCondition:e.target.value})} placeholder="e.g. First to clean finish after the challenge is met"/></label>
@@ -1320,22 +1334,16 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
     </MEPanel>
 
-    <MEPanel title="3. Scoring" subtitle="Editable value for each active constraint" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
-      {constraints.length===0?<p className="mutedText">Select constraints above to assign scoring values.</p>:
-        <div className="meScoreList">{constraints.map(name=><div className="meScoreRow" key={name}>
+    <MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
+      {scored.length===0?<p className="mutedText">Select game-logic modifiers or constraints above to assign scoring values.</p>:
+        <div className="meScoreList">{scored.map(name=><div className="meScoreRow" key={name}>
           <span className="meScoreLabel">{name}</span>
-          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[name]??parseBonusValue(name)} onChange={e=>setScore(name,e.target.value)}/></div>
+          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[name]??parseBonusValue(name)} onChange={e=>setScore(name,e.target.value)} placeholder="constraint only"/></div>
         </div>)}</div>}
     </MEPanel>
 
-    <MEPanel title="4. Double Bounce" subtitle="Attaches to this game — not a standalone block" open={open==='db'} onToggle={()=>toggle('db')}>
-      <div className="meChipRow">
-        {[['off','Off'],['unlimited','Unlimited'],['countdown','Countdown 5→1']].map(([mode,lbl])=>
-          <button type="button" key={mode} className={config.doubleBounce.mode===mode?'meChip meChipOn':'meChip'} onClick={()=>setDB({mode})}>{lbl}</button>)}
-      </div>
-      {config.doubleBounce.mode==='countdown'&&<label className="meField meFieldInline">Count from<input type="number" min="1" value={config.doubleBounce.countFrom} onChange={e=>setDB({countFrom:Number(e.target.value)})}/></label>}
-      {config.doubleBounce.mode!=='off'&&<label className="meField">Assign by player<input value={config.doubleBounce.byPlayer} onChange={e=>setDB({byPlayer:e.target.value})} placeholder="e.g. Jacob: 3 · Max: 1"/></label>}
-      {config.doubleBounce.mode!=='off'&&<label className="meCheck"><input type="checkbox" checked={!!config.doubleBounce.showOnPlayerView} onChange={e=>setDB({showOnPlayerView:e.target.checked})}/> Display active on Player View</label>}
+    <MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
+      <UniversalDBHandicapPanel/>
     </MEPanel>
   </div>;
 }
@@ -1862,7 +1870,7 @@ function MentalSkillsPlaceholder({setScreen}){
     {!activeAnimal&&section==='court'&&<div className="mentalContentPanel"><h2>👁 Court Calibration</h2><p>The official 4-minute knock-up is information gathering, not just warming up.</p><div className="mentalGrid"><div className="mentalCard"><h3>Self Calibration</h3><p>Check timing, length, movement, racket preparation and touch.</p></div><div className="mentalCard"><h3>Opponent Observation</h3><p>Notice whether opponent handles height, pace, volleys, late preparation or rotational swing paths.</p></div><div className="mentalCard"><h3>Quiet Eye</h3><p>Now the ball, court and opponent exist. Use target → ball → strike to launch into performance.</p></div></div></div>}
     {!activeAnimal&&section==='cues'&&<div className="mentalContentPanel"><h2>🎯 Cue Statements</h2><div className="mentalGrid">{animals.map(a=><div className="mentalCard" key={a.name}><h3>{a.emoji} {a.name}</h3><p>“{a.cue}”</p></div>)}</div></div>}
     {!activeAnimal&&section==='breathing'&&<div className="mentalContentPanel"><h2>🫁 Breathing & Regulation</h2><p className="mutedText">Breathing is a tool selected when useful. The aim is agency, not dependency on a ritual.</p><div className="mentalGrid"><div className="mentalCard"><h3>😌 Calm Breath</h3><p><strong>Use:</strong> anxiety, rushing, panic, over-arousal.</p><p><strong>Protocol:</strong> inhale 4 seconds → exhale 6–8 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 30 seconds.</p><p><strong>Animals:</strong> Elephant + Golden Retriever.</p><p><strong>Coach observes:</strong> slower tempo, reduced rushing, calmer reset.</p></div><div className="mentalCard"><h3>🎯 Centre Breath</h3><p><strong>Use:</strong> refocus, distraction, overthinking, between rallies.</p><p><strong>Protocol:</strong> inhale 3 seconds → hold 3 seconds → exhale 3 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 20–30 seconds.</p><p><strong>Animals:</strong> Eagle + Wolf.</p><p><strong>Coach observes:</strong> breath, cue, eyes up, ready posture.</p></div><div className="mentalCard"><h3>⚡ Activate Breath</h3><p><strong>Use:</strong> flat, passive or under-aroused players.</p><p><strong>Protocol:</strong> inhale 1 second → forceful exhale 1 second → repeat 2–3 times.</p><p><strong>Total time:</strong> approximately 4–6 seconds.</p><p><strong>Animals:</strong> Lion + Cheetah.</p><p><strong>Coach observes:</strong> stronger posture, faster first movement, commitment.</p></div><div className="mentalCard"><h3>🦁 Attack Breath</h3><p><strong>Use:</strong> immediately before an attacking opportunity.</p><p><strong>Protocol:</strong> recognise opportunity → 1-second inhale → 1-second forceful exhale → attack.</p><p><strong>Total time:</strong> 1–2 seconds, single repetition.</p><p><strong>Animals:</strong> Lion + Eagle.</p><p><strong>Coach observes:</strong> attack linked to information, not a blind rush.</p></div></div></div>}
-    {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Overlays</button></div>}
+    {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Modifier Engine</button></div>}
   </div>;
 }
 
@@ -3213,7 +3221,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
 
       
-      <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Overlays</h2></button>
+      <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
 
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
     </div>;
@@ -8867,7 +8875,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     <div className="page">
       <div className="pageTop">
         <h1>Competition</h1>
-        <div className="buttonRow"><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
+        <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Start a new competition? This clears the current teams, scores, rounds and results. Players and DB handicaps are kept.')){try{localStorage.removeItem(COMPETITION_STATE_KEY);localStorage.removeItem('checkerboardCompetitionProjection');}catch{}window.location.reload();}}}>+ NEW COMPETITION</button><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
       </div>
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
