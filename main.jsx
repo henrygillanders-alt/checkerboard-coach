@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v146 Configurable Modifier Engine + DB Handicap + New Competition';
+const APP_VERSION='v147 Competition Modifier Engine + Per-Mode Reset';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1274,7 +1274,7 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game'}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
@@ -1342,9 +1342,9 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
         </div>)}</div>}
     </MEPanel>
 
-    <MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
+    {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
       <UniversalDBHandicapPanel/>
-    </MEPanel>
+    </MEPanel>}
   </div>;
 }
 
@@ -7416,6 +7416,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function getSavedCompetitionState(){try{return JSON.parse(localStorage.getItem(COMPETITION_STATE_KEY)||'{}')}catch{return {}}}
   // v100h43: restore competition / box / NSSL state when returning to the page.
   const [mode,setMode]=useState(()=>getSavedCompetitionState().mode||'invasion');
+  const [competitionModifier,setCompetitionModifier]=useState(()=>{
+    try{const saved=JSON.parse(localStorage.getItem('checkerboard_competition_modifier_v147')||'null');if(saved)return saved;}catch{}
+    return {...emptyModifierConfig(),constraints:(getSavedCompetitionState().competitionLayers||[])};
+  });
+  useEffect(()=>{try{localStorage.setItem('checkerboard_competition_modifier_v147',JSON.stringify(competitionModifier));}catch{}},[competitionModifier]);
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
       // v100h21: first use the App-level remembered format. This survives page changes.
@@ -7650,6 +7655,28 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   function resetMatch(){
     setMatchScore({a:0,b:0});
+  }
+
+  function resetCurrentMode(){
+    const labels={invasion:'Invasion game',matchplay:'Matchplay',roundRobin:'Round Robin',nsl:'NSSL',monrad:'Monrad'};
+    if(!window.confirm(`Reset ${labels[mode]||'this competition'}? This clears its draw, teams, scores and results. Other modes, players and DB handicaps are kept.`)) return;
+    if(mode==='invasion'){
+      setInvasionTeams([]);setInvasionTeamPoints({});setInvasionPlayerPoints({});setInvasionTeamLives({});
+      setInvasionCarryLives({});setInvasionFinishLives({});setInvasionPlayerRound(0);setInvasionCourtRound(0);
+      setInvasionGameStarted(false);setInvasionRotationStep(0);setInvasionEliminated('');setInvasionCourtAssignments([]);setInvasionInvaderOverrides({});
+      try{const s=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');['invasionTeams','invasionTeamPoints','invasionPlayerPoints','invasionTeamLives','invasionCarryLives','invasionFinishLives','invasionPlayerRound','invasionCourtRound','invasionGameStarted','invasionRotationStep','invasionEliminated','invasionCourtAssignments','invasionInvaderOverrides'].forEach(k=>delete s[k]);localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(s));}catch{}
+    }else if(mode==='matchplay'){
+      setMatchScore({a:0,b:0});setMatchPlayers({a:'P1',b:'P2'});
+      setCompetitionMatchScores(prev=>{const n={...prev};Object.keys(n).forEach(k=>{if(k.startsWith('matchplay'))delete n[k];});return n;});
+    }else if(mode==='roundRobin'){
+      setRrFixtures([]);setRrResults({});setRrBoxes([]);setRrBoxFixtures([]);setRrBoxResults({});setRrFinalBoxes([]);setRrFinalFixtures([]);setRrFinalResults({});
+      setCompetitionMatchScores(prev=>{const n={...prev};Object.keys(n).forEach(k=>{if(k.startsWith('rr'))delete n[k];});return n;});
+    }else if(mode==='nsl'){
+      setNslScores({});setNslActivePeriod(1);setNslTimerRunning(false);setNslPowerPlayActive(false);setNslPowerPlayTeam('');
+    }else if(mode==='monrad'){
+      setMonradRounds([]);setMonradResults({});setMonradPlacingRounds([]);setMonradPlacingResults({});setMonradFinalPlaces({});
+      setCompetitionMatchScores(prev=>{const n={...prev};Object.keys(n).forEach(k=>{if(k.startsWith('monrad'))delete n[k];});return n;});
+    }
   }
 
 
@@ -8875,7 +8902,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     <div className="page">
       <div className="pageTop">
         <h1>Competition</h1>
-        <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Start a new competition? This clears the current teams, scores, rounds and results. Players and DB handicaps are kept.')){try{localStorage.removeItem(COMPETITION_STATE_KEY);localStorage.removeItem('checkerboardCompetitionProjection');}catch{}window.location.reload();}}}>+ NEW COMPETITION</button><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
+        <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Start a new competition? This clears the current teams, scores, rounds and results. Players and DB handicaps are kept.')){try{localStorage.removeItem(COMPETITION_STATE_KEY);localStorage.removeItem('checkerboardCompetitionProjection');}catch{}window.location.reload();}}}>+ NEW COMPETITION</button><button type="button" className="secondaryBtn" onClick={resetCurrentMode}>RESET {(mode==='roundRobin'?'ROUND ROBIN':mode==='nsl'?'NSSL':mode||'').toUpperCase()}</button><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
       </div>
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
@@ -9856,8 +9883,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         </div>
 
         <div className="technicalScoringBox alwaysVisibleScoring">
-          <strong>Modifier Overlays</strong>
-          <OverlayFamilyTabs selectedOverlays={competitionLayers} onToggle={toggleLayer} context="Competition" />
+          <strong>Universal Modifiers</strong>
+          <UniversalModifierEngine title="" context="Competition" hideDoubleBounce value={competitionModifier} onChange={next=>{setCompetitionModifier(next);setCompetitionLayers(next.constraints||[]);}}/>
 
           <label>Checkerboard Code / Sequence
             <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
