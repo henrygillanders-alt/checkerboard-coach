@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v147 Competition Modifier Engine + Per-Mode Reset';
+const APP_VERSION='v149 Merged Game Builder + Diversity Tab';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1160,6 +1160,7 @@ const TECHNICAL_OVERLAYS = [
  {id:'racquet-above-wrist',category:'Preparation',title:'Racquet Above Wrist',rule:'Racquet head is organised above wrist before the striking action.',process:'Improves readiness and reduces late compensatory wrist action. The racquet is available earlier as part of the movement solution.',breakdown:'Racquet drops; wrist collapses; player flicks late.',constraint:'Racquet below wrist in preparation = warning or loss.',checkerboard:'Useful for volleys to [5]/[6] and attacks [8-1], [7-2].',pairings:['Prepared before leaving T','Non-playing arm active','Stable head through contact'],games:['Volley games','Double Bounce','Checkerboard front-wall targets']},
  {id:'prepared-before-t',category:'Preparation',title:'Prepared Before Leaving T',rule:'Racquet preparation must be visible before first movement away from the T zone.',process:'Preparation and movement couple earlier. The player is not using travel time to organise the racquet, freeing perception and movement resources for spacing and decision adaptation.',breakdown:'Player leaves T empty-handed and arrives rushed.',constraint:'No visible preparation before movement = “late prep”.',checkerboard:'Strong with [6-3], [5-4], [8-1].',pairings:['Second Eye Overlay','Move before bounce','Split before opponent contact'],games:['Progressive ATL','Boast-drive rotations','Double Bounce']},
  {id:'split-contact',category:'Preparation',title:'Split Before Opponent Contact',rule:'Player shows a split/readiness action before opponent strikes.',process:'The split creates a perceptual-motor readiness point linking opponent contact information to first movement.',breakdown:'Player waits flat-footed and starts late.',constraint:'No split before opponent contact = loss or bonus removed.',checkerboard:'Useful in rapid exchanges through [3]/[4] and volley pressure from [5]/[6].',pairings:['Early opponent pickup','Prepared before leaving T','Move before bounce'],games:['Rotational pressure','Invasion','Progressive ATL']},
+ {id:'split-step',category:'Movement',title:'Split Step',rule:'Player lands the split step as the opponent strikes the ball.',process:'A timed split step couples opponent contact information to first movement, loading the legs so the player can push off in any direction. It converts watching into a readiness action and removes the flat-footed start.',breakdown:'No split, or split lands too early/late; player starts flat-footed and arrives rushed.',constraint:'No split step timed to opponent contact = loss or bonus removed.',checkerboard:'Useful everywhere, especially rapid exchanges through [3]/[4] and volley pressure from [5]/[6].',pairings:['Split before opponent contact','Early opponent pickup','Move before bounce'],games:['Rotational pressure','Invasion','Progressive ATL','Double Bounce']},
  {id:'non-playing-arm',category:'Balance',title:'Non-Playing Arm Active',rule:'Non-playing arm supports spacing, balance and body organisation before contact.',process:'The non-playing arm regulates trunk orientation and spacing, giving a more stable movement platform under pressure.',breakdown:'Free arm disappears and body collapses into the ball.',constraint:'Passive/trapped arm during key contact = “arm”.',checkerboard:'Useful on [8-1], [7-2], [6-3], [5-4].',pairings:['Finish balanced','Stable head through contact','Racquet above wrist'],games:['Double Bounce','Checkerboard pairs']},
  {id:'stable-head',category:'Balance',title:'Stable Head Through Contact',rule:'Head remains stable through striking phase.',process:'Head stability protects visual calibration and contact timing. Excessive movement disrupts perception of spacing and destabilises action.',breakdown:'Head lifts/dives through contact.',constraint:'Clear head pull = loss or reset.',checkerboard:'Strong on [8-1], [7-2], [6-3], [5-4].',pairings:['Eyes on contact point','Finish balanced','Non-playing arm active'],games:['Double Bounce','Front-court pressure games']},
  {id:'finish-balanced',category:'Balance',title:'Finish Balanced',rule:'Player finishes the shot without falling or collapsing out of shape.',process:'Balanced finishing shows the movement solution accounts for current shot and next action. It supports faster reorientation and recovery pickup.',breakdown:'Player over-commits and cannot recover/read next ball.',constraint:'Unnecessary fall-through = loss or bonus removed.',checkerboard:'Useful after [8-1], [7-2], [6-3].',pairings:['Stable head through contact','Non-playing arm active','Recover through central lane'],games:['Double Bounce','Progressive ATL','Invasion']},
@@ -1656,8 +1657,9 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
   const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
   const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
   const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
-  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : mentalOptions;
-  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions];
+  const diversityOptions=DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
+  const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : family==='Diversity' ? diversityOptions : mentalOptions;
+  const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions,...diversityOptions];
   const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
 
   return <div className="overlayFamilyEngine">
@@ -1665,6 +1667,7 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
       <button type="button" className={family==='Technical'?'activeFamilyTab':''} onClick={()=>setFamily('Technical')}>🔧 Technical</button>
       <button type="button" className={family==='Tactical'?'activeFamilyTab':''} onClick={()=>setFamily('Tactical')}>♟ Tactical</button>
       <button type="button" className={family==='Mental Performance'?'activeFamilyTab':''} onClick={()=>setFamily('Mental Performance')}>🧠 Mental Performance</button>
+      <button type="button" className={family==='Diversity'?'activeFamilyTab':''} onClick={()=>setFamily('Diversity')}>🎲 Diversity</button>
     </div>
 
     <p className="overlayExplain">Select {family.toLowerCase()} overlays for {context}. Selected overlays continue to feed the Active Overlay Rules section and projection text.</p>
@@ -7145,11 +7148,17 @@ function appendToSessionState(prev,card){
 }
 
 function UniversalGameEditor({game,onSave,onCancel}){
-  const [draft,setDraft]=useState(()=>normaliseGameCard(game));
+  const [draft,setDraft]=useState(()=>{
+    const base=normaliseGameCard(game);
+    return {...base,
+      modifier: base.modifier||{...emptyModifierConfig(),constraints:(base.layers||[])},
+      appliesTo: base.appliesTo||'Everyone',
+      namedPlayer: base.namedPlayer||''};
+  });
   function update(key,value){setDraft(prev=>({...prev,[key]:value}));}
-  function updateLayers(value){setDraft(prev=>({...prev,layers:value.split(',').map(x=>x.trim()).filter(Boolean)}));}
+  function onModifierChange(next){setDraft(prev=>({...prev,modifier:next,layers:next.constraints||[]}));}
   return <div className="universalEditor customGameBuilder">
-    <h2>{draft.id===game.id?'Edit Game Card':'New Game Card'}</h2>
+    <h2>{draft.id===game.id?'Edit Game':'New Game'}</h2>
     <div className="editorGrid">
       <label>Title<input value={draft.title||''} onChange={e=>update('title',e.target.value)}/></label>
       <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
@@ -7158,10 +7167,20 @@ function UniversalGameEditor({game,onSave,onCancel}){
       <label className="wide">Task<textarea value={draft.task||''} onChange={e=>update('task',e.target.value)}/></label>
       <label className="wide">Rationale<textarea value={draft.rationale||''} onChange={e=>update('rationale',e.target.value)}/></label>
       <label className="wide">Coach Focus<textarea value={draft.coach||''} onChange={e=>update('coach',e.target.value)}/></label>
-      <label className="wide">Scoring<textarea value={draft.scoring||''} onChange={e=>update('scoring',e.target.value)}/></label>
-      <label className="wide">Layers / Overlays<input value={(draft.layers||[]).join(', ')} onChange={e=>updateLayers(e.target.value)} placeholder="Clean Winner, Opponent Off T"/></label>
+      <label className="wide">Scoring notes (optional)<textarea value={draft.scoring||''} onChange={e=>update('scoring',e.target.value)}/></label>
     </div>
-    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>onSave(normaliseGameCard(draft))}>Save Game Card</button><button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+
+    <div className="appliesToBlock">
+      <strong>Constraint applies to</strong>
+      <p className="overlayExplain">Choose who the constraints bind. Use this for one-player games (server / receiver / a named player) or whole-game constraints for everyone.</p>
+      <div className="meChipRow">{['Everyone','Server','Receiver','Named Player'].map(opt=>
+        <button type="button" key={opt} className={draft.appliesTo===opt?'meChip meChipOn':'meChip'} onClick={()=>update('appliesTo',opt)}>{opt}</button>)}</div>
+      {draft.appliesTo==='Named Player'&&<label className="meField">Named player<input value={draft.namedPlayer||''} onChange={e=>update('namedPlayer',e.target.value)} placeholder="e.g. Jacob"/></label>}
+    </div>
+
+    <UniversalModifierEngine title="Universal Modifiers" context={draft.title||'Game'} value={draft.modifier} onChange={onModifierChange}/>
+
+    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>onSave(normaliseGameCard(draft))}>Save Game</button><button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
 }
 
@@ -7203,7 +7222,7 @@ function Games({setSession,setScreen}){
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
     {id:'rotations',label:'Rotations',category:'Rotations'},
-    {id:'custom',label:'Custom',category:'Custom'},
+    {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
 
@@ -7267,7 +7286,7 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game Card</button>
+      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -7291,7 +7310,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='custom'&&<CustomGameBuilder key="custom-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onSave={card=>addAndGo(card)} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
@@ -7766,10 +7785,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           }
         } else {
           next[gameIdx]={...next[gameIdx],[side]:cleaned,loserSide:''};
-        }
-        if(scoreId==='matchplay-main'){
-          const live=calculateWinsFrom(next);
-          setMatchScore(live);
         }
         return next;
       });

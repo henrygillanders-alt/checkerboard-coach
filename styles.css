@@ -8254,3 +8254,7 @@ button.mentalSkillsTile p{
 /* ── v145 engine: collapsed custom logic ─────────────────────────────────── */
 .meAddOwnBtn{align-self:flex-start;font-size:0.8rem;padding:6px 12px;border-radius:8px;border:1px dashed #356;background:transparent;color:#7fb4ff;cursor:pointer;}
 .meLogicEdit{display:flex;flex-direction:column;gap:10px;margin-top:6px;padding-top:8px;border-top:1px dashed #243244;}
+
+/* ── v149 unified Game Builder: applies-to ───────────────────────────────── */
+.appliesToBlock{display:flex;flex-direction:column;gap:8px;margin:14px 0;padding:12px 14px;border:1px solid #243244;border-radius:12px;background:#0e1722;}
+.appliesToBlock>strong{font-size:0.95rem;}
