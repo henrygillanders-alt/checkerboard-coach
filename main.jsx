@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v143 Persistent Player Display URL';
+const APP_VERSION='v144 Universal Modifier Engine + Player Identifiers';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -159,7 +159,50 @@ cbRef:CB_CODES
 
 const DEFAULT_ATL={btlCount:'0 BTL shots',side:'Both sides',consecutive:'No',shot1:'Any shot',shot2:'Any shot',shot3:'Any shot',method1:'Players choice',method2:'Players choice',method3:'Players choice',cbRef:'None'};
 
-const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false};
+// ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
+const PLAYER_ANIMALS=[
+  {emoji:'🦅',name:'Eagle',trait:'awareness, sees early, picks up information'},
+  {emoji:'🐕',name:'Golden Retriever',trait:'resilient, ignores distractions, chases the next ball'},
+  {emoji:'🐈',name:'Cat',trait:'patient, balanced, strikes at the right moment'},
+  {emoji:'🦁',name:'Lion',trait:'brave, commits to the opportunity'},
+  {emoji:'🐅',name:'Tiger',trait:'predatory, hunts a weakness with sustained pressure'},
+  {emoji:'🐺',name:'Wolf',trait:'disciplined, tactically intelligent, stays with the plan'},
+  {emoji:'🐆',name:'Cheetah',trait:'fast, early pick-up, moves early'},
+  {emoji:'🐘',name:'Elephant',trait:'composed, stable under pressure and emotion'},
+  {emoji:'🦉',name:'Owl',trait:'adaptable, solves problems, changes solution'},
+  {emoji:'🐬',name:'Dolphin',trait:'creative, uses disguise and variety with purpose'},
+  {emoji:'🦗',name:'Grasshopper',trait:'adaptable, quick learner, light mover'},
+  {emoji:'🦈',name:'Shark',trait:'predator, aggressive finisher, relentless'}
+];
+const ROLE_MODELS=[
+  {name:'James Willstrop',trait:'touch'},
+  {name:'Jonah Barrington',trait:'will power / endurance'},
+  {name:'Roger Federer',trait:'cool and clinical under pressure'}
+];
+function findAnimal(name){return PLAYER_ANIMALS.find(a=>a.name===name)||null;}
+function playerRoleModelLabel(player){
+  if(!player) return '';
+  if(player.roleModel==='__custom__'){
+    const n=String(player.customRoleModel||'').trim();
+    if(!n) return '';
+    const t=String(player.customRoleModelTrait||'').trim();
+    return t?`${n} — ${t}`:n;
+  }
+  const preset=ROLE_MODELS.find(r=>r.name===player.roleModel);
+  return preset?`${preset.name} — ${preset.trait}`:'';
+}
+function PlayerIdTags({player,showTrait=false}){
+  if(!player) return null;
+  const animal=findAnimal(player.animal);
+  const role=playerRoleModelLabel(player);
+  if(!animal&&!role) return null;
+  return <span className="playerIdTags">
+    {animal&&<span className="playerIdTag playerIdAnimal" title={animal.trait}>{animal.emoji} {animal.name}{showTrait&&animal.trait?` · ${animal.trait}`:''}</span>}
+    {role&&<span className="playerIdTag playerIdRole" title={role}>🎯 {role}</span>}
+  </span>;
+}
+
+const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false,animal:'',roleModel:'',customRoleModel:'',customRoleModelTrait:''};
 
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
 
@@ -1194,6 +1237,104 @@ const DIVERSITY_OVERLAYS=[
   {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
 ];
 
+// ── v144 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
+// Single engine replacing the old overlay systems. Fixed panel order everywhere:
+// 1) Game Logic  2) Constraints  3) Scoring  4) Double Bounce.
+const MODIFIER_CONSTRAINTS={
+  technical:['Volley only','No boast','Weak side','Straight only','No back wall'],
+  tactical:['Length before attack','Opponent off T','Blind finish','Central control','Target zones'],
+  mental:['Pressure point','One chance only','Bonus under pressure','Clutch point','Comeback point']
+};
+const DEFAULT_MODIFIER_SCORING={'Volley only':2,'Blind finish':3,'Length before attack':1,'Opponent off T':2,'Pressure point':5};
+function defaultScoreFor(label){return DEFAULT_MODIFIER_SCORING[label]!=null?DEFAULT_MODIFIER_SCORING[label]:1;}
+function emptyModifierConfig(){
+  return {
+    logic:{winCondition:'',survival:'',conversionWindow:'',bankReset:'',timeLimit:'',invasion:{ballOut:-1,balcony:-3,stopRule:'Stop when one player loses all lives',enabled:false}},
+    constraints:{technical:[],tactical:[],mental:[]},
+    scoring:{},
+    doubleBounce:{mode:'off',countFrom:5,byPlayer:'',showOnPlayerView:true}
+  };
+}
+function MEPanel({title,subtitle,open,onToggle,children}){
+  return <div className={open?'mePanel meOpen':'mePanel'}>
+    <button type="button" className="mePanelHead" onClick={onToggle}>
+      <span className="mePanelTitle">{title}</span>
+      {subtitle&&<span className="mePanelSub">{subtitle}</span>}
+      <span className="mePanelChevron">{open?'▾':'▸'}</span>
+    </button>
+    {open&&<div className="mePanelBody">{children}</div>}
+  </div>;
+}
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine'}){
+  const isControlled=!!value&&typeof onChange==='function';
+  const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
+  const config=isControlled?value:internal;
+  function commit(next){if(isControlled)onChange(next);else setInternal(next);}
+  const [open,setOpen]=useState('logic');
+  function toggle(panel){setOpen(open===panel?'':panel);}
+  function setLogic(patch){commit({...config,logic:{...config.logic,...patch}});}
+  function setInvasion(patch){commit({...config,logic:{...config.logic,invasion:{...config.logic.invasion,...patch}}});}
+  function toggleConstraint(group,label){
+    const active=config.constraints[group]||[];
+    const on=active.includes(label);
+    const nextActive=on?active.filter(x=>x!==label):[...active,label];
+    const nextScoring={...config.scoring};
+    if(on){delete nextScoring[label];}else if(nextScoring[label]==null){nextScoring[label]=defaultScoreFor(label);}
+    commit({...config,constraints:{...config.constraints,[group]:nextActive},scoring:nextScoring});
+  }
+  function setScore(label,val){commit({...config,scoring:{...config.scoring,[label]:val===''?'':Number(val)}});}
+  function setDB(patch){commit({...config,doubleBounce:{...config.doubleBounce,...patch}});}
+  const activeConstraints=[...config.constraints.technical,...config.constraints.tactical,...config.constraints.mental];
+  const groupLabels={technical:'Technical',tactical:'Tactical',mental:'Mental Performance'};
+  return <div className="modifierEngine">
+    {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
+
+    <MEPanel title="1. Game Logic" subtitle="Win, survival, windows, time, invasion penalties" open={open==='logic'} onToggle={()=>toggle('logic')}>
+      <label className="meField">Win condition<input value={config.logic.winCondition} onChange={e=>setLogic({winCondition:e.target.value})} placeholder="e.g. First to clean finish after the challenge is met"/></label>
+      <label className="meField">Survival rule<input value={config.logic.survival} onChange={e=>setLogic({survival:e.target.value})} placeholder="e.g. Lose a life on an unforced error"/></label>
+      <label className="meField">Conversion window<input value={config.logic.conversionWindow} onChange={e=>setLogic({conversionWindow:e.target.value})} placeholder="e.g. 4-shot window to convert"/></label>
+      <label className="meField">Bank / reset<input value={config.logic.bankReset} onChange={e=>setLogic({bankReset:e.target.value})} placeholder="e.g. Bank points at 5, reset on error"/></label>
+      <label className="meField">Time limit<input value={config.logic.timeLimit} onChange={e=>setLogic({timeLimit:e.target.value})} placeholder="e.g. 8 minutes"/></label>
+      <div className="meInvasionBlock">
+        <label className="meCheck"><input type="checkbox" checked={!!config.logic.invasion.enabled} onChange={e=>setInvasion({enabled:e.target.checked})}/> Invasion penalty rules</label>
+        {config.logic.invasion.enabled&&<div className="meInvasionRows">
+          <label className="meField meFieldInline">Ball out<input type="number" value={config.logic.invasion.ballOut} onChange={e=>setInvasion({ballOut:Number(e.target.value)})}/></label>
+          <label className="meField meFieldInline">Balcony<input type="number" value={config.logic.invasion.balcony} onChange={e=>setInvasion({balcony:Number(e.target.value)})}/></label>
+          <label className="meField">Stop rule<input value={config.logic.invasion.stopRule} onChange={e=>setInvasion({stopRule:e.target.value})}/></label>
+        </div>}
+      </div>
+    </MEPanel>
+
+    <MEPanel title="2. Constraints" subtitle="Technical · Tactical · Mental Performance" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
+      {['technical','tactical','mental'].map(group=><div className="meConstraintGroup" key={group}>
+        <h4>{groupLabels[group]}</h4>
+        <div className="meChipRow">{MODIFIER_CONSTRAINTS[group].map(label=>{
+          const on=(config.constraints[group]||[]).includes(label);
+          return <button type="button" key={label} className={on?'meChip meChipOn':'meChip'} onClick={()=>toggleConstraint(group,label)}>{label}</button>;
+        })}</div>
+      </div>)}
+    </MEPanel>
+
+    <MEPanel title="3. Scoring" subtitle="Assign an editable value to each active constraint" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
+      {activeConstraints.length===0?<p className="mutedText">Activate constraints above to assign scoring values.</p>:
+        <div className="meScoreList">{activeConstraints.map(label=><div className="meScoreRow" key={label}>
+          <span className="meScoreLabel">{label}</span>
+          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[label]??defaultScoreFor(label)} onChange={e=>setScore(label,e.target.value)}/></div>
+        </div>)}</div>}
+    </MEPanel>
+
+    <MEPanel title="4. Double Bounce" subtitle="Attaches to this game — not a standalone block" open={open==='db'} onToggle={()=>toggle('db')}>
+      <div className="meChipRow">
+        {[['off','Off'],['unlimited','Unlimited'],['countdown','Countdown 5→1']].map(([mode,lbl])=>
+          <button type="button" key={mode} className={config.doubleBounce.mode===mode?'meChip meChipOn':'meChip'} onClick={()=>setDB({mode})}>{lbl}</button>)}
+      </div>
+      {config.doubleBounce.mode==='countdown'&&<label className="meField meFieldInline">Count from<input type="number" min="1" value={config.doubleBounce.countFrom} onChange={e=>setDB({countFrom:Number(e.target.value)})}/></label>}
+      {config.doubleBounce.mode!=='off'&&<label className="meField">Assign by player<input value={config.doubleBounce.byPlayer} onChange={e=>setDB({byPlayer:e.target.value})} placeholder="e.g. Jacob: 3 · Max: 1"/></label>}
+      {config.doubleBounce.mode!=='off'&&<label className="meCheck"><input type="checkbox" checked={!!config.doubleBounce.showOnPlayerView} onChange={e=>setDB({showOnPlayerView:e.target.checked})}/> Display active on Player View</label>}
+    </MEPanel>
+  </div>;
+}
+
 function UniversalOverlays({setScreen}){
   const [family,setFamily]=useState('Tactical');
   const [selected,setSelected]=useState(null);
@@ -1245,11 +1386,15 @@ function UniversalOverlays({setScreen}){
   return <div className="page universalOverlaysPage bottomOverlayPad">
     <div className="pageTop">
       <div>
-        <h1>Universal Overlays</h1>
-        <p className="mutedText">{family} overlays</p>
+        <h1>Universal Modifier Engine</h1>
+        <p className="mutedText">One engine for every game — Game Logic · Constraints · Scoring · Double Bounce.</p>
       </div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
+
+    <UniversalModifierEngine title=""/>
+
+    <div className="overlayReferenceDivider"><strong>Overlay reference library</strong><span>Browse the {family.toLowerCase()} overlay descriptions used as constraint language.</span></div>
 
     {family==='Tactical'&&<div className="universalInfoNote"><strong>Tactical Overlays</strong><span>Use these to shape decisions, advantage recognition and tactical behaviours inside games.</span></div>}
     {family==='Technical'&&<div className="universalInfoNote"><strong>Technical Overlays</strong><span>Use these as observable perception–action constraints, not isolated technique commands.</span></div>}
@@ -7232,11 +7377,20 @@ return <div className="page">
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
 <select value={form.category} onChange={e=>updateCategory(e.target.value)}>{LEVELS.map(level=><option key={level.label}>{level.label}</option>)}<option>Guest</option></select>
 {form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/>
+<div className="playerIdentityFields">
+<label className="playerIdentityLabel">Animal Identity
+<select value={form.animal||''} onChange={e=>setForm({...form,animal:e.target.value})}><option value="">No animal set</option>{PLAYER_ANIMALS.map(a=><option key={a.name} value={a.name}>{a.emoji} {a.name} — {a.trait}</option>)}</select>
+</label>
+<label className="playerIdentityLabel">Role Model Identity
+<select value={form.roleModel||''} onChange={e=>setForm({...form,roleModel:e.target.value})}><option value="">No role model set</option>{ROLE_MODELS.map(r=><option key={r.name} value={r.name}>{r.name} — {r.trait}</option>)}<option value="__custom__">Custom role model…</option></select>
+</label>
+{form.roleModel==='__custom__'&&<div className="playerIdentityCustomRow"><input placeholder="Role model name (e.g. Ali Farag)" value={form.customRoleModel||''} onChange={e=>setForm({...form,customRoleModel:e.target.value})}/><input placeholder="Trait (e.g. deception)" value={form.customRoleModelTrait||''} onChange={e=>setForm({...form,customRoleModelTrait:e.target.value})}/></div>}
+</div>
 <div className="buttonRow"><button className="primaryBtn" onClick={savePlayer}>{editing!==null?'Update Player':'Save Player'}</button><button className="secondaryBtn" onClick={()=>{setShowForm(false);setEditing(null);setForm(EMPTY_PLAYER);}}>Cancel</button></div></div>}
 <div className="attendanceSummary"><strong>Present for {sessionDate}:</strong> {presentCount}<span>All unmarked players are recorded as absent when attendance is saved.</span></div>
 <div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow"><input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/><select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select><input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/><button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in ranked court allocation. Lower number = stronger seed.</p></div>
 {players.length===0&&<div className="placeholder">No players added yet. Add players or guests above.</div>}
-<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><h3>{player.name}</h3><div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div><div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div><div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Absent'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div></div>)}</div>
+<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><div className="playerCardNameRow"><h3>{player.name}</h3><PlayerIdTags player={player}/></div><div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div><div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div><div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Absent'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div></div>)}</div>
 <div className="gameCard"><h2>Attendance History</h2>{attendanceHistory.length?<div className="attendanceHistoryList">{attendanceHistory.slice(0,8).map(r=><div key={r.id||r.date}><strong>{r.date}</strong><span>{r.players.filter(p=>p.present).length} present · {r.players.filter(p=>!p.present).length} absent</span></div>)}</div>:<p className="mutedText">No saved attendance records yet.</p>}</div>
 </div>;
 }

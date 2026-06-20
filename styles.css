@@ -8208,3 +8208,45 @@ button.mentalSkillsTile p{
 }
 /* v142: Projector home tile is removed; keep any old projector card hidden if reached through stale markup. */
 .projectionHomeCard{display:none!important;}
+
+/* ── v144 Player Identifiers ─────────────────────────────────────────────── */
+.playerCardNameRow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+.playerIdTags{display:inline-flex;flex-wrap:wrap;gap:6px;}
+.playerIdTag{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:600;padding:2px 8px;border-radius:999px;line-height:1.4;white-space:nowrap;}
+.playerIdAnimal{background:#10331f;color:#7ee0a6;border:1px solid #1d6b3f;}
+.playerIdRole{background:#10243f;color:#7fb4ff;border:1px solid #1d4a8b;}
+.playerIdentityFields{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px;}
+.playerIdentityLabel{display:flex;flex-direction:column;gap:4px;font-size:0.8rem;font-weight:600;color:#bcd;}
+.playerIdentityLabel select{font-weight:400;}
+.playerIdentityCustomRow{display:flex;gap:8px;flex-wrap:wrap;}
+.playerIdentityCustomRow input{flex:1;min-width:140px;}
+
+/* ── v144 Universal Modifier Engine ──────────────────────────────────────── */
+.modifierEngine{display:flex;flex-direction:column;gap:10px;margin:8px 0 18px;}
+.modifierEngineHead h2{margin:0 0 2px;}
+.mePanel{border:1px solid #243244;border-radius:12px;overflow:hidden;background:#0e1722;}
+.mePanel.meOpen{border-color:#356;}
+.mePanelHead{width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;background:transparent;border:0;color:inherit;cursor:pointer;text-align:left;}
+.mePanelTitle{font-weight:700;font-size:0.95rem;}
+.mePanelSub{flex:1;font-size:0.74rem;color:#8aa;}
+.mePanelChevron{font-size:0.9rem;color:#8aa;}
+.mePanelBody{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #1d2a39;}
+.meField{display:flex;flex-direction:column;gap:4px;font-size:0.8rem;font-weight:600;color:#bcd;}
+.meField input{font-weight:400;}
+.meFieldInline{flex-direction:row;align-items:center;gap:8px;}
+.meFieldInline input{width:90px;}
+.meInvasionBlock{border-top:1px dashed #243244;padding-top:8px;display:flex;flex-direction:column;gap:8px;}
+.meInvasionRows{display:flex;flex-wrap:wrap;gap:10px;}
+.meCheck{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;color:#bcd;}
+.meConstraintGroup h4{margin:6px 0 4px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:#8aa;}
+.meChipRow{display:flex;flex-wrap:wrap;gap:8px;}
+.meChip{font-size:0.8rem;padding:6px 12px;border-radius:999px;border:1px solid #2c3e52;background:#13202e;color:#cde;cursor:pointer;}
+.meChipOn{background:#1d6b3f;border-color:#2a8f55;color:#eafff1;font-weight:600;}
+.meScoreList{display:flex;flex-direction:column;gap:6px;}
+.meScoreRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;background:#13202e;border-radius:8px;}
+.meScoreLabel{font-size:0.85rem;}
+.meScoreInput{display:flex;align-items:center;gap:4px;font-weight:700;}
+.meScoreInput input{width:64px;}
+.overlayReferenceDivider{margin:14px 0 6px;padding-top:10px;border-top:1px solid #243244;display:flex;flex-direction:column;gap:2px;}
+.overlayReferenceDivider strong{font-size:0.9rem;}
+.overlayReferenceDivider span{font-size:0.74rem;color:#8aa;}
