@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v151 Custom Constraints';
+const APP_VERSION='v152 Game Logic Architecture + Per-Tab Custom Constraints';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1181,7 +1181,11 @@ const TACTICAL_OVERLAYS = [
   {category:'Width', title:'Width Before Attack', rule:'Point/bonus only counts if player first creates width or body-line separation before attacking short.', coach:'Prevents reckless front-court attacks.', pairings:['Cat','Attack Only On Advantage']},
   {category:'Checkerboard', title:'Checkerboard Pair Challenge', rule:'Complete a chosen checkerboard pair such as [6-3] or [5-4] before scoring bonus opens.', coach:'Use as tactical intention layer over live rallies.', pairings:['Quiet Eye','External Target Focus']},
   {category:'Tempo', title:'Route Breaker', rule:'Player must change route or rhythm when opponent begins to predict the pattern.', coach:'Look for perception, not pre-planned variety.', pairings:['Wolf','See Space Before Strike']},
-  {category:'Pressure', title:'Opponent Not Recovered To T', rule:'Attack is encouraged only when opponent has not reorganised around the T.', coach:'Helps players recognise genuine vulnerability.', pairings:['Eagle','Tiger']}
+  {category:'Pressure', title:'Opponent Not Recovered To T', rule:'Attack is encouraged only when opponent has not reorganised around the T.', coach:'Helps players recognise genuine vulnerability.', pairings:['Eagle','Tiger']},
+  {category:'Pressure', title:'Opponent Off T', rule:'Look to finish when the opponent is away from the T and unable to cover both sides.', coach:'Shapes recognition of when the opponent is genuinely out of position rather than just moving.', pairings:['Eagle','Tiger','Lion']},
+  {category:'Pressure', title:'Opponent Off Balance', rule:'Attack when the opponent is reaching, stretched or unbalanced at contact.', coach:'Trains the player to read body shape, not just court position, before committing.', pairings:['Eagle','Tiger']},
+  {category:'Pressure', title:'Opponent Moving Forward', rule:'Exploit the opponent travelling forward by changing length or lifting behind them.', coach:'Develops manipulation of opponent momentum rather than hitting into their movement.', pairings:['Owl','Dolphin']},
+  {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']}
 ];
 
 const MENTAL_PERFORMANCE_OVERLAYS = [
@@ -1260,6 +1264,9 @@ function parseBonusValue(name){
 }
 function emptyModifierConfig(){
   return {
+    completion:'',
+    finishMode:'Open',
+    conversion:'None',
     gameLogic:[],
     logic:{winCondition:'',survival:'',conversionWindow:'',bankReset:'',timeLimit:'',invasion:{ballOut:-1,balcony:-3,stopRule:'Stop when one player loses all lives',enabled:false}},
     constraints:[],
@@ -1323,17 +1330,35 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
     {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
 
     <MEPanel title="1. Game Logic" subtitle="What counts — eligibility and validity" open={open==='logic'} onToggle={()=>toggle('logic')}>
-      <p className="mutedText">Tap the modifiers that count for this game. Each one is configurable and feeds the Scoring panel.</p>
-      <div className="meChipRow">{COMPLETION_CONSTRAINTS.map(name=>{
-        const on=gameLogic.includes(name);
-        return <button type="button" key={name} className={on?'meChip meChipOn':'meChip'} onClick={()=>toggleGameLogic(name)}>{on?'✓ ':'+ '}{name}</button>;
-      })}</div>
+      <div className="meLogicGroup">
+        <h4>Completion</h4>
+        <div className="meChipRow">{GAME_LOGIC_COMPLETION.map(opt=>{
+          const on=config.completion===opt;
+          return <button type="button" key={opt} className={on?'meChip meChipOn':'meChip'} onClick={()=>commit({...config,completion:on?'':opt})}>{opt}</button>;
+        })}</div>
+      </div>
+      <div className="meLogicGroup">
+        <h4>Finish rules</h4>
+        <div className="meChipRow">{COMPLETION_CONSTRAINTS.map(name=>{
+          const on=gameLogic.includes(name);
+          return <button type="button" key={name} className={on?'meChip meChipOn':'meChip'} onClick={()=>toggleGameLogic(name)}>{on?'✓ ':'+ '}{name}</button>;
+        })}</div>
+      </div>
+      <div className="meLogicGroup">
+        <h4>Finish mode</h4>
+        <div className="meChipRow">{GAME_LOGIC_FINISH_MODE.map(opt=>
+          <button type="button" key={opt} className={config.finishMode===opt?'meChip meChipOn':'meChip'} onClick={()=>commit({...config,finishMode:opt})}>{opt}</button>)}</div>
+      </div>
+      <div className="meLogicGroup">
+        <h4>Conversion window</h4>
+        <div className="meChipRow">{GAME_LOGIC_CONVERSION.map(opt=>
+          <button type="button" key={opt} className={config.conversion===opt?'meChip meChipOn':'meChip'} onClick={()=>commit({...config,conversion:opt})}>{opt}</button>)}</div>
+      </div>
       <button type="button" className="meAddOwnBtn" onClick={()=>setShowLogicEdit(!showLogicEdit)}>{showLogicEdit?'− Hide custom game logic':'+ Add your own game logic'}</button>
       {showLogicEdit&&<div className="meLogicEdit">
         <label className="meField">Win condition<input value={config.logic.winCondition} onChange={e=>setLogic({winCondition:e.target.value})} placeholder="e.g. First to clean finish after the challenge is met"/></label>
         <label className="meField">Survival rule<input value={config.logic.survival} onChange={e=>setLogic({survival:e.target.value})} placeholder="e.g. Lose a life on an unforced error"/></label>
-        <label className="meField">Conversion window<input value={config.logic.conversionWindow} onChange={e=>setLogic({conversionWindow:e.target.value})} placeholder="e.g. 4-shot window to convert"/></label>
-        <label className="meField">Bank / reset<input value={config.logic.bankReset} onChange={e=>setLogic({bankReset:e.target.value})} placeholder="e.g. Bank at 5, reset on error"/></label>
+        <label className="meField">Trigger / access logic<input value={config.logic.bankReset} onChange={e=>setLogic({bankReset:e.target.value})} placeholder="e.g. Only after ATL complete · Winner stays on"/></label>
         <label className="meField">Time limit<input value={config.logic.timeLimit} onChange={e=>setLogic({timeLimit:e.target.value})} placeholder="e.g. 8 minutes"/></label>
         <div className="meInvasionBlock">
           <label className="meCheck"><input type="checkbox" checked={!!config.logic.invasion.enabled} onChange={e=>setInvasion({enabled:e.target.checked})}/> Invasion penalty rules</label>
@@ -1348,12 +1373,6 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
 
     <MEPanel title="2. Constraints" subtitle="Standard overlay library — Technical · Tactical · Mental · Diversity" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
-      <button type="button" className="meAddOwnBtn" onClick={()=>setShowConstraintEdit(!showConstraintEdit)}>{showConstraintEdit?'− Hide custom constraint':'+ Add your own constraint'}</button>
-      {showConstraintEdit&&<div className="meLogicEdit">
-        <label className="meField">Custom constraint<input value={customConstraintText} onChange={e=>setCustomConstraintText(e.target.value)} placeholder="e.g. Recover through central lane" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustomConstraint();}}}/></label>
-        <button type="button" className="meChip meChipOn" onClick={addCustomConstraint}>+ Add constraint</button>
-        {customConstraints.length>0&&<div className="meChipRow">{customConstraints.map(c=><button type="button" key={c} className="meChip meChipOn" onClick={()=>toggleConstraint(c)}>{c} ✕</button>)}</div>}
-      </div>}
     </MEPanel>
 
     <MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
@@ -1678,6 +1697,9 @@ function MentalOverlaySelector({context='Game'}){
 
 function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
   const [family,setFamily]=useState('Tactical');
+  const [customByFamily,setCustomByFamily]=useState({Technical:[],Tactical:[],'Mental Performance':[],Diversity:[]});
+  const [customText,setCustomText]=useState('');
+  const [showCustom,setShowCustom]=useState(false);
 
   const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
   const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
@@ -1701,7 +1723,16 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
       {source.map(o=><button key={`${family}-${o.name}`} type="button" className={selectedOverlays.includes(o.name)?'selectedOverlay':''} onClick={()=>onToggle(o.name)}>
         <strong>{o.name}</strong><span>{o.category}</span>
       </button>)}
+      {(customByFamily[family]||[]).map(name=><button key={`custom-${family}-${name}`} type="button" className={selectedOverlays.includes(name)?'selectedOverlay':''} onClick={()=>onToggle(name)}>
+        <strong>{name}</strong><span>Custom {family}</span>
+      </button>)}
     </div>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowCustom(!showCustom)}>{showCustom?`− Hide custom ${family.toLowerCase()} constraint`:`+ Add your own ${family.toLowerCase()} constraint`}</button>
+    {showCustom&&<div className="overlayCustomAdd">
+      <input value={customText} onChange={e=>setCustomText(e.target.value)} placeholder={`New ${family.toLowerCase()} constraint`} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();const n=customText.trim();if(n){setCustomByFamily(prev=>({...prev,[family]:(prev[family]||[]).includes(n)?prev[family]:[...(prev[family]||[]),n]}));if(!selectedOverlays.includes(n))onToggle(n);setCustomText('');}}}}/>
+      <button type="button" className="meChip meChipOn" onClick={()=>{const n=customText.trim();if(!n)return;setCustomByFamily(prev=>({...prev,[family]:(prev[family]||[]).includes(n)?prev[family]:[...(prev[family]||[]),n]}));if(!selectedOverlays.includes(n))onToggle(n);setCustomText('');}}>+ Add</button>
+    </div>}
 
     <div className="activeOverlayPanel">
       <h3>Active Overlay Rules</h3>
@@ -3518,7 +3549,10 @@ const CHECKERBOARD_LEVELS=[
   {level:4,label:'Level 4 — Triple + 4-shot window',challenge:'triple',window:'4-shot window',tZone:false,description:'Triple challenge with 4-shot window. T Challenge is selectable as an overlay.'},
   {level:5,label:'Level 5 — Triple + 2-shot window',challenge:'triple',window:'2-shot window',tZone:false,description:'Triple challenge with 2-shot window. T Challenge is selectable as an overlay.'}
 ];
-const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish','Opponent moving forward','Opponent off balance','Opponent off T','T Challenge'];
+const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish'];
+const GAME_LOGIC_COMPLETION=['Single','Pair','Triple','Sequence'];
+const GAME_LOGIC_FINISH_MODE=['Open','Blind'];
+const GAME_LOGIC_CONVERSION=['None','Within 4 shots','Within 2 shots','Immediate'];
 const DELIVERY_MODES=['Open','Blind'];
 
 function buildCheckerboardGame(config){
