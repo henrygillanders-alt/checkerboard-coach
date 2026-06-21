@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v165 visible version stamp';
+const APP_VERSION='v166 SnL copy player link';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7472,6 +7472,14 @@ function SnakesLaddersGame(){
   const [showSettings,setShowSettings]=useState(false);
   const [projecting,setProjecting]=useState(false);
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
+  async function copySLPlayerLink(){
+    setProjecting(true);
+    const url=buildLivePlayerViewUrl();
+    let copied=false;
+    try{ if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; } }catch{}
+    if(copied){ alert('Live player link copied. Open it on the second device — the Snakes & Ladders board updates live as you tap winners.'); }
+    else{ window.prompt('LIVE Snakes & Ladders player link — open this on the second device:', url); }
+  }
 
   const allocation=useMemo(()=>{
     if(usingAttendance)return rankedBlockCourtAllocation(presentsObj,courtCount);
@@ -7502,8 +7510,8 @@ function SnakesLaddersGame(){
     {courts>1&&<div className="slCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'slCourtTab slCourtTabOn':'slCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
 
     <div className="slDisplayBar">
-      <button type="button" className={projecting?'primaryBtn slProjOn':'secondaryBtn'} onClick={()=>setProjecting(p=>!p)}>{projecting?`● Live on Player Display${courts>1?` — Court ${active+1}`:''}`:'Show on Player Display'}</button>
-      {projecting&&<span className="slDisplayHint">Open this on the wall screen: <a href={liveUrl} target="_blank" rel="noreferrer">{liveUrl}</a></span>}
+      <button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>
+      {projecting&&<span className="slDisplayHint">🟢 Live{courts>1?` — Court ${active+1}`:''} · board updates as you tap winners</span>}
     </div>
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 

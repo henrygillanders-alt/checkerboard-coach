@@ -8304,3 +8304,70 @@ button.mentalSkillsTile p{
 .slSettings label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:0.88rem;}
 .slSettings input[type=number],.slSettings select{max-width:120px;}
 .slCheck{justify-content:flex-start!important;}
+
+/* ── v158 Snakes & Ladders multi-player ──────────────────────────────────── */
+.slOnCourt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px;border-radius:12px;background:#16202e;border:1px solid #2a3a4e;}
+.slOnCourtLabel{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#9ab;}
+.slOnCourt>button{flex:1;min-width:120px;}
+.slVs{color:#8aa;font-weight:700;}
+.slQueue{font-size:0.86rem;color:#9ab;padding:2px 4px;}
+.slLeaderboard{display:flex;flex-direction:column;gap:4px;}
+.slLbRow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;background:#111b27;border:1px solid #1e2a38;}
+.slLbOn{border-color:#5b9bff;background:#15243a;}
+.slLbName{flex:1;font-weight:600;}
+.slLbPos{font-size:0.82rem;color:#9ab;}
+.slNameGrid{display:flex;flex-wrap:wrap;gap:8px;}
+.slNameGrid .slNameField{flex:1;min-width:120px;}
+
+/* ── v160 Snakes & Ladders multi-court ───────────────────────────────────── */
+.slSessionBar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:#16202e;border:1px solid #2a3a4e;}
+.slSessionInfo{font-weight:600;}
+.slInlineField{display:flex;align-items:center;gap:8px;font-size:0.9rem;}
+.slInlineField select{min-width:70px;}
+.slManualNames{display:flex;flex-direction:column;gap:8px;}
+.slCourtTabs{display:flex;gap:8px;flex-wrap:wrap;}
+.slCourtTab{padding:8px 14px;border-radius:10px;background:#16202e;border:1px solid #2a3a4e;color:#cdd;font-weight:600;}
+.slCourtTab span{color:#8aa;font-weight:400;}
+.slCourtTabOn{background:#1d3a5c;border-color:#5b9bff;color:#fff;}
+.slAllocation{display:flex;flex-direction:column;gap:4px;}
+.slAllocRow{display:flex;gap:10px;padding:6px 12px;border-radius:8px;background:#111b27;border:1px solid #1e2a38;font-size:0.88rem;}
+.slAllocRow strong{min-width:70px;}
+.slAllocRow span{color:#aab;}
+.slAllocRowOn{border-color:#5b9bff;}
+.slCourt{display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+
+/* ── v161 ladder drag-and-drop ───────────────────────────────────────────── */
+.ladderDragHandle{cursor:grab;background:#1a2636;border:1px solid #2a3a4e;border-radius:8px;color:#8aa;font-size:1.2rem;line-height:1;padding:8px 12px;min-width:40px;display:flex;align-items:center;justify-content:center;user-select:none;}
+.ladderDragHandle:active{cursor:grabbing;background:#23344a;}
+.juniorLadderRow{display:flex;align-items:center;gap:10px;}
+.ladderRowDragging{background:#1d3a5c;border:1px solid #5b9bff;border-radius:10px;opacity:0.95;box-shadow:0 6px 18px rgba(0,0,0,0.4);}
+
+/* ── v162 S&L optional rally modifiers ───────────────────────────────────── */
+.slBonusRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:10px;background:#1a1330;border:1px solid #4a3a6e;}
+.slBonusLabel{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#b9a8e0;}
+.slBonuses{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:12px;background:#0f1822;border:1px solid #223044;}
+.slBonusEdit{display:flex;align-items:center;gap:10px;}
+.slBonusName{flex:1;font-weight:600;}
+.slBonusEdit input{max-width:64px;}
+.slBonusRemove{background:#331717;border:1px solid #8a3a3a;color:#f0a0a0;border-radius:8px;padding:4px 10px;}
+.slBonusQuick{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ── v164 Snakes & Ladders player-display mirror ─────────────────────────── */
+.slDisplayBar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.slProjOn{background:#1d6b3a!important;border-color:#3fae6a!important;}
+.slDisplayHint{font-size:0.82rem;color:#9ab;}
+.slDisplayHint a{color:#7db8ff;word-break:break-all;}
+.slDisplayPage{padding:24px;display:flex;flex-direction:column;gap:18px;max-width:900px;margin:0 auto;}
+.slDisplayHead{text-align:center;}
+.slDisplayHead h1{margin:4px 0;font-size:2rem;}
+.slDisplayHead p{color:#9ab;margin:0;}
+.slDisplayLive{color:#5fd38d;font-weight:700;letter-spacing:0.08em;font-size:0.8rem;}
+.slDisplayOnCourt{text-align:center;font-size:1.4rem;font-weight:700;}
+.slDisplayOnCourt span{color:#8aa;font-weight:400;margin:0 8px;}
+.slDisplayWin{font-size:1.4rem;}
+.slDisplayLeaderboard{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.slDisplayLeaderboard .slLbRow{flex:0 0 auto;}
+.slDisplayBoard .slCell{min-height:64px;}
+
+/* ── v165 visible version stamp ──────────────────────────────────────────── */
+.versionStamp{position:fixed;bottom:10px;right:12px;z-index:9999;background:rgba(16,24,36,0.92);border:1px solid #3a5a8e;color:#7db8ff;font-size:0.74rem;font-weight:700;padding:5px 12px;border-radius:999px;letter-spacing:0.02em;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,0.4);}
