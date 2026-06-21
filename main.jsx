@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v153 Tin Height In All Builders';
+const APP_VERSION='v155 Custom Game Logic In All Builders';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3555,6 +3555,17 @@ const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side fini
 const GAME_LOGIC_COMPLETION=['Single','Pair','Triple','Sequence'];
 const GAME_LOGIC_FINISH_MODE=['Open','Blind'];
 const GAME_LOGIC_CONVERSION=['None','Within 4 shots','Within 2 shots','Immediate'];
+function CustomGameLogicAdder({selected=[],onToggle,standard=COMPLETION_CONSTRAINTS}){
+  const [show,setShow]=useState(false);
+  const [text,setText]=useState('');
+  const custom=(selected||[]).filter(c=>!standard.includes(c));
+  function add(){const n=text.trim();if(!n)return;if(!(selected||[]).includes(n))onToggle(n);setText('');}
+  return <div className="customLogicAdder">
+    {custom.length>0&&<div className="quickLayers">{custom.map(c=><button key={c} type="button" className="activeLayer" onClick={()=>onToggle(c)}>{c} ✕</button>)}</div>}
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShow(!show)}>{show?'− Hide custom game logic':'+ Add your own game logic'}</button>
+    {show&&<div className="overlayCustomAdd"><input value={text} onChange={e=>setText(e.target.value)} placeholder="New game-logic rule (e.g. Must finish straight)" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();add();}}}/><button type="button" className="meChip meChipOn" onClick={add}>+ Add</button></div>}
+  </div>;
+}
 const DELIVERY_MODES=['Open','Blind'];
 
 function buildCheckerboardGame(config){
@@ -3598,6 +3609,9 @@ function CheckerboardEngine({onAddToSession}){
     const nextSeq=next.challenge==='single'?'[6-3]':next.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS[0]:CHECKERBOARD_TRIPLE_OPTIONS[0];
     setConfig(prev=>({...prev,level:Number(value),sequence:nextSeq,customSequence:'',showCustomSequence:false}));
   }
+  const [showCustomLogic,setShowCustomLogic]=useState(false);
+  const [customLogicText,setCustomLogicText]=useState('');
+  function addCustomLogic(){const n=customLogicText.trim();if(!n)return;setConfig(prev=>{const cur=prev.completionConstraints||[];return cur.includes(n)?prev:{...prev,completionConstraints:[...cur,n]};});setCustomLogicText('');}
   function toggleCompletion(item){setConfig(prev=>{const current=prev.completionConstraints||[];return {...prev,completionConstraints:current.includes(item)?current.filter(x=>x!==item):[...current,item]};});}
   function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
   function updateCheckerboardModifierScore(layer,value){setCheckerboardModifierScores(prev=>({...prev,[layer]:value}));}
@@ -3674,7 +3688,9 @@ return <div className="checkerboardEngine">
 
     {/* GAME LOGIC */}
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}{(config.completionConstraints||[]).filter(c=>!COMPLETION_CONSTRAINTS.includes(c)).map(c=><button key={c} className="activeLayer" onClick={()=>toggleCompletion(c)}>{c} ✕</button>)}</div>
+      <button type="button" className="meAddOwnBtn" onClick={()=>setShowCustomLogic(!showCustomLogic)}>{showCustomLogic?'− Hide custom game logic':'+ Add your own game logic'}</button>
+      {showCustomLogic&&<div className="overlayCustomAdd"><input value={customLogicText} onChange={e=>setCustomLogicText(e.target.value)} placeholder="New game-logic rule (e.g. Must finish straight)" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustomLogic();}}}/><button type="button" className="meChip meChipOn" onClick={addCustomLogic}>+ Add</button></div>}
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}
@@ -3859,6 +3875,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <CustomGameLogicAdder selected={manualLayers} onToggle={toggleManualLayer}/>
     </CollapsibleLayer>
 
     <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
@@ -3974,6 +3991,7 @@ function ClassicConditionedBuilder({onAddToSession}){
 
       <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
         <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+        <CustomGameLogicAdder selected={selectedOverlays[overlayKey(game)]||[]} onToggle={item=>toggleGameOverlay(game,item)}/>
       </CollapsibleLayer>
       <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
         <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Completion bonus set by selected game. Overlays add bonus points.</p></div>
@@ -5793,6 +5811,7 @@ function CustomGameBuilder({onAddToSession}){
         <label>Checkerboard Zone<select value={cbCode} onChange={e=>setCbCode(e.target.value)}>{cbOptions.map(option=><option key={option}>{option}</option>)}</select></label>
       </div>
       <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <CustomGameLogicAdder selected={layers} onToggle={toggleLayer}/>
     </CollapsibleLayer>
 
     {/* SCORING LOGIC */}

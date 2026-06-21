@@ -8258,3 +8258,9 @@ button.mentalSkillsTile p{
 /* ── v149 unified Game Builder: applies-to ───────────────────────────────── */
 .appliesToBlock{display:flex;flex-direction:column;gap:8px;margin:14px 0;padding:12px 14px;border:1px solid #243244;border-radius:12px;background:#0e1722;}
 .appliesToBlock>strong{font-size:0.95rem;}
+
+/* ── v152 Game Logic groups + per-tab custom constraint ──────────────────── */
+.meLogicGroup{display:flex;flex-direction:column;gap:6px;margin-bottom:4px;}
+.meLogicGroup h4{margin:4px 0 2px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#8aa;}
+.overlayCustomAdd{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.overlayCustomAdd input{flex:1;min-width:160px;}
