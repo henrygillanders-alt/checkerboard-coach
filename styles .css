@@ -8264,3 +8264,43 @@ button.mentalSkillsTile p{
 .meLogicGroup h4{margin:4px 0 2px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#8aa;}
 .overlayCustomAdd{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
 .overlayCustomAdd input{flex:1;min-width:160px;}
+
+/* ── v156 Game Builder rationalisation ───────────────────────────────────── */
+.courtAreaBlock{display:flex;flex-direction:column;gap:8px;margin:6px 0 14px;}
+.courtAreaBlock>strong{font-size:0.95rem;}
+.meAppliesTo{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed #243244;}
+.meAppliesTo>strong{font-size:0.85rem;color:#bcd;}
+.meNamedPlayer{max-width:280px;}
+
+/* ── v157 Snakes & Ladders ────────────────────────────────────────────────── */
+.slGame{display:flex;flex-direction:column;gap:14px;}
+.slNameRow{display:flex;gap:12px;flex-wrap:wrap;}
+.slNameField{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
+.slNameField span{font-size:0.78rem;color:#9ab;}
+.slScoreRow{display:flex;gap:12px;}
+.slScore{flex:1;display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-radius:12px;background:#16202e;border:1px solid #243244;}
+.slScore strong{font-size:1.05rem;}
+.slScore span{font-size:0.82rem;color:#9ab;}
+.slScoreWin{border-color:#f0c050;background:#2a2410;}
+.slWinBanner{padding:12px 16px;border-radius:12px;background:#1d3326;border:1px solid #3a7a52;font-weight:700;text-align:center;}
+.slBoard{display:grid;gap:6px;}
+.slCell{position:relative;aspect-ratio:1;border-radius:10px;background:#111b27;border:1px solid #223044;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;min-height:54px;}
+.slCellEmpty{background:transparent;border:none;}
+.slNum{position:absolute;top:3px;left:5px;font-size:0.66rem;color:#6b7d92;}
+.slMark{font-size:0.72rem;font-weight:600;line-height:1.1;text-align:center;}
+.slLadder{background:#16301f;border-color:#3a7a52;}
+.slSnake{background:#331717;border-color:#8a3a3a;}
+.slFinish{background:#2a2410;border-color:#f0c050;}
+.slTokens{display:flex;gap:3px;margin-top:2px;}
+.slTok{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:#06101a;font-weight:800;}
+.slTok0{background:#5b9bff;}
+.slTok1{background:#f0a850;}
+.slControls{display:flex;gap:10px;flex-wrap:wrap;}
+.slControls>button{flex:1;min-width:130px;}
+.slEvents{display:flex;flex-direction:column;gap:4px;}
+.slEvent{padding:7px 12px;border-radius:8px;background:#16202e;font-size:0.86rem;color:#aab;}
+.slEventNew{background:#1d2a3a;color:#dfe8f2;font-weight:600;}
+.slSettings{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:#0f1822;border:1px solid #223044;}
+.slSettings label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:0.88rem;}
+.slSettings input[type=number],.slSettings select{max-width:120px;}
+.slCheck{justify-content:flex-start!important;}

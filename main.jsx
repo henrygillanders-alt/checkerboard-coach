@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v156 Game Builder Rationalised + Game 25';
+const APP_VERSION='v157 Snakes and Ladders';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7324,6 +7324,140 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
 }
 
 
+function slGenerateBoard(size,snakeCount,ladderCount,drop,rise){
+  const triggers=new Set();
+  const ladders={},snakes={};
+  let a=0;
+  while(Object.keys(ladders).length<ladderCount && a++<1500){
+    const foot=2+Math.floor(Math.random()*(size-2));
+    const len=rise.min+Math.floor(Math.random()*(rise.max-rise.min+1));
+    const top=foot+len;
+    if(top>=size||triggers.has(foot))continue;
+    ladders[foot]=top;triggers.add(foot);
+  }
+  a=0;
+  while(Object.keys(snakes).length<snakeCount && a++<1500){
+    const head=3+Math.floor(Math.random()*(size-3));
+    const len=drop.min+Math.floor(Math.random()*(drop.max-drop.min+1));
+    const tail=head-len;
+    if(tail<1||triggers.has(head))continue;
+    snakes[head]=tail;triggers.add(head);
+  }
+  return {snakes,ladders};
+}
+function slSerpentine(size,cols){
+  const rows=Math.ceil(size/cols),grid=[];
+  for(let r=rows-1;r>=0;r--){
+    const row=[];
+    for(let c=0;c<cols;c++){
+      const base=r*cols;
+      const n=(r%2===0)?base+c+1:base+(cols-1-c)+1;
+      row.push(n<=size?n:null);
+    }
+    grid.push(row);
+  }
+  return grid;
+}
+function SnakesLaddersGame(){
+  const SL_PRESENTS=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false});
+  const [board,setBoard]=useState(()=>slGenerateBoard(21,5,5,{min:2,max:7},{min:2,max:7}));
+  const [names,setNames]=useState(['Player 1','Player 2']);
+  const [players,setPlayers]=useState([{pos:1},{pos:1}]);
+  const [winner,setWinner]=useState(null);
+  const [revealed,setRevealed]=useState(new Set());
+  const [events,setEvents]=useState([]);
+  const [wins,setWins]=useState([0,0]);
+  const [showSettings,setShowSettings]=useState(false);
+  const size=settings.size;
+  const cols=size===15?5:size===30?6:7;
+  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
+
+  function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
+  function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));setPlayers([{pos:1},{pos:1}]);setWinner(null);setRevealed(new Set());setEvents([]);}
+  function newGame(){setPlayers([{pos:1},{pos:1}]);setWinner(null);setRevealed(new Set());setEvents([]);}
+  function resetMatch(){newGame();setWins([0,0]);}
+
+  function playRally(w){
+    if(winner!=null)return;
+    const next=players.map(p=>({...p}));
+    const W=next[w],L=next[1-w];
+    const ev=[],reveal=new Set(revealed);
+    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${names[w]} climbed a ladder · ${W.pos}→${top}`);reveal.add(W.pos);W.pos=top;}
+    else{W.pos=applyMove(W.pos+1);}
+    if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${names[1-w]} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
+    setPlayers(next);setRevealed(reveal);
+    if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
+    if(W.pos>=size){setWinner(w);setWins(prev=>{const c=[...prev];c[w]++;return c;});}
+  }
+
+  const needToWin=1;
+  const cellInfo=(n)=>{
+    const isLadder=board.ladders[n]!=null, isSnake=board.snakes[n]!=null;
+    const show=settings.visible||revealed.has(n);
+    return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};
+  };
+
+  return <div className="gameCard slGame">
+    <div className="categoryTag">Snakes &amp; Ladders™</div>
+    <h2>Snakes &amp; Ladders</h2>
+    <p className="mutedText">Win a rally to move forward one square. Lose a rally while sitting on a snake and you slide down it. Win a rally while sitting on a ladder and you climb. First to {size} wins.</p>
+
+    <div className="slNameRow">
+      {[0,1].map(i=><label key={i} className="slNameField"><span>Player {i+1}</span><input value={names[i]} list="slPresent" onChange={e=>setNames(prev=>{const c=[...prev];c[i]=e.target.value;return c;})}/></label>)}
+      <datalist id="slPresent">{SL_PRESENTS.map(n=><option key={n} value={n}/>)}</datalist>
+    </div>
+
+    <div className="slScoreRow">
+      <div className={winner===0?'slScore slScoreWin':'slScore'}><strong>{names[0]}</strong><span>Square {players[0].pos} · Games {wins[0]}</span></div>
+      <div className={winner===1?'slScore slScoreWin':'slScore'}><strong>{names[1]}</strong><span>Square {players[1].pos} · Games {wins[1]}</span></div>
+    </div>
+
+    {winner!=null&&<div className="slWinBanner">🏆 {names[winner]} reaches {size} and wins the game!</div>}
+
+    <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
+      {grid.flat().map((n,idx)=>{
+        if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
+        const ci=cellInfo(n);
+        const here=[0,1].filter(i=>players[i].pos===n);
+        return <div key={idx} className={`slCell${ci.show&&ci.isLadder?' slLadder':''}${ci.show&&ci.isSnake?' slSnake':''}${n===size?' slFinish':''}`}>
+          <span className="slNum">{n}</span>
+          {ci.show&&ci.isLadder&&<span className="slMark">🪜→{ci.to}</span>}
+          {ci.show&&ci.isSnake&&<span className="slMark">🐍→{ci.to}</span>}
+          {n===size&&<span className="slMark">🏁</span>}
+          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className={i===0?'slTok slTok0':'slTok slTok1'}>{(names[i]||'P')[0].toUpperCase()}</b>)}</span>}
+        </div>;
+      })}
+    </div>
+
+    <div className="slControls">
+      <button type="button" className="primaryBtn" disabled={winner!=null} onClick={()=>playRally(0)}>{names[0]} won rally</button>
+      <button type="button" className="primaryBtn" disabled={winner!=null} onClick={()=>playRally(1)}>{names[1]} won rally</button>
+    </div>
+    <div className="slControls">
+      <button type="button" className="secondaryBtn" onClick={newGame}>New Game (same board)</button>
+      <button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>
+      <button type="button" className="secondaryBtn" onClick={resetMatch}>Reset Match</button>
+    </div>
+
+    {events.length>0&&<div className="slEvents">{events.map((e,i)=><div key={i} className={i===0?'slEvent slEventNew':'slEvent'}>{e}</div>)}</div>}
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Board settings'}</button>
+    {showSettings&&<div className="slSettings">
+      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
+      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
+      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
+      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
+      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,max:Number(e.target.value)||1}}))}/></label>
+      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,min:Number(e.target.value)||1}}))}/></label>
+      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
+      <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
+      <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
+      <p className="mutedText">Changes apply on the next “New Board”.</p>
+    </div>}
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -7356,6 +7490,7 @@ function Games({setSession,setScreen}){
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
     {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
+    {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
@@ -7447,6 +7582,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
+    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine"/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
