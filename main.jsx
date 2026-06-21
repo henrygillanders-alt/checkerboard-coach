@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v155 Custom Game Logic In All Builders';
+const APP_VERSION='v156 Game Builder Rationalised + Game 25';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -330,6 +330,7 @@ return[
 ...perceptionGames(),
 {id:'length-before-attack',title:'Length Before Attack',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Player must create length pressure before attacking short.',rationale:'Encourages patient pressure construction rather than rushed attacks.',coach:'Watch whether players attack only after the opponent is displaced, late or off balance.',layers:['Quality Length Before Attack'],cbCode:'None'},
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
+{id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
 {id:'cb-pair',title:'Checkerboard Pair Challenge',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected checkerboard pair before bonus scoring opens.',rationale:'Builds tactical linking and opponent displacement awareness.',coach:'Use the code as tactical intention, not a hoop to jump through.',layers:[],cbCode:'[6-4] + [8-1]'},
 {id:'cb-clean-finish',title:'Checkerboard Clean Finish',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected CB code and win with a clean finish bonus.',rationale:'Connects tactical construction with high-quality conversion.',coach:'The clean winner sits on top of all scoring, but only after the challenge is met.',layers:['CB Code','Clean Winner','4-Shot Window'],cbCode:'[6-3]'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
@@ -1284,7 +1285,7 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false,appliesTo,onAppliesToChange,namedPlayer='',onNamedPlayerChange,presentPlayers=[]}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
@@ -1372,6 +1373,12 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
     </MEPanel>
 
     <MEPanel title="2. Constraints" subtitle="Standard overlay library — Technical · Tactical · Mental · Diversity" open={open==='constraints'} onToggle={()=>toggle('constraints')}>
+      {onAppliesToChange&&<div className="meAppliesTo">
+        <strong>Applies to</strong>
+        <div className="meChipRow">{['Everyone','Server','Receiver','Named Player'].map(opt=>
+          <button type="button" key={opt} className={appliesTo===opt?'meChip meChipOn':'meChip'} onClick={()=>onAppliesToChange(opt)}>{opt}</button>)}</div>
+        {appliesTo==='Named Player'&&<select className="meNamedPlayer" value={namedPlayer} onChange={e=>onNamedPlayerChange&&onNamedPlayerChange(e.target.value)}><option value="">Select player…</option>{presentPlayers.map(n=><option key={n}>{n}</option>)}{namedPlayer&&!presentPlayers.includes(namedPlayer)&&<option>{namedPlayer}</option>}</select>}
+      </div>}
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
     </MEPanel>
 
@@ -7269,7 +7276,7 @@ function appendToSessionState(prev,card){
   return [...base,normaliseGameCard(card)];
 }
 
-function UniversalGameEditor({game,onSave,onCancel}){
+function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
   const [draft,setDraft]=useState(()=>{
     const base=normaliseGameCard(game);
     return {...base,
@@ -7277,33 +7284,42 @@ function UniversalGameEditor({game,onSave,onCancel}){
       appliesTo: base.appliesTo||'Everyone',
       namedPlayer: base.namedPlayer||''};
   });
+  const [status,setStatus]=useState('');
+  const presentPlayers=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const COURT_AREAS=['Full court','3/4 Court','Egyptian 3/4','Front 3/4','Back 3/4','Half court'];
   function update(key,value){setDraft(prev=>({...prev,[key]:value}));}
   function onModifierChange(next){setDraft(prev=>({...prev,modifier:next,layers:next.constraints||[]}));}
+  function doSaveCard(){if(onSaveCard){onSaveCard(normaliseGameCard(draft));setStatus('Saved as a card in the library.');}}
+  function doAddToSession(){if(onAddToSession){onAddToSession(normaliseGameCard(draft));setStatus('Added to the current session.');}}
   return <div className="universalEditor customGameBuilder">
     <h2>{draft.id===game.id?'Edit Game':'New Game'}</h2>
+
     <div className="editorGrid">
       <label>Title<input value={draft.title||''} onChange={e=>update('title',e.target.value)}/></label>
       <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
       <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
       <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
-      <label>Court Area<select value={draft.courtFormat||'Full court'} onChange={e=>update('courtFormat',e.target.value)}>{['Full court','3/4 Court','Egyptian 3/4','3/4 25','Front 3/4','Back 3/4','Half court'].map(c=><option key={c}>{c}</option>)}</select></label>
+    </div>
+    <div className="courtAreaBlock">
+      <strong>Court Area</strong>
+      <div className="meChipRow">{COURT_AREAS.map(c=><button type="button" key={c} className={(draft.courtFormat||'Full court')===c?'meChip meChipOn':'meChip'} onClick={()=>update('courtFormat',c)}>{c}</button>)}</div>
+    </div>
+
+    <div className="editorGrid">
       <label className="wide">Task<textarea value={draft.task||''} onChange={e=>update('task',e.target.value)}/></label>
       <label className="wide">Rationale<textarea value={draft.rationale||''} onChange={e=>update('rationale',e.target.value)}/></label>
       <label className="wide">Coach Focus<textarea value={draft.coach||''} onChange={e=>update('coach',e.target.value)}/></label>
-      <label className="wide">Scoring notes (optional)<textarea value={draft.scoring||''} onChange={e=>update('scoring',e.target.value)}/></label>
     </div>
 
-    <div className="appliesToBlock">
-      <strong>Constraint applies to</strong>
-      <p className="overlayExplain">Choose who the constraints bind. Use this for one-player games (server / receiver / a named player) or whole-game constraints for everyone.</p>
-      <div className="meChipRow">{['Everyone','Server','Receiver','Named Player'].map(opt=>
-        <button type="button" key={opt} className={draft.appliesTo===opt?'meChip meChipOn':'meChip'} onClick={()=>update('appliesTo',opt)}>{opt}</button>)}</div>
-      {draft.appliesTo==='Named Player'&&<label className="meField">Named player<input value={draft.namedPlayer||''} onChange={e=>update('namedPlayer',e.target.value)} placeholder="e.g. Jacob"/></label>}
+    <UniversalModifierEngine title="Universal Modifiers" context={draft.title||'Game'} value={draft.modifier} onChange={onModifierChange}
+      appliesTo={draft.appliesTo} onAppliesToChange={v=>update('appliesTo',v)} namedPlayer={draft.namedPlayer} onNamedPlayerChange={v=>update('namedPlayer',v)} presentPlayers={presentPlayers}/>
+
+    <div className="buttonRow">
+      {onAddToSession&&<button type="button" className="primaryBtn" onClick={doAddToSession}>Add to Session</button>}
+      {onSaveCard&&<button type="button" className="primaryBtn" onClick={doSaveCard}>Save as Card</button>}
+      <button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button>
     </div>
-
-    <UniversalModifierEngine title="Universal Modifiers" context={draft.title||'Game'} value={draft.modifier} onChange={onModifierChange}/>
-
-    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>onSave(normaliseGameCard(draft))}>Save Game</button><button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+    {status&&<div className="statusBox">{status}</div>}
   </div>;
 }
 
@@ -7409,7 +7425,6 @@ function Games({setSession,setScreen}){
   return <div className="page">
     <div className="pageTop">
       <h1>Games Library</h1>
-      <button type="button" className="primaryBtn" onClick={()=>{setActiveClassId(activeClassId||'custom');setEditingCard(emptyUniversalGame(activeCategory||'Custom Coach Game'));}}>+ New Game</button>
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
@@ -7423,7 +7438,7 @@ function Games({setSession,setScreen}){
 
     {logicCard&&!['checkerboard','atl','atb','powerplay','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
-    {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSave={saveCard} onCancel={()=>setEditingCard(null)}/>}
+    {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSaveCard={saveCard} onAddToSession={addAndGo} onCancel={()=>setEditingCard(null)}/>}
 
     {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
@@ -7433,7 +7448,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onSave={card=>addAndGo(card)} onCancel={()=>setActiveClassId(null)}/>}
+    {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
@@ -7455,10 +7470,11 @@ function Games({setSession,setScreen}){
           <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
           {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
           <div className="actionRow">
-            <button type="button" onClick={()=>setLogicCard(card)}>Add Logic</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add To Session</button><button type="button" onClick={(e)=>{e.preventDefault();addStay(card);setScreen('sessions');}}>Add + View Session</button><button type="button" onClick={()=>setScreen('sessions')}>View Session</button><button type="button" onClick={()=>setScreen('playerDisplay')}>Player View</button>
-            <button onClick={()=>setEditingCard(card)}>Edit</button>
-            <button onClick={()=>duplicateCard(card)}>Duplicate</button>
-            <button className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
+            <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addStay(card);}}>Add to Session</button>
+            <button type="button" onClick={()=>setScreen('playerDisplay')}>Player View</button>
+            <button type="button" onClick={()=>setEditingCard(card)}>Edit</button>
+            <button type="button" onClick={()=>duplicateCard(card)}>Duplicate</button>
+            <button type="button" className="secondaryBtn" onClick={()=>deleteCard(card.id)}>Delete</button>
           </div>
         </div>)}
       </div>

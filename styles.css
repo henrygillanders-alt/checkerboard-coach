@@ -8264,3 +8264,10 @@ button.mentalSkillsTile p{
 .meLogicGroup h4{margin:4px 0 2px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#8aa;}
 .overlayCustomAdd{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
 .overlayCustomAdd input{flex:1;min-width:160px;}
+
+/* ── v156 Game Builder rationalisation ───────────────────────────────────── */
+.courtAreaBlock{display:flex;flex-direction:column;gap:8px;margin:6px 0 14px;}
+.courtAreaBlock>strong{font-size:0.95rem;}
+.meAppliesTo{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed #243244;}
+.meAppliesTo>strong{font-size:0.85rem;color:#bcd;}
+.meNamedPlayer{max-width:280px;}
