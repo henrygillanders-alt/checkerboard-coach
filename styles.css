@@ -8318,3 +8318,20 @@ button.mentalSkillsTile p{
 .slLbPos{font-size:0.82rem;color:#9ab;}
 .slNameGrid{display:flex;flex-wrap:wrap;gap:8px;}
 .slNameGrid .slNameField{flex:1;min-width:120px;}
+
+/* ── v160 Snakes & Ladders multi-court ───────────────────────────────────── */
+.slSessionBar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;background:#16202e;border:1px solid #2a3a4e;}
+.slSessionInfo{font-weight:600;}
+.slInlineField{display:flex;align-items:center;gap:8px;font-size:0.9rem;}
+.slInlineField select{min-width:70px;}
+.slManualNames{display:flex;flex-direction:column;gap:8px;}
+.slCourtTabs{display:flex;gap:8px;flex-wrap:wrap;}
+.slCourtTab{padding:8px 14px;border-radius:10px;background:#16202e;border:1px solid #2a3a4e;color:#cdd;font-weight:600;}
+.slCourtTab span{color:#8aa;font-weight:400;}
+.slCourtTabOn{background:#1d3a5c;border-color:#5b9bff;color:#fff;}
+.slAllocation{display:flex;flex-direction:column;gap:4px;}
+.slAllocRow{display:flex;gap:10px;padding:6px 12px;border-radius:8px;background:#111b27;border:1px solid #1e2a38;font-size:0.88rem;}
+.slAllocRow strong{min-width:70px;}
+.slAllocRow span{color:#aab;}
+.slAllocRowOn{border-color:#5b9bff;}
+.slCourt{display:flex;flex-direction:column;gap:14px;margin-top:6px;}

@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v159 SnL emoji and attendance names';
+const APP_VERSION='v160 SnL multi-court';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7360,29 +7360,22 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function SnakesLaddersGame(){
-  const SL_PRESENTS=useMemo(()=>slReadPresents(),[]);
+function SnakesLaddersCourt({players,settings}){
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
-  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0});
-  const [board,setBoard]=useState(()=>slGenerateBoard(21,5,5,{min:2,max:7},{min:2,max:7}));
-  const [count,setCount]=useState(4);
-  const [roster,setRoster]=useState(()=>slDefaultRoster(4,slReadPresents()));
-  const [queue,setQueue]=useState([0,1,2,3]);
+  const size=settings.size;
+  const cols=size===15?5:size===30?6:7;
+  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
+  const [board,setBoard]=useState(()=>slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  const [roster,setRoster]=useState(()=>players.map(n=>({name:n,pos:1})));
+  const [queue,setQueue]=useState(()=>players.map((_,i)=>i));
   const [winner,setWinner]=useState(null);
   const [revealed,setRevealed]=useState(new Set());
   const [events,setEvents]=useState([]);
   const [streak,setStreak]=useState({holder:null,n:0});
-  const [showSettings,setShowSettings]=useState(false);
-  const size=settings.size;
-  const cols=size===15?5:size===30?6:7;
-  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
-  function rebuild(n){const r=slDefaultRoster(n,SL_PRESENTS);setRoster(r);setQueue(r.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
-  function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));setRoster(prev=>prev.map(p=>({...p,pos:1})));setQueue(roster.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
-  function newGame(){setRoster(prev=>prev.map(p=>({...p,pos:1})));setQueue(roster.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
-  function setName(i,v){setRoster(prev=>{const c=prev.map(p=>({...p}));c[i].name=v;return c;});}
-  function setPlayerCount(n){setCount(n);rebuild(n);}
+  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
+  function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot){
     if(winner!=null||queue.length<2)return;
@@ -7409,11 +7402,7 @@ function SnakesLaddersGame(){
   const onA=queue[0],onB=queue[1];
   const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
 
-  return <div className="gameCard slGame">
-    <div className="categoryTag">Snakes &amp; Ladders™</div>
-    <h2>Snakes &amp; Ladders</h2>
-    <p className="mutedText">King-of-court board race for {count} players. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {size} wins.</p>
-
+  return <div className="slCourt">
     {winner==null&&queue.length>=2&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
       <button type="button" className="primaryBtn" onClick={()=>playRally(0)}>{roster[onA].name} won</button>
@@ -7421,6 +7410,7 @@ function SnakesLaddersGame(){
       <button type="button" className="primaryBtn" onClick={()=>playRally(1)}>{roster[onB].name} won</button>
     </div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
+    {queue.length<2&&<div className="slQueue">Needs at least 2 players on this court.</div>}
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
@@ -7442,16 +7432,58 @@ function SnakesLaddersGame(){
     </div>
 
     <div className="slControls">
-      <button type="button" className="secondaryBtn" onClick={newGame}>New Game (same board)</button>
+      <button type="button" className="secondaryBtn" onClick={resetPositions}>New Game (same board)</button>
       <button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>
     </div>
-
     {events.length>0&&<div className="slEvents">{events.map((e,i)=><div key={i} className={i===0?'slEvent slEventNew':'slEvent'}>{e}</div>)}</div>}
+  </div>;
+}
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Players & board settings'}</button>
+function SnakesLaddersGame(){
+  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const usingAttendance=presentsObj.length>=2;
+  const [courtCount,setCourtCount]=useState(1);
+  const [activeCourt,setActiveCourt]=useState(0);
+  const [manualCount,setManualCount]=useState(4);
+  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2','Player 3','Player 4']);
+  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0});
+  const [showSettings,setShowSettings]=useState(false);
+
+  const allocation=useMemo(()=>{
+    if(usingAttendance)return rankedBlockCourtAllocation(presentsObj,courtCount);
+    return [manualNames.slice(0,manualCount)];
+  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount]);
+  const courts=allocation.length;
+  const active=Math.min(activeCourt,courts-1);
+
+  function setManualName(i,v){setManualNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+
+  return <div className="gameCard slGame">
+    <div className="categoryTag">Snakes &amp; Ladders™</div>
+    <h2>Snakes &amp; Ladders</h2>
+    <p className="mutedText">King-of-court board race. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {settings.size} wins.</p>
+
+    <div className="slSessionBar">
+      <div className="slSessionInfo">{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
+      {usingAttendance
+        ? <label className="slInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        : <label className="slInlineField">Players<select value={manualCount} onChange={e=>setManualCount(Number(e.target.value))}>{[2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+    </div>
+
+    {!usingAttendance&&<div className="slManualNames">
+      <p className="mutedText">Mark players present in the Players screen to auto-split them across courts. For now, name them here:</p>
+      <div className="slNameGrid">{Array.from({length:manualCount}).map((_,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={manualNames[i]||''} onChange={e=>setManualName(i,e.target.value)}/></label>)}</div>
+    </div>}
+
+    {courts>1&&<div className="slCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'slCourtTab slCourtTabOn':'slCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
+    {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
+
+    {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
+      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings}/>
+    </div>)}
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
     {showSettings&&<div className="slSettings">
-      <label>Players<select value={count} onChange={e=>setPlayerCount(Number(e.target.value))}>{[2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-      <div className="slNameGrid">{roster.map((p,i)=><label key={i} className="slNameField"><span>P{i+1}</span>{SL_PRESENTS.length>0?<select value={p.name} onChange={e=>setName(i,e.target.value)}><option value={p.name}>{p.name}</option>{SL_PRESENTS.filter(n=>n!==p.name).map(n=><option key={n} value={n}>{n}</option>)}</select>:<input value={p.name} onChange={e=>setName(i,e.target.value)}/>}</label>)}</div>
       <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
       {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
       <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
@@ -7463,7 +7495,7 @@ function SnakesLaddersGame(){
       <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
-      <p className="mutedText">Player-count changes apply now. Board changes apply on the next “New Board”.</p>
+      <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. Changing courts re-deals the players.</p>
     </div>}
   </div>;
 }
