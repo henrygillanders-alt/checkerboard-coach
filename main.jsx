@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v158 Snakes and Ladders Multiplayer King of Court';
+const APP_VERSION='v159 SnL emoji and attendance names';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7358,14 +7358,15 @@ function slSerpentine(size,cols){
   }
   return grid;
 }
+function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
 function SnakesLaddersGame(){
-  const SL_PRESENTS=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const SL_PRESENTS=useMemo(()=>slReadPresents(),[]);
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
   const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0});
   const [board,setBoard]=useState(()=>slGenerateBoard(21,5,5,{min:2,max:7},{min:2,max:7}));
   const [count,setCount]=useState(4);
-  const [roster,setRoster]=useState(()=>slDefaultRoster(4,[]));
+  const [roster,setRoster]=useState(()=>slDefaultRoster(4,slReadPresents()));
   const [queue,setQueue]=useState([0,1,2,3]);
   const [winner,setWinner]=useState(null);
   const [revealed,setRevealed]=useState(new Set());
@@ -7390,9 +7391,9 @@ function SnakesLaddersGame(){
     const next=roster.map(p=>({...p}));
     const W=next[wIdx],L=next[lIdx];
     const ev=[],reveal=new Set(revealed);
-    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${W.name} climbed a ladder · ${W.pos}\u2192${top}`);reveal.add(W.pos);W.pos=top;}
+    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${W.name} climbed a ladder · ${W.pos}→${top}`);reveal.add(W.pos);W.pos=top;}
     else{W.pos=applyMove(W.pos+1);}
-    if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}\u2192${tail}`);reveal.add(L.pos);L.pos=tail;}
+    if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
     setRoster(next);setRevealed(reveal);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
     if(W.pos>=size){setWinner(wIdx);return;}
@@ -7409,7 +7410,7 @@ function SnakesLaddersGame(){
   const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
 
   return <div className="gameCard slGame">
-    <div className="categoryTag">Snakes &amp; Ladders\u2122</div>
+    <div className="categoryTag">Snakes &amp; Ladders™</div>
     <h2>Snakes &amp; Ladders</h2>
     <p className="mutedText">King-of-court board race for {count} players. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {size} wins.</p>
 
@@ -7419,9 +7420,9 @@ function SnakesLaddersGame(){
       <span className="slVs">vs</span>
       <button type="button" className="primaryBtn" onClick={()=>playRally(1)}>{roster[onB].name} won</button>
     </div>}
-    {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' \u2192 ')}</div>}
+    {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
 
-    {winner!=null&&<div className="slWinBanner">\ud83c\udfc6 {roster[winner].name} reaches {size} and wins!</div>}
+    {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
     <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
@@ -7432,9 +7433,9 @@ function SnakesLaddersGame(){
         const here=roster.map((p,i)=>p.pos===n?i:-1).filter(i=>i>=0);
         return <div key={idx} className={`slCell${ci.show&&ci.isLadder?' slLadder':''}${ci.show&&ci.isSnake?' slSnake':''}${n===size?' slFinish':''}`}>
           <span className="slNum">{n}</span>
-          {ci.show&&ci.isLadder&&<span className="slMark">\ud83e\udd9c\u2192{ci.to}</span>}
-          {ci.show&&ci.isSnake&&<span className="slMark">\ud83d\udc0d\u2192{ci.to}</span>}
-          {n===size&&<span className="slMark">\ud83c\udfc1</span>}
+          {ci.show&&ci.isLadder&&<span className="slMark">🪜→{ci.to}</span>}
+          {ci.show&&ci.isSnake&&<span className="slMark">🐍→{ci.to}</span>}
+          {n===size&&<span className="slMark">🏁</span>}
           {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(roster[i].name||'P')[0].toUpperCase()}</b>)}</span>}
         </div>;
       })}
@@ -7447,13 +7448,13 @@ function SnakesLaddersGame(){
 
     {events.length>0&&<div className="slEvents">{events.map((e,i)=><div key={i} className={i===0?'slEvent slEventNew':'slEvent'}>{e}</div>)}</div>}
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide settings':'\u2699 Players & board settings'}</button>
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Players & board settings'}</button>
     {showSettings&&<div className="slSettings">
       <label>Players<select value={count} onChange={e=>setPlayerCount(Number(e.target.value))}>{[2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-      <div className="slNameGrid">{roster.map((p,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={p.name} list="slPresent" onChange={e=>setName(i,e.target.value)}/></label>)}<datalist id="slPresent">{SL_PRESENTS.map(n=><option key={n} value={n}/>)}</datalist></div>
+      <div className="slNameGrid">{roster.map((p,i)=><label key={i} className="slNameField"><span>P{i+1}</span>{SL_PRESENTS.length>0?<select value={p.name} onChange={e=>setName(i,e.target.value)}><option value={p.name}>{p.name}</option>{SL_PRESENTS.filter(n=>n!==p.name).map(n=><option key={n} value={n}>{n}</option>)}</select>:<input value={p.name} onChange={e=>setName(i,e.target.value)}/>}</label>)}</div>
       <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
       {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
-      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1\u2013{v}</option>)}</select></label>
+      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
       <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
       <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
       <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
@@ -7462,7 +7463,7 @@ function SnakesLaddersGame(){
       <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
-      <p className="mutedText">Player-count changes apply now. Board changes apply on the next \u201cNew Board\u201d.</p>
+      <p className="mutedText">Player-count changes apply now. Board changes apply on the next “New Board”.</p>
     </div>}
   </div>;
 }
