@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v168 Poker rationale';
+const APP_VERSION='v169 rationale across all modules';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3110,6 +3110,11 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     <div className="perceptionWorkArea">
       <div className="perceptionSidebar">
         <h3>{currentSection.title}</h3><p>{currentSection.subtitle}</p>
+        <CoachRationale label="Why these games — coach rationale">
+          <p>{currentSection.subtitle}</p>
+          {currentSection.focus&&<p><strong>Progression:</strong> {currentSection.focus}</p>}
+          <p className="mutedText">These are perception-action games, not technique drills: the skill being trained is earlier, better information pickup and the movement organisation that follows from it. Each game below carries its own rationale and scoring.</p>
+        </CoachRationale>
         <div className="perceptionPhaseButtons">{phases.map(ph=><button key={ph} className={phase===ph?'activePerceptionPhase':''} onClick={()=>{setPhase(ph);setSelected(null);}}>{ph}</button>)}</div>
         {section!=='early-read'&&<div className="perceptionBuildNote"><strong>Complete section</strong><p>This section now sits inside PERCEPTION™ so Quiet Eye, Tracking, Interception and Deception share the same perception-action framework.</p></div>}
       </div>
@@ -3194,6 +3199,13 @@ function formatPeakDate(baseDate,offset){
   d.setDate(d.getDate()+offset);
   return d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
 }
+function CoachRationale({label='Why this game — coach rationale',children}){
+  const [open,setOpen]=useState(false);
+  return <>
+    <button type="button" className="meAddOwnBtn" onClick={()=>setOpen(!open)}>{open?'− Hide rationale':label}</button>
+    {open&&<div className="slRationale">{children}</div>}
+  </>;
+}
 function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
   const [tab,setTab]=useState('planner');
   const [tournamentDate,setTournamentDate]=useState('');
@@ -3240,6 +3252,10 @@ function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
   return <div className={embedded?'peakWeekEmbedded':'page peakWeekPage'}>
     {!embedded&&<div className="pageTop"><div><h1>⚡ PEAK WEEK™</h1><p className="mutedText">Competition readiness · neural priming · pressure preparation · taper planning</p></div><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div>}
     <div className="peakWeekHero"><span>PRE-COMPETITION PREPARATION</span><h2>Volume falls. Intensity remains. Representativeness rises.</h2><p>Player arrives fast, sharp, confident and fresh.</p></div>
+    <CoachRationale label="Why this module — coach rationale">
+      <p>PEAK WEEK is a <strong>pre-competition taper</strong>: training volume falls while intensity and sharpness are preserved, so the player arrives fresh but not flat.</p>
+      <p>The week protects readiness — managing fatigue while maintaining perception-action sharpness and competitive intent on reduced load. Work becomes <strong>more representative, not more</strong>: rehearsing the specific demands, routines and decisions of the event rather than accumulating fitness. The Wednesday session and optional Friday activation are the sharpening touchpoints into the tournament.</p>
+    </CoachRationale>
     <div className="peakWeekTabs">
       {['planner','tabata','templates','activation','notes'].map(id=><button key={id} className={tab===id?'activePeakTab':''} onClick={()=>setTab(id)}>{id==='planner'?'Peak Week Planner':id==='tabata'?'Neural Tabata':id==='templates'?'Session Templates':id==='activation'?'Optional Friday Activation':'Coach Notes'}</button>)}
     </div>
@@ -12378,6 +12394,10 @@ function TacticalIntentionsModule({setScreen,setSession}){
   return <div className="page tacticalIntentionsPage">
     <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
+    <CoachRationale label="Why these games — coach rationale">
+      <p>Pattern Lab keeps the practical value of the classic <strong>Patterns of Play</strong> — a large library of recognisable tactical situations — while removing the rigid prescription that turns patterns into rehearsed routines.</p>
+      <p>Each card is reframed through Checkerboard zones, flight constraints, disguise and diversity, so the player <strong>recognises the affordance and chooses a functional solution</strong> rather than executing one fixed answer. The constraints keep representativeness high and guard against attractor states — the same pattern hardening into an unthinking habit.</p>
+    </CoachRationale>
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);}}>⚡ Random Pattern</button></div>
 
