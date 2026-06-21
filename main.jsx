@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v157 Snakes and Ladders';
+const APP_VERSION='v158 Snakes and Ladders Multiplayer King of Court';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7358,93 +7358,102 @@ function slSerpentine(size,cols){
   }
   return grid;
 }
+function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
 function SnakesLaddersGame(){
   const SL_PRESENTS=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
-  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false});
+  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
+  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0});
   const [board,setBoard]=useState(()=>slGenerateBoard(21,5,5,{min:2,max:7},{min:2,max:7}));
-  const [names,setNames]=useState(['Player 1','Player 2']);
-  const [players,setPlayers]=useState([{pos:1},{pos:1}]);
+  const [count,setCount]=useState(4);
+  const [roster,setRoster]=useState(()=>slDefaultRoster(4,[]));
+  const [queue,setQueue]=useState([0,1,2,3]);
   const [winner,setWinner]=useState(null);
   const [revealed,setRevealed]=useState(new Set());
   const [events,setEvents]=useState([]);
-  const [wins,setWins]=useState([0,0]);
+  const [streak,setStreak]=useState({holder:null,n:0});
   const [showSettings,setShowSettings]=useState(false);
   const size=settings.size;
   const cols=size===15?5:size===30?6:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
-  function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));setPlayers([{pos:1},{pos:1}]);setWinner(null);setRevealed(new Set());setEvents([]);}
-  function newGame(){setPlayers([{pos:1},{pos:1}]);setWinner(null);setRevealed(new Set());setEvents([]);}
-  function resetMatch(){newGame();setWins([0,0]);}
+  function rebuild(n){const r=slDefaultRoster(n,SL_PRESENTS);setRoster(r);setQueue(r.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
+  function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));setRoster(prev=>prev.map(p=>({...p,pos:1})));setQueue(roster.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
+  function newGame(){setRoster(prev=>prev.map(p=>({...p,pos:1})));setQueue(roster.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
+  function setName(i,v){setRoster(prev=>{const c=prev.map(p=>({...p}));c[i].name=v;return c;});}
+  function setPlayerCount(n){setCount(n);rebuild(n);}
 
-  function playRally(w){
-    if(winner!=null)return;
-    const next=players.map(p=>({...p}));
-    const W=next[w],L=next[1-w];
+  function playRally(slot){
+    if(winner!=null||queue.length<2)return;
+    const A=queue[0],B=queue[1];
+    const wIdx=slot===0?A:B, lIdx=slot===0?B:A;
+    const next=roster.map(p=>({...p}));
+    const W=next[wIdx],L=next[lIdx];
     const ev=[],reveal=new Set(revealed);
-    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${names[w]} climbed a ladder · ${W.pos}→${top}`);reveal.add(W.pos);W.pos=top;}
+    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${W.name} climbed a ladder · ${W.pos}\u2192${top}`);reveal.add(W.pos);W.pos=top;}
     else{W.pos=applyMove(W.pos+1);}
-    if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${names[1-w]} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
-    setPlayers(next);setRevealed(reveal);
+    if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}\u2192${tail}`);reveal.add(L.pos);L.pos=tail;}
+    setRoster(next);setRevealed(reveal);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
-    if(W.pos>=size){setWinner(w);setWins(prev=>{const c=[...prev];c[w]++;return c;});}
+    if(W.pos>=size){setWinner(wIdx);return;}
+    let newStreak={holder:wIdx,n:streak.holder===wIdx?streak.n+1:1};
+    const rest=queue.slice(2);
+    const capHit=settings.mode==='winner'&&settings.streakCap>0&&newStreak.n>=settings.streakCap;
+    let nq;
+    if(settings.mode==='rotation'||capHit){nq=[...rest,A,B];if(capHit)newStreak={holder:null,n:0};}
+    else{nq=[wIdx,...rest,lIdx];}
+    setQueue(nq);setStreak(newStreak);
   }
 
-  const needToWin=1;
-  const cellInfo=(n)=>{
-    const isLadder=board.ladders[n]!=null, isSnake=board.snakes[n]!=null;
-    const show=settings.visible||revealed.has(n);
-    return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};
-  };
+  const onA=queue[0],onB=queue[1];
+  const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
 
   return <div className="gameCard slGame">
-    <div className="categoryTag">Snakes &amp; Ladders™</div>
+    <div className="categoryTag">Snakes &amp; Ladders\u2122</div>
     <h2>Snakes &amp; Ladders</h2>
-    <p className="mutedText">Win a rally to move forward one square. Lose a rally while sitting on a snake and you slide down it. Win a rally while sitting on a ladder and you climb. First to {size} wins.</p>
+    <p className="mutedText">King-of-court board race for {count} players. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {size} wins.</p>
 
-    <div className="slNameRow">
-      {[0,1].map(i=><label key={i} className="slNameField"><span>Player {i+1}</span><input value={names[i]} list="slPresent" onChange={e=>setNames(prev=>{const c=[...prev];c[i]=e.target.value;return c;})}/></label>)}
-      <datalist id="slPresent">{SL_PRESENTS.map(n=><option key={n} value={n}/>)}</datalist>
-    </div>
+    {winner==null&&queue.length>=2&&<div className="slOnCourt">
+      <span className="slOnCourtLabel">On court</span>
+      <button type="button" className="primaryBtn" onClick={()=>playRally(0)}>{roster[onA].name} won</button>
+      <span className="slVs">vs</span>
+      <button type="button" className="primaryBtn" onClick={()=>playRally(1)}>{roster[onB].name} won</button>
+    </div>}
+    {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' \u2192 ')}</div>}
 
-    <div className="slScoreRow">
-      <div className={winner===0?'slScore slScoreWin':'slScore'}><strong>{names[0]}</strong><span>Square {players[0].pos} · Games {wins[0]}</span></div>
-      <div className={winner===1?'slScore slScoreWin':'slScore'}><strong>{names[1]}</strong><span>Square {players[1].pos} · Games {wins[1]}</span></div>
-    </div>
+    {winner!=null&&<div className="slWinBanner">\ud83c\udfc6 {roster[winner].name} reaches {size} and wins!</div>}
 
-    {winner!=null&&<div className="slWinBanner">🏆 {names[winner]} reaches {size} and wins the game!</div>}
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
         if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
         const ci=cellInfo(n);
-        const here=[0,1].filter(i=>players[i].pos===n);
+        const here=roster.map((p,i)=>p.pos===n?i:-1).filter(i=>i>=0);
         return <div key={idx} className={`slCell${ci.show&&ci.isLadder?' slLadder':''}${ci.show&&ci.isSnake?' slSnake':''}${n===size?' slFinish':''}`}>
           <span className="slNum">{n}</span>
-          {ci.show&&ci.isLadder&&<span className="slMark">🪜→{ci.to}</span>}
-          {ci.show&&ci.isSnake&&<span className="slMark">🐍→{ci.to}</span>}
-          {n===size&&<span className="slMark">🏁</span>}
-          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className={i===0?'slTok slTok0':'slTok slTok1'}>{(names[i]||'P')[0].toUpperCase()}</b>)}</span>}
+          {ci.show&&ci.isLadder&&<span className="slMark">\ud83e\udd9c\u2192{ci.to}</span>}
+          {ci.show&&ci.isSnake&&<span className="slMark">\ud83d\udc0d\u2192{ci.to}</span>}
+          {n===size&&<span className="slMark">\ud83c\udfc1</span>}
+          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(roster[i].name||'P')[0].toUpperCase()}</b>)}</span>}
         </div>;
       })}
     </div>
 
     <div className="slControls">
-      <button type="button" className="primaryBtn" disabled={winner!=null} onClick={()=>playRally(0)}>{names[0]} won rally</button>
-      <button type="button" className="primaryBtn" disabled={winner!=null} onClick={()=>playRally(1)}>{names[1]} won rally</button>
-    </div>
-    <div className="slControls">
       <button type="button" className="secondaryBtn" onClick={newGame}>New Game (same board)</button>
       <button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>
-      <button type="button" className="secondaryBtn" onClick={resetMatch}>Reset Match</button>
     </div>
 
     {events.length>0&&<div className="slEvents">{events.map((e,i)=><div key={i} className={i===0?'slEvent slEventNew':'slEvent'}>{e}</div>)}</div>}
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Board settings'}</button>
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide settings':'\u2699 Players & board settings'}</button>
     {showSettings&&<div className="slSettings">
-      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
+      <label>Players<select value={count} onChange={e=>setPlayerCount(Number(e.target.value))}>{[2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+      <div className="slNameGrid">{roster.map((p,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={p.name} list="slPresent" onChange={e=>setName(i,e.target.value)}/></label>)}<datalist id="slPresent">{SL_PRESENTS.map(n=><option key={n} value={n}/>)}</datalist></div>
+      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
+      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
+      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1\u2013{v}</option>)}</select></label>
       <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
       <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
       <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
@@ -7453,7 +7462,7 @@ function SnakesLaddersGame(){
       <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
-      <p className="mutedText">Changes apply on the next “New Board”.</p>
+      <p className="mutedText">Player-count changes apply now. Board changes apply on the next \u201cNew Board\u201d.</p>
     </div>}
   </div>;
 }
