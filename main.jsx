@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v166 SnL copy player link';
+const APP_VERSION='v168 Poker rationale';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7470,6 +7470,7 @@ function SnakesLaddersGame(){
   function removeBonus(i){setSettings(s=>({...s,bonuses:(s.bonuses||[]).filter((_,j)=>j!==i)}));}
   function setBonusSquares(i,v){setSettings(s=>({...s,bonuses:(s.bonuses||[]).map((b,j)=>j===i?{...b,squares:Number(v)||0}:b)}));}
   const [showSettings,setShowSettings]=useState(false);
+  const [showRationale,setShowRationale]=useState(false);
   const [projecting,setProjecting]=useState(false);
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
   async function copySLPlayerLink(){
@@ -7494,6 +7495,20 @@ function SnakesLaddersGame(){
     <div className="categoryTag">Snakes &amp; Ladders™</div>
     <h2>Snakes &amp; Ladders</h2>
     <p className="mutedText">King-of-court board race. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {settings.size} wins.</p>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
+    {showRationale&&<div className="slRationale">
+      <p>An <strong>informational pressure game</strong>: the score moves both forwards and backwards, so every point carries consequence. That non-linearity creates score volatility, uncertainty and momentum swings that are highly representative of matchplay — and the deliberate instability is where adaptation happens.</p>
+      <p>What it trains:</p>
+      <ul>
+        <li><strong>Loss aversion</strong> — snakes weaponise the fact that a loss hurts more than a win helps.</li>
+        <li><strong>Momentum perception</strong> — players feel the swings physically as tokens climb and slide.</li>
+        <li><strong>Emotional regulation</strong> — recovering composure after a setback is the core skill; the metric worth watching is how the next few rallies go after a snake.</li>
+        <li><strong>Opportunity recognition</strong> — ladders reward reading when to commit and attack.</li>
+        <li><strong>Pressure tolerance</strong> — because the board is visible and randomised, big points are felt <em>before</em> they arrive, which is representative clutch pressure.</li>
+      </ul>
+      <p className="mutedText">Randomising the board each game keeps the consequence-landscape fresh, preventing pattern learning and forcing genuine re-perception every session.</p>
+    </div>}
 
     <div className="slSessionBar">
       <div className="slSessionInfo">{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
@@ -12176,12 +12191,27 @@ function BlindTargetScoreModule({setScreen,players=[]}){
   const[mirror,setMirror]=useState(false);
   const[revealFirst,setRevealFirst]=useState(false);
   const[form,setForm]=useState(false);
+  const[showRationale,setShowRationale]=useState(false);
   const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
   const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
   return <div className="page btsPage">
     <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
     <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why these games — coach rationale'}</button>
+    {showRationale&&<div className="slRationale">
+      <p>This family applies <strong>poker psychology</strong> to squash: players must make good decisions when information is <strong>incomplete</strong> (hidden targets) and consequence is <strong>uneven</strong> (raises, folds). Pressure isn't the objective — it's the consequence of the uncertainty.</p>
+      <p>What it trains:</p>
+      <ul>
+        <li><strong>Decision-making under incomplete information</strong> — acting on partial knowledge rather than waiting for certainty.</li>
+        <li><strong>Risk-reward management</strong> — a raise is a bet on your own execution; folding well is a skill, not a weakness.</li>
+        <li><strong>Reading the opponent</strong> — what a raise or hesitation reveals, and the deception layer of disguising your own intent.</li>
+        <li><strong>Sustained attention</strong> — because endpoints are hidden, every rally might already be match ball, so effort can't be paced.</li>
+        <li><strong>Emotional regulation</strong> — staying composed through swings of fortune that aren't fully in your control.</li>
+      </ul>
+      <p className="mutedText">Coach-lite by design: don't pre-teach the inference layer — discovery is the learning. Debrief decisions, not scores.</p>
+    </div>}
     <div className="gameCard btsConfig">
       <h2>Delivery Mode</h2>
       <div className="btsModeGrid">
