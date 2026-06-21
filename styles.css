@@ -8341,3 +8341,13 @@ button.mentalSkillsTile p{
 .ladderDragHandle:active{cursor:grabbing;background:#23344a;}
 .juniorLadderRow{display:flex;align-items:center;gap:10px;}
 .ladderRowDragging{background:#1d3a5c;border:1px solid #5b9bff;border-radius:10px;opacity:0.95;box-shadow:0 6px 18px rgba(0,0,0,0.4);}
+
+/* ── v162 S&L optional rally modifiers ───────────────────────────────────── */
+.slBonusRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-radius:10px;background:#1a1330;border:1px solid #4a3a6e;}
+.slBonusLabel{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:#b9a8e0;}
+.slBonuses{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:12px;background:#0f1822;border:1px solid #223044;}
+.slBonusEdit{display:flex;align-items:center;gap:10px;}
+.slBonusName{flex:1;font-weight:600;}
+.slBonusEdit input{max-width:64px;}
+.slBonusRemove{background:#331717;border:1px solid #8a3a3a;color:#f0a0a0;border-radius:8px;padding:4px 10px;}
+.slBonusQuick{display:flex;gap:6px;flex-wrap:wrap;}

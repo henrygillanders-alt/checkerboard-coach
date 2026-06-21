@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v161 ladder drag-drop + Blind Target in Library';
+const APP_VERSION='v163 Poker rename';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3274,7 +3274,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
-      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Blind Target Score</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
       <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Solo Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
@@ -7372,6 +7372,7 @@ function SnakesLaddersCourt({players,settings}){
   const [revealed,setRevealed]=useState(new Set());
   const [events,setEvents]=useState([]);
   const [streak,setStreak]=useState({holder:null,n:0});
+  const [activeBonuses,setActiveBonuses]=useState(new Set());
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
   function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
@@ -7386,6 +7387,9 @@ function SnakesLaddersCourt({players,settings}){
     const ev=[],reveal=new Set(revealed);
     if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${W.name} climbed a ladder · ${W.pos}→${top}`);reveal.add(W.pos);W.pos=top;}
     else{W.pos=applyMove(W.pos+1);}
+    const extra=(settings.bonuses||[]).reduce((sum,b)=>activeBonuses.has(b.label)?sum+(Number(b.squares)||0):sum,0);
+    if(extra>0){W.pos=applyMove(W.pos+extra);if(board.ladders[W.pos]){const t=board.ladders[W.pos];ev.push(`${W.name} bonus +${extra} → ladder ${W.pos}→${t}`);reveal.add(W.pos);W.pos=t;}else{ev.push(`${W.name} bonus +${extra} square${extra===1?'':'s'}`);}}
+    if(activeBonuses.size>0)setActiveBonuses(new Set());
     if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
     setRoster(next);setRevealed(reveal);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
@@ -7403,6 +7407,7 @@ function SnakesLaddersCourt({players,settings}){
   const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
 
   return <div className="slCourt">
+    {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
     {winner==null&&queue.length>=2&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
       <button type="button" className="primaryBtn" onClick={()=>playRally(0)}>{roster[onA].name} won</button>
@@ -7446,7 +7451,13 @@ function SnakesLaddersGame(){
   const [activeCourt,setActiveCourt]=useState(0);
   const [manualCount,setManualCount]=useState(4);
   const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2','Player 3','Player 4']);
-  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0});
+  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]});
+  const [showBonuses,setShowBonuses]=useState(false);
+  const [bonusLabel,setBonusLabel]=useState('');
+  const [bonusSq,setBonusSq]=useState(2);
+  function addBonus(label,sq){const l=(label||'').trim();if(!l)return;setSettings(s=>({...s,bonuses:[...(s.bonuses||[]),{label:l,squares:Number(sq)||1}]}));setBonusLabel('');}
+  function removeBonus(i){setSettings(s=>({...s,bonuses:(s.bonuses||[]).filter((_,j)=>j!==i)}));}
+  function setBonusSquares(i,v){setSettings(s=>({...s,bonuses:(s.bonuses||[]).map((b,j)=>j===i?{...b,squares:Number(v)||0}:b)}));}
   const [showSettings,setShowSettings]=useState(false);
 
   const allocation=useMemo(()=>{
@@ -7481,6 +7492,14 @@ function SnakesLaddersGame(){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings}/>
     </div>)}
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
+    {showBonuses&&<div className="slBonuses">
+      <p className="mutedText">Pure Snakes &amp; Ladders by default. Add a bonus to award extra squares when a finish or constraint is met on a winning rally — the coach taps the bonus chip before the winner.</p>
+      {(settings.bonuses||[]).map((b,i)=><div key={i} className="slBonusEdit"><span className="slBonusName">{b.label}</span><label>+<input type="number" min="0" max="9" value={b.squares} onChange={e=>setBonusSquares(i,e.target.value)}/> sq</label><button type="button" className="slBonusRemove" onClick={()=>removeBonus(i)}>✕</button></div>)}
+      <div className="slBonusQuick">{COMPLETION_CONSTRAINTS.map(c=><button type="button" key={c} className="meChip" disabled={(settings.bonuses||[]).some(b=>b.label===c)} onClick={()=>addBonus(c,2)}>+ {c}</button>)}</div>
+      <div className="overlayCustomAdd"><input value={bonusLabel} onChange={e=>setBonusLabel(e.target.value)} placeholder="Custom constraint" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addBonus(bonusLabel,bonusSq);}}}/><input type="number" min="0" max="9" value={bonusSq} onChange={e=>setBonusSq(Number(e.target.value)||0)} style={{maxWidth:'70px'}}/><button type="button" className="meChip meChipOn" onClick={()=>addBonus(bonusLabel,bonusSq)}>+ Add</button></div>
+    </div>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
     {showSettings&&<div className="slSettings">
@@ -7533,7 +7552,7 @@ function Games({setSession,setScreen}){
     {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
-    {id:'blindtarget',label:'Blind Target Score',category:'Blind Target'},
+    {id:'blindtarget',label:'Poker',category:'Blind Target'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
@@ -12099,7 +12118,7 @@ function BlindTargetScoreModule({setScreen,players=[]}){
   const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
   const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
   return <div className="page btsPage">
-    <div className="pageTop"><div><h1>Blind Target Score</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
     <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
     <div className="gameCard btsConfig">
