@@ -8335,3 +8335,9 @@ button.mentalSkillsTile p{
 .slAllocRow span{color:#aab;}
 .slAllocRowOn{border-color:#5b9bff;}
 .slCourt{display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+
+/* ── v161 ladder drag-and-drop ───────────────────────────────────────────── */
+.ladderDragHandle{cursor:grab;background:#1a2636;border:1px solid #2a3a4e;border-radius:8px;color:#8aa;font-size:1.2rem;line-height:1;padding:8px 12px;min-width:40px;display:flex;align-items:center;justify-content:center;user-select:none;}
+.ladderDragHandle:active{cursor:grabbing;background:#23344a;}
+.juniorLadderRow{display:flex;align-items:center;gap:10px;}
+.ladderRowDragging{background:#1d3a5c;border:1px solid #5b9bff;border-radius:10px;opacity:0.95;box-shadow:0 6px 18px rgba(0,0,0,0.4);}

@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v160 SnL multi-court';
+const APP_VERSION='v161 ladder drag-drop + Blind Target in Library';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7533,6 +7533,7 @@ function Games({setSession,setScreen}){
     {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
+    {id:'blindtarget',label:'Blind Target Score',category:'Blind Target'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
@@ -7605,7 +7606,7 @@ function Games({setSession,setScreen}){
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
-        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>selectClass(gameClass.id)}>
+        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):selectClass(gameClass.id)}>
           {gameClass.label}
         </button>
       )}
@@ -11242,12 +11243,28 @@ function LiveSessionDelivery({session=[],setScreen}){
 
 function JuniorLadder({players=[],setPlayers=()=>{}}){
   const [showAll,setShowAll]=useState(false);
+  const [dragName,setDragName]=useState(null);
+  const [order,setOrder]=useState([]);
+  const rowRefs=useRef({});
   const ladderPlayers=useMemo(()=>[...(players||[])].filter(p=>p&&p.name&&(showAll||p.playerType!=='Guest Player')).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[players,showAll]);
   function updateRank(name,newRank){setPlayers(prev=>(prev||[]).map(p=>{if(p.name!==name)return p; if(newRank==='')return {...p,juniorRanking:'',ranking:''}; const n=String(newRank).replace(/[^0-9]/g,''); return {...p,juniorRanking:n,ranking:n};}));}
-  function normalizeRanks(){const ordered=[...ladderPlayers];setPlayers(prev=>(prev||[]).map(p=>{const idx=ordered.findIndex(x=>x.name===p.name);return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;}));}
-  function move(name,dir){const ordered=[...ladderPlayers];const idx=ordered.findIndex(p=>p.name===name);const swap=idx+dir;if(idx<0||swap<0||swap>=ordered.length)return;const moved=ordered.splice(idx,1)[0];ordered.splice(swap,0,moved);setPlayers(prev=>(prev||[]).map(p=>{const newIdx=ordered.findIndex(x=>x.name===p.name);return newIdx>=0?{...p,juniorRanking:String(newIdx+1),ranking:String(newIdx+1)}:p;}));}
+  function commitOrder(names){setPlayers(prev=>(prev||[]).map(p=>{const idx=names.indexOf(p.name);return idx>=0?{...p,juniorRanking:String(idx+1),ranking:String(idx+1)}:p;}));}
+  function normalizeRanks(){commitOrder(ladderPlayers.map(p=>p.name));}
+  function startDrag(e,name){e.preventDefault();setDragName(name);setOrder(ladderPlayers.map(p=>p.name));try{e.currentTarget.setPointerCapture(e.pointerId);}catch(_){}}
+  function onDragMove(e){
+    if(!dragName)return;
+    const cur=order.length?order:ladderPlayers.map(p=>p.name);
+    const without=cur.filter(n=>n!==dragName);
+    const y=e.clientY;
+    let insert=without.length;
+    for(let i=0;i<without.length;i++){const el=rowRefs.current[without[i]];if(!el)continue;const r=el.getBoundingClientRect();if(y<r.top+r.height/2){insert=i;break;}}
+    const nq=[...without.slice(0,insert),dragName,...without.slice(insert)];
+    if(nq.join('|')!==cur.join('|'))setOrder(nq);
+  }
+  function endDrag(){if(!dragName)return;const finalOrder=order.length?order:ladderPlayers.map(p=>p.name);commitOrder(finalOrder);setDragName(null);setOrder([]);}
+  const visible=dragName&&order.length?order.map(n=>ladderPlayers.find(p=>p.name===n)).filter(Boolean):ladderPlayers;
   const presentCount=(players||[]).filter(p=>p&&p.present).length;
-  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Ladder allocation uses ranked blocks, not snake seeding.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{ladderPlayers.length?ladderPlayers.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} className="juniorLadderRow"><div className="ladderRankBadge">#{rawRank===''?'—':rawRank}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div><div className="ladderMoveBtns"><button type="button" className="secondaryBtn" disabled={idx===0} onClick={()=>move(p.name,-1)}>↑</button><button type="button" className="secondaryBtn" disabled={idx===ladderPlayers.length-1} onClick={()=>move(p.name,1)}>↓</button></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
+  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Drag the ⠿ handle to reorder; ladder allocation uses ranked blocks.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{visible.length?visible.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} ref={el=>{if(el)rowRefs.current[p.name]=el;}} className={dragName===p.name?'juniorLadderRow ladderRowDragging':'juniorLadderRow'}><button type="button" className="ladderDragHandle" style={{touchAction:'none'}} onPointerDown={e=>startDrag(e,p.name)} onPointerMove={onDragMove} onPointerUp={endDrag} onPointerCancel={endDrag} aria-label="Drag to reorder">⠿</button><div className="ladderRankBadge">{dragName?`#${idx+1}`:`#${rawRank===''?'—':rawRank}`}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
 }
 
 function PlayerHub({players,setPlayers,session,setSession}){
