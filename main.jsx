@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v163 Poker rename';
+const APP_VERSION='v165 visible version stamp';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1290,7 +1290,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
   function commit(next){if(isControlled)onChange(next);else setInternal(next);}
-  const [open,setOpen]=useState('constraints');
+  const [open,setOpen]=useState(null);
   const [showLogicEdit,setShowLogicEdit]=useState(false);
   const [showConstraintEdit,setShowConstraintEdit]=useState(false);
   const [customConstraintText,setCustomConstraintText]=useState('');
@@ -7360,7 +7360,7 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function SnakesLaddersCourt({players,settings}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:7;
@@ -7405,6 +7405,17 @@ function SnakesLaddersCourt({players,settings}){
 
   const onA=queue[0],onB=queue[1];
   const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
+
+  useEffect(()=>{
+    if(!project)return;
+    const payload={type:'snakesladders',size,board,visible:settings.visible,revealed:[...revealed],
+      players:roster.map(p=>({name:p.name,pos:p.pos})),
+      onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
+      queueNames:queue.slice(2).map(i=>roster[i].name),
+      winnerName:winner!=null?roster[winner].name:null,
+      courtLabel};
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'snakesladders',payload);
+  },[project,roster,board,queue,winner,revealed,courtLabel]);
 
   return <div className="slCourt">
     {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
@@ -7459,6 +7470,8 @@ function SnakesLaddersGame(){
   function removeBonus(i){setSettings(s=>({...s,bonuses:(s.bonuses||[]).filter((_,j)=>j!==i)}));}
   function setBonusSquares(i,v){setSettings(s=>({...s,bonuses:(s.bonuses||[]).map((b,j)=>j===i?{...b,squares:Number(v)||0}:b)}));}
   const [showSettings,setShowSettings]=useState(false);
+  const [projecting,setProjecting]=useState(false);
+  const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
 
   const allocation=useMemo(()=>{
     if(usingAttendance)return rankedBlockCourtAllocation(presentsObj,courtCount);
@@ -7487,10 +7500,15 @@ function SnakesLaddersGame(){
     </div>}
 
     {courts>1&&<div className="slCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'slCourtTab slCourtTabOn':'slCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
+
+    <div className="slDisplayBar">
+      <button type="button" className={projecting?'primaryBtn slProjOn':'secondaryBtn'} onClick={()=>setProjecting(p=>!p)}>{projecting?`● Live on Player Display${courts>1?` — Court ${active+1}`:''}`:'Show on Player Display'}</button>
+      {projecting&&<span className="slDisplayHint">Open this on the wall screen: <a href={liveUrl} target="_blank" rel="noreferrer">{liveUrl}</a></span>}
+    </div>
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
-      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings}/>
+      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={projecting&&i===active} courtLabel={courts>1?`Court ${i+1}`:''}/>
     </div>)}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
@@ -7516,6 +7534,41 @@ function SnakesLaddersGame(){
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
       <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. Changing courts re-deals the players.</p>
     </div>}
+  </div>;
+}
+
+function SnakesLaddersPlayerDisplay({payload={}}){
+  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
+  const size=payload.size||21;
+  const cols=size===15?5:size===30?6:7;
+  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
+  const board=payload.board||{snakes:{},ladders:{}};
+  const players=payload.players||[];
+  const idxByName=useMemo(()=>{const m={};players.forEach((p,i)=>{m[p.name]=i;});return m;},[players]);
+  const revealed=new Set(payload.revealed||[]);
+  const visible=payload.visible!==false;
+  const onCourt=payload.onCourt||[];
+  const winnerName=payload.winnerName||null;
+  const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
+  return <div className="playerDisplayPage slDisplayPage">
+    <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
+    {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
+      :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
+    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
+      {grid.flat().map((n,idx)=>{
+        if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
+        const ci=cellInfo(n);
+        const here=players.map(p=>p.pos===n?p.name:null).filter(Boolean);
+        return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
+          <span className="slNum">{n}</span>
+          {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
+          {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
+          {n===size&&<span className="slMark">🏁</span>}
+          {here.length>0&&<span className="slTokens">{here.map(nm=><b key={nm} className="slTok" style={{background:SL_COLORS[(idxByName[nm]||0)%SL_COLORS.length]}}>{nm[0].toUpperCase()}</b>)}</span>}
+        </div>;
+      })}
+    </div>
   </div>;
 }
 
@@ -12460,19 +12513,21 @@ useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[playe
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
+if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
-<header className="hero">
+<div className="versionStamp" title="Deployed build">{APP_VERSION}</div>
+  <header className="hero">
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
     <button className="homeBtn" onClick={()=>go('home')}>HOME</button>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
   </div>
-  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ v136</h1><p>Sessions · Games · Players · Competition</p></div>
+  <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ {APP_VERSION.split(' ')[0]}</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
