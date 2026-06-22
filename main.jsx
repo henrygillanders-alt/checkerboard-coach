@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v178 ATL auto-CB removed, manual CB kept';
+const APP_VERSION='v179 Disruption Rotations';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -8350,6 +8350,372 @@ function TinWarPlayerDisplay({payload={}}){
 }
 
 
+function DisruptionStyles(){
+  return <style>{`
+.drSuite{display:flex;flex-direction:column;gap:16px;}
+.drLead{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.drLead h3{margin:0;font-size:1.05rem;color:#8fd0ee;}
+.drLead p{margin:0;line-height:1.45;color:#cdd9e6;}
+.drTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.drTab{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:9px 11px;color:#cdd9e6;cursor:pointer;}
+.drTab strong{font-size:0.9rem;}
+.drTab span{font-size:0.66rem;color:#7c8ea0;text-transform:uppercase;letter-spacing:0.03em;}
+.drTabActive{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.drInfo{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+.drInfoHead{display:flex;align-items:center;gap:12px;}
+.drInfoHead h2{margin:0;font-size:1.35rem;}
+.drTag{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;background:#123040;border:1px solid #2E6E8E;color:#8fd0ee;padding:3px 9px;border-radius:999px;}
+.drPurpose{margin:0;font-style:italic;color:#9fc4dc;}
+.drSectionGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.drSection{background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:11px 13px;}
+.drSection strong{display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;margin-bottom:4px;}
+.drSection p{margin:0;line-height:1.42;color:#cdd9e6;font-size:0.9rem;}
+.drRunBox{background:#10130b;border:1px solid #3a4a16;border-radius:12px;padding:13px 15px;display:flex;flex-direction:column;gap:6px;}
+.drRunBox h4{margin:0;color:#bef264;font-size:0.95rem;}
+.drRunBox p{margin:0;line-height:1.45;color:#d7e4c4;font-size:0.9rem;}
+.drControls{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.drLiveTop{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;}
+.drShotBox{flex:1;min-width:240px;background:#0b1118;border:1px solid #2c3c4e;border-radius:12px;padding:14px;}
+.drShotLabel{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:#7c8ea0;}
+.drShotText{font-size:1.4rem;font-weight:800;color:#eaf4fb;margin-top:4px;line-height:1.2;}
+.drShotMeta{font-size:0.8rem;color:#8fd0ee;margin-top:6px;}
+.drCycleBox{text-align:center;background:#0b1118;border:1px solid #2c3c4e;border-radius:12px;padding:12px 18px;}
+.drCycleNum{font-size:2.4rem;font-weight:800;color:#7db8ff;line-height:1;}
+.drCycleLabel{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:#7c8ea0;}
+.drBtnRow{display:flex;gap:8px;flex-wrap:wrap;}
+.drBtn{background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:10px 14px;font-size:0.86rem;font-weight:600;cursor:pointer;}
+.drBtnPrimary{background:#16466a;border-color:#7db8ff;color:#eaf4fb;}
+.drBtnGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.drBtnGhost{background:#161b22;border-color:#3a4a5e;color:#cdd9e6;}
+.drChip{font-size:0.78rem;font-weight:700;padding:4px 11px;border-radius:999px;background:#2a1206;border:1px solid #6a5410;color:#f5c542;}
+.drSpecial{background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:9px;}
+.drSpecial h4{margin:0;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:#9fb0c2;}
+.drComboRow{display:flex;align-items:center;gap:8px;background:#0f1822;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
+.drComboRow span{flex:1;color:#eaf4fb;font-size:0.9rem;}
+.drMini{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:7px;width:34px;height:34px;font-size:1rem;cursor:pointer;}
+.drDbGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;}
+.drDbCard{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0f1822;border:1px solid #223044;border-radius:9px;padding:8px 11px;}
+.drDbCard strong{font-size:0.92rem;}
+.drDbCard select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:7px;padding:5px 8px;}
+.drBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.drBottomBar .drBtnPrimary{margin-left:auto;}
+.drWon{text-align:center;background:#0d2a18;border:1px solid #1d6b3f;border-radius:12px;padding:14px;color:#86efac;font-weight:800;font-size:1.1rem;}
+.drScoreOpts{display:flex;flex-wrap:wrap;gap:10px;}
+.drScoreOpts label{display:flex;align-items:center;gap:7px;font-size:0.85rem;color:#cdd9e6;background:#0f1822;border:1px solid #223044;border-radius:9px;padding:7px 11px;cursor:pointer;}
+.drLog{display:flex;flex-direction:column;gap:3px;background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;}
+.drLogRow{font-size:0.82rem;color:#9fb0c2;font-family:ui-monospace,monospace;}
+
+.drDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#0d1b2a 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
+.drDisplayShell{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:26px;text-align:center;}
+.drDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#5e89b0;}
+.drDisplayTop h1{margin:6px 0 4px;font-size:2.8rem;color:#eaf4fb;}
+.drDisplayTop p{margin:0;font-size:1.1rem;color:#9fc4dc;font-style:italic;}
+.drDisplayShot{background:#0f1c2b;border:1px solid #21384e;border-radius:20px;padding:30px;}
+.drDisplayShot .lbl{font-size:1rem;letter-spacing:0.1em;color:#5e89b0;text-transform:uppercase;}
+.drDisplayShot .txt{font-size:2.6rem;font-weight:800;color:#7db8ff;margin-top:8px;line-height:1.15;}
+.drDisplayMeta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.drDispChip{font-size:1.1rem;font-weight:700;padding:8px 16px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
+.drDispChipHot{background:#2a1206;border-color:#6a5410;color:#f5c542;}
+.drDisplayDb{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.drDispDb{background:#0f1c2b;border:1px solid #21384e;border-radius:12px;padding:12px 18px;color:#eaf4fb;}
+.drDispDb b{color:#8fd0ee;}
+.drDisplayWon{font-size:2rem;font-weight:800;color:#86efac;}
+@media (max-width:600px){
+  .drTabs{grid-template-columns:repeat(2,1fr);}
+  .drSectionGrid{grid-template-columns:1fr;}
+  .drDisplayTop h1{font-size:2rem;}
+  .drDisplayShot .txt{font-size:1.8rem;}
+}
+`}</style>;
+}
+
+const DISRUPTION_CHAOS=['Reverse','Volley only','Two-touch','Weak-hand grip','One-bounce only'];
+const DISRUPTION_CALLS=['Boast → Lob','Drop → Drive','Drive → Drop','Lob → Boast','Drop → Boast'];
+const DISRUPTION_COMBO_PALETTE=['Boast','Drive','Straight drop','Crosscourt lob','Diagonal drop','Straight lob','Volley drop','Counter drop'];
+
+const DISRUPTION_ROTATIONS=[
+  {id:'dr1',title:'Racquet Change',tag:'Equipment',type:'racquet',
+   shots:['P1 Boast → T → change racquet','P2 Drive → T → change racquet','P3 Boast → T → change racquet'],
+   setup:'3 players. Each player has up to 5 racquets. The front player’s spares sit in front of the T; the back players’ spares sit behind the T.',
+   sequence:'Continuous boast / drive rotation. After hitting, each player passes through the T and swaps racquet before their next turn.',
+   objective:'Stay organised — keep the rotation flowing while the tool in your hand keeps changing.',
+   constraints:'Must change racquet through the T every cycle. Racquet count adjustable 1–10.',
+   coaching:'Watch grip re-set and timing under the disruption, not a “correct” swing. Adaptation, not technique.',
+   progressions:'Increase racquet count. Reduce changeover time. Add a chaos modifier.',
+   purpose:'Equipment disruption · grip adaptation · timing pressure.'},
+  {id:'dr2',title:'Boast–Drive Diagonal',tag:'Movement',type:'movement',
+   shots:['P1 Boast front-right → through T','P2 Straight drive left wall → diagonal to back-right','P3 Boast → through T → front-left'],
+   setup:'3 players working a diagonal traffic pattern across the court.',
+   sequence:'P1 boasts front-right and moves through the T. P2 drives straight on the left wall and moves diagonally to back-right. P3 boasts and moves through the T to front-left. Cycle repeats.',
+   objective:'Manage traffic and crossing lanes while keeping the pattern alive.',
+   constraints:'Hold the movement lanes. Recover through the T, not around it.',
+   coaching:'Traffic management, crossing lanes and recovery discipline. Let collisions teach spacing.',
+   progressions:'Add a second ball window. Tighten the recovery time. Add chaos.',
+   purpose:'Traffic management · crossing lanes · recovery discipline.'},
+  {id:'dr3',title:'Drop–Lob Reverse',tag:'Movement',type:'movement',
+   shots:['P1 Straight drop','P2 Crosscourt lob','P3 Straight drop'],
+   setup:'3 players. The movement pattern reverses the direction of the Boast–Drive Diagonal.',
+   sequence:'P1 straight drop, P2 crosscourt lob, P3 straight drop. Players move front-to-back, reversing the previous rotation’s flow.',
+   objective:'Transfer cleanly front-to-back and vary tempo under the lift.',
+   constraints:'Lift must clear; drops must be tight. Reverse the movement direction from Rotation 2.',
+   coaching:'Front-back transfer, tempo variation and lifting under pressure. Reward composure on the lift.',
+   progressions:'Add disguise on the drop. Add a chaos modifier. Move to player choice.',
+   purpose:'Front-back transfer · tempo variation · lift under pressure.'},
+  {id:'dr4',title:'Combination Cycle',tag:'Pattern',type:'combo',
+   shots:['Boast','Drive','Straight drop','Crosscourt lob','Diagonal drop','Straight lob'],
+   setup:'3 players running a fixed but editable shot cycle. The coach can reorder the sequence below.',
+   sequence:'Run the shot cycle in order, then repeat. Reorder the shots to change the linking problem.',
+   objective:'Link shots into a flowing pattern and hold the rhythm across cycles.',
+   constraints:'Follow the current shot order. A break resets the cycle (optional).',
+   coaching:'Shot linking, pattern memory and rhythm variation — but keep asking players to feel the next affordance, not recite the list.',
+   progressions:'Lengthen the sequence. Shorten it and add player choice on the final shot.',
+   purpose:'Shot linking · pattern memory · rhythm variation.'},
+  {id:'dr5',title:'Coach Call Change',tag:'Pattern',type:'coachcall',
+   shots:['Rally in the base pattern until the coach calls CHANGE'],
+   setup:'3 players in a base rotation. The coach can interrupt at any moment.',
+   sequence:'Players run the base pattern. On the coach call “CHANGE” they immediately switch shot family — e.g. Boast → Lob, Drop → Drive, Drive → Drop.',
+   objective:'Adapt instantly to an external call without losing organisation.',
+   constraints:'The called change must happen on the very next shot. No hesitation window.',
+   coaching:'Adaptability and fast tactical adjustment. Keep calls unpredictable; reward the speed of the switch.',
+   progressions:'Increase call frequency. Randomise the call. Hand the call to a player.',
+   purpose:'Adaptability · fast tactical adjustment.'},
+  {id:'dr6',title:'Player Decision',tag:'Decision',type:'decision',
+   shots:['Player reads the picture and chooses: Boast / Drive / Drop / Lob'],
+   setup:'3 players. No fixed pattern. Each player chooses their shot from the affordance.',
+   sequence:'There is no script. The player reads the picture and selects boast, drive, drop or lob based on what the situation offers.',
+   objective:'Read the affordance and choose a functional solution in real time.',
+   constraints:'Allowed shots: boast, drive, drop, lob. Anything goes within those, driven by the picture.',
+   coaching:'Affordance reading, decision-making and representative design — the highest ecological level. Coach the read, not the answer.',
+   progressions:'Widen the shot set. Add a constraint that problematises the opponent. Add chaos or a predator.',
+   purpose:'Affordance reading · decision making · representative design.'},
+  {id:'dr7',title:'Chaos Mode',tag:'Decision',type:'chaos',
+   shots:['Rally under the active chaos modifier'],
+   setup:'3 players. The coach layers disruption modifiers on top of any rotation.',
+   sequence:'Run any rotation while a chaos modifier is live: reverse, volley only, two-touch, weak-hand grip or one-bounce only. Switch modifiers without warning.',
+   objective:'Keep solving the rally problem while the rules keep shifting under you.',
+   constraints:'Obey the active modifier. The coach can change it at any time.',
+   coaching:'Disruption tolerance. It should feel messy — that is the point. Intervene briefly, then let them solve.',
+   progressions:'Stack two modifiers. Shorten the time between changes.',
+   purpose:'Disruption tolerance.'},
+  {id:'dr8',title:'Predator Mode',tag:'Decision',type:'predator',
+   shots:['Two players hold structure · the predator can break it and attack'],
+   setup:'3 players. One is the predator. Select the predator below; rotate after each cycle.',
+   sequence:'Two players stay in the rotation structure. The predator may break the pattern at any time and attack. Rotate the predator role after each cycle.',
+   objective:'Defend structure against unpredictability, and attack well when you hold the predator role.',
+   constraints:'Only the predator may break the pattern. The other two must stay in structure.',
+   coaching:'Asymmetry, unpredictability and attack under chaos. Reward the structured players for staying organised under threat.',
+   progressions:'Two predators. Predator earns a bonus for a clean break. Add a chaos modifier.',
+   purpose:'Asymmetry · unpredictability · attack under chaos.'},
+];
+
+function DisruptionRotations({setScreen,setSession,embedded=false}){
+  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [names,setNames]=useState(()=>presents.length>=3?presents.slice(0,8):presents.length>=2?presents.slice(0,8):['Player 1','Player 2','Player 3']);
+  const [rotId,setRotId]=useState('dr1');
+  const rot=DISRUPTION_ROTATIONS.find(r=>r.id===rotId)||DISRUPTION_ROTATIONS[0];
+
+  const [shotIndex,setShotIndex]=useState(0);
+  const [cycle,setCycle]=useState(0);
+  const [target,setTarget]=useState(10);
+  const [racquets,setRacquets]=useState(5);
+  const [combo,setCombo]=useState(DISRUPTION_ROTATIONS[3].shots.slice());
+  const [activeChaos,setActiveChaos]=useState(null);
+  const [activeCall,setActiveCall]=useState(null);
+  const [predator,setPredator]=useState(null);
+  const [db,setDb]=useState({});
+  const [errorResets,setErrorResets]=useState(false);
+  const [cleanBonus,setCleanBonus]=useState(false);
+  const [predatorBonus,setPredatorBonus]=useState(false);
+  const [log,setLog]=useState([]);
+  const [undoStack,setUndoStack]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+
+  const shots=rotId==='dr4'?combo:rot.shots;
+  const namesKey=names.join('|');
+  const won=cycle>=target;
+
+  useEffect(()=>{
+    setShotIndex(0);setCycle(0);setActiveChaos(null);setActiveCall(null);setUndoStack([]);setLog([]);
+    setPredator(names[0]||null);
+    setDb(()=>{const d={};names.forEach(n=>d[n]='Unlimited');return d;});
+  },[rotId,namesKey]);
+
+  function snap(){return {shotIndex,cycle,activeChaos,activeCall,predator,db:{...db},combo:[...combo],log:[...log]};}
+  function pushUndo(){const s=snap();setUndoStack(p=>[...p.slice(-29),s]);}
+  function addLog(m){setLog(p=>[m,...p].slice(0,8));}
+
+  function nextShot(){pushUndo();
+    const list=rotId==='dr4'?combo:rot.shots;
+    const ni=shotIndex+1;
+    if(ni>=list.length){setShotIndex(0);setCycle(c=>c+1);addLog('Cycle complete ('+(cycle+1)+')');}
+    else{setShotIndex(ni);}
+  }
+  function prevShot(){pushUndo();setShotIndex(i=>Math.max(0,i-1));}
+  function cycleAdjust(d){pushUndo();setCycle(c=>Math.max(0,c+d));}
+  function errorReset(){pushUndo();setShotIndex(0);addLog('Error — cycle progress reset');}
+  function bonus(amount,label){pushUndo();setCycle(c=>c+amount);addLog(label+' +'+amount);}
+
+  function randomChaos(){pushUndo();const c=DISRUPTION_CHAOS[Math.floor(Math.random()*DISRUPTION_CHAOS.length)];setActiveChaos(c);addLog('Chaos → '+c);}
+  function pickChaos(c){pushUndo();setActiveChaos(activeChaos===c?null:c);addLog(activeChaos===c?'Chaos cleared':'Chaos → '+c);}
+  function callChange(){pushUndo();const c=DISRUPTION_CALLS[Math.floor(Math.random()*DISRUPTION_CALLS.length)];setActiveCall(c);addLog('CALL CHANGE → '+c);}
+  function rotatePredator(){pushUndo();const i=names.indexOf(predator);const next=names[(i+1)%names.length];setPredator(next);addLog('Predator → '+next);}
+
+  function moveCombo(i,dir){const j=i+dir;if(j<0||j>=combo.length)return;pushUndo();setCombo(prev=>{const c=[...prev];const t=c[i];c[i]=c[j];c[j]=t;return c;});}
+  function removeCombo(i){pushUndo();setCombo(prev=>prev.filter((_,k)=>k!==i));}
+  function addCombo(shot){pushUndo();setCombo(prev=>[...prev,shot]);}
+
+  function setDbFor(n,v){pushUndo();setDb(p=>({...p,[n]:v}));}
+
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setShotIndex(s.shotIndex);setCycle(s.cycle);setActiveChaos(s.activeChaos);setActiveCall(s.activeCall);setPredator(s.predator);setDb(s.db);setCombo(s.combo);setLog(s.log);return prev.slice(0,-1);});}
+  function resetAll(){setShotIndex(0);setCycle(0);setActiveChaos(null);setActiveCall(null);setPredator(names[0]||null);setCombo(DISRUPTION_ROTATIONS[3].shots.slice());setDb(()=>{const d={};names.forEach(n=>d[n]='Unlimited');return d;});setUndoStack([]);setLog([]);}
+
+  useEffect(()=>{
+    if(!projecting)return;
+    const list=rotId==='dr4'?combo:rot.shots;
+    const payload={type:'disruption',
+      rotation:{title:rot.title,tag:rot.tag,purpose:rot.purpose},
+      shot:list[shotIndex]||list[0],shotIndex,totalShots:list.length,
+      cycle,target,won:cycle>=target,
+      chaos:activeChaos,call:activeCall,
+      predator:rotId==='dr8'?predator:null,
+      racquets:rotId==='dr1'?racquets:null,
+      players:names.map(n=>({name:n,db:db[n]||'Unlimited'}))};
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'disruption',payload);
+  },[projecting,rotId,shotIndex,cycle,target,activeChaos,activeCall,predator,racquets,db,combo,namesKey]);
+
+  async function copyPlayerLink(){
+    setProjecting(true);const url=buildLivePlayerViewUrl();let ok=false;
+    try{if(navigator.clipboard){await navigator.clipboard.writeText(url);ok=true;}}catch{}
+    if(ok){alert('Live player link copied. Open it on the second device — the rotation, current shot and cycle update live as you tap.');}
+    else{window.prompt('LIVE Disruption Rotations player link — open on the second device:',url);}
+  }
+  function addToSessionCard(){
+    if(typeof setSession!=='function')return;
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Disruption Rotations — '+rot.title,category:'Rotations',format:'3-player disruption rotation',duration:10,task:rot.sequence+' '+rot.objective,scoring:'Complete a full cycle = 1 point. '+target+' cycles wins.',rationale:'Challenges the prescriptive boast-and-drive view: the rotation is a scaffold; the disruption ('+rot.purpose+') breaks autopilot and pushes players from reproducing a pattern toward reading affordances.',coach:rot.coaching,playerFocus:rot.objective,layers:['Rotations'],rld:rotId==='dr6'||rotId==='dr7'||rotId==='dr8'?6:4}));
+    alert(rot.title+' added to your session. Open Session Builder to see the rotation.');
+  }
+  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+  const usingDefaults=presents.length<2;
+
+  return <div className={embedded?'drSuite drSuiteEmbedded':'gameCard drSuite'}>
+    <DisruptionStyles/>
+    {!embedded&&<div className="moduleHead"><div><h1>Disruption Rotations™</h1></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+
+    <div className="drLead">
+      <h3>Not a boast-and-drive drill</h3>
+      <p>These deliberately challenge the prescriptive, traditional view of rotations. The rotation is only a <strong>scaffold</strong>; every disruption layer — equipment, movement, pattern, decision — is there to break the autopilot and push players from <em>reproducing a fixed pattern</em> toward <em>reading affordances and generating their own solutions</em>. The progression runs toward Player Decision, Chaos and Predator, where there is no fixed pattern at all.</p>
+    </div>
+
+    <div className="drTabs">
+      {DISRUPTION_ROTATIONS.map(r=><button type="button" key={r.id} className={rotId===r.id?'drTab drTabActive':'drTab'} onClick={()=>setRotId(r.id)}><strong>{r.title}</strong><span>{r.tag}</span></button>)}
+    </div>
+
+    <div className="drInfo">
+      <div className="drInfoHead"><h2>{rot.title}</h2><span className="drTag">{rot.tag} disruption</span></div>
+      <p className="drPurpose">{rot.purpose}</p>
+      <div className="drSectionGrid">
+        <div className="drSection"><strong>Setup</strong><p>{rot.setup}</p></div>
+        <div className="drSection"><strong>Sequence</strong><p>{rot.sequence}</p></div>
+        <div className="drSection"><strong>Objective</strong><p>{rot.objective}</p></div>
+        <div className="drSection"><strong>Constraints</strong><p>{rot.constraints}</p></div>
+        <div className="drSection"><strong>Coaching focus</strong><p>{rot.coaching}</p></div>
+        <div className="drSection"><strong>Progressions</strong><p>{rot.progressions}</p></div>
+      </div>
+    </div>
+
+    <div className="drRunBox">
+      <h4>Run it as a game</h4>
+      <p>Add court-line boundaries: a shot landing <strong>outside the tramline loses the point</strong>. Works with 4 on court + 1 waiting — when a player loses, the player at the door comes in. After every change, players move round <strong>anticlockwise</strong> and the new player starts at <strong>right back</strong>.</p>
+    </div>
+
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={false}>
+      <p>The rotation runs continuously. A shot is valid if it keeps the pattern alive under the live constraint and any active disruption (chaos / coach call / predator break). Advance the shot as each player completes their turn; a full pass through the sequence is one cycle.</p>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={false}>
+      <p>Complete a full cycle = 1 point. {target} cycles wins. Use the optional rules below.</p>
+      <div className="drScoreOpts">
+        <label><input type="checkbox" checked={errorResets} onChange={()=>setErrorResets(!errorResets)}/> Error resets the current cycle</label>
+        <label><input type="checkbox" checked={cleanBonus} onChange={()=>setCleanBonus(!cleanBonus)}/> Clean completion bonus +2</label>
+        <label><input type="checkbox" checked={predatorBonus} onChange={()=>setPredatorBonus(!predatorBonus)}/> Predator bonus +1</label>
+      </div>
+      <div className="drBtnRow" style={{marginTop:'8px'}}><span className="drShotLabel" style={{alignSelf:'center'}}>Target:</span>{[5,10,15].map(t=><button key={t} type="button" className={target===t?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setTarget(t)}>{t}</button>)}</div>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={false}>
+      <p>{rot.constraints} Layer chaos modifiers, a coach call or a predator on top to problematise the pattern without rewriting the game.</p>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="4" title="Double Bounce" subtitle="Per-player allowance" color="purple" defaultOpen={false}>
+      <p className="mutedText">Allocate a double-bounce allowance per present player (Unlimited or 1–5).</p>
+      <div className="drDbGrid">{names.map(n=><div className="drDbCard" key={n}><strong>{n}</strong><select value={db[n]||'Unlimited'} onChange={e=>setDbFor(n,e.target.value)}>{['Unlimited','1','2','3','4','5'].map(v=><option key={v}>{v}</option>)}</select></div>)}</div>
+    </CollapsibleLayer>
+
+    {usingDefaults&&<div className="drSpecial"><span className="mutedText">Fewer than 2 present players found — using default names (edit below, or mark players Present):</span><div className="drBtnRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)} style={{background:'#0b1118',border:'1px solid #2c3c4e',color:'#eaf2f9',borderRadius:'8px',padding:'8px 10px'}}/>)}</div></div>}
+
+    <div className="drControls">
+      <div className="drLiveTop">
+        <div className="drShotBox">
+          <div className="drShotLabel">Current shot</div>
+          <div className="drShotText">{shots[shotIndex]||shots[0]}</div>
+          <div className="drShotMeta">Shot {Math.min(shotIndex+1,shots.length)} of {shots.length}{activeChaos?' · Chaos: '+activeChaos:''}{activeCall?' · CALL: '+activeCall:''}{rotId==='dr8'&&predator?' · Predator: '+predator:''}{rotId==='dr1'?' · '+racquets+' racquets':''}</div>
+        </div>
+        <div className="drCycleBox"><div className="drCycleNum">{cycle}</div><div className="drCycleLabel">cycles / {target}</div></div>
+      </div>
+
+      {won&&<div className="drWon">🏁 Target reached — {target} cycles complete</div>}
+
+      <div className="drBtnRow">
+        <button type="button" className="drBtn drBtnPrimary" onClick={nextShot}>Next shot ▸</button>
+        <button type="button" className="drBtn drBtnGhost" onClick={prevShot}>◂ Back</button>
+        <button type="button" className="drBtn drBtnGood" onClick={()=>cycleAdjust(1)}>Cycle +1</button>
+        <button type="button" className="drBtn drBtnGhost" onClick={()=>cycleAdjust(-1)}>Cycle −1</button>
+        {errorResets&&<button type="button" className="drBtn drBtnGhost" onClick={errorReset}>Error reset</button>}
+        {cleanBonus&&<button type="button" className="drBtn drBtnGood" onClick={()=>bonus(2,'Clean completion')}>Clean +2</button>}
+        {predatorBonus&&rotId==='dr8'&&<button type="button" className="drBtn drBtnGood" onClick={()=>bonus(1,'Predator')}>Predator +1</button>}
+      </div>
+
+      {rotId==='dr1'&&<div className="drSpecial"><h4>Racquet count</h4><div className="drBtnRow">{[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} type="button" className={racquets===n?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setRacquets(n)}>{n}</button>)}</div></div>}
+
+      {rotId==='dr4'&&<div className="drSpecial"><h4>Editable shot cycle</h4>{combo.map((s,i)=><div className="drComboRow" key={i}><span>{i+1}. {s}</span><button type="button" className="drMini" onClick={()=>moveCombo(i,-1)}>▲</button><button type="button" className="drMini" onClick={()=>moveCombo(i,1)}>▼</button><button type="button" className="drMini" onClick={()=>removeCombo(i)}>✕</button></div>)}<div className="drBtnRow"><span className="drShotLabel" style={{alignSelf:'center'}}>Add:</span>{DISRUPTION_COMBO_PALETTE.map(s=><button key={s} type="button" className="drBtn" onClick={()=>addCombo(s)}>{s}</button>)}</div></div>}
+
+      {rotId==='dr5'&&<div className="drSpecial"><h4>Coach call</h4><div className="drBtnRow"><button type="button" className="drBtn drBtnPrimary" onClick={callChange}>CALL CHANGE ▸</button>{activeCall&&<><span className="drChip">{activeCall}</span><button type="button" className="drBtn drBtnGhost" onClick={()=>{pushUndo();setActiveCall(null);}}>Clear</button></>}</div></div>}
+
+      {rotId==='dr7'&&<div className="drSpecial"><h4>Chaos modifiers</h4><div className="drBtnRow">{DISRUPTION_CHAOS.map(c=><button key={c} type="button" className={activeChaos===c?'drBtn drBtnPrimary':'drBtn'} onClick={()=>pickChaos(c)}>{c}</button>)}<button type="button" className="drBtn drBtnGood" onClick={randomChaos}>⚡ Random</button></div></div>}
+
+      {rotId==='dr8'&&<div className="drSpecial"><h4>Predator</h4><div className="drBtnRow">{names.map(n=><button key={n} type="button" className={predator===n?'drBtn drBtnPrimary':'drBtn'} onClick={()=>{pushUndo();setPredator(n);}}>{n}</button>)}<button type="button" className="drBtn drBtnGood" onClick={rotatePredator}>Rotate predator ▸</button></div></div>}
+    </div>
+
+    <div className="drBottomBar">
+      <button type="button" className="drBtn drBtnGhost" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
+      <button type="button" className="drBtn drBtnGhost" onClick={resetAll}>Reset</button>
+      {typeof setSession==='function'&&<button type="button" className="drBtn" onClick={addToSessionCard}>Add to Session</button>}
+      <button type="button" className="drBtn drBtnPrimary" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
+    </div>
+
+    {log.length>0&&<div className="drLog">{log.map((l,i)=><div key={i} className="drLogRow">{l}</div>)}</div>}
+  </div>;
+}
+
+function DisruptionPlayerDisplay({payload={}}){
+  const rot=payload.rotation||{};
+  const players=payload.players||[];
+  return <div className="playerDisplayPage drDisplayPage">
+    <DisruptionStyles/>
+    <div className="drDisplayShell">
+      <div className="drDisplayTop"><span>DISRUPTION ROTATIONS</span><h1>{rot.title||'Rotation'}</h1><p>{rot.purpose||''}</p></div>
+      <div className="drDisplayShot"><div className="lbl">Current shot</div><div className="txt">{payload.shot||''}</div></div>
+      <div className="drDisplayMeta">
+        <span className="drDispChip">Cycle {payload.cycle} / {payload.target}</span>
+        {payload.chaos&&<span className="drDispChip drDispChipHot">Chaos: {payload.chaos}</span>}
+        {payload.call&&<span className="drDispChip drDispChipHot">CALL: {payload.call}</span>}
+        {payload.predator&&<span className="drDispChip drDispChipHot">Predator: {payload.predator}</span>}
+        {payload.racquets&&<span className="drDispChip">{payload.racquets} racquets</span>}
+      </div>
+      {players.length>0&&<div className="drDisplayDb">{players.map((p,i)=><div className="drDispDb" key={i}>{p.name} · <b>DB {p.db}</b></div>)}</div>}
+      {payload.won&&<div className="drDisplayWon">🏁 {payload.target} cycles — complete</div>}
+    </div>
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -8482,7 +8848,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
     {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">Tin height is not just a leveller here — it's a contested, dynamic resource. Lowering your own scoring tin opens the kill; raising your opponent's removes theirs. Win well to improve your conditions or worsen theirs, and the affordance landscape shifts through the game.</p><TinWarModule embedded setSession={setSession}/></div>}
-    {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
+    {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
@@ -11654,9 +12020,17 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
 }
 
 
-function RotationalAffordanceGames({setScreen}){
+function RotationalAffordanceGames({setScreen,setSession}){
   const [playerGroup,setPlayerGroup]=useState('2 Player');
   const [levelFilter,setLevelFilter]=useState('All');
+  const [rotMode,setRotMode]=useState('affordance');
+  if(rotMode==='disruption'){
+    return <div className="page rotationalPage">
+      <div className="pageTop"><h1>Rotations</h1><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Home</button></div>
+      <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setRotMode('affordance')}>Affordance Rotations</button><button className="primaryBtn" onClick={()=>setRotMode('disruption')}>Disruption Rotations</button></div>
+      <DisruptionRotations embedded setSession={setSession} setScreen={setScreen}/>
+    </div>;
+  }
 
   const games=[
     {
@@ -11743,6 +12117,8 @@ function RotationalAffordanceGames({setScreen}){
       <h1>Rotational Affordance Games</h1>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>← Home</button>
     </div>
+
+    <div className="buttonRow"><button className="primaryBtn" onClick={()=>setRotMode('affordance')}>Affordance Rotations</button><button className="secondaryBtn" onClick={()=>setRotMode('disruption')}>Disruption Rotations</button></div>
 
     <div className="gameCard">
       <div className="categoryTag">Developing Tactical Emergence</div>
@@ -13317,6 +13693,7 @@ if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className=
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
@@ -13347,7 +13724,7 @@ return <div>
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={go}/>}
       {screen==='diagnostic'&&<DiagnosticTemplate setScreen={go}/>} 
-      {screen==='rotational'&&<RotationalAffordanceGames setScreen={go}/>} 
+      {screen==='rotational'&&<RotationalAffordanceGames setScreen={go} setSession={setSession}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
       {screen==='playerDisplay'&&<PlayerDisplayView session={session} setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
