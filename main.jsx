@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v171 Double Bounce Suite';
+const APP_VERSION='v172 DB suite under DB tab';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7673,7 +7673,94 @@ const DB_GAMES=[
    note:'A pure commitment decision — when do you bet the golden bounce?'},
 ];
 
-function DoubleBounceSuiteModule({setScreen,players=[]}){
+function DBSuiteStyles(){
+  return <style>{`
+/* ─── DOUBLE BOUNCE SUITE ─────────────────────────────────────────────── */
+.dbSuite{display:flex;flex-direction:column;gap:16px;}
+.dbSuite .moduleHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.dbSuite .moduleHead h1{margin:0;font-size:1.7rem;}
+.dbGameTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.dbGameTab{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:9px 11px;color:#cdd9e6;cursor:pointer;}
+.dbGameTab strong{font-size:0.92rem;}
+.dbGameTab span{font-size:0.68rem;color:#7c8ea0;text-transform:uppercase;letter-spacing:0.03em;}
+.dbGameTabActive{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.dbGameInfo{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.dbGameInfoHead{display:flex;align-items:center;gap:12px;}
+.dbGameInfoHead h2{margin:0;font-size:1.35rem;}
+.dbTag{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;background:#123040;border:1px solid #2E6E8E;color:#8fd0ee;padding:3px 9px;border-radius:999px;}
+.dbPrinciple{margin:0;font-style:italic;color:#9fc4dc;font-size:1.02rem;}
+.dbInfoGrid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:4px;}
+.dbInfoGrid h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;}
+.dbInfoGrid p,.dbInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
+.dbInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
+.dbNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
+.dbSettings{display:flex;flex-wrap:wrap;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;}
+.dbSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
+.dbSettings select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:7px 9px;font-size:0.95rem;}
+.dbToggleLabel{align-items:flex-start;}
+.dbToggleLabel button{margin-top:2px;padding:6px 14px;}
+.dbRosterEdit{display:flex;flex-direction:column;gap:8px;background:#1a1206;border:1px solid #4a3a12;border-radius:10px;padding:11px 13px;}
+.dbNameRow{display:flex;gap:8px;flex-wrap:wrap;}
+.dbNameRow input{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:8px 10px;font-size:0.95rem;}
+.dbControls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.dbPlayerCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.dbPlayerTop{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.dbPlayerTop strong{font-size:1.1rem;}
+.dbGoldenChip{font-size:0.72rem;font-weight:700;color:#f5c542;background:#2a2206;border:1px solid #6a5410;border-radius:999px;padding:3px 9px;}
+.dbGoldenLost{color:#7c8ea0;background:#161b22;border-color:#2c3c4e;text-decoration:line-through;}
+.dbPointChip{font-size:0.78rem;font-weight:700;color:#8fd0ee;background:#123040;border:1px solid #2E6E8E;border-radius:999px;padding:3px 9px;}
+.dbCounterRow{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.dbCounterBtn{width:58px;height:58px;border-radius:14px;border:none;font-size:2rem;font-weight:800;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;line-height:1;}
+.dbMinus{background:#7a2233;}
+.dbPlus{background:#1d6b3f;}
+.dbCounter{display:flex;flex-direction:column;align-items:center;line-height:1;}
+.dbCounterNum{font-size:2.6rem;font-weight:800;color:#eaf4fb;}
+.dbCounterLabel{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:#7c8ea0;}
+.dbActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
+.dbActionBtn{flex:1;min-width:120px;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px 10px;font-size:0.84rem;font-weight:600;cursor:pointer;}
+.dbActionGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.dbActionDanger{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
+.dbStealTarget{margin-top:2px;background:#2a1206;border:1px dashed #b8821f;color:#f5c542;border-radius:9px;padding:8px;font-weight:700;cursor:pointer;}
+.dbRecoveryBanner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#1a1206;border:1px solid #6a5410;border-radius:14px;padding:14px 18px;}
+.dbRecoveryBanner>strong{font-size:1.05rem;color:#f5c542;letter-spacing:0.03em;}
+.dbRecoveryCount{font-size:2.4rem;font-weight:800;color:#f5c542;}
+.dbRecoveryBtns{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
+.dbBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.dbBottomBar .primaryBtn{margin-left:auto;}
+.dbUndoBtn{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;}
+.dbUndoBtn:disabled{opacity:0.4;cursor:default;}
+.dbLog{display:flex;flex-direction:column;gap:3px;background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;}
+.dbLogRow{font-size:0.82rem;color:#9fb0c2;font-family:ui-monospace,monospace;}
+
+/* Double Bounce — player display (wall screen) */
+.dbDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#0d1b2a 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
+.dbDisplayShell{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:34px;}
+.dbDisplayTop{text-align:center;}
+.dbDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#5e89b0;}
+.dbDisplayTop h1{margin:6px 0 4px;font-size:3rem;color:#eaf4fb;}
+.dbDisplayTop p{margin:0;font-size:1.2rem;color:#9fc4dc;font-style:italic;}
+.dbDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.dbDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:20px;padding:26px;text-align:center;display:flex;flex-direction:column;gap:6px;}
+.dbDisplayName{font-size:1.5rem;font-weight:700;color:#eaf4fb;display:flex;align-items:center;justify-content:center;gap:8px;}
+.dbGoldDot{color:#f5c542;font-size:1.1rem;}
+.dbGoldDotLost{color:#46596c;font-size:1.1rem;}
+.dbDisplayNum{font-size:5rem;font-weight:800;color:#7db8ff;line-height:1;}
+.dbDisplaySub{font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:#5e89b0;}
+.dbDisplayPoints{margin-top:6px;font-size:1.2rem;font-weight:700;color:#8fd0ee;}
+.dbDisplayRecovery{text-align:center;font-size:1.6rem;font-weight:700;color:#f5c542;background:#1a1206;border:1px solid #6a5410;border-radius:14px;padding:16px;}
+.dbDisplaySteal{text-align:center;font-size:1.3rem;color:#f5c542;}
+
+@media (max-width:600px){
+  .dbGameTabs{grid-template-columns:repeat(2,1fr);}
+  .dbInfoGrid{grid-template-columns:1fr;gap:10px;}
+  .dbDisplayTop h1{font-size:2.1rem;}
+  .dbDisplayNum{font-size:3.6rem;}
+}
+`}</style>;
+}
+
+
+function DoubleBounceSuiteModule({setScreen,players=[],embedded=false}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
   const [gameId,setGameId]=useState('db1');
@@ -7792,13 +7879,16 @@ function DoubleBounceSuiteModule({setScreen,players=[]}){
   function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
   const usingDefaults=presents.length<2;
 
-  return <div className="gameCard dbSuite">
-    <div className="moduleHead">
+  return <div className={embedded?'dbSuite dbSuiteEmbedded':'gameCard dbSuite'}>
+    <DBSuiteStyles/>
+    {!embedded&&<div className="moduleHead">
       <div><h1>Double Bounce Suite™</h1><p className="mutedText">The double bounce as a resource economy — spend to survive, earn to dominate.</p></div>
-      <button type="button" className="homeBtn" onClick={()=>setScreen('home')}>Home</button>
-    </div>
+      <button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button>
+    </div>}
 
-    <CoachRationale label="Why this suite — DB as a resource economy">
+    {embedded&&<div className="dbSuiteHeading"><h2>The games</h2><p className="mutedText">Pick a game, then drive the live DB counters below. The coaching rationale for double bounce is the protocol above; each game turns it into a resource economy — spend to survive, earn to dominate.</p></div>}
+
+    {!embedded&&<CoachRationale label="Why this suite — DB as a resource economy">
       <p>In most uses the double bounce is a static handicap. Here it becomes a <strong>currency the player controls</strong>: you <strong>spend</strong> a bounce to survive a rally you would otherwise lose, and you <strong>earn</strong> bounces back by producing genuine tactical behaviour — volleys, T-control, displacing the opponent.</p>
       <ul>
         <li><strong>Spend = survive:</strong> a self-managed leveller. The player decides when to use a resource, so the agency — and the cost — sits with them.</li>
@@ -7806,7 +7896,7 @@ function DoubleBounceSuiteModule({setScreen,players=[]}){
         <li><strong>Risk-reward under pressure:</strong> spend now versus bank for later is a live decision — the same lever as the Gambler and the Declared finish.</li>
       </ul>
       <p className="mutedText">Debrief the decisions — when they spent, when they held, what they earned — not the DB totals.</p>
-    </CoachRationale>
+    </CoachRationale>}
 
     <div className="dbGameTabs">
       {DB_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'dbGameTab dbGameTabActive':'dbGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}
@@ -7883,6 +7973,7 @@ function DoubleBounceSuitePlayerDisplay({payload={}}){
   const players=payload.players||[];
   const rec=payload.recovery;
   return <div className="playerDisplayPage dbDisplayPage">
+    <DBSuiteStyles/>
     <div className="dbDisplayShell">
       <div className="dbDisplayTop"><span>DOUBLE BOUNCE</span><h1>{game.title||'Double Bounce'}</h1><p>{game.principle||''}</p></div>
       <div className="dbDisplayGrid">
@@ -7935,7 +8026,6 @@ function Games({setSession,setScreen}){
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
     {id:'blindtarget',label:'Poker',category:'Blind Target'},
-    {id:'dbsuite',label:'Double Bounce Suite',category:'Double Bounce'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
@@ -8008,7 +8098,7 @@ function Games({setSession,setScreen}){
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
-        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):gameClass.id==='dbsuite'?setScreen('doubleBounceSuite'):selectClass(gameClass.id)}>
+        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):selectClass(gameClass.id)}>
           {gameClass.label}
         </button>
       )}
@@ -8031,7 +8121,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
-    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">Double Bounce is now a normal Games Library class. Use this protocol here, then add it to the session when ready.</p><DoubleBounceTool setScreen={setScreen}/></div>}
+    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
@@ -12882,7 +12972,6 @@ return <div>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
-      {screen==='doubleBounceSuite'&&<DoubleBounceSuiteModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
