@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v177 poker mult + session nav + ATL CB removed';
+const APP_VERSION='v178 ATL auto-CB removed, manual CB kept';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2629,7 +2629,7 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
   const picked=Object.values(selected).filter(Boolean);
   const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No constraints selected';
   function addToSession(){
-    const cbActive=baseGame!=='ATL / BTL'&&customCode&&customCode.trim();
+    const cbActive=customCode&&customCode.trim();
     const title=`${baseGame} + Game Constraints`;
     const game={
       id:Date.now()+Math.random(),title,category:'Game Constraints',duration:10,
@@ -2652,7 +2652,7 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
       <div><label>Base Game</label><select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>{baseGames.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Apply To</label><select value={appliesTo} onChange={e=>setAppliesTo(e.target.value)}>{applicationOptions.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Consequence</label><select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(x=><option key={x}>{x}</option>)}</select></div>
-      {baseGame!=='ATL / BTL'&&<div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>}
+      <div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>
     </div>
     <div className="constraintsExampleBox"><h2>Example</h2><p><strong>Base Game:</strong> ATL / BTL</p><p><strong>Tactical condition:</strong> Complete <strong>[5-4]</strong> before BTL.</p><p><strong>Handicap restriction:</strong> Stronger player allowed zones <strong>[5]+[7]</strong> only.</p><p><strong>Behaviour condition:</strong> Racquet above wrist. Consequence: {consequence}.</p></div>
     <div className="constraintsTabs">{families.map(f=><button key={f} className={family===f?'activeConstraintTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
@@ -2660,7 +2660,7 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
       <div className="constraintsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'constraintCard selectedConditionCard':'constraintCard'} onClick={()=>toggle(item)}>
         <span className="conditionCode">{item.id} · {item.type}</span><h2>{item.title}</h2><p><strong>Develops</strong><br/>{item.develops}</p><p><strong>Rule</strong><br/>{item.rule}</p><p><strong>Rationale</strong><br/>{item.rationale}</p><p><strong>Best used with</strong><br/>{item.best}</p>
       </button>)}</div>
-      <aside className="activeConstraintsPanel"><h2>Selected Constraints</h2><div className="activeConstraintMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p>{baseGame!=='ATL / BTL'&&<p><strong>CB / Spatial:</strong> {customCode}</p>}</div>{picked.length===0?<p>No constraints selected.</p>:picked.map(item=><div key={item.id} className="activeConstraintItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Constraints Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected constraints.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
+      <aside className="activeConstraintsPanel"><h2>Selected Constraints</h2><div className="activeConstraintMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p><p><strong>CB / Spatial:</strong> {customCode}</p></div>{picked.length===0?<p>No constraints selected.</p>:picked.map(item=><div key={item.id} className="activeConstraintItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Constraints Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected constraints.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
     </div>
   </div>;
 }
@@ -3823,7 +3823,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     return '[6-3] + [6-2]';
   }
   const autoCbZone=sideToCbZone(side);
-  const composedAtl=useMemo(()=>{const chosen=useCustomCb?(customCbZone||'Custom CB sequence'):autoCbZone;const layers=[...new Set([...manualLayers])];return {...builtAtl,side,cbCode:chosen,task:`${builtAtl.task} Side: ${side}. Checkerboard zone focus: ${chosen}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side,useCustomCb,customCbZone,autoCbZone]);
+  const composedAtl=useMemo(()=>{const layers=[...new Set([...manualLayers])];return {...builtAtl,side,cbCode:'None',task:`${builtAtl.task} Side: ${side}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side]);
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers,modifierScores:builderModifierScores}));
   },[atl,side,useCustomCb,customCbZone,manualLayers,builderModifierScores]);
@@ -3883,9 +3883,6 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
         <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
-        <label>Auto CB Zone<input value={autoCbZone} readOnly /></label>
-        <label>Custom Override<select value={useCustomCb?'Yes':'No'} onChange={e=>setUseCustomCb(e.target.value==='Yes')}><option>No</option><option>Yes</option></select></label>
-        {useCustomCb&&<label>Custom CB<input value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="[6-3] + [6-2]"/></label>}
         {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
         {atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
         {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
