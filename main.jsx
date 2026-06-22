@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v179 Disruption Rotations';
+const APP_VERSION='v180 Disruption order + warm ball';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -8450,7 +8450,7 @@ const DISRUPTION_ROTATIONS=[
    objective:'Manage traffic and crossing lanes while keeping the pattern alive.',
    constraints:'Hold the movement lanes. Recover through the T, not around it.',
    coaching:'Traffic management, crossing lanes and recovery discipline. Let collisions teach spacing.',
-   progressions:'Add a second ball window. Tighten the recovery time. Add chaos.',
+   progressions:'Keep a warm ball in your pocket and feed it in the instant the rally dies — the pressure never drops. Tighten the recovery time. Add a chaos modifier.',
    purpose:'Traffic management · crossing lanes · recovery discipline.'},
   {id:'dr3',title:'Drop–Lob Reverse',tag:'Movement',type:'movement',
    shots:['P1 Straight drop','P2 Crosscourt lob','P3 Straight drop'],
@@ -8631,7 +8631,10 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={false}>
       <p>The rotation runs continuously. A shot is valid if it keeps the pattern alive under the live constraint and any active disruption (chaos / coach call / predator break). Advance the shot as each player completes their turn; a full pass through the sequence is one cycle.</p>
     </CollapsibleLayer>
-    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={false}>
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={false}>
+      <p>{rot.constraints} Layer chaos modifiers, a coach call or a predator on top to problematise the pattern without rewriting the game.</p>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={false}>
       <p>Complete a full cycle = 1 point. {target} cycles wins. Use the optional rules below.</p>
       <div className="drScoreOpts">
         <label><input type="checkbox" checked={errorResets} onChange={()=>setErrorResets(!errorResets)}/> Error resets the current cycle</label>
@@ -8639,9 +8642,6 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
         <label><input type="checkbox" checked={predatorBonus} onChange={()=>setPredatorBonus(!predatorBonus)}/> Predator bonus +1</label>
       </div>
       <div className="drBtnRow" style={{marginTop:'8px'}}><span className="drShotLabel" style={{alignSelf:'center'}}>Target:</span>{[5,10,15].map(t=><button key={t} type="button" className={target===t?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setTarget(t)}>{t}</button>)}</div>
-    </CollapsibleLayer>
-    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={false}>
-      <p>{rot.constraints} Layer chaos modifiers, a coach call or a predator on top to problematise the pattern without rewriting the game.</p>
     </CollapsibleLayer>
     <CollapsibleLayer num="4" title="Double Bounce" subtitle="Per-player allowance" color="purple" defaultOpen={false}>
       <p className="mutedText">Allocate a double-bounce allowance per present player (Unlimited or 1–5).</p>
