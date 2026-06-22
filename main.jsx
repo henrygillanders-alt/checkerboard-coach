@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v176 live modules to session';
+const APP_VERSION='v177 poker mult + session nav + ATL CB removed';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2629,16 +2629,17 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
   const picked=Object.values(selected).filter(Boolean);
   const selectedSummary=picked.length?picked.map(x=>`${x.title} (${x.type})`).join(' · '):'No constraints selected';
   function addToSession(){
+    const cbActive=baseGame!=='ATL / BTL'&&customCode&&customCode.trim();
     const title=`${baseGame} + Game Constraints`;
     const game={
       id:Date.now()+Math.random(),title,category:'Game Constraints',duration:10,
-      task:`Base game: ${baseGame}. Apply to: ${appliesTo}. Checkerboard code / spatial code: ${customCode}.`,
+      task:`Base game: ${baseGame}. Apply to: ${appliesTo}.${cbActive?` Checkerboard code / spatial code: ${customCode}.`:''}`,
       rationale:'Conditions keep the base game simple while shaping tactical decisions, behaviour standards or handicap restrictions.',
       whatToDo:picked.length?picked.map(x=>`${x.title}: ${x.rule}`).join(' '):'Select conditions, then apply them to a base game.',
       scoring:`Consequence: ${consequence}. Use only the minimum consequence needed to shape the behaviour.`,
       coach:'Choose the base game first, then add the minimum constraint needed for the coaching problem.',
       playerFocus:'Understand the constraint. Solve the rally problem inside it.',
-      suggestedOverlays:picked.map(x=>x.title),layers:['Game Constraints'],cbCode:customCode,conditions:picked,applyTo:appliesTo,consequence
+      suggestedOverlays:picked.map(x=>x.title),layers:['Game Constraints'],cbCode:cbActive?customCode:'None',conditions:picked,applyTo:appliesTo,consequence
     };
     if(typeof onAddToSession==='function'){onAddToSession(game);setStatus('Game Constraints card added to session.');return;}
     if(typeof setSession==='function'){setSession(prev=>[...(prev||[]),game]);setStatus('Game Constraints card added to session.');return;}
@@ -2647,12 +2648,11 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
   return <div className="page gameConstraintsPage">
     {!embedded&&<div className="pageTop"><div><h1>Game Constraints</h1><p className="mutedText">Base game first. Then tactical, behaviour and handicap constraints with clear rationale.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>}
     {embedded&&<div className="constraintsEmbeddedTop"><div><h2>Game Constraints</h2><p className="mutedText">Add tactical, behaviour or handicap constraints to this base game without leaving the page.</p></div><button className="secondaryBtn" onClick={onClose}>Close Conditions</button></div>}
-    <div className="constraintsIntro"><h2>v100h10 Embedded Conditions Workflow</h2><p>Stop separating overlays, game logic and special rules. Choose the base game, add a small number of conditions, then choose the consequence.</p><p><strong>Decision test:</strong> tactical decision, behaviour standard or handicap restriction?</p></div>
     <div className="constraintBuilderPanel">
       <div><label>Base Game</label><select value={baseGame} onChange={e=>setBaseGame(e.target.value)}>{baseGames.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Apply To</label><select value={appliesTo} onChange={e=>setAppliesTo(e.target.value)}>{applicationOptions.map(x=><option key={x}>{x}</option>)}</select></div>
       <div><label>Consequence</label><select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequenceOptions.map(x=><option key={x}>{x}</option>)}</select></div>
-      <div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>
+      {baseGame!=='ATL / BTL'&&<div><label>CB Code / Spatial Code</label><input value={customCode} onChange={e=>setCustomCode(e.target.value)} placeholder="[5-4] or [5]+[7]"/></div>}
     </div>
     <div className="constraintsExampleBox"><h2>Example</h2><p><strong>Base Game:</strong> ATL / BTL</p><p><strong>Tactical condition:</strong> Complete <strong>[5-4]</strong> before BTL.</p><p><strong>Handicap restriction:</strong> Stronger player allowed zones <strong>[5]+[7]</strong> only.</p><p><strong>Behaviour condition:</strong> Racquet above wrist. Consequence: {consequence}.</p></div>
     <div className="constraintsTabs">{families.map(f=><button key={f} className={family===f?'activeConstraintTab':''} onClick={()=>setFamily(f)}>{f}</button>)}</div>
@@ -2660,7 +2660,7 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
       <div className="constraintsGrid">{activeList.map(item=><button key={item.id} className={selected[item.id]?'constraintCard selectedConditionCard':'constraintCard'} onClick={()=>toggle(item)}>
         <span className="conditionCode">{item.id} · {item.type}</span><h2>{item.title}</h2><p><strong>Develops</strong><br/>{item.develops}</p><p><strong>Rule</strong><br/>{item.rule}</p><p><strong>Rationale</strong><br/>{item.rationale}</p><p><strong>Best used with</strong><br/>{item.best}</p>
       </button>)}</div>
-      <aside className="activeConstraintsPanel"><h2>Selected Constraints</h2><div className="activeConstraintMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p><p><strong>CB / Spatial:</strong> {customCode}</p></div>{picked.length===0?<p>No constraints selected.</p>:picked.map(item=><div key={item.id} className="activeConstraintItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Constraints Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected constraints.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
+      <aside className="activeConstraintsPanel"><h2>Selected Constraints</h2><div className="activeConstraintMeta"><p><strong>Base:</strong> {baseGame}</p><p><strong>Apply to:</strong> {appliesTo}</p><p><strong>Consequence:</strong> {consequence}</p>{baseGame!=='ATL / BTL'&&<p><strong>CB / Spatial:</strong> {customCode}</p>}</div>{picked.length===0?<p>No constraints selected.</p>:picked.map(item=><div key={item.id} className="activeConstraintItem"><strong>{item.title}</strong><span>{item.type}</span><p>{item.rule}</p></div>)}<button className="primaryBtn" onClick={addToSession}>Add Constraints Card To Session</button>{status&&<div className="statusBox">{status}</div>}<div className="playerViewMini"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{baseGame} with selected constraints.</p><p><strong>HOW TO SCORE</strong><br/>{consequence}</p><p><strong>KEY FOCUS</strong><br/>{selectedSummary}</p></div></aside>
     </div>
   </div>;
 }
@@ -12896,7 +12896,7 @@ function BTSRevealCard({label,value,suit}){
   function reveal(){setShow(true);clearTimeout(ref.current);ref.current=setTimeout(()=>setShow(false),3000);}
   return <div className="btsRevealCard"><strong>{label}</strong><button onClick={reveal} className="btsCardBtn"><BTSCardFace value={value} suit={suit} hidden={!show}/></button><small>{show?'Auto-hides in 3 seconds':'Tap to reveal'}</small></div>;
 }
-function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
+function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=3}){
   const[open,setOpen]=useState(false);
   const[deal,setDeal]=useState(null);
   const[playerCount,setPlayerCount]=useState(4);
@@ -12909,7 +12909,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
       const source=rankedAttendanceCourts.length?rankedAttendanceCourts.flat().map((name,i)=>({label:name,court:`Court ${rankedAttendanceCourts.findIndex(c=>c.includes(name))+1}`})):Array.from({length:playerCount},(_,i)=>({label:`Player ${i+1}`,court:'Court'}));
       const players=source.map(item=>{
         const card=btsPick(deck);
-        const target=game.id==='blind-race'||game.id==='koc-cumulative'?card*3:card;
+        const target=game.id==='blind-race'||game.id==='koc-cumulative'?card*mult:card;
         return {...item,card,target};
       });
       setDeal({players,suit:BTS_SUITS[game.suit],koc:true});
@@ -12932,7 +12932,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
     <p>{game.blurb}</p>
     <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
     {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance. Allocation is ranked blocks, not snake seeding.</p><div className="buttonRow">{[2,3,4,5,6].map(n=><button key={n} className={courtCount===n?'activeLayer':''} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{rankedAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present attendance players found. Use generic player labels.</p><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
-    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={`${p.court}-${p.label}`} label={`${p.court?`${p.court} · `:''}${p.label}`} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are card × 3 targets tied to named Attendance players for this rotation. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="P1" value={deal.a} suit={deal.suit}/><BTSRevealCard label="P2" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
+    {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={`${p.court}-${p.label}`} label={`${p.court?`${p.court} · `:''}${p.label}`} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are {mult>1?('card × '+mult):'card-value'} targets tied to named Attendance players for this rotation. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="P1" value={deal.a} suit={deal.suit}/><BTSRevealCard label="P2" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
     {open&&<div className="btsMoreInfo">
       <div className="infoBox"><strong>Setup</strong><p>{game.setup}</p></div>
       <div className="infoBox"><strong>Step-by-step</strong><ol>{game.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
@@ -12946,6 +12946,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
 function BlindTargetScoreModule({setScreen,players=[],setSession}){
   const[mode,setMode]=useState('coach');
   const[deck,setDeck]=useState('4-9');
+  const[mult,setMult]=useState(3);
   const[customLo,setCustomLo]=useState(4);
   const[customHi,setCustomHi]=useState(9);
   const[mirror,setMirror]=useState(false);
@@ -12979,6 +12980,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
       </div>
       <h2>Configuration</h2>
       <div className="btsDeckRow">{BTS_DECKS.map(d=><button key={d.id} className={deck===d.id?'activeLayer':''} onClick={()=>setDeck(d.id)}>{d.label}</button>)}</div>
+      <div className="btsDeckRow"><span className="mutedText" style={{alignSelf:'center',marginRight:'6px',fontSize:'0.85rem'}}>Target multiplier (Blind Race / KOC Cumulative):</span>{[1,2,3].map(m=><button key={m} className={mult===m?'activeLayer':''} onClick={()=>setMult(m)}>{m===1?'×1 (cards as dealt)':'× '+m}</button>)}</div>
       {deck==='custom'&&<div className="btsCustomDeck"><label>Min <input type="number" value={customLo} onChange={e=>setCustomLo(+e.target.value)}/></label><label>Max <input type="number" value={customHi} onChange={e=>setCustomHi(+e.target.value)}/></label></div>}
       <div className="btsToggleRow">
         <button className={mirror?'activeLayer':''} onClick={()=>setMirror(!mirror)}>Mirror Block {mirror?'ON':'OFF'}</button>
@@ -12987,7 +12989,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
       </div>
       {form&&<div className="hintBox"><strong>Form Card note:</strong> public tendency stats change bluffing economics. Use with advanced players.</div>}
     </div>
-    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players}/>)}</div></section>)}
+    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players} mult={mult}/>)}</div></section>)}
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
   </div>;
 }
@@ -13324,6 +13326,7 @@ if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerD
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
 <div className="versionStamp" title="Deployed build">{APP_VERSION}</div>
+{screen!=='home'&&screen!=='sessions'&&screen!=='playerDisplay'&&<button onClick={()=>go('sessions')} style={{position:'fixed',bottom:'10px',left:'12px',zIndex:9999,background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'0.8rem',fontWeight:700,padding:'9px 15px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>📋 Session Builder</button>}
   <header className="hero">
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
