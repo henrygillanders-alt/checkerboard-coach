@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v169 rationale across all modules';
+const APP_VERSION='v170 RLD discs + Tin Height rationale';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3458,7 +3458,7 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
     {lastAdded&&<div className="statusBox">Added: {lastAdded}</div>}
     <div className="sessionAllGameGrid">
       {visible.map((game,index)=><div className="sessionAllGameCard gameCard" key={`${game.id}-${index}`}>
-        <div className="libraryCardTop"><div><div className="categoryTag">{game.category||'Game'}</div><h3>{game.title}</h3></div>{game.rld!==undefined&&<RLDBadge level={Number(game.rld)} />}</div>
+        <div className="libraryCardTop"><div><div className="categoryTag">{game.category||'Game'}</div><h3>{game.title}</h3></div><RLDBadge level={(game.rld===''||game.rld===undefined)?4:Number(game.rld)} /></div>
         <p><strong>Task: </strong>{game.task||game.description||'Run the game.'}</p>
         {game.scoring&&<p><strong>Scoring: </strong>{game.scoring}</p>}
         <div className="playerViewMini"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p></div>
@@ -6243,6 +6243,14 @@ function UniversalTinHeightPanel({setScreen}){
       <div><strong>Tin Height · All Games</strong><p>Uses players marked Present today. Raise the tin for stronger players to level a game without changing the task. Higher tin = harder.</p></div>
       <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Tin Height On':'Enable Tin Height'}</button>
     </div>
+    <CoachRationale label="Coaching value — not just a leveller">
+      <p>Tin height isn't only a handicap — it's an <strong>affordance shaper</strong>. It changes <em>how</em> a rally has to be won, not just who's likely to win it.</p>
+      <ul>
+        <li><strong>Raised tin</strong> removes the cheap low kill, so players must <strong>manufacture openings</strong> through width, length and movement before they can finish — it trains how you create and take chances.</li>
+        <li><strong>Lowered tin</strong> rewards attacking precision and punishes loose balls — it raises the cost of a poor length.</li>
+      </ul>
+      <p className="mutedText">So as a per-player setting it levels a mixed group; as a whole-game setting it's a tactical constraint that reshapes the problem for everyone.</p>
+    </CoachRationale>
     {enabled&&<>
       <div className="statusBox"><strong>Present Players</strong><p>{presentPlayers.length?`${presentPlayers.length} present player${presentPlayers.length===1?'':'s'} loaded from Players / Attendance.`:'No present players found. Mark players Present in Players before assigning tin heights.'}</p></div>
       <div className="dbAllocationGrid">
@@ -7283,6 +7291,7 @@ function emptyUniversalGame(category='Custom'){
     rationale:'Describe why this game helps.',
     coach:'Give one clear coach cue.',
     scoring:'Win rally = 1. Add any bonus scoring here.',
+    rld:4,
     layers:[]
   });
 }
@@ -7315,6 +7324,7 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
       <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
       <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
       <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
+      <label>RLD level<select value={draft.rld===''||draft.rld===undefined?4:Number(draft.rld)} onChange={e=>update('rld',Number(e.target.value))}>{RLD_LEVELS.map(r=><option key={r.level} value={r.level}>{r.short} — {r.label}</option>)}</select></label>
     </div>
     <div className="courtAreaBlock">
       <strong>Court Area</strong>
@@ -7755,7 +7765,7 @@ function Games({setSession,setScreen}){
       <h2>Saved Game Cards</h2>
       <div className="libraryGrid">
         {visibleCards.map(card=><div className="universalGameCard gameCard" key={card.id}>
-          <div className="categoryTag">{card.category||'Game'}</div>
+          <div className="libraryCardTop"><div className="categoryTag">{card.category||'Game'}</div><RLDBadge level={(card.rld===''||card.rld===undefined)?4:Number(card.rld)} /></div>
           <h3>{card.title}</h3>
           <p><strong>Task: </strong>{card.task||card.description||'Run the game.'}</p>
           {card.scoring&&<p><strong>Scoring: </strong>{card.scoring}</p>}
