@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v174 Tin War + session fix';
+const APP_VERSION='v176 live modules to session';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7481,7 +7481,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
   </div>;
 }
 
-function SnakesLaddersGame(){
+function SnakesLaddersGame({setSession}={}){
   const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
@@ -7552,6 +7552,7 @@ function SnakesLaddersGame(){
 
     <div className="slDisplayBar">
       <button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));alert('Snakes & Ladders added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       {projecting&&<span className="slDisplayHint">🟢 Live{courts>1?` — Court ${active+1}`:''} · board updates as you tap winners</span>}
     </div>
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
@@ -7760,7 +7761,7 @@ function DBSuiteStyles(){
 }
 
 
-function DoubleBounceSuiteModule({setScreen,players=[],embedded=false}){
+function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
   const [gameId,setGameId]=useState('db1');
@@ -7961,6 +7962,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false}){
     <div className="dbBottomBar">
       <button type="button" className="dbUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
       <button type="button" className="secondaryBtn" onClick={resetEconomy}>Reset</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Double Bounce — '+game.title,category:'Double Bounce',format:'Resource economy',duration:10,task:'Run the Double Bounce Suite live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Double bounce as a resource economy — spend to survive, earn to dominate.',coach:'Debrief the decisions — when they spent, when they held, what they earned.',playerFocus:'Spend a bounce to survive; earn it back through pressure.',layers:['Double Bounce'],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
 
@@ -8121,7 +8123,7 @@ const TINWAR_GAMES=[
    note:'Drags your strongest player out of the kill-based attractor into length, height and patience.'},
 ];
 
-function TinWarModule({setScreen,embedded=false}){
+function TinWarModule({setScreen,embedded=false,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
   const [gameId,setGameId]=useState('tw1');
@@ -8317,6 +8319,7 @@ function TinWarModule({setScreen,embedded=false}){
       <button type="button" className="twUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
       <button type="button" className="twAdvanceBtn" onClick={advanceRally}>Advance rally ▸</button>
       <button type="button" className="secondaryBtn" onClick={resetAll}>Reset</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'Dynamic tin height',duration:10,task:'Run Tin War live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Tin height as a contested, dynamic resource — win well to improve your conditions or worsen theirs.',coach:'Earned conditions only; debrief how they manufactured or denied chances.',playerFocus:'Win well to ease your own tin or harden your opponent’s.',layers:['Tin Height'],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
 
@@ -8476,12 +8479,12 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine"/>}
+    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
-    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded/></div>}
-    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">Tin height is not just a leveller here — it's a contested, dynamic resource. Lowering your own scoring tin opens the kill; raising your opponent's removes theirs. Win well to improve your conditions or worsen theirs, and the affordance landscape shifts through the game.</p><TinWarModule embedded/></div>}
+    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
+    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">Tin height is not just a leveller here — it's a contested, dynamic resource. Lowering your own scoring tin opens the kill; raising your opponent's removes theirs. Win well to improve your conditions or worsen theirs, and the affordance landscape shifts through the game.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
@@ -12940,7 +12943,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[]}){
     </div>}
   </div>;
 }
-function BlindTargetScoreModule({setScreen,players=[]}){
+function BlindTargetScoreModule({setScreen,players=[],setSession}){
   const[mode,setMode]=useState('coach');
   const[deck,setDeck]=useState('4-9');
   const[customLo,setCustomLo]=useState(4);
@@ -12952,7 +12955,7 @@ function BlindTargetScoreModule({setScreen,players=[]}){
   const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
   const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
   return <div className="page btsPage">
-    <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',layers:['Informational Pressure'],rld:4}));alert('Poker added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
     <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
 
@@ -13332,7 +13335,7 @@ return <div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
-      {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
+      {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
