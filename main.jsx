@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v180 Disruption order + warm ball';
+const APP_VERSION='v182 Court Battle mode';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -8529,6 +8529,18 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
   const [log,setLog]=useState([]);
   const [undoStack,setUndoStack]=useState([]);
   const [projecting,setProjecting]=useState(false);
+  const [battle,setBattle]=useState(false);
+  const [courtCount,setCourtCount]=useState(3);
+  const [battleTarget,setBattleTarget]=useState(10);
+  const [streaks,setStreaks]=useState([]);
+
+  const courts=useMemo(()=>{
+    if(!battle)return [];
+    const list=names.slice();const cc=Math.max(2,Math.min(6,courtCount));
+    const out=Array.from({length:cc},()=>[]);
+    list.forEach((n,i)=>out[i%cc].push(n));
+    return out;
+  },[battle,names.join('|'),courtCount]);
 
   const shots=rotId==='dr4'?combo:rot.shots;
   const namesKey=names.join('|');
@@ -8540,9 +8552,18 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
     setDb(()=>{const d={};names.forEach(n=>d[n]='Unlimited');return d;});
   },[rotId,namesKey]);
 
-  function snap(){return {shotIndex,cycle,activeChaos,activeCall,predator,db:{...db},combo:[...combo],log:[...log]};}
+  useEffect(()=>{
+    setStreaks(courts.map(()=>({current:0,best:0})));
+  },[courts.length,battle]);
+
+  function snap(){return {shotIndex,cycle,activeChaos,activeCall,predator,db:{...db},combo:[...combo],streaks:streaks.map(s=>({...s})),log:[...log]};}
   function pushUndo(){const s=snap();setUndoStack(p=>[...p.slice(-29),s]);}
   function addLog(m){setLog(p=>[m,...p].slice(0,8));}
+
+  function courtCycle(ci){pushUndo();setStreaks(prev=>prev.map((s,i)=>{if(i!==ci)return s;const current=s.current+1;return {current,best:Math.max(s.best,current)};}));addLog('Court '+(ci+1)+' cycle ✓');}
+  function courtBreak(ci){pushUndo();setStreaks(prev=>prev.map((s,i)=>i===ci?{...s,current:0}:s));addLog('Court '+(ci+1)+' streak broken');}
+  const battleLeader=streaks.length?streaks.reduce((bi,s,i,arr)=>s.best>arr[bi].best?i:bi,0):0;
+  const battleWon=streaks.some(s=>s.current>=battleTarget);
 
   function nextShot(){pushUndo();
     const list=rotId==='dr4'?combo:rot.shots;
@@ -8566,7 +8587,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
 
   function setDbFor(n,v){pushUndo();setDb(p=>({...p,[n]:v}));}
 
-  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setShotIndex(s.shotIndex);setCycle(s.cycle);setActiveChaos(s.activeChaos);setActiveCall(s.activeCall);setPredator(s.predator);setDb(s.db);setCombo(s.combo);setLog(s.log);return prev.slice(0,-1);});}
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setShotIndex(s.shotIndex);setCycle(s.cycle);setActiveChaos(s.activeChaos);setActiveCall(s.activeCall);setPredator(s.predator);setDb(s.db);setCombo(s.combo);if(s.streaks)setStreaks(s.streaks);setLog(s.log);return prev.slice(0,-1);});}
   function resetAll(){setShotIndex(0);setCycle(0);setActiveChaos(null);setActiveCall(null);setPredator(names[0]||null);setCombo(DISRUPTION_ROTATIONS[3].shots.slice());setDb(()=>{const d={};names.forEach(n=>d[n]='Unlimited');return d;});setUndoStack([]);setLog([]);}
 
   useEffect(()=>{
@@ -8579,9 +8600,10 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
       chaos:activeChaos,call:activeCall,
       predator:rotId==='dr8'?predator:null,
       racquets:rotId==='dr1'?racquets:null,
-      players:names.map(n=>({name:n,db:db[n]||'Unlimited'}))};
+      players:names.map(n=>({name:n,db:db[n]||'Unlimited'})),
+      battle:battle?{target:battleTarget,leader:battleLeader,courts:courts.map((c,i)=>({label:'Court '+(i+1),players:c,current:streaks[i]?streaks[i].current:0,best:streaks[i]?streaks[i].best:0}))}:null};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'disruption',payload);
-  },[projecting,rotId,shotIndex,cycle,target,activeChaos,activeCall,predator,racquets,db,combo,namesKey]);
+  },[projecting,rotId,shotIndex,cycle,target,activeChaos,activeCall,predator,racquets,db,combo,namesKey,battle,battleTarget,streaks,courtCount]);
 
   async function copyPlayerLink(){
     setProjecting(true);const url=buildLivePlayerViewUrl();let ok=false;
@@ -8591,7 +8613,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
   }
   function addToSessionCard(){
     if(typeof setSession!=='function')return;
-    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Disruption Rotations — '+rot.title,category:'Rotations',format:'3-player disruption rotation',duration:10,task:rot.sequence+' '+rot.objective,scoring:'Complete a full cycle = 1 point. '+target+' cycles wins.',rationale:'Challenges the prescriptive boast-and-drive view: the rotation is a scaffold; the disruption ('+rot.purpose+') breaks autopilot and pushes players from reproducing a pattern toward reading affordances.',coach:rot.coaching,playerFocus:rot.objective,layers:['Rotations'],rld:rotId==='dr6'||rotId==='dr7'||rotId==='dr8'?6:4}));
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Disruption Rotations — '+rot.title,category:'Rotations',format:'3-player disruption rotation',duration:10,task:rot.sequence+' '+rot.objective,scoring:'Cooperative: complete a full cycle (one pass through the sequence) = 1 point; first to '+target+' cycles wins. Competitive: run with tramlines — a shot outside the tramline loses the point, loser out.',rationale:'Challenges the prescriptive boast-and-drive view: the rotation is a scaffold; the disruption ('+rot.purpose+') breaks autopilot and pushes players from reproducing a pattern toward reading affordances.',coach:rot.coaching,playerFocus:rot.objective,layers:[],rld:rotId==='dr6'||rotId==='dr7'||rotId==='dr8'?6:4}));
     alert(rot.title+' added to your session. Open Session Builder to see the rotation.');
   }
   function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
@@ -8651,6 +8673,8 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
     {usingDefaults&&<div className="drSpecial"><span className="mutedText">Fewer than 2 present players found — using default names (edit below, or mark players Present):</span><div className="drBtnRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)} style={{background:'#0b1118',border:'1px solid #2c3c4e',color:'#eaf2f9',borderRadius:'8px',padding:'8px 10px'}}/>)}</div></div>}
 
     <div className="drControls">
+      <div className="drBtnRow"><span className="drShotLabel" style={{alignSelf:'center'}}>Run mode:</span><button type="button" className={!battle?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setBattle(false)}>Single court</button><button type="button" className={battle?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setBattle(true)}>Court Battle</button></div>
+      {!battle&&<>
       <div className="drLiveTop">
         <div className="drShotBox">
           <div className="drShotLabel">Current shot</div>
@@ -8671,6 +8695,18 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
         {cleanBonus&&<button type="button" className="drBtn drBtnGood" onClick={()=>bonus(2,'Clean completion')}>Clean +2</button>}
         {predatorBonus&&rotId==='dr8'&&<button type="button" className="drBtn drBtnGood" onClick={()=>bonus(1,'Predator')}>Predator +1</button>}
       </div>
+      </>}
+
+      {battle&&<div className="drSpecial"><h4>Court Battle — most successive cycles</h4>
+        <p className="mutedText" style={{margin:0,fontSize:'0.85rem'}}>Each court strings together as many cycles in a row as it can. A break resets that court's run to 0 but keeps its best. Most successive cycles wins.</p>
+        <div className="drBtnRow"><span className="drShotLabel" style={{alignSelf:'center'}}>Courts:</span>{[2,3,4,5,6].map(c=><button key={c} type="button" className={courtCount===c?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setCourtCount(c)}>{c}</button>)}<span className="drShotLabel" style={{alignSelf:'center',marginLeft:'8px'}}>First to:</span>{[5,10,15].map(t=><button key={t} type="button" className={battleTarget===t?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setBattleTarget(t)}>{t}</button>)}</div>
+        {battleWon&&<div className="drWon">🏆 Court {battleLeader+1} reached {battleTarget} successive cycles!</div>}
+        <div className="drDbGrid">{courts.map((c,i)=>{const lead=i===battleLeader&&streaks[i]&&streaks[i].best>0;return <div className="drDbCard" key={i} style={{flexDirection:'column',alignItems:'stretch',gap:'8px',background:lead?'#0d2a18':'#0f1822',borderColor:lead?'#1d6b3f':'#223044'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><strong>Court {i+1}{lead?' 👑':''}</strong><span className="drShotLabel">{c.join(' · ')||'—'}</span></div>
+          <div style={{display:'flex',gap:'12px',alignItems:'baseline'}}><span className="drCycleNum" style={{fontSize:'1.8rem'}}>{streaks[i]?streaks[i].current:0}</span><span className="drShotLabel">current run</span><span style={{color:'#86efac',fontWeight:700}}>best {streaks[i]?streaks[i].best:0}</span></div>
+          <div className="drBtnRow"><button type="button" className="drBtn drBtnGood" onClick={()=>courtCycle(i)}>Cycle ✓</button><button type="button" className="drBtn" onClick={()=>courtBreak(i)} style={{background:'#2a0d12',borderColor:'#7a2233',color:'#fca5b5'}}>Break ✗</button></div>
+        </div>;})}</div>
+      </div>}
 
       {rotId==='dr1'&&<div className="drSpecial"><h4>Racquet count</h4><div className="drBtnRow">{[1,2,3,4,5,6,7,8,9,10].map(n=><button key={n} type="button" className={racquets===n?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setRacquets(n)}>{n}</button>)}</div></div>}
 
@@ -8697,6 +8733,23 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
 function DisruptionPlayerDisplay({payload={}}){
   const rot=payload.rotation||{};
   const players=payload.players||[];
+  const battle=payload.battle;
+  if(battle&&battle.courts&&battle.courts.length){
+    const ranked=[...battle.courts].map((c,i)=>({...c,idx:i})).sort((a,b)=>b.best-a.best||b.current-a.current);
+    return <div className="playerDisplayPage drDisplayPage">
+      <DisruptionStyles/>
+      <div className="drDisplayShell">
+        <div className="drDisplayTop"><span>DISRUPTION ROTATIONS · COURT BATTLE</span><h1>{rot.title||'Rotation'}</h1><p>Most successive cycles wins · first to {battle.target}</p></div>
+        <div className="drDisplayDb" style={{flexDirection:'column',gap:'14px',maxWidth:'700px',margin:'0 auto',width:'100%'}}>
+          {ranked.map((c,r)=><div className="drDispDb" key={c.idx} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'16px',background:r===0&&c.best>0?'#0d2a18':'#0f1c2b',borderColor:r===0&&c.best>0?'#1d6b3f':'#21384e'}}>
+            <div style={{textAlign:'left'}}><div style={{fontSize:'1.4rem',fontWeight:800,color:'#eaf4fb'}}>{r===0&&c.best>0?'👑 ':''}{c.label}</div><div style={{fontSize:'0.95rem',color:'#5e89b0'}}>{(c.players||[]).join(' · ')}</div></div>
+            <div style={{textAlign:'right'}}><div style={{fontSize:'2.4rem',fontWeight:800,color:'#7db8ff',lineHeight:1}}>{c.best}</div><div style={{fontSize:'0.85rem',color:'#5e89b0'}}>best run · now {c.current}</div></div>
+          </div>)}
+        </div>
+        {payload.won&&<div className="drDisplayWon">🏆 Target reached</div>}
+      </div>
+    </div>;
+  }
   return <div className="playerDisplayPage drDisplayPage">
     <DisruptionStyles/>
     <div className="drDisplayShell">
