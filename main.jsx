@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v172 DB suite under DB tab';
+const APP_VERSION='v174 Tin War + session fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3469,7 +3469,7 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
   </div>;
 }
 
-function Sessions({session,setSession,setScreen}){const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
@@ -7992,6 +7992,364 @@ function DoubleBounceSuitePlayerDisplay({payload={}}){
 }
 
 
+function TinWarStyles(){
+  return <style>{`
+.twSuite{display:flex;flex-direction:column;gap:16px;}
+.twSuiteHeading h2{margin:0 0 4px;font-size:1.35rem;}
+.twGameTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.twGameTab{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:9px 11px;color:#cdd9e6;cursor:pointer;}
+.twGameTab strong{font-size:0.92rem;}
+.twGameTab span{font-size:0.68rem;color:#7c8ea0;text-transform:uppercase;letter-spacing:0.03em;}
+.twGameTabActive{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.twGameInfo{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.twGameInfoHead{display:flex;align-items:center;gap:12px;}
+.twGameInfoHead h2{margin:0;font-size:1.35rem;}
+.twTag{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;background:#123040;border:1px solid #2E6E8E;color:#8fd0ee;padding:3px 9px;border-radius:999px;}
+.twPrinciple{margin:0;font-style:italic;color:#9fc4dc;font-size:1.02rem;}
+.twInfoGrid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:4px;}
+.twInfoGrid h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;}
+.twInfoGrid p,.twInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
+.twInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
+.twNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
+.twSettings{display:flex;flex-wrap:wrap;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;align-items:flex-end;}
+.twSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
+.twSettings select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:7px 9px;font-size:0.95rem;}
+.twToggleLabel button{margin-top:2px;padding:6px 14px;}
+.twRosterEdit{display:flex;flex-direction:column;gap:8px;background:#1a1206;border:1px solid #4a3a12;border-radius:10px;padding:11px 13px;}
+.twNameRow{display:flex;gap:8px;flex-wrap:wrap;}
+.twNameRow input{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:8px 10px;font-size:0.95rem;}
+.twControls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+.twPlayerCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.twPlayerTop{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.twPlayerTop strong{font-size:1.1rem;}
+.twChips{display:flex;gap:6px;flex-wrap:wrap;}
+.twChip{font-size:0.72rem;font-weight:700;border-radius:999px;padding:3px 9px;}
+.twChipLock{color:#f5c542;background:#2a2206;border:1px solid #6a5410;}
+.twChipFreeze{color:#8fd0ee;background:#0b2530;border:1px solid #2E6E8E;}
+.twChipToken{color:#c5b3ff;background:#1c1630;border:1px solid #4a3a7a;}
+.twChipPeak{color:#86efac;background:#0b1f14;border:1px solid #1d3a28;}
+.twMain{display:flex;gap:12px;align-items:stretch;}
+.twLadder{display:flex;flex-direction:column;gap:3px;flex:1;}
+.twRung{display:flex;justify-content:space-between;align-items:center;border:1px solid #223044;border-radius:7px;padding:5px 9px;font-size:0.8rem;color:#7c8ea0;background:#0b1118;}
+.twRung b{font-weight:700;letter-spacing:0.04em;}
+.twRung span{font-size:0.72rem;opacity:0.8;}
+.twRungActive{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.twRungActive span{color:#8fd0ee;opacity:1;}
+.twNudge{display:flex;flex-direction:column;gap:7px;justify-content:center;min-width:104px;}
+.twNudgeBtn{background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+.twActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
+.twActionBtn{flex:1;min-width:120px;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px 10px;font-size:0.84rem;font-weight:600;cursor:pointer;}
+.twActionGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.twActionDanger{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
+.twPickStrip{display:flex;gap:7px;flex-wrap:wrap;background:#0b1118;border:1px dashed #3a5a8e;border-radius:9px;padding:8px;}
+.twMenu{display:flex;flex-direction:column;gap:6px;background:#0b1118;border:1px dashed #3a5a8e;border-radius:9px;padding:9px;}
+.twBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.twBottomBar .primaryBtn{margin-left:auto;}
+.twUndoBtn{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;}
+.twUndoBtn:disabled{opacity:0.4;cursor:default;}
+.twAdvanceBtn{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;}
+.twSummit{text-align:center;background:#2a2206;border:1px solid #6a5410;border-radius:12px;padding:12px;color:#f5c542;font-weight:700;}
+.twLog{display:flex;flex-direction:column;gap:3px;background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;}
+.twLogRow{font-size:0.82rem;color:#9fb0c2;font-family:ui-monospace,monospace;}
+
+.twDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#0d1b2a 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
+.twDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:30px;}
+.twDisplayTop{text-align:center;}
+.twDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#5e89b0;}
+.twDisplayTop h1{margin:6px 0 4px;font-size:3rem;color:#eaf4fb;}
+.twDisplayTop p{margin:0;font-size:1.2rem;color:#9fc4dc;font-style:italic;}
+.twDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
+.twDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;}
+.twDisplayName{font-size:1.5rem;font-weight:700;color:#eaf4fb;text-align:center;}
+.twDisplayLadder{display:flex;flex-direction:column;gap:4px;}
+.twDispRung{display:flex;justify-content:space-between;border:1px solid #21384e;border-radius:8px;padding:8px 12px;font-size:1rem;color:#5e89b0;}
+.twDispRungActive{background:#16466a;border-color:#7db8ff;color:#eaf4fb;font-weight:800;}
+.twDisplayChips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.twDispChip{font-size:0.95rem;font-weight:700;padding:4px 12px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
+@media (max-width:600px){
+  .twGameTabs{grid-template-columns:repeat(2,1fr);}
+  .twInfoGrid{grid-template-columns:1fr;gap:10px;}
+  .twDisplayTop h1{font-size:2.1rem;}
+}
+`}</style>;
+}
+
+const TIN_LADDER=[
+  {key:'HIGH',label:'HIGH',cm:'75cm'},
+  {key:'MIDHIGH',label:'MID-HIGH',cm:'60cm'},
+  {key:'STANDARD',label:'STANDARD',cm:'48cm'},
+  {key:'LOW',label:'LOW',cm:'33cm'},
+  {key:'KILL',label:'KILL',cm:'19cm'},
+];
+
+const TINWAR_GAMES=[
+  {id:'tw1',title:'Earn the Drop',tag:'Foundation',start:2,
+   principle:'Win well and you choose: make yourself more dangerous, or blunt your opponent.',
+   logic:'Both start at STANDARD. Earn a reward by a volley winner, forcing the opponent off the T, or 3 accurate lengths in a row. On reward, choose to ease your own tin or harden the opponent’s — one level.',
+   earn:['Volley winner','Force opponent off the T','3 accurate lengths in a row (past short line, back quarter)'],
+   scoring:'Normal rally scoring. The tin reward is the consequence.',
+   note:'The choice is the lesson — sharpen yourself, or problematise them.'},
+  {id:'tw2',title:'Steal the Height',tag:'Zero-sum',start:3,
+   principle:'A front-court winner swings the height both ways at once.',
+   logic:'Both start at LOW. Win with a front-court winner and the height transfers: your tin eases one level, the opponent’s hardens one level.',
+   earn:['Front-court winner → you ease one level, opponent hardens one level'],
+   scoring:'Normal rally scoring. Transfer is instant.',
+   note:'Refinement: turn on the Comeback rule and a gap cap to stop the spiral running away.'},
+  {id:'tw3',title:'Lock the Tin',tag:'Protection',start:2,
+   principle:'Earn the T and protect your conditions.',
+   logic:'Both start at STANDARD. Hold an earned T for 3 consecutive opponent contacts (won through pressure, not camped) and LOCK your tin — the opponent cannot harden it for the next 3 rallies.',
+   earn:['Hold earned T for 3 consecutive contacts → LOCK for 3 rallies'],
+   scoring:'Normal rally scoring. Lock counter runs live.',
+   note:'Rewards central control with protection rather than attack. Tap Advance rally to tick locks down.'},
+  {id:'tw4',title:'Pressure Bank',tag:'Token economy',start:2,
+   principle:'Bank wins, spend them on the height.',
+   logic:'Every 3 rally wins earns 1 token. Spend a token to: ease your own tin, harden the opponent’s, freeze the opponent’s tin for 3 rallies, or lock your own tin for 3 rallies.',
+   earn:['Every 3 wins → +1 token'],
+   scoring:'Normal rally scoring. Token bank visible.',
+   note:'Refinement: the confusing “raise your own tin” option is replaced by a defensive “lock your own”.'},
+  {id:'tw5',title:'Comeback Rule',tag:'Anti-collapse',start:1,
+   principle:'Win two in a row and claw a level back.',
+   logic:'Win 2 consecutive rallies and your tin eases one level (your tin only). Keeps a trailing player in the contest.',
+   earn:['2 consecutive rally wins → ease one level'],
+   scoring:'Normal rally scoring. Use the Win / Lose taps to track streaks.',
+   note:'Also available as a universal toggle across every Tin War game.'},
+  {id:'tw6',title:'The Climb',tag:'Auto-leveller',start:4,
+   principle:'Winning makes it harder — find your true height.',
+   logic:'Everyone starts on the full front wall (KILL). Win a rally → your tin rises one level; lose → it eases one level. You settle at the height that matches your level, so the game self-balances. Peak level reached is your real score.',
+   earn:['Win → harder','Lose → easier','Win at HIGH → summit bonus'],
+   scoring:'Track peak level reached. Optional: first to win at HIGH takes the game.',
+   note:'Drags your strongest player out of the kill-based attractor into length, height and patience.'},
+];
+
+function TinWarModule({setScreen,embedded=false}){
+  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
+  const [gameId,setGameId]=useState('tw1');
+  const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
+
+  const [comebackOn,setComebackOn]=useState(false);
+  const [maxGap,setMaxGap]=useState(0);
+  const [showSettings,setShowSettings]=useState(false);
+
+  const [tin,setTin]=useState({});
+  const [locked,setLocked]=useState({});
+  const [frozen,setFrozen]=useState({});
+  const [tokens,setTokens]=useState({});
+  const [streak,setStreak]=useState({});
+  const [wins,setWins]=useState({});
+  const [peak,setPeak]=useState({});
+  const [tcount,setTcount]=useState({});
+  const [pending,setPending]=useState(null);
+  const [spendMenu,setSpendMenu]=useState(null);
+  const [pickFor,setPickFor]=useState(null);
+  const [pickMode,setPickMode]=useState(null);
+  const [summit,setSummit]=useState(null);
+  const [log,setLog]=useState([]);
+  const [undoStack,setUndoStack]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+
+  const namesKey=names.join('|');
+  useEffect(()=>{
+    const t={},lo={},fr={},tk={},st={},wn={},pk={},tc={};
+    names.forEach(n=>{t[n]=game.start;lo[n]=0;fr[n]=0;tk[n]=0;st[n]=0;wn[n]=0;pk[n]=game.start;tc[n]=0;});
+    setTin(t);setLocked(lo);setFrozen(fr);setTokens(tk);setStreak(st);setWins(wn);setPeak(pk);setTcount(tc);
+    setPending(null);setSpendMenu(null);setPickFor(null);setPickMode(null);setSummit(null);setUndoStack([]);setLog([]);
+    setComebackOn(gameId==='tw5');
+  },[gameId,namesKey]);
+
+  function snap(){return {tin:{...tin},locked:{...locked},frozen:{...frozen},tokens:{...tokens},streak:{...streak},wins:{...wins},peak:{...peak},tcount:{...tcount},summit,log:[...log]};}
+  function pushUndo(){const s=snap();setUndoStack(p=>[...p.slice(-29),s]);}
+  function addLog(m){setLog(p=>[m,...p].slice(0,8));}
+  const HARD=0, EASY=TIN_LADDER.length-1;
+  function harderIdx(i){return Math.max(HARD,i-1);}
+  function easierIdx(i){return Math.min(EASY,i+1);}
+  function exceedsGap(next){if(!maxGap)return false;const v=names.map(n=>next[n]);return (Math.max(...v)-Math.min(...v))>maxGap;}
+
+  function easeOwn(n){if(frozen[n]>0){addLog(n+' tin frozen');return;}pushUndo();setTin(p=>{const nx={...p,[n]:easierIdx(p[n])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});addLog(n+' eased their tin');}
+  function hardenTin(target){if(locked[target]>0||frozen[target]>0){addLog(target+' tin protected');return;}pushUndo();setTin(p=>{const nx={...p,[target]:harderIdx(p[target])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});addLog(target+' tin hardened');}
+
+  function startPick(forName,mode){const others=names.filter(x=>x!==forName);if(others.length===1){applyToOpp(forName,others[0],mode);}else{setPickFor(forName);setPickMode(mode);}}
+  function applyToOpp(self,opp,mode){
+    if(mode==='steal'){
+      if(locked[opp]>0||frozen[opp]>0){addLog(opp+' protected — only self eased');easeOwn(self);setPickFor(null);return;}
+      pushUndo();
+      setTin(p=>{const nx={...p,[self]:easierIdx(p[self]),[opp]:harderIdx(p[opp])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});
+      addLog(self+' front-court win — eased self, hardened '+opp);
+    }else if(mode==='harden'){hardenTin(opp);}
+    else if(mode==='freeze'){pushUndo();setFrozen(p=>({...p,[opp]:3}));addLog(self+' froze '+opp+'’s tin (3)');}
+    setPickFor(null);setPickMode(null);
+  }
+
+  function earnReward(n){setPending(n);}
+  function resolveReward(n,how){pushUndo();
+    if(how==='self'){setTin(p=>({...p,[n]:easierIdx(p[n])}));addLog(n+' eased own tin');}
+    else{startPick(n,'harden');addLog(n+' chose to harden opponent');}
+    setPending(null);
+  }
+
+  function tHold(n){pushUndo();const next=(tcount[n]||0)+1;
+    if(next>=3){setTcount(p=>({...p,[n]:0}));setLocked(p=>({...p,[n]:3}));addLog(n+' held earned T → LOCK (3)');}
+    else{setTcount(p=>({...p,[n]:next}));addLog(n+' holding T ('+next+'/3)');}
+  }
+
+  function bankWin(n){pushUndo();const w=(wins[n]||0)+1;setWins(p=>({...p,[n]:w}));
+    if(w%3===0){setTokens(p=>({...p,[n]:(p[n]||0)+1}));addLog(n+' → +1 token (3 wins)');}
+    else{addLog(n+' win ('+(w%3)+'/3 to token)');}
+  }
+  function spendToken(n,opt){
+    if((tokens[n]||0)<=0){return;}
+    pushUndo();setTokens(p=>({...p,[n]:p[n]-1}));setSpendMenu(null);
+    if(opt==='easeSelf'){setTin(p=>({...p,[n]:easierIdx(p[n])}));addLog(n+' spent token — eased own');}
+    else if(opt==='hardenOpp'){startPick(n,'harden');addLog(n+' spent token — harden opponent');}
+    else if(opt==='freezeOpp'){startPick(n,'freeze');addLog(n+' spent token — freeze opponent');}
+    else if(opt==='lockSelf'){setLocked(p=>({...p,[n]:3}));addLog(n+' spent token — locked own (3)');}
+  }
+
+  function recordWin(n){pushUndo();const s=(streak[n]||0)+1;
+    const reset={};names.forEach(x=>{if(x!==n)reset[x]=0;});
+    setStreak(p=>({...p,...reset,[n]:s}));
+    if(comebackOn&&s>=2){setTin(p=>({...p,[n]:easierIdx(p[n])}));setStreak(p=>({...p,[n]:0}));addLog(n+' won 2 in a row → tin eased');}
+    else{addLog(n+' win (streak '+s+')');}
+  }
+  function recordLoss(n){pushUndo();setStreak(p=>({...p,[n]:0}));addLog(n+' lost — streak reset');}
+
+  function climbWin(n){const cur=tin[n]??game.start;pushUndo();
+    if(cur===HARD){setSummit(n);addLog(n+' WON at HIGH — SUMMIT');return;}
+    const ni=harderIdx(cur);setTin(p=>({...p,[n]:ni}));setPeak(p=>({...p,[n]:Math.min(p[n]??ni,ni)}));addLog(n+' won → '+TIN_LADDER[ni].label);
+  }
+  function climbLose(n){const cur=tin[n]??game.start;pushUndo();const ni=easierIdx(cur);setTin(p=>({...p,[n]:ni}));addLog(n+' lost → '+TIN_LADDER[ni].label);}
+
+  function advanceRally(){pushUndo();
+    setLocked(p=>{const o={};Object.keys(p).forEach(k=>o[k]=Math.max(0,p[k]-1));return o;});
+    setFrozen(p=>{const o={};Object.keys(p).forEach(k=>o[k]=Math.max(0,p[k]-1));return o;});
+    addLog('Advanced rally — locks/freezes ticked');
+  }
+
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setTin(s.tin);setLocked(s.locked);setFrozen(s.frozen);setTokens(s.tokens);setStreak(s.streak);setWins(s.wins);setPeak(s.peak);setTcount(s.tcount);setSummit(s.summit);setLog(s.log);return prev.slice(0,-1);});}
+  function resetAll(){const t={},lo={},fr={},tk={},st={},wn={},pk={},tc={};names.forEach(n=>{t[n]=game.start;lo[n]=0;fr[n]=0;tk[n]=0;st[n]=0;wn[n]=0;pk[n]=game.start;tc[n]=0;});setTin(t);setLocked(lo);setFrozen(fr);setTokens(tk);setStreak(st);setWins(wn);setPeak(pk);setTcount(tc);setSummit(null);setUndoStack([]);setLog([]);}
+
+  useEffect(()=>{
+    if(!projecting)return;
+    const payload={type:'tinwar',
+      game:{title:game.title,tag:game.tag,principle:game.principle},
+      ladder:TIN_LADDER,
+      players:names.map(n=>({name:n,idx:tin[n]??game.start,locked:locked[n]||0,frozen:frozen[n]||0,tokens:tokens[n]||0,peak:peak[n]??game.start})),
+      showTokens:gameId==='tw4',showPeak:gameId==='tw6',summit};
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
+  },[projecting,tin,locked,frozen,tokens,peak,summit,gameId,namesKey]);
+
+  async function copyPlayerLink(){
+    setProjecting(true);const url=buildLivePlayerViewUrl();let ok=false;
+    try{if(navigator.clipboard){await navigator.clipboard.writeText(url);ok=true;}}catch{}
+    if(ok){alert('Live player link copied. Open it on the second device — the tin ladders update live as you tap.');}
+    else{window.prompt('LIVE Tin War player link — open on the second device:',url);}
+  }
+  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+  const usingDefaults=presents.length<2;
+  const showComeback=gameId==='tw5'||comebackOn;
+
+  return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
+    <TinWarStyles/>
+    {!embedded&&<div className="moduleHead"><div><h1>Tin War™</h1><p className="mutedText">Dynamic tin height as a contested resource — win well to improve your conditions or worsen theirs.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="twSuiteHeading"><h2>The games</h2><p className="mutedText">Pick a game, then drive the live tin ladders below. Tin height is earned and contested: win well to ease your own scoring tin or harden your opponent’s.</p></div>}
+
+    <div className="twGameTabs">
+      {TINWAR_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'twGameTab twGameTabActive':'twGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}
+    </div>
+
+    <div className="twGameInfo">
+      <div className="twGameInfoHead"><h2>{game.title}</h2><span className="twTag">{game.tag}</span></div>
+      <p className="twPrinciple">{game.principle}</p>
+      <div className="twInfoGrid">
+        <div><h4>Game logic</h4><p>{game.logic}</p></div>
+        <div><h4>Earn / move</h4><ul>{game.earn.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
+        <div><h4>Scoring</h4><p>{game.scoring}</p></div>
+      </div>
+      <p className="twNote">{game.note}</p>
+    </div>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Settings'}</button>
+    {showSettings&&<div className="twSettings">
+      <label className="twToggleLabel">Comeback rule<button type="button" className={comebackOn?'primaryBtn':'secondaryBtn'} onClick={()=>setComebackOn(!comebackOn)}>{comebackOn?'ON':'OFF'}</button></label>
+      <label>Max gap (levels)<select value={maxGap} onChange={e=>setMaxGap(Number(e.target.value))}><option value={0}>Off</option><option value={2}>2</option><option value={3}>3</option></select></label>
+      <span className="mutedText" style={{fontSize:'0.78rem',maxWidth:'260px'}}>Comeback: 2 straight wins eases your tin. Gap cap stops the tins drifting too far apart.</span>
+    </div>}
+
+    {usingDefaults&&<div className="twRosterEdit"><span className="mutedText">No present players found — using two default names (edit below, or mark players Present):</span><div className="twNameRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)}/>)}</div></div>}
+
+    {summit&&<div className="twSummit">🏔 {summit} won a rally at HIGH — SUMMIT! <button type="button" className="twActionBtn" style={{marginLeft:'10px',flex:'none'}} onClick={()=>setSummit(null)}>Clear</button></div>}
+
+    <div className="twControls">
+      {names.map(n=>{
+        const idx=tin[n]??game.start;
+        const isPickTarget=pickFor&&pickFor!==n;
+        return <div className="twPlayerCard" key={n}>
+          <div className="twPlayerTop"><strong>{n}</strong><div className="twChips">
+            {locked[n]>0&&<span className="twChip twChipLock">LOCK {locked[n]}</span>}
+            {frozen[n]>0&&<span className="twChip twChipFreeze">FROZEN {frozen[n]}</span>}
+            {gameId==='tw4'&&<span className="twChip twChipToken">{tokens[n]||0} tokens</span>}
+            {gameId==='tw6'&&<span className="twChip twChipPeak">peak {TIN_LADDER[peak[n]??idx].label}</span>}
+          </div></div>
+          <div className="twMain">
+            <div className="twLadder">{TIN_LADDER.map((r,i)=><div key={r.key} className={i===idx?'twRung twRungActive':'twRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div>
+            <div className="twNudge">
+              <button type="button" className="twNudgeBtn" onClick={()=>hardenTin(n)}>▲ Harder</button>
+              <button type="button" className="twNudgeBtn" onClick={()=>easeOwn(n)}>▼ Easier</button>
+              <button type="button" className="twNudgeBtn" onClick={()=>startPick(n,'harden')}>Harden opp</button>
+            </div>
+          </div>
+          <div className="twActionStrip">
+            {gameId==='tw1'&&pending!==n&&<button type="button" className="twActionBtn" onClick={()=>earnReward(n)}>Earn reward ▸</button>}
+            {gameId==='tw1'&&pending===n&&<div className="twMenu"><span className="mutedText">{n} earned — choose:</span><button type="button" className="twActionBtn twActionGood" onClick={()=>resolveReward(n,'self')}>Ease my tin</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>resolveReward(n,'opp')}>Harden opponent</button></div>}
+            {gameId==='tw2'&&<button type="button" className="twActionBtn" onClick={()=>startPick(n,'steal')}>{pickFor===n?'Pick opponent…':'Front-court win'}</button>}
+            {gameId==='tw3'&&<button type="button" className="twActionBtn" onClick={()=>tHold(n)}>T held ({tcount[n]||0}/3)</button>}
+            {gameId==='tw4'&&<><button type="button" className="twActionBtn" onClick={()=>bankWin(n)}>Win +1</button>{(tokens[n]||0)>0&&<button type="button" className="twActionBtn twActionGood" onClick={()=>setSpendMenu(spendMenu===n?null:n)}>Spend token ▸</button>}</>}
+            {gameId==='tw4'&&spendMenu===n&&<div className="twMenu"><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'easeSelf')}>Ease my tin</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'hardenOpp')}>Harden opponent</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'freezeOpp')}>Freeze opponent (3)</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'lockSelf')}>Lock my tin (3)</button></div>}
+            {gameId==='tw6'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>climbWin(n)}>Win ▲</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>climbLose(n)}>Lose ▼</button></>}
+            {showComeback&&gameId!=='tw6'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>recordWin(n)}>Win</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>recordLoss(n)}>Lose</button></>}
+          </div>
+          {isPickTarget&&<div className="twPickStrip"><span className="mutedText">target:</span><button type="button" className="twActionBtn" onClick={()=>applyToOpp(pickFor,n,pickMode)}>{n}</button></div>}
+        </div>;
+      })}
+    </div>
+
+    <div className="twBottomBar">
+      <button type="button" className="twUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
+      <button type="button" className="twAdvanceBtn" onClick={advanceRally}>Advance rally ▸</button>
+      <button type="button" className="secondaryBtn" onClick={resetAll}>Reset</button>
+      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
+    </div>
+
+    {log.length>0&&<div className="twLog">{log.map((l,i)=><div key={i} className="twLogRow">{l}</div>)}</div>}
+  </div>;
+}
+
+function TinWarPlayerDisplay({payload={}}){
+  const game=payload.game||{};
+  const players=payload.players||[];
+  const ladder=payload.ladder||TIN_LADDER;
+  return <div className="playerDisplayPage twDisplayPage">
+    <TinWarStyles/>
+    <div className="twDisplayShell">
+      <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
+      {payload.summit&&<div className="twSummit" style={{fontSize:'1.4rem'}}>🏔 {payload.summit} reached the SUMMIT</div>}
+      <div className="twDisplayGrid">
+        {players.map((p,i)=><div className="twDisplayCard" key={i}>
+          <div className="twDisplayName">{p.name}</div>
+          <div className="twDisplayLadder">{ladder.map((r,j)=><div key={r.key} className={j===p.idx?'twDispRung twDispRungActive':'twDispRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div>
+          <div className="twDisplayChips">
+            {p.locked>0&&<span className="twDispChip">LOCK {p.locked}</span>}
+            {p.frozen>0&&<span className="twDispChip">FROZEN {p.frozen}</span>}
+            {payload.showTokens&&<span className="twDispChip">{p.tokens} tokens</span>}
+            {payload.showPeak&&<span className="twDispChip">peak {ladder[p.peak]?ladder[p.peak].label:''}</span>}
+          </div>
+        </div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -8030,6 +8388,7 @@ function Games({setSession,setScreen}){
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
+    {id:'tinwar',label:'Tin War',category:'Tin War'},
     {id:'rotations',label:'Rotations',category:'Rotations'},
     {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
@@ -8122,11 +8481,12 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded/></div>}
+    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">Tin height is not just a leveller here — it's a contested, dynamic resource. Lowering your own scoring tin opens the kill; raising your opponent's removes theirs. Win well to improve your conditions or worsen theirs, and the affordance landscape shifts through the game.</p><TinWarModule embedded/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen}/></div>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -12938,7 +13298,7 @@ function goBack(){
   });
 }
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
-const[session,setSession]=useState(()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY))||[]}catch{return[]}});
+const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[]);}catch{return[]}});
 const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   try{
     const direct=localStorage.getItem('checkerboardInvasionFormat');
@@ -12954,6 +13314,7 @@ useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasio
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
