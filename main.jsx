@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v170 RLD discs + Tin Height rationale';
+const APP_VERSION='v171 Double Bounce Suite';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7621,6 +7621,286 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   </div>;
 }
 
+// ─── DOUBLE BOUNCE SUITE™ ─────────────────────────────────────────────────────
+const DB_GAMES=[
+  {id:'db1',title:'Bank & Spend',tag:'Foundation',
+   principle:'Spend a bounce to survive — earn it back through pressure.',
+   logic:'Everyone starts on the set DB. Using a double bounce costs DB. Recover DB by producing the chosen tactical behaviour.',
+   earn:['Win the rally with a volley','Force opponent behind the short line','Force opponent off the T'],
+   scoring:'Normal rally scoring. DB is a separate currency.',
+   note:'Coach picks which earn-condition is live; tap + when a player produces it.'},
+  {id:'db2',title:'Steal the Bounce',tag:'Zero-sum',
+   principle:'Win the right way and take a bounce off your opponent.',
+   logic:'Using a DB costs 1. Win with a volley winner or a front-court attack and you STEAL 1 DB from your opponent.',
+   earn:['Volley winner → steal 1','Front-court attack winner → steal 1'],
+   scoring:'Normal rally scoring. The steal moves 1 DB loser → winner.',
+   note:'Refinement: a player can never be stolen below 0 — the steal only moves what is there.'},
+  {id:'db3',title:'T Reward',tag:'Earned T',
+   principle:'Hold the T under pressure and bank a bounce.',
+   logic:'Earn DB by EARNING the T: hold it for 2 consecutive opponent contacts straight after you have attacked or moved the opponent. Passive camping does not count.',
+   earn:['Hold earned T for 2 consecutive opponent contacts → +1 DB, then reset'],
+   scoring:'Normal rally scoring. The T-hold counter runs live.',
+   note:'Refinement: reward is for T won through pressure, not for standing on the T.'},
+  {id:'db4',title:'Volley Harvest',tag:'Volley',
+   principle:'Only volleys pay.',
+   logic:'Only volleys earn DB. Clean volley = +1. Volley winner = +2. Using a DB = minus 1.',
+   earn:['Clean volley → +1 DB','Volley winner → +2 DB'],
+   scoring:'Normal rally scoring.',
+   note:'Simplest earn engine — rewards taking the ball early.'},
+  {id:'db5',title:'Break the T',tag:'Displacement',
+   principle:'Move them off the T — bank a bounce.',
+   logic:'If the opponent contacts the ball OUTSIDE the T corridor, you earn +1 DB. Uses the same T-corridor idea already in the app.',
+   earn:['Opponent struck from outside the T corridor → +1 DB'],
+   scoring:'Normal rally scoring.',
+   note:'Mirror of T Reward — earn by displacing the opponent, not by holding.'},
+  {id:'db6',title:'Three Shot Recovery',tag:'Conversion',
+   principle:'Survive now — but pay it back fast.',
+   logic:'Spend a DB and a 3-shot recovery window opens. Regain the T and win the rally within 3 shots to restore the DB. Miss the window and the DB is gone.',
+   earn:['Win within the 3-shot window after a spend → restore the DB'],
+   scoring:'Normal rally scoring. The recovery counter runs live.',
+   note:'Conversion-window pressure: capitalise quickly or lose the resource.'},
+  {id:'db7',title:'Pressure Debt',tag:'Loss-aversion',
+   principle:'Survival costs you on the scoreboard.',
+   logic:'Using a DB costs 1 DB AND a point penalty. Win the rally with a volley and you earn +1 point and +1 DB.',
+   earn:['Volley win → +1 point and +1 DB'],
+   scoring:'Live point tracker. A DB spend applies the point penalty.',
+   note:'Refinement: the point penalty is configurable (0 / 1 / 2) so spending stays a live option, not a trap.'},
+  {id:'db8',title:'Golden Bounce',tag:'Clutch',
+   principle:'One bounce, all-or-nothing.',
+   logic:'Each player has 1 Golden DB. Use it and win the rally → you keep it. Use it and lose → it is gone for good. Normal DB are unaffected.',
+   earn:['Use Golden + win → retain','Use Golden + lose → lost permanently'],
+   scoring:'Normal rally scoring.',
+   note:'A pure commitment decision — when do you bet the golden bounce?'},
+];
+
+function DoubleBounceSuiteModule({setScreen,players=[]}){
+  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
+  const [gameId,setGameId]=useState('db1');
+  const game=DB_GAMES.find(g=>g.id===gameId)||DB_GAMES[0];
+
+  const [startingDB,setStartingDB]=useState(3);
+  const [maxCap,setMaxCap]=useState(5);
+  const [rewardValue,setRewardValue]=useState(1);
+  const [costValue,setCostValue]=useState(1);
+  const [losePointOnUse,setLosePointOnUse]=useState(false);
+  const [debtPenalty,setDebtPenalty]=useState(1);
+  const [showSettings,setShowSettings]=useState(false);
+
+  const [db,setDb]=useState({});
+  const [golden,setGolden]=useState({});
+  const [points,setPoints]=useState({});
+  const [tcount,setTcount]=useState({});
+  const [recovery,setRecovery]=useState(null);
+  const [lastSteal,setLastSteal]=useState(null);
+  const [stealFrom,setStealFrom]=useState(null);
+  const [log,setLog]=useState([]);
+  const [undoStack,setUndoStack]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+
+  const namesKey=names.join('|');
+  useEffect(()=>{
+    const init={},g={},pt={},tc={};
+    names.forEach(n=>{init[n]=Math.min(startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});
+    setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);
+  },[gameId,startingDB,maxCap,namesKey]);
+
+  function snapshot(){return {db:{...db},golden:{...golden},points:{...points},tcount:{...tcount},recovery:recovery?{...recovery}:null,log:[...log]};}
+  function pushUndo(){const s=snapshot();setUndoStack(prev=>[...prev.slice(-29),s]);}
+  function addLog(msg){setLog(prev=>[msg,...prev].slice(0,8));}
+  function clamp(v){return Math.max(0,Math.min(maxCap,v));}
+
+  function spend(n){pushUndo();setDb(p=>({...p,[n]:Math.max(0,(p[n]||0)-costValue)}));if(losePointOnUse){setPoints(p=>({...p,[n]:(p[n]||0)-1}));}addLog(n+' spent a bounce');}
+  function reward(n,amt){pushUndo();setDb(p=>({...p,[n]:clamp((p[n]||0)+amt)}));addLog(n+' earned +'+amt+' DB');}
+
+  function steal(winner,loser){pushUndo();
+    const take=Math.min(1,db[loser]||0);
+    setDb(p=>({...p,[loser]:Math.max(0,(p[loser]||0)-take),[winner]:clamp((p[winner]||0)+take)}));
+    setLastSteal({from:loser,to:winner,ts:Date.now()});
+    addLog(winner+' stole '+take+' DB from '+loser);
+    setStealFrom(null);
+  }
+  function onStealClick(winner){
+    const others=names.filter(n=>n!==winner);
+    if(others.length===1){steal(winner,others[0]);}
+    else{setStealFrom(stealFrom===winner?null:winner);}
+  }
+
+  function tHold(n){pushUndo();
+    const next=(tcount[n]||0)+1;
+    if(next>=2){setTcount(p=>({...p,[n]:0}));setDb(p=>({...p,[n]:clamp((p[n]||0)+1)}));addLog(n+' held earned T → +1 DB');}
+    else{setTcount(p=>({...p,[n]:next}));addLog(n+' holding T ('+next+'/2)');}
+  }
+
+  function startRecovery(n){pushUndo();
+    setDb(p=>({...p,[n]:Math.max(0,(p[n]||0)-costValue)}));
+    setRecovery({player:n,shots:3});
+    addLog(n+' spent → recovery live (3)');
+  }
+  function recoveryTick(){if(!recovery)return;pushUndo();
+    const s=recovery.shots-1;
+    if(s<=0){addLog(recovery.player+' missed the window — DB lost');setRecovery(null);}
+    else{setRecovery({...recovery,shots:s});}
+  }
+  function recoveryWin(){if(!recovery)return;pushUndo();
+    const pl=recovery.player;
+    setDb(p=>({...p,[pl]:clamp((p[pl]||0)+costValue)}));
+    addLog(pl+' converted — DB restored');
+    setRecovery(null);
+  }
+  function recoveryLost(){if(!recovery)return;pushUndo();addLog(recovery.player+' lost the rally — DB gone');setRecovery(null);}
+
+  function spendDebt(n){pushUndo();
+    setDb(p=>({...p,[n]:Math.max(0,(p[n]||0)-costValue)}));
+    setPoints(p=>({...p,[n]:(p[n]||0)-debtPenalty}));
+    addLog(n+' spent — debt '+debtPenalty+' pt');
+  }
+  function volleyPoint(n){pushUndo();
+    setPoints(p=>({...p,[n]:(p[n]||0)+1}));
+    setDb(p=>({...p,[n]:clamp((p[n]||0)+1)}));
+    addLog(n+' volley win → +1 pt, +1 DB');
+  }
+
+  function useGolden(n,won){pushUndo();
+    if(won){addLog(n+' used Golden and WON — retained');}
+    else{setGolden(p=>({...p,[n]:'lost'}));addLog(n+' used Golden and LOST — gone');}
+  }
+
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setDb(s.db);setGolden(s.golden);setPoints(s.points);setTcount(s.tcount);setRecovery(s.recovery);setLog(s.log);return prev.slice(0,-1);});}
+  function resetEconomy(){const init={},g={},pt={},tc={};names.forEach(n=>{init[n]=Math.min(startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);}
+
+  useEffect(()=>{
+    if(!projecting)return;
+    const payload={type:'doublebounce',
+      game:{title:game.title,tag:game.tag,principle:game.principle},
+      players:names.map(n=>({name:n,db:db[n]??0,golden:golden[n]||null,points:points[n]??0,tcount:tcount[n]??0})),
+      recovery:recovery?{player:recovery.player,shots:recovery.shots}:null,
+      lastSteal,maxCap,
+      showPoints:gameId==='db7',showGolden:gameId==='db8',showT:gameId==='db3'};
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'doublebounce',payload);
+  },[projecting,db,golden,points,tcount,recovery,lastSteal,gameId,namesKey,maxCap]);
+
+  async function copyPlayerLink(){
+    setProjecting(true);
+    const url=buildLivePlayerViewUrl();
+    let copied=false;
+    try{if(navigator.clipboard){await navigator.clipboard.writeText(url);copied=true;}}catch{}
+    if(copied){alert('Live player link copied. Open it on the second device — the Double Bounce status updates live as you tap.');}
+    else{window.prompt('LIVE Double Bounce player link — open on the second device:',url);}
+  }
+
+  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+  const usingDefaults=presents.length<2;
+
+  return <div className="gameCard dbSuite">
+    <div className="moduleHead">
+      <div><h1>Double Bounce Suite™</h1><p className="mutedText">The double bounce as a resource economy — spend to survive, earn to dominate.</p></div>
+      <button type="button" className="homeBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+
+    <CoachRationale label="Why this suite — DB as a resource economy">
+      <p>In most uses the double bounce is a static handicap. Here it becomes a <strong>currency the player controls</strong>: you <strong>spend</strong> a bounce to survive a rally you would otherwise lose, and you <strong>earn</strong> bounces back by producing genuine tactical behaviour — volleys, T-control, displacing the opponent.</p>
+      <ul>
+        <li><strong>Spend = survive:</strong> a self-managed leveller. The player decides when to use a resource, so the agency — and the cost — sits with them.</li>
+        <li><strong>Earn = dominate:</strong> the earn-conditions are real squash objectives, so the economy rewards attacking the opponent, not gaming the rules.</li>
+        <li><strong>Risk-reward under pressure:</strong> spend now versus bank for later is a live decision — the same lever as the Gambler and the Declared finish.</li>
+      </ul>
+      <p className="mutedText">Debrief the decisions — when they spent, when they held, what they earned — not the DB totals.</p>
+    </CoachRationale>
+
+    <div className="dbGameTabs">
+      {DB_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'dbGameTab dbGameTabActive':'dbGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}
+    </div>
+
+    <div className="dbGameInfo">
+      <div className="dbGameInfoHead"><h2>{game.title}</h2><span className="dbTag">{game.tag}</span></div>
+      <p className="dbPrinciple">{game.principle}</p>
+      <div className="dbInfoGrid">
+        <div><h4>Game logic</h4><p>{game.logic}</p></div>
+        <div><h4>Earn DB</h4><ul>{game.earn.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
+        <div><h4>Scoring</h4><p>{game.scoring}</p></div>
+      </div>
+      <p className="dbNote">{game.note}</p>
+    </div>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Universal settings'}</button>
+    {showSettings&&<div className="dbSettings">
+      <label>Starting DB<select value={startingDB} onChange={e=>setStartingDB(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+      <label>Max DB cap<select value={maxCap} onChange={e=>setMaxCap(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+      <label>Reward<select value={rewardValue} onChange={e=>setRewardValue(Number(e.target.value))}><option value={1}>+1</option><option value={2}>+2</option></select></label>
+      <label>Cost<select value={costValue} onChange={e=>setCostValue(Number(e.target.value))}><option value={1}>−1</option><option value={2}>−2</option></select></label>
+      <label className="dbToggleLabel">Lose point on use<button type="button" className={losePointOnUse?'primaryBtn':'secondaryBtn'} onClick={()=>setLosePointOnUse(!losePointOnUse)}>{losePointOnUse?'ON':'OFF'}</button></label>
+      {gameId==='db7'&&<label>Debt penalty<select value={debtPenalty} onChange={e=>setDebtPenalty(Number(e.target.value))}><option value={0}>0 pt</option><option value={1}>1 pt</option><option value={2}>2 pt</option></select></label>}
+    </div>}
+
+    {usingDefaults&&<div className="dbRosterEdit"><span className="mutedText">No present players found — using two default names (edit below, or mark players Present in Players):</span><div className="dbNameRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)}/>)}</div></div>}
+
+    <div className="dbControls">
+      {names.map(n=>{
+        const isStealTarget=stealFrom&&stealFrom!==n;
+        return <div className="dbPlayerCard" key={n}>
+          <div className="dbPlayerTop"><strong>{n}</strong>{gameId==='db8'&&<span className={golden[n]==='lost'?'dbGoldenChip dbGoldenLost':'dbGoldenChip'}>{golden[n]==='lost'?'Golden lost':'Golden ●'}</span>}{gameId==='db7'&&<span className="dbPointChip">{points[n]||0} pts</span>}</div>
+          <div className="dbCounterRow">
+            <button type="button" className="dbCounterBtn dbMinus" onClick={()=>spend(n)}>−</button>
+            <div className="dbCounter"><span className="dbCounterNum">{db[n]??0}</span><span className="dbCounterLabel">DB</span></div>
+            <button type="button" className="dbCounterBtn dbPlus" onClick={()=>reward(n,rewardValue)}>+</button>
+          </div>
+          <div className="dbActionStrip">
+            {gameId==='db2'&&<button type="button" className="dbActionBtn" onClick={()=>onStealClick(n)}>{stealFrom===n?'Pick opponent…':'Steal +1'}</button>}
+            {gameId==='db3'&&<button type="button" className="dbActionBtn" onClick={()=>tHold(n)}>T held ({tcount[n]||0}/2)</button>}
+            {gameId==='db4'&&<><button type="button" className="dbActionBtn" onClick={()=>reward(n,1)}>Clean volley +1</button><button type="button" className="dbActionBtn" onClick={()=>reward(n,2)}>Volley winner +2</button></>}
+            {gameId==='db6'&&!recovery&&<button type="button" className="dbActionBtn" onClick={()=>startRecovery(n)}>Spend → recovery</button>}
+            {gameId==='db7'&&<><button type="button" className="dbActionBtn" onClick={()=>spendDebt(n)}>Spend (debt)</button><button type="button" className="dbActionBtn" onClick={()=>volleyPoint(n)}>Volley win +pt+DB</button></>}
+            {gameId==='db8'&&golden[n]==='active'&&<><button type="button" className="dbActionBtn dbActionGood" onClick={()=>useGolden(n,true)}>Golden → WON</button><button type="button" className="dbActionBtn dbActionDanger" onClick={()=>useGolden(n,false)}>Golden → LOST</button></>}
+          </div>
+          {isStealTarget&&<button type="button" className="dbStealTarget" onClick={()=>steal(stealFrom,n)}>Steal from {n}</button>}
+        </div>;
+      })}
+    </div>
+
+    {gameId==='db6'&&recovery&&<div className="dbRecoveryBanner">
+      <strong>RECOVERY LIVE — {recovery.player}</strong>
+      <span className="dbRecoveryCount">{recovery.shots}</span>
+      <div className="dbRecoveryBtns">
+        <button type="button" className="dbActionBtn" onClick={recoveryTick}>−1 shot</button>
+        <button type="button" className="dbActionBtn dbActionGood" onClick={recoveryWin}>Won → restore</button>
+        <button type="button" className="dbActionBtn dbActionDanger" onClick={recoveryLost}>Lost</button>
+      </div>
+    </div>}
+
+    <div className="dbBottomBar">
+      <button type="button" className="dbUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
+      <button type="button" className="secondaryBtn" onClick={resetEconomy}>Reset</button>
+      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
+    </div>
+
+    {log.length>0&&<div className="dbLog">{log.map((l,i)=><div key={i} className="dbLogRow">{l}</div>)}</div>}
+  </div>;
+}
+
+function DoubleBounceSuitePlayerDisplay({payload={}}){
+  const game=payload.game||{};
+  const players=payload.players||[];
+  const rec=payload.recovery;
+  return <div className="playerDisplayPage dbDisplayPage">
+    <div className="dbDisplayShell">
+      <div className="dbDisplayTop"><span>DOUBLE BOUNCE</span><h1>{game.title||'Double Bounce'}</h1><p>{game.principle||''}</p></div>
+      <div className="dbDisplayGrid">
+        {players.map((p,i)=><div className="dbDisplayCard" key={i}>
+          <div className="dbDisplayName">{p.name}{payload.showGolden&&p.golden==='active'&&<span className="dbGoldDot">●</span>}{payload.showGolden&&p.golden==='lost'&&<span className="dbGoldDotLost">●</span>}</div>
+          <div className="dbDisplayNum">{p.db}</div>
+          <div className="dbDisplaySub">double bounces{payload.maxCap?(' / '+payload.maxCap):''}</div>
+          {payload.showPoints&&<div className="dbDisplayPoints">{p.points} pts</div>}
+          {payload.showT&&<div className="dbDisplayPoints">T-hold {p.tcount}/2</div>}
+        </div>)}
+      </div>
+      {rec&&<div className="dbDisplayRecovery">RECOVERY — {rec.player}: <strong>{rec.shots}</strong> shots left</div>}
+      {payload.lastSteal&&<div className="dbDisplaySteal">{payload.lastSteal.to} stole a bounce from {payload.lastSteal.from}</div>}
+    </div>
+  </div>;
+}
+
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -7655,6 +7935,7 @@ function Games({setSession,setScreen}){
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
     {id:'blindtarget',label:'Poker',category:'Blind Target'},
+    {id:'dbsuite',label:'Double Bounce Suite',category:'Double Bounce'},
     {id:'technical',label:'Technical',category:'Technical'},
     {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
     {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
@@ -7727,7 +8008,7 @@ function Games({setSession,setScreen}){
     </div>
     <div className="gameClassGrid">
       {gameClasses.map(gameClass=>
-        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):selectClass(gameClass.id)}>
+        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):gameClass.id==='dbsuite'?setScreen('doubleBounceSuite'):selectClass(gameClass.id)}>
           {gameClass.label}
         </button>
       )}
@@ -12582,6 +12863,7 @@ useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[sess
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
@@ -12600,6 +12882,7 @@ return <div>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players}/>}
+      {screen==='doubleBounceSuite'&&<DoubleBounceSuiteModule setScreen={go} players={players}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
