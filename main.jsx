@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v184 word cleanup + RLD assessment';
+const APP_VERSION='v185 search button';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13726,6 +13726,43 @@ function SoloPracticeModule({setScreen}){
 }
 
 
+const SEARCH_INDEX=[
+  {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
+  {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
+  {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
+  {label:'Competition',sub:'King of court & formats',kw:'competition king court tournament invasion',screen:'competition'},
+  {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level',screen:'rld'},
+  {label:'Blind Target Score',sub:'Poker psychology · Raise & Fold',kw:'poker blind target raise fold bluff pressure',screen:'blindTargetScore'},
+  {label:'PEAK WEEK',sub:'Competition taper plan',kw:'peak week taper prep competition routine',screen:'peakWeek'},
+  {label:'Tactical Intentions',sub:'Intention-led play',kw:'tactical intentions intent',screen:'tacticalIntentions'},
+  {label:'Pressure',sub:'Pressure module',kw:'pressure index tactical pressure',screen:'pressure'},
+  {label:'Vision & Perception',sub:'Gaze & anticipation',kw:'vision perception gaze anticipation quiet eye early read',screen:'visionPerception'},
+  {label:'Perception',sub:'Perceptual training',kw:'perception perceptual',screen:'perception'},
+  {label:'Unopposed Practice',sub:'Practice with opponent removed',kw:'solo unopposed practice alone feeding',screen:'soloPractice'},
+  {label:'Universal Modifier Engine',sub:'Overlays · constraints',kw:'overlays modifier engine technical tactical mental diversity constraints',screen:'technical'},
+  {label:'Game Constraints Engine',sub:'Build constraints',kw:'constraints engine cb code',screen:'constraints'},
+  {label:'Double Bounce',sub:'Rally extender + suite',kw:'double bounce suite rally',screen:'doubleBounce'},
+  {label:'Shots',sub:'Shot tools',kw:'shots lob drop boast drive serve',screen:'shots'},
+  {label:'Tools',sub:'Tools architecture',kw:'tools architecture',screen:'tools'},
+  {label:'Diagnostic Intervention',sub:'Diagnose & intervene',kw:'diagnostic intervention',screen:'diagnosticIntervention'},
+  {label:'Level 0 Foundations',sub:'Foundation activities',kw:'level 0 foundation beginner',screen:'level0'},
+  {label:'Data / Storage',sub:'Backup & data',kw:'storage data backup export',screen:'storage'},
+  // ── game-library classes ──
+  {label:'Checkerboard Games',sub:'Games Library',kw:'checkerboard zone',screen:'games',classId:'checkerboard'},
+  {label:'ATL Builder',sub:'Games Library',kw:'atl above tin line builder',screen:'games',classId:'atl'},
+  {label:'ATB / BTL Builder',sub:'Games Library',kw:'atb btl below tin builder',screen:'games',classId:'atb'},
+  {label:'Power Play',sub:'Games Library',kw:'power play',screen:'games',classId:'powerplay'},
+  {label:'Tactical Pressure',sub:'Games Library',kw:'tactical pressure',screen:'games',classId:'tacticalpressure'},
+  {label:'Classic Games',sub:'Games Library',kw:'classic traditional',screen:'games',classId:'classic'},
+  {label:'Snakes & Ladders',sub:'Games Library',kw:'snakes ladders climb',screen:'games',classId:'snakesladders'},
+  {label:'Custom Game Builder',sub:'Games Library',kw:'custom build your own game',screen:'games',classId:'custom'},
+  {label:'Information / Anticipation',sub:'Games Library',kw:'information anticipation early read pattern',screen:'games',classId:'information'},
+  {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal',screen:'games',classId:'doubleBounce'},
+  {label:'Tin War',sub:'Games Library',kw:'tin war height ladder climb',screen:'games',classId:'tinwar'},
+  {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
+];
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -13751,10 +13788,20 @@ useEffect(()=>{
   return ()=>{cancelled=true;clearInterval(id);};
 },[liveRoomParam]);
 const[backStack,setBackStack]=useState([]);
+const[searchOpen,setSearchOpen]=useState(false);
+const[searchQ,setSearchQ]=useState('');
+const searchResults=useMemo(()=>{const q=searchQ.trim().toLowerCase();if(!q)return SEARCH_INDEX;return SEARCH_INDEX.filter(it=>(it.label+' '+(it.sub||'')+' '+(it.kw||'')).toLowerCase().includes(q));},[searchQ]);
 function go(next){
   if(!next||next===screen) return;
   setBackStack(prev=>[...prev,screen].slice(-30));
   setScreen(next);
+}
+function runSearch(item){
+  setSearchOpen(false);setSearchQ('');
+  if(item.classId){try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,item.classId);}catch{}}
+  const target=item.screen||'home';
+  if(target===screen){if(item.classId){setBackStack(prev=>[...prev,screen].slice(-30));setScreen('home');setTimeout(()=>setScreen('games'),0);}return;}
+  go(target);
 }
 function goBack(){
   setBackStack(prev=>{
@@ -13788,6 +13835,21 @@ if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerD
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
 <div className="versionStamp" title="Deployed build">{APP_VERSION}</div>
+{searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
+  <div onClick={e=>e.stopPropagation()} style={{maxWidth:'620px',margin:'60px auto 0',width:'92%',background:'#0d1722',border:'1px solid #243140',borderRadius:'16px',padding:'14px',boxShadow:'0 20px 60px rgba(0,0,0,0.6)',maxHeight:'82vh',display:'flex',flexDirection:'column'}}>
+    <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+      <input autoFocus value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Search games, modules, tools…" style={{flex:1,background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'10px',color:'#eaf4fb',fontSize:'1rem',padding:'12px 14px',outline:'none'}}/>
+      <button onClick={()=>setSearchOpen(false)} style={{background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',borderRadius:'10px',padding:'12px 14px',fontWeight:700,cursor:'pointer'}}>Close</button>
+    </div>
+    <div style={{marginTop:'10px',overflowY:'auto'}}>
+      {searchResults.length===0&&<div style={{color:'#7c8ea0',padding:'18px',textAlign:'center'}}>No matches for "{searchQ}"</div>}
+      {searchResults.map((r,i)=><button key={i} onClick={()=>runSearch(r)} style={{display:'flex',flexDirection:'column',alignItems:'flex-start',gap:'2px',width:'100%',textAlign:'left',background:'#0f1822',border:'1px solid #1e2c3c',borderRadius:'10px',padding:'11px 14px',marginBottom:'7px',cursor:'pointer'}}>
+        <span style={{fontWeight:700,color:'#eaf4fb'}}>{r.label}</span>
+        <span style={{color:'#6b8299',fontSize:'0.8rem'}}>{r.sub}</span>
+      </button>)}
+    </div>
+  </div>
+</div>}
 {screen!=='home'&&screen!=='sessions'&&screen!=='playerDisplay'&&<button onClick={()=>go('sessions')} style={{position:'fixed',bottom:'10px',left:'12px',zIndex:9999,background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'0.8rem',fontWeight:700,padding:'9px 15px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>📋 Session Builder</button>}
   <header className="hero">
   <div className="heroNav">
@@ -13795,6 +13857,7 @@ return <div>
     <button className="homeBtn" onClick={()=>go('home')}>HOME</button>
     <button className="homeBtn navPlayerBtn" onClick={()=>go('playerDisplay')}>PLAYER DISPLAY</button>
     <button className="homeBtn navCompBtn" onClick={()=>go('competition')}>COMPETITION</button>
+    <button className="homeBtn" onClick={()=>setSearchOpen(true)} aria-label="Search" style={{fontWeight:700}}>🔍 SEARCH</button>
   </div>
   <div><div className="eyebrow">CHECKERBOARD COACH</div><h1>Checkerboard Squash™ {APP_VERSION.split(' ')[0]}</h1><p>Sessions · Games · Players · Competition</p></div>
 </header>
