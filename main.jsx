@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v189 serve QE protocol + tramline return';
+const APP_VERSION='v190 S&L undo + brighter bigger board';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -7420,7 +7420,7 @@ function slSerpentine(size,cols){
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
 function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
-  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
+  const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
@@ -7432,13 +7432,18 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
   const [events,setEvents]=useState([]);
   const [streak,setStreak]=useState({holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
+  const [undoStack,setUndoStack]=useState([]);
+
+  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses)};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
-  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});}
+  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot){
     if(winner!=null||queue.length<2)return;
+    setUndoStack(prev=>[...prev.slice(-29),slSnapshot()]);
     const A=queue[0],B=queue[1];
     const wIdx=slot===0?A:B, lIdx=slot===0?B:A;
     const next=roster.map(p=>({...p}));
@@ -7477,6 +7482,15 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
   },[project,roster,board,queue,winner,revealed,courtLabel]);
 
   return <div className="slCourt">
+    <style>{`
+.slBoard .slCell{background:#1a2942 !important;border:1.5px solid #3a5a8c !important;}
+.slBoard .slCell.slLadder{background:#12592f !important;border-color:#38d074 !important;}
+.slBoard .slCell.slSnake{background:#5e1633 !important;border-color:#ff5fa2 !important;}
+.slBoard .slCell.slFinish{background:#5f4d0f !important;border-color:#ffd400 !important;}
+.slBoard .slNum{font-size:1.8rem !important;font-weight:800 !important;color:#f2f7ff !important;line-height:1.05 !important;}
+.slBoard .slTok{font-size:1.35rem !important;min-width:2.1rem !important;height:2.1rem !important;line-height:2.1rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slBoard .slMark{font-size:1rem !important;}
+`}</style>
     {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
     {winner==null&&queue.length>=2&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
@@ -7507,6 +7521,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
     </div>
 
     <div className="slControls">
+      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
       <button type="button" className="secondaryBtn" onClick={resetPositions}>New Game (same board)</button>
       <button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>
     </div>
