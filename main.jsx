@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v187 Serve & Return + Bucket Lob';
+const APP_VERSION='v189 serve QE protocol + tramline return';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13797,6 +13797,7 @@ const SR_TABS=[
 ];
 const SR_GAMES={
   serve:[
+    {id:'sv0',title:'Quiet Eye Serve',task:'Use Quiet Eye before striking. The serve must contact the side wall, then drop into the back of the court; the returner works to a marked back-court area.',scoring:'+1 side-wall contact · +1 ball bounces on the floor before the back wall · +3 ace · −1 if Quiet Eye is not visibly used before the strike.',bonus:'',buttons:[{who:'server',label:'Side wall +1',pts:1},{who:'server',label:'Floor bounce +1',pts:1},{who:'server',label:'Ace +3',pts:3},{who:'server',label:'No Quiet Eye −1',pts:-1}]},
     {id:'sv1',title:'Deep Serve Challenge',task:'Serve must land beyond the service box.',scoring:'1 point for a successful serve.',bonus:'+1 if it forces a weak return.'},
     {id:'sv2',title:'Width Serve Challenge',task:'Force the returner to take the ball tight to the side wall.',scoring:'1 point.',bonus:'+1 for an off-balance return.'},
     {id:'sv3',title:'Jam Serve',task:'Serve into the body space to reduce the opponent’s swing freedom.',scoring:'1 point.',bonus:'+2 if the return is weak.'},
@@ -13804,6 +13805,7 @@ const SR_GAMES={
     {id:'sv5',title:'Deception Serve',task:'Use hold and disguise on the serve.',scoring:'1 point.',bonus:'+1 if the returner misreads.'},
   ],
   return:[
+    {id:'rt0',title:'Tramline Return',task:'Track the ball all the way and return into the same-side tramline; recover after.',scoring:'+1 return stays in the same-side tramline · +3 if volleyed · −1 no visible tracking of ball flight · −1 if the ball is let bounce and the player has to turn to retrieve.',bonus:'',buttons:[{who:'returner',label:'Tramline +1',pts:1},{who:'returner',label:'Volleyed +3',pts:3},{who:'returner',label:'No tracking −1',pts:-1},{who:'returner',label:'Bounce & turn −1',pts:-1}]},
     {id:'rt1',title:'Deep Return Only',task:'Return must reach the back quarter.',scoring:'1 point.',bonus:''},
     {id:'rt2',title:'Width Return Only',task:'Return must finish tight to the side wall.',scoring:'1 point.',bonus:''},
     {id:'rt3',title:'Return + Recover',task:'Return, then regain the T.',scoring:'1 point for a quality return.',bonus:'+1 if the T is recovered.'},
@@ -13872,7 +13874,7 @@ function SRStyles(){return <style>{`
 
 function ServeReturnModule({setScreen,setSession,embedded=false}){
   const [tab,setTab]=useState('serve');
-  const [sel,setSel]=useState('sv1');
+  const [sel,setSel]=useState('sv0');
   const [srv,setSrv]=useState(0);
   const [ret,setRet]=useState(0);
   const [phase,setPhase]=useState('Serve');
@@ -13941,12 +13943,12 @@ function ServeReturnModule({setScreen,setSession,embedded=false}){
           <div className="srSide">
             <h4>Server</h4>
             <div className="srNum" style={{color:'#7db8ff'}}>{srv}</div>
-            <div className="srBtnRow"><button type="button" className="srBtn good" onClick={()=>addSrv(1)}>+1</button><button type="button" className="srBtn good" onClick={()=>addSrv(2)}>+2</button><button type="button" className="srBtn good" onClick={()=>addSrv(3)}>+3</button></div>
+            <div className="srBtnRow">{(game&&game.buttons&&game.buttons.some(b=>b.who==='server')?game.buttons.filter(b=>b.who==='server'):[{label:'+1',pts:1},{label:'+2',pts:2},{label:'+3',pts:3}]).map((b,i)=><button key={i} type="button" className={'srBtn '+(b.pts<0?'ghost':'good')} onClick={()=>addSrv(b.pts)}>{b.label}</button>)}</div>
           </div>
           <div className="srSide">
             <h4>Returner</h4>
             <div className="srNum" style={{color:'#86efac'}}>{ret}</div>
-            <div className="srBtnRow"><button type="button" className="srBtn good" onClick={()=>addRet(1)}>+1</button><button type="button" className="srBtn good" onClick={()=>addRet(2)}>+2</button><button type="button" className="srBtn good" onClick={()=>addRet(3)}>+3</button></div>
+            <div className="srBtnRow">{(game&&game.buttons&&game.buttons.some(b=>b.who==='returner')?game.buttons.filter(b=>b.who==='returner'):[{label:'+1',pts:1},{label:'+2',pts:2},{label:'+3',pts:3}]).map((b,i)=><button key={i} type="button" className={'srBtn '+(b.pts<0?'ghost':'good')} onClick={()=>addRet(b.pts)}>{b.label}</button>)}</div>
           </div>
         </div>
         <div className="srBtnRow" style={{marginTop:'10px'}}>
@@ -14027,9 +14029,9 @@ function LobStyles(){return <style>{`
 `}</style>;}
 
 function LobModule({setScreen,setSession,embedded=false}){
-  const [count,setCount]=useState(5);
+  const [count,setCount]=useState(7);
   const [names,setNames]=useState(['P1','P2','P3','P4','P5','P6','P7']);
-  const [learner,setLearner]=useState(1); // index of current learner (start P2 per brief)
+  const [rot,setRot]=useState(0);
   const [attempts,setAttempts]=useState(0);
   const [scores,setScores]=useState({});
   const [side,setSide]=useState('right');
@@ -14038,31 +14040,38 @@ function LobModule({setScreen,setSession,embedded=false}){
   const TARGET=20;
 
   const roster=names.slice(0,count);
-  const guards=Math.max(1,count-3);
-  const curName=roster[learner%count]||('P'+((learner%count)+1));
+  const shortLine=Math.max(0,count-4); // standing guards on the short line
+  // role cycle (anticlockwise): 0 Learner · 1..shortLine Short line · then Bucket sit · Collector · Feeder
+  function playerAtPos(p){return roster[(((p-rot)%count)+count)%count];}
+  const learnerName=playerAtPos(0);
+  const shortLineNames=Array.from({length:shortLine},(_,i)=>playerAtPos(1+i));
+  const bucketSitName=playerAtPos(shortLine+1);
+  const collectorName=playerAtPos(shortLine+2);
+  const feederName=playerAtPos(shortLine+3);
+  const curName=learnerName;
   const curScore=scores[curName]||0;
   const done=attempts>=TARGET;
 
-  function pushUndo(){setUndo(p=>[...p.slice(-29),{attempts,scores:{...scores},learner,side}]);}
+  function pushUndo(){setUndo(p=>[...p.slice(-29),{attempts,scores:{...scores},rot,side}]);}
   function record(pts){if(done)return;pushUndo();setScores(s=>({...s,[curName]:(s[curName]||0)+pts}));setAttempts(a=>a+1);}
-  function doUndo(){setUndo(p=>{if(!p.length)return p;const s=p[p.length-1];setAttempts(s.attempts);setScores(s.scores);setLearner(s.learner);setSide(s.side);return p.slice(0,-1);});}
-  function nextLearner(){pushUndo();setLearner(l=>(l+1)%count);setAttempts(0);} // anticlockwise rotation
+  function doUndo(){setUndo(p=>{if(!p.length)return p;const s=p[p.length-1];setAttempts(s.attempts);setScores(s.scores);setRot(s.rot);setSide(s.side);return p.slice(0,-1);});}
+  function rotate(){pushUndo();setRot(r=>(r+1)%count);setAttempts(0);} // everyone moves one spot anticlockwise
   function flipSide(){pushUndo();setSide(s=>s==='right'?'left':'right');setAttempts(0);}
 
   const leaderboard=roster.map(n=>({name:n,score:scores[n]||0})).sort((a,b)=>b.score-a.score);
-  const objective='Play a high cross-court lob over the guards so it drops into the back-corner bucket.';
+  const objective='Play a high cross-court lob over the short-line guards so it drops into the back-corner bucket.';
 
   useEffect(()=>{
     if(!projecting)return;
-    writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});
-  },[projecting,learner,attempts,scores,side]);
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,feeder:feederName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});
+  },[projecting,rot,attempts,scores,side]);
 
-  function pushPV(){setProjecting(true);writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});}
+  function pushPV(){setProjecting(true);writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,feeder:feederName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});}
   function openPV(){try{window.open(buildLivePlayerViewUrl(),'_blank');}catch{}}
 
   function addToSession(){
     if(!setSession)return;
-    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Bucket Lob — high cross lob',category:'Shots',format:'4–7 players · one court',duration:15,task:objective+' Feeder drops medium-high to the side; guards (positioned by height) block from fixed positions using the racquet only; a ball-gatherer feeds the feeder.',scoring:'5 points if the ball lands in the bucket, −1 for every guard interception. 20 lobs each, rotate anticlockwise, repeat on the opposite side.',rationale:'No technical instruction. The guard wall (height-set) is the constraint that forces the lob shape — high enough to clear the guards, deep enough to die in the bucket: a representative copy of lobbing over an opponent’s volley into the back corner.',coach:'Analogy not instruction: scoop sand with a spade and throw it back over your non-playing shoulder. Raise or lower guards to demand a higher or flatter trajectory.',playerFocus:'Clear the wall, drop in the bucket.',layers:[],rld:4}));
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Bucket Lob — high cross lob',category:'Shots',format:'4–7 players · one court',duration:15,task:objective+' Feeder drops medium-high to the side; standing guards hold the short line (positioned by height) and a seated guard sits in front of the bucket; a collector feeds the feeder. Guards are fixed — racquet only.',scoring:'5 points if the ball lands in the bucket, −1 for every guard interception. 20 lobs each, then rotate anticlockwise; repeat on the opposite side.',rationale:'No technical instruction. The standing short-line guards (height-set) force the lob shape — high enough to clear them, deep enough to die in the bucket — a representative copy of lobbing over an opponent’s volley into the back corner. The bucket guard sits so the target stays reachable.',coach:'Analogy not instruction: scoop sand with a spade and throw it back over your non-playing shoulder. Raise or lower the standing guards to demand a higher or flatter trajectory.',playerFocus:'Clear the wall, drop in the bucket.',layers:[],rld:4}));
   }
 
   return <div className={embedded?'':'page'}>
@@ -14076,9 +14085,16 @@ function LobModule({setScreen,setSession,embedded=false}){
 
       <div className="lobChips">
         <span className="lobChip">Players: {count}</span>
-        <span className="lobChip">Guards: {guards}</span>
+        <span className="lobChip">Short-line guards: {shortLine}</span>
         <span className="lobChip">Feed side: {side==='right'?'Right [7]':'Left'}</span>
         <span className="lobChip">Bucket: back corner [8]</span>
+      </div>
+      <div className="lobChips" style={{marginTop:'4px'}}>
+        <span className="lobChip" style={{background:'#3a2f10',borderColor:'#7a6322',color:'#ffd479'}}>🎯 Learner: {learnerName}</span>
+        {shortLineNames.length>0&&<span className="lobChip">🧱 Short line: {shortLineNames.join(' · ')}</span>}
+        <span className="lobChip">🪑 Bucket (sitting): {bucketSitName}</span>
+        <span className="lobChip">🧺 Collector: {collectorName}</span>
+        <span className="lobChip">🎾 Feeder: {feederName}</span>
       </div>
       <div className="lobBtnRow">
         <span className="lobMuted" style={{alignSelf:'center'}}>Court size:</span>
@@ -14097,7 +14113,7 @@ function LobModule({setScreen,setSession,embedded=false}){
           </div>
           <div className="lobBtnRow">
             <button type="button" className="lobBtn ghost" onClick={doUndo} disabled={!undo.length}>Undo</button>
-            <button type="button" className="lobBtn" onClick={nextLearner}>Next learner (anticlockwise) →</button>
+            <button type="button" className="lobBtn" onClick={rotate}>Rotate (anticlockwise) →</button>
             <button type="button" className="lobBtn ghost" onClick={flipSide}>Switch to {side==='right'?'left':'right'} side</button>
           </div>
           <div className="lobBtnRow">
@@ -14109,15 +14125,15 @@ function LobModule({setScreen,setSession,embedded=false}){
         <div className="lobSide">
           <h4 style={{margin:'0 0 8px',color:'#eaf4fb'}}>Scoreboard</h4>
           {leaderboard.map((p,i)=><div key={p.name} className={'lobRow'+(p.name===curName?' on':'')}><b>{i===0&&p.score>0?'👑 ':''}{p.name}</b><span>{p.score}</span></div>)}
-          <p className="lobMuted" style={{marginTop:'10px'}}>Roles: feeder drops medium-high to the side; {guards} guard{guards>1?'s':''} block from fixed positions (racquet only, no moving); one player gathers balls for the feeder. Everyone takes 20 lobs, then rotate.</p>
+          <p className="lobMuted" style={{marginTop:'10px'}}>Feeder drops medium-high to the {side} side. {shortLine} guard{shortLine===1?'':'s'} stand on the short line; the bucket guard <strong>sits</strong> in front of the bucket — if they stand, scoring is impossible. Guards are fixed (racquet only, no moving). One player collects balls for the feeder. After 20 lobs everyone rotates one spot anticlockwise.</p>
         </div>
       </div>
 
       <CollapsibleLayer num="1" title="Game Logic" subtitle="How it runs" color="green" defaultOpen={false}>
-        <p>Feeder plays a medium-high drop to the {side} side. The learner plays one high cross-court lob aiming for the back-corner bucket. Guards stand in a line along the service box and at the bucket; they may not move from their spots and may only use the racquet to touch the ball. Each learner gets 20 lobs, then players rotate anticlockwise and the activity repeats on the opposite side.</p>
+        <p>The feeder plays a medium-high drop to the {side} side. The learner plays one high cross-court lob aiming for the back-corner bucket. Standing guards hold the short line and may not move (racquet only); the bucket guard <strong>sits</strong> in front of the bucket so the ball can still drop in. Each learner gets 20 lobs, then everyone rotates one spot anticlockwise — learner to the short line, short line on to the bucket seat, bucket guard to collecting, collector to feeding, feeder becomes the new learner. Repeat on the opposite side.</p>
       </CollapsibleLayer>
       <CollapsibleLayer num="2" title="Constraints" subtitle="The guard wall shapes the shot" color="blue" defaultOpen={false}>
-        <p>Position and restrict the guards <strong>by height</strong> so a successful lob has the trajectory you want. Guards with racquets up raise the barrier and demand a higher lob; lower or spread guards change the window. Guards are fixed — they cannot move, only reach. This is the whole teaching mechanism: the lob shape is forced by the barrier, not by a coaching cue.</p>
+        <p>Position and restrict the <strong>standing short-line guards by height</strong> so a successful lob has the trajectory you want — racquets up raises the barrier and demands a higher lob; lower or spread guards change the window. The <strong>bucket guard must sit</strong>: a standing guard there makes the bucket unreachable, so seating them is what keeps the target live. Guards are fixed — they cannot move, only reach. The lob shape is forced by the barrier, not by a coaching cue.</p>
       </CollapsibleLayer>
       <CollapsibleLayer num="3" title="Scoring Logic" subtitle="Fully observable" color="gold" defaultOpen={false}>
         <p><strong>+5</strong> if the ball lands in the bucket. <strong>−1</strong> for every guard interception. Short or out = 0. No coach judgement required — the bucket and the guards decide. 20 lobs each; highest total after both sides wins.</p>
