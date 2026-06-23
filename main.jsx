@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v185 search button';
+const APP_VERSION='v186 search indexes games + overlays';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13726,7 +13726,7 @@ function SoloPracticeModule({setScreen}){
 }
 
 
-const SEARCH_INDEX=[
+const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
@@ -13763,6 +13763,27 @@ const SEARCH_INDEX=[
   {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
 ];
 
+function buildSearchIndex(){
+  const idx=[...SEARCH_DESTINATIONS];
+  const pushGames=(arr,sub,nav)=>{try{(arr||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub,kw:(g.title+' '+(g.purpose||g.quick||g.objective||g.task||'')),...nav});});}catch{}};
+  pushGames(typeof DB_GAMES!=='undefined'&&DB_GAMES,'Double Bounce Suite',{screen:'games',classId:'doubleBounce'});
+  pushGames(typeof TINWAR_GAMES!=='undefined'&&TINWAR_GAMES,'Tin War',{screen:'games',classId:'tinwar'});
+  pushGames(typeof BTS_GAMES!=='undefined'&&BTS_GAMES,'Blind Target Score',{screen:'blindTargetScore'});
+  pushGames(typeof TACTICAL_INTENTION_GAMES!=='undefined'&&TACTICAL_INTENTION_GAMES,'Tactical Intentions',{screen:'tacticalIntentions'});
+  pushGames(typeof PATTERN_LAB_READY_GAMES!=='undefined'&&PATTERN_LAB_READY_GAMES,'Pattern Lab',{screen:'tacticalIntentions'});
+  pushGames(typeof TP_GAMES!=='undefined'&&TP_GAMES,'Tactical Pressure',{screen:'games',classId:'tacticalpressure'});
+  pushGames(typeof DISRUPTION_ROTATIONS!=='undefined'&&DISRUPTION_ROTATIONS,'Disruption Rotations',{screen:'games',classId:'rotations'});
+  try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games'});});}catch{}
+  const pushOv=(arr,fam)=>{try{(arr||[]).forEach(o=>{if(o&&o.title)idx.push({label:o.title,sub:'Modifier Engine · '+fam,kw:o.title+' '+(o.rule||'')+' '+(o.category||''),screen:'technical'});});}catch{}};
+  pushOv(typeof TECHNICAL_OVERLAYS!=='undefined'&&TECHNICAL_OVERLAYS,'Technical');
+  pushOv(typeof TACTICAL_OVERLAYS!=='undefined'&&TACTICAL_OVERLAYS,'Tactical');
+  pushOv(typeof UNIVERSAL_MENTAL_OVERLAYS!=='undefined'&&UNIVERSAL_MENTAL_OVERLAYS,'Mental');
+  pushOv(typeof DIVERSITY_OVERLAYS!=='undefined'&&DIVERSITY_OVERLAYS,'Diversity');
+  const seen=new Set();const out=[];
+  idx.forEach(it=>{const k=it.label+'|'+(it.screen||'')+'|'+(it.classId||'');if(!seen.has(k)){seen.add(k);out.push(it);}});
+  return out;
+}
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -13790,7 +13811,8 @@ useEffect(()=>{
 const[backStack,setBackStack]=useState([]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
-const searchResults=useMemo(()=>{const q=searchQ.trim().toLowerCase();if(!q)return SEARCH_INDEX;return SEARCH_INDEX.filter(it=>(it.label+' '+(it.sub||'')+' '+(it.kw||'')).toLowerCase().includes(q));},[searchQ]);
+const searchAll=useMemo(()=>buildSearchIndex(),[]);
+const searchResults=useMemo(()=>{const q=searchQ.trim().toLowerCase();if(!q)return searchAll.slice(0,40);const tokens=q.split(/\s+/).filter(Boolean);return searchAll.filter(it=>{const hay=(it.label+' '+(it.sub||'')+' '+(it.kw||'')).toLowerCase();return tokens.every(t=>hay.includes(t));}).slice(0,80);},[searchQ,searchAll]);
 function go(next){
   if(!next||next===screen) return;
   setBackStack(prev=>[...prev,screen].slice(-30));
