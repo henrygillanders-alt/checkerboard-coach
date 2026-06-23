@@ -12,7 +12,13 @@ const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
 function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
 function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
+function getCourtModeFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('court');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function courtRoomId(base,n){return `${base}__court${n}`;}
+function courtStandingsRoomId(base){return `${base}__standings`;}
+function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
 function getPersistentLiveRoomId(){
+  const cm=getCourtModeFromUrl();
+  if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
   try{
     let room=localStorage.getItem(LIVE_ROOM_KEY);
     if(!room){room=makeLiveRoomId();localStorage.setItem(LIVE_ROOM_KEY,room);}
@@ -71,7 +77,7 @@ async function readLivePlayerRoom(roomId){
       headers:supabaseRestHeaders()
     });
     if(!res.ok){console.warn('Live sync read failed',res.status,await res.text().catch(()=>''));return null;}
-    const rows=await res.json();
+const APP_VERSION='v191 Court Monitor — King of Courts';
     return rows?.[0]||null;
   }catch(err){console.warn('Live sync read failed',err);return null;}
 }
@@ -3324,6 +3330,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('serveReturn')}><h2>Serve &amp; Return</h2><span className="homeTileSubtitle">Create · Disrupt · Exploit</span></button>
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('bucketLob')}><h2>Bucket Lob</h2><span className="homeTileSubtitle">Lob — no instruction</span></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
@@ -7545,7 +7552,7 @@ function SnakesLaddersGame({setSession}={}){
   function setBonusSquares(i,v){setSettings(s=>({...s,bonuses:(s.bonuses||[]).map((b,j)=>j===i?{...b,squares:Number(v)||0}:b)}));}
   const [showSettings,setShowSettings]=useState(false);
   const [showRationale,setShowRationale]=useState(false);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
   async function copySLPlayerLink(){
     setProjecting(true);
@@ -7832,7 +7839,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const [stealFrom,setStealFrom]=useState(null);
   const [log,setLog]=useState([]);
   const [undoStack,setUndoStack]=useState([]);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
 
   const namesKey=names.join('|');
   useEffect(()=>{
@@ -8196,7 +8203,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [summit,setSummit]=useState(null);
   const [log,setLog]=useState([]);
   const [undoStack,setUndoStack]=useState([]);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
 
   const namesKey=names.join('|');
   useEffect(()=>{
@@ -8579,7 +8586,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
   const [predatorBonus,setPredatorBonus]=useState(false);
   const [log,setLog]=useState([]);
   const [undoStack,setUndoStack]=useState([]);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [battle,setBattle]=useState(false);
   const [courtCount,setCourtCount]=useState(3);
   const [battleTarget,setBattleTarget]=useState(10);
@@ -13753,6 +13760,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Blind Target Score',sub:'Poker psychology · Raise & Fold',kw:'poker blind target raise fold bluff pressure',screen:'blindTargetScore'},
   {label:'Serve & Return',sub:'Serve · return · first 3 shots · read & react',kw:'serve return first three shots third ball read react quiet eye split step deep width jam deception',screen:'serveReturn'},
   {label:'Bucket Lob',sub:'Learn the lob with no instruction',kw:'lob bucket guards high cross lob defensive trajectory back corner',screen:'bucketLob'},
+  {label:'Court Monitor',sub:'King of Courts — live multi-court leaderboard',kw:'court monitor multi court king of courts live leaderboard dashboard six courts engagement',screen:'courtMonitor'},
   {label:'PEAK WEEK',sub:'Competition taper plan',kw:'peak week taper prep competition routine',screen:'peakWeek'},
   {label:'Tactical Intentions',sub:'Intention-led play',kw:'tactical intentions intent',screen:'tacticalIntentions'},
   {label:'Pressure',sub:'Pressure module',kw:'pressure index tactical pressure',screen:'pressure'},
@@ -13894,7 +13902,7 @@ function ServeReturnModule({setScreen,setSession,embedded=false}){
   const [ret,setRet]=useState(0);
   const [phase,setPhase]=useState('Serve');
   const [undo,setUndo]=useState([]);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [srvDb,setSrvDb]=useState('Unlimited');
   const [retDb,setRetDb]=useState('Unlimited');
 
@@ -14051,7 +14059,7 @@ function LobModule({setScreen,setSession,embedded=false}){
   const [scores,setScores]=useState({});
   const [side,setSide]=useState('right');
   const [undo,setUndo]=useState([]);
-  const [projecting,setProjecting]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const TARGET=20;
 
   const roster=names.slice(0,count);
@@ -14173,6 +14181,148 @@ function LobPlayerDisplay({payload={}}){
   </div>;
 }
 
+/* ───────────────────── COURT MONITOR (King of Courts) ───────────────────── */
+function cmOrdinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+
+function normalizeCourtPayload(row){
+  if(!row||!row.payload)return null;
+  const p=row.payload,t=p.type;
+  const ageMs=row.updated_at?(Date.now()-new Date(row.updated_at).getTime()):(p.updatedAt?Date.now()-p.updatedAt:null);
+  const stale=ageMs!=null&&ageMs>20000;
+  let game='Live',headline='',target=null,pct=null,leaderName='',winnerName=p.winnerName||null,players=[];
+  if(t==='snakesladders'){
+    game='Snakes & Ladders';players=(p.players||[]).map(x=>({name:x.name,score:x.pos}));
+    const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
+    leaderName=lead?lead.name:'';target=p.size||50;headline=lead?('Square '+lead.score):'';pct=lead&&target?lead.score/target:null;
+    if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
+  }else if(t==='tinwar'){
+    game='Tin War';const ladder=p.ladder||[];const max=Math.max(1,ladder.length-1);
+    players=(p.players||[]).map(x=>({name:x.name,score:max-(x.peak??x.idx??max)}));
+    const lead=(p.players||[]).reduce((a,b)=>{const ai=a?(a.peak??a.idx??max):99;const bi=(b.peak??b.idx??max);return bi<ai?b:a;},null);
+    const li=lead?(lead.peak??lead.idx??max):max;leaderName=lead?lead.name:'';headline=ladder[li]?ladder[li].label:'';target='HIGH';pct=(max-li)/max;
+  }else if(t==='disruption'&&p.battle){
+    game='Court Battle';const cs=p.battle.courts||[];const best=cs.reduce((m,c)=>Math.max(m,c.best||0),0);
+    headline=best+' streak';target=p.battle.target;pct=p.battle.target?best/p.battle.target:null;
+  }else if(t==='servereturn'){game='Serve & Return';headline='S '+(p.serverPts||0)+' · R '+(p.returnerPts||0);}
+  else if(t==='bucketlob'){game='Bucket Lob';leaderName=p.learner||'';headline=(p.score||0)+' pts';}
+  else if(t==='doublebounce'){game='Double Bounce';}
+  else if(t==='blindtarget'){game='Blind Target';}
+  return {type:t,game,headline,target,pct:pct!=null?Math.max(0,Math.min(1,pct)):null,leaderName,winnerName,players,stale,ageMs};
+}
+
+function CMStyles(){return <style>{`
+.cmWrap{max-width:1100px;margin:0 auto;}
+.cmHero{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:16px;padding:18px 20px;margin-bottom:16px;text-align:center;}
+.cmHero .k{letter-spacing:0.14em;color:#7fc8a0;font-size:0.9rem;}
+.cmHero h2{margin:6px 0 2px;color:#eaf4fb;font-size:1.8rem;}
+.cmHero .lead{font-size:1.3rem;color:#ffd479;font-weight:800;margin-top:6px;}
+.cmRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.cmGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.cmCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:15px;}
+.cmCard.lead{border-color:#1d6b3f;background:#0d2417;}
+.cmCard.stale{opacity:0.5;}
+.cmCard .cnum{font-size:1.1rem;font-weight:800;color:#9cc4ec;}
+.cmCard .game{font-size:0.8rem;color:#6b8299;margin-top:2px;}
+.cmCard .head{font-size:2rem;font-weight:800;color:#eaf4fb;margin:8px 0 2px;}
+.cmCard .who{font-size:0.9rem;color:#86efac;}
+.cmBar{height:10px;border-radius:6px;background:#1a2740;overflow:hidden;margin-top:10px;}
+.cmBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#34e07a);}
+.cmRank{display:inline-block;background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:2px 10px;font-weight:800;font-size:0.8rem;}
+.cmWait{color:#6b8299;font-style:italic;margin-top:8px;}
+.cmLink{display:flex;gap:8px;align-items:center;margin-top:10px;}
+.cmLinkBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer;font-size:0.85rem;}
+.cmShareCard{background:#0b1320;border:1px dashed #2c4a6e;border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+.cmShareCard .ct{font-weight:800;color:#9cc4ec;}
+.cmShareCard code{display:block;color:#7c8ea0;font-size:0.72rem;word-break:break-all;margin-top:4px;}
+.cmCourtBanner{position:sticky;top:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#0d2a18,#102338);border-bottom:2px solid #1d6b3f;color:#eaf4fb;padding:9px 14px;text-align:center;font-weight:800;letter-spacing:0.03em;font-size:1.05rem;}
+`}</style>;}
+
+function CourtMonitor({setScreen}){
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
+  const [count,setCount]=useState(()=>{try{return Number(localStorage.getItem('cbCourtCount'))||3;}catch{return 3;}});
+  const [rooms,setRooms]=useState({});
+  const [copied,setCopied]=useState(null);
+  const [showLinks,setShowLinks]=useState(true);
+  useEffect(()=>{try{localStorage.setItem('cbCourtCount',String(count));}catch{}},[count]);
+
+  useEffect(()=>{
+    let cancelled=false;
+    async function load(){
+      const ns=Array.from({length:count},(_,i)=>i+1);
+      const out={};
+      await Promise.all(ns.map(async n=>{const row=await readLivePlayerRoom(courtRoomId(base,n));out[n]=normalizeCourtPayload(row);}));
+      if(cancelled)return;
+      setRooms(out);
+      const ranking=ns.map(n=>({court:n,pct:out[n]?out[n].pct:null,headline:out[n]?out[n].headline:'',leaderName:out[n]?out[n].leaderName:'',game:out[n]?out[n].game:null})).filter(r=>r.game).sort((a,b)=>((b.pct)||0)-((a.pct)||0));
+      writeLivePlayerRoom(courtStandingsRoomId(base),'standings',{type:'standings',count,ranking,updatedAt:Date.now()});
+    }
+    load();const id=setInterval(load,2500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[base,count]);
+
+  const ranked=Array.from({length:count},(_,i)=>i+1).map(n=>({n,d:rooms[n]})).sort((a,b)=>{const ap=a.d?.pct,bp=b.d?.pct;if(ap==null&&bp==null)return a.n-b.n;if(ap==null)return 1;if(bp==null)return -1;return bp-ap;});
+  const liveCourts=ranked.filter(r=>r.d&&r.d.game&&!r.d.stale);
+  const leader=liveCourts.length?ranked.find(r=>r.d&&r.d.game):null;
+  function copyLink(n){try{navigator.clipboard.writeText(buildCourtLink(n,base));setCopied(n);setTimeout(()=>setCopied(null),1500);}catch{}}
+
+  return <div className="page">
+    <CMStyles/>
+    <div className="pageTop"><div><h1>Court Monitor</h1><p className="mutedText">King of Courts — every court, one live leaderboard</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>
+    <div className="cmWrap">
+      <div className="cmHero">
+        <div className="k">KING OF COURTS</div>
+        <h2>{liveCourts.length} of {count} courts live</h2>
+        {leader&&leader.d&&leader.d.pct!=null?<div className="lead">👑 Court {leader.n} leading — {leader.d.headline}{leader.d.leaderName?(' ('+leader.d.leaderName+')'):''}</div>:<div className="cmWait">Waiting for courts to report…</div>}
+      </div>
+
+      <div className="cmRow">
+        <span className="mutedText">Courts:</span>
+        {[2,3,4,5,6].map(c=><button key={c} type="button" className={'lobBtn ghost'+(count===c?' bucket':'')} onClick={()=>setCount(c)} style={{borderRadius:'9px',padding:'8px 13px',fontWeight:700,cursor:'pointer',border:count===c?'1px solid #1d6b3f':'1px solid #2c3c4e',background:count===c?'#114d2c':'#0b1118',color:count===c?'#bff0d0':'#9fb0c2'}}>{c}</button>)}
+        <button type="button" className="cmLinkBtn" onClick={()=>setShowLinks(s=>!s)} style={{marginLeft:'auto'}}>{showLinks?'Hide':'Show'} court links</button>
+      </div>
+
+      {showLinks&&<div style={{marginBottom:'16px'}}>
+        <p className="mutedText" style={{marginTop:0}}>Send each court its own link. Open it on that court's device (phone or tablet), run any game, and it reports here automatically.</p>
+        {Array.from({length:count},(_,i)=>i+1).map(n=><div className="cmShareCard" key={n}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><span className="ct">Court {n}</span><button type="button" className="cmLinkBtn" onClick={()=>copyLink(n)}>{copied===n?'Copied ✓':'Copy link'}</button></div>
+          <code>{buildCourtLink(n,base)}</code>
+        </div>)}
+      </div>}
+
+      <div className="cmGrid">
+        {ranked.map(({n,d},i)=>{
+          const isLead=d&&d.game&&d.pct!=null&&i===0;
+          return <div key={n} className={'cmCard'+(isLead?' lead':'')+(d&&d.stale?' stale':'')}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline'}}>
+              <span className="cnum">{isLead?'👑 ':''}Court {n}</span>
+              {d&&d.game&&d.pct!=null&&<span className="cmRank">{cmOrdinal(i+1)}</span>}
+            </div>
+            {d&&d.game?<>
+              <div className="game">{d.game}{d.stale?' · paused':''}</div>
+              <div className="head">{d.headline||'—'}</div>
+              {d.leaderName&&<div className="who">{d.leaderName}</div>}
+              {d.pct!=null&&<div className="cmBar"><i style={{width:Math.round(d.pct*100)+'%'}}/></div>}
+            </>:<div className="cmWait">No device connected yet</div>}
+          </div>;
+        })}
+      </div>
+    </div>
+  </div>;
+}
+
+function CourtStandingBanner({host,court}){
+  const [rank,setRank]=useState(null),[total,setTotal]=useState(0),[leadCourt,setLeadCourt]=useState(null);
+  useEffect(()=>{
+    let c=false;
+    async function load(){const row=await readLivePlayerRoom(courtStandingsRoomId(host));if(c||!row||!row.payload)return;const r=row.payload.ranking||[];const idx=r.findIndex(x=>x.court===court);setRank(idx>=0?idx+1:null);setTotal(r.length);setLeadCourt(r[0]?r[0].court:null);}
+    load();const id=setInterval(load,3000);return ()=>{c=true;clearInterval(id);};
+  },[host,court]);
+  return <div className="cmCourtBanner">
+    <CMStyles/>
+    COURT {court}{rank?(' · '+cmOrdinal(rank)+' of '+total):''}{leadCourt?(leadCourt===court?' · 👑 leading!':(' · leader: Court '+leadCourt)):''}
+  </div>;
+}
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -14198,6 +14348,7 @@ useEffect(()=>{
   return ()=>{cancelled=true;clearInterval(id);};
 },[liveRoomParam]);
 const[backStack,setBackStack]=useState([]);
+const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -14265,6 +14416,7 @@ return <div>
 </div>}
 {screen!=='home'&&screen!=='sessions'&&screen!=='playerDisplay'&&<button onClick={()=>go('sessions')} style={{position:'fixed',bottom:'10px',left:'12px',zIndex:9999,background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'0.8rem',fontWeight:700,padding:'9px 15px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>📋 Session Builder</button>}
   <header className="hero">
+  {courtMode&&<CourtStandingBanner host={courtMode.host} court={courtMode.court}/>}
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
     <button className="homeBtn" onClick={()=>go('home')}>HOME</button>
@@ -14299,6 +14451,7 @@ return <div>
       {screen==='shots'&&<ShotsModule setScreen={go}/>}
       {screen==='serveReturn'&&<ServeReturnModule setScreen={go} setSession={setSession}/>}
       {screen==='bucketLob'&&<LobModule setScreen={go} setSession={setSession}/>}
+      {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
