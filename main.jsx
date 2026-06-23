@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v182 Court Battle mode';
+const APP_VERSION='v184 word cleanup + RLD assessment';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -1558,8 +1558,6 @@ function DoubleBounceTool({setScreen}){
   return <div className="page doubleBounceToolPage">
     <div className="pageTop">
       <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
-    <MentalOverlaySelector context="Double Bounce"/>
-
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
     <section className="doubleBounceHero">
@@ -2666,6 +2664,19 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
 }
 function RLDScreen({setScreen}){
   const [activeSection,setActiveSection]=useState('rld');
+  const RPAT_DIMS=[
+    {id:'coupling',label:'Information–movement coupling',q:'Is the player acting on the same perceptual information (a live opponent, real ball flight) that is available in a match — rather than a fed, predictable feed?'},
+    {id:'fidelity',label:'Perception–action fidelity',q:'Are the actions the same as competition — the same shots, footwork and recovery — performed at match-like speed and quality?'},
+    {id:'decision',label:'Decision / affordance demand',q:'Does the task require the player to read the picture and choose, rather than repeat a pre-known answer?'},
+    {id:'constraints',label:'Representative constraints',q:'Do the constraints — opponent, space, scoring, time, pressure — mirror what shapes behaviour in a real match?'},
+    {id:'effort',label:'Effort & emotional fidelity',q:'Does it carry match-like physical load and emotional stakes (consequence, scoreboard, pressure)?'},
+    {id:'transfer',label:'Transfer intent',q:'Is it clear how this specific task transfers to match-play, and is that link strong?'},
+  ];
+  const [rpat,setRpat]=useState(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;});
+  const rpatTotal=RPAT_DIMS.reduce((s,d)=>s+(rpat[d.id]||0),0);
+  const rpatMax=RPAT_DIMS.length*5;
+  const rpatMin=RPAT_DIMS.length;
+  const rpatLevel=Math.max(0,Math.min(6,Math.round(((rpatTotal-rpatMin)/(rpatMax-rpatMin))*6)));
 
   const rldExamples={
     0:{
@@ -2719,7 +2730,7 @@ function RLDScreen({setScreen}){
     </div>
 
     <div className="rldSectionNav">
-      {[{id:'rld',label:'RLD Scale',emoji:'📊'},{id:'cpf',label:'Challenge Point',emoji:'🎯'},{id:'together',label:'Using Together',emoji:'🔗'}].map(s=>
+      {[{id:'rld',label:'RLD Scale',emoji:'📊'},{id:'cpf',label:'Challenge Point',emoji:'🎯'},{id:'together',label:'Using Together',emoji:'🔗'},{id:'assess',label:'Assess an Activity',emoji:'📝'}].map(s=>
         <button key={s.id} type="button"
           className={activeSection===s.id?'rldNavActive':'rldNavBtn'}
           onClick={()=>setActiveSection(s.id)}>
@@ -2727,6 +2738,29 @@ function RLDScreen({setScreen}){
         </button>
       )}
     </div>
+
+    {/* ── ASSESS AN ACTIVITY (RPAT-style) ── */}
+    {activeSection==='assess'&&<div>
+      <div className="rldHero">
+        <h2>Assess an Activity's RLD</h2>
+        <p>A quick coach self-assessment in the spirit of the <strong>Representative Practice Assessment Tool (RPAT)</strong> (Krause, Farrow et al., 2018). Rate the activity on each dimension and the module returns an RLD level. For the validated tennis instrument, see the original paper.</p>
+        <div className="rldHeroPrinciple">"How much does this look and feel like real squash?"</div>
+      </div>
+      {RPAT_DIMS.map(d=><div key={d.id} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'12px',padding:'14px 16px',marginBottom:'10px',display:'flex',flexDirection:'column',gap:'8px'}}>
+        <strong style={{color:'#eaf4fb'}}>{d.label}</strong>
+        <p className="mutedText" style={{margin:0,lineHeight:1.4}}>{d.q}</p>
+        <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>{[1,2,3,4,5].map(v=><button key={v} type="button" onClick={()=>setRpat(p=>({...p,[d.id]:v}))} style={{width:'46px',height:'42px',borderRadius:'9px',fontWeight:700,cursor:'pointer',border:rpat[d.id]===v?'1px solid #2E6E8E':'1px solid #2c3c4e',background:rpat[d.id]===v?'#16466a':'#0b1118',color:rpat[d.id]===v?'#eaf4fb':'#9fb0c2'}}>{v}</button>)}</div>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#7c8ea0'}}><span>1 · isolated / fed</span><span>5 · match-like</span></div>
+      </div>)}
+      <div style={{background:'#0b1f14',border:'1px solid #1d3a28',borderRadius:'14px',padding:'18px',display:'flex',flexDirection:'column',gap:'12px',marginTop:'6px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
+          <RLDBadge level={rpatLevel} size="lg"/>
+          <div><div style={{fontSize:'0.8rem',color:'#7c8ea0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Assessed level · score {rpatTotal} / {rpatMax}</div><div style={{fontSize:'1.4rem',fontWeight:800,color:'#86efac'}}>RLD {rpatLevel}</div></div>
+        </div>
+        <p style={{margin:0,lineHeight:1.45,color:'#d7e4c4'}}>{rpatLevel<=1?'Largely isolated — useful for calibration or grooving a pattern, but plan a clear route back into representative play.':rpatLevel<=3?'Partly representative — add live opponent interaction, real decisions or match-like consequence to climb the scale.':rpatLevel<=5?'Strongly representative — close to competition. Use the Challenge Point Framework to tune the difficulty for each player.':'Match Play — full representativeness. The real test of transfer.'}</p>
+        <button type="button" className="secondaryBtn" onClick={()=>setRpat(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;})} style={{alignSelf:'flex-start'}}>Reset ratings</button>
+      </div>
+    </div>}
 
     {/* ── RLD SCALE ── */}
     {activeSection==='rld'&&<div>
@@ -8436,7 +8470,7 @@ const DISRUPTION_COMBO_PALETTE=['Boast','Drive','Straight drop','Crosscourt lob'
 const DISRUPTION_ROTATIONS=[
   {id:'dr1',title:'Racquet Change',tag:'Equipment',type:'racquet',
    shots:['P1 Boast → T → change racquet','P2 Drive → T → change racquet','P3 Boast → T → change racquet'],
-   setup:'3 players. Each player has up to 5 racquets. The front player’s spares sit in front of the T; the back players’ spares sit behind the T.',
+   setup:'3 players, 5 racquets on court in total — one in each player’s hand, one spare in front of the T (for the front player) and one spare behind the T (for the back players). After hitting, a player swaps to a spare as they pass through the T.',
    sequence:'Continuous boast / drive rotation. After hitting, each player passes through the T and swaps racquet before their next turn.',
    objective:'Stay organised — keep the rotation flowing while the tool in your hand keeps changing.',
    constraints:'Must change racquet through the T every cycle. Racquet count adjustable 1–10.',
@@ -8651,13 +8685,14 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
     </div>
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={false}>
-      <p>The rotation runs continuously. A shot is valid if it keeps the pattern alive under the live constraint and any active disruption (chaos / coach call / predator break). Advance the shot as each player completes their turn; a full pass through the sequence is one cycle.</p>
+      <p>A shot counts if it keeps the rotation going and obeys the live constraint, chaos call or predator break. One full lap of the sequence = one cycle. Tap Next shot as each player completes their turn.</p>
     </CollapsibleLayer>
     <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={false}>
       <p>{rot.constraints} Layer chaos modifiers, a coach call or a predator on top to problematise the pattern without rewriting the game.</p>
     </CollapsibleLayer>
     <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={false}>
       <p>Complete a full cycle = 1 point. {target} cycles wins. Use the optional rules below.</p>
+      <p className="mutedText" style={{fontSize:'0.85rem'}}>Two ways to run it: <strong>cooperative</strong> — the group (or each court) strings cycles together as a team challenge; <strong>competitive</strong> — run with tramlines, a shot outside the line loses the point, loser out.</p>
       <div className="drScoreOpts">
         <label><input type="checkbox" checked={errorResets} onChange={()=>setErrorResets(!errorResets)}/> Error resets the current cycle</label>
         <label><input type="checkbox" checked={cleanBonus} onChange={()=>setCleanBonus(!cleanBonus)}/> Clean completion bonus +2</label>
