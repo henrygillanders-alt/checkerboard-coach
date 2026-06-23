@@ -77,7 +77,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v186 search indexes games + overlays';
+const APP_VERSION='v187 Serve & Return + Bucket Lob';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3322,6 +3322,8 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('serveReturn')}><h2>Serve &amp; Return</h2><span className="homeTileSubtitle">Create · Disrupt · Exploit</span></button>
+      <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('bucketLob')}><h2>Bucket Lob</h2><span className="homeTileSubtitle">Lob — no instruction</span></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
@@ -13734,6 +13736,8 @@ const SEARCH_DESTINATIONS=[
   {label:'Competition',sub:'King of court & formats',kw:'competition king court tournament invasion',screen:'competition'},
   {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level',screen:'rld'},
   {label:'Blind Target Score',sub:'Poker psychology · Raise & Fold',kw:'poker blind target raise fold bluff pressure',screen:'blindTargetScore'},
+  {label:'Serve & Return',sub:'Serve · return · first 3 shots · read & react',kw:'serve return first three shots third ball read react quiet eye split step deep width jam deception',screen:'serveReturn'},
+  {label:'Bucket Lob',sub:'Learn the lob with no instruction',kw:'lob bucket guards high cross lob defensive trajectory back corner',screen:'bucketLob'},
   {label:'PEAK WEEK',sub:'Competition taper plan',kw:'peak week taper prep competition routine',screen:'peakWeek'},
   {label:'Tactical Intentions',sub:'Intention-led play',kw:'tactical intentions intent',screen:'tacticalIntentions'},
   {label:'Pressure',sub:'Pressure module',kw:'pressure index tactical pressure',screen:'pressure'},
@@ -13782,6 +13786,360 @@ function buildSearchIndex(){
   const seen=new Set();const out=[];
   idx.forEach(it=>{const k=it.label+'|'+(it.screen||'')+'|'+(it.classId||'');if(!seen.has(k)){seen.add(k);out.push(it);}});
   return out;
+}
+
+/* ───────────────────────── SERVE & RETURN™ ───────────────────────── */
+const SR_TABS=[
+  {id:'serve',label:'Serve Quality',blurb:'Serve = affordance creation. Build functional length, width, variation, disguise and pressure tolerance.'},
+  {id:'return',label:'Return Quality',blurb:'Return = affordance disruption. Neutralise the serve under pressure.'},
+  {id:'first3',label:'First 3 Shots',blurb:'Serve · return · third ball — the most decisive phase of the rally. Third ball = affordance exploitation.'},
+  {id:'read',label:'Read & React',blurb:'Perceptual tab — Second Eye, Quiet Eye, Tau and early information pickup.'},
+];
+const SR_GAMES={
+  serve:[
+    {id:'sv1',title:'Deep Serve Challenge',task:'Serve must land beyond the service box.',scoring:'1 point for a successful serve.',bonus:'+1 if it forces a weak return.'},
+    {id:'sv2',title:'Width Serve Challenge',task:'Force the returner to take the ball tight to the side wall.',scoring:'1 point.',bonus:'+1 for an off-balance return.'},
+    {id:'sv3',title:'Jam Serve',task:'Serve into the body space to reduce the opponent’s swing freedom.',scoring:'1 point.',bonus:'+2 if the return is weak.'},
+    {id:'sv4',title:'Back Wall Serve',task:'Serve must hit the back wall before the floor — an extreme length challenge.',scoring:'2 points.',bonus:''},
+    {id:'sv5',title:'Deception Serve',task:'Use hold and disguise on the serve.',scoring:'1 point.',bonus:'+1 if the returner misreads.'},
+  ],
+  return:[
+    {id:'rt1',title:'Deep Return Only',task:'Return must reach the back quarter.',scoring:'1 point.',bonus:''},
+    {id:'rt2',title:'Width Return Only',task:'Return must finish tight to the side wall.',scoring:'1 point.',bonus:''},
+    {id:'rt3',title:'Return + Recover',task:'Return, then regain the T.',scoring:'1 point for a quality return.',bonus:'+1 if the T is recovered.'},
+    {id:'rt4',title:'Weak Side Return',task:'Return targets the opponent’s weak side.',scoring:'1 point.',bonus:''},
+    {id:'rt5',title:'Pressure Return',task:'Server may attack the third ball; the returner must survive.',scoring:'2 points if the rally is neutralised.',bonus:''},
+  ],
+  first3:[
+    {id:'f1',title:'Third Ball Attack',task:'Server must attack the third shot.',scoring:'1 point.',bonus:'+2 for a winner.'},
+    {id:'f2',title:'Third Ball Width',task:'Server must create width on the third ball.',scoring:'1 point.',bonus:''},
+    {id:'f3',title:'Third Ball Hold',task:'Server must hold before attacking.',scoring:'1 point.',bonus:'+1 if the opponent is wrong-footed.'},
+    {id:'f4',title:'Returner Neutralise',task:'Returner must prevent the third-ball attack.',scoring:'2 points.',bonus:''},
+    {id:'f5',title:'First 3 Winner',task:'Rally ends after the third shot — high pressure.',scoring:'Winner of the exchange = 1 point.',bonus:''},
+  ],
+  read:[
+    {id:'rr1',title:'Move Before Front Wall',task:'Returner must initiate movement before the serve contacts the front wall.',scoring:'1 point.',bonus:''},
+    {id:'rr2',title:'Read Body Cue',task:'Returner calls the serve side before the bounce.',scoring:'1 point.',bonus:''},
+    {id:'rr3',title:'Read Racquet Cue',task:'Returner predicts serve width from racquet preparation.',scoring:'1 point.',bonus:''},
+    {id:'rr4',title:'Disguise Detection',task:'Server disguises; the returner reads it.',scoring:'2 points.',bonus:''},
+    {id:'rr5',title:'Split-Step Timing',task:'Returner’s split-step must land at the opponent’s contact.',scoring:'1 point.',bonus:'+1 for correct timing.'},
+  ],
+};
+
+function SRStyles(){return <style>{`
+.srWrap{max-width:1000px;margin:0 auto;}
+.srTabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.srTab{flex:1;min-width:140px;background:#0f1822;border:1px solid #223044;border-radius:11px;padding:11px 12px;color:#9fb0c2;font-weight:700;cursor:pointer;text-align:left;}
+.srTab.on{background:#16466a;border-color:#2E6E8E;color:#eaf4fb;}
+.srTab small{display:block;font-weight:500;color:#6b8299;font-size:0.72rem;margin-top:3px;}
+.srBlurb{background:#0d1722;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:10px;padding:11px 14px;color:#c5d6e6;margin-bottom:14px;line-height:1.45;}
+.srGameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;margin-bottom:16px;}
+.srGameCard{background:#0f1822;border:1px solid #223044;border-radius:11px;padding:12px 13px;color:#c5d6e6;cursor:pointer;text-align:left;}
+.srGameCard.on{background:#102a1c;border-color:#1d6b3f;}
+.srGameCard strong{color:#eaf4fb;display:block;margin-bottom:4px;}
+.srGameCard span{font-size:0.8rem;color:#7c8ea0;line-height:1.35;}
+.srDetail{background:#0b1320;border:1px solid #213247;border-radius:14px;padding:16px;margin-bottom:16px;}
+.srDetail h3{margin:0 0 4px;color:#eaf4fb;}
+.srObj{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0;}
+.srObjBox{flex:1;min-width:200px;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:11px 13px;}
+.srObjBox .lbl{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:#5e89b0;margin-bottom:4px;}
+.srObjBox p{margin:0;color:#d7e4f0;line-height:1.4;}
+.srScorer{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+.srSide{flex:1;min-width:220px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px;}
+.srSide h4{margin:0 0 6px;color:#eaf4fb;}
+.srNum{font-size:2.6rem;font-weight:800;line-height:1;}
+.srBtnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.srBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;}
+.srBtn.good{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.srBtn.ghost{background:#0b1118;border-color:#2c3c4e;color:#9fb0c2;}
+.srPhase{display:inline-flex;gap:6px;align-items:center;background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:5px 12px;font-weight:700;font-size:0.85rem;}
+.srMuted{color:#7c8ea0;font-size:0.85rem;line-height:1.45;}
+/* player display */
+.srDisp{min-height:100vh;background:radial-gradient(circle at 50% 0%,#102338,#060c14 70%);color:#eaf4fb;padding:5vh 4vw;box-sizing:border-box;}
+.srDispTop{text-align:center;margin-bottom:3vh;}
+.srDispTop span{letter-spacing:0.14em;color:#5e89b0;font-size:1rem;}
+.srDispTop h1{font-size:3rem;margin:6px 0 0;}
+.srDispObj{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:3vh;}
+.srDispCard{flex:1;min-width:300px;max-width:460px;background:#0e1d30;border:1px solid #21384e;border-radius:16px;padding:22px;}
+.srDispCard .l{color:#5e89b0;text-transform:uppercase;letter-spacing:0.06em;font-size:1rem;margin-bottom:8px;}
+.srDispCard .t{font-size:1.7rem;font-weight:700;line-height:1.3;}
+.srDispScore{display:flex;gap:30px;justify-content:center;align-items:center;margin-bottom:2vh;}
+.srDispScore .s{text-align:center;}
+.srDispScore .s .n{font-size:4.5rem;font-weight:800;color:#7db8ff;line-height:1;}
+.srDispScore .s .who{color:#5e89b0;font-size:1.1rem;margin-top:6px;}
+.srDispBonus{text-align:center;font-size:1.3rem;color:#ffd479;}
+`}</style>;}
+
+function ServeReturnModule({setScreen,setSession,embedded=false}){
+  const [tab,setTab]=useState('serve');
+  const [sel,setSel]=useState('sv1');
+  const [srv,setSrv]=useState(0);
+  const [ret,setRet]=useState(0);
+  const [phase,setPhase]=useState('Serve');
+  const [undo,setUndo]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+  const [srvDb,setSrvDb]=useState('Unlimited');
+  const [retDb,setRetDb]=useState('Unlimited');
+
+  const games=SR_GAMES[tab]||[];
+  const game=games.find(g=>g.id===sel)||games[0];
+  const tabMeta=SR_TABS.find(t=>t.id===tab)||SR_TABS[0];
+
+  useEffect(()=>{const first=(SR_GAMES[tab]||[])[0];if(first&&!(SR_GAMES[tab]||[]).some(g=>g.id===sel))setSel(first.id);},[tab]);
+
+  function push(){setUndo(p=>[...p.slice(-29),{srv,ret,phase}]);}
+  function addSrv(n){push();setSrv(s=>s+n);}
+  function addRet(n){push();setRet(s=>s+n);}
+  function doUndo(){setUndo(p=>{if(!p.length)return p;const s=p[p.length-1];setSrv(s.srv);setRet(s.ret);setPhase(s.phase);return p.slice(0,-1);});}
+  function resetScore(){push();setSrv(0);setRet(0);setPhase('Serve');}
+  function nextPhase(){push();setPhase(p=>p==='Serve'?'Return':p==='Return'?'Third ball':'Serve');}
+
+  useEffect(()=>{
+    if(!projecting)return;
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'servereturn',{
+      type:'servereturn',tabLabel:tabMeta.label,
+      game:game?{title:game.title,task:game.task,scoring:game.scoring,bonus:game.bonus}:null,
+      serverPts:srv,returnerPts:ret,phase,showPhase:tab==='first3'
+    });
+  },[projecting,tab,sel,srv,ret,phase]);
+
+  function pushPlayerView(){setProjecting(true);writeLivePlayerRoom(getPersistentLiveRoomId(),'servereturn',{type:'servereturn',tabLabel:tabMeta.label,game:game?{title:game.title,task:game.task,scoring:game.scoring,bonus:game.bonus}:null,serverPts:srv,returnerPts:ret,phase,showPhase:tab==='first3'});}
+  function openPlayerView(){try{window.open(buildLivePlayerViewUrl(),'_blank');}catch{}}
+
+  function addToSession(){
+    if(!setSession||!game)return;
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Serve & Return — '+game.title,category:'Serve & Return',format:tabMeta.label,duration:10,task:game.task,scoring:game.scoring+(game.bonus?(' Bonus: '+game.bonus):''),rationale:'Serve = affordance creation · return = affordance disruption · third ball = affordance exploitation. Trains the rally before it begins: initiative, disruption, anticipation and first-strike quality.',coach:'Reward function (did it create/deny advantage?), not textbook form. Layer constraints and DB to keep it representative.',playerFocus:game.task,layers:[],rld:tab==='read'?5:4}));
+  }
+
+  return <div className={embedded?'':'page'}>
+    <SRStyles/>
+    {!embedded&&<div className="pageTop"><div><h1>Serve &amp; Return™</h1><p className="mutedText">Serve = create · Return = disrupt · Third ball = exploit</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    <div className="srWrap">
+      <CoachRationale label="Why this module — the rally before the rally">
+        <p>Serve and return shape the rally before it begins, yet they are routinely under-trained. In ecological terms the <strong>serve creates an affordance</strong> (an advantage to exploit), the <strong>return disrupts it</strong>, and the <strong>third ball exploits or neutralises</strong> what the first two produced. Score the <em>function</em> — did the shot create, deny or take advantage — not the textbook shape of it.</p>
+      </CoachRationale>
+
+      <div className="srTabs">
+        {SR_TABS.map(t=><button key={t.id} type="button" className={'srTab'+(tab===t.id?' on':'')} onClick={()=>setTab(t.id)}>{t.label}<small>{t.id==='serve'?'length · width · disguise':t.id==='return'?'neutralise the serve':t.id==='first3'?'serve · return · third ball':'perceptual reading'}</small></button>)}
+      </div>
+
+      <div className="srBlurb">{tabMeta.blurb}</div>
+
+      <div className="srGameGrid">
+        {games.map(g=><button key={g.id} type="button" className={'srGameCard'+(sel===g.id?' on':'')} onClick={()=>setSel(g.id)}><strong>{g.title}</strong><span>{g.task}</span></button>)}
+      </div>
+
+      {game&&<div className="srDetail">
+        <h3>{game.title}</h3>
+        {tab==='first3'&&<div style={{margin:'4px 0 10px'}}><span className="srPhase">Phase · {phase}</span> <button type="button" className="srBtn ghost" onClick={nextPhase} style={{marginLeft:'8px'}}>Next phase →</button></div>}
+        <div className="srObj">
+          <div className="srObjBox"><div className="lbl">Objective</div><p>{game.task}</p></div>
+          <div className="srObjBox"><div className="lbl">Scoring</div><p>{game.scoring}{game.bonus?(' '):''}{game.bonus&&<strong style={{color:'#ffd479'}}> Bonus: {game.bonus}</strong>}</p></div>
+        </div>
+
+        <div className="srScorer">
+          <div className="srSide">
+            <h4>Server</h4>
+            <div className="srNum" style={{color:'#7db8ff'}}>{srv}</div>
+            <div className="srBtnRow"><button type="button" className="srBtn good" onClick={()=>addSrv(1)}>+1</button><button type="button" className="srBtn good" onClick={()=>addSrv(2)}>+2</button><button type="button" className="srBtn good" onClick={()=>addSrv(3)}>+3</button></div>
+          </div>
+          <div className="srSide">
+            <h4>Returner</h4>
+            <div className="srNum" style={{color:'#86efac'}}>{ret}</div>
+            <div className="srBtnRow"><button type="button" className="srBtn good" onClick={()=>addRet(1)}>+1</button><button type="button" className="srBtn good" onClick={()=>addRet(2)}>+2</button><button type="button" className="srBtn good" onClick={()=>addRet(3)}>+3</button></div>
+          </div>
+        </div>
+        <div className="srBtnRow" style={{marginTop:'10px'}}>
+          <button type="button" className="srBtn ghost" onClick={doUndo} disabled={!undo.length}>Undo</button>
+          <button type="button" className="srBtn ghost" onClick={resetScore}>Reset score</button>
+          <button type="button" className="srBtn" onClick={pushPlayerView}>Push to Player View</button>
+          <button type="button" className="srBtn ghost" onClick={openPlayerView}>Open Player View</button>
+          {setSession&&<button type="button" className="srBtn" onClick={addToSession}>Add to Session</button>}
+        </div>
+      </div>}
+
+      <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts and how the exchange runs" color="green" defaultOpen={false}>
+        <p>{game?game.task+' ':''}Run live from a real serve. Options: must attack the third ball, must finish with a volley, blind serve pattern, or a fixed serve sequence. A shot counts only if it does its job in the phase (create, neutralise or exploit).</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing the rules" color="blue" defaultOpen={false}>
+        <p><strong>Tactical:</strong> return to the T · force the weak side · attack width. <strong>Technical:</strong> Second Eye · Quiet Eye · hold finish · racquet above wrist. <strong>Mental:</strong> stay calm under serve pressure · fox (deception) · shark (attack mode). Layer one at a time so the serve or return shape is forced by the constraint, not coached by instruction.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="3" title="Scoring Logic" subtitle="Reward the function" color="gold" defaultOpen={false}>
+        <p>{game?(game.scoring+(game.bonus?(' Bonus: '+game.bonus):'')):''} Optional overlays: serve winner +2 · weak return forced +1 · third-ball winner +3. Award on outcome, not aesthetics.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Skill leveller" color="purple" defaultOpen={false}>
+        <p className="srMuted">Use Double Bounce as the leveller so server and returner can compete on equal terms.</p>
+        <div className="srObj" style={{marginTop:'8px'}}>
+          <label className="srObjBox"><div className="lbl">Server DB</div><select value={srvDb} onChange={e=>setSrvDb(e.target.value)} style={{width:'100%',background:'#0b1118',color:'#eaf4fb',border:'1px solid #2c3c4e',borderRadius:'8px',padding:'8px'}}>{['Unlimited','1 bounce','2 bounce','3 bounce'].map(o=><option key={o}>{o}</option>)}</select></label>
+          <label className="srObjBox"><div className="lbl">Returner DB</div><select value={retDb} onChange={e=>setRetDb(e.target.value)} style={{width:'100%',background:'#0b1118',color:'#eaf4fb',border:'1px solid #2c3c4e',borderRadius:'8px',padding:'8px'}}>{['Unlimited','1 bounce','2 bounce','3 bounce'].map(o=><option key={o}>{o}</option>)}</select></label>
+        </div>
+      </CollapsibleLayer>
+    </div>
+  </div>;
+}
+
+function ServeReturnPlayerDisplay({payload={}}){
+  const g=payload.game||{};
+  return <div className="srDisp">
+    <SRStyles/>
+    <div className="srDispTop"><span>SERVE &amp; RETURN™ · {payload.tabLabel||''}</span><h1>{g.title||'Serve & Return'}</h1></div>
+    {payload.showPhase&&<div style={{textAlign:'center',marginBottom:'2.5vh'}}><span className="srPhase" style={{fontSize:'1.3rem',padding:'8px 20px'}}>Phase · {payload.phase}</span></div>}
+    <div className="srDispObj">
+      <div className="srDispCard"><div className="l">Objective</div><div className="t">{g.task||''}</div></div>
+      <div className="srDispCard"><div className="l">How to score</div><div className="t">{g.scoring||''}</div></div>
+    </div>
+    <div className="srDispScore">
+      <div className="s"><div className="n">{payload.serverPts||0}</div><div className="who">Server</div></div>
+      <div className="s"><div className="n" style={{color:'#86efac'}}>{payload.returnerPts||0}</div><div className="who">Returner</div></div>
+    </div>
+    {g.bonus&&<div className="srDispBonus">Bonus available: {g.bonus}</div>}
+  </div>;
+}
+
+/* ───────────────────────── BUCKET LOB™ ───────────────────────── */
+function LobStyles(){return <style>{`
+.lobWrap{max-width:1000px;margin:0 auto;}
+.lobBoard{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0;}
+.lobMain{flex:2;min-width:280px;background:#0b1320;border:1px solid #213247;border-radius:14px;padding:16px;}
+.lobSide{flex:1;min-width:220px;background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px;}
+.lobLearner{font-size:1.4rem;font-weight:800;color:#ffd479;}
+.lobBig{font-size:3rem;font-weight:800;line-height:1;color:#86efac;}
+.lobAtt{font-size:1rem;color:#7c8ea0;margin-top:4px;}
+.lobBtnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.lobBtn{border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;border:1px solid #2c3c4e;background:#16466a;color:#eaf4fb;}
+.lobBtn.bucket{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;font-size:1.05rem;}
+.lobBtn.block{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
+.lobBtn.ghost{background:#0b1118;border-color:#2c3c4e;color:#9fb0c2;}
+.lobRow{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;background:#0d1722;margin-bottom:6px;}
+.lobRow.on{background:#14331f;border:1px solid #1d6b3f;}
+.lobRow b{color:#eaf4fb;}
+.lobMuted{color:#7c8ea0;font-size:0.85rem;line-height:1.5;}
+.lobChips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.lobChip{background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:4px 11px;font-size:0.8rem;font-weight:700;}
+/* player display */
+.lobDisp{min-height:100vh;background:radial-gradient(circle at 50% 0%,#11331f,#060c14 70%);color:#eaf4fb;padding:5vh 4vw;box-sizing:border-box;text-align:center;}
+.lobDisp h1{font-size:3rem;margin:6px 0;}
+.lobDisp .obj{font-size:1.7rem;color:#bff0d0;max-width:800px;margin:0 auto 3vh;line-height:1.4;}
+.lobDispScore{font-size:6rem;font-weight:800;color:#86efac;line-height:1;}
+.lobDispAtt{font-size:1.4rem;color:#9fb0c2;margin-top:6px;}
+.lobLead{max-width:560px;margin:3vh auto 0;}
+.lobLead .r{display:flex;justify-content:space-between;background:#0f1d30;border:1px solid #21384e;border-radius:10px;padding:10px 16px;margin-bottom:7px;font-size:1.2rem;}
+`}</style>;}
+
+function LobModule({setScreen,setSession,embedded=false}){
+  const [count,setCount]=useState(5);
+  const [names,setNames]=useState(['P1','P2','P3','P4','P5','P6','P7']);
+  const [learner,setLearner]=useState(1); // index of current learner (start P2 per brief)
+  const [attempts,setAttempts]=useState(0);
+  const [scores,setScores]=useState({});
+  const [side,setSide]=useState('right');
+  const [undo,setUndo]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+  const TARGET=20;
+
+  const roster=names.slice(0,count);
+  const guards=Math.max(1,count-3);
+  const curName=roster[learner%count]||('P'+((learner%count)+1));
+  const curScore=scores[curName]||0;
+  const done=attempts>=TARGET;
+
+  function pushUndo(){setUndo(p=>[...p.slice(-29),{attempts,scores:{...scores},learner,side}]);}
+  function record(pts){if(done)return;pushUndo();setScores(s=>({...s,[curName]:(s[curName]||0)+pts}));setAttempts(a=>a+1);}
+  function doUndo(){setUndo(p=>{if(!p.length)return p;const s=p[p.length-1];setAttempts(s.attempts);setScores(s.scores);setLearner(s.learner);setSide(s.side);return p.slice(0,-1);});}
+  function nextLearner(){pushUndo();setLearner(l=>(l+1)%count);setAttempts(0);} // anticlockwise rotation
+  function flipSide(){pushUndo();setSide(s=>s==='right'?'left':'right');setAttempts(0);}
+
+  const leaderboard=roster.map(n=>({name:n,score:scores[n]||0})).sort((a,b)=>b.score-a.score);
+  const objective='Play a high cross-court lob over the guards so it drops into the back-corner bucket.';
+
+  useEffect(()=>{
+    if(!projecting)return;
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});
+  },[projecting,learner,attempts,scores,side]);
+
+  function pushPV(){setProjecting(true);writeLivePlayerRoom(getPersistentLiveRoomId(),'bucketlob',{type:'bucketlob',learner:curName,score:curScore,attemptsLeft:TARGET-attempts,side,objective,leaderboard});}
+  function openPV(){try{window.open(buildLivePlayerViewUrl(),'_blank');}catch{}}
+
+  function addToSession(){
+    if(!setSession)return;
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Bucket Lob — high cross lob',category:'Shots',format:'4–7 players · one court',duration:15,task:objective+' Feeder drops medium-high to the side; guards (positioned by height) block from fixed positions using the racquet only; a ball-gatherer feeds the feeder.',scoring:'5 points if the ball lands in the bucket, −1 for every guard interception. 20 lobs each, rotate anticlockwise, repeat on the opposite side.',rationale:'No technical instruction. The guard wall (height-set) is the constraint that forces the lob shape — high enough to clear the guards, deep enough to die in the bucket: a representative copy of lobbing over an opponent’s volley into the back corner.',coach:'Analogy not instruction: scoop sand with a spade and throw it back over your non-playing shoulder. Raise or lower guards to demand a higher or flatter trajectory.',playerFocus:'Clear the wall, drop in the bucket.',layers:[],rld:4}));
+  }
+
+  return <div className={embedded?'':'page'}>
+    <LobStyles/>
+    {!embedded&&<div className="pageTop"><div><h1>Bucket Lob™</h1><p className="mutedText">Learn the lob with no technical instruction — the guard wall shapes the shot</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    <div className="lobWrap">
+      <CoachRationale label="Why this works — constraint, not instruction">
+        <p>Nobody is told how to swing. The <strong>guard wall sets the problem</strong>: a line of players along the service box, each raising the racquet to their own height, is the barrier the ball must clear; the <strong>bucket in the back corner</strong> is where it must die. The only lob that scores is one that goes <em>up enough to clear the guards and back enough to drop in the bucket</em> — which is exactly the shape of a real defensive lob over an opponent’s volley. Set guard height to demand the trajectory you want: taller/racquets-up forces a higher lob, lower guards allow a flatter one.</p>
+        <p className="lobMuted">Coaching analogy (not a technical cue): scoop a spade of sand off the beach and throw it back over your non-playing shoulder.</p>
+      </CoachRationale>
+
+      <div className="lobChips">
+        <span className="lobChip">Players: {count}</span>
+        <span className="lobChip">Guards: {guards}</span>
+        <span className="lobChip">Feed side: {side==='right'?'Right [7]':'Left'}</span>
+        <span className="lobChip">Bucket: back corner [8]</span>
+      </div>
+      <div className="lobBtnRow">
+        <span className="lobMuted" style={{alignSelf:'center'}}>Court size:</span>
+        {[4,5,6,7].map(c=><button key={c} type="button" className={'lobBtn ghost'+(count===c?' bucket':'')} onClick={()=>setCount(c)}>{c}</button>)}
+      </div>
+
+      <div className="lobBoard">
+        <div className="lobMain">
+          <div className="lobLearner">Learner: {curName}</div>
+          <div className="lobBig">{curScore}</div>
+          <div className="lobAtt">{done?'20 lobs complete — rotate':('Lob '+(attempts+1)+' of '+TARGET)}</div>
+          <div className="lobBtnRow">
+            <button type="button" className="lobBtn bucket" onClick={()=>record(5)} disabled={done}>In bucket +5</button>
+            <button type="button" className="lobBtn block" onClick={()=>record(-1)} disabled={done}>Guard intercept −1</button>
+            <button type="button" className="lobBtn ghost" onClick={()=>record(0)} disabled={done}>Short / out (0)</button>
+          </div>
+          <div className="lobBtnRow">
+            <button type="button" className="lobBtn ghost" onClick={doUndo} disabled={!undo.length}>Undo</button>
+            <button type="button" className="lobBtn" onClick={nextLearner}>Next learner (anticlockwise) →</button>
+            <button type="button" className="lobBtn ghost" onClick={flipSide}>Switch to {side==='right'?'left':'right'} side</button>
+          </div>
+          <div className="lobBtnRow">
+            <button type="button" className="lobBtn" onClick={pushPV}>Push to Player View</button>
+            <button type="button" className="lobBtn ghost" onClick={openPV}>Open Player View</button>
+            {setSession&&<button type="button" className="lobBtn" onClick={addToSession}>Add to Session</button>}
+          </div>
+        </div>
+        <div className="lobSide">
+          <h4 style={{margin:'0 0 8px',color:'#eaf4fb'}}>Scoreboard</h4>
+          {leaderboard.map((p,i)=><div key={p.name} className={'lobRow'+(p.name===curName?' on':'')}><b>{i===0&&p.score>0?'👑 ':''}{p.name}</b><span>{p.score}</span></div>)}
+          <p className="lobMuted" style={{marginTop:'10px'}}>Roles: feeder drops medium-high to the side; {guards} guard{guards>1?'s':''} block from fixed positions (racquet only, no moving); one player gathers balls for the feeder. Everyone takes 20 lobs, then rotate.</p>
+        </div>
+      </div>
+
+      <CollapsibleLayer num="1" title="Game Logic" subtitle="How it runs" color="green" defaultOpen={false}>
+        <p>Feeder plays a medium-high drop to the {side} side. The learner plays one high cross-court lob aiming for the back-corner bucket. Guards stand in a line along the service box and at the bucket; they may not move from their spots and may only use the racquet to touch the ball. Each learner gets 20 lobs, then players rotate anticlockwise and the activity repeats on the opposite side.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="2" title="Constraints" subtitle="The guard wall shapes the shot" color="blue" defaultOpen={false}>
+        <p>Position and restrict the guards <strong>by height</strong> so a successful lob has the trajectory you want. Guards with racquets up raise the barrier and demand a higher lob; lower or spread guards change the window. Guards are fixed — they cannot move, only reach. This is the whole teaching mechanism: the lob shape is forced by the barrier, not by a coaching cue.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="3" title="Scoring Logic" subtitle="Fully observable" color="gold" defaultOpen={false}>
+        <p><strong>+5</strong> if the ball lands in the bucket. <strong>−1</strong> for every guard interception. Short or out = 0. No coach judgement required — the bucket and the guards decide. 20 lobs each; highest total after both sides wins.</p>
+      </CollapsibleLayer>
+      <CollapsibleLayer num="4" title="DB Handicap" subtitle="Skill leveller" color="purple" defaultOpen={false}>
+        <p className="lobMuted">Level the field by handicapping stronger players: fewer attempts, a smaller bucket, an extra guard, or a higher guard wall on their turn. Keep the challenge point near 70% success for everyone.</p>
+      </CollapsibleLayer>
+    </div>
+  </div>;
+}
+
+function LobPlayerDisplay({payload={}}){
+  const lb=payload.leaderboard||[];
+  return <div className="lobDisp">
+    <LobStyles/>
+    <div style={{letterSpacing:'0.14em',color:'#7fc8a0'}}>BUCKET LOB™</div>
+    <h1>{payload.learner||'Learner'}</h1>
+    <div className="obj">{payload.objective||''}</div>
+    <div className="lobDispScore">{payload.score||0}</div>
+    <div className="lobDispAtt">{payload.attemptsLeft} lobs left · {payload.side==='right'?'right':'left'} side</div>
+    {lb.length>0&&<div className="lobLead">{lb.map((p,i)=><div className="r" key={p.name}><span>{i===0&&p.score>0?'👑 ':''}{p.name}</span><span>{p.score}</span></div>)}</div>}
+  </div>;
 }
 
 function App(){
@@ -13851,6 +14209,8 @@ if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <Snakes
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeReturnPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
@@ -13906,6 +14266,8 @@ return <div>
       {screen==='plugPlay'&&<PlugAndPlay setScreen={go} setSession={setSession}/>}
       {screen==='constraints'&&<GameConstraintsEngine setScreen={go} setSession={setSession}/>}
       {screen==='shots'&&<ShotsModule setScreen={go}/>}
+      {screen==='serveReturn'&&<ServeReturnModule setScreen={go} setSession={setSession}/>}
+      {screen==='bucketLob'&&<LobModule setScreen={go} setSession={setSession}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
