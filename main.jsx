@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v191 Court Monitor — King of Courts';
+const APP_VERSION='v192 Poker live match + monitor';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13429,7 +13429,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
   </div>;
 }
 function BlindTargetScoreModule({setScreen,players=[],setSession}){
-  const[mode,setMode]=useState('coach');
+  const[mode,setMode]=useState('assisted');
   const[deck,setDeck]=useState('4-9');
   const[mult,setMult]=useState(3);
   const[customLo,setCustomLo]=useState(4);
@@ -13439,6 +13439,20 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   const[form,setForm]=useState(false);
   const[showRationale,setShowRationale]=useState(false);
   const deckRange=deck==='custom'?[Math.min(customLo,customHi),Math.max(customLo,customHi)]:BTS_DECKS.find(d=>d.id===deck).range;
+  const[started,setStarted]=useState(false);
+  const[scores,setScores]=useState({});
+  const[target,setTarget]=useState(0);
+  const[winner,setWinner]=useState(null);
+  const[undoStack,setUndoStack]=useState([]);
+  const[projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const competitors=(players||[]).slice(0,8);
+  function drawTarget(){const lo=deckRange[0],hi=deckRange[1];const card=lo+Math.floor(Math.random()*(hi-lo+1));return Math.max(4,card*mult);}
+  function startGame(){const s={};competitors.forEach(n=>s[n]=0);setScores(s);setTarget(drawTarget());setWinner(null);setStarted(true);setUndoStack([]);}
+  function winRally(n){if(winner)return;setUndoStack(p=>[...p.slice(-29),{scores:{...scores},winner}]);setScores(prev=>{const v=(prev[n]||0)+1;if(v>=target)setWinner(n);return {...prev,[n]:v};});}
+  function undoRally(){setUndoStack(p=>{if(!p.length)return p;const s=p[p.length-1];setScores(s.scores);setWinner(s.winner);return p.slice(0,-1);});}
+  function newMatch(){startGame();}
+  const leadName=competitors.reduce((a,b)=>((scores[b]||0)>(scores[a]||0)?b:a),competitors[0]||'');
+  useEffect(()=>{if(!projecting)return;writeLivePlayerRoom(getPersistentLiveRoomId(),'blindtarget',{type:'blindtarget',started,players:competitors.map(n=>({name:n,score:scores[n]||0})),leaderName:leadName,leaderScore:scores[leadName]||0,winnerName:winner});},[projecting,scores,started,winner]);
   const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
   return <div className="page btsPage">
     <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',layers:['Informational Pressure'],rld:4}));alert('Poker added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
@@ -13473,6 +13487,24 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
         <button className={form?'activeLayer':''} onClick={()=>setForm(!form)}>Form Card {form?'ON':'OFF'}</button>
       </div>
       {form&&<div className="hintBox"><strong>Form Card note:</strong> public tendency stats change bluffing economics. Use with advanced players.</div>}
+    </div>
+    <div className="gameCard btsConfig">
+      <style>{`
+      .btsScorerGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px;}
+      .btsScoreCard{background:#0f1822;border:1px solid #2c3c4e;border-radius:12px;padding:14px;text-align:center;cursor:pointer;}
+      .btsScoreCard .nm{color:#eaf4fb;font-weight:700;}
+      .btsScoreCard .pts{font-size:2.4rem;font-weight:800;color:#7db8ff;line-height:1;margin:6px 0;}
+      .btsScoreCard .hint{font-size:0.72rem;color:#6b8299;}
+      .btsWinBanner{background:#0d2a18;border:1px solid #1d6b3f;color:#bff0d0;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:1.1rem;margin-top:10px;}
+      `}</style>
+      <h2>Live Match{mode==='assisted'?' · Assisted':''}</h2>
+      {!started?
+        <><p className="mutedText">The app draws a <strong>hidden target</strong> from the {deck==='custom'?'custom':deck} deck (× {mult}). First to reach it wins — the number stays secret until someone hits it. Tap the rally winner each point.</p>
+        {competitors.length<2?<div className="hintBox">Add at least 2 present players (Players tab) to start a match.</div>:<button type="button" className="primaryBtn" onClick={startGame}>Start game · {competitors.length} players</button>}</>
+        :
+        <><div className="btsScorerGrid">{competitors.map(n=><div role="button" tabIndex={0} key={n} className="btsScoreCard" onClick={()=>winRally(n)} style={winner===n?{borderColor:'#1d6b3f',background:'#0d2417'}:undefined}><div className="nm">{n}</div><div className="pts">{scores[n]||0}</div><div className="hint">tap = won rally</div></div>)}</div>
+        {winner?<div className="btsWinBanner">🏆 Target was {target} — {winner} wins!</div>:<p className="mutedText" style={{marginTop:'10px'}}>Hidden target in play — every rally could be match ball.</p>}
+        <div className="btsToggleRow" style={{marginTop:'10px'}}><button type="button" onClick={undoRally} disabled={!undoStack.length}>Undo</button><button type="button" onClick={newMatch}>New match · new hidden target</button>{projecting&&<span className="mutedText" style={{alignSelf:'center'}}>● reporting to Court Monitor</span>}</div></>}
     </div>
     {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players} mult={mult}/>)}</div></section>)}
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
@@ -14206,7 +14238,7 @@ function normalizeCourtPayload(row){
   }else if(t==='servereturn'){game='Serve & Return';headline='S '+(p.serverPts||0)+' · R '+(p.returnerPts||0);}
   else if(t==='bucketlob'){game='Bucket Lob';leaderName=p.learner||'';headline=(p.score||0)+' pts';}
   else if(t==='doublebounce'){game='Double Bounce';}
-  else if(t==='blindtarget'){game='Blind Target';}
+  else if(t==='blindtarget'){game='Poker';players=(p.players||[]).map(x=>({name:x.name,score:x.score}));leaderName=p.leaderName||'';headline=p.winnerName?('🏆 '+p.winnerName):(p.started?((p.leaderScore||0)+' pts'):'Ready');winnerName=p.winnerName||null;pct=null;}
   return {type:t,game,headline,target,pct:pct!=null?Math.max(0,Math.min(1,pct)):null,leaderName,winnerName,players,stale,ageMs};
 }
 
