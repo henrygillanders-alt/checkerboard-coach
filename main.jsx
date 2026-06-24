@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v192 Poker live match + monitor';
+const APP_VERSION='v192b Poker live match fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13445,7 +13445,9 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   const[winner,setWinner]=useState(null);
   const[undoStack,setUndoStack]=useState([]);
   const[projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
-  const competitors=(players||[]).slice(0,8);
+  const allNames=(players||[]).map(p=>typeof p==='string'?p:(p&&p.name)||'').filter(Boolean);
+  const presentNames=(players||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);
+  const competitors=(presentNames.length?presentNames:allNames).slice(0,8);
   function drawTarget(){const lo=deckRange[0],hi=deckRange[1];const card=lo+Math.floor(Math.random()*(hi-lo+1));return Math.max(4,card*mult);}
   function startGame(){const s={};competitors.forEach(n=>s[n]=0);setScores(s);setTarget(drawTarget());setWinner(null);setStarted(true);setUndoStack([]);}
   function winRally(n){if(winner)return;setUndoStack(p=>[...p.slice(-29),{scores:{...scores},winner}]);setScores(prev=>{const v=(prev[n]||0)+1;if(v>=target)setWinner(n);return {...prev,[n]:v};});}
