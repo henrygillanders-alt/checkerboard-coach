@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v193 Poker attendance + KOC first';
+const APP_VERSION='v194 Pattern Lab terms · attendance reads';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -840,9 +840,15 @@ function CompetitionPlayerDisplayCard({competition}){
           <h2>INVASION RULES</h2>
           <p>{formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</p>
           <div className="competitionRuleGrid">
+            {competition.invasionFormat==='lives'?<>
             <span>Invader puts ball out = -1 life</span>
             <span>Invader hits into balcony = -3 lives</span>
             <span>Stop when one invader loses all lives</span>
+            </>:<>
+            <span>Defender error = +1 to invader</span>
+            <span>Defender into balcony = +3 to invader</span>
+            <span>Invader puts ball out / into balcony = no score</span>
+            </>}
             <span>{competition.invasionRotation||'Rotate courts / invaders using the selected format.'}</span>
           </div>
         </section>
@@ -7818,7 +7824,7 @@ function DBSuiteStyles(){
 
 function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
-  const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
+  const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2']);
   const [gameId,setGameId]=useState('db1');
   const game=DB_GAMES.find(g=>g.id===gameId)||DB_GAMES[0];
 
@@ -8180,7 +8186,7 @@ const TINWAR_GAMES=[
 
 function TinWarModule({setScreen,embedded=false,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
-  const [names,setNames]=useState(()=>presents.length>=2?presents.slice(0,6):['Player 1','Player 2']);
+  const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2']);
   const [gameId,setGameId]=useState('tw1');
   const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
 
@@ -9845,7 +9851,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const present=playerNames.map(name=>players.find(p=>p.name===name)||name);
     const source=present.length?present:[...playerNames];
     const count=Math.max(1,Number(invasionCourts)||2);
-    const seeded=rankedBlockCourtAllocation(source,count);
+    const seeded=snakeSeedPlayers(source,count);
     const baseTeams=seeded.map((teamPlayers,index)=>({
       id:`team-${index+1}`,
       name:teamNameFromPlayers(teamPlayers,index),
@@ -13386,7 +13392,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
   const[deal,setDeal]=useState(null);
   const[playerCount,setPlayerCount]=useState(4);
   const[courtCount,setCourtCount]=useState(3);
-  const rankedAttendance=useMemo(()=>[...(attendancePlayers||[])].filter(p=>p&&p.name&&p.present).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))),[attendancePlayers]);
+  const rankedAttendance=useMemo(()=>{let reg=[];try{reg=(JSON.parse(localStorage.getItem(PLAYER_KEY))||[]);}catch{reg=[];}if(!reg.some(p=>p&&p.present&&p.name))reg=(attendancePlayers||[]);return reg.filter(p=>p&&p.name&&p.present).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name)));},[attendancePlayers,open]);
   const rankedAttendanceCourts=useMemo(()=>rankedAttendance.length?rankedBlockCourtAllocation(rankedAttendance,Math.max(1,Math.min(6,Number(courtCount)||3))):[],[rankedAttendance,courtCount]);
   function makeDeal(){
     if(game.format==='King of Court'){
@@ -13541,13 +13547,13 @@ const TACTICAL_INTENTION_GAMES=[
   {title:'Width Before Attack',rld:'4',quick:'Use one straight route and one crosscourt route before the attack bonus is live.',logic:'Player must combine [6-3] or [5-4] with [7-2] or [8-1] before attacking. Sequence is not prescribed; the width requirement is the constraint.',score:'Rally = 1 · Straight + Cross completed = +1 · Win after attack = +2.',constraints:['Straight + Cross','No Repeat','Blind Finish','4-Shot Window'],coach:'Stretch first. Exploit second. Preserve tactical sense rather than alternating mechanically.'},
   {title:'Front–Back Manipulation',rld:'4',quick:'Create a front-court action and then re-establish back-court pressure before attacking.',logic:'Use [8-1] or [7-2] to pull forward, then [6-3] or [5-4] to send back. Attack when recovery is poor.',score:'Rally = 1 · Front + Back achieved = +1 · Win after depth change = +2.',constraints:['Front + Back','DB Optional','Opponent Off T','No Volley / Volley Choice'],coach:'Make the opponent solve depth changes. The pattern is the tactical problem, not a fixed shot list.'},
   {title:'Counter Attack Recognition',rld:'5',quick:'After an opponent attack, player scores bonus for recognising whether to counter short or reset long.',logic:'Rally begins with pressure. One player attacks. Recovering player chooses counter attack [1]-[4] or reset [5]/[6] based on ball quality and opponent recovery.',score:'Rally = 1 · Correct counter/read = +1 · Counter attack winner = +2.',constraints:['Disguise Active','Short/Long Decision','No Repeat','Random Diversity Card'],coach:'Recognise the second affordance. The first attack is not the end of the tactical problem.'},
-  {title:'Deception & Affordance Recognition',rld:'5',quick:'Players must genuinely hold two options before committing. Opponent reads preparation cues, not just the ball.',logic:'Back player may drive, lob or straight drop from similar preparation. Front player must read opponent-racquet scene and respond. No Repeat prevents comfort patterns.',score:'Rally = 1 · Successful disguise = +1 · Win after three different families = +2.',constraints:['DIS','NR','Three Shot Families','Random Diversity Card'],coach:'Perceive, do not predict. The player should prepare options and let information select the solution.'}
+  {title:'Deception & Affordance Recognition',rld:'5',quick:'Players must genuinely hold two options before committing. Opponent reads preparation cues, not just the ball.',logic:'Back player may drive, lob or straight drop from similar preparation. Front player must read opponent-racquet scene and respond. No Repeat prevents comfort patterns.',score:'Rally = 1 · Successful disguise = +1 · Win after three different families = +2.',constraints:['Disguise','No Repeat','Three Shot Families','Random Diversity Card'],coach:'Perceive, do not predict. The player should prepare options and let information select the solution.'}
 ];
 
 function makePattern({id,level,title,attack='Any',rld='3',back,front,recovery,followup='',flags=[],docRef='',intention='Pressure Before Attack'}){
   const constraints=[...flags];
-  if(level>=2&&!constraints.includes('V+')) constraints.unshift('V+');
-  if(level===1&&!constraints.includes('V-')) constraints.unshift('V-');
+  if(level>=2&&!constraints.includes('Volley allowed')) constraints.unshift('Volley allowed');
+  if(level===1&&!constraints.includes('Must bounce — no volley')) constraints.unshift('Must bounce — no volley');
   return {
     id,level,title,attack,rld,back,front,recovery,followup,flags:constraints,docRef,intention,
     quick:`${back} → ${front} → ${recovery}${followup?` → ${followup}`:''}`,
@@ -13559,79 +13565,79 @@ function makePattern({id,level,title,attack='Any',rld='3',back,front,recovery,fo
 
 const PATTERN_LAB_READY_GAMES=[
   // Level I — fixed exposure library, bounce only
-  makePattern({id:'L1-01',level:1,title:'L1-01 Straight Drive · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6] X cross drive',docRef:'L1 #1'}),
-  makePattern({id:'L1-02',level:1,title:'L1-02 Straight Drive · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] W straight drive',docRef:'L1 #2'}),
-  makePattern({id:'L1-03',level:1,title:'L1-03 Straight Drive · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6] X cross drive',docRef:'L1 #3'}),
-  makePattern({id:'L1-04',level:1,title:'L1-04 Straight Drive · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W straight drive',docRef:'L1 #4'}),
-  makePattern({id:'L1-05',level:1,title:'L1-05 Straight Lob · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6] X cross drive',docRef:'L1 #5'}),
-  makePattern({id:'L1-06',level:1,title:'L1-06 Straight Lob · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] W straight drive',docRef:'L1 #6'}),
-  makePattern({id:'L1-07',level:1,title:'L1-07 Straight Lob · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6] X cross drive',docRef:'L1 #7'}),
-  makePattern({id:'L1-08',level:1,title:'L1-08 Straight Lob · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W straight drive',docRef:'L1 #8'}),
-  makePattern({id:'L1-09',level:1,title:'L1-09 Straight Drive · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6] L-X cross lob',docRef:'L1 #9'}),
-  makePattern({id:'L1-10',level:1,title:'L1-10 Straight Drive · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] W straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] L straight lob',docRef:'L1 #10'}),
-  makePattern({id:'L1-11',level:1,title:'L1-11 Straight Drive · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6] L-X cross lob',docRef:'L1 #11'}),
-  makePattern({id:'L1-12',level:1,title:'L1-12 Straight Drive · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] W straight drive',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L straight lob',docRef:'L1 #12'}),
-  makePattern({id:'L1-13',level:1,title:'L1-13 Straight Lob · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6] L-X cross lob',docRef:'L1 #13'}),
-  makePattern({id:'L1-14',level:1,title:'L1-14 Straight Lob · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] L straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] L straight lob',docRef:'L1 #14'}),
-  makePattern({id:'L1-15',level:1,title:'L1-15 Straight Lob · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6] L-X cross lob',docRef:'L1 #15'}),
-  makePattern({id:'L1-16',level:1,title:'L1-16 Straight Lob · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] L straight lob',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L straight lob',docRef:'L1 #16'}),
+  makePattern({id:'L1-01',level:1,title:'L1-01 Straight Drive · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] straight drive',front:'[2]/[1] boast',recovery:'[6] cross drive',docRef:'L1 #1'}),
+  makePattern({id:'L1-02',level:1,title:'L1-02 Straight Drive · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] straight drive',docRef:'L1 #2'}),
+  makePattern({id:'L1-03',level:1,title:'L1-03 Straight Drive · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight drive',front:'[3]/[4] cross drop',recovery:'[6] cross drive',docRef:'L1 #3'}),
+  makePattern({id:'L1-04',level:1,title:'L1-04 Straight Drive · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight drive',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight drive',docRef:'L1 #4'}),
+  makePattern({id:'L1-05',level:1,title:'L1-05 Straight Lob · Boast · Cross Drive',attack:'Boast',rld:'2',back:'[6]/[5] straight lob',front:'[2]/[1] boast',recovery:'[6] cross drive',docRef:'L1 #5'}),
+  makePattern({id:'L1-06',level:1,title:'L1-06 Straight Lob · Boast · Straight Drive',attack:'Boast',rld:'2',back:'[6]/[5] straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] straight drive',docRef:'L1 #6'}),
+  makePattern({id:'L1-07',level:1,title:'L1-07 Straight Lob · Cross Drop · Cross Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight lob',front:'[3]/[4] cross drop',recovery:'[6] cross drive',docRef:'L1 #7'}),
+  makePattern({id:'L1-08',level:1,title:'L1-08 Straight Lob · Cross Drop · Straight Drive',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight lob',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight drive',docRef:'L1 #8'}),
+  makePattern({id:'L1-09',level:1,title:'L1-09 Straight Drive · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] straight drive',front:'[2]/[1] boast',recovery:'[6] cross lob',docRef:'L1 #9'}),
+  makePattern({id:'L1-10',level:1,title:'L1-10 Straight Drive · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] straight drive',front:'[2]/[1] boast',recovery:'[6]/[5] straight lob',docRef:'L1 #10'}),
+  makePattern({id:'L1-11',level:1,title:'L1-11 Straight Drive · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight drive',front:'[3]/[4] cross drop',recovery:'[6] cross lob',docRef:'L1 #11'}),
+  makePattern({id:'L1-12',level:1,title:'L1-12 Straight Drive · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight drive',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight lob',docRef:'L1 #12'}),
+  makePattern({id:'L1-13',level:1,title:'L1-13 Straight Lob · Boast · Cross Lob',attack:'Boast',rld:'2',back:'[6]/[5] straight lob',front:'[2]/[1] boast',recovery:'[6] cross lob',docRef:'L1 #13'}),
+  makePattern({id:'L1-14',level:1,title:'L1-14 Straight Lob · Boast · Straight Lob',attack:'Boast',rld:'2',back:'[6]/[5] straight lob',front:'[2]/[1] boast',recovery:'[6]/[5] straight lob',docRef:'L1 #14'}),
+  makePattern({id:'L1-15',level:1,title:'L1-15 Straight Lob · Cross Drop · Cross Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight lob',front:'[3]/[4] cross drop',recovery:'[6] cross lob',docRef:'L1 #15'}),
+  makePattern({id:'L1-16',level:1,title:'L1-16 Straight Lob · Cross Drop · Straight Lob',attack:'Cross Drop',rld:'2',back:'[6]/[5] straight lob',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight lob',docRef:'L1 #16'}),
 
   // Level II — direction choice and short/long recovery
-  makePattern({id:'L2-01',level:2,title:'L2-01 Drive Choice · Cross Drop · Straight Drop · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #1',flags:['Direction Choice']}),
-  makePattern({id:'L2-02',level:2,title:'L2-02 Drive Choice · Boast · Straight Drop · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #2',flags:['Direction Choice']}),
-  makePattern({id:'L2-03',level:2,title:'L2-03 Drive Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #3',flags:['Direction Choice']}),
-  makePattern({id:'L2-04',level:2,title:'L2-04 Drive Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #4',flags:['Direction Choice']}),
-  makePattern({id:'L2-05',level:2,title:'L2-05 Lob Choice · Cross Drop · Straight Drop · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #5',flags:['Height Change']}),
-  makePattern({id:'L2-06',level:2,title:'L2-06 Lob Choice · Boast · Straight Drop · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #6',flags:['Height Change']}),
-  makePattern({id:'L2-07',level:2,title:'L2-07 Lob Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #7',flags:['Height Change']}),
-  makePattern({id:'L2-08',level:2,title:'L2-08 Lob Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #8',flags:['Height Change']}),
-  makePattern({id:'L2-09',level:2,title:'L2-09 Lob Choice · Cross Drop · Drop Counter · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #9',flags:['Height Change']}),
-  makePattern({id:'L2-10',level:2,title:'L2-10 Lob Choice · Boast · Drop Counter · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] W or X drive reset',docRef:'L2 #10',flags:['Height Change']}),
-  makePattern({id:'L2-11',level:2,title:'L2-11 Drive Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #11',flags:['Height Change']}),
-  makePattern({id:'L2-12',level:2,title:'L2-12 Drive Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #12',flags:['Height Change']}),
-  makePattern({id:'L2-13',level:2,title:'L2-13 Drive Choice · Cross Drop · Drop Counter · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #13',flags:['Height Change']}),
-  makePattern({id:'L2-14',level:2,title:'L2-14 Drive Choice · Boast · Drop Counter · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop counter',followup:'[6]/[5] L or L-X lob reset',docRef:'L2 #14',flags:['Height Change']}),
-  makePattern({id:'L2-15',level:2,title:'L2-15 Lob Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #15',flags:['Height Change']}),
-  makePattern({id:'L2-16',level:2,title:'L2-16 Lob Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #16',flags:['Height Change']}),
-  makePattern({id:'L2-17',level:2,title:'L2-17 Drive Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] W or X drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #17',flags:['Any Short Attack']}),
-  makePattern({id:'L2-18',level:2,title:'L2-18 Lob Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #18',flags:['Any Short Attack']}),
-  makePattern({id:'L2-19',level:2,title:'L2-19 Drive Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] W or X drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] W or X drive recovery',docRef:'L2 #19',flags:['Any Short Attack']}),
-  makePattern({id:'L2-20',level:2,title:'L2-20 Lob Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] L or L-X lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] L or L-X lob recovery',docRef:'L2 #20',flags:['Any Short Attack']}),
+  makePattern({id:'L2-01',level:2,title:'L2-01 Drive Choice · Cross Drop · Straight Drop · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross drive reset',docRef:'L2 #1',flags:['Direction Choice']}),
+  makePattern({id:'L2-02',level:2,title:'L2-02 Drive Choice · Boast · Straight Drop · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross drive reset',docRef:'L2 #2',flags:['Direction Choice']}),
+  makePattern({id:'L2-03',level:2,title:'L2-03 Drive Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #3',flags:['Direction Choice']}),
+  makePattern({id:'L2-04',level:2,title:'L2-04 Drive Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #4',flags:['Direction Choice']}),
+  makePattern({id:'L2-05',level:2,title:'L2-05 Lob Choice · Cross Drop · Straight Drop · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross lob reset',docRef:'L2 #5',flags:['Height Change']}),
+  makePattern({id:'L2-06',level:2,title:'L2-06 Lob Choice · Boast · Straight Drop · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross lob reset',docRef:'L2 #6',flags:['Height Change']}),
+  makePattern({id:'L2-07',level:2,title:'L2-07 Lob Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #7',flags:['Height Change']}),
+  makePattern({id:'L2-08',level:2,title:'L2-08 Lob Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #8',flags:['Height Change']}),
+  makePattern({id:'L2-09',level:2,title:'L2-09 Lob Choice · Cross Drop · Drop Counter · Drive Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross drive reset',docRef:'L2 #9',flags:['Height Change']}),
+  makePattern({id:'L2-10',level:2,title:'L2-10 Lob Choice · Boast · Drop Counter · Drive Reset',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross drive reset',docRef:'L2 #10',flags:['Height Change']}),
+  makePattern({id:'L2-11',level:2,title:'L2-11 Drive Choice · Cross Drop · Lob Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #11',flags:['Height Change']}),
+  makePattern({id:'L2-12',level:2,title:'L2-12 Drive Choice · Boast · Lob Recovery',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #12',flags:['Height Change']}),
+  makePattern({id:'L2-13',level:2,title:'L2-13 Drive Choice · Cross Drop · Drop Counter · Lob Reset',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross lob reset',docRef:'L2 #13',flags:['Height Change']}),
+  makePattern({id:'L2-14',level:2,title:'L2-14 Drive Choice · Boast · Drop Counter · Lob Reset',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop counter',followup:'[6]/[5] straight or cross lob reset',docRef:'L2 #14',flags:['Height Change']}),
+  makePattern({id:'L2-15',level:2,title:'L2-15 Lob Choice · Cross Drop · Drive Recovery',attack:'Cross Drop',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #15',flags:['Height Change']}),
+  makePattern({id:'L2-16',level:2,title:'L2-16 Lob Choice · Boast · Drive Recovery',attack:'Boast',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #16',flags:['Height Change']}),
+  makePattern({id:'L2-17',level:2,title:'L2-17 Drive Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #17',flags:['Any Short Attack']}),
+  makePattern({id:'L2-18',level:2,title:'L2-18 Lob Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #18',flags:['Any Short Attack']}),
+  makePattern({id:'L2-19',level:2,title:'L2-19 Drive Choice · Any Short Attack · Drive Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] straight or cross drive choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] straight or cross drive recovery',docRef:'L2 #19',flags:['Any Short Attack']}),
+  makePattern({id:'L2-20',level:2,title:'L2-20 Lob Choice · Any Short Attack · Lob Recovery',attack:'Any Short',rld:'3',back:'[6]/[5] straight or cross lob choice',front:'[1]-[4] any short attack',recovery:'[6]/[5] straight or cross lob recovery',docRef:'L2 #20',flags:['Any Short Attack']}),
 
   // Level III — disguise and two-option recovery
-  makePattern({id:'L3-01',level:3,title:'L3-01 Lob Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #1',flags:['DIS']}),
-  makePattern({id:'L3-02',level:3,title:'L3-02 Lob Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #2',flags:['DIS']}),
-  makePattern({id:'L3-03',level:3,title:'L3-03 Drive Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #3',flags:['DIS']}),
-  makePattern({id:'L3-04',level:3,title:'L3-04 Drive Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #4',flags:['DIS']}),
-  makePattern({id:'L3-05',level:3,title:'L3-05 Lob Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #5',flags:['DIS','Height Change']}),
-  makePattern({id:'L3-06',level:3,title:'L3-06 Lob Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] W or X drive reset',docRef:'L3 #6',flags:['DIS','Height Change']}),
-  makePattern({id:'L3-07',level:3,title:'L3-07 Drive Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #7',flags:['DIS','Height Change']}),
-  makePattern({id:'L3-08',level:3,title:'L3-08 Drive Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] F or F-X drop choice',followup:'[6]/[5] L or L-X lob reset',docRef:'L3 #8',flags:['DIS','Height Change']}),
+  makePattern({id:'L3-01',level:3,title:'L3-01 Lob Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross lob reset',docRef:'L3 #1',flags:['Disguise']}),
+  makePattern({id:'L3-02',level:3,title:'L3-02 Lob Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross lob reset',docRef:'L3 #2',flags:['Disguise']}),
+  makePattern({id:'L3-03',level:3,title:'L3-03 Drive Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross drive reset',docRef:'L3 #3',flags:['Disguise']}),
+  makePattern({id:'L3-04',level:3,title:'L3-04 Drive Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross drive reset',docRef:'L3 #4',flags:['Disguise']}),
+  makePattern({id:'L3-05',level:3,title:'L3-05 Lob Choice · Cross Drop · Drop Choice · Drive Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross drive reset',docRef:'L3 #5',flags:['Disguise','Height Change']}),
+  makePattern({id:'L3-06',level:3,title:'L3-06 Lob Choice · Boast · Drop Choice · Drive Reset',attack:'Boast',rld:'4',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross drive reset',docRef:'L3 #6',flags:['Disguise','Height Change']}),
+  makePattern({id:'L3-07',level:3,title:'L3-07 Drive Choice · Cross Drop · Drop Choice · Lob Reset',attack:'Cross Drop',rld:'4',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross lob reset',docRef:'L3 #7',flags:['Disguise','Height Change']}),
+  makePattern({id:'L3-08',level:3,title:'L3-08 Drive Choice · Boast · Drop Choice · Lob Reset',attack:'Boast',rld:'4',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[1]-[4] straight or cross drop choice',followup:'[6]/[5] straight or cross lob reset',docRef:'L3 #8',flags:['Disguise','Height Change']}),
 
   // Level IV — short/long decision and no-repeat representative set
-  makePattern({id:'L4-01',level:4,title:'L4-01 Drive Choice · Cross Drop · Straight Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6] X cross drive',docRef:'L4 #1-2',flags:['DIS','NR','Short/Long Decision']}),
-  makePattern({id:'L4-02',level:4,title:'L4-02 Drive Choice · Cross Drop · Straight Drop or Straight Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6]/[5] W straight drive',docRef:'L4 #3-4',flags:['DIS','NR','Short/Long Decision']}),
-  makePattern({id:'L4-03',level:4,title:'L4-03 Drive Choice · Boast · Straight Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6] X cross drive',docRef:'L4 #5-6',flags:['DIS','NR','Short/Long Decision']}),
-  makePattern({id:'L4-04',level:4,title:'L4-04 Drive Choice · Boast · Straight Drop or Straight Drive',attack:'Boast',rld:'5',back:'[6]/[5] W or X drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6]/[5] W straight drive',docRef:'L4 #7-8',flags:['DIS','NR','Short/Long Decision']}),
-  makePattern({id:'L4-05',level:4,title:'L4-05 Lob Choice · Cross Drop · Straight Drop or Cross Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[3]/[4] F-X cross drop',recovery:'[2]/[1] F straight drop OR [6] L-X cross lob',docRef:'L4 #21-24',flags:['DIS','NR','Height Change']}),
-  makePattern({id:'L4-06',level:4,title:'L4-06 Lob Choice · Boast · Straight Drop or Straight Lob',attack:'Boast',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] F straight drop OR [6]/[5] L straight lob',docRef:'L4 #25-32',flags:['DIS','NR','Height Change']}),
-  makePattern({id:'L4-07',level:4,title:'L4-07 Drive Choice · Cross Drop · Any Drop or Long',attack:'Cross Drop',rld:'5',back:'[6]/[5] W or X drive choice',front:'[3]/[4] F-X cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #33-36',flags:['DIS','NR','Three Shot Families']}),
-  makePattern({id:'L4-08',level:4,title:'L4-08 Lob Choice · Boast · Any Drop or Long',attack:'Boast',rld:'5',back:'[6]/[5] L or L-X lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #39-40',flags:['DIS','NR','Three Shot Families']}),
+  makePattern({id:'L4-01',level:4,title:'L4-01 Drive Choice · Cross Drop · Straight Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop OR [6] cross drive',docRef:'L4 #1-2',flags:['Disguise','No Repeat','Short/Long Decision']}),
+  makePattern({id:'L4-02',level:4,title:'L4-02 Drive Choice · Cross Drop · Straight Drop or Straight Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop OR [6]/[5] straight drive',docRef:'L4 #3-4',flags:['Disguise','No Repeat','Short/Long Decision']}),
+  makePattern({id:'L4-03',level:4,title:'L4-03 Drive Choice · Boast · Straight Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop OR [6] cross drive',docRef:'L4 #5-6',flags:['Disguise','No Repeat','Short/Long Decision']}),
+  makePattern({id:'L4-04',level:4,title:'L4-04 Drive Choice · Boast · Straight Drop or Straight Drive',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross drive choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop OR [6]/[5] straight drive',docRef:'L4 #7-8',flags:['Disguise','No Repeat','Short/Long Decision']}),
+  makePattern({id:'L4-05',level:4,title:'L4-05 Lob Choice · Cross Drop · Straight Drop or Cross Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross lob choice',front:'[3]/[4] cross drop',recovery:'[2]/[1] straight drop OR [6] cross lob',docRef:'L4 #21-24',flags:['Disguise','No Repeat','Height Change']}),
+  makePattern({id:'L4-06',level:4,title:'L4-06 Lob Choice · Boast · Straight Drop or Straight Lob',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[2]/[1] straight drop OR [6]/[5] straight lob',docRef:'L4 #25-32',flags:['Disguise','No Repeat','Height Change']}),
+  makePattern({id:'L4-07',level:4,title:'L4-07 Drive Choice · Cross Drop · Any Drop or Long',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross drive choice',front:'[3]/[4] cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #33-36',flags:['Disguise','No Repeat','Three Shot Families']}),
+  makePattern({id:'L4-08',level:4,title:'L4-08 Lob Choice · Boast · Any Drop or Long',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross lob choice',front:'[2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any long',docRef:'L4 #39-40',flags:['Disguise','No Repeat','Three Shot Families']}),
 
   // Level V — full option set from back, early attack available
-  makePattern({id:'L5-01',level:5,title:'L5-01 Drive/Cross/Back Drop · Boast · Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6] X cross drive',docRef:'L5 #1-2',flags:['DIS','NR','Back Court Attack']}),
-  makePattern({id:'L5-02',level:5,title:'L5-02 Drive/Cross/Back Drop · Cross Drop · Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] F-X cross drop',recovery:'[2]/[1] F drop OR [6] X cross drive',docRef:'L5 #3-4',flags:['DIS','NR','Back Court Attack']}),
-  makePattern({id:'L5-03',level:5,title:'L5-03 Lob/Cross Lob/Back Drop · Boast · Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] L/L-X lob OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6]/[5] W/X drive',docRef:'L5 #5-8',flags:['DIS','NR','Back Court Attack']}),
-  makePattern({id:'L5-04',level:5,title:'L5-04 Drive/Cross/Back Drop · Boast · Drop or Lob',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] F drop OR [6]/[5] L/L-X lob',docRef:'L5 #9-16',flags:['DIS','NR','Back Court Attack','Height Change']}),
-  makePattern({id:'L5-05',level:5,title:'L5-05 Drive/Cross/Back Drop · Boast · Any Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] W/X drive OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any drive',docRef:'L5 #17-20',flags:['DIS','NR','Three Shot Families','Back Court Attack']}),
-  makePattern({id:'L5-06',level:5,title:'L5-06 Lob/Cross Lob/Back Drop · Cross Drop · Any Drop or Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] L/L-X lob OR [1]/[2] F straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] F-X cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any lob',docRef:'L5 #25-28',flags:['DIS','NR','Three Shot Families','Back Court Attack']}),
+  makePattern({id:'L5-01',level:5,title:'L5-01 Drive/Cross/Back Drop · Boast · Drop or Cross Drive',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross drive OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] straight drop OR [6] cross drive',docRef:'L5 #1-2',flags:['Disguise','No Repeat','Back Court Attack']}),
+  makePattern({id:'L5-02',level:5,title:'L5-02 Drive/Cross/Back Drop · Cross Drop · Drop or Cross Drive',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross drive OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] cross drop',recovery:'[2]/[1] straight drop OR [6] cross drive',docRef:'L5 #3-4',flags:['Disguise','No Repeat','Back Court Attack']}),
+  makePattern({id:'L5-03',level:5,title:'L5-03 Lob/Cross Lob/Back Drop · Boast · Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross lob OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] straight drop OR [6]/[5] straight or cross drive',docRef:'L5 #5-8',flags:['Disguise','No Repeat','Back Court Attack']}),
+  makePattern({id:'L5-04',level:5,title:'L5-04 Drive/Cross/Back Drop · Boast · Drop or Lob',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross drive OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[2]/[1] straight drop OR [6]/[5] straight or cross lob',docRef:'L5 #9-16',flags:['Disguise','No Repeat','Back Court Attack','Height Change']}),
+  makePattern({id:'L5-05',level:5,title:'L5-05 Drive/Cross/Back Drop · Boast · Any Drop or Drive',attack:'Boast',rld:'5',back:'[6]/[5] straight or cross drive OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [2]/[1] boast',recovery:'[1]-[4] any drop OR [5]/[6] any drive',docRef:'L5 #17-20',flags:['Disguise','No Repeat','Three Shot Families','Back Court Attack']}),
+  makePattern({id:'L5-06',level:5,title:'L5-06 Lob/Cross Lob/Back Drop · Cross Drop · Any Drop or Lob',attack:'Cross Drop',rld:'5',back:'[6]/[5] straight or cross lob OR [1]/[2] straight drop from back',front:'front player covers drop with any long reset, then [3]/[4] cross drop',recovery:'[1]-[4] any drop OR [5]/[6] any lob',docRef:'L5 #25-28',flags:['Disguise','No Repeat','Three Shot Families','Back Court Attack']}),
 ];
 
 const PATTERN_LEVEL_META={
-  1:{label:'Level I',subtitle:'Fixed pattern',note:'Zone and flight fixed. Player solves movement first. V- must bounce.'},
-  2:{label:'Level II',subtitle:'Direction choice',note:'Back player chooses straight or cross. Recovery begins short/long choice. V+ available.'},
-  3:{label:'Level III',subtitle:'Two options + disguise',note:'Players hold two options. DIS active: opponent reads preparation, not only ball flight.'},
-  4:{label:'Level IV',subtitle:'Short/long decision',note:'Recovery chooses attack short or reset long. NR prevents repeat attractor locking.'},
+  1:{label:'Level I',subtitle:'Fixed pattern',note:'Zone and flight fixed. Player solves movement first. Volley not allowed — the ball must bounce.'},
+  2:{label:'Level II',subtitle:'Direction choice',note:'Back player chooses straight or cross. Recovery begins short/long choice. Volley now allowed.'},
+  3:{label:'Level III',subtitle:'Two options + disguise',note:'Players hold two options. Disguise active: opponent reads preparation, not only ball flight.'},
+  4:{label:'Level IV',subtitle:'Short/long decision',note:'Recovery chooses attack short or reset long. No-Repeat prevents repeat attractor locking.'},
   5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
 };
 
