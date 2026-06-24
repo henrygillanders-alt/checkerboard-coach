@@ -77,13 +77,13 @@ async function readLivePlayerRoom(roomId){
       headers:supabaseRestHeaders()
     });
     if(!res.ok){console.warn('Live sync read failed',res.status,await res.text().catch(()=>''));return null;}
-const APP_VERSION='v191 Court Monitor — King of Courts';
+    const rows=await res.json();
     return rows?.[0]||null;
   }catch(err){console.warn('Live sync read failed',err);return null;}
 }
 
 
-const APP_VERSION='v190 S&L undo + brighter bigger board';
+const APP_VERSION='v191 Court Monitor — King of Courts';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
