@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v192b Poker live match fix';
+const APP_VERSION='v193 Poker attendance + KOC first';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13445,9 +13445,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   const[winner,setWinner]=useState(null);
   const[undoStack,setUndoStack]=useState([]);
   const[projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
-  const allNames=(players||[]).map(p=>typeof p==='string'?p:(p&&p.name)||'').filter(Boolean);
-  const presentNames=(players||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);
-  const competitors=(presentNames.length?presentNames:allNames).slice(0,8);
+  const competitors=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[started,players]);
   function drawTarget(){const lo=deckRange[0],hi=deckRange[1];const card=lo+Math.floor(Math.random()*(hi-lo+1));return Math.max(4,card*mult);}
   function startGame(){const s={};competitors.forEach(n=>s[n]=0);setScores(s);setTarget(drawTarget());setWinner(null);setStarted(true);setUndoStack([]);}
   function winRally(n){if(winner)return;setUndoStack(p=>[...p.slice(-29),{scores:{...scores},winner}]);setScores(prev=>{const v=(prev[n]||0)+1;if(v>=target)setWinner(n);return {...prev,[n]:v};});}
@@ -13455,7 +13453,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   function newMatch(){startGame();}
   const leadName=competitors.reduce((a,b)=>((scores[b]||0)>(scores[a]||0)?b:a),competitors[0]||'');
   useEffect(()=>{if(!projecting)return;writeLivePlayerRoom(getPersistentLiveRoomId(),'blindtarget',{type:'blindtarget',started,players:competitors.map(n=>({name:n,score:scores[n]||0})),leaderName:leadName,leaderScore:scores[leadName]||0,winnerName:winner});},[projecting,scores,started,winner]);
-  const groups=['Junior','Tier 1','Tier 2','Tier 3','King of Court'];
+  const groups=['King of Court','Junior','Tier 1','Tier 2','Tier 3'];
   return <div className="page btsPage">
     <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',layers:['Informational Pressure'],rld:4}));alert('Poker added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
