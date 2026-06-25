@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v195 Invasion rules on display';
+const APP_VERSION='v196 Pattern Lab detail page + panels';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13651,17 +13651,115 @@ const PATTERN_LEVEL_META={
   5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
 };
 
+function PatternRunPanel({title,note,children}){
+  return <div className="pdPanel"><h4>{title}</h4><div className="pdChips">{children}</div>{note&&<p className="pdNote">{note}</p>}</div>;
+}
+function PdChip({on,onClick,children}){
+  return <div role="button" tabIndex={0} className={on?'pdChip on':'pdChip'} onClick={onClick}>{children}</div>;
+}
+function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
+  const [trigger,setTrigger]=useState('off');
+  const [direction,setDirection]=useState('straight');
+  const [crossCap,setCrossCap]=useState(0);
+  const [db,setDb]=useState(0);
+  const [heightLev,setHeightLev]=useState(false);
+  const [cycleMode,setCycleMode]=useState('breakdown');
+  const [openAfter,setOpenAfter]=useState(2);
+  const [tramline,setTramline]=useState(false);
+  const triggerLabel={off:'No trigger (free)',offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
+  const dirLabel=direction==='straight'?'Straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
+  const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
+  const runRules=[
+    'Attack trigger: '+triggerLabel,
+    'Direction: '+dirLabel+(direction==='cross'?' (functional cross only — must land 3/4)':''),
+    db>0?('Double Bounce leveller: '+db+' DB'):'Double Bounce: off',
+    heightLev?'Height leveller: on':'Height leveller: off',
+    cycleLabel,
+    tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
+  ];
+  function add(view){onAdd(game,view,runRules);}
+  return <div className="page patternDetailPage">
+    <style>{`
+    .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
+    .pdPanel{background:#101a24;border:1px solid #243446;border-radius:12px;padding:14px;}
+    .pdPanel h4{margin:0 0 10px;color:#eaf4fb;font-size:0.95rem;}
+    .pdChips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+    .pdChip{padding:8px 12px;border-radius:9px;border:1px solid #2c3c4e;background:#0d1620;color:#cde0ee;cursor:pointer;font-size:0.85rem;}
+    .pdChip.on{background:#1f6b8e;border-color:#2E6E8E;color:#fff;font-weight:700;}
+    .pdNote{font-size:0.74rem;color:#7a93a8;margin-top:9px;line-height:1.35;}
+    .pdStepNum{min-width:34px;text-align:center;font-weight:800;color:#eaf4fb;font-size:1.1rem;}
+    .pdSummary{background:#0d1f17;border:1px solid #1d6b3f;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:5px;margin:8px 0 4px;}
+    .pdSummary strong{color:#bff0d0;}
+    .pdSummary span{color:#cde7d6;font-size:0.85rem;}
+    .pdSectionTitle{margin:14px 0 2px;color:#eaf4fb;}
+    .pdSectionSub{color:#7a93a8;font-size:0.8rem;margin:0 0 4px;}
+    `}</style>
+    <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
+      <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
+      <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{game.logic}</p></section><section><h3>Scoring Logic</h3><p>{game.score}</p></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints / Flags</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div></section></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{game.quick}</p><small>{meta.note}</small></div>
+    </div>
+
+    <h2 className="pdSectionTitle">Run-rule panels</h2>
+    <p className="pdSectionSub">Overlay how this pattern is run. The pattern stays the same; these set the conditions, levellers and end-rule.</p>
+    <div className="pdPanelGrid">
+      <PatternRunPanel title="Attack Trigger" note="The condition that releases the attack shot. Until it is true, the player keeps building.">
+        <PdChip on={trigger==='off'} onClick={()=>setTrigger('off')}>No trigger</PdChip>
+        <PdChip on={trigger==='offT'} onClick={()=>setTrigger('offT')}>Opponent off T</PdChip>
+        <PdChip on={trigger==='inFront'} onClick={()=>setTrigger('inFront')}>Player in front</PdChip>
+        <PdChip on={trigger==='both'} onClick={()=>setTrigger('both')}>Both</PdChip>
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Direction" note={direction==='cross'?'Functional cross only: a cross counts only if it lands 3/4 (sends the opponent back). Set a cap, or tag specific shots once the converted library is in.':'Start straight-only, then progress to both sides.'}>
+        <PdChip on={direction==='straight'} onClick={()=>setDirection('straight')}>Straight only</PdChip>
+        <PdChip on={direction==='both'} onClick={()=>setDirection('both')}>Both sides</PdChip>
+        <PdChip on={direction==='cross'} onClick={()=>setDirection('cross')}>Cross allowed</PdChip>
+        {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap</PdChip></>}
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Double Bounce (leveller)" note="Spend a bounce to even out a mismatch.">
+        <PdChip on={false} onClick={()=>setDb(v=>Math.max(0,v-1))}>−</PdChip>
+        <span className="pdStepNum">{db===0?'Off':db+' DB'}</span>
+        <PdChip on={false} onClick={()=>setDb(v=>v+1)}>+</PdChip>
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Height (leveller)" note="Allow a height window to keep the rally alive for the weaker player.">
+        <PdChip on={!heightLev} onClick={()=>setHeightLev(false)}>Off</PdChip>
+        <PdChip on={heightLev} onClick={()=>setHeightLev(true)}>On</PdChip>
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Cycle / Open Play" note="How the pattern resolves. Open play is fully open — loose balls are punished naturally.">
+        <PdChip on={cycleMode==='breakdown'} onClick={()=>setCycleMode('breakdown')}>Until breakdown</PdChip>
+        <PdChip on={cycleMode==='openAfter'} onClick={()=>setCycleMode('openAfter')}>Open after N</PdChip>
+        {cycleMode==='openAfter'&&<><PdChip on={false} onClick={()=>setOpenAfter(v=>Math.max(1,v-1))}>−</PdChip><span className="pdStepNum">{openAfter}</span><PdChip on={false} onClick={()=>setOpenAfter(v=>v+1)}>+</PdChip></>}
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Tramline" note="All balls must land inside the tramline.">
+        <PdChip on={!tramline} onClick={()=>setTramline(false)}>Off</PdChip>
+        <PdChip on={tramline} onClick={()=>setTramline(true)}>On</PdChip>
+      </PatternRunPanel>
+    </div>
+
+    <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
+
+    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>add(false)}>Add To Session</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
+  </div>;
+}
 function TacticalIntentionsModule({setScreen,setSession}){
   const [selected,setSelected]=useState(PATTERN_LAB_READY_GAMES[0]);
   const [mode,setMode]=useState('ready');
+  const [detailOpen,setDetailOpen]=useState(false);
   const [levelFilter,setLevelFilter]=useState('All');
   const [attackFilter,setAttackFilter]=useState('All');
   const [random,setRandom]=useState(null);
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
-  function addGame(game,view=false){
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:game.logic,rationale:game.logic,scoring:game.score,layers:game.flags,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+  function addGame(game,view=false,runRules=null){
+    const desc=game.logic+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
+    const layers=runRules&&runRules.length?[...(game.flags||[]),...runRules]:game.flags;
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:desc,rationale:game.logic,scoring:game.score,layers:layers,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
@@ -13670,6 +13768,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const sessionCount=(()=>{try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');return Array.isArray(saved)?saved.length:(Array.isArray(saved.rotations)?saved.rotations.length:0);}catch{return 0;}})();
   const active=random||selected;
   const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
+  if(detailOpen)return <PatternDetailPage game={active} meta={meta} onBack={()=>setDetailOpen(false)} onAdd={addGame} viewSession={viewSession} setScreen={setScreen}/>;
   return <div className="page tacticalIntentionsPage">
     <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
@@ -13678,18 +13777,13 @@ function TacticalIntentionsModule({setScreen,setSession}){
       <p>Each card is reframed through Checkerboard zones, flight constraints, disguise and diversity, so the player <strong>recognises the affordance and chooses a functional solution</strong> rather than executing one fixed answer. The constraints keep representativeness high and guard against attractor states — the same pattern hardening into an unthinking habit.</p>
     </CoachRationale>
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
-    <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);}}>⚡ Random Pattern</button></div>
+    <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);setDetailOpen(true);}}>⚡ Random Pattern</button></div>
 
-    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
+    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);setDetailOpen(true);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
 
-    {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');}}><strong>{game.title}</strong><span>{game.quick}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
+    {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');setDetailOpen(true);}}><strong>{game.title}</strong><span>{game.quick}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
 
-    <div className="tiDetail gameCard"><div className="categoryTag">Plug & Play Pattern</div><h2>{active.title}</h2><RLDBadge level={Number(active.rld)} size="lg"/>
-      <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{active.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>Game Logic</h3><p>{active.logic}</p></section><section><h3>Scoring Logic</h3><p>{active.score}</p></section><section><h3>Coach Cue</h3><p>{active.coach}</p></section><section><h3>Constraints / Flags</h3><div className="chipRow">{active.flags.map(c=><span key={c}>{c}</span>)}</div></section></div>
-      <div className="patternSequence"><strong>Compact notation</strong><p>{active.quick}</p><small>{meta.note}</small></div>
-      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(active,false);}}>Add To Session</button><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(active,true);}}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button><button type="button" className="secondaryBtn" onClick={()=>setMode('advanced')}>Customise This Pattern</button></div>
-    </div>
+    {mode!=='framework'&&<p className="pdSectionSub">Tap any pattern above to open its detail page and run-rule panels.</p>}
 
     {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Pattern Lab Game</h2><p>Start with any plug-and-play card, then modify with the existing Game Logic, Scoring Logic, Constraints and DB panels. Diversity Constraints are overlays, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
     <div className="gameCard"><h2>CLA Rationale</h2><p>The large game library preserves coach usability: there is always another exercise ready. The CLA upgrade is that each pattern now includes flight constraints, disguise, no-repeat and diversity overlays so players cannot simply default to their strongest attractor state.</p></div>
