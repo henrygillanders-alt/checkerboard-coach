@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v196 Pattern Lab detail page + panels';
+const APP_VERSION='v197 Pattern Lab per-player levellers';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13661,8 +13661,15 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [trigger,setTrigger]=useState('off');
   const [direction,setDirection]=useState('straight');
   const [crossCap,setCrossCap]=useState(0);
-  const [db,setDb]=useState(0);
-  const [heightLev,setHeightLev]=useState(false);
+  const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [dbAll,setDbAll]=useState(0);
+  const [dbBy,setDbBy]=useState({});
+  const [heightAll,setHeightAll]=useState(false);
+  const [heightBy,setHeightBy]=useState({});
+  const dbEff=n=>dbBy[n]!==undefined?dbBy[n]:dbAll;
+  const heightEff=n=>heightBy[n]!==undefined?heightBy[n]:heightAll;
+  const dbOverrides=present.filter(n=>dbBy[n]!==undefined&&dbBy[n]!==dbAll).map(n=>n+' '+dbBy[n]);
+  const heightOverrides=present.filter(n=>heightBy[n]!==undefined&&heightBy[n]!==heightAll).map(n=>n+' '+(heightBy[n]?'on':'off'));
   const [cycleMode,setCycleMode]=useState('breakdown');
   const [openAfter,setOpenAfter]=useState(2);
   const [tramline,setTramline]=useState(false);
@@ -13672,8 +13679,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const runRules=[
     'Attack trigger: '+triggerLabel,
     'Direction: '+dirLabel+(direction==='cross'?' (functional cross only — must land 3/4)':''),
-    db>0?('Double Bounce leveller: '+db+' DB'):'Double Bounce: off',
-    heightLev?'Height leveller: on':'Height leveller: off',
+    'Double Bounce: all '+(dbAll===0?'0':dbAll+' DB')+(dbOverrides.length?(' · '+dbOverrides.join(', ')):''),
+    'Height: '+(heightAll?'on':'off')+' for all'+(heightOverrides.length?(' · '+heightOverrides.join(', ')):''),
     cycleLabel,
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
@@ -13693,6 +13700,12 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     .pdSummary span{color:#cde7d6;font-size:0.85rem;}
     .pdSectionTitle{margin:14px 0 2px;color:#eaf4fb;}
     .pdSectionSub{color:#7a93a8;font-size:0.8rem;margin:0 0 4px;}
+    .pdLevPanel{grid-column:1/-1;}
+    .pdEveryone{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding-bottom:10px;border-bottom:1px solid #243446;}
+    .pdEveryone .lab{color:#9fb3c4;font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+    .pdLevGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 14px;}
+    .pdPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px;border-top:1px solid #1b2733;cursor:pointer;}
+    .pdPlayerRow .nm{color:#cde0ee;font-size:0.85rem;}
     `}</style>
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
@@ -13718,16 +13731,16 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap</PdChip></>}
       </PatternRunPanel>
 
-      <PatternRunPanel title="Double Bounce (leveller)" note="Spend a bounce to even out a mismatch.">
-        <PdChip on={false} onClick={()=>setDb(v=>Math.max(0,v-1))}>−</PdChip>
-        <span className="pdStepNum">{db===0?'Off':db+' DB'}</span>
-        <PdChip on={false} onClick={()=>setDb(v=>v+1)}>+</PdChip>
-      </PatternRunPanel>
+      <div className="pdPanel pdLevPanel"><h4>Double Bounce (leveller)</h4>
+        <div className="pdEveryone"><span className="lab">Everyone</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.max(0,v-1))}>−</PdChip><span className="pdStepNum">{dbAll===0?'0':dbAll+' DB'}</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.min(3,v+1))}>+</PdChip>{Object.keys(dbBy).length>0&&<PdChip on={false} onClick={()=>setDbBy({})}>clear overrides</PdChip>}</div>
+        {present.length>0?<div className="pdLevGrid">{present.map(n=><div role="button" tabIndex={0} key={n} className="pdPlayerRow" onClick={()=>setDbBy(o=>{const cur=o[n]!==undefined?o[n]:dbAll;return {...o,[n]:cur+1>3?0:cur+1};})}><span className="nm">{n}</span><span className="pdStepNum">{dbEff(n)}</span></div>)}</div>:<p className="pdNote">Mark attendance to set DB per player. The Everyone control applies to all.</p>}
+        <p className="pdNote">Tap a player to cycle their DB 0–3. Per-player overrides the group default.</p>
+      </div>
 
-      <PatternRunPanel title="Height (leveller)" note="Allow a height window to keep the rally alive for the weaker player.">
-        <PdChip on={!heightLev} onClick={()=>setHeightLev(false)}>Off</PdChip>
-        <PdChip on={heightLev} onClick={()=>setHeightLev(true)}>On</PdChip>
-      </PatternRunPanel>
+      <div className="pdPanel pdLevPanel"><h4>Height (leveller)</h4>
+        <div className="pdEveryone"><span className="lab">Everyone</span><PdChip on={!heightAll} onClick={()=>setHeightAll(false)}>Off</PdChip><PdChip on={heightAll} onClick={()=>setHeightAll(true)}>On</PdChip>{Object.keys(heightBy).length>0&&<PdChip on={false} onClick={()=>setHeightBy({})}>clear overrides</PdChip>}</div>
+        {present.length>0?<div className="pdLevGrid">{present.map(n=>{const e=heightEff(n);return <div role="button" tabIndex={0} key={n} className="pdPlayerRow" onClick={()=>setHeightBy(o=>{const cur=o[n]!==undefined?o[n]:heightAll;return {...o,[n]:!cur};})}><span className="nm">{n}</span><span className="pdStepNum" style={e?undefined:{color:'#6b8299'}}>{e?'On':'Off'}</span></div>;})}</div>:<p className="pdNote">Mark attendance to set height per player. The Everyone control applies to all.</p>}
+      </div>
 
       <PatternRunPanel title="Cycle / Open Play" note="How the pattern resolves. Open play is fully open — loose balls are punished naturally.">
         <PdChip on={cycleMode==='breakdown'} onClick={()=>setCycleMode('breakdown')}>Until breakdown</PdChip>
