@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v194 Pattern Lab terms · attendance reads';
+const APP_VERSION='v195 Invasion rules on display';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -10637,7 +10637,17 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             </div>
             <div className="projectionInfoCard">
               <strong>Rules</strong>
-              <p>{current.rules?.[0]||'Follow the competition format.'}</p>
+              {invasionFormat==='lives'?<>
+                <p>Defenders always serve</p>
+                <p>Invader puts ball out = -1 life</p>
+                <p>Invader hits into balcony = -3 lives</p>
+                <p>Stop when one invader loses all lives</p>
+              </>:<>
+                <p>Invader serves</p>
+                <p>Defender error = +1 to invader</p>
+                <p>Defender into balcony = +3 to invader</p>
+                <p>Invader out / into balcony = no score</p>
+              </>}
             </div>
             <div className="projectionInfoCard">
               <strong>Checkerboard</strong>
