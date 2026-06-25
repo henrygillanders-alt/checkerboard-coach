@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v198 Pattern Lab rebuilt library + direction';
+const APP_VERSION='v199 Pattern Lab to Player Display';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -13622,6 +13622,17 @@ const PATTERN_LEVEL_META={
   5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
 };
 
+function PatternLabPlayerDisplay({payload={}}){
+  const p=payload;const rr=Array.isArray(p.runRules)?p.runRules:[];
+  return <div className="playerDisplayPage"><div className="playerDisplayShell">
+    <style>{`.plPatNote{font-family:'Consolas',monospace;font-size:1.5rem;line-height:1.7;color:#eaf4fb;font-weight:700;}
+    .plRunGrid{display:flex;flex-wrap:wrap;gap:10px;}.plRunGrid span{background:#13314a;border:1px solid #2E6E8E;color:#cfe6f5;border-radius:10px;padding:8px 14px;font-size:1.05rem;}`}</style>
+    <div className="playerDisplayTop"><span>PATTERN LAB · LIVE</span><h1>{p.title||'Pattern'}</h1>{(p.rld||p.level)&&<p>{p.level?('Level '+p.level):''}{p.level&&p.rld?' · ':''}{p.rld?('RLD '+p.rld):''}</p>}</div>
+    <div className="playerDisplayGrid"><section className="playerDisplayFocus"><h2>PATTERN</h2><p className="plPatNote">{p.notation}</p></section></div>
+    {p.coach&&<section className="playerDisplayFocus" style={{marginTop:'12px'}}><h2>FOCUS</h2><p>{p.coach}</p></section>}
+    {rr.length>0&&<div className="playerDisplayRules" style={{marginTop:'12px'}}><h2>RUN-RULES</h2><div className="plRunGrid">{rr.map((r,i)=><span key={i}>{r}</span>)}</div></div>}
+  </div></div>;
+}
 function PatternRunPanel({title,note,children}){
   return <div className="pdPanel"><h4>{title}</h4><div className="pdChips">{children}</div>{note&&<p className="pdNote">{note}</p>}</div>;
 }
@@ -13658,6 +13669,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
   function add(view){onAdd(game,view,runRules);}
+  const [pushed,setPushed]=useState(false);
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:game.quick,level:game.level,rld:game.rld,coach:game.coach,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
@@ -13731,7 +13744,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
-    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>add(false)}>Add To Session</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
+    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>add(false)}>Add To Session</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={pushDisplay}>{pushed?'✓ Sent to Player Display':'Push to Player Display'}</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
   </div>;
 }
 function TacticalIntentionsModule({setScreen,setSession}){
@@ -14335,6 +14348,7 @@ function normalizeCourtPayload(row){
     headline=best+' streak';target=p.battle.target;pct=p.battle.target?best/p.battle.target:null;
   }else if(t==='servereturn'){game='Serve & Return';headline='S '+(p.serverPts||0)+' · R '+(p.returnerPts||0);}
   else if(t==='bucketlob'){game='Bucket Lob';leaderName=p.learner||'';headline=(p.score||0)+' pts';}
+  else if(t==='pattern'){game='Pattern Lab';headline=p.title||'Pattern';pct=null;}
   else if(t==='doublebounce'){game='Double Bounce';}
   else if(t==='blindtarget'){game='Poker';players=(p.players||[]).map(x=>({name:x.name,score:x.score}));leaderName=p.leaderName||'';headline=p.winnerName?('🏆 '+p.winnerName):(p.started?((p.leaderScore||0)+' pts'):'Ready');winnerName=p.winnerName||null;pct=null;}
   return {type:t,game,headline,target,pct:pct!=null?Math.max(0,Math.min(1,pct)):null,leaderName,winnerName,players,stale,ageMs};
@@ -14523,6 +14537,7 @@ if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerD
 if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeReturnPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='pattern'){return <PatternLabPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
