@@ -5155,6 +5155,12 @@ const COACH_PRESSURE_EXERCISES=[
   {title:'Exercise 4 — Front and Back Court + Cross Court',setup:'Coach can feed drive, drop or occasional cross court.',task:'Cross court is treated as a boast. Player must read ball shape and solve the transition.',focus:['Reading ball shape','Front-back transitions','Decision making under pressure']},
   {title:'Exercise 5 — Counter Drop Series',setup:'Coach boast → player drop → coach counter drop → player drive → repeat.',task:'Repeat the sequence while preserving drive quality and recovery.',focus:['Quality of drive','Recovery before next movement']},
   {title:'Exercise 6 — Counter Drop + Volley Drive',setup:'Coach boast → player drop → coach counter drop → player drive → coach drive → player volleys drive deep → repeat.',task:'Add deep volley interception after the counter-drop sequence.',focus:['Counter-drop recovery','Volley interception','Physical pressure with control']},
+  {title:'Exercise 7 — Volley Intercept (Straight)',setup:'Coach boasts or drops.',task:'P1 drives straight. P2 volleys straight, taking the ball early before the service box. P1 tries to pass.',focus:['Volley before service box','Take time away','Early recognition','Return to T']},
+  {title:'Exercise 8 — Volley Intercept (Straight / Cross Court)',setup:'Coach boasts or drops.',task:'P1 drives straight or cross court. P2 reads the line and volleys straight before the service box.',focus:['Volley before service box','Reading ball shape','Early recognition','Commitment to first movement']},
+  {title:'Exercise 9 — Double Volley',setup:'Coach feeds a straight drive.',task:'P1 intercepts with a straight volley drop. P2 drives straight or cross court. P1 volleys deep. Reset.',focus:['Volley interception','Front-back transition','Take time away','Recovery before next movement']},
+  {title:'Exercise 10 — Double Volley + Boast Option',setup:'Coach feeds a straight drive.',task:'P1 first volley is a straight drop or 2-wall boast, then the same continuation: P2 drives, P1 volleys deep.',focus:['Disguise first volley','Decision making under pressure','Front-back transitions','Return to T']},
+  {title:'Exercise 11 — Back Drop to Volley Intercept',setup:'Coach feeds deep.',task:'P1 moves back and plays a straight drop. P2 drives straight or cross court. P1 recovers forward and volleys.',focus:['Reset from the back','Recover with intent','Volley interception','Early recognition']},
+  {title:'Exercise 12 — Back Drop / Boast to Volley Intercept',setup:'Coach feeds deep.',task:'P1 chooses a straight drop or 2-wall boast. P2 drives. P1 recovers and volleys.',focus:['Disguise back-court shot','Decision making under pressure','Volley interception','Return to T']},
 ];
 
 const UNIVERSAL_PRESSURE_COACHING_NOTES=['Return to T','Racquet head above wrist between shots','Stable head on contact','Stay in shot until follow-through complete','Quiet Eye','Recover before next movement'];
@@ -5232,25 +5238,25 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:[{title:'Predictable',detail:'Coach feeds a known pattern until quality is stable.'},{title:'Variable',detail:'Coach varies depth, height and tempo.'},{title:'Live Finish',detail:'Coach calls LIVE after a pressure sequence.'}]
   },
   {
-    id:'pp8-coach-pressure-progressions',code:'PP8',title:'Coach Pressure Progressions',format:'1-2-2',theme:'Six coach-fed pressure exercises',duration:'12–18 min',rld:4,
-    summary:'Six 1-2-2 coach pressure exercises. Two players rotate while the coach builds physical stress and demands shot quality.',
+    id:'pp8-coach-pressure-progressions',code:'PP8',title:'Coach Pressure Progressions',format:'1-2-2',theme:'Twelve coach-fed pressure exercises',duration:'12–18 min',rld:4,
+    summary:'Twelve 1-2-2 coach pressure exercises. Two players rotate while the coach builds physical stress and demands shot quality.',
     setup:'Coach on or near service box depending on exercise. Two players rotate after each feed or short sequence.',
-    task:'Work through the six exercises or select the exercise that matches the player problem.',
+    task:'Work through the twelve exercises or select the exercise that matches the player problem.',
     scoring:'Coach scores quality completions, not exhaustion. Add consequences only if quality remains stable.',
-    coach:'Use the universal coaching notes across all six exercises.',
+    coach:'Use the universal coaching notes across all twelve exercises.',
     projection:{what:'Rotate through coach pressure exercises.',score:'Quality completion scores.',focus:'Control under physical pressure.'},
     exercises:COACH_PRESSURE_EXERCISES,
     universalNotes:UNIVERSAL_PRESSURE_COACHING_NOTES,
     progressions:COACH_PRESSURE_EXERCISES.map((ex,i)=>({title:ex.title.replace(/^Exercise \d+ — /,''),detail:ex.task}))
   },
   {
-    id:'pp9-six-progression-series',code:'PP9',title:'Six Progression Pressure Series',format:'1-2-2',theme:'All six progressions on one page',duration:'12–18 min',rld:4,
-    summary:'A single expandable page for the full six-progression pressure series. Use it as a complete session ladder or select one progression as the day’s pressure focus.',
+    id:'pp9-six-progression-series',code:'PP9',title:'Twelve Progression Pressure Series',format:'1-2-2',theme:'All twelve progressions on one page',duration:'12–18 min',rld:4,
+    summary:'A single expandable page for the full twelve-progression pressure series. Use it as a complete session ladder or select one progression as the day’s pressure focus.',
     setup:'Coach controls the series. Two players rotate. Start at the simplest exercise that preserves quality.',
     task:'Progress only when the player can maintain control, recovery discipline and quiet eye under the previous pressure level.',
     scoring:'Progression complete = +1. Quality collapse = repeat or regress one step.',
     coach:'Do not rush the ladder. The cumulative effect of the progressions is the pressure.',
-    projection:{what:'Climb the six pressure progressions.',score:'Complete quality progressions.',focus:'Cumulative pressure with recovery discipline.'},
+    projection:{what:'Climb the twelve pressure progressions.',score:'Complete quality progressions.',focus:'Cumulative pressure with recovery discipline.'},
     exercises:COACH_PRESSURE_EXERCISES,
     universalNotes:UNIVERSAL_PRESSURE_COACHING_NOTES,
     progressions:COACH_PRESSURE_EXERCISES.map((ex,i)=>({title:`Progression ${i+1} — ${ex.title.replace(/^Exercise \d+ — /,'')}`,detail:ex.task}))
