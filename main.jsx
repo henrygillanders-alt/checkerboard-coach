@@ -15,6 +15,12 @@ function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().
 function getCourtModeFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('court');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function courtRoomId(base,n){return `${base}__court${n}`;}
 function courtStandingsRoomId(base){return `${base}__standings`;}
+function nsslCourtRoomId(base,n){return `${base}__nsslcourt${n}`;}
+function nsslClockRoomId(base){return `${base}__nsslclock`;}
+function getNsslCourtFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('nsslCourt');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function getNsslMasterFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('nsslMaster');if(h)return {host:h};}catch{}return null;}
+function buildNsslCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?nsslCourt=${n}&host=${encodeURIComponent(base)}`;}
+function buildNsslMasterLink(base){const b=window.location.origin+window.location.pathname;return `${b}?nsslMaster=${encodeURIComponent(base)}`;}
 function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
@@ -27,6 +33,37 @@ function getPersistentLiveRoomId(){
 }
 function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';} }
 function buildLivePlayerViewUrl(roomId){const room=roomId||getPersistentLiveRoomId();const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(room)}`;}
+const NSSL_PERIOD_KEYS=['p1','p2','p3','ot'];
+function nsslPeriodKeyFor(activePeriod){return NSSL_PERIOD_KEYS[(Number(activePeriod)||1)-1]||'p1';}
+function nsslPeriodLabel(key){return ({p1:'P1',p2:'P2',p3:'P3',ot:'OT'})[key]||String(key||'').toUpperCase();}
+function nsslPeriodWeight(key){return key==='p3'?2:1;}
+function nsslFmtTime(seconds){const s=Math.max(0,Math.floor(Number(seconds)||0));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function nsslCourtTotals(courtPayload){
+  const per=courtPayload&&courtPayload.periods||{};
+  let a=0,b=0; NSSL_PERIOD_KEYS.forEach(k=>{a+=Number(per[k]?.a||0);b+=Number(per[k]?.b||0);});
+  if(courtPayload&&courtPayload.totals){a=Number(courtPayload.totals.a||a);b=Number(courtPayload.totals.b||b);}
+  return {a,b};
+}
+function nsslBuildLeague(courtPayloads){
+  const table={};
+  function ensure(name){if(!table[name])table[name]={name,played:0,mp:0,pf:0,pa:0};return table[name];}
+  (courtPayloads||[]).forEach(c=>{
+    if(!c||!c.teamA||!c.teamB)return;
+    const an=c.teamA.name,bn=c.teamB.name;
+    if(!an||!bn||an==='BYE'||bn==='BYE')return;
+    const A=ensure(an),B=ensure(bn);
+    A.played+=1;B.played+=1;
+    const per=c.periods||{};
+    NSSL_PERIOD_KEYS.forEach(k=>{
+      const pa=Number(per[k]?.a||0),pb=Number(per[k]?.b||0);
+      A.pf+=pa;A.pa+=pb;B.pf+=pb;B.pa+=pa;
+      if(pa===0&&pb===0)return;
+      const w=nsslPeriodWeight(k);
+      if(pa>pb)A.mp+=w; else if(pb>pa)B.mp+=w;
+    });
+  });
+  return Object.values(table).sort((x,y)=>y.mp-x.mp||(y.pf-y.pa)-(x.pf-x.pa)||y.pf-x.pf||String(x.name).localeCompare(String(y.name)));
+}
 function supabaseRestHeaders(extra={}){
   // Supabase REST expects both apikey and Authorization for browser writes with RLS.
   // This works for the new sb_publishable_ keys as well as legacy eyJ anon keys.
@@ -83,7 +120,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v201 RR standings + court monitor display + wake lock + SL markers';
+const APP_VERSION='v204 TINWAR 6-game + shots/bucket lob + NSSL court scoring';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2043,6 +2080,7 @@ function ShotsModule({setScreen}){
     {id:'crosscourts',title:'Functional Crosscourts',tag:'Solve problem · avoid time donation'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
+    {id:'bucketlob',title:'Bucket Lob',tag:'Lob by self-discovery · over the guards into the bucket'},
     {id:'finish',title:'Finish',tag:'Kill · Nick · Attacking Boast'},
     {id:'wrist',title:'Wrist Mechanics',tag:'Elastic Release · Smiley Face Protocol'},
     {id:'biomech',title:'Swing Biomechanics',tag:'Bow · Spring · Whip · Torch'}
@@ -2105,8 +2143,18 @@ function ShotsModule({setScreen}){
       <p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p>
     </div>
 
-    <div className="shotSelectorRow shotFunctionRow">
-      {shotSections.map(s=><button key={s.id} className={section===s.id?'activeShotBtn':''} onClick={()=>setSection(s.id)}>{s.title}<span>{s.tag}</span></button>)}
+    <div className="shotFnGrid">
+      <style>{`
+.shotFnGrid{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
+.shotFnCard{display:block;width:100%;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:14px;padding:15px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s ease,background .15s ease,transform .05s ease;}
+.shotFnCard:active{transform:scale(0.995);}
+.shotFnCard .shotFnTitle{display:block;font-size:1.2rem;font-weight:800;color:#eaf4fb;letter-spacing:0.01em;}
+.shotFnCard .shotFnTag{display:block;margin-top:5px;font-size:0.95rem;font-weight:700;color:#5fae84;}
+.shotFnCard.shotFnActive{background:linear-gradient(135deg,#0d3722,#0f2e44);border-color:#1d6b3f;box-shadow:0 0 0 1px rgba(52,224,122,0.25);}
+.shotFnCard.shotFnActive .shotFnTitle{color:#ffffff;}
+.shotFnCard.shotFnActive .shotFnTag{color:#bff0d0;}
+`}</style>
+      {shotSections.map(s=><div key={s.id} role="button" tabIndex={0} className={'shotFnCard'+(section===s.id?' shotFnActive':'')} onClick={()=>setSection(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSection(s.id);}}}><span className="shotFnTitle">{s.title}</span><span className="shotFnTag">{s.tag}</span></div>)}
     </div>
 
     {section==='learn'&&<div className="shotDetailPanel shotsLearnPanel">
@@ -2248,6 +2296,17 @@ function ShotsModule({setScreen}){
       <div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div>
       <p>{categoryCards[section].intro}</p>
       <div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div>
+    </div>}
+
+    {section==='bucketlob'&&<div className="shotDetailPanel">
+      <div className="shotDetailHeader"><div><div className="categoryTag">Gain Time · Lob Family</div><h2>Bucket Lob</h2><p className="mutedText">Learn the lob by self-discovery — no technical instruction.</p></div><button className="primaryBtn" onClick={()=>setScreen('bucketLob')}>Open Bucket Lob</button></div>
+      <p>Play a high cross-court lob over the short-line guards so it drops into the back-corner bucket. The guards and the bucket are the only feedback the player needs — height, width and pace self-organise around the trajectory problem rather than a coached swing.</p>
+      <div className="shotsPrincipleGrid">
+        <div className="gameCard shotsPrincipleCard"><h3>The problem</h3><p>Clear the guards on the short line and drop the ball into the back-corner bucket. The target sets the task; the solution is the player's to find.</p></div>
+        <div className="gameCard shotsPrincipleCard"><h3>Why it works</h3><p>A representative target replaces instruction. The lob's defensive, organising and attacking functions are felt through the ball's flight, not described.</p></div>
+        <div className="gameCard shotsPrincipleCard"><h3>Run it live</h3><p>Rotating roles — Learner, Feeder, Collector and short-line guards — with a live score and Player Display. Open the full module to run it courtside.</p></div>
+      </div>
+      <div className="buttonRow" style={{marginTop:'14px'}}><button className="primaryBtn" onClick={()=>setScreen('bucketLob')}>Open Bucket Lob module</button></div>
     </div>}
 
 
@@ -9329,6 +9388,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslPowerPlayTeam,setNslPowerPlayTeam]=useState(()=>getSavedCompetitionState().nslPowerPlayTeam||'');
   const [nslPowerPlaySeconds,setNslPowerPlaySeconds]=useState(()=>getSavedCompetitionState().nslPowerPlaySeconds||60);
   const [nslPowerPlayActive,setNslPowerPlayActive]=useState(()=>getSavedCompetitionState().nslPowerPlayActive||false);
+  const [nsslCopied,setNsslCopied]=useState('');
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
@@ -10394,6 +10454,21 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return fixtures;
   }
 
+  function nsslDetailedTeams(){
+    return getNslGeneratedTeams().map((t)=>{
+      const players=[...(t.players||[])].sort((a,b)=>rankForTeamName(a)-rankForTeamName(b)||String(a).localeCompare(String(b)));
+      return {name:t.name,players,captain:players[0]||null};
+    });
+  }
+  function nsslDetailedFixtures(){
+    const teams=nsslDetailedTeams();
+    const fx=[];
+    for(let i=0;i<teams.length;i+=2){
+      fx.push({court:Math.floor(i/2)+1,a:teams[i]||{name:'BYE',players:[],captain:null},b:teams[i+1]||{name:'BYE',players:[],captain:null}});
+    }
+    return fx;
+  }
+
 
   function nslTeamKey(name){return String(name||'Team').replace(/\s+/g,'_');}
   function nslFixtureKey(idx){return `fixture-${idx}`;}
@@ -10427,6 +10502,17 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return ()=>clearInterval(id);
   },[nslPowerPlayActive]);
   useEffect(()=>{if(nslPowerPlayActive&&nslPowerPlaySeconds<=0)setNslPowerPlayActive(false);},[nslPowerPlayActive,nslPowerPlaySeconds]);
+  const nsslHostBase=useMemo(()=>{try{return getPersistentLiveRoomId();}catch{return 'cb-checkerboard-live';}},[]);
+  useEffect(()=>{
+    if(mode!=='nsl')return;
+    const handle=setTimeout(()=>{
+      try{
+        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
+        writeLivePlayerRoom(nsslClockRoomId(nsslHostBase),'nsslclock',payload);
+      }catch{}
+    },300);
+    return ()=>clearTimeout(handle);
+  });
   // v100h43 NSSL round timer and competition persistence
 
   const modeInfo={
@@ -11518,13 +11604,32 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             {nslOrgTab==='teams'&&(
               <div className="nslPanel">
                 <h3>Auto Team Allocation Preview</h3>
-                <div className="nslTeamGrid">{Array.from({length:nslTeams}).map((_,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>Team {teamIdx+1}</strong>{playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).map(name=><p key={name}>{name}</p>)}{!playerNames.filter((_,idx)=>idx%nslTeams===teamIdx).length&&<p>Waiting for players</p>}</div>)}</div>
+                <div className="nslTeamGrid">{nsslDetailedTeams().map((team,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>{team.name||`Team ${teamIdx+1}`}</strong>{team.players.length?team.players.map(name=><p key={name} style={name===team.captain?{color:'#ffd479',fontWeight:700}:undefined}>{name}{name===team.captain?' (C)':''}</p>):<p>Waiting for players</p>}</div>)}</div>
+                <p className="overlayExplain">Captain (C) defaults to the highest-ranked player in each team.</p>
               </div>
             )}
 
             {nslOrgTab==='score'&&(
               <div className="nslPanel nslScorePanel nslScorePanelV45">
                 <h3>NSSL Score Input</h3>
+
+                <div className="nslPanel" style={{background:'#0b1320',border:'1px solid #1d6b3f',marginBottom:'14px'}}>
+                  <h3 style={{marginTop:0}}>📺 Court Devices &amp; Master Display</h3>
+                  <p className="overlayExplain">Open one scoring screen per court on its own device, and the master leaderboard on the big screen. Keep <strong>this organiser screen</strong> open — it runs the shared league clock and rosters for every court.</p>
+                  <div className="buttonRow" style={{flexWrap:'wrap',gap:'8px'}}>
+                    <button type="button" className="primaryBtn" onClick={()=>{try{navigator.clipboard.writeText(buildNsslMasterLink(nsslHostBase));setNsslCopied('master');setTimeout(()=>setNsslCopied(''),1500);}catch{}}}>{nsslCopied==='master'?'Master link copied ✓':'Copy Master Display link'}</button>
+                    <button type="button" className="secondaryBtn" onClick={()=>{try{window.open(buildNsslMasterLink(nsslHostBase),'_blank');}catch{}}}>Open Master Display</button>
+                  </div>
+                  <div style={{display:'grid',gap:'8px',marginTop:'10px'}}>
+                    {nsslDetailedFixtures().map((fx,idx)=><div key={idx} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
+                      <span style={{fontWeight:800,color:'#9cc4ec'}}>Court {idx+1} — {fx.a.name} v {fx.b.name}</span>
+                      <span style={{display:'flex',gap:'6px'}}>
+                        <button type="button" className="secondaryBtn" onClick={()=>{try{navigator.clipboard.writeText(buildNsslCourtLink(idx+1,nsslHostBase));setNsslCopied('c'+idx);setTimeout(()=>setNsslCopied(''),1500);}catch{}}}>{nsslCopied==='c'+idx?'Copied ✓':'Copy'}</button>
+                        <button type="button" className="secondaryBtn" onClick={()=>{try{window.open(buildNsslCourtLink(idx+1,nsslHostBase),'_blank');}catch{}}}>Open</button>
+                      </span>
+                    </div>)}
+                  </div>
+                </div>
 
                 <div className="nslBigTimerBox">
                   <div className="nslTimerLabel">ACTIVE PERIOD</div>
@@ -11545,17 +11650,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>}
 
                 <div className="nslScoreCourtGrid">
-                  {getNslFixtures().map((fixture,idx)=><div className="nslCourtScoreCard" key={idx}>
+                  {nsslDetailedFixtures().map((fixture,idx)=><div className="nslCourtScoreCard" key={idx}>
                     <h4>Court {idx+1}</h4>
-                    {[fixture.a,fixture.b].filter(name=>name&&name!=='BYE').map(team=><div className={nslPowerPlayActive&&nslPowerPlayTeam===team?'nslTeamScoreBox activePowerTeam':'nslTeamScoreBox'} key={team}>
+                    {[fixture.a,fixture.b].filter(t=>t&&t.name&&t.name!=='BYE').map(team=><div className={nslPowerPlayActive&&nslPowerPlayTeam===team.name?'nslTeamScoreBox activePowerTeam':'nslTeamScoreBox'} key={team.name}>
                       <div>
-                        <span>{team}</span>
-                        <strong>{getNslScore(team,idx)}</strong>
+                        <span>{team.name}{team.captain?<small style={{display:'block',color:'#ffd479',fontWeight:700}}>© {team.captain}</small>:null}</span>
+                        <strong>{getNslScore(team.name,idx)}</strong>
                       </div>
+                      {team.players&&team.players.length>0&&<div style={{fontSize:'0.78rem',color:'#9fb0c2',margin:'2px 0 6px',gridColumn:'1 / -1'}}>{team.players.map(p=>p===team.captain?`${p} (C)`:p).join(' · ')}</div>}
                       <div className="nslScoreControls">
-                        <button type="button" onClick={()=>adjustNslScore(team,-1,idx)}>-1</button>
-                        <button type="button" className="primaryBtn" onClick={()=>adjustNslScore(team,1,idx)}>+1</button>
-                        <button type="button" className={nslPowerPlayActive&&nslPowerPlayTeam===team?'activePowerPlayBtn':'secondaryBtn'} onClick={()=>startNslPowerPlay(team)}>⚡ Power Play</button>
+                        <button type="button" onClick={()=>adjustNslScore(team.name,-1,idx)}>-1</button>
+                        <button type="button" className="primaryBtn" onClick={()=>adjustNslScore(team.name,1,idx)}>+1</button>
+                        <button type="button" className={nslPowerPlayActive&&nslPowerPlayTeam===team.name?'activePowerPlayBtn':'secondaryBtn'} onClick={()=>startNslPowerPlay(team.name)}>⚡ Power Play</button>
                       </div>
                     </div>)}
                   </div>)}
@@ -14627,6 +14733,195 @@ function CourtStandingsPlayerDisplay({payload={}}){
   </div>;
 }
 
+function NsslCourtScorer({court,host}){
+  const roomId=nsslCourtRoomId(host,court);
+  const [clock,setClock]=useState(null);
+  const [periods,setPeriods]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
+  const [pp,setPp]=useState({side:null,active:false,seconds:60});
+  const [undoStack,setUndoStack]=useState([]);
+  const [status,setStatus]=useState('Connecting…');
+
+  useEffect(()=>{
+    let cancelled=false;
+    async function load(){const row=await readLivePlayerRoom(nsslClockRoomId(host));if(cancelled)return;if(row&&row.payload){setClock(row.payload);setStatus('Live');}else setStatus('Waiting for organiser clock…');}
+    load();const id=setInterval(load,1500);return ()=>{cancelled=true;clearInterval(id);};
+  },[host]);
+
+  const fixture=useMemo(()=>{const fx=(clock&&clock.fixtures)||[];return fx.find(f=>Number(f.court)===Number(court))||null;},[clock,court]);
+  const teamA=fixture?.a||{name:'Team A',players:[],captain:null};
+  const teamB=fixture?.b||{name:'Team B',players:[],captain:null};
+  const activeKey=nsslPeriodKeyFor(clock?.activePeriod);
+  const totals=useMemo(()=>{let a=0,b=0;NSSL_PERIOD_KEYS.forEach(k=>{a+=periods[k]?.a||0;b+=periods[k]?.b||0;});return {a,b};},[periods]);
+
+  useEffect(()=>{if(!pp.active)return;const id=setInterval(()=>setPp(p=>{const s=p.seconds-1;if(s<=0)return {side:null,active:false,seconds:60};return {...p,seconds:s};}),1000);return ()=>clearInterval(id);},[pp.active]);
+
+  useEffect(()=>{
+    const payload={type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()};
+    writeLivePlayerRoom(roomId,'nssl',payload);
+    const id=setInterval(()=>writeLivePlayerRoom(roomId,'nssl',{...payload,updatedAt:Date.now()}),3000);
+    return ()=>clearInterval(id);
+  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,roomId]);
+
+  function score(side,delta){
+    if(delta>0&&pp.active&&pp.side&&pp.side!==side)return;
+    setUndoStack(s=>[...s,JSON.parse(JSON.stringify(periods))].slice(-50));
+    setPeriods(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:Math.max(0,(prev[activeKey]?.[side]||0)+delta)}}));
+  }
+  function undo(){setUndoStack(s=>{if(!s.length)return s;setPeriods(s[s.length-1]);return s.slice(0,-1);});}
+  function powerPlay(side){setPp({side,active:true,seconds:60});}
+  function endPP(){setPp({side:null,active:false,seconds:60});}
+  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);endPP();}}
+
+  const periodLabel=nsslPeriodLabel(activeKey);
+  function TeamPanel({side,team}){
+    const locked=pp.active&&pp.side&&pp.side!==side;
+    const onPP=pp.active&&pp.side===side;
+    const players=team.players||[];
+    return <div className={'nsslScTeam'+(onPP?' nsslScPP':'')+(locked?' nsslScLocked':'')}>
+      <div className="nsslScTeamHead"><strong>{team.name}</strong>{team.captain&&<span className="nsslScCapt">©&nbsp;{team.captain}</span>}</div>
+      {players.length>0&&<div className="nsslScPlayers">{players.map(p=><span key={p} className={p===team.captain?'nsslCaptName':''}>{p}{p===team.captain?' (C)':''}</span>)}</div>}
+      <div className="nsslScScore">{totals[side]}</div>
+      <div className="nsslScThisPeriod">{periodLabel} this period: {periods[activeKey]?.[side]||0}</div>
+      <div className="nsslScBtns">
+        <div role="button" tabIndex={0} className="nsslScMinus" onClick={()=>score(side,-1)}>−1</div>
+        <div role="button" tabIndex={0} className="nsslScPlus" onClick={()=>score(side,1)}>+1</div>
+      </div>
+      <div role="button" tabIndex={0} className={'nsslScPPBtn'+(onPP?' nsslScPPOn':'')+(locked?' nsslScPPDim':'')} onClick={()=>onPP?endPP():powerPlay(side)}>{onPP?`⚡ ${nsslFmtTime(pp.seconds)} · end`:'⚡ Power Play'}</div>
+    </div>;
+  }
+
+  return <div className="playerDisplayPage nsslScPage">
+    <style>{`
+.nsslScPage{padding:14px;max-width:760px;margin:0 auto;}
+.nsslScTop{text-align:center;margin-bottom:10px;}
+.nsslScTop h1{margin:2px 0;color:#eaf4fb;font-size:1.7rem;}
+.nsslScTop p{color:#7fc8a0;margin:0;}
+.nsslScLive{color:#34e07a;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
+.nsslScClock{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:12px;text-align:center;margin-bottom:14px;}
+.nsslScClockPeriod{color:#7fc8a0;letter-spacing:0.12em;font-weight:800;font-size:0.95rem;}
+.nsslScClockTime{color:#ffd479;font-size:3rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;}
+.nsslScClockState{color:#9fb0c2;font-size:0.85rem;}
+.nsslScGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.nsslScTeam{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;text-align:center;transition:border-color .15s,opacity .15s;}
+.nsslScTeam.nsslScPP{border-color:#ffd400;box-shadow:0 0 0 1px rgba(255,212,0,0.3);}
+.nsslScTeam.nsslScLocked{opacity:0.55;}
+.nsslScTeamHead strong{display:block;color:#eaf4fb;font-size:1.25rem;font-weight:800;}
+.nsslScCapt{display:inline-block;margin-top:3px;color:#ffd479;font-size:0.8rem;font-weight:700;}
+.nsslScPlayers{display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:center;margin:8px 0;font-size:0.85rem;color:#9fb0c2;}
+.nsslScPlayers .nsslCaptName{color:#ffd479;font-weight:700;}
+.nsslScScore{font-size:4rem;font-weight:800;color:#eaf4fb;line-height:1;}
+.nsslScThisPeriod{color:#7fb0e0;font-size:0.85rem;margin-bottom:10px;}
+.nsslScBtns{display:flex;gap:8px;}
+.nsslScMinus,.nsslScPlus{flex:1;border-radius:12px;padding:18px 0;font-size:1.5rem;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.nsslScMinus{background:#2a1620;border:1px solid #5e2233;color:#ff9db5;}
+.nsslScPlus{background:#114d2c;border:1px solid #1d6b3f;color:#bff0d0;}
+.nsslScPlus:active,.nsslScMinus:active{transform:scale(0.97);}
+.nsslScPPBtn{margin-top:10px;border-radius:10px;padding:10px;font-weight:800;cursor:pointer;background:#15233a;border:1px solid #294063;color:#9cc4ec;}
+.nsslScPPBtn.nsslScPPOn{background:#5f4d0f;border-color:#ffd400;color:#ffe9a8;}
+.nsslScPPBtn.nsslScPPDim{opacity:0.5;}
+.nsslScControls{display:flex;gap:10px;margin-top:14px;justify-content:center;}
+.nsslScCtl{background:#0f1822;border:1px solid #2c3c4e;color:#9fb0c2;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;}
+.nsslScCtl.danger{border-color:#5e2233;color:#ff9db5;}
+.nsslScWait{text-align:center;color:#6b8299;font-style:italic;padding:20px;}
+`}</style>
+    <div className="nsslScTop"><span className="nsslScLive">● COURT {court}</span><h1>NSSL Court {court}</h1><p>{status}</p></div>
+    <div className="nsslScClock">
+      <div className="nsslScClockPeriod">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):'—'}</div>
+      <div className="nsslScClockTime">{clock?nsslFmtTime(clock.secondsRemaining):'--:--'}</div>
+      <div className="nsslScClockState">{clock?(clock.running?'running':'paused'):'waiting for organiser'} · shared league clock</div>
+    </div>
+    {fixture?<><div className="nsslScGrid"><TeamPanel side="a" team={teamA}/><TeamPanel side="b" team={teamB}/></div>
+      <div className="nsslScControls"><div role="button" tabIndex={0} className="nsslScCtl" onClick={undo}>↶ Undo</div><div role="button" tabIndex={0} className="nsslScCtl danger" onClick={resetCourt}>Reset court</div></div>
+    </>:<p className="nsslScWait">Waiting for the organiser to generate fixtures for this court…</p>}
+  </div>;
+}
+
+function NsslMasterDisplay({host}){
+  const [clock,setClock]=useState(null);
+  const [courts,setCourts]=useState({});
+  const [status,setStatus]=useState('Connecting…');
+  useEffect(()=>{
+    let cancelled=false;
+    async function load(){
+      const clockRow=await readLivePlayerRoom(nsslClockRoomId(host));
+      const ck=(clockRow&&clockRow.payload)||null;
+      if(!cancelled){setClock(ck);setStatus(ck?'Live':'Waiting for organiser…');}
+      const fixtures=(ck&&ck.fixtures)||[];
+      const out={};
+      await Promise.all(fixtures.map(async f=>{const row=await readLivePlayerRoom(nsslCourtRoomId(host,f.court));out[f.court]=(row&&row.payload)||null;}));
+      if(!cancelled)setCourts(out);
+    }
+    load();const id=setInterval(load,2000);return ()=>{cancelled=true;clearInterval(id);};
+  },[host]);
+
+  const fixtures=(clock&&clock.fixtures)||[];
+  const courtData=fixtures.map(f=>{
+    const cp=courts[f.court];
+    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
+  });
+  const league=nsslBuildLeague(courtData);
+
+  return <div className="playerDisplayPage nsslMaPage">
+    <style>{`
+.nsslMaPage{padding:16px;max-width:1150px;margin:0 auto;}
+.nsslMaHead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+.nsslMaTitle h1{margin:0;color:#eaf4fb;font-size:2rem;}
+.nsslMaTitle span{color:#34e07a;font-weight:800;letter-spacing:0.12em;font-size:0.85rem;}
+.nsslMaClock{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:10px 20px;text-align:center;min-width:200px;}
+.nsslMaClock .p{color:#7fc8a0;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
+.nsslMaClock .t{color:#ffd479;font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+.nsslMaClock .s{color:#9fb0c2;font-size:0.78rem;}
+.nsslMaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:18px;}
+.nsslMaCourt{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;}
+.nsslMaCourt.pp{border-color:#ffd400;}
+.nsslMaCourt.off{opacity:0.5;}
+.nsslMaCourtTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.nsslMaCourtTop b{color:#9cc4ec;font-size:1.05rem;}
+.nsslMaCourtTop em{font-size:0.75rem;font-style:normal;color:#6b8299;}
+.nsslMaScoreRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
+.nsslMaSide{text-align:center;}
+.nsslMaSide .nm{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
+.nsslMaSide .cap{color:#ffd479;font-size:0.72rem;font-weight:700;}
+.nsslMaSide .sc{color:#ffffff;font-size:2.6rem;font-weight:800;line-height:1;}
+.nsslMaSide.lead .sc{color:#86efac;}
+.nsslMaVs{color:#6b8299;font-weight:700;}
+.nsslMaPlayers{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:center;margin-top:4px;font-size:0.72rem;color:#7e91a6;}
+.nsslMaPPbadge{margin-top:8px;text-align:center;color:#ffe9a8;font-weight:700;font-size:0.82rem;}
+.nsslMaTblWrap h2{color:#9cc4ec;font-size:1.1rem;margin:0 0 6px;}
+.nsslMaTbl{width:100%;border-collapse:collapse;font-size:1.05rem;}
+.nsslMaTbl th{text-align:left;color:#7fb0e0;font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid #25405f;}
+.nsslMaTbl td{padding:7px 10px;border-bottom:1px solid #1a2c43;color:#eaf4fb;}
+.nsslMaTbl td.nm{font-weight:700;}
+.nsslMaTbl th:not(:nth-child(2)),.nsslMaTbl td:not(.nm){text-align:center;}
+.nsslMaTbl tr.lead td{background:#0d2417;color:#bff0d0;}
+.nsslMaTbl tr.lead td.nm::before{content:'👑 ';}
+.nsslMaWait{text-align:center;color:#6b8299;font-style:italic;padding:8px;}
+`}</style>
+    <div className="nsslMaHead">
+      <div className="nsslMaTitle"><span>● LIVE</span><h1>NSSL · Live League</h1></div>
+      <div className="nsslMaClock"><div className="p">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):status}</div><div className="t">{clock?nsslFmtTime(clock.secondsRemaining):'--:--'}</div><div className="s">{clock?(clock.running?'running':'paused'):'shared league clock'}</div></div>
+    </div>
+    {courtData.length>0?<div className="nsslMaGrid">{courtData.map(c=>{
+      const aLead=c.totals.a>c.totals.b,bLead=c.totals.b>c.totals.a;
+      const ppName=c.powerPlay?(c.powerPlay.side==='a'?c.teamA.name:c.teamB.name):null;
+      return <div key={c.court} className={'nsslMaCourt'+(c.powerPlay?' pp':'')+(!c.connected||c.stale?' off':'')}>
+        <div className="nsslMaCourtTop"><b>Court {c.court}</b><em>{!c.connected?'no device':c.stale?'paused':'live'}</em></div>
+        <div className="nsslMaScoreRow">
+          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div></div>
+          <div className="nsslMaVs">v</div>
+          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div></div>
+        </div>
+        {(c.teamA.players?.length||c.teamB.players?.length)?<div className="nsslMaPlayers">{[...(c.teamA.players||[]),'·',...(c.teamB.players||[])].map((p,i)=><span key={i}>{p}</span>)}</div>:null}
+        {ppName&&<div className="nsslMaPPbadge">⚡ Power Play: {ppName}{c.powerPlay.seconds!=null?` · ${nsslFmtTime(c.powerPlay.seconds)}`:''}</div>}
+      </div>;
+    })}</div>:<p className="nsslMaWait">Waiting for the organiser to generate fixtures…</p>}
+    <div className="nsslMaTblWrap">
+      <h2>League Table · Match Points</h2>
+      {league.length>0?<table className="nsslMaTbl"><thead><tr><th>#</th><th>Team</th><th>P</th><th>MP</th><th>PF</th><th>+/−</th></tr></thead><tbody>{league.map((r,i)=><tr key={r.name} className={i===0&&r.mp>0?'lead':''}><td>{i+1}</td><td className="nm">{r.name}</td><td>{r.played}</td><td>{r.mp}</td><td>{r.pf}</td><td>{(r.pf-r.pa)>0?'+':''}{r.pf-r.pa}</td></tr>)}</tbody></table>:<p className="nsslMaWait">Scores will appear as courts report. Match points: P1 & P2 = 1, P3 = 2, OT = 1.</p>}
+    </div>
+  </div>;
+}
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -14663,6 +14958,8 @@ useEffect(()=>{
 },[screen]);
 const[backStack,setBackStack]=useState([]);
 const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
+const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
+const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -14700,6 +14997,8 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
+if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
+if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
