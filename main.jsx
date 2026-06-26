@@ -83,7 +83,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v200 nav + tiles + serve wording';
+const APP_VERSION='v201 RR standings + court monitor display + wake lock + SL markers';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -770,13 +770,92 @@ function CompetitionPlayerDisplayCard({competition}){
       <ActiveExtrasPanel/>
     </div>}
     {mode!=='matchplay'&&<><CompetitionRulesPanel/><ActiveExtrasPanel/></>}
-    {mode==='roundRobin'&&<div className="competitionDisplayLayout competitionLeagueDisplay">
-      <section className="competitionDisplayDraw"><h2>BOX / ROUND ROBIN FIXTURES</h2>
-        {(competition.rrFixtures&&competition.rrFixtures.length?competition.rrFixtures:competition.rrBoxFixtures?.[0]||[]).slice(0,4).map((round,idx)=><div key={idx} className="compactCourtRow"><b>R{idx+1}</b><span>{round.map(m=>`${m.a} v ${m.b}`).join(' / ')}</span><em>Schedule</em></div>)}
-        {!(competition.rrFixtures&&competition.rrFixtures.length)&&!(competition.rrBoxFixtures&&competition.rrBoxFixtures.length)&&<p>No fixtures generated yet.</p>}
-      </section>
-      <section className="competitionDisplayNext"><h2>STANDINGS</h2><p>Standings update from saved match results.</p><p>{(competition.playerNames||[]).slice(0,10).join(' · ')||'No players selected'}</p></section>
-    </div>}
+    {mode==='roundRobin'&&(()=>{
+      const scores=competition.competitionMatchScores||{};
+      const hasBoxes=Array.isArray(competition.rrBoxes)&&competition.rrBoxes.length>0;
+      const hasFinal=Array.isArray(competition.rrFinalBoxes)&&competition.rrFinalBoxes.length>0;
+      const hasSingle=Array.isArray(competition.rrFixtures)&&competition.rrFixtures.length>0;
+      function sortRows(rows){return rows.sort((a,b)=>b.wins-a.wins||a.losses-b.losses||(b.pf-b.pa)-(a.pf-a.pa)||b.pf-a.pf||String(a.name).localeCompare(String(b.name)));}
+      function singleStandings(){
+        const t={};(competition.playerNames||[]).forEach(n=>{t[n]={name:n,played:0,wins:0,losses:0,pf:0,pa:0};});
+        (competition.rrFixtures||[]).forEach((round,ri)=>(round||[]).forEach((m,mi)=>{
+          const w=(competition.rrResults||{})[`${ri}-${mi}`];if(!w)return;
+          const l=w===m.a?m.b:m.a;
+          [m.a,m.b].forEach(n=>{if(!t[n])t[n]={name:n,played:0,wins:0,losses:0,pf:0,pa:0};t[n].played+=1;});
+          if(t[w])t[w].wins+=1;if(t[l])t[l].losses+=1;
+          const sc=scores[`${ri}-${mi}`];
+          if(sc&&sc.a!==''&&sc.b!==''){const sa=Number(sc.a)||0,sb=Number(sc.b)||0;if(t[m.a]){t[m.a].pf+=sa;t[m.a].pa+=sb;}if(t[m.b]){t[m.b].pf+=sb;t[m.b].pa+=sa;}}
+        }));
+        return sortRows(Object.values(t));
+      }
+      function boxStandings(box,fixtures,results,boxIdx,stage){
+        const t={};(box.players||[]).forEach(n=>{t[n]={name:n,played:0,wins:0,losses:0,pf:0,pa:0};});
+        (fixtures||[]).forEach((round,ri)=>(round||[]).forEach((m,mi)=>{
+          const w=(results||{})[`${stage}-${boxIdx}-${ri}-${mi}`];if(!w)return;
+          const l=w===m.a?m.b:m.a;
+          [m.a,m.b].forEach(n=>{if(!t[n])t[n]={name:n,played:0,wins:0,losses:0,pf:0,pa:0};t[n].played+=1;});
+          if(t[w])t[w].wins+=1;if(t[l])t[l].losses+=1;
+          const sc=scores[`rr-${stage}-${ri}-${mi}-${boxIdx}`];
+          if(sc&&sc.a!==''&&sc.b!==''){const sa=Number(sc.a)||0,sb=Number(sc.b)||0;if(t[m.a]){t[m.a].pf+=sa;t[m.a].pa+=sb;}if(t[m.b]){t[m.b].pf+=sb;t[m.b].pa+=sa;}}
+        }));
+        return sortRows(Object.values(t));
+      }
+      function pd(r){const d=r.pf-r.pa;return (d>0?'+':'')+d;}
+      const StandingsTable=({rows})=>rows.length?<table className="rrStandTbl"><thead><tr><th>#</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/−</th></tr></thead><tbody>{rows.map((r,i)=><tr key={r.name} className={i===0&&r.played>0?'rrLead':''}><td>{i+1}</td><td className="rrName">{r.name}</td><td>{r.played}</td><td>{r.wins}</td><td>{r.losses}</td><td>{pd(r)}</td></tr>)}</tbody></table>:<p className="rrEmpty">No results entered yet.</p>;
+      const tblStyle=`
+.rrLeagueWrap{display:grid;gap:14px;}
+.rrStandTbl{width:100%;border-collapse:collapse;font-size:1.05rem;margin-top:6px;}
+.rrStandTbl th{text-align:left;color:#7fb0e0;font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #25405f;}
+.rrStandTbl td{padding:6px 8px;border-bottom:1px solid #1a2c43;color:#eaf4fb;}
+.rrStandTbl td.rrName{font-weight:700;}
+.rrStandTbl th:not(:nth-child(2)),.rrStandTbl td:not(.rrName){text-align:center;}
+.rrStandTbl tr.rrLead td{background:#0d2417;color:#bff0d0;}
+.rrStandTbl tr.rrLead td.rrName::before{content:'👑 ';}
+.rrEmpty{color:#6b8299;font-style:italic;}
+.rrFixList{display:grid;gap:5px;margin-top:6px;}
+.rrFixRow{display:flex;gap:8px;align-items:center;background:#0f1822;border:1px solid #223044;border-radius:8px;padding:6px 10px;}
+.rrFixRow b{color:#9cc4ec;min-width:2.4rem;}
+.rrFixMatch{flex:1;}
+.rrFixMatch .rrWin{font-weight:800;color:#86efac;}
+.rrFixMatch .rrLoseN{color:#9fb0c2;}
+.rrFixRes{color:#ffd479;font-weight:700;font-variant-numeric:tabular-nums;}
+.rrFixPend{color:#6b8299;font-style:italic;}
+.rrBoxBlock{background:#0b1320;border:1px solid #223044;border-radius:12px;padding:12px 14px;}
+.rrBoxBlock h3{margin:0 0 4px;color:#9cc4ec;font-size:1.05rem;}
+.rrBoxGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+`;
+      function FixtureList({fixtures,results,scoresKeyFn}){
+        const rows=[];
+        (fixtures||[]).forEach((round,ri)=>(round||[]).forEach((m,mi)=>rows.push({ri,mi,m})));
+        if(!rows.length)return <p className="rrEmpty">No fixtures generated yet.</p>;
+        return <div className="rrFixList">{rows.map(({ri,mi,m})=>{
+          const w=(results||{})[scoresKeyFn?scoresKeyFn(ri,mi):`${ri}-${mi}`];
+          const sc=scores[scoresKeyFn?(`rr-group-${ri}-${mi}`):`${ri}-${mi}`];
+          const hasScore=sc&&sc.a!==''&&sc.b!=='';
+          return <div key={`${ri}-${mi}`} className="rrFixRow">
+            <b>R{ri+1}</b>
+            <span className="rrFixMatch">
+              <span className={w===m.a?'rrWin':'rrLoseN'}>{m.a}</span> <span className="rrLoseN">v</span> <span className={w===m.b?'rrWin':'rrLoseN'}>{m.b}</span>
+            </span>
+            {hasScore?<span className="rrFixRes">{sc.a}–{sc.b}</span>:w?<span className="rrFixRes">{w} won</span>:<span className="rrFixPend">to play</span>}
+          </div>;
+        })}</div>;
+      }
+      return <div className="competitionDisplayLayout competitionLeagueDisplay rrLeagueWrap">
+        <style>{tblStyle}</style>
+        {hasBoxes?<>
+          <section className="competitionDisplayDraw"><h2>BOX STANDINGS{hasFinal?' · GROUP STAGE':''}</h2>
+            <div className="rrBoxGrid">{(competition.rrBoxes||[]).map((box,bi)=><div key={bi} className="rrBoxBlock"><h3>{box.name||`Box ${bi+1}`}</h3><StandingsTable rows={boxStandings(box,(competition.rrBoxFixtures||[])[bi]||[],competition.rrBoxResults,bi,'group')}/></div>)}</div>
+          </section>
+          {hasFinal&&<section className="competitionDisplayNext"><h2>FINAL STAGE</h2>
+            <div className="rrBoxGrid">{(competition.rrFinalBoxes||[]).map((box,bi)=><div key={bi} className="rrBoxBlock"><h3>{box.name||`Final Box ${bi+1}`}{box.range?` · ${box.range}`:''}</h3><StandingsTable rows={boxStandings(box,(competition.rrFinalFixtures||[])[bi]||[],competition.rrFinalResults,bi,'final')}/></div>)}</div>
+          </section>}
+        </>:hasSingle?<>
+          <section className="competitionDisplayDraw"><h2>STANDINGS</h2><StandingsTable rows={singleStandings()}/></section>
+          <section className="competitionDisplayNext"><h2>FIXTURES &amp; RESULTS</h2><FixtureList fixtures={competition.rrFixtures} results={competition.rrResults}/></section>
+        </>:<section className="competitionDisplayDraw"><h2>ROUND ROBIN</h2><p className="rrEmpty">No fixtures generated yet. Generate a draw on the coach device, then enter results — standings update here live.</p></section>}
+      </div>;
+    })()}
     {mode==='monrad'&&((competition.monradRounds&&competition.monradRounds.length>0)||(competition.monradPlacingRounds&&competition.monradPlacingRounds.length>0))&&(()=>{
       const hasPlacing=(competition.monradPlacingRounds||[]).length>0;
       const counts=monradCompletedCount();
@@ -7636,7 +7715,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
 .slBoard .slCell.slFinish{background:#5f4d0f !important;border-color:#ffd400 !important;}
 .slBoard .slNum{font-size:1.8rem !important;font-weight:800 !important;color:#f2f7ff !important;line-height:1.05 !important;}
 .slBoard .slTok{font-size:1.35rem !important;min-width:2.1rem !important;height:2.1rem !important;line-height:2.1rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
-.slBoard .slMark{font-size:1rem !important;}
+.slBoard .slMark{font-size:1.55rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.1 !important;}
+.slDisplayBoard .slMark{font-size:2.1rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slDisplayBoard .slNum{font-size:2.1rem !important;}
 `}</style>
     {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
     {winner==null&&queue.length>=2&&<div className="slOnCourt">
@@ -7796,6 +7877,11 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const winnerName=payload.winnerName||null;
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
   return <div className="playerDisplayPage slDisplayPage">
+    <style>{`
+.slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
+.slDisplayBoard .slTok{font-size:1.5rem !important;min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+`}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
       :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
@@ -14524,6 +14610,8 @@ function CourtMonitor({setScreen}){
   const [rooms,setRooms]=useState({});
   const [copied,setCopied]=useState(null);
   const [showLinks,setShowLinks]=useState(true);
+  const [pushDisplay,setPushDisplay]=useState(false);
+  const [copiedDisplay,setCopiedDisplay]=useState(false);
   useEffect(()=>{try{localStorage.setItem('cbCourtCount',String(count));}catch{}},[count]);
 
   useEffect(()=>{
@@ -14536,10 +14624,15 @@ function CourtMonitor({setScreen}){
       setRooms(out);
       const ranking=ns.map(n=>({court:n,pct:out[n]?out[n].pct:null,headline:out[n]?out[n].headline:'',leaderName:out[n]?out[n].leaderName:'',game:out[n]?out[n].game:null})).filter(r=>r.game).sort((a,b)=>((b.pct)||0)-((a.pct)||0));
       writeLivePlayerRoom(courtStandingsRoomId(base),'standings',{type:'standings',count,ranking,updatedAt:Date.now()});
+      if(pushDisplay){
+        const courts=ns.map(n=>({court:n,game:out[n]?out[n].game:null,headline:out[n]?out[n].headline:'',leaderName:out[n]?out[n].leaderName:'',pct:out[n]?out[n].pct:null,stale:out[n]?out[n].stale:false}));
+        const liveCount=courts.filter(c=>c.game&&!c.stale).length;
+        writeLivePlayerRoom(getPersistentLiveRoomId(),'courtstandings',{type:'courtstandings',count,courts,liveCount,updatedAt:Date.now()});
+      }
     }
     load();const id=setInterval(load,2500);
     return ()=>{cancelled=true;clearInterval(id);};
-  },[base,count]);
+  },[base,count,pushDisplay]);
 
   const ranked=Array.from({length:count},(_,i)=>i+1).map(n=>({n,d:rooms[n]})).sort((a,b)=>{const ap=a.d?.pct,bp=b.d?.pct;if(ap==null&&bp==null)return a.n-b.n;if(ap==null)return 1;if(bp==null)return -1;return bp-ap;});
   const liveCourts=ranked.filter(r=>r.d&&r.d.game&&!r.d.stale);
@@ -14559,8 +14652,21 @@ function CourtMonitor({setScreen}){
       <div className="cmRow">
         <span className="mutedText">Courts:</span>
         {[2,3,4,5,6].map(c=><button key={c} type="button" className={'lobBtn ghost'+(count===c?' bucket':'')} onClick={()=>setCount(c)} style={{borderRadius:'9px',padding:'8px 13px',fontWeight:700,cursor:'pointer',border:count===c?'1px solid #1d6b3f':'1px solid #2c3c4e',background:count===c?'#114d2c':'#0b1118',color:count===c?'#bff0d0':'#9fb0c2'}}>{c}</button>)}
-        <button type="button" className="cmLinkBtn" onClick={()=>setShowLinks(s=>!s)} style={{marginLeft:'auto'}}>{showLinks?'Hide':'Show'} court links</button>
+        <button type="button" className="cmLinkBtn" onClick={()=>setPushDisplay(p=>!p)} style={{marginLeft:'auto',background:pushDisplay?'#114d2c':'#16466a',border:pushDisplay?'1px solid #1d6b3f':'1px solid #2E6E8E'}}>{pushDisplay?'■ Pushing to Player Display':'▣ Push to Player Display'}</button>
+        <button type="button" className="cmLinkBtn" onClick={()=>setShowLinks(s=>!s)}>{showLinks?'Hide':'Show'} court links</button>
       </div>
+
+      {pushDisplay&&<div className="cmShareCard" style={{borderColor:'#1d6b3f'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
+          <span className="ct">📺 Big-screen leaderboard is live</span>
+          <span style={{display:'flex',gap:'8px'}}>
+            <button type="button" className="cmLinkBtn" onClick={()=>{try{navigator.clipboard.writeText(buildLivePlayerViewUrl());setCopiedDisplay(true);setTimeout(()=>setCopiedDisplay(false),1500);}catch{}}}>{copiedDisplay?'Copied ✓':'Copy display link'}</button>
+            <button type="button" className="cmLinkBtn" onClick={()=>{try{window.open(buildLivePlayerViewUrl(),'_blank');}catch{}}}>Open display</button>
+          </span>
+        </div>
+        <p className="mutedText" style={{margin:'6px 0 0'}}>Open this on the big screen / second device — it shows the live King of Courts ranking for players. Leave this Monitor running on your device to keep it updating.</p>
+        <code>{buildLivePlayerViewUrl()}</code>
+      </div>}
 
       {showLinks&&<div style={{marginBottom:'16px'}}>
         <p className="mutedText" style={{marginTop:0}}>Send each court its own link. Open it on that court's device (phone or tablet), run any game, and it reports here automatically.</p>
@@ -14604,6 +14710,56 @@ function CourtStandingBanner({host,court}){
   </div>;
 }
 
+function CourtStandingsPlayerDisplay({payload={}}){
+  const courts=payload.courts||[];
+  const ranked=[...courts].sort((a,b)=>{
+    const ag=!!a.game,bg=!!b.game;
+    if(ag&&!bg)return -1; if(!ag&&bg)return 1;
+    const ap=a.pct,bp=b.pct;
+    if(ap==null&&bp==null)return (a.court||0)-(b.court||0);
+    if(ap==null)return 1; if(bp==null)return -1;
+    return bp-ap;
+  });
+  const leader=ranked.find(c=>c.game&&c.pct!=null);
+  return <div className="playerDisplayPage csPdPage">
+    <style>{`
+.csPdPage{padding:18px;max-width:1100px;margin:0 auto;}
+.csPdHead{text-align:center;margin-bottom:14px;}
+.csPdHead h1{margin:4px 0 2px;font-size:2.4rem;color:#eaf4fb;letter-spacing:0.02em;}
+.csPdHead p{color:#7fc8a0;font-size:1.1rem;margin:0;}
+.csPdLive{display:inline-block;color:#34e07a;font-weight:800;letter-spacing:0.12em;font-size:0.9rem;}
+.csPdLeader{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:14px 18px;text-align:center;color:#ffd479;font-weight:800;font-size:1.5rem;margin-bottom:16px;}
+.csPdWait{text-align:center;color:#6b8299;font-style:italic;font-size:1.2rem;margin-bottom:16px;}
+.csPdGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.csPdCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px;}
+.csPdCard.csPdTop{border-color:#1d6b3f;background:#0d2417;}
+.csPdCard.csPdStale{opacity:0.5;}
+.csPdRow{display:flex;justify-content:space-between;align-items:baseline;}
+.csPdCourt{font-size:1.25rem;font-weight:800;color:#9cc4ec;}
+.csPdRank{background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:2px 12px;font-weight:800;font-size:0.9rem;}
+.csPdGame{font-size:0.95rem;color:#6b8299;margin-top:4px;}
+.csPdHeadline{font-size:2.3rem;font-weight:800;color:#eaf4fb;margin:6px 0 2px;}
+.csPdWho{font-size:1.05rem;color:#86efac;}
+.csPdBar{height:12px;border-radius:7px;background:#1a2740;overflow:hidden;margin-top:12px;}
+.csPdBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#34e07a);}
+`}</style>
+    <div className="csPdHead"><span className="csPdLive">● LIVE</span><h1>King of Courts</h1><p>{(payload.liveCount!=null?payload.liveCount:ranked.filter(c=>c.game&&!c.stale).length)} of {payload.count||courts.length} courts live</p></div>
+    {leader?<div className="csPdLeader">👑 Court {leader.court} leading — {leader.headline||'—'}{leader.leaderName?` (${leader.leaderName})`:''}</div>:<div className="csPdWait">Waiting for courts to report…</div>}
+    <div className="csPdGrid">{ranked.map((c,i)=>{
+      const isLead=c.game&&c.pct!=null&&i===0;
+      return <div key={c.court} className={'csPdCard'+(isLead?' csPdTop':'')+(c.stale?' csPdStale':'')}>
+        <div className="csPdRow"><span className="csPdCourt">{isLead?'👑 ':''}Court {c.court}</span>{c.game&&c.pct!=null&&<span className="csPdRank">{cmOrdinal(i+1)}</span>}</div>
+        {c.game?<>
+          <div className="csPdGame">{c.game}{c.stale?' · paused':''}</div>
+          <div className="csPdHeadline">{c.headline||'—'}</div>
+          {c.leaderName&&<div className="csPdWho">{c.leaderName}</div>}
+          {c.pct!=null&&<div className="csPdBar"><i style={{width:Math.round(c.pct*100)+'%'}}/></div>}
+        </>:<div className="csPdWait">No device connected</div>}
+      </div>;
+    })}</div>
+  </div>;
+}
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -14628,6 +14784,16 @@ useEffect(()=>{
   const id=setInterval(load,2000);
   return ()=>{cancelled=true;clearInterval(id);};
 },[liveRoomParam]);
+useEffect(()=>{
+  if(screen!=='playerDisplay')return;
+  if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
+  let lock=null;
+  async function acquire(){try{if(document.visibilityState==='visible'){lock=await navigator.wakeLock.request('screen');}}catch{}}
+  acquire();
+  const onVis=()=>{if(document.visibilityState==='visible')acquire();};
+  document.addEventListener('visibilitychange',onVis);
+  return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
+},[screen]);
 const[backStack,setBackStack]=useState([]);
 const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
@@ -14675,6 +14841,7 @@ if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <Disruptio
 if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeReturnPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='pattern'){return <PatternLabPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='courtstandings'){return <CourtStandingsPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
