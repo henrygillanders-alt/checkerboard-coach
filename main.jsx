@@ -1,4 +1,3 @@
-/* BUILD PATCH: TIN WAR REAL CLIMB + TIMED KOC FINAL — 2026-06-26 */
 // v142 game-builder/scoring/player-display cleanup build
 /* v135 Competition Payload Export Fix */
 
@@ -8142,7 +8141,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   useEffect(()=>{
     if(!projecting)return;
     const payload={type:'doublebounce',
-      game:{title:game.title,tag:game.tag,principle:game.player||game.principle},
+      game:{title:game.title,tag:game.tag,principle:game.principle},
       players:names.map(n=>({name:n,db:db[n]??0,golden:golden[n]||null,points:points[n]??0,tcount:tcount[n]??0})),
       recovery:recovery?{player:recovery.player,shots:recovery.shots}:null,
       lastSteal,maxCap,
@@ -8358,44 +8357,52 @@ function TinWarStyles(){
 `}</style>;
 }
 
+
 const TIN_LADDER=[
-  {key:'FULL',label:'FULL WALL',cm:'real tin to out',player:'Full legal front wall available. This is the easiest starting window.',band:'Full wall'},
-  {key:'NO15',label:'NO 0–15cm',cm:'above 15cm only',player:'You cannot score in the real tin to 15cm space.',band:'Above 15cm'},
-  {key:'NO30',label:'NO 0–30cm',cm:'above 30cm only',player:'You cannot score in the real tin to 30cm space.',band:'Above 30cm'},
-  {key:'NO65',label:'NO 0–65cm',cm:'above 65cm only',player:'You cannot score in the real tin to 65cm space. This is the neutral Tin War line.',band:'Above 65cm'},
-  {key:'NOSERVICE',label:'NO LOWER WALL',cm:'above service line only',player:'You cannot score below the service line.',band:'Above service line'},
-  {key:'TOP',label:'TOP WINDOW',cm:'service line + 30cm and above',player:'Lowest attacking space is gone. You must win using the upper window.',band:'Top window only'},
+  {key:'OPEN',label:'OPEN WALL',cm:'full legal wall',player:'You can use the full front wall above the real tin.',band:'Any legal height above the real tin'},
+  {key:'NO15',label:'NO LOW 15',cm:'tin + 15cm',player:'You cannot score in the bottom 15cm above the real tin.',band:'Above 15cm only'},
+  {key:'NO30',label:'NO LOW 30',cm:'tin + 30cm',player:'You cannot score in the bottom 30cm above the real tin.',band:'Above 30cm only'},
+  {key:'NO65',label:'NO LOW 65',cm:'tin + 65cm',player:'You cannot score in the bottom 65cm above the real tin.',band:'Above 65cm only'},
+  {key:'SERVICE',label:'SERVICE LINE+',cm:'above service line',player:'You must score above the service line. Low kills are gone.',band:'Above service line only'},
+  {key:'TOP',label:'TOP WINDOW',cm:'30cm above service line',player:'You must score very high: 30cm above the service line or higher.',band:'Top window only'},
 ];
 
 const TINWAR_GAMES=[
-  {id:'tw1',title:'Earn the Drop',tag:'Protocol choice',start:3,
-   principle:'Win normally for 1. Win with the selected protocol shot and you choose: drop your own tin or raise the opponent’s tin.',
-   player:'Win rally = 1. Protocol winner = 1 + Tin choice. Choose: lower yours, or raise theirs.',
-   logic:'Timed King of Court. Players carry their own Tin state across court rotations. Start at 65cm. Coach selects the winning-shot protocol before the game. A normal rally win is +1. A protocol winner is +1 and earns one Tin action: move own Tin down one level, or move opponent Tin up one level.',
-   earn:['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Coach can select one or multiple protocols'],
-   scoring:'Normal rally win = +1. Selected protocol winner = +1 plus Tin choice.',
-   note:'This keeps both Tin War protocols: skill-triggered Tin movement plus timed KOC player-carried Tin.'},
-  {id:'tw2',title:'Climb — Full Wall Leveller',tag:'Leveller',start:0,
-   principle:'The more you win, the less bottom wall you are allowed to use.',
-   player:'Start with full wall. Each win removes more bottom wall. Keep winning with less space.',
-   logic:'Timed King of Court. Every player starts with FULL WALL. Each rally win removes the next lower band from that player’s legal scoring area: 0–15cm, then 0–30cm, then 0–65cm, then below service line, then the lower wall is gone. Players carry the restriction across timed rotations. Reset only by coach or new session.',
-   earn:['Win 1 → no scoring in real tin to 15cm space','Win 2 → no scoring in real tin to 30cm space','Win 3 → no scoring in real tin to 65cm space','Win 4 → no scoring below service line','Win 5 → top window only'],
-   scoring:'Rally win = +1. The handicap increases after each win.',
-   note:'This is the true Climb leveller: success creates a handicap by removing attacking space.'},
-  {id:'tw3',title:'King Hunt',tag:'Timed KOC',start:3,
-   principle:'The leader carries their Tin. Beat the leader for the bonus.',
-   player:'Highest score is King. Beat the King = 3. King keeps their Tin restriction.',
-   logic:'Timed King of Court. The highest-scoring player on the court is the King. The King carries their current Tin state. If a challenger beats the King, the challenger scores 3 points and becomes the new King. Tin state stays with each player across rotations.',
-   earn:['Beat the King → +3','New King carries their own Tin','Former King keeps their own Tin state'],
-   scoring:'Normal win = +1. Beat King = +3.',
-   note:'Creates a public target: the court knows who must be hunted.'},
-  {id:'tw4',title:'Target Hunter',tag:'Public target',start:3,
-   principle:'Everyone can see your scoring window, so you must disguise the finish.',
-   player:'Normal win = 1. Win in your active target band = 3. Opponent knows the target.',
-   logic:'Timed King of Court. Player View shows each player’s active scoring band. A normal rally win scores 1. A winner hit into the player’s active target band scores 3. Because the opponent can see the target, the attacker must create, disguise and finish better.',
-   earn:['Hit active target band winner → +3','Normal rally win → +1'],
-   scoring:'Normal win = +1. Active target winner = +3.',
-   note:'This adds public-information pressure: the opponent knows where the finish is coming.'},
+  {id:'tw1',title:'Survival Stack',tag:'KOC leveller',start:0,
+   principle:'Win and stay on. Every win removes more of your low front wall.',
+   player:'Win = 1 point. Each win makes your wall smaller. Lose = reset when you leave court.',
+   logic:'King of the Court. Everyone starts OPEN WALL. When a player wins a rally they score 1 and their own tin restriction moves up one level. The stronger the streak, the fewer low attacking options they have. When they lose and rotate off, tap Reset Player.',
+   earn:['Rally win = +1 point','Winner compresses own wall by one level','Loser rotating off resets to OPEN WALL'],
+   scoring:'Rally win = 1 point. Target win optional = 3 points.',
+   note:'This is the base Tin War game for groups: the player who keeps winning carries the harder constraint.'},
+  {id:'tw2',title:'Target Hunter',tag:'public target',start:0,
+   principle:'Everyone can see your restriction, so your opponent knows where you are likely to finish.',
+   player:'Win normally = 1. Win by hitting your legal target area = 3. Opponent knows your target.',
+   logic:'Use the player’s current tin restriction as public information. A normal rally win scores 1. A winner into the player’s active legal scoring area scores 3. Because the target is visible, the opponent can defend it and make the finish harder.',
+   earn:['Normal rally win = +1','Target-area winner = +3','Any scoring win compresses your own wall by one level'],
+   scoring:'1 for rally win. 3 for target win.',
+   note:'This creates disguise pressure: can the player finish into a known area when the defender is expecting it?'},
+  {id:'tw3',title:'King Hunt',tag:'promotion / relegation',start:0,
+   principle:'The king carries their restriction. Beat the king and you get the bonus.',
+   player:'King stays on with their current wall. Challenger starts open. Beat the king = 3 points.',
+   logic:'Set the current winner as KING. The king keeps their current restriction while challengers rotate in. A challenger who beats the king scores 3 and becomes the new king. The beaten king resets when they go off court.',
+   earn:['King rally win = +1 and king compresses','Challenger beats king = +3','New king takes over'],
+   scoring:'King win = 1. Beat king = 3. Target win may also be used as +3 if coach wants.',
+   note:'Excellent for KOC because everyone can hunt the player who is surviving under restriction.'},
+  {id:'tw4',title:'Lockdown',tag:'pressure trap',start:0,
+   principle:'Two wins in a row puts your opponent under target-only pressure.',
+   player:'Win 2 rallies in a row to put opponent in Lockdown. In Lockdown they only score by target win.',
+   logic:'Track consecutive wins. When a player wins two rallies in a row, choose an opponent and put them in LOCKDOWN for 3 rallies. During Lockdown, normal rally wins do not score for that opponent; only target-area wins score.',
+   earn:['2 consecutive wins = trigger Lockdown','Lockdown lasts 3 rallies','Opponent must score by target win'],
+   scoring:'Normal player: win = 1, target = 3. Locked player: target win only.',
+   note:'Use sparingly. It makes the player solve pressure with precision, not just survival.'},
+  {id:'tw5',title:'Last Window',tag:'maximum pressure',start:4,
+   principle:'At the highest restriction, only target wins count.',
+   player:'When you reach the top window, normal wins do not score. Only target wins score.',
+   logic:'Players begin near the hardest levels. Once a player reaches TOP WINDOW, rally wins still rotate normally but only a target-area winner scores. This is the extreme precision version for advanced groups.',
+   earn:['Reach TOP WINDOW','Normal rally win = no score at TOP WINDOW','Target win = +3'],
+   scoring:'Target wins only at the final level.',
+   note:'Best for advanced or short finishing rounds. It forces construction before the finish.'},
 ];
 
 function TinWarModule({setScreen,embedded=false,setSession}){
@@ -8403,132 +8410,97 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2']);
   const [gameId,setGameId]=useState('tw1');
   const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
-
-  const [comebackOn,setComebackOn]=useState(false);
-  const [maxGap,setMaxGap]=useState(0);
-  const [showSettings,setShowSettings]=useState(false);
+  const namesKey=names.join('|');
 
   const [tin,setTin]=useState({});
-  const [locked,setLocked]=useState({});
-  const [frozen,setFrozen]=useState({});
-  const [tokens,setTokens]=useState({});
+  const [score,setScore]=useState({});
   const [streak,setStreak]=useState({});
-  const [wins,setWins]=useState({});
-  const [peak,setPeak]=useState({});
-  const [tcount,setTcount]=useState({});
-  const [pending,setPending]=useState(null);
-  const [spendMenu,setSpendMenu]=useState(null);
-  const [pickFor,setPickFor]=useState(null);
-  const [pickMode,setPickMode]=useState(null);
-  const [summit,setSummit]=useState(null);
+  const [king,setKing]=useState('');
+  const [locked,setLocked]=useState({});
   const [log,setLog]=useState([]);
   const [undoStack,setUndoStack]=useState([]);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
 
-  const namesKey=names.join('|');
-  useEffect(()=>{
-    const t={},lo={},fr={},tk={},st={},wn={},pk={},tc={};
-    names.forEach(n=>{t[n]=game.start;lo[n]=0;fr[n]=0;tk[n]=0;st[n]=0;wn[n]=0;pk[n]=game.start;tc[n]=0;});
-    setTin(t);setLocked(lo);setFrozen(fr);setTokens(tk);setStreak(st);setWins(wn);setPeak(pk);setTcount(tc);
-    setPending(null);setSpendMenu(null);setPickFor(null);setPickMode(null);setSummit(null);setUndoStack([]);setLog([]);
-    setComebackOn(gameId==='tw5');
-  },[gameId,namesKey]);
+  const EASY=0,HARD=TIN_LADDER.length-1;
+  function compressIdx(i){return Math.min(HARD,(i??game.start)+1);}
+  function resetIdx(){return game.start??0;}
+  function addLog(m){setLog(p=>[m,...p].slice(0,9));}
+  function snap(){return {tin:{...tin},score:{...score},streak:{...streak},king,locked:{...locked},log:[...log]};}
+  function pushUndo(){setUndoStack(p=>[...p.slice(-29),snap()]);}
 
-  function snap(){return {tin:{...tin},locked:{...locked},frozen:{...frozen},tokens:{...tokens},streak:{...streak},wins:{...wins},peak:{...peak},tcount:{...tcount},summit,log:[...log]};}
-  function pushUndo(){const s=snap();setUndoStack(p=>[...p.slice(-29),s]);}
-  function addLog(m){setLog(p=>[m,...p].slice(0,8));}
-  const EASY=0, HARD=TIN_LADDER.length-1;
-  function harderIdx(i){return Math.min(HARD,i+1);} // harder = lose more bottom wall / raised opponent tin
-  function easierIdx(i){return Math.max(EASY,i-1);} // easier = regain lower wall / drop own tin
-  function exceedsGap(next){if(!maxGap)return false;const v=names.map(n=>next[n]);return (Math.max(...v)-Math.min(...v))>maxGap;}
+  useEffect(()=>{resetAll(true);},[gameId,namesKey]);
 
-  function easeOwn(n){if(frozen[n]>0){addLog(n+' tin frozen');return;}pushUndo();setTin(p=>{const nx={...p,[n]:easierIdx(p[n])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});addLog(n+' dropped their tin');}
-  function hardenTin(target){if(locked[target]>0||frozen[target]>0){addLog(target+' tin protected');return;}pushUndo();setTin(p=>{const nx={...p,[target]:harderIdx(p[target])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});addLog(target+' tin raised');}
-
-  function startPick(forName,mode){const others=names.filter(x=>x!==forName);if(others.length===1){applyToOpp(forName,others[0],mode);}else{setPickFor(forName);setPickMode(mode);}}
-  function applyToOpp(self,opp,mode){
-    if(mode==='steal'){
-      if(locked[opp]>0||frozen[opp]>0){addLog(opp+' protected — only self eased');easeOwn(self);setPickFor(null);return;}
-      pushUndo();
-      setTin(p=>{const nx={...p,[self]:easierIdx(p[self]),[opp]:harderIdx(p[opp])};if(exceedsGap(nx)){addLog('gap cap — no change');return p;}return nx;});
-      addLog(self+' front-court win — eased self, hardened '+opp);
-    }else if(mode==='harden'){hardenTin(opp);}
-    else if(mode==='freeze'){pushUndo();setFrozen(p=>({...p,[opp]:3}));addLog(self+' froze '+opp+'’s tin (3)');}
-    setPickFor(null);setPickMode(null);
+  function resetAll(skipUndo=false){
+    if(!skipUndo)pushUndo();
+    const t={},sc={},st={},lo={};
+    names.forEach(n=>{t[n]=game.start;sc[n]=0;st[n]=0;lo[n]=0;});
+    setTin(t);setScore(sc);setStreak(st);setLocked(lo);setKing('');setLog([]);setUndoStack([]);
   }
-
-  function earnReward(n){setPending(n);}
-  function resolveReward(n,how){pushUndo();
-    if(how==='self'){setTin(p=>({...p,[n]:easierIdx(p[n])}));addLog(n+' dropped own tin');}
-    else{startPick(n,'harden');addLog(n+' chose to raise opponent');}
-    setPending(null);
-  }
-
-  function tHold(n){pushUndo();const next=(tcount[n]||0)+1;
-    if(next>=3){setTcount(p=>({...p,[n]:0}));setLocked(p=>({...p,[n]:3}));addLog(n+' held earned T → LOCK (3)');}
-    else{setTcount(p=>({...p,[n]:next}));addLog(n+' holding T ('+next+'/3)');}
-  }
-
-  function bankWin(n){pushUndo();const w=(wins[n]||0)+1;setWins(p=>({...p,[n]:w}));
-    if(w%3===0){setTokens(p=>({...p,[n]:(p[n]||0)+1}));addLog(n+' → +1 token (3 wins)');}
-    else{addLog(n+' win ('+(w%3)+'/3 to token)');}
-  }
-  function spendToken(n,opt){
-    if((tokens[n]||0)<=0){return;}
-    pushUndo();setTokens(p=>({...p,[n]:p[n]-1}));setSpendMenu(null);
-    if(opt==='easeSelf'){setTin(p=>({...p,[n]:easierIdx(p[n])}));addLog(n+' spent token — eased own');}
-    else if(opt==='hardenOpp'){startPick(n,'harden');addLog(n+' spent token — raise opponent');}
-    else if(opt==='freezeOpp'){startPick(n,'freeze');addLog(n+' spent token — freeze opponent');}
-    else if(opt==='lockSelf'){setLocked(p=>({...p,[n]:3}));addLog(n+' spent token — locked own (3)');}
-  }
-
-  function recordWin(n){pushUndo();const s=(streak[n]||0)+1;
+  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+  function resetPlayer(n){pushUndo();setTin(p=>({...p,[n]:resetIdx()}));setStreak(p=>({...p,[n]:0}));setLocked(p=>({...p,[n]:0}));if(king===n)setKing('');addLog(n+' reset to OPEN WALL');}
+  function makeKing(n){pushUndo();setKing(n);addLog(n+' is KING');}
+  function tickLocks(){setLocked(p=>{const o={};Object.keys(p).forEach(k=>o[k]=Math.max(0,(p[k]||0)-1));return o;});}
+  function compressPlayer(n){setTin(p=>({...p,[n]:compressIdx(p[n])}));}
+  function addScore(n,pts){setScore(p=>({...p,[n]:(p[n]||0)+pts}));}
+  function recordWin(n,pts=1,kind='rally'){
+    pushUndo();
+    const idx=tin[n]??game.start;
+    const targetOnly=(locked[n]||0)>0 || (gameId==='tw5'&&idx>=HARD);
+    const scoresThisWin=!(targetOnly&&pts===1);
+    if(scoresThisWin){addScore(n,pts);compressPlayer(n);}
     const reset={};names.forEach(x=>{if(x!==n)reset[x]=0;});
-    setStreak(p=>({...p,...reset,[n]:s}));
-    if(comebackOn&&s>=2){setTin(p=>({...p,[n]:easierIdx(p[n])}));setStreak(p=>({...p,[n]:0}));addLog(n+' won 2 in a row → tin eased');}
-    else{addLog(n+' win (streak '+s+')');}
+    const nextStreak=(streak[n]||0)+1;
+    setStreak(p=>({...p,...reset,[n]:nextStreak}));
+    tickLocks();
+    if(!king)setKing(n);
+    addLog(scoresThisWin?n+' '+kind+' win: +'+pts+' and wall compressed':n+' rally win — no score: target win required');
   }
-  function recordLoss(n){pushUndo();setStreak(p=>({...p,[n]:0}));addLog(n+' lost — streak reset');}
-
-  function climbWin(n){const cur=tin[n]??game.start;pushUndo();
-    if(cur===HARD){setSummit(n);addLog(n+' WON at HIGH — SUMMIT');return;}
-    const ni=harderIdx(cur);setTin(p=>({...p,[n]:ni}));setPeak(p=>({...p,[n]:Math.min(p[n]??ni,ni)}));addLog(n+' won → '+TIN_LADDER[ni].label);
+  function targetWin(n){recordWin(n,3,'TARGET');}
+  function beatKing(n){
+    pushUndo();
+    const oldKing=king;
+    addScore(n,3);
+    compressPlayer(n);
+    setKing(n);
+    const reset={};names.forEach(x=>reset[x]=x===n?1:0);
+    setStreak(reset);
+    tickLocks();
+    if(oldKing&&oldKing!==n){setTin(p=>({...p,[oldKing]:resetIdx()}));setLocked(p=>({...p,[oldKing]:0}));addLog(n+' beat KING '+oldKing+': +3. Old king reset.');}
+    else{addLog(n+' beat the king: +3');}
   }
-  function climbLose(n){const cur=tin[n]??game.start;pushUndo();const ni=easierIdx(cur);setTin(p=>({...p,[n]:ni}));addLog(n+' lost → '+TIN_LADDER[ni].label);}
-
-  function advanceRally(){pushUndo();
-    setLocked(p=>{const o={};Object.keys(p).forEach(k=>o[k]=Math.max(0,p[k]-1));return o;});
-    setFrozen(p=>{const o={};Object.keys(p).forEach(k=>o[k]=Math.max(0,p[k]-1));return o;});
-    addLog('Advanced rally — locks/freezes ticked');
+  function triggerLockdown(n){
+    const others=names.filter(x=>x!==n);
+    const target=others[0];
+    if(!target){return;}
+    pushUndo();setLocked(p=>({...p,[target]:3}));addLog(n+' triggered LOCKDOWN on '+target+' (3 rallies)');
   }
-
-  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setTin(s.tin);setLocked(s.locked);setFrozen(s.frozen);setTokens(s.tokens);setStreak(s.streak);setWins(s.wins);setPeak(s.peak);setTcount(s.tcount);setSummit(s.summit);setLog(s.log);return prev.slice(0,-1);});}
-  function resetAll(){const t={},lo={},fr={},tk={},st={},wn={},pk={},tc={};names.forEach(n=>{t[n]=game.start;lo[n]=0;fr[n]=0;tk[n]=0;st[n]=0;wn[n]=0;pk[n]=game.start;tc[n]=0;});setTin(t);setLocked(lo);setFrozen(fr);setTokens(tk);setStreak(st);setWins(wn);setPeak(pk);setTcount(tc);setSummit(null);setUndoStack([]);setLog([]);}
+  function advanceRally(){pushUndo();tickLocks();addLog('Advanced rally — Lockdown ticks down');}
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setTin(s.tin);setScore(s.score);setStreak(s.streak);setKing(s.king);setLocked(s.locked);setLog(s.log);return prev.slice(0,-1);});}
 
   useEffect(()=>{
     if(!projecting)return;
     const payload={type:'tinwar',
-      game:{title:game.title,tag:game.tag,principle:game.player||game.principle},
+      game:{title:game.title,tag:game.tag,principle:game.player||game.principle,scoring:game.scoring},
       ladder:TIN_LADDER,
-      players:names.map(n=>({name:n,idx:tin[n]??game.start,locked:locked[n]||0,frozen:frozen[n]||0,tokens:tokens[n]||0,peak:peak[n]??game.start})),
-      showTokens:gameId==='tw4',showPeak:gameId==='tw6',summit};
+      king,
+      players:names.map(n=>({name:n,idx:tin[n]??game.start,score:score[n]||0,streak:streak[n]||0,locked:locked[n]||0,isKing:king===n,band:TIN_LADDER[tin[n]??game.start]?.band||''})),
+      rules:{win:'WIN = 1',target:'TARGET WIN = 3',king:'BEAT KING = 3'},
+      updatedAt:new Date().toISOString()};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
-  },[projecting,tin,locked,frozen,tokens,peak,summit,gameId,namesKey]);
+  },[projecting,tin,score,streak,locked,king,gameId,namesKey]);
 
   async function copyPlayerLink(){
     setProjecting(true);const url=buildLivePlayerViewUrl();let ok=false;
     try{if(navigator.clipboard){await navigator.clipboard.writeText(url);ok=true;}}catch{}
-    if(ok){alert('Live player link copied. Open it on the second device — the tin ladders update live as you tap.');}
+    if(ok){alert('Live player link copied. Open it on the second device — Tin War updates live as you tap.');}
     else{window.prompt('LIVE Tin War player link — open on the second device:',url);}
   }
-  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
   const usingDefaults=presents.length<2;
-  const showComeback=gameId==='tw5'||comebackOn;
 
   return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
     <TinWarStyles/>
-    {!embedded&&<div className="moduleHead"><div><h1>Tin War™</h1><p className="mutedText">Timed KOC Tin games. Players carry Tin state. Climb starts with full wall and each win removes bottom wall.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
-    {embedded&&<div className="twSuiteHeading"><h2>The games</h2><p className="mutedText">Pick a Tin War game. All games are timed King of Court. Each player carries their Tin state across rotations.</p></div>}
+    {!embedded&&<div className="moduleHead"><div><h1>Tin War™</h1><p className="mutedText">KOC leveller: winning removes low front-wall space. Success creates pressure.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="twSuiteHeading"><h2>Tin War™</h2><p className="mutedText">Simple player rule: win points and your wall gets smaller. Target wins score more. Beat the king for the bonus.</p></div>}
 
     <div className="twGameTabs">
       {TINWAR_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'twGameTab twGameTabActive':'twGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}
@@ -8538,54 +8510,43 @@ function TinWarModule({setScreen,embedded=false,setSession}){
       <div className="twGameInfoHead"><h2>{game.title}</h2><span className="twTag">{game.tag}</span></div>
       <p className="twPrinciple">{game.principle}</p>
       <div className="twInfoGrid">
-        <div><h4>Game logic</h4><p>{game.logic}</p></div>
-        <div><h4>Earn / move</h4><ul>{game.earn.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
+        <div><h4>Player display message</h4><p>{game.player}</p></div>
+        <div><h4>Step by step</h4><ul>{game.earn.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
         <div><h4>Scoring</h4><p>{game.scoring}</p></div>
       </div>
       <p className="twNote">{game.note}</p>
     </div>
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Settings'}</button>
-    {showSettings&&<div className="twSettings">
-      <label className="twToggleLabel">Comeback rule<button type="button" className={comebackOn?'primaryBtn':'secondaryBtn'} onClick={()=>setComebackOn(!comebackOn)}>{comebackOn?'ON':'OFF'}</button></label>
-      <label>Max gap (levels)<select value={maxGap} onChange={e=>setMaxGap(Number(e.target.value))}><option value={0}>Off</option><option value={2}>2</option><option value={3}>3</option></select></label>
-      <span className="mutedText" style={{fontSize:'0.78rem',maxWidth:'260px'}}>Comeback: 2 straight wins eases your tin. Gap cap stops the tins drifting too far apart.</span>
-    </div>}
-
     {usingDefaults&&<div className="twRosterEdit"><span className="mutedText">No present players found — using two default names (edit below, or mark players Present):</span><div className="twNameRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)}/>)}</div></div>}
-
-    {summit&&<div className="twSummit">🏔 {summit} won a rally at HIGH — SUMMIT! <button type="button" className="twActionBtn" style={{marginLeft:'10px',flex:'none'}} onClick={()=>setSummit(null)}>Clear</button></div>}
 
     <div className="twControls">
       {names.map(n=>{
         const idx=tin[n]??game.start;
-        const isPickTarget=pickFor&&pickFor!==n;
+        const rung=TIN_LADDER[idx]||TIN_LADDER[0];
+        const isLocked=(locked[n]||0)>0;
+        const atTop=idx>=HARD;
         return <div className="twPlayerCard" key={n}>
           <div className="twPlayerTop"><strong>{n}</strong><div className="twChips">
-            {locked[n]>0&&<span className="twChip twChipLock">LOCK {locked[n]}</span>}
-            {frozen[n]>0&&<span className="twChip twChipFreeze">FROZEN {frozen[n]}</span>}
-            {gameId==='tw4'&&<span className="twChip twChipToken">{tokens[n]||0} tokens</span>}
-            {gameId==='tw6'&&<span className="twChip twChipPeak">peak {TIN_LADDER[peak[n]??idx].label}</span>}
+            {king===n&&<span className="twChip twChipPeak">KING</span>}
+            <span className="twChip twChipToken">{score[n]||0} pts</span>
+            {(streak[n]||0)>0&&<span className="twChip twChipLock">streak {streak[n]}</span>}
+            {isLocked&&<span className="twChip twChipFreeze">LOCKDOWN {locked[n]}</span>}
           </div></div>
           <div className="twMain">
             <div className="twLadder">{TIN_LADDER.map((r,i)=><div key={r.key} className={i===idx?'twRung twRungActive':'twRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div>
             <div className="twNudge">
-              <button type="button" className="twNudgeBtn" onClick={()=>hardenTin(n)}>▲ Raise</button>
-              <button type="button" className="twNudgeBtn" onClick={()=>easeOwn(n)}>▼ Drop</button>
-              <button type="button" className="twNudgeBtn" onClick={()=>startPick(n,'harden')}>Raise opp</button>
+              <button type="button" className="twNudgeBtn" onClick={()=>recordWin(n,1,'rally')}>Win +1</button>
+              <button type="button" className="twNudgeBtn" onClick={()=>targetWin(n)}>Target +3</button>
+              <button type="button" className="twNudgeBtn" onClick={()=>resetPlayer(n)}>Reset</button>
             </div>
           </div>
+          <p className="twNote"><strong>Current rule:</strong> {rung.player}</p>
           <div className="twActionStrip">
-            {gameId==='tw1'&&pending!==n&&<button type="button" className="twActionBtn" onClick={()=>earnReward(n)}>Earn reward ▸</button>}
-            {gameId==='tw1'&&pending===n&&<div className="twMenu"><span className="mutedText">{n} earned — choose:</span><button type="button" className="twActionBtn twActionGood" onClick={()=>resolveReward(n,'self')}>Drop my tin</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>resolveReward(n,'opp')}>Raise opponent</button></div>}
-            {gameId==='tw2'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>climbWin(n)}>Win +1 / remove wall</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>{pushUndo();setTin(p=>({...p,[n]:0}));addLog(n+' reset to FULL WALL');}}>Reset player</button></>}
-            {gameId==='tw3'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>{pushUndo();setWins(p=>({...p,[n]:(p[n]||0)+1}));addLog(n+' normal win +1');}}>Normal win +1</button><button type="button" className="twActionBtn twActionGood" onClick={()=>{pushUndo();setWins(p=>({...p,[n]:(p[n]||0)+3}));addLog(n+' beat King +3');}}>Beat King +3</button></>}
-            {gameId==='tw4'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>{pushUndo();setWins(p=>({...p,[n]:(p[n]||0)+1}));addLog(n+' normal win +1');}}>Normal win +1</button><button type="button" className="twActionBtn twActionGood" onClick={()=>{pushUndo();setWins(p=>({...p,[n]:(p[n]||0)+3}));addLog(n+' target winner +3');}}>Target winner +3</button></>}
-            {gameId==='tw4'&&spendMenu===n&&<div className="twMenu"><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'easeSelf')}>Drop my tin</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'hardenOpp')}>Raise opponent</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'freezeOpp')}>Freeze opponent (3)</button><button type="button" className="twActionBtn" onClick={()=>spendToken(n,'lockSelf')}>Lock my tin (3)</button></div>}
-            
-            {showComeback&&gameId!=='tw6'&&<><button type="button" className="twActionBtn twActionGood" onClick={()=>recordWin(n)}>Win</button><button type="button" className="twActionBtn twActionDanger" onClick={()=>recordLoss(n)}>Lose</button></>}
+            <button type="button" className="twActionBtn" onClick={()=>makeKing(n)}>{king===n?'King ✓':'Set King'}</button>
+            {king&&king!==n&&<button type="button" className="twActionBtn twActionGood" onClick={()=>beatKing(n)}>Beat King +3</button>}
+            {gameId==='tw4'&&<button type="button" className="twActionBtn twActionDanger" onClick={()=>triggerLockdown(n)}>Lockdown opp</button>}
+            {atTop&&<span className="twChip twChipFreeze">LAST WINDOW: target wins only</span>}
           </div>
-          {isPickTarget&&<div className="twPickStrip"><span className="mutedText">target:</span><button type="button" className="twActionBtn" onClick={()=>applyToOpp(pickFor,n,pickMode)}>{n}</button></div>}
         </div>;
       })}
     </div>
@@ -8593,8 +8554,8 @@ function TinWarModule({setScreen,embedded=false,setSession}){
     <div className="twBottomBar">
       <button type="button" className="twUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
       <button type="button" className="twAdvanceBtn" onClick={advanceRally}>Advance rally ▸</button>
-      <button type="button" className="secondaryBtn" onClick={resetAll}>Reset</button>
-      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'Timed KOC Tin War',duration:10,task:'Run Tin War live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Timed KOC Tin War where players carry Tin state. Climb is a leveller: wins remove bottom wall.',coach:'Earned conditions only; debrief how they manufactured or denied chances.',playerFocus:game.player||'Win points and manage your Tin state.',layers:['Tin Height'],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
+      <button type="button" className="secondaryBtn" onClick={()=>resetAll(false)}>Reset All</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'KOC leveller',duration:10,task:'Run Tin War live: '+game.title+'. '+game.player,scoring:game.scoring,rationale:'Tin War is a self-handicapping KOC pressure game: winning removes low front-wall space, so success creates harder attacking conditions.',coach:'Keep the player display visible. Players must understand their current legal scoring area.',playerFocus:game.player,layers:['Tin Height','KOC'],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
 
@@ -8609,19 +8570,23 @@ function TinWarPlayerDisplay({payload={}}){
   return <div className="playerDisplayPage twDisplayPage">
     <TinWarStyles/>
     <div className="twDisplayShell">
-      <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
-      {payload.summit&&<div className="twSummit" style={{fontSize:'1.4rem'}}>🏔 {payload.summit} reached the SUMMIT</div>}
+      <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||'Win points and your wall gets smaller.'}</p></div>
+      <div className="twDisplayChips" style={{fontSize:'1.15rem'}}><span className="twDispChip">WIN = 1</span><span className="twDispChip">TARGET WIN = 3</span><span className="twDispChip">BEAT KING = 3</span></div>
       <div className="twDisplayGrid">
-        {players.map((p,i)=><div className="twDisplayCard" key={i}>
-          <div className="twDisplayName">{p.name}</div>
-          <div className="twDisplayLadder">{ladder.map((r,j)=><div key={r.key} className={j===p.idx?'twDispRung twDispRungActive':'twDispRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div>
-          <div className="twDisplayChips">
-            {p.locked>0&&<span className="twDispChip">LOCK {p.locked}</span>}
-            {p.frozen>0&&<span className="twDispChip">FROZEN {p.frozen}</span>}
-            {payload.showTokens&&<span className="twDispChip">{p.tokens} tokens</span>}
-            {payload.showPeak&&<span className="twDispChip">peak {ladder[p.peak]?ladder[p.peak].label:''}</span>}
-          </div>
-        </div>)}
+        {players.map((p,i)=>{
+          const r=ladder[p.idx]||ladder[0];
+          return <div className="twDisplayCard" key={i}>
+            <div className="twDisplayName">{p.isKing?'👑 ':''}{p.name}</div>
+            <div className="twDisplayChips">
+              <span className="twDispChip">{p.score||0} pts</span>
+              {p.streak>0&&<span className="twDispChip">streak {p.streak}</span>}
+              {p.locked>0&&<span className="twDispChip">LOCKDOWN {p.locked}</span>}
+            </div>
+            <div className="twDisplayLadder">{ladder.map((x,j)=><div key={x.key} className={j===p.idx?'twDispRung twDispRungActive':'twDispRung'}><b>{x.label}</b><span>{x.cm}</span></div>)}</div>
+            <div className="twSummit" style={{fontSize:'1.05rem'}}>{r.player}</div>
+            <p className="mutedText" style={{textAlign:'center',fontSize:'1.05rem',margin:0}}>Active target: <strong>{r.band}</strong></p>
+          </div>;
+        })}
       </div>
     </div>
   </div>;
@@ -9180,7 +9145,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
-    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">UPDATED TIN WAR: timed King of Court only. Players carry Tin state across rotations. Climb starts FULL WALL and every win removes more of the bottom wall. Earn the Drop uses coach-selected winning-shot protocols.</p><TinWarModule embedded setSession={setSession}/></div>}
+    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText">Tin height is not just a leveller here — it's a contested, dynamic resource. Lowering your own scoring tin opens the kill; raising your opponent's removes theirs. Win well to improve your conditions or worsen theirs, and the affordance landscape shifts through the game.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
@@ -14556,10 +14521,10 @@ function normalizeCourtPayload(row){
     leaderName=lead?lead.name:'';target=p.size||50;headline=lead?('Square '+lead.score):'';pct=lead&&target?lead.score/target:null;
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
-    game='Tin War';const ladder=p.ladder||[];const max=Math.max(1,ladder.length-1);
-    players=(p.players||[]).map(x=>({name:x.name,score:max-(x.peak??x.idx??max)}));
-    const lead=(p.players||[]).reduce((a,b)=>{const ai=a?(a.peak??a.idx??max):99;const bi=(b.peak??b.idx??max);return bi<ai?b:a;},null);
-    const li=lead?(lead.peak??lead.idx??max):max;leaderName=lead?lead.name:'';headline=ladder[li]?ladder[li].label:'';target='HIGH';pct=(max-li)/max;
+    game='Tin War';const ladder=p.ladder||[];
+    players=(p.players||[]).map(x=>({name:x.name,score:x.score||0}));
+    const lead=(p.players||[]).reduce((a,b)=>{const as=a?(a.score||0):-1;const bs=b?(b.score||0):-1;return bs>as?b:a;},null);
+    const li=lead?(lead.idx??0):0;leaderName=lead?lead.name:'';headline=(p.king?('King: '+p.king+' · '):'')+(ladder[li]?ladder[li].label:'');target='Tin War';pct=null;
   }else if(t==='disruption'&&p.battle){
     game='Court Battle';const cs=p.battle.courts||[];const best=cs.reduce((m,c)=>Math.max(m,c.best||0),0);
     headline=best+' streak';target=p.battle.target;pct=p.battle.target?best/p.battle.target:null;
