@@ -122,7 +122,19 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v210 Functional Crosscourt + coach-assignable error penalties + Bucket Lob into Lob';
+const APP_VERSION='v211 Back button steps through in-module pages + Bucket Lob analogy';
+
+// Back-interceptor registry: lets a module with an inner (second) page tell the
+// floating Back button to step back inside the module before leaving to the
+// previous App screen. A module calls useBackIntercept(innerPageOpen, closeFn).
+const __backInterceptors=[];
+function __pushBack(fn){__backInterceptors.push(fn);}
+function __popBack(fn){const i=__backInterceptors.lastIndexOf(fn);if(i>=0)__backInterceptors.splice(i,1);}
+function __runBack(){for(let i=__backInterceptors.length-1;i>=0;i--){try{if(__backInterceptors[i]())return true;}catch{}}return false;}
+function useBackIntercept(active,handler){
+  const ref=useRef(handler);ref.current=handler;
+  useEffect(()=>{if(!active)return;const fn=()=>ref.current();__pushBack(fn);return ()=>__popBack(fn);},[active]);
+}
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2329,6 +2341,7 @@ function ShotsModule({setScreen}){
       <div className="shotsPrincipleGrid">{categoryCards.time.items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div>
       <div className="shotDetailHeader" style={{marginTop:'20px'}}><div><div className="categoryTag">Teaching the Lob</div><h2>Bucket Lob</h2><p className="mutedText">How the lob is learned here — by self-discovery, no technical instruction.</p></div><button className="primaryBtn" onClick={()=>setScreen('bucketLob')}>Open Bucket Lob module</button></div>
       <p>Play a high cross-court lob over the short-line guards so it drops into the back-corner bucket. The guards and the bucket are the only feedback the player needs — height, width and pace self-organise around the trajectory problem rather than a coached swing.</p>
+      <div style={{background:'#0c1a2e',border:'1px solid #2c6e8a',borderRadius:'10px',padding:'12px 14px',margin:'12px 0',color:'#cfe6f2',fontWeight:600,lineHeight:1.45}}>🪣 <strong style={{color:'#7fd0e8'}}>Coaching analogy</strong> (not a technical cue): lift a spade of sand off the beach and throw it back over your left shoulder into the bucket.</div>
       <div className="shotsPrincipleGrid">
         <div className="gameCard shotsPrincipleCard"><h3>The problem</h3><p>Clear the guards on the short line and drop the ball into the back-corner bucket. The target sets the task; the solution is the player's to find.</p></div>
         <div className="gameCard shotsPrincipleCard"><h3>Why it works</h3><p>A representative target replaces instruction. The lob's defensive, organising and attacking functions are felt through the ball's flight, not described.</p></div>
@@ -3579,6 +3592,7 @@ function CommonGameErrors({setSession}){
   const [penaltyByPlayer,setPenaltyByPlayer]=useState({});
   const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
   const e=errors.find(x=>x.id===sel);
+  useBackIntercept(!!sel,()=>{setSel(null);return true;});
   function openErr(id){setSel(id);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');setEnfMode('penalty');setPenaltyDefault(1);setPenaltyByPlayer({});}
   function toggleOverlay(layer){setOverlays(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
   function addToSession(){
@@ -3700,6 +3714,7 @@ function GameSelector({onAddToSession,addButtonText='Add To Session',setScreen})
 const[category,setCategory]=useState(null);
 const[atl,setAtl]=useState(DEFAULT_ATL);
 const[selectedGame,setSelectedGame]=useState(null);
+useBackIntercept(!!selectedGame,()=>{setSelectedGame(null);return true;});
 const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
 const cats=['ATL / BTL','Perception','Peak Week','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
 const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
@@ -14134,6 +14149,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const [selected,setSelected]=useState(PATTERN_LAB_READY_GAMES[0]);
   const [mode,setMode]=useState('ready');
   const [detailOpen,setDetailOpen]=useState(false);
+  useBackIntercept(detailOpen,()=>{setDetailOpen(false);return true;});
   const [levelFilter,setLevelFilter]=useState('All');
   const [attackFilter,setAttackFilter]=useState('All');
   const [random,setRandom]=useState(null);
@@ -15247,6 +15263,7 @@ function runSearch(item){
   go(target);
 }
 function goBack(){
+  if(__runBack())return;
   setBackStack(prev=>{
     const last=prev.length?prev[prev.length-1]:'home';
     setScreen(last);
