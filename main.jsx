@@ -120,7 +120,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v204 TINWAR 6-game + shots/bucket lob + NSSL court scoring';
+const APP_VERSION='v206 NSSL player rotation + sub limits + min-time warnings';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2153,6 +2153,16 @@ function ShotsModule({setScreen}){
 .shotFnCard.shotFnActive{background:linear-gradient(135deg,#0d3722,#0f2e44);border-color:#1d6b3f;box-shadow:0 0 0 1px rgba(52,224,122,0.25);}
 .shotFnCard.shotFnActive .shotFnTitle{color:#ffffff;}
 .shotFnCard.shotFnActive .shotFnTag{color:#bff0d0;}
+.shotDetailPanel{background:#0f1822 !important;border:1px solid #223044 !important;border-radius:16px !important;padding:20px !important;color:#eaf4fb !important;box-shadow:none !important;}
+.shotDetailPanel .shotDetailHeader{align-items:flex-start;}
+.shotDetailPanel h2{color:#ffd479 !important;}
+.shotDetailPanel h3{color:#9cc4ec !important;}
+.shotDetailPanel p,.shotDetailPanel li,.shotDetailPanel span{color:#c7d4e2;}
+.shotDetailPanel .mutedText{color:#8aa0b6 !important;}
+.shotDetailPanel .categoryTag{background:#16325a !important;color:#bcd6f5 !important;}
+.shotDetailPanel .gameCard,.shotDetailPanel .shotsPrincipleCard{background:#0b1320 !important;border:1px solid #223044 !important;color:#eaf4fb !important;box-shadow:none !important;}
+.shotDetailPanel .gameCard h3,.shotDetailPanel .shotsPrincipleCard h3{color:#ffd479 !important;}
+.shotDetailPanel .gameCard p,.shotDetailPanel .shotsPrincipleCard p{color:#c7d4e2 !important;}
 `}</style>
       {shotSections.map(s=><div key={s.id} role="button" tabIndex={0} className={'shotFnCard'+(section===s.id?' shotFnActive':'')} onClick={()=>setSection(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSection(s.id);}}}><span className="shotFnTitle">{s.title}</span><span className="shotFnTag">{s.tag}</span></div>)}
     </div>
@@ -2293,7 +2303,7 @@ function ShotsModule({setScreen}){
     </div>}
 
     {['movement','time','finish'].includes(section)&&<div className="shotDetailPanel">
-      <div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">Placeholder category for the next content release.</p></div></div>
+      <div className="shotDetailHeader"><div><div className="categoryTag">Shot Function Family</div><h2>{categoryCards[section].title}</h2><p className="mutedText">The shots that solve this problem — defined by function, not form.</p></div></div>
       <p>{categoryCards[section].intro}</p>
       <div className="shotsPrincipleGrid">{categoryCards[section].items.map(x=><div className="gameCard shotsPrincipleCard" key={x}><h3>{x.split(' — ')[0]}</h3><p>{x.split(' — ')[1]}</p></div>)}</div>
     </div>}
@@ -9389,6 +9399,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslPowerPlaySeconds,setNslPowerPlaySeconds]=useState(()=>getSavedCompetitionState().nslPowerPlaySeconds||60);
   const [nslPowerPlayActive,setNslPowerPlayActive]=useState(()=>getSavedCompetitionState().nslPowerPlayActive||false);
   const [nsslCopied,setNsslCopied]=useState('');
+  const [nslMinPlayerMins,setNslMinPlayerMins]=useState(()=>Number(getSavedCompetitionState().nslMinPlayerMins)||0);
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
@@ -10507,7 +10518,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(mode!=='nsl')return;
     const handle=setTimeout(()=>{
       try{
-        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
+        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:{p1:2,p2:2,p3:4,ot:4},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
         writeLivePlayerRoom(nsslClockRoomId(nsslHostBase),'nsslclock',payload);
       }catch{}
     },300);
@@ -10648,6 +10659,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       nslPowerPlayTeam,
       nslPowerPlaySeconds,
       nslPowerPlayActive,
+      nslMinPlayerMins,
       updatedAt:new Date().toISOString()
     };
   }
@@ -10732,7 +10744,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         updatedAt:new Date().toISOString()
       }));
     }catch{}
-  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive]);
+  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,nslMinPlayerMins]);
 
   useEffect(()=>{
     try{
@@ -11620,6 +11632,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     <button type="button" className="primaryBtn" onClick={()=>{try{navigator.clipboard.writeText(buildNsslMasterLink(nsslHostBase));setNsslCopied('master');setTimeout(()=>setNsslCopied(''),1500);}catch{}}}>{nsslCopied==='master'?'Master link copied ✓':'Copy Master Display link'}</button>
                     <button type="button" className="secondaryBtn" onClick={()=>{try{window.open(buildNsslMasterLink(nsslHostBase),'_blank');}catch{}}}>Open Master Display</button>
                   </div>
+                  <div style={{display:'flex',alignItems:'center',gap:'10px',marginTop:'12px',flexWrap:'wrap'}}>
+                    <span style={{fontWeight:700,color:'#bcd6f5'}}>Min court time / player:</span>
+                    <input type="number" min="0" step="0.5" value={nslMinPlayerMins} onChange={e=>setNslMinPlayerMins(Math.max(0,Number(e.target.value)||0))} style={{width:'80px',padding:'8px',borderRadius:'8px',border:'1px solid #2c3c4e',background:'#0f1822',color:'#eaf4fb',fontWeight:700}}/>
+                    <span style={{color:'#8aa0b6'}}>min {Number(nslMinPlayerMins)>0?'· court devices warn captains when a player is under':'· 0 = off'}</span>
+                  </div>
+                  <p className="overlayExplain" style={{marginTop:'6px'}}>Court devices also count substitutions per period (2 · 2 · 4) and warn captains at the limit.</p>
                   <div style={{display:'grid',gap:'8px',marginTop:'10px'}}>
                     {nsslDetailedFixtures().map((fx,idx)=><div key={idx} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
                       <span style={{fontWeight:800,color:'#9cc4ec'}}>Court {idx+1} — {fx.a.name} v {fx.b.name}</span>
@@ -14740,6 +14758,9 @@ function NsslCourtScorer({court,host}){
   const [pp,setPp]=useState({side:null,active:false,seconds:60});
   const [undoStack,setUndoStack]=useState([]);
   const [status,setStatus]=useState('Connecting…');
+  const [onCourtIdx,setOnCourtIdx]=useState({a:0,b:0});
+  const [playerTime,setPlayerTime]=useState({a:{},b:{}});
+  const [subsUsed,setSubsUsed]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
 
   useEffect(()=>{
     let cancelled=false;
@@ -14752,15 +14773,29 @@ function NsslCourtScorer({court,host}){
   const teamB=fixture?.b||{name:'Team B',players:[],captain:null};
   const activeKey=nsslPeriodKeyFor(clock?.activePeriod);
   const totals=useMemo(()=>{let a=0,b=0;NSSL_PERIOD_KEYS.forEach(k=>{a+=periods[k]?.a||0;b+=periods[k]?.b||0;});return {a,b};},[periods]);
+  const minSec=Number(clock?.minPlayerSeconds||0);
+  const subLimits=clock?.subLimits||{p1:2,p2:2,p3:4,ot:4};
+  const tickRef=useRef({running:false,aName:null,bName:null});
+  tickRef.current={running:!!clock?.running,aName:(teamA.players||[])[onCourtIdx.a]||null,bName:(teamB.players||[])[onCourtIdx.b]||null};
 
   useEffect(()=>{if(!pp.active)return;const id=setInterval(()=>setPp(p=>{const s=p.seconds-1;if(s<=0)return {side:null,active:false,seconds:60};return {...p,seconds:s};}),1000);return ()=>clearInterval(id);},[pp.active]);
 
   useEffect(()=>{
-    const payload={type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()};
+    const id=setInterval(()=>{
+      const t=tickRef.current; if(!t.running)return;
+      setPlayerTime(pt=>{const next={a:{...pt.a},b:{...pt.b}}; if(t.aName)next.a[t.aName]=(next.a[t.aName]||0)+1; if(t.bName)next.b[t.bName]=(next.b[t.bName]||0)+1; return next;});
+    },1000);
+    return ()=>clearInterval(id);
+  },[]);
+
+  useEffect(()=>{
+    const aOn=(teamA.players||[])[onCourtIdx.a]||null;
+    const bOn=(teamB.players||[])[onCourtIdx.b]||null;
+    const payload={type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,onCourtA:aOn,onCourtB:bOn,subsUsed,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()};
     writeLivePlayerRoom(roomId,'nssl',payload);
     const id=setInterval(()=>writeLivePlayerRoom(roomId,'nssl',{...payload,updatedAt:Date.now()}),3000);
     return ()=>clearInterval(id);
-  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,roomId]);
+  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,onCourtIdx.a,onCourtIdx.b,subsUsed,roomId]);
 
   function score(side,delta){
     if(delta>0&&pp.active&&pp.side&&pp.side!==side)return;
@@ -14768,18 +14803,24 @@ function NsslCourtScorer({court,host}){
     setPeriods(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:Math.max(0,(prev[activeKey]?.[side]||0)+delta)}}));
   }
   function undo(){setUndoStack(s=>{if(!s.length)return s;setPeriods(s[s.length-1]);return s.slice(0,-1);});}
+  function subOn(side,idx){
+    if(onCourtIdx[side]===idx)return;
+    setSubsUsed(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:(prev[activeKey]?.[side]||0)+1}}));
+    setOnCourtIdx(prev=>({...prev,[side]:idx}));
+  }
   function powerPlay(side){setPp({side,active:true,seconds:60});}
   function endPP(){setPp({side:null,active:false,seconds:60});}
-  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);endPP();}}
+  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);setPlayerTime({a:{},b:{}});setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setOnCourtIdx({a:0,b:0});endPP();}}
 
   const periodLabel=nsslPeriodLabel(activeKey);
   function TeamPanel({side,team}){
     const locked=pp.active&&pp.side&&pp.side!==side;
     const onPP=pp.active&&pp.side===side;
     const players=team.players||[];
+    const subUsed=subsUsed[activeKey]?.[side]||0;
+    const lim=subLimits[activeKey]||0;
     return <div className={'nsslScTeam'+(onPP?' nsslScPP':'')+(locked?' nsslScLocked':'')}>
       <div className="nsslScTeamHead"><strong>{team.name}</strong>{team.captain&&<span className="nsslScCapt">©&nbsp;{team.captain}</span>}</div>
-      {players.length>0&&<div className="nsslScPlayers">{players.map(p=><span key={p} className={p===team.captain?'nsslCaptName':''}>{p}{p===team.captain?' (C)':''}</span>)}</div>}
       <div className="nsslScScore">{totals[side]}</div>
       <div className="nsslScThisPeriod">{periodLabel} this period: {periods[activeKey]?.[side]||0}</div>
       <div className="nsslScBtns">
@@ -14787,8 +14828,26 @@ function NsslCourtScorer({court,host}){
         <div role="button" tabIndex={0} className="nsslScPlus" onClick={()=>score(side,1)}>+1</div>
       </div>
       <div role="button" tabIndex={0} className={'nsslScPPBtn'+(onPP?' nsslScPPOn':'')+(locked?' nsslScPPDim':'')} onClick={()=>onPP?endPP():powerPlay(side)}>{onPP?`⚡ ${nsslFmtTime(pp.seconds)} · end`:'⚡ Power Play'}</div>
+      {players.length>0&&<div className="nsslScRoster">
+        <div className="nsslScRosterHead">On court &amp; rotation — tap to sub on</div>
+        {players.map((p,i)=>{
+          const on=onCourtIdx[side]===i;
+          const t=playerTime[side]?.[p]||0;
+          const under=minSec>0&&t<minSec;
+          return <div key={p} role="button" tabIndex={0} className={'nsslScRosterRow'+(on?' on':'')+(under?' under':'')} onClick={()=>{if(!on)subOn(side,i);}}>
+            <span className="rn">{on?'● ':'○ '}{p}{p===team.captain?' (C)':''}</span>
+            <span className="rt">{nsslFmtTime(t)}{minSec>0?(under?' ⚠':' ✓'):''}</span>
+          </div>;
+        })}
+        <div className={'nsslScSubLine'+(subUsed>=lim?' hit':'')}>Subs {periodLabel}: {subUsed}/{lim}{subUsed>=lim?' · limit reached':''}</div>
+      </div>}
     </div>;
   }
+  const underList=[];
+  if(minSec>0&&fixture){
+    [['a',teamA],['b',teamB]].forEach(([side,team])=>{(team.players||[]).forEach(p=>{const t=playerTime[side]?.[p]||0;if(t<minSec)underList.push({name:p,t});});});
+  }
+  const subAtLimit=fixture&&(((subsUsed[activeKey]?.a||0)>=(subLimits[activeKey]||0))||((subsUsed[activeKey]?.b||0)>=(subLimits[activeKey]||0)));
 
   return <div className="playerDisplayPage nsslScPage">
     <style>{`
@@ -14823,6 +14882,19 @@ function NsslCourtScorer({court,host}){
 .nsslScCtl{background:#0f1822;border:1px solid #2c3c4e;color:#9fb0c2;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;}
 .nsslScCtl.danger{border-color:#5e2233;color:#ff9db5;}
 .nsslScWait{text-align:center;color:#6b8299;font-style:italic;padding:20px;}
+.nsslScRoster{margin-top:12px;text-align:left;border-top:1px solid #223044;padding-top:8px;}
+.nsslScRosterHead{font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;color:#7fb0e0;margin-bottom:5px;}
+.nsslScRosterRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid #1c2a3c;margin-bottom:4px;cursor:pointer;background:#0b1320;}
+.nsslScRosterRow.on{background:#114d2c;border-color:#1d6b3f;}
+.nsslScRosterRow.on .rn{color:#bff0d0;font-weight:800;}
+.nsslScRosterRow.under .rt{color:#ffb84d;}
+.nsslScRosterRow .rn{color:#cdd9e6;font-size:0.92rem;}
+.nsslScRosterRow .rt{color:#9fb0c2;font-variant-numeric:tabular-nums;font-size:0.85rem;font-weight:700;}
+.nsslScSubLine{margin-top:4px;font-size:0.82rem;color:#9fb0c2;font-weight:700;}
+.nsslScSubLine.hit{color:#ffb84d;}
+.nsslScBanner{border-radius:12px;padding:10px 14px;margin-bottom:12px;font-weight:700;}
+.nsslScBanner.time{background:#3a2c0a;border:1px solid #8a6d18;color:#ffe9a8;}
+.nsslScBanner.subs{background:#3a1620;border:1px solid #8a2740;color:#ffc2d1;}
 `}</style>
     <div className="nsslScTop"><span className="nsslScLive">● COURT {court}</span><h1>NSSL Court {court}</h1><p>{status}</p></div>
     <div className="nsslScClock">
@@ -14830,6 +14902,8 @@ function NsslCourtScorer({court,host}){
       <div className="nsslScClockTime">{clock?nsslFmtTime(clock.secondsRemaining):'--:--'}</div>
       <div className="nsslScClockState">{clock?(clock.running?'running':'paused'):'waiting for organiser'} · shared league clock</div>
     </div>
+    {subAtLimit&&<div className="nsslScBanner subs">⚠ Substitution limit reached this period ({nsslPeriodLabel(activeKey)}: {subLimits[activeKey]} subs)</div>}
+    {minSec>0&&underList.length>0&&<div className="nsslScBanner time">⏱ Still needs court time: {underList.map(u=>`${u.name} ${nsslFmtTime(u.t)}/${nsslFmtTime(minSec)}`).join(' · ')}</div>}
     {fixture?<><div className="nsslScGrid"><TeamPanel side="a" team={teamA}/><TeamPanel side="b" team={teamB}/></div>
       <div className="nsslScControls"><div role="button" tabIndex={0} className="nsslScCtl" onClick={undo}>↶ Undo</div><div role="button" tabIndex={0} className="nsslScCtl danger" onClick={resetCourt}>Reset court</div></div>
     </>:<p className="nsslScWait">Waiting for the organiser to generate fixtures for this court…</p>}
@@ -14857,7 +14931,7 @@ function NsslMasterDisplay({host}){
   const fixtures=(clock&&clock.fixtures)||[];
   const courtData=fixtures.map(f=>{
     const cp=courts[f.court];
-    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
+    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,onCourtA:cp?.onCourtA||null,onCourtB:cp?.onCourtB||null,connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
   });
   const league=nsslBuildLeague(courtData);
 
@@ -14884,6 +14958,7 @@ function NsslMasterDisplay({host}){
 .nsslMaSide .cap{color:#ffd479;font-size:0.72rem;font-weight:700;}
 .nsslMaSide .sc{color:#ffffff;font-size:2.6rem;font-weight:800;line-height:1;}
 .nsslMaSide.lead .sc{color:#86efac;}
+.nsslMaSide .oc{color:#7fc8a0;font-size:0.8rem;font-weight:700;margin-top:2px;}
 .nsslMaVs{color:#6b8299;font-weight:700;}
 .nsslMaPlayers{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:center;margin-top:4px;font-size:0.72rem;color:#7e91a6;}
 .nsslMaPPbadge{margin-top:8px;text-align:center;color:#ffe9a8;font-weight:700;font-size:0.82rem;}
@@ -14907,9 +14982,9 @@ function NsslMasterDisplay({host}){
       return <div key={c.court} className={'nsslMaCourt'+(c.powerPlay?' pp':'')+(!c.connected||c.stale?' off':'')}>
         <div className="nsslMaCourtTop"><b>Court {c.court}</b><em>{!c.connected?'no device':c.stale?'paused':'live'}</em></div>
         <div className="nsslMaScoreRow">
-          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div></div>
+          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div>{c.onCourtA&&<div className="oc">▶ {c.onCourtA}</div>}</div>
           <div className="nsslMaVs">v</div>
-          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div></div>
+          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div>{c.onCourtB&&<div className="oc">▶ {c.onCourtB}</div>}</div>
         </div>
         {(c.teamA.players?.length||c.teamB.players?.length)?<div className="nsslMaPlayers">{[...(c.teamA.players||[]),'·',...(c.teamB.players||[])].map((p,i)=><span key={i}>{p}</span>)}</div>:null}
         {ppName&&<div className="nsslMaPPbadge">⚡ Power Play: {ppName}{c.powerPlay.seconds!=null?` · ${nsslFmtTime(c.powerPlay.seconds)}`:''}</div>}
