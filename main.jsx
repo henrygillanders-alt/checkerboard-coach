@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v208 Games Library · Common Game Errors tab (placeholder)';
+const APP_VERSION='v209 Common Game Errors · standalone activities + scoring + overlays + add-to-session';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3523,14 +3523,6 @@ return <div className="homeGrid homeGridV99h52">
 
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('stabilise');
-  const matchErrors=[
-    {title:'Non-functional crosscourt',error:'Crosscourt played by default rather than to solve a rally problem.',cost:'Sits up through the middle and donates time — opponent volleys, holds the T and keeps the open court. A classic time-giver.',train:'Crosscourt only when it takes time away or pulls the opponent off the T. Width, depth and opponent position decide it — not habit.'},
-    {title:'Not volleying the serve',error:'Letting the serve travel to the back instead of taking the return early.',cost:'Concedes the T and the initiative; the server dictates how the rally opens.',train:'Read the serve early and volley the return to take time and seize the T.'},
-    {title:'Not volleying volley-able balls',error:'Letting a takeable ball bounce and run to the back.',cost:'Donates time, drags you off the T and turns an attacking chance into a defensive one.',train:'Recognise the affordance to intercept — take the ball early when the information says it is on.'},
-    {title:'Losing length',error:'Length floats, sits short or comes off the side wall.',cost:'Opponent steps in, volleys and attacks — the pressure transfers onto you.',train:'Judge working length by its effect on the opponent (late arrival, no volley, no attack), not by a target zone alone.'},
-    {title:'Hitting back to the opponent',error:'Returning the ball into the space the opponent already occupies.',cost:'Demands no movement — opponent stays on the T and the rally stays neutral or turns against you.',train:'Read where the opponent is and play into the space they must cover. Move them, do not feed them.'},
-    {title:'Not looking at the opponent',error:'Eyes locked on the ball or front wall; the opponent goes unseen.',cost:'No information — position, recovery and the open court are all missed, so every choice is blind.',train:'Perceive the opponent before and as you strike. Their position is the information that selects the shot.'}
-  ];
   return <div className="page gamesLibraryPage">
     <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete · Game Errors</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="universalFamilyTabs gamesLibraryTabs">
@@ -3558,32 +3550,116 @@ function GamesLibrary({setScreen,setSession}){
     </div>}
     {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
     {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
-    {tab==='errors'&&<div>
-      <style>{`
-.gameErrorsWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:14px;}
-.gameErrorCard{background:#0f1822;border:1px solid #223044;border-left:3px solid #b4533f;border-radius:12px;padding:14px 16px;}
-.gameErrorCard h3{color:#ff9db5;margin:0 0 8px;font-size:1.05rem;}
-.gameErrorCard .gErow{margin:7px 0;}
-.gameErrorCard .gElabel{display:block;font-size:0.68rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:800;margin-bottom:1px;}
-.gameErrorCard .gErow.err .gElabel{color:#ff9db5;}
-.gameErrorCard .gErow.cost .gElabel{color:#ffd479;}
-.gameErrorCard .gErow.train .gElabel{color:#7fc8a0;}
-.gameErrorCard .gErow p{margin:0;color:#c7d4e2;font-size:0.9rem;line-height:1.42;}
-.gameErrorsPlaceholder{background:#0c1a2e;border:1px dashed #2c4a6e;border-radius:12px;padding:14px 16px;margin-top:14px;color:#9fb6cf;font-size:0.9rem;line-height:1.5;}
-.gameErrorsPlaceholder strong{color:#bcd6f5;}
-`}</style>
-      <div className="libraryStageIntro"><h2>⚠️ Common Game Errors</h2><p>Activities built here target the recurring errors and poor decisions that actually decide matches — framed by function and by the information the player missed, never by technical form alone. Some may overlap other categories, but the coaching intention here is always the matchplay error itself.</p></div>
-      <div className="gameErrorsWrap">{matchErrors.map(e=><div className="gameErrorCard" key={e.title}>
-        <h3>{e.title}</h3>
-        <div className="gErow err"><span className="gElabel">The error</span><p>{e.error}</p></div>
-        <div className="gErow cost"><span className="gElabel">What it costs</span><p>{e.cost}</p></div>
-        <div className="gErow train"><span className="gElabel">Train instead</span><p>{e.train}</p></div>
-      </div>)}</div>
-      <div className="gameErrorsPlaceholder"><strong>Placeholder — activities to follow.</strong> This is the design brief for a focused set of matchplay-error challenges. More errors to come (e.g. late preparation, unnecessary retreat off the T, predictable patterns under pressure). Each will become a representative activity that exposes the error and rewards the better decision.</div>
-    </div>}
+    {tab==='errors'&&<CommonGameErrors setSession={setSession}/>}
   </div>;
 }
 
+
+function CommonGameErrors({setSession}){
+  const errors=[
+    {id:'cge-cross',tag:'Non-functional crosscourt',title:'Crosscourt That Counts',error:'Crosscourt played by default rather than to solve a rally problem.',cost:'Sits up through the middle and donates time — opponent volleys, holds the T and keeps the open court. A classic time-giver.',train:'Crosscourt only when it takes time away or pulls the opponent off the T. Width, depth and opponent position decide it — not habit.',format:'Conditioned game',duration:9,rld:4,task:'Free game, but a crosscourt only stays live if it passes behind the service box and the opponent cannot volley it. A cross cut off in the middle is replayed and the hitter is warned; a second offence loses the point. Straight play and drives are unrestricted.',rationale:'Re-couples the crosscourt to its function — beat the volley, find the back — instead of a default reset. The opponent’s volley position becomes the information that selects whether cross is on.',coach:'Score the effect, not the shot: did it beat the volley and die in the back, or sit up in the middle? Between games: “only go cross when it takes time away.”',playerFocus:'Cross only when it beats the volley and dies in the back.',layers:['Tactical: Width & Depth'],scoringOptions:['Cross that beats the volley and lands behind the box = rally on; cross cut off in the middle = loss of point.','Win the rally = 1. Bonus +1 if the winning cross was uncuttable and found the back; −1 if you played a loose cross through the middle.','Coach call only: every cross that sits up in the middle = a point to the opponent, regardless of who wins the rally.']},
+    {id:'cge-serve',tag:'Not volleying the serve',title:'Take The Serve Early',error:'Letting the serve travel to the back instead of taking the return early.',cost:'Concedes the T and the initiative; the server dictates how the rally opens.',train:'Read the serve early and volley the return to take time and seize the T.',format:'Conditioned serve + return',duration:8,rld:4,task:'Returner must volley the serve whenever it is reachable above the cut line; letting it bounce is only allowed when the serve is genuinely tight or unreachable. Server tries to serve tight enough to deny the volley. Play the point out.',rationale:'Couples return choice to serve quality — the player reads whether the serve affords a volley and takes the T early instead of retreating by default.',coach:'Reward the early take and the T seized, not a clean winner. Between games: “volley the serve — don’t let it drag you back.”',playerFocus:'Reachable serve = volley it, take the T.',layers:['Volley & Intercept'],scoringOptions:['Volleyed return that holds the T = rally on; a reachable serve let go to the back = point to server.','Win the rally = 1, but only counts if the return was volleyed when the serve was reachable.','Count clean volley returns over the game; a passed-up reachable serve = 0 for that rally.']},
+    {id:'cge-volley',tag:'Not volleying volley-able balls',title:'Intercept On',error:'Letting a takeable ball bounce and run to the back.',cost:'Donates time, drags you off the T and turns an attacking chance into a defensive one.',train:'Recognise the affordance to intercept — take the ball early when the information says it is on.',format:'Conditioned game',duration:9,rld:4,task:'Free game. Any ball reachable in front of the player above the cut line must be volleyed; letting a takeable ball pass to the back is replayed and warned, then loses. Opponent plays normally and tries to deny the volley with width and depth.',rationale:'Trains the affordance to intercept — reading the loose or floaty ball as a chance to take time, not a ball to chase to the back.',coach:'Call “that was on” when a volley is passed up. Between games: “if you can reach it in front, take it.”',playerFocus:'See the takeable ball, volley it, keep the T.',layers:['Volley & Intercept'],scoringOptions:['Reachable ball volleyed = rally continues; a takeable ball let go to the back = loss of point.','Win the rally = 1; +1 if the rally was won off an interception, taken-early volley.','Coach call only: each passed-up volley = a point to the opponent.']},
+    {id:'cge-length',tag:'Losing length',title:'Length That Pins',error:'Length floats, sits short or comes off the side wall.',cost:'Opponent steps in, volleys and attacks — the pressure transfers onto you.',train:'Judge working length by its effect on the opponent (late arrival, no volley, no attack), not by a target zone alone.',format:'Length conditioned game',duration:9,rld:4,task:'Length game scored by effect: a drive counts as good length only if the opponent cannot volley it and has to take it behind the back of the service box. A ball the opponent volleys or attacks from short scores nothing for the hitter.',rationale:'Defines working length by its effect on the opponent — late arrival, no volley, no attack — rather than a static target zone. Function before form.',coach:'Judge length by what it does to the opponent, not where it lands. Between games: “get your length back behind them — stop feeding the volley.”',playerFocus:'Length is good only if they can’t volley or attack it.',layers:['Quality Length Before Attack'],scoringOptions:['Each drive the opponent must take behind the box, no volley = 1; a length they volley or attack = 0.','Win the rally = 1; −1 if you lost it off your own short or floated length.','First to a target number of “pinning” lengths (uncuttable, deep) wins the game.']},
+    {id:'cge-space',tag:'Hitting back to the opponent',title:'Move Them, Don’t Feed Them',error:'Returning the ball into the space the opponent already occupies.',cost:'Demands no movement — opponent stays on the T and the rally stays neutral or turns against you.',train:'Read where the opponent is and play into the space they must cover. Move them, do not feed them.',format:'Conditioned game (space-based)',duration:9,rld:4,task:'Free game with one rule: you must play into the half of the court the opponent is not standing in, read at your contact. Playing into the opponent’s space (no movement demanded) is warned, then loses. Opponent plays freely.',rationale:'Forces perception of the opponent’s position as the information that selects placement — the rally becomes about creating movement, not just returning the ball.',coach:'Reward shots that move the opponent off the T. Between games: “look where they are — hit where they aren’t.”',playerFocus:'Read their position; play into the space they must cover.',layers:['Opponent Information'],scoringOptions:['Shot into open space (opponent has to move to it) = rally on; ball fed into the opponent’s space = loss of point.','Win the rally = 1; +1 if the winner came from a shot that wrong-footed or stretched the opponent.','Coach call only: each ball played straight at the opponent = a point against.']},
+    {id:'cge-watch',tag:'Not looking at the opponent',title:'Eyes On The Striker',error:'Eyes locked on the ball or front wall; the opponent goes unseen.',cost:'No information — position, recovery and the open court are all missed, so every choice is blind.',train:'Perceive the opponent before and as you strike. Their position is the information that selects the shot.',format:'Perception game',duration:8,rld:4,task:'Both players must turn and watch the opponent strike the ball (coach watches for the head/eye turn). Occasionally the striker holds or shows one shot and plays another, so the only way to read it is to watch. Reward correct early movement that could only come from watching.',rationale:'Makes the opponent’s preparation the source of advance information; the player who doesn’t watch is playing blind. Trains the perception side of perception–action coupling.',coach:'Watch for the turn-and-look. Between games: “turn and watch them hit — that’s where the information is.”',playerFocus:'Watch the opponent strike; their shape tells you what’s coming.',layers:['Opponent Information','Early Cue Search'],scoringOptions:['Correct early move that could only come from watching = 1; caught flat or wrong-footed by a hold = 0.','Coach scores the read, not the rally: clean turn-and-watch + early commit = 1 each rally.','Win the rally = 1; +1 when you clearly read the disguise by watching the striker.']},
+    {id:'cge-tee',tag:'Unnecessary retreat off the T',title:'Hold The T',error:'Backing off the T when the ball does not force it.',cost:'Hands over the T and time — opponent dictates, you defend from deep without needing to.',train:'Hold your ground and take the ball earlier. Only give up the T when the ball genuinely makes you.',format:'Conditioned positioning game',duration:9,rld:4,task:'Free game in which the player may not retreat behind the back of the service box unless the ball genuinely forces them there; the coach flags every unforced step back. Reward taking the ball earlier and recovering tight to the T.',rationale:'Court position is a choice under most conditions; unnecessary retreat donates the T and time. The constraint rewards holding ground and taking the ball earlier.',coach:'Flag the unforced step back. Between games: “stop backing off — hold your ground and take it earlier.”',playerFocus:'Hold the T; only go back when the ball makes you.',layers:['Volley & Intercept'],scoringOptions:['Rally played without an unforced retreat = on; each unforced step behind the box = warning, then loss.','Win the rally = 1; +1 if you won it from a forward, T-holding position.','Coach call only: every unnecessary retreat = a point to the opponent.']},
+    {id:'cge-pattern',tag:'Predictable patterns',title:'Break The Pattern',error:'Playing the same shot from the same place, especially under pressure.',cost:'Opponent reads you and sets early — your best shot becomes their easiest ball.',train:'Read the situation and vary. Don’t default to the habit when the opponent has it covered.',format:'Conditioned game',duration:9,rld:5,task:'Free game in which you may not play the same shot twice in a row from the same corner; repeating the pattern is replayed, then loses. The opponent is told the player’s tendency (from the analysis) so it is punished if they don’t vary.',rationale:'Exposes one-dimensional decision-making under pressure; the constraint pushes the player from reproducing a habit (an attractor state) toward reading the situation and varying.',coach:'Name the tendency from the analysis. Between games: “you’re going cross every time — they’re reading you; vary it.”',playerFocus:'Don’t repeat the obvious — make them guess.',layers:['Tactical Variability'],scoringOptions:['Same shot repeated from the same corner = loss of point; varied, situation-led choice = rally on.','Win the rally = 1; −1 if you lost it playing the predictable, scouted shot.','Coach tallies repeats of the named tendency; fewest repeats wins the game.']},
+    {id:'cge-loose',tag:'Not punishing the loose ball',title:'Punish The Loose Ball',error:'Resetting a ball that was begging to be put away.',cost:'Lets the opponent off, extends the rally and surrenders an attacking chance you had earned.',train:'When it sits up, take it in. Recognise the attacking affordance and convert the pressure.',format:'Conditioned game',duration:9,rld:5,task:'Whenever a loose ball sits up — defined as above the cut, off the side wall or short of the service box — the player must attack it (kill, volley drop, or hard low cross). Letting a loose ball go back to a rebuild length scores nothing and is warned.',rationale:'Trains recognition of the attacking affordance and the decision to convert pressure into a finish, rather than resetting a ball that was on.',coach:'Call “that was loose” when a chance is passed up. Between games: “when it sits up, take it in — don’t reset a loose ball.”',playerFocus:'Loose ball = attack it; don’t let them off.',layers:['Front-court Pressure'],scoringOptions:['Loose ball attacked and won = 2; loose ball reset to length = 0 even if you win the rally.','Win the rally = 1; +1 if it was won by attacking a loose ball, −1 if you passed one up.','Coach call only: each passed-up loose ball = a point to the opponent.']},
+    {id:'cge-boast',tag:'Boasting good length',title:'Don’t Boast Good Length',error:'Boasting a ball you could have driven, handing over the front court.',cost:'Volunteers the front, brings the opponent forward onto an easy attacking ball, and gives up the T.',train:'Boast only what you genuinely can’t drive. Drive or lob the good ball and keep them deep.',format:'Conditioned game',duration:9,rld:4,task:'The player may only boast off a genuinely difficult ball (deep in the corner, off the back wall). Boasting a driveable good-length ball is warned, then loses. Drive or lob the good ball instead.',rationale:'Re-couples the boast to its function — an escape from a ball you cannot drive — rather than a default reset that gives away the front court and the T.',coach:'“Only boast what you can’t drive — stop handing them the front.” Name it from the analysis if it’s a repeat tendency.',playerFocus:'Boast the trouble ball; drive the good one.',layers:['Tactical: Shot Selection'],scoringOptions:['Boast off a genuine trouble ball = fine; boast off a driveable ball = loss of point.','Win the rally = 1; −1 if you boasted a ball you could have driven and gave up the front.','Coach call only: each unnecessary boast = a point to the opponent.']}
+  ];
+  const [sel,setSel]=useState(null);
+  const [scoreIdx,setScoreIdx]=useState(0);
+  const [customScore,setCustomScore]=useState('');
+  const [overlays,setOverlays]=useState([]);
+  const [added,setAdded]=useState('');
+  const e=errors.find(x=>x.id===sel);
+  function openErr(id){setSel(id);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');}
+  function toggleOverlay(layer){setOverlays(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
+  function addToSession(){
+    if(!e||typeof setSession!=='function')return;
+    const scoring=customScore.trim()?customScore.trim():e.scoringOptions[scoreIdx];
+    const layers=[...new Set([...(e.layers||[]),...overlays])];
+    const card={id:Date.now()+Math.random(),title:e.title,category:'Common Game Errors',format:e.format,duration:e.duration,task:e.task,scoring,rationale:e.rationale,coach:e.coach,playerFocus:e.playerFocus,layers,rld:e.rld};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(e.title);
+  }
+  const STYLE=`
+.cgeWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-top:14px;}
+.cgeCard{background:#0f1822;border:1px solid #223044;border-left:3px solid #b4533f;border-radius:12px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.cgeCard:active{background:#13202e;}
+.cgeCard h3{color:#ff9db5;margin:0 0 8px;font-size:1.05rem;}
+.cgeCard .gErow{margin:7px 0;}
+.cgeCard .gElabel{display:block;font-size:0.68rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:800;margin-bottom:1px;}
+.cgeCard .gErow.err .gElabel{color:#ff9db5;}
+.cgeCard .gErow.cost .gElabel{color:#ffd479;}
+.cgeCard .gErow.train .gElabel{color:#7fc8a0;}
+.cgeCard .gErow p{margin:0;color:#c7d4e2;font-size:0.9rem;line-height:1.42;}
+.cgeCard .cgeOpen{margin-top:10px;color:#9cc4ec;font-weight:800;font-size:0.86rem;}
+.cgeDetail{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.cgeDetail h2{color:#fff;margin:0 0 4px;}
+.cgeDetail .cgeTag{display:inline-block;background:#b4533f;color:#fff;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;border-radius:6px;padding:3px 8px;margin-bottom:10px;}
+.cgeMeta{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;}
+.cgeMeta span{background:#15233a;border:1px solid #294063;color:#bcd6f5;border-radius:999px;padding:4px 10px;font-size:0.74rem;font-weight:700;}
+.cgeBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.cgeBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.cgeBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.cgeBrief{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0;}
+.cgeBrief div{background:#0d1722;border:1px solid #223044;border-radius:8px;padding:8px 10px;}
+.cgeBrief .l{display:block;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:2px;}
+.cgeBrief .err .l{color:#ff9db5;}.cgeBrief .cost .l{color:#ffd479;}.cgeBrief .train .l{color:#7fc8a0;}
+.cgeBrief p{margin:0;color:#c7d4e2;font-size:0.84rem;line-height:1.36;}
+.cgeScoreLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin:14px 0 6px;}
+.cgeScoreOpt{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:11px 13px;margin:7px 0;color:#dbe6f2;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;gap:10px;align-items:flex-start;}
+.cgeScoreOpt .dot{flex:0 0 auto;width:16px;height:16px;border-radius:50%;border:2px solid #456;margin-top:2px;}
+.cgeScoreOpt.on{border-color:#34e07a;background:#0c2418;}
+.cgeScoreOpt.on .dot{border-color:#34e07a;background:#34e07a;}
+.cgeCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 12px;color:#dbe6f2;font-size:0.9rem;margin-top:6px;}
+.cgeCustom::placeholder{color:#6b7d92;}
+.cgeAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.cgeAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cgeBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:6px;-webkit-tap-highlight-color:transparent;}`;
+  if(e){
+    return <div>
+      <style>{STYLE}</style>
+      <div className="cgeBack" role="button" tabIndex={0} onClick={()=>setSel(null)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSel(null);}}>← All errors</div>
+      <div className="cgeDetail">
+        <span className="cgeTag">Match-analysis error</span>
+        <h2>{e.title}</h2>
+        <div className="cgeMeta"><span>{e.format}</span><span>{e.duration} min</span><span>RLD {e.rld}</span><span>Spotlight: {e.tag}</span></div>
+        <div className="cgeBrief">
+          <div className="err"><span className="l">The error</span><p>{e.error}</p></div>
+          <div className="cost"><span className="l">What it costs</span><p>{e.cost}</p></div>
+          <div className="train"><span className="l">Train instead</span><p>{e.train}</p></div>
+        </div>
+        <div className="cgeBox"><strong>The activity</strong><p>{e.task}</p></div>
+        <div className="cgeBox"><strong>Why it works</strong><p>{e.rationale}</p></div>
+        <div className="cgeBox"><strong>Coach · between-games cue</strong><p>{e.coach}</p></div>
+        <div className="cgeBox"><strong>Player focus</strong><p>{e.playerFocus}</p></div>
+        <div className="cgeScoreLabel">Scoring — choose one</div>
+        {e.scoringOptions.map((opt,i)=><div key={i} className={'cgeScoreOpt'+(!customScore.trim()&&scoreIdx===i?' on':'')} role="button" tabIndex={0} onClick={()=>{setScoreIdx(i);setCustomScore('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setScoreIdx(i);setCustomScore('');}}}><span className="dot"></span><span>{opt}</span></div>)}
+        <input className="cgeCustom" placeholder="…or type your own scoring" value={customScore} onChange={ev=>setCustomScore(ev.target.value)}/>
+        <div className="cgeScoreLabel">Modifiers — optional overlays</div>
+        <OverlayFamilyTabs selectedOverlays={overlays} onToggle={toggleOverlay} context="Common Game Errors"/>
+        <div className="cgeAddRow">
+          {typeof setSession==='function'&&<button type="button" className="primaryBtn" onClick={addToSession}>Add to Session</button>}
+          {added&&<span className="cgeAdded">✓ {added} added — open Session Builder to see the rotation.</span>}
+        </div>
+      </div>
+    </div>;
+  }
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>⚠️ Common Game Errors</h2><p>The courtside-coachable errors from match analysis — decisions a player can change at the next handover, put under a spotlight. Each is a standalone activity that exposes the error and rewards the better decision. Tap one to set scoring, add modifiers, and drop it into a session.</p></div>
+    <div className="cgeWrap">{errors.map(er=><div className="cgeCard" key={er.id} role="button" tabIndex={0} onClick={()=>openErr(er.id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')openErr(er.id);}}>
+      <h3>{er.title}</h3>
+      <div className="gErow err"><span className="gElabel">The error</span><p>{er.error}</p></div>
+      <div className="gErow cost"><span className="gElabel">What it costs</span><p>{er.cost}</p></div>
+      <div className="gErow train"><span className="gElabel">Train instead</span><p>{er.train}</p></div>
+      <div className="cgeOpen">Open activity →</div>
+    </div>)}</div>
+  </div>;
+}
 
 function GameSelector({onAddToSession,addButtonText='Add To Session',setScreen}){
 const[category,setCategory]=useState(null);
