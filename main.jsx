@@ -34,6 +34,8 @@ function getPersistentLiveRoomId(){
 function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';} }
 function buildLivePlayerViewUrl(roomId){const room=roomId||getPersistentLiveRoomId();const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(room)}`;}
 const NSSL_PERIOD_KEYS=['p1','p2','p3','ot'];
+const NSSL_PP_ALLOW={p1:1,p2:1,p3:2,ot:1};
+const NSSL_PP_SECONDS=120;
 function nsslPeriodKeyFor(activePeriod){return NSSL_PERIOD_KEYS[(Number(activePeriod)||1)-1]||'p1';}
 function nsslPeriodLabel(key){return ({p1:'P1',p2:'P2',p3:'P3',ot:'OT'})[key]||String(key||'').toUpperCase();}
 function nsslPeriodWeight(key){return key==='p3'?2:1;}
@@ -120,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v206 NSSL player rotation + sub limits + min-time warnings';
+const APP_VERSION='v207 NSSL power-play + master sub/min-time + Shots graphics fix';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -2163,6 +2165,20 @@ function ShotsModule({setScreen}){
 .shotDetailPanel .gameCard,.shotDetailPanel .shotsPrincipleCard{background:#0b1320 !important;border:1px solid #223044 !important;color:#eaf4fb !important;box-shadow:none !important;}
 .shotDetailPanel .gameCard h3,.shotDetailPanel .shotsPrincipleCard h3{color:#ffd479 !important;}
 .shotDetailPanel .gameCard p,.shotDetailPanel .shotsPrincipleCard p{color:#c7d4e2 !important;}
+.shotDetailPanel .shotQuickGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:8px 0 16px;}
+.shotDetailPanel .claPrincipleList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:8px 0 16px;}
+.shotDetailPanel .shotQuickCard,.shotDetailPanel .claPrincipleList>div{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;padding:14px 16px !important;color:#c7d4e2 !important;box-shadow:none !important;}
+.shotDetailPanel .shotQuickCard h3,.shotDetailPanel .claPrincipleList>div h3{color:#9cc4ec !important;margin:0 0 6px !important;font-size:1.05rem !important;}
+.shotDetailPanel .shotQuickCard p,.shotDetailPanel .claPrincipleList>div p{color:#c7d4e2 !important;margin:0 !important;line-height:1.45 !important;}
+.shotDetailPanel .shotsLearnTabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+.shotDetailPanel .shotsLearnTabs button{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;border-radius:999px !important;padding:9px 18px !important;font-weight:800 !important;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.shotDetailPanel .shotsLearnTabs button.activeShotTab{background:linear-gradient(135deg,#0d3722,#0f2e44) !important;border-color:#1d6b3f !important;color:#bff0d0 !important;box-shadow:0 0 0 1px rgba(52,224,122,0.25) !important;}
+.shotDetailPanel .shotCoachRule{background:#0c1a2e !important;border:1px solid #25405f !important;border-radius:12px !important;padding:14px 16px !important;margin-top:12px !important;}
+.shotDetailPanel .shotCoachRule h3{color:#ffd479 !important;}
+.shotDetailPanel .shotCoachRule p,.shotDetailPanel .shotCoachRule strong{color:#dbe6f2 !important;}
+.shotDetailPanel .playerViewCard.shotPlayerView{background:linear-gradient(135deg,#0d2a2a,#0b1726) !important;border:1px solid #1d5b6b !important;border-radius:12px !important;color:#dbe6f2 !important;margin-top:14px !important;}
+.shotDetailPanel .playerViewCard.shotPlayerView h3{color:#ffd479 !important;}
+.shotDetailPanel .playerViewCard.shotPlayerView p,.shotDetailPanel .playerViewCard.shotPlayerView strong{color:#dbe6f2 !important;}
 `}</style>
       {shotSections.map(s=><div key={s.id} role="button" tabIndex={0} className={'shotFnCard'+(section===s.id?' shotFnActive':'')} onClick={()=>setSection(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSection(s.id);}}}><span className="shotFnTitle">{s.title}</span><span className="shotFnTag">{s.tag}</span></div>)}
     </div>
@@ -10497,7 +10513,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     setNslRoundSeconds(Math.max(0,Number(minutes)||0)*60);
     setNslTimerRunning(false);
   }
-  function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(60);setNslPowerPlayActive(true);}
+  function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(NSSL_PP_SECONDS);setNslPowerPlayActive(true);}
   function stopNslPowerPlay(){setNslPowerPlayActive(false);}
   function resetNslScores(){setNslScores({});}
 
@@ -10524,6 +10540,16 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     },300);
     return ()=>clearTimeout(handle);
   });
+  useEffect(()=>{
+    if(mode!=='nsl')return;
+    if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
+    let lock=null;
+    async function acquire(){try{if(document.visibilityState==='visible'){lock=await navigator.wakeLock.request('screen');}}catch{}}
+    acquire();
+    const onVis=()=>{if(document.visibilityState==='visible')acquire();};
+    document.addEventListener('visibilitychange',onVis);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
+  },[mode]);
   // v100h43 NSSL round timer and competition persistence
 
   const modeInfo={
@@ -14755,11 +14781,14 @@ function NsslCourtScorer({court,host}){
   const roomId=nsslCourtRoomId(host,court);
   const [clock,setClock]=useState(null);
   const [periods,setPeriods]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
-  const [pp,setPp]=useState({side:null,active:false,seconds:60});
+  const [pp,setPp]=useState({side:null,active:false,seconds:NSSL_PP_SECONDS});
+  const [ppUsed,setPpUsed]=useState({p1:0,p2:0,p3:0,ot:0});
   const [undoStack,setUndoStack]=useState([]);
   const [status,setStatus]=useState('Connecting…');
   const [onCourtIdx,setOnCourtIdx]=useState({a:0,b:0});
   const [playerTime,setPlayerTime]=useState({a:{},b:{}});
+  const ptRef=useRef({a:{},b:{}});
+  useEffect(()=>{ptRef.current=playerTime;},[playerTime]);
   const [subsUsed,setSubsUsed]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
 
   useEffect(()=>{
@@ -14778,7 +14807,7 @@ function NsslCourtScorer({court,host}){
   const tickRef=useRef({running:false,aName:null,bName:null});
   tickRef.current={running:!!clock?.running,aName:(teamA.players||[])[onCourtIdx.a]||null,bName:(teamB.players||[])[onCourtIdx.b]||null};
 
-  useEffect(()=>{if(!pp.active)return;const id=setInterval(()=>setPp(p=>{const s=p.seconds-1;if(s<=0)return {side:null,active:false,seconds:60};return {...p,seconds:s};}),1000);return ()=>clearInterval(id);},[pp.active]);
+  useEffect(()=>{if(!pp.active)return;const id=setInterval(()=>setPp(p=>{const s=p.seconds-1;if(s<=0)return {side:null,active:false,seconds:NSSL_PP_SECONDS};return {...p,seconds:s};}),1000);return ()=>clearInterval(id);},[pp.active]);
 
   useEffect(()=>{
     const id=setInterval(()=>{
@@ -14791,11 +14820,11 @@ function NsslCourtScorer({court,host}){
   useEffect(()=>{
     const aOn=(teamA.players||[])[onCourtIdx.a]||null;
     const bOn=(teamB.players||[])[onCourtIdx.b]||null;
-    const payload={type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,onCourtA:aOn,onCourtB:bOn,subsUsed,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()};
-    writeLivePlayerRoom(roomId,'nssl',payload);
-    const id=setInterval(()=>writeLivePlayerRoom(roomId,'nssl',{...payload,updatedAt:Date.now()}),3000);
+    const mk=()=>({type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,onCourtA:aOn,onCourtB:bOn,subsUsed,subLimits,playerTime:ptRef.current,minSec,ppUsed,ppAllow:NSSL_PP_ALLOW,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()});
+    writeLivePlayerRoom(roomId,'nssl',mk());
+    const id=setInterval(()=>writeLivePlayerRoom(roomId,'nssl',mk()),3000);
     return ()=>clearInterval(id);
-  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,onCourtIdx.a,onCourtIdx.b,subsUsed,roomId]);
+  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,onCourtIdx.a,onCourtIdx.b,subsUsed,ppUsed,minSec,roomId]);
 
   function score(side,delta){
     if(delta>0&&pp.active&&pp.side&&pp.side!==side)return;
@@ -14808,9 +14837,15 @@ function NsslCourtScorer({court,host}){
     setSubsUsed(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:(prev[activeKey]?.[side]||0)+1}}));
     setOnCourtIdx(prev=>({...prev,[side]:idx}));
   }
-  function powerPlay(side){setPp({side,active:true,seconds:60});}
-  function endPP(){setPp({side:null,active:false,seconds:60});}
-  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);setPlayerTime({a:{},b:{}});setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setOnCourtIdx({a:0,b:0});endPP();}}
+  function powerPlay(side){
+    const used=ppUsed[activeKey]||0;
+    const allow=NSSL_PP_ALLOW[activeKey]||0;
+    if(used>=allow)return;
+    setPpUsed(prev=>({...prev,[activeKey]:(prev[activeKey]||0)+1}));
+    setPp({side,active:true,seconds:NSSL_PP_SECONDS});
+  }
+  function endPP(){setPp({side:null,active:false,seconds:NSSL_PP_SECONDS});}
+  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);setPlayerTime({a:{},b:{}});setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setPpUsed({p1:0,p2:0,p3:0,ot:0});setOnCourtIdx({a:0,b:0});endPP();}}
 
   const periodLabel=nsslPeriodLabel(activeKey);
   function TeamPanel({side,team}){
@@ -14819,6 +14854,10 @@ function NsslCourtScorer({court,host}){
     const players=team.players||[];
     const subUsed=subsUsed[activeKey]?.[side]||0;
     const lim=subLimits[activeKey]||0;
+    const ppUsedThis=ppUsed[activeKey]||0;
+    const ppAllowThis=NSSL_PP_ALLOW[activeKey]||0;
+    const ppLeft=Math.max(0,ppAllowThis-ppUsedThis);
+    const ppExhausted=!onPP&&ppLeft<=0;
     return <div className={'nsslScTeam'+(onPP?' nsslScPP':'')+(locked?' nsslScLocked':'')}>
       <div className="nsslScTeamHead"><strong>{team.name}</strong>{team.captain&&<span className="nsslScCapt">©&nbsp;{team.captain}</span>}</div>
       <div className="nsslScScore">{totals[side]}</div>
@@ -14827,7 +14866,7 @@ function NsslCourtScorer({court,host}){
         <div role="button" tabIndex={0} className="nsslScMinus" onClick={()=>score(side,-1)}>−1</div>
         <div role="button" tabIndex={0} className="nsslScPlus" onClick={()=>score(side,1)}>+1</div>
       </div>
-      <div role="button" tabIndex={0} className={'nsslScPPBtn'+(onPP?' nsslScPPOn':'')+(locked?' nsslScPPDim':'')} onClick={()=>onPP?endPP():powerPlay(side)}>{onPP?`⚡ ${nsslFmtTime(pp.seconds)} · end`:'⚡ Power Play'}</div>
+      <div role="button" tabIndex={0} className={'nsslScPPBtn'+(onPP?' nsslScPPOn':'')+(locked||ppExhausted?' nsslScPPDim':'')} onClick={()=>{if(onPP){endPP();}else{powerPlay(side);}}}>{onPP?`⚡ ${nsslFmtTime(pp.seconds)} · end`:(ppExhausted?`⚡ used (${ppUsedThis}/${ppAllowThis})`:`⚡ Power Play · ${ppLeft} left`)}</div>
       {players.length>0&&<div className="nsslScRoster">
         <div className="nsslScRosterHead">On court &amp; rotation — tap to sub on</div>
         {players.map((p,i)=>{
@@ -14929,9 +14968,13 @@ function NsslMasterDisplay({host}){
   },[host]);
 
   const fixtures=(clock&&clock.fixtures)||[];
+  const minSec=Number(clock?.minPlayerSeconds||0);
+  const subLimits=clock?.subLimits||{p1:2,p2:2,p3:4,ot:4};
+  const activeKey=nsslPeriodKeyFor(clock?.activePeriod);
+  const periodLabel=nsslPeriodLabel(activeKey);
   const courtData=fixtures.map(f=>{
     const cp=courts[f.court];
-    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,onCourtA:cp?.onCourtA||null,onCourtB:cp?.onCourtB||null,connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
+    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,onCourtA:cp?.onCourtA||null,onCourtB:cp?.onCourtB||null,subsUsed:cp?.subsUsed||{},playerTime:cp?.playerTime||{a:{},b:{}},connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
   });
   const league=nsslBuildLeague(courtData);
 
@@ -14959,6 +15002,9 @@ function NsslMasterDisplay({host}){
 .nsslMaSide .sc{color:#ffffff;font-size:2.6rem;font-weight:800;line-height:1;}
 .nsslMaSide.lead .sc{color:#86efac;}
 .nsslMaSide .oc{color:#7fc8a0;font-size:0.8rem;font-weight:700;margin-top:2px;}
+.nsslMaSide .sb{color:#9fb0c2;font-size:0.72rem;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
+.nsslMaSide .sb.hit{color:#ffb84d;}
+.nsslMaUnder{margin-top:8px;text-align:center;background:#3a2c0a;border:1px solid #8a6d18;color:#ffe9a8;border-radius:8px;padding:5px 8px;font-size:0.78rem;font-weight:700;}
 .nsslMaVs{color:#6b8299;font-weight:700;}
 .nsslMaPlayers{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:center;margin-top:4px;font-size:0.72rem;color:#7e91a6;}
 .nsslMaPPbadge{margin-top:8px;text-align:center;color:#ffe9a8;font-weight:700;font-size:0.82rem;}
@@ -14979,15 +15025,21 @@ function NsslMasterDisplay({host}){
     {courtData.length>0?<div className="nsslMaGrid">{courtData.map(c=>{
       const aLead=c.totals.a>c.totals.b,bLead=c.totals.b>c.totals.a;
       const ppName=c.powerPlay?(c.powerPlay.side==='a'?c.teamA.name:c.teamB.name):null;
+      const limThis=subLimits[activeKey]||0;
+      const subA=c.subsUsed?.[activeKey]?.a??0;
+      const subB=c.subsUsed?.[activeKey]?.b??0;
+      const under=[];
+      if(minSec>0&&c.connected){[['a',c.teamA],['b',c.teamB]].forEach(([s,t])=>{(t.players||[]).forEach(p=>{const tt=c.playerTime?.[s]?.[p]||0;if(tt<minSec)under.push(p);});});}
       return <div key={c.court} className={'nsslMaCourt'+(c.powerPlay?' pp':'')+(!c.connected||c.stale?' off':'')}>
         <div className="nsslMaCourtTop"><b>Court {c.court}</b><em>{!c.connected?'no device':c.stale?'paused':'live'}</em></div>
         <div className="nsslMaScoreRow">
-          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div>{c.onCourtA&&<div className="oc">▶ {c.onCourtA}</div>}</div>
+          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div>{c.onCourtA&&<div className="oc">▶ {c.onCourtA}</div>}{limThis>0&&<div className={'sb'+(subA>=limThis?' hit':'')}>subs {subA}/{limThis}</div>}</div>
           <div className="nsslMaVs">v</div>
-          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div>{c.onCourtB&&<div className="oc">▶ {c.onCourtB}</div>}</div>
+          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div>{c.onCourtB&&<div className="oc">▶ {c.onCourtB}</div>}{limThis>0&&<div className={'sb'+(subB>=limThis?' hit':'')}>subs {subB}/{limThis}</div>}</div>
         </div>
         {(c.teamA.players?.length||c.teamB.players?.length)?<div className="nsslMaPlayers">{[...(c.teamA.players||[]),'·',...(c.teamB.players||[])].map((p,i)=><span key={i}>{p}</span>)}</div>:null}
         {ppName&&<div className="nsslMaPPbadge">⚡ Power Play: {ppName}{c.powerPlay.seconds!=null?` · ${nsslFmtTime(c.powerPlay.seconds)}`:''}</div>}
+        {minSec>0&&under.length>0&&<div className="nsslMaUnder">⏱ Needs court time ({periodLabel}): {under.join(', ')}</div>}
       </div>;
     })}</div>:<p className="nsslMaWait">Waiting for the organiser to generate fixtures…</p>}
     <div className="nsslMaTblWrap">
