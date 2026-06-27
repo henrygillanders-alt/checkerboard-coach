@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v212 Live Match Coaching module';
+const APP_VERSION='v214 Live Match Coaching controls';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3492,70 +3492,6 @@ function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
   </div>;
 }
 
-
-function LiveMatchCoaching({setScreen}){
-  const MATCH_KEY='checkerboard_live_match_coaching_v212';
-  const ADV=['Central Volley','Front Left','Front Right','Back Left','Back Right','Crosscourt Intercept','Set on T','Pressure Build','No Clear Advantage'];
-  const TAGS=['Return Of Serve – No Volley','Loose Drive','Loose Drop','Vision – Not Reading Opponent','Defensive Boast','Non-Functional Cross Court','No T Recovery','Late Contact When Attacking','Unforced Tin Error','Deception Hold By Opponent','Ball Focused Decisions','Self Created Pressure Attacking','Hitting Back To Opponent','Opponent Set When Attacking'];
-  const LOST=['Forced Error','Unforced Error','Winner Against','Stroke Against','Tin','Out'];
-  const WON=['Drive','Drop','Volley','Boast','Lob','Nick','Stroke'];
-  const empty={currentGame:1,meta:{player:'',opponent:'',date:new Date().toISOString().slice(0,10)},selected:{adv:'',zone:'',chain:[],lost:'',won:''},games:{1:[],2:[],3:[],4:[],5:[]}};
-  const[state,setState]=useState(()=>{try{const v=JSON.parse(localStorage.getItem(MATCH_KEY)||'null');return v&&v.games?v:empty;}catch{return empty;}});
-  useEffect(()=>{try{localStorage.setItem(MATCH_KEY,JSON.stringify(state));}catch{}},[state]);
-  function setMeta(k,v){setState(st=>({...st,meta:{...st.meta,[k]:v}}));}
-  function select(k,v){setState(st=>({...st,selected:{...st.selected,[k]:st.selected[k]===v?'':v}}));}
-  function toggleTag(t){setState(st=>{const c=st.selected.chain||[];let n=c.includes(t)?c.filter(x=>x!==t):(c.length<4?[...c,t]:c);return {...st,selected:{...st.selected,chain:n}};});}
-  function setGame(g){setState(st=>({...st,currentGame:g}));}
-  function save(){const s=state.selected;if(!s.adv||!s.zone||!s.chain.length||!s.lost){alert('Select advantage, zone, at least one problem stem, and point-lost tag.');return;}setState(st=>{const g=st.currentGame;const rally={...st.selected,time:new Date().toISOString()};return {...st,selected:{adv:'',zone:'',chain:[],lost:'',won:''},games:{...st.games,[g]:[...(st.games[g]||[]),rally]}};});}
-  function undo(){setState(st=>{const g=st.currentGame;return {...st,games:{...st.games,[g]:(st.games[g]||[]).slice(0,-1)}};});}
-  function reset(){if(confirm('Reset this match analysis?'))setState(empty);}
-  function counts(arr,fn){const o={};arr.forEach(x=>{const k=fn(x);if(k)o[k]=(o[k]||0)+1;});return o;}
-  function top(o){let k='',n=0;Object.entries(o).forEach(([a,b])=>{if(b>n){k=a;n=b;}});return {k,n};}
-  const all=Object.values(state.games).flat();
-  const current=state.games[state.currentGame]||[];
-  const base=current.length?current:all;
-  const tagCounts={};base.forEach(r=>(r.chain||[]).forEach(t=>tagCounts[t]=(tagCounts[t]||0)+1));
-  const advTop=top(counts(base,r=>r.adv));
-  const rootTop=top(counts(base,r=>r.chain&&r.chain[0]));
-  const tagTop=top(tagCounts);
-  let problem=base.length?`Opponent gaining control from ${advTop.k}.`:'No rallies recorded yet.';
-  let cause=rootTop.k||tagTop.k||'—';
-  let instruction='Reduce loose balls and build pressure patiently.';
-  let cue='Use 3 / 4 before attacking 1 or 2.';
-  if((tagCounts['Non-Functional Cross Court']||0)>=2||tagTop.k==='Non-Functional Cross Court'){instruction='Your crosscourt is not moving them enough. Stay straighter until you create width.';cue='3 / 4 first, then change direction.';}
-  if(advTop.k==='Central Volley'&&(tagCounts['Non-Functional Cross Court']||0)>=1){problem='Opponent is controlling central volleys from non-functional crosscourts.';instruction='Stop feeding the middle volley. Build straighter and wider before changing direction.';cue='Straight pressure 3 / 4 before 1 / 2.';}
-  else if((tagCounts['Opponent Set When Attacking']||0)>=2){instruction='You are attacking into a stable opponent. Move them first, then attack.';cue='Move a back corner first, then front.';}
-  else if((tagCounts['Hitting Back To Opponent']||0)>=2){instruction='You are recycling to their strength. Change height, width or angle.';cue='Avoid returning directly to the same zone.';}
-  else if((tagCounts['No T Recovery']||0)>=2){instruction='Recover first. Attack second.';cue='Shot, recover, then choose.';}
-  else if((tagCounts['Self Created Pressure Attacking']||0)>=2){instruction='You are forcing attacks without earning them. Build one more shot.';cue='3 / 4 before short attack.';}
-  function sortedRows(o){return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8);}
-  const allTagCounts={};all.forEach(r=>(r.chain||[]).forEach(t=>allTagCounts[t]=(allTagCounts[t]||0)+1));
-  const zoneCounts=counts(all,r=>r.zone), advCounts=counts(all,r=>r.adv), winCounts=counts(all,r=>r.won);
-  function Chip({on,children,click}){return <div role="button" tabIndex={0} onClick={click} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click&&click();}}} className={on?'lmcChip on':'lmcChip'}>{children}</div>;}
-  function MiniTable({rows}){return rows.length?<table className="lmcTable"><tbody>{rows.map(([k,v])=><tr key={k}><td>{k}</td><td>{v}</td></tr>)}</tbody></table>:<p className="lmcMuted">No data yet.</p>;}
-  return <div className="page lmcPage">
-    <style>{`
-      .lmcPage{background:#07111f;color:#eaf4fb;padding-bottom:40px;}
-      .lmcTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px;}
-      .lmcTop h1{margin:0;font-size:1.7rem}.lmcMuted{color:#8ea8bd}.lmcCard{background:#0b1624!important;border:1px solid #1f3850;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
-      .lmcMeta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.lmcMeta label{color:#9fb3c4;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.lmcMeta input{width:100%;margin-top:5px;background:#07101a!important;color:#eaf4fb!important;border:1px solid #284057!important;border-radius:12px;padding:11px;font-size:1rem}
-      .lmcTabs,.lmcChips{display:flex;flex-wrap:wrap;gap:8px}.lmcTab,.lmcChip{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #284057;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}.lmcTab.on,.lmcChip.on{background:#2E6E8E!important;border-color:#61b6df;color:white!important}.lmcLayout{display:grid;grid-template-columns:.9fr 1.1fr;gap:12px}.lmcCourt{aspect-ratio:.7/1;min-height:420px;border:4px solid #d9f1ff;border-top-width:8px;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;background:#101d30}.lmcZone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);font-size:3rem;font-weight:1000;color:#eaf4fb;cursor:pointer}.lmcZone small{display:block;font-size:.82rem;color:#b5d0e6;margin-top:4px}.lmcZone.on{background:#2E6E8E!important}.lmcChain{display:flex;flex-wrap:wrap;gap:6px;min-height:38px;background:#07101a;border:1px solid #284057;border-radius:12px;padding:8px;margin:8px 0}.lmcPill{background:#123552;border:1px solid #2E6E8E;border-radius:999px;padding:7px 10px;color:#dcefff;font-size:.82rem}.lmcSave{width:100%;background:#24b36b!important;color:#03120a!important;border:1px solid #24b36b;border-radius:14px;padding:15px;font-weight:1000;font-size:1.05rem;cursor:pointer}.lmcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.lmcAction{background:#13283f!important;color:#eaf4fb!important;border:1px solid #31516b;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}.lmcOut{border-left:6px solid #2E6E8E;background:#07101a;border-radius:14px;padding:12px;margin-bottom:8px}.lmcOut.red{border-left-color:#ff647c}.lmcOut.yellow{border-left-color:#f1b84b}.lmcOut.green{border-left-color:#24b36b}.lmcOut .lab{color:#8ea8bd;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.lmcOut .txt{font-size:1.05rem;font-weight:900;margin-top:4px}.lmcTable{width:100%;border-collapse:collapse}.lmcTable td{border-bottom:1px solid #1d344a;padding:7px;color:#dcefff}.lmcLog{background:#07101a;border:1px solid #1f3850;border-radius:12px;padding:9px;margin-bottom:8px;font-size:.86rem}.lmcExport{white-space:pre-wrap;background:#06101b;border:1px solid #20384e;border-radius:12px;padding:10px;font-size:.78rem;color:#bcd5e9;max-height:220px;overflow:auto}@media(max-width:760px){.lmcLayout,.lmcMeta{grid-template-columns:1fr}.lmcCourt{min-height:360px}.lmcTop{flex-direction:column}.lmcChip{font-size:.86rem;padding:9px}.lmcZone{font-size:2.4rem}}
-    `}</style>
-    <div className="lmcTop"><div><h1>Live Match Coaching</h1><p className="lmcMuted">Match analysis → problem stem chain → one positive instruction.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="lmcCard lmcMeta"><label>Player<input value={state.meta.player} onChange={e=>setMeta('player',e.target.value)} placeholder="Player"/></label><label>Opponent<input value={state.meta.opponent} onChange={e=>setMeta('opponent',e.target.value)} placeholder="Opponent"/></label><label>Date<input type="date" value={state.meta.date} onChange={e=>setMeta('date',e.target.value)}/></label></div>
-    <div className="lmcCard"><div className="lmcTabs">{[1,2,3,4,5].map(g=><div key={g} role="button" tabIndex={0} className={state.currentGame===g?'lmcTab on':'lmcTab'} onClick={()=>setGame(g)}>Game {g} · {(state.games[g]||[]).length}</div>)}</div></div>
-    <div className="lmcLayout"><div>
-      <div className="lmcCard"><h2>Tap problem zone</h2><div className="lmcCourt">{[['1','Front Left'],['2','Front Right'],['4','Back Left'],['3','Back Right']].map(z=><div key={z[0]} role="button" tabIndex={0} className={state.selected.zone===z[0]?'lmcZone on':'lmcZone'} onClick={()=>select('zone',z[0])}><span>{z[0]}<small>{z[1]}</small></span></div>)}</div></div>
-      <div className="lmcCard"><h2>Between-game message</h2><div className="lmcOut red"><div className="lab">Primary problem</div><div className="txt">{problem}</div></div><div className="lmcOut yellow"><div className="lab">Root cause</div><div className="txt">{cause}</div></div><div className="lmcOut green"><div className="lab">Positive instruction</div><div className="txt">{instruction}</div></div><div className="lmcOut"><div className="lab">Checkerboard cue</div><div className="txt">{cue}</div></div></div>
-    </div><div>
-      <div className="lmcCard"><h2>Rally builder</h2><p className="lmcMuted">1. Where did opponent gain control?</p><div className="lmcChips">{ADV.map(x=><Chip key={x} on={state.selected.adv===x} click={()=>select('adv',x)}>{x}</Chip>)}</div><p className="lmcMuted">2. Problem stem chain — tap up to 4 causes in order.</p><div className="lmcChain">{state.selected.chain.length?state.selected.chain.map((x,i)=><span className="lmcPill" key={x}>{i+1}. {x}</span>):<span className="lmcMuted">No causes selected</span>}</div><div className="lmcChips">{TAGS.map(x=><Chip key={x} on={state.selected.chain.includes(x)} click={()=>toggleTag(x)}>{x}</Chip>)}</div><p className="lmcMuted">3. Point lost tag</p><div className="lmcChips">{LOST.map(x=><Chip key={x} on={state.selected.lost===x} click={()=>select('lost',x)}>{x}</Chip>)}</div><p className="lmcMuted">4. Winning shot optional</p><div className="lmcChips">{WON.map(x=><Chip key={x} on={state.selected.won===x} click={()=>select('won',x)}>{x}</Chip>)}</div><button className="lmcSave" onClick={save}>Save Rally</button><div className="lmcActions"><button className="lmcAction" onClick={undo}>Undo Last</button><button className="lmcAction" onClick={reset}>Reset Match</button></div></div>
-      <div className="lmcCard"><h2>Analysis</h2><p className="lmcMuted">All games: {all.length} rallies · Current game: {current.length}</p><h3>Top problem tags</h3><MiniTable rows={sortedRows(allTagCounts)}/><h3>Opponent advantage</h3><MiniTable rows={sortedRows(advCounts)}/><h3>Problem zones</h3><MiniTable rows={sortedRows(zoneCounts)}/><h3>Winning shots</h3><MiniTable rows={sortedRows(winCounts)}/></div>
-      <div className="lmcCard"><h2>Current game log</h2>{current.length?current.slice().reverse().map((r,i)=><div className="lmcLog" key={r.time+i}><strong>Rally {current.length-i}</strong> · Zone {r.zone} · {r.adv}<br/>Chain: {(r.chain||[]).join(' → ')}<br/>Lost: {r.lost}{r.won?' · Won by: '+r.won:''}</div>):<p className="lmcMuted">No rallies in this game yet.</p>}</div>
-      <div className="lmcCard"><h2>Copy summary</h2><div className="lmcExport">{`Live Match Coaching\n${state.meta.player||'Player'} v ${state.meta.opponent||'Opponent'} · ${state.meta.date}\n\nPrimary problem: ${problem}\nRoot cause: ${cause}\nInstruction: ${instruction}\nCheckerboard cue: ${cue}\n\nTop tags:\n${sortedRows(allTagCounts).map(r=>r[0]+': '+r[1]).join('\n')||'No data'}`}</div></div>
-    </div></div>
-  </div>;
-}
-
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
@@ -3571,7 +3507,7 @@ return <div className="homeGrid homeGridV99h52">
       </button>
 
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · positive instruction</span></button>
+      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
@@ -14363,7 +14299,6 @@ const SEARCH_DESTINATIONS=[
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
   {label:'Competition',sub:'King of court & formats',kw:'competition king court tournament invasion',screen:'competition'},
-  {label:'Live Match Coaching',sub:'Match analysis · positive instruction',kw:'match analysis live coaching errors stemmed from non functional crosscourt',screen:'liveMatchCoaching'},
   {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level',screen:'rld'},
   {label:'Blind Target Score',sub:'Poker psychology · Raise & Fold',kw:'poker blind target raise fold bluff pressure',screen:'blindTargetScore'},
   {label:'Serve & Return',sub:'Serve · return · first 3 shots · read & react',kw:'serve return first three shots third ball read react quiet eye split step deep width jam deception',screen:'serveReturn'},
@@ -15274,6 +15209,57 @@ function NsslMasterDisplay({host}){
   </div>;
 }
 
+
+
+/* ───────────────────── LIVE MATCH COACHING / MATCH ANALYSIS ───────────────────── */
+const LMC_ADVANTAGE=['Central Corridor','Central Volley','Front Left','Front Right','Back Left','Back Right','Crosscourt Intercept','Set on T','Pressure Build','No Clear Advantage'];
+const LMC_TAGS=['Return Of Serve – No Volley','Loose Drive','Loose Drop','Vision – Not Reading Opponent','Defensive Boast','Non-Functional Cross Court','No T Recovery','Late Contact When Attacking','Unforced Tin Error','Deception Hold By Opponent','Ball Focused Decisions','Self Created Pressure Attacking','Hitting Back To Opponent','Opponent Set When Attacking'];
+const LMC_LOST=['Forced Error','Unforced Error','Winner Against','Stroke Against','Tin','Out'];
+const LMC_WIN=['Drive','Drop','Volley','Boast','Lob','Nick','Stroke'];
+const LMC_KEY='checkerboard_live_match_coaching_v214';
+function lmcCount(arr,fn){const o={};(arr||[]).forEach(x=>{const k=fn(x);if(k)o[k]=(o[k]||0)+1;});return o;}
+function lmcTop(o){let k='—',n=0;Object.entries(o||{}).forEach(([a,b])=>{if(b>n){k=a;n=b;}});return {key:k,count:n};}
+function LiveMatchCoaching({setScreen}){
+  const emptyGames=()=>({1:[],2:[],3:[],4:[],5:[]});
+  const [meta,setMeta]=useState(()=>{try{return JSON.parse(localStorage.getItem(LMC_KEY+'_meta'))||{player:'',opponent:'',date:new Date().toISOString().slice(0,10)};}catch{return {player:'',opponent:'',date:new Date().toISOString().slice(0,10)};}});
+  const [game,setGame]=useState(1);
+  const [games,setGames]=useState(()=>{try{return JSON.parse(localStorage.getItem(LMC_KEY))||emptyGames();}catch{return emptyGames();}});
+  const [pick,setPick]=useState({advantage:'',zone:'',chain:[],lost:'',win:''});
+  useEffect(()=>{try{localStorage.setItem(LMC_KEY,JSON.stringify(games));localStorage.setItem(LMC_KEY+'_meta',JSON.stringify(meta));}catch{}},[games,meta]);
+  const gameRallies=games[game]||[];
+  const all=Object.values(games).flat();
+  function toggleChain(t){setPick(p=>p.chain.includes(t)?{...p,chain:p.chain.filter(x=>x!==t)}:(p.chain.length>=4?p:{...p,chain:[...p.chain,t]}));}
+  function saveRally(){if(!pick.advantage||!pick.zone||!pick.chain.length||!pick.lost){alert('Select advantage, zone, at least one problem cause, and point-lost tag.');return;}setGames(g=>({...g,[game]:[...(g[game]||[]),{...pick,time:new Date().toISOString()}]}));setPick({advantage:'',zone:'',chain:[],lost:'',win:''});}
+  function undo(){setGames(g=>({...g,[game]:(g[game]||[]).slice(0,-1)}));}
+  function clearGame(){if(confirm('Clear the current game only?'))setGames(g=>({...g,[game]:[]}));}
+  function newGame(){const next=Math.min(5,game+1);setGame(next);setPick({advantage:'',zone:'',chain:[],lost:'',win:''});}
+  function endGame(){alert('Game '+game+' saved. Moving to Game '+Math.min(5,game+1)+'.');newGame();}
+  function resetMatch(){if(confirm('Reset the whole match analysis?')){setGames(emptyGames());setGame(1);setPick({advantage:'',zone:'',chain:[],lost:'',win:''});}}
+  function engine(rows){if(!rows.length)return {problem:'No rallies recorded yet.',cause:'—',instruction:'—',cue:'—'};const adv=lmcTop(lmcCount(rows,r=>r.advantage));const root=lmcTop(lmcCount(rows,r=>r.chain&&r.chain[0]));const tagCounts={};rows.forEach(r=>(r.chain||[]).forEach(t=>tagCounts[t]=(tagCounts[t]||0)+1));
+    let problem='Opponent gaining advantage from '+adv.key+'.';let cause=root.key||'Pattern still forming.';let instruction='Build pressure patiently and remove the opponent’s easiest advantage.';let cue='Use 3 / 4 before attacking 1 or 2.';
+    if((adv.key==='Central Corridor'||adv.key==='Central Volley')&&(tagCounts['Non-Functional Cross Court']||0)>=1){problem='Opponent is gaining advantage in the central corridor from non-functional crosscourts.';cause='Non-Functional Cross Court';instruction='Your crosscourt is not making them move. Stay straighter or hit wider before changing direction.';cue='3 / 4 first — do not feed the corridor.';}
+    else if((tagCounts['Opponent Set When Attacking']||0)>=2){cause='Opponent Set When Attacking';instruction='You are attacking into a stable opponent. Move them first, then attack.';cue='Back corner pressure before front attack.';}
+    else if((tagCounts['Hitting Back To Opponent']||0)>=2){cause='Hitting Back To Opponent';instruction='You are recycling to their strength. Change height, width or angle.';cue='Do not return the ball to the same opponent zone.';}
+    else if((tagCounts['No T Recovery']||0)>=2){cause='No T Recovery';instruction='Recover first. Attack second.';cue='Shot → T recovery → next choice.';}
+    else if((tagCounts['Self Created Pressure Attacking']||0)>=2){cause='Self Created Pressure Attacking';instruction='You are forcing attacks without earning them. Build one more shot.';cue='3 / 4 before the short attack.';}
+    return {problem,cause,instruction,cue};}
+  const out=engine(gameRallies.length?gameRallies:all);
+  const tagCounts={};all.forEach(r=>(r.chain||[]).forEach(t=>tagCounts[t]=(tagCounts[t]||0)+1));
+  const rows=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const Btn=({on,onClick,children,tone})=><div role="button" tabIndex={0} onClick={onClick} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')onClick&&onClick(e);}} className={'lmcBtn '+(on?'on ':'')+(tone||'')}>{children}</div>;
+  const pickBtn=(key,val)=><Btn key={val} on={pick[key]===val} onClick={()=>setPick(p=>({...p,[key]:p[key]===val?'':val}))}>{val}</Btn>;
+  return <div className="page lmcPage"><style>{`
+    .lmcPage{max-width:1180px;margin:0 auto;color:#eaf4fb}.lmcTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}.lmcPanel{background:#07111f!important;border:1px solid #24364f;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}.lmcGrid{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:820px){.lmcGrid{grid-template-columns:.85fr 1.15fr}}.lmcFields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.lmcFields input{background:#0b1728!important;color:#eaf4fb!important;border:1px solid #2d415d!important;border-radius:12px!important;padding:10px!important}.lmcTabs,.lmcBtns{display:flex;gap:8px;flex-wrap:wrap}.lmcBtn{background:#102033!important;border:1px solid #2a405d!important;border-radius:13px;padding:10px 12px;min-height:42px;font-weight:800;color:#eaf4fb!important;cursor:pointer;user-select:none}.lmcBtn.on{background:#2563eb!important;border-color:#60a5fa!important}.lmcBtn.green{background:#0f3a24!important;border-color:#22c55e!important}.lmcBtn.red{background:#3a1018!important;border-color:#fb7185!important}.lmcBtn.gold{background:#3a2a0f!important;border-color:#fbbf24!important}.lmcCourt{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;border:4px solid #eaf4fb;border-top-width:8px;border-radius:10px;min-height:390px;overflow:hidden;background:#12233a}.lmcZone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);font-size:46px;font-weight:950}.lmcZone.on{background:#2563eb}.lmcZone small{display:block;font-size:13px;color:#bfdbfe}.lmcChain{display:flex;gap:6px;flex-wrap:wrap;background:#0b1728;border:1px solid #2d415d;border-radius:12px;min-height:42px;padding:8px}.lmcPill{background:#14345a;border:1px solid #3b82f6;border-radius:999px;padding:6px 10px;font-size:13px}.lmcOut{display:grid;gap:8px}.lmcCard{background:#0b1728!important;border:1px solid #2d415d;border-left:6px solid #60a5fa;border-radius:14px;padding:11px}.lmcCard.red{border-left-color:#fb7185}.lmcCard.gold{border-left-color:#fbbf24}.lmcCard.green{border-left-color:#22c55e}.lmcLabel{font-size:11px;color:#93a4bb;letter-spacing:.09em;font-weight:900}.lmcText{font-size:17px;font-weight:900;line-height:1.25;margin-top:4px}.lmcLog{background:#0b1728;border:1px solid #2d415d;border-radius:12px;padding:9px;margin-bottom:7px;font-size:13px}.lmcTable{width:100%;border-collapse:collapse}.lmcTable td{border-bottom:1px solid #24364f;padding:7px;font-size:13px}.lmcHow ol{margin:8px 0 0 20px}.lmcHow li{margin-bottom:5px;color:#c9d7ea}.lmcMuted{color:#93a4bb;font-size:13px}`}</style>
+    <div className="lmcTop"><div><h1>Live Match Coaching</h1><p className="mutedText">Fast match analysis: advantage → zone → problem stem chain → one positive instruction.</p></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={resetMatch}>Reset Match</button></div></div>
+    <div className="lmcPanel lmcHow"><h2>How to use</h2><ol><li>Tap where the opponent gained advantage — include <strong>Central Corridor</strong> when the ball allowed control through the middle.</li><li>Tap the court zone where the problem occurred: 1 front-left, 2 front-right, 3 back-right, 4 back-left.</li><li>Build the error stem chain — tap up to 4 causes in order.</li><li>Tap how the point was lost. Winning shot is optional.</li><li>Press Save Rally. The app updates the between-game cue.</li></ol></div>
+    <div className="lmcPanel"><div className="lmcFields"><input placeholder="Player" value={meta.player} onChange={e=>setMeta(m=>({...m,player:e.target.value}))}/><input placeholder="Opponent" value={meta.opponent} onChange={e=>setMeta(m=>({...m,opponent:e.target.value}))}/><input type="date" value={meta.date} onChange={e=>setMeta(m=>({...m,date:e.target.value}))}/></div><div className="lmcTabs" style={{marginTop:10}}>{[1,2,3,4,5].map(n=><Btn key={n} on={game===n} onClick={()=>setGame(n)}>Game {n} · {(games[n]||[]).length}</Btn>)}</div><div className="lmcBtns" style={{marginTop:10}}><Btn tone="red" onClick={undo}>Undo Last Rally</Btn><Btn tone="gold" onClick={endGame}>End Game / Next</Btn><Btn tone="green" onClick={newGame}>New Game</Btn><Btn tone="red" onClick={clearGame}>Clear Current Game</Btn></div></div>
+    <div className="lmcGrid"><div><div className="lmcPanel"><h2>Problem zone</h2><div className="lmcCourt">{[['1','Front Left'],['2','Front Right'],['4','Back Left'],['3','Back Right']].map(([z,l])=><div key={z} role="button" tabIndex={0} className={'lmcZone '+(pick.zone===z?'on':'')} onClick={()=>setPick(p=>({...p,zone:p.zone===z?'':z}))} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')setPick(p=>({...p,zone:p.zone===z?'':z}));}}><span>{z}<small>{l}</small></span></div>)}</div></div><div className="lmcPanel"><h2>Between-game instruction</h2><div className="lmcOut"><div className="lmcCard red"><div className="lmcLabel">PRIMARY PROBLEM</div><div className="lmcText">{out.problem}</div></div><div className="lmcCard gold"><div className="lmcLabel">ROOT CAUSE</div><div className="lmcText">{out.cause}</div></div><div className="lmcCard green"><div className="lmcLabel">POSITIVE INSTRUCTION</div><div className="lmcText">{out.instruction}</div></div><div className="lmcCard"><div className="lmcLabel">CHECKERBOARD CUE</div><div className="lmcText">{out.cue}</div></div></div></div></div>
+    <div><div className="lmcPanel"><h2>Rally builder</h2><p className="lmcMuted">1. Opponent advantage</p><div className="lmcBtns">{LMC_ADVANTAGE.map(v=>pickBtn('advantage',v))}</div><p className="lmcMuted">2. Problem stem chain</p><div className="lmcChain">{pick.chain.length?pick.chain.map((x,i)=><span className="lmcPill" key={x}>{i+1}. {x}</span>):<span className="lmcMuted">No causes selected</span>}</div><div className="lmcBtns" style={{marginTop:8}}>{LMC_TAGS.map(t=><Btn key={t} on={pick.chain.includes(t)} onClick={()=>toggleChain(t)}>{t}</Btn>)}</div><p className="lmcMuted">3. Point lost</p><div className="lmcBtns">{LMC_LOST.map(v=>pickBtn('lost',v))}</div><p className="lmcMuted">4. Winning shot optional</p><div className="lmcBtns">{LMC_WIN.map(v=>pickBtn('win',v))}</div><div style={{marginTop:12}}><Btn tone="green" onClick={saveRally}>Save Rally</Btn></div></div>
+    <div className="lmcPanel"><h2>Analysis</h2><p className="lmcMuted">All games: {all.length} rallies · Current game: {gameRallies.length}</p><h3>Top problem tags</h3><LmcTable rows={rows(tagCounts)}/><h3>Opponent advantage</h3><LmcTable rows={rows(lmcCount(all,r=>r.advantage))}/><h3>Winning shots</h3><LmcTable rows={rows(lmcCount(all,r=>r.win))}/></div><div className="lmcPanel"><h2>Game log</h2>{gameRallies.length?gameRallies.slice().reverse().map((r,i)=><div className="lmcLog" key={i}><strong>Rally {gameRallies.length-i}</strong> · Zone {r.zone} · {r.advantage}<br/>Chain: {(r.chain||[]).join(' → ')}<br/>Lost: {r.lost}{r.win?' · Won by: '+r.win:''}</div>):<p className="lmcMuted">No rallies saved in this game yet.</p>}</div></div></div>
+  </div>;
+}
+function LmcTable({rows}){return rows&&rows.length?<table className="lmcTable"><tbody>{rows.map(([k,v])=><tr key={k}><td>{k}</td><td>{v}</td></tr>)}</tbody></table>:<p className="lmcMuted">No data yet.</p>;}
+
 function App(){
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
 const[livePayload,setLivePayload]=useState(null);
@@ -15401,12 +15387,12 @@ return <div>
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
+      {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
-      {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
