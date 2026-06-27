@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v207 NSSL power-play + master sub/min-time + Shots graphics fix';
+const APP_VERSION='v208 Games Library · Common Game Errors tab (placeholder)';
 
 // ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
@@ -3523,12 +3523,21 @@ return <div className="homeGrid homeGridV99h52">
 
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('stabilise');
+  const matchErrors=[
+    {title:'Non-functional crosscourt',error:'Crosscourt played by default rather than to solve a rally problem.',cost:'Sits up through the middle and donates time — opponent volleys, holds the T and keeps the open court. A classic time-giver.',train:'Crosscourt only when it takes time away or pulls the opponent off the T. Width, depth and opponent position decide it — not habit.'},
+    {title:'Not volleying the serve',error:'Letting the serve travel to the back instead of taking the return early.',cost:'Concedes the T and the initiative; the server dictates how the rally opens.',train:'Read the serve early and volley the return to take time and seize the T.'},
+    {title:'Not volleying volley-able balls',error:'Letting a takeable ball bounce and run to the back.',cost:'Donates time, drags you off the T and turns an attacking chance into a defensive one.',train:'Recognise the affordance to intercept — take the ball early when the information says it is on.'},
+    {title:'Losing length',error:'Length floats, sits short or comes off the side wall.',cost:'Opponent steps in, volleys and attacks — the pressure transfers onto you.',train:'Judge working length by its effect on the opponent (late arrival, no volley, no attack), not by a target zone alone.'},
+    {title:'Hitting back to the opponent',error:'Returning the ball into the space the opponent already occupies.',cost:'Demands no movement — opponent stays on the T and the rally stays neutral or turns against you.',train:'Read where the opponent is and play into the space they must cover. Move them, do not feed them.'},
+    {title:'Not looking at the opponent',error:'Eyes locked on the ball or front wall; the opponent goes unseen.',cost:'No information — position, recovery and the open court are all missed, so every choice is blind.',train:'Perceive the opponent before and as you strike. Their position is the information that selects the shot.'}
+  ];
   return <div className="page gamesLibraryPage">
-    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete · Game Errors</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="universalFamilyTabs gamesLibraryTabs">
       <button className={tab==='explore'?'activeFamilyTab':''} onClick={()=>setTab('explore')}>🔍 Explore</button>
       <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
       <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
+      <button className={tab==='errors'?'activeFamilyTab':''} onClick={()=>setTab('errors')}>⚠️ Common Game Errors</button>
     </div>
     {tab==='explore'&&<div>
       <div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks. The entry point for beginner coaching.</p></div>
@@ -3549,6 +3558,29 @@ function GamesLibrary({setScreen,setSession}){
     </div>}
     {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
     {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+    {tab==='errors'&&<div>
+      <style>{`
+.gameErrorsWrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:14px;}
+.gameErrorCard{background:#0f1822;border:1px solid #223044;border-left:3px solid #b4533f;border-radius:12px;padding:14px 16px;}
+.gameErrorCard h3{color:#ff9db5;margin:0 0 8px;font-size:1.05rem;}
+.gameErrorCard .gErow{margin:7px 0;}
+.gameErrorCard .gElabel{display:block;font-size:0.68rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:800;margin-bottom:1px;}
+.gameErrorCard .gErow.err .gElabel{color:#ff9db5;}
+.gameErrorCard .gErow.cost .gElabel{color:#ffd479;}
+.gameErrorCard .gErow.train .gElabel{color:#7fc8a0;}
+.gameErrorCard .gErow p{margin:0;color:#c7d4e2;font-size:0.9rem;line-height:1.42;}
+.gameErrorsPlaceholder{background:#0c1a2e;border:1px dashed #2c4a6e;border-radius:12px;padding:14px 16px;margin-top:14px;color:#9fb6cf;font-size:0.9rem;line-height:1.5;}
+.gameErrorsPlaceholder strong{color:#bcd6f5;}
+`}</style>
+      <div className="libraryStageIntro"><h2>⚠️ Common Game Errors</h2><p>Activities built here target the recurring errors and poor decisions that actually decide matches — framed by function and by the information the player missed, never by technical form alone. Some may overlap other categories, but the coaching intention here is always the matchplay error itself.</p></div>
+      <div className="gameErrorsWrap">{matchErrors.map(e=><div className="gameErrorCard" key={e.title}>
+        <h3>{e.title}</h3>
+        <div className="gErow err"><span className="gElabel">The error</span><p>{e.error}</p></div>
+        <div className="gErow cost"><span className="gElabel">What it costs</span><p>{e.cost}</p></div>
+        <div className="gErow train"><span className="gElabel">Train instead</span><p>{e.train}</p></div>
+      </div>)}</div>
+      <div className="gameErrorsPlaceholder"><strong>Placeholder — activities to follow.</strong> This is the design brief for a focused set of matchplay-error challenges. More errors to come (e.g. late preparation, unnecessary retreat off the T, predictable patterns under pressure). Each will become a representative activity that exposes the error and rewards the better decision.</div>
+    </div>}
   </div>;
 }
 
