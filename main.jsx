@@ -10,8 +10,9 @@ import'./styles.css';
 const SUPABASE_URL='https://pjohecwpciwexvtmvkdz.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
+const GLOBAL_LIVE_ROOM='checkerboard-live-main';
 function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
-function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
+function makeLiveRoomId(){return GLOBAL_LIVE_ROOM;}
 function getCourtModeFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('court');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function courtRoomId(base,n){return `${base}__court${n}`;}
 function courtStandingsRoomId(base){return `${base}__standings`;}
@@ -25,14 +26,12 @@ function buildCourtLink(n,base){const b=window.location.origin+window.location.p
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
   if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
-  try{
-    let room=localStorage.getItem(LIVE_ROOM_KEY);
-    if(!room){room=makeLiveRoomId();localStorage.setItem(LIVE_ROOM_KEY,room);}
-    return room;
-  }catch{return 'cb-checkerboard-live';}
+  try{localStorage.setItem(LIVE_ROOM_KEY,GLOBAL_LIVE_ROOM);}catch{}
+  return GLOBAL_LIVE_ROOM;
 }
-function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';} }
-function buildLivePlayerViewUrl(roomId){const room=roomId||getPersistentLiveRoomId();const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(room)}`;}
+function isLivePath(){try{return String(window.location.pathname||'').replace(/\/+$/,'').endsWith('/live');}catch{return false;}}
+function getLiveRoomFromUrl(){try{const q=new URLSearchParams(window.location.search||'').get('liveRoom')||'';return q|| (isLivePath()?GLOBAL_LIVE_ROOM:'');}catch{return isLivePath()?GLOBAL_LIVE_ROOM:'';} }
+function buildLivePlayerViewUrl(roomId){return `${window.location.origin}/live`;}
 const NSSL_PERIOD_KEYS=['p1','p2','p3','ot'];
 const NSSL_PP_ALLOW={p1:1,p2:1,p3:2,ot:1};
 const NSSL_PP_SECONDS=120;
@@ -122,7 +121,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v218 RR ladder snake seeding';
+const APP_VERSION='v218 Blind allocation + pinned trace/map patch';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -581,6 +580,27 @@ function buildPlayerCompetitionUrl(state){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerCompetition=${encoded}`;
 }
+
+function CheckerboardMapVisual({compact=false}){
+  const floor=[['1','FL'],['2','FR'],['4','BL'],['3','BR']];
+  const front=[['5','TL'],['6','TR'],['8','BL'],['7','BR']];
+  return <div className={compact?'cbVisualMap compact':'cbVisualMap'}>
+    <div className="cbVisualTitle">Checkerboard Map</div>
+    <div className="cbFrontWall">{front.map(([n,l])=><div key={n} className={'cbMapZone z'+n}><strong>{n}</strong><span>{l}</span></div>)}</div>
+    <div className="cbCourtFloor">{floor.map(([n,l])=><div key={n} className={'cbMapZone z'+n}><strong>{n}</strong><span>{l}</span></div>)}</div>
+    <div className="cbMapNote">Floor: 1–4 · Front wall: 5–8</div>
+  </div>;
+}
+
+function CheckerboardBlindPlayerDisplay({payload={}}){
+  const allocations=payload.allocations||[];
+  return <div className="playerDisplayPage cbBlindLivePage"><div className="playerDisplayShell cbBlindLiveShell">
+    <div className="playerDisplayTop"><span>CHECKERBOARD BLIND</span><h1>{payload.title||'Blind Challenge Allocation'}</h1><p>Each player uses only their own challenge code.</p></div>
+    <CheckerboardMapVisual/>
+    <div className="cbBlindLiveGrid">{allocations.length?allocations.map((row,idx)=><section key={(row.name||'p')+idx} className="cbBlindLiveCard"><h2>{row.name}</h2><p className="cbBlindCode">{row.challenge}</p>{row.finish&&<p><strong>Finish:</strong> {row.finish}</p>}<p className="cbBlindSmall">{row.levelLabel||payload.levelLabel||''}</p></section>):<section><h2>Waiting</h2><p>No blind codes allocated yet.</p></section>}</div>
+  </div></div>;
+}
+
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
@@ -593,6 +613,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
         {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
       </select>}
     </div>
+    {String(title||'').toLowerCase().includes('checkerboard')&&<CheckerboardMapVisual compact/>}
     <div className="playerDisplayGrid">
       <section><h2>WHAT TO DO</h2><p>{what}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
@@ -4010,6 +4031,9 @@ function buildCheckerboardGame(config){
 
 function CheckerboardEngine({onAddToSession}){
   const[config,setConfig]=useState({level:2,sequence:'[5-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
+  const [blindAllocations,setBlindAllocations]=useState([]);
+  const [blindRevealAll,setBlindRevealAll]=useState(false);
+  const blindHistoryRef=useRef([]);
   const [checkerboardModifierScores,setCheckerboardModifierScores]=useState({});
   const [cbDbAssign,setCbDbAssign]=useState('Both Players');
   const [cbDbPlayer,setCbDbPlayer]=useState('');
@@ -4030,6 +4054,41 @@ function CheckerboardEngine({onAddToSession}){
   function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
   function updateCheckerboardModifierScore(layer,value){setCheckerboardModifierScores(prev=>({...prev,[layer]:value}));}
   const checkerboardScoringLayers=editableModifierLayers([...(built.layers||[]),...(config.completionConstraints||[])]);
+  
+  function cbPresentPlayers(){
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY)||'[]');
+      const present=list.filter(p=>p&&p.present&&p.name).sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)||String(a.name).localeCompare(String(b.name))).map(p=>p.name);
+      return present.length?present:['Player 1','Player 2'];
+    }catch{return ['Player 1','Player 2'];}
+  }
+  function cbRandomChallenge(){
+    if(levelInfo.challenge==='single'){
+      const singles=CB_CODES.filter(code=>code!=='None'&&!code.includes('+'));
+      return singles[Math.floor(Math.random()*singles.length)]||'[6-3]';
+    }
+    if(levelInfo.challenge==='pair')return CHECKERBOARD_PAIR_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_PAIR_OPTIONS.length)]||'[5-4] + [8-1]';
+    return CHECKERBOARD_TRIPLE_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_TRIPLE_OPTIONS.length)]||'[5-4] + [8-1] + [6-3]';
+  }
+  function cbRandomFinish(){
+    const finishDeck=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish','Opponent moving forward','Opponent off balance','Opponent off T'];
+    return finishDeck[Math.floor(Math.random()*finishDeck.length)];
+  }
+  async function publishBlindAllocations(rows,revealed=blindRevealAll){
+    const payload={type:'checkerboardBlind',title:'Checkerboard Blind',level:config.level,levelLabel:levelInfo.label,challengeType:levelInfo.challenge,allocations:rows.map(r=>({...r,challenge:revealed?r.challenge:'Hidden challenge'})),updatedAt:new Date().toISOString()};
+    await writeLivePlayerRoom(getPersistentLiveRoomId(),'checkerboardBlind',payload);
+  }
+  async function allocateBlindToPlayers(){
+    const players=cbPresentPlayers();
+    const rows=players.map(name=>({name,challenge:cbRandomChallenge(),finish:config.deliveryMode==='Blind'?cbRandomFinish():'',levelLabel:levelInfo.label,completed:false}));
+    blindHistoryRef.current=[blindAllocations,...blindHistoryRef.current].slice(0,10);
+    setBlindAllocations(rows);setBlindRevealAll(false);
+    await publishBlindAllocations(rows,false);
+  }
+  async function revealBlindAllocations(){setBlindRevealAll(true);await publishBlindAllocations(blindAllocations,true);}
+  async function rerollBlindAllocations(){await allocateBlindToPlayers();}
+  async function undoBlindAllocations(){const prev=blindHistoryRef.current[0]||[];blindHistoryRef.current=blindHistoryRef.current.slice(1);setBlindAllocations(prev);setBlindRevealAll(false);await publishBlindAllocations(prev,false);}
+  async function copyCheckerboardBlindLink(){await publishBlindAllocations(blindAllocations,blindRevealAll);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Checkerboard blind Player Display link copied.');}catch{window.prompt('Checkerboard blind Player Display link:',url);}}
   
   function generateBlindChallengeCard(){
     let card='';
@@ -4116,6 +4175,12 @@ return <div className="checkerboardEngine">
     {/* CONSTRAINTS */}
     <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
       <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
+      {config.deliveryMode==='Blind'&&<div className="blindCardPanel cbBlindAllocator" style={{marginTop:'12px'}}>
+        <h3>Blind Allocation To Players</h3>
+        <p>Press Allocate Blind and each present player receives a hidden checkerboard code on the Player Display.</p>
+        <div className="buttonRow"><button className="primaryBtn" onClick={allocateBlindToPlayers}>Allocate Blind</button><button className="secondaryBtn" onClick={revealBlindAllocations} disabled={!blindAllocations.length}>Reveal All</button><button className="secondaryBtn" onClick={rerollBlindAllocations}>Re-roll</button><button className="secondaryBtn" onClick={undoBlindAllocations}>Undo Allocation</button><button className="secondaryBtn" onClick={copyCheckerboardBlindLink}>Copy Player Display</button></div>
+        <div className="cbBlindAllocationGrid">{blindAllocations.length?blindAllocations.map(row=><div key={row.name} className="cbBlindAllocationRow"><strong>{row.name}</strong><span>{blindRevealAll?row.challenge:'Hidden challenge'}</span></div>):<p className="overlayExplain">No allocations yet. Present players are taken from Attendance.</p>}</div>
+      </div>}
       {config.deliveryMode==='Blind'&&<div className="blindCardPanel" style={{marginTop:'12px'}}>
         <p>Blind Card delivery uses two hidden decks — challenge and finish.</p>
         <div className="blindDeckGrid">
@@ -15307,7 +15372,7 @@ function LiveMatchCoaching({setScreen}){
 .lmcTraceSide{position:absolute;right:14px;top:70px;z-index:6;width:min(300px,calc(100vw - 28px));max-height:calc(100vh - 150px);background:rgba(7,17,31,.88)!important;border:1px solid #20344f;border-radius:16px;padding:10px;overflow:auto;backdrop-filter:blur(8px);}.lmcTraceSide:not(.open){width:auto;max-width:280px}.lmcTraceCard{background:rgba(7,17,31,.78)!important;border:1px solid #21364f;border-radius:14px;padding:8px;margin-bottom:7px}.lmcTraceLabel{font-size:10px;color:#8ea3bd;letter-spacing:.08em;font-weight:950;text-transform:uppercase}.lmcTraceValue{font-size:22px;font-weight:950;color:#fff;margin-top:2px}.lmcTraceSmall{font-size:11px;color:#aab8ca;line-height:1.25}.lmcTraceGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}.lmcOutcome{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:9;width:min(760px,calc(100vw - 20px));background:rgba(9,18,32,.98)!important;border:1px solid #31486a;border-radius:18px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.55);}.lmcOutcomeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}@media(max-width:620px){.lmcOutcomeGrid{grid-template-columns:1fr 1fr}.lmcOutcome{bottom:8px}.lmcTraceSide{top:auto;bottom:12px;right:12px;max-height:34vh;width:min(320px,calc(100vw - 24px))}}.lmcLogItem{border:1px solid #21364f;background:#07111f;border-radius:12px;padding:8px;margin-top:7px;font-size:12px;color:#dce8f5}.lmcPill2{display:inline-block;border:1px solid #3b82f6;background:#10294a;border-radius:999px;padding:3px 7px;margin:3px 4px 0 0;font-weight:800;font-size:11px}.lmcPill2.red{border-color:#fb7185;background:#34101a}.lmcTraceHelp{position:absolute;left:14px;bottom:14px;z-index:4;max-width:520px;background:rgba(6,16,32,.72);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:8px 10px;color:#d6e3f2;font-size:11px;line-height:1.3;pointer-events:none;}.lmcTraceStatus{font-weight:900;color:#fff}.lmcTraceNoScroll,.lmcTraceNoScroll *{touch-action:none!important;}
 `}</style>
     <div className="lmcTraceTop">
-      <div className="lmcTraceTitle"><h1>Live Match Coaching · Continuous Trace</h1><p>Trace the full rally. Lift finger to end. Outcome → Save + New Rally.</p></div>
+      <div className="lmcTraceTitle"><h1>Live Match Coaching · Zones 3 Trace</h1><p>Large pinned court. Trace continuously until the rally ends.</p></div>
       <div className="lmcTraceActions"><button type="button" className="lmcTraceBtn" onClick={()=>setScreen('home')}>Home</button><button type="button" className="lmcTraceBtn red" onClick={undoLast}>Undo Last</button><button type="button" className="lmcTraceBtn red" onClick={clearCurrent}>Clear Trace</button><button type="button" className={'lmcTraceBtn '+(heatOn?'on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="lmcTraceBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} Log</button></div>
     </div>
     <div className="lmcTraceMain lmcTraceNoScroll">
@@ -15409,6 +15474,7 @@ useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasio
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
+if(screen==='playerDisplay'&&livePayload?.type==='checkerboardBlind'){return <CheckerboardBlindPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
