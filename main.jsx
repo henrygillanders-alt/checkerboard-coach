@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v217 Live Match Coaching full trace';
+const APP_VERSION='v218 RR ladder snake seeding';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9627,6 +9627,26 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return teamNameFromPlayers(team?.players||[],index);
   }
 
+  function roundRobinSeedValueForName(name){
+    const player=players.find(p=>p&&p.name===name);
+    if(player) return playerSeedValue(player);
+    const idx=playerNames.indexOf(name);
+    return idx>=0?10000+idx:99999;
+  }
+  function rankedRoundRobinNames(){
+    return [...playerNames].sort((a,b)=>roundRobinSeedValueForName(a)-roundRobinSeedValueForName(b)||String(a).localeCompare(String(b)));
+  }
+  function snakeDistributeRoundRobinBoxes(names,count){
+    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:[]}));
+    (names||[]).forEach((name,index)=>{
+      const row=Math.floor(index/count);
+      const pos=index%count;
+      const boxIndex=row%2===0?pos:(count-1-pos);
+      boxes[boxIndex].players.push(name);
+    });
+    return boxes;
+  }
+
   function invasionDbLabel(name){
     const status=playerBounces?.[invasionName(name)]||'No DB';
     return status==='No DB'?'No DB':status;
@@ -10342,7 +10362,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function generateRoundRobin(){
-    const names=[...playerNames];
+    const names=rankedRoundRobinNames();
     const rounds=buildRoundRobinRounds(names);
     setRrFixtures(rounds);
     setRrResults({});
@@ -10362,7 +10382,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
   function getRoundRobinStandings(){
     const table={};
-    playerNames.forEach(name=>{table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0};});
+    rankedRoundRobinNames().forEach(name=>{table[name]={name,played:0,wins:0,losses:0,pf:0,pa:0};});
     rrFixtures.forEach((round,ridx)=>round.forEach((match,midx)=>{
       const result=competitionMatchScores[rrKey(ridx,midx)];
       const winner=rrResults[rrKey(ridx,midx)];
@@ -10387,10 +10407,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function distributeRoundRobinBoxes(){
-    const names=[...playerNames];
+    const names=rankedRoundRobinNames();
     const count=Math.max(1,Math.min(Number(rrBoxCount)||1,Math.max(1,names.length)));
-    const boxes=Array.from({length:count},(_,idx)=>({name:`Box ${String.fromCharCode(65+idx)}`,players:[]}));
-    names.forEach((name,idx)=>boxes[idx%count].players.push(name));
+    const boxes=snakeDistributeRoundRobinBoxes(names,count);
     setRrBoxes(boxes);
     setRrBoxFixtures(boxes.map(box=>buildRoundRobinRounds(box.players)));
     setRrBoxResults({});
