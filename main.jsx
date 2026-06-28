@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v218 — Blind Allocation restored';
+const APP_VERSION='v219 Dual Coach Trace + Tap';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4008,90 +4008,6 @@ function buildCheckerboardGame(config){
   return {id:Date.now()+Math.random(),title:`Checkerboard · ${level.label}`,category:'Checkerboard',duration:Number(config.duration)||8,format:config.format||'King of Court',task:taskParts.join(' '),rationale:'Uses the agreed checkerboard level progression so the tactical complexity, T-zone prevention and conversion windows scale automatically.',coach:'Coach the recognition of the affordance, not just the code. At Levels 4–5, remind players that the challenge resets if they do not convert within the shot window.',layers,cbCode:sequence,scoring:scoring.join(' · ')};
 }
 
-// ─── BLIND CHECKERBOARD ALLOCATION ───────────────────────────────────────────
-const CB_BLIND_ALLOC_KEY='cbBlindAllocV218';
-function cbReadPresentPlayers(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
-function cbBlindPool(mode){
-  if(mode==='Pair')return CHECKERBOARD_PAIR_OPTIONS.filter(c=>c!=='Custom');
-  if(mode==='Triple')return CHECKERBOARD_TRIPLE_OPTIONS.slice();
-  return CB_CODES.filter(c=>c!=='None'&&c!=='Custom'&&!c.includes('+'));
-}
-function cbRandomCode(pool){return pool[Math.floor(Math.random()*pool.length)];}
-function BlindCheckerboardAllocation({level=2}){
-  const [mode,setMode]=useState('Single');
-  const [alloc,setAlloc]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(CB_BLIND_ALLOC_KEY)||'null');return (s&&s.alloc)||{};}catch{return{};}});
-  const [revealed,setRevealed]=useState(false);
-  const [history,setHistory]=useState([]);
-  const [present,setPresent]=useState(()=>cbReadPresentPlayers());
-  const [pushed,setPushed]=useState(false);
-  const [peek,setPeek]=useState('');
-  const peekTimer=useRef(null);
-  function peekPlayer(n){if(peekTimer.current)clearTimeout(peekTimer.current);setPeek(n);peekTimer.current=setTimeout(()=>setPeek(''),4000);}
-  const levelInfo=CHECKERBOARD_LEVELS.find(l=>l.level===Number(level))||CHECKERBOARD_LEVELS[1];
-  function refreshPresent(){const p=cbReadPresentPlayers();setPresent(p);return p;}
-  function persistAndPush(nextAlloc,nextMode,reveal){
-    try{localStorage.setItem(CB_BLIND_ALLOC_KEY,JSON.stringify({alloc:nextAlloc,mode:nextMode,revealed:reveal,updatedAt:Date.now()}));}catch{}
-    try{writeLivePlayerRoom(getPersistentLiveRoomId(),'cbblind',{type:'cbblind',mode:nextMode,allocations:nextAlloc,revealed:!!reveal,level:Number(level),levelLabel:levelInfo.label});}catch{}
-  }
-  function allocate(){
-    const players=refreshPresent();
-    if(!players.length){alert('No present players. Mark players Present in Players / Attendance first.');return;}
-    const pool=cbBlindPool(mode);
-    const next={};players.forEach(n=>{next[n]=cbRandomCode(pool);});
-    setHistory(prev=>[...prev,{alloc,mode}]);
-    setAlloc(next);setRevealed(false);
-    persistAndPush(next,mode,false);
-    setPushed(true);setTimeout(()=>setPushed(false),1800);
-  }
-  function revealAll(){const r=!revealed;setRevealed(r);persistAndPush(alloc,mode,r);}
-  function undoLast(){setHistory(prev=>{if(!prev.length)return prev;const last=prev[prev.length-1];const a=last.alloc||{};const m=last.mode||mode;setAlloc(a);setMode(m);setRevealed(false);persistAndPush(a,m,false);return prev.slice(0,-1);});}
-  const names=Object.keys(alloc);
-  return <div className="gameCard" style={{marginTop:'14px',border:'1px solid #2d4766'}}>
-    <div className="categoryTag">Blind Checkerboard Allocation</div>
-    <h2 style={{marginTop:'4px'}}>Blind Checkerboard Allocation</h2>
-    <p className="mutedText">Each present player is dealt a hidden checkerboard challenge code. Coach view shows every code; Player View (/live) shows each player only their own.</p>
-    <div className="engineGrid">
-      <label>Challenge type<select value={mode} onChange={e=>setMode(e.target.value)}><option>Single</option><option>Pair</option><option>Triple</option></select></label>
-    </div>
-    <div className="buttonRow" style={{flexWrap:'wrap',gap:'8px'}}>
-      <button type="button" className="primaryBtn" onClick={allocate}>Allocate Blind</button>
-      <button type="button" className="secondaryBtn" onClick={allocate} disabled={!names.length}>Re-roll</button>
-      <button type="button" className="secondaryBtn" onClick={revealAll} disabled={!names.length}>{revealed?'Hide All':'Reveal All'}</button>
-      <button type="button" className="secondaryBtn" onClick={undoLast} disabled={!history.length}>Undo Last Allocation</button>
-    </div>
-    {pushed&&<div className="statusBox"><strong>Pushed to Player View.</strong> Players open <strong>/live</strong> and tap their name to see only their own code.</div>}
-    <div className="statusBox"><strong>Present players:</strong> {present.length?present.join(' · '):'None present — mark players Present in Players / Attendance.'}</div>
-    {names.length>0&&<><p className="mutedText" style={{marginTop:'8px',marginBottom:'4px'}}>Single iPad: tap a player's card to reveal only their code for 4 seconds, then hand the device on. "Reveal All" is the coach overview.</p>
-    <div className="cbBlindGrid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'8px'}}>
-      {names.map(n=>{const open=revealed||peek===n;return <div key={n} role="button" tabIndex={0} onClick={()=>peekPlayer(n)} style={{border:'1px solid '+(open?'#22c55e':'#2d4766'),borderRadius:'12px',padding:'10px',background:'#0c1a2c',cursor:'pointer'}}>
-        <div style={{fontWeight:800,color:'#eaf4fb'}}>{n}</div>
-        <div style={{marginTop:'4px',fontSize:'1.1rem',fontWeight:900,color:open?'#22c55e':'#9fb0c2'}}>{open?alloc[n]:'🔒 Tap to reveal'}</div>
-      </div>;})}
-    </div></>}
-    <div className="infoBox" style={{marginTop:'10px'}}><strong>{levelInfo.label}</strong><p>{Number(level)<=3?'Levels 1–3: completed challenges are banked.':'Levels 4–5: challenge resets if not converted inside the conversion window.'} Clean winner bonus remains separate.{Number(level)>=3?' T-zone prevention applies from Level 3.':''}</p></div>
-  </div>;
-}
-function CbBlindPlayerDisplay({payload,setScreen}){
-  const [picked,setPicked]=useState('');
-  const [show,setShow]=useState(false);
-  const alloc=(payload&&payload.allocations)||{};
-  const names=Object.keys(alloc);
-  const revealedAll=!!(payload&&payload.revealed);
-  function pick(n){setPicked(n);setShow(true);setTimeout(()=>setShow(false),5000);}
-  return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell">
-    <div className="playerDisplayTop"><span>PLAYER DISPLAY · BLIND CHECKERBOARD</span><h1>Tap your name</h1><p>{payload?.levelLabel||''} · {payload?.mode||'Single'} challenge</p></div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:'10px',padding:'12px'}}>
-      {names.length?names.map(n=><button type="button" key={n} className={picked===n?'primaryBtn':'secondaryBtn'} onClick={()=>pick(n)}>{n}</button>):<p className="mutedText">Waiting for the coach to allocate…</p>}
-    </div>
-    {picked&&(show||revealedAll)&&<div className="btsDealBox" style={{textAlign:'center',padding:'18px'}}>
-      <p className="mutedText">{picked}</p>
-      <div style={{fontSize:'2rem',fontWeight:900,color:'#22c55e'}}>{alloc[picked]}</div>
-      <p className="mutedText">Your hidden checkerboard code.{revealedAll?'':' Hides after 5 seconds.'}</p>
-    </div>}
-    {picked&&!show&&!revealedAll&&<div className="btsDealBox" style={{textAlign:'center',padding:'14px'}}><button type="button" className="primaryBtn" onClick={()=>pick(picked)}>Show {picked}'s code again</button></div>}
-    {typeof setScreen==='function'&&<div className="buttonRow" style={{padding:'12px'}}><button className="secondaryBtn" onClick={()=>setScreen('home')}>← Coach App</button></div>}
-  </div></div>;
-}
 function CheckerboardEngine({onAddToSession}){
   const[config,setConfig]=useState({level:2,sequence:'[5-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
   const [checkerboardModifierScores,setCheckerboardModifierScores]=useState({});
@@ -4236,8 +4152,6 @@ return <div className="checkerboardEngine">
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
     <UniversalTinHeightPanel/>
-
-    <BlindCheckerboardAllocation level={config.level}/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -15346,7 +15260,111 @@ function lmcTraceLoad(){try{const x=JSON.parse(localStorage.getItem(LMC_TRACE_KE
 function lmcTraceSave(x){try{localStorage.setItem(LMC_TRACE_KEY,JSON.stringify(x||[]));}catch{}}
 function lmcTraceDenorm(path,w,h){return (path||[]).map(p=>({...p,x:p.nx*w,y:p.ny*h}));}
 function lmcTraceCorridorPct(path){if(!path||!path.length)return 0;const n=path.filter(p=>p.nx>=0.43&&p.nx<=0.57).length;return Math.round((n/path.length)*100);}
+
+function MatchTracePlayerDisplay({payload}){
+  const rallies=Array.isArray(payload?.rallies)?payload.rallies:[];
+  const path=Array.isArray(payload?.path)?payload.path:[];
+  const corridor=rallies.filter(r=>r&&r.corridor).length;
+  const rate=rallies.length?Math.round((corridor/rallies.length)*100):0;
+  const last=rallies[rallies.length-1]||null;
+  return <div className="traceDisplayPage"><style>{`
+    .traceDisplayPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:18px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.traceDisplayShell{max-width:1100px;margin:0 auto}.traceDisplayTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.traceDisplayTop h1{margin:0;font-size:2rem}.traceDisplayMuted{color:#9fb3c4}.traceDisplayGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}.traceDisplayCard{background:#0b1624;border:1px solid #20364f;border-radius:16px;padding:14px}.traceDisplayLabel{font-size:.72rem;color:#8ea8bd;text-transform:uppercase;letter-spacing:.08em;font-weight:900}.traceDisplayValue{font-size:2rem;font-weight:1000;margin-top:5px}.traceDisplayLog{background:#0b1624;border:1px solid #20364f;border-radius:16px;padding:12px}.traceDisplayPill{display:inline-block;border:1px solid #3b82f6;background:#10294a;border-radius:999px;padding:5px 9px;margin:3px 5px 0 0;font-weight:800}.traceDisplayPill.red{border-color:#fb7185;background:#34101a}@media(max-width:700px){.traceDisplayGrid{grid-template-columns:1fr}.traceDisplayTop h1{font-size:1.5rem}}`}</style>
+    <div className="traceDisplayShell"><div className="traceDisplayTop"><div><h1>Second Coach Trace Display</h1><p className="traceDisplayMuted">Read-only live spatial stream from Match Coaching trace mode.</p></div><div className="traceDisplayMuted">{payload?.updatedAt?new Date(payload.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):'Waiting'}</div></div>
+    <div className="traceDisplayGrid"><div className="traceDisplayCard"><div className="traceDisplayLabel">Saved rallies</div><div className="traceDisplayValue">{rallies.length}</div></div><div className="traceDisplayCard"><div className="traceDisplayLabel">Corridor load</div><div className="traceDisplayValue">{rate}%</div></div><div className="traceDisplayCard"><div className="traceDisplayLabel">Current trace</div><div className="traceDisplayValue">{path.length}</div><div className="traceDisplayMuted">points live</div></div></div>
+    <div className="traceDisplayCard"><div className="traceDisplayLabel">Last rally</div>{last?<div><span className={'traceDisplayPill '+(['Non-functional','Intercepted','Opponent advantage','Error'].includes(last.outcome)?'red':'')}>{last.outcome}</span><span className="traceDisplayPill">Corridor {last.corridor?'YES':'NO'}</span><span className="traceDisplayPill">{last.corridorPct}%</span></div>:<p className="traceDisplayMuted">No saved rally yet.</p>}</div>
+    <div className="traceDisplayLog"><div className="traceDisplayLabel">Recent rally log</div>{rallies.length?rallies.slice().reverse().slice(0,10).map((r,i)=><div key={r.id||i} style={{borderTop:'1px solid #20364f',padding:'9px 0'}}><strong>Rally {rallies.length-i}</strong><br/><span className={'traceDisplayPill '+(['Non-functional','Intercepted','Opponent advantage','Error'].includes(r.outcome)?'red':'')}>{r.outcome}</span><span className="traceDisplayPill">Corridor {r.corridor?'YES':'NO'}</span><span className="traceDisplayPill">{r.corridorPct}%</span></div>):<p className="traceDisplayMuted">Waiting for trace data.</p>}</div></div></div>;
+}
+
+function LiveMatchTapAnalysis({setScreen}){
+  const MATCH_KEY='checkerboard_live_match_coaching_v212';
+  const ADV=['Central Volley','Front Left','Front Right','Back Left','Back Right','Crosscourt Intercept','Set on T','Pressure Build','No Clear Advantage'];
+  const TAGS=['Return Of Serve – No Volley','Loose Drive','Loose Drop','Vision – Not Reading Opponent','Defensive Boast','Non-Functional Cross Court','No T Recovery','Late Contact When Attacking','Unforced Tin Error','Deception Hold By Opponent','Ball Focused Decisions','Self Created Pressure Attacking','Hitting Back To Opponent','Opponent Set When Attacking'];
+  const LOST=['Forced Error','Unforced Error','Winner Against','Stroke Against','Tin','Out'];
+  const WON=['Drive','Drop','Volley','Boast','Lob','Nick','Stroke'];
+  const empty={currentGame:1,meta:{player:'',opponent:'',date:new Date().toISOString().slice(0,10)},selected:{adv:'',zone:'',chain:[],lost:'',won:''},games:{1:[],2:[],3:[],4:[],5:[]}};
+  const[state,setState]=useState(()=>{try{const v=JSON.parse(localStorage.getItem(MATCH_KEY)||'null');return v&&v.games?v:empty;}catch{return empty;}});
+  useEffect(()=>{try{localStorage.setItem(MATCH_KEY,JSON.stringify(state));}catch{}},[state]);
+  function setMeta(k,v){setState(st=>({...st,meta:{...st.meta,[k]:v}}));}
+  function select(k,v){setState(st=>({...st,selected:{...st.selected,[k]:st.selected[k]===v?'':v}}));}
+  function toggleTag(t){setState(st=>{const c=st.selected.chain||[];let n=c.includes(t)?c.filter(x=>x!==t):(c.length<4?[...c,t]:c);return {...st,selected:{...st.selected,chain:n}};});}
+  function setGame(g){setState(st=>({...st,currentGame:g}));}
+  function save(){const s=state.selected;if(!s.adv||!s.zone||!s.chain.length||!s.lost){alert('Select advantage, zone, at least one problem stem, and point-lost tag.');return;}setState(st=>{const g=st.currentGame;const rally={...st.selected,time:new Date().toISOString()};return {...st,selected:{adv:'',zone:'',chain:[],lost:'',won:''},games:{...st.games,[g]:[...(st.games[g]||[]),rally]}};});}
+  function undo(){setState(st=>{const g=st.currentGame;return {...st,games:{...st.games,[g]:(st.games[g]||[]).slice(0,-1)}};});}
+  function reset(){if(confirm('Reset this match analysis?'))setState(empty);}
+  function counts(arr,fn){const o={};arr.forEach(x=>{const k=fn(x);if(k)o[k]=(o[k]||0)+1;});return o;}
+  function top(o){let k='',n=0;Object.entries(o).forEach(([a,b])=>{if(b>n){k=a;n=b;}});return {k,n};}
+  const all=Object.values(state.games).flat();
+  const current=state.games[state.currentGame]||[];
+  const base=current.length?current:all;
+  const tagCounts={};base.forEach(r=>(r.chain||[]).forEach(t=>tagCounts[t]=(tagCounts[t]||0)+1));
+  const advTop=top(counts(base,r=>r.adv));
+  const rootTop=top(counts(base,r=>r.chain&&r.chain[0]));
+  const tagTop=top(tagCounts);
+  let problem=base.length?`Opponent gaining control from ${advTop.k}.`:'No rallies recorded yet.';
+  let cause=rootTop.k||tagTop.k||'—';
+  let instruction='Reduce loose balls and build pressure patiently.';
+  let cue='Use 3 / 4 before attacking 1 or 2.';
+  if((tagCounts['Non-Functional Cross Court']||0)>=2||tagTop.k==='Non-Functional Cross Court'){instruction='Your crosscourt is not moving them enough. Stay straighter until you create width.';cue='3 / 4 first, then change direction.';}
+  if(advTop.k==='Central Volley'&&(tagCounts['Non-Functional Cross Court']||0)>=1){problem='Opponent is controlling central volleys from non-functional crosscourts.';instruction='Stop feeding the middle volley. Build straighter and wider before changing direction.';cue='Straight pressure 3 / 4 before 1 / 2.';}
+  else if((tagCounts['Opponent Set When Attacking']||0)>=2){instruction='You are attacking into a stable opponent. Move them first, then attack.';cue='Move a back corner first, then front.';}
+  else if((tagCounts['Hitting Back To Opponent']||0)>=2){instruction='You are recycling to their strength. Change height, width or angle.';cue='Avoid returning directly to the same zone.';}
+  else if((tagCounts['No T Recovery']||0)>=2){instruction='Recover first. Attack second.';cue='Shot, recover, then choose.';}
+  else if((tagCounts['Self Created Pressure Attacking']||0)>=2){instruction='You are forcing attacks without earning them. Build one more shot.';cue='3 / 4 before short attack.';}
+  function sortedRows(o){return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,8);}
+  const allTagCounts={};all.forEach(r=>(r.chain||[]).forEach(t=>allTagCounts[t]=(allTagCounts[t]||0)+1));
+  const zoneCounts=counts(all,r=>r.zone), advCounts=counts(all,r=>r.adv), winCounts=counts(all,r=>r.won);
+  function Chip({on,children,click}){return <div role="button" tabIndex={0} onClick={click} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();click&&click();}}} className={on?'lmcChip on':'lmcChip'}>{children}</div>;}
+  function MiniTable({rows}){return rows.length?<table className="lmcTable"><tbody>{rows.map(([k,v])=><tr key={k}><td>{k}</td><td>{v}</td></tr>)}</tbody></table>:<p className="lmcMuted">No data yet.</p>;}
+  return <div className="page lmcPage">
+    <style>{`
+      .lmcPage{background:#07111f;color:#eaf4fb;padding-bottom:40px;}
+      .lmcTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px;}
+      .lmcTop h1{margin:0;font-size:1.7rem}.lmcMuted{color:#8ea8bd}.lmcCard{background:#0b1624!important;border:1px solid #1f3850;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+      .lmcMeta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.lmcMeta label{color:#9fb3c4;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.lmcMeta input{width:100%;margin-top:5px;background:#07101a!important;color:#eaf4fb!important;border:1px solid #284057!important;border-radius:12px;padding:11px;font-size:1rem}
+      .lmcTabs,.lmcChips{display:flex;flex-wrap:wrap;gap:8px}.lmcTab,.lmcChip{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #284057;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}.lmcTab.on,.lmcChip.on{background:#2E6E8E!important;border-color:#61b6df;color:white!important}.lmcLayout{display:grid;grid-template-columns:.9fr 1.1fr;gap:12px}.lmcCourt{aspect-ratio:.7/1;min-height:420px;border:4px solid #d9f1ff;border-top-width:8px;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;background:#101d30}.lmcZone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);font-size:3rem;font-weight:1000;color:#eaf4fb;cursor:pointer}.lmcZone small{display:block;font-size:.82rem;color:#b5d0e6;margin-top:4px}.lmcZone.on{background:#2E6E8E!important}.lmcChain{display:flex;flex-wrap:wrap;gap:6px;min-height:38px;background:#07101a;border:1px solid #284057;border-radius:12px;padding:8px;margin:8px 0}.lmcPill{background:#123552;border:1px solid #2E6E8E;border-radius:999px;padding:7px 10px;color:#dcefff;font-size:.82rem}.lmcSave{width:100%;background:#24b36b!important;color:#03120a!important;border:1px solid #24b36b;border-radius:14px;padding:15px;font-weight:1000;font-size:1.05rem;cursor:pointer}.lmcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.lmcAction{background:#13283f!important;color:#eaf4fb!important;border:1px solid #31516b;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}.lmcOut{border-left:6px solid #2E6E8E;background:#07101a;border-radius:14px;padding:12px;margin-bottom:8px}.lmcOut.red{border-left-color:#ff647c}.lmcOut.yellow{border-left-color:#f1b84b}.lmcOut.green{border-left-color:#24b36b}.lmcOut .lab{color:#8ea8bd;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.lmcOut .txt{font-size:1.05rem;font-weight:900;margin-top:4px}.lmcTable{width:100%;border-collapse:collapse}.lmcTable td{border-bottom:1px solid #1d344a;padding:7px;color:#dcefff}.lmcLog{background:#07101a;border:1px solid #1f3850;border-radius:12px;padding:9px;margin-bottom:8px;font-size:.86rem}.lmcExport{white-space:pre-wrap;background:#06101b;border:1px solid #20384e;border-radius:12px;padding:10px;font-size:.78rem;color:#bcd5e9;max-height:220px;overflow:auto}@media(max-width:760px){.lmcLayout,.lmcMeta{grid-template-columns:1fr}.lmcCourt{min-height:360px}.lmcTop{flex-direction:column}.lmcChip{font-size:.86rem;padding:9px}.lmcZone{font-size:2.4rem}}
+    `}</style>
+    <div className="lmcTop"><div><h1>Live Match Coaching</h1><p className="lmcMuted">Match analysis → problem stem chain → one positive instruction.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="lmcCard lmcMeta"><label>Player<input value={state.meta.player} onChange={e=>setMeta('player',e.target.value)} placeholder="Player"/></label><label>Opponent<input value={state.meta.opponent} onChange={e=>setMeta('opponent',e.target.value)} placeholder="Opponent"/></label><label>Date<input type="date" value={state.meta.date} onChange={e=>setMeta('date',e.target.value)}/></label></div>
+    <div className="lmcCard"><div className="lmcTabs">{[1,2,3,4,5].map(g=><div key={g} role="button" tabIndex={0} className={state.currentGame===g?'lmcTab on':'lmcTab'} onClick={()=>setGame(g)}>Game {g} · {(state.games[g]||[]).length}</div>)}</div></div>
+    <div className="lmcLayout"><div>
+      <div className="lmcCard"><h2>Tap problem zone</h2><div className="lmcCourt">{[['1','Front Left'],['2','Front Right'],['4','Back Left'],['3','Back Right']].map(z=><div key={z[0]} role="button" tabIndex={0} className={state.selected.zone===z[0]?'lmcZone on':'lmcZone'} onClick={()=>select('zone',z[0])}><span>{z[0]}<small>{z[1]}</small></span></div>)}</div></div>
+      <div className="lmcCard"><h2>Between-game message</h2><div className="lmcOut red"><div className="lab">Primary problem</div><div className="txt">{problem}</div></div><div className="lmcOut yellow"><div className="lab">Root cause</div><div className="txt">{cause}</div></div><div className="lmcOut green"><div className="lab">Positive instruction</div><div className="txt">{instruction}</div></div><div className="lmcOut"><div className="lab">Checkerboard cue</div><div className="txt">{cue}</div></div></div>
+    </div><div>
+      <div className="lmcCard"><h2>Rally builder</h2><p className="lmcMuted">1. Where did opponent gain control?</p><div className="lmcChips">{ADV.map(x=><Chip key={x} on={state.selected.adv===x} click={()=>select('adv',x)}>{x}</Chip>)}</div><p className="lmcMuted">2. Problem stem chain — tap up to 4 causes in order.</p><div className="lmcChain">{state.selected.chain.length?state.selected.chain.map((x,i)=><span className="lmcPill" key={x}>{i+1}. {x}</span>):<span className="lmcMuted">No causes selected</span>}</div><div className="lmcChips">{TAGS.map(x=><Chip key={x} on={state.selected.chain.includes(x)} click={()=>toggleTag(x)}>{x}</Chip>)}</div><p className="lmcMuted">3. Point lost tag</p><div className="lmcChips">{LOST.map(x=><Chip key={x} on={state.selected.lost===x} click={()=>select('lost',x)}>{x}</Chip>)}</div><p className="lmcMuted">4. Winning shot optional</p><div className="lmcChips">{WON.map(x=><Chip key={x} on={state.selected.won===x} click={()=>select('won',x)}>{x}</Chip>)}</div><button className="lmcSave" onClick={save}>Save Rally</button><div className="lmcActions"><button className="lmcAction" onClick={undo}>Undo Last</button><button className="lmcAction" onClick={reset}>Reset Match</button></div></div>
+      <div className="lmcCard"><h2>Analysis</h2><p className="lmcMuted">All games: {all.length} rallies · Current game: {current.length}</p><h3>Top problem tags</h3><MiniTable rows={sortedRows(allTagCounts)}/><h3>Opponent advantage</h3><MiniTable rows={sortedRows(advCounts)}/><h3>Problem zones</h3><MiniTable rows={sortedRows(zoneCounts)}/><h3>Winning shots</h3><MiniTable rows={sortedRows(winCounts)}/></div>
+      <div className="lmcCard"><h2>Current game log</h2>{current.length?current.slice().reverse().map((r,i)=><div className="lmcLog" key={r.time+i}><strong>Rally {current.length-i}</strong> · Zone {r.zone} · {r.adv}<br/>Chain: {(r.chain||[]).join(' → ')}<br/>Lost: {r.lost}{r.won?' · Won by: '+r.won:''}</div>):<p className="lmcMuted">No rallies in this game yet.</p>}</div>
+      <div className="lmcCard"><h2>Copy summary</h2><div className="lmcExport">{`Live Match Coaching\n${state.meta.player||'Player'} v ${state.meta.opponent||'Opponent'} · ${state.meta.date}\n\nPrimary problem: ${problem}\nRoot cause: ${cause}\nInstruction: ${instruction}\nCheckerboard cue: ${cue}\n\nTop tags:\n${sortedRows(allTagCounts).map(r=>r[0]+': '+r[1]).join('\n')||'No data'}`}</div></div>
+    </div></div>
+  </div>;
+}
+
+
+
 function LiveMatchCoaching({setScreen}){
+  const [mode,setMode]=useState('menu');
+  function copyTraceLink(){
+    const room=getPersistentLiveRoomId();
+    const url=buildLivePlayerViewUrl(room);
+    writeLivePlayerRoom(room,'matchTrace',{type:'matchTrace',rallies:[],path:[],message:'Waiting for trace data',updatedAt:new Date().toISOString()});
+    try{navigator.clipboard&&navigator.clipboard.writeText(url);}catch{}
+    alert('Second coach display link copied. Open it on the second iPad.');
+  }
+  if(mode==='tap')return <LiveMatchTapAnalysis setScreen={setScreen}/>;
+  if(mode==='trace')return <LiveMatchTraceModule setScreen={setScreen}/>;
+  if(mode==='report')return <div className="lmcMenuPage"><style>{`
+    .lmcMenuPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.lmcMenuCard{max-width:760px;margin:0 auto;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:18px}.lmcMenuBtn{display:block;width:100%;text-align:left;background:#102238!important;color:#eaf4fb!important;border:1px solid #2b4a66;border-radius:16px;padding:16px;margin:10px 0;font-weight:900;font-size:1.05rem}.lmcMenuMuted{color:#9fb3c4}.lmcMenuTop{display:flex;justify-content:space-between;gap:12px;align-items:center}`}</style><div className="lmcMenuCard"><div className="lmcMenuTop"><div><h1>Between Game Report</h1><p className="lmcMenuMuted">Report view will combine guided tags and trace evidence.</p></div><button className="lmcMenuBtn" style={{width:'auto'}} onClick={()=>setMode('menu')}>Back</button></div><p className="lmcMenuMuted">Road-test note: this is parked until guided tap and trace inputs are both stable.</p></div></div>;
+  return <div className="lmcMenuPage"><style>{`
+    .lmcMenuPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:20px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.lmcMenuCard{max-width:860px;margin:0 auto;background:#0b1624;border:1px solid #20364f;border-radius:20px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}.lmcMenuTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.lmcMenuTop h1{margin:0;font-size:1.7rem}.lmcMenuMuted{color:#9fb3c4}.lmcMenuGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lmcMenuBtn{display:block;width:100%;text-align:left;background:#102238!important;color:#eaf4fb!important;border:1px solid #2b4a66;border-radius:18px;padding:18px;font-weight:900;font-size:1.08rem;min-height:120px}.lmcMenuBtn strong{display:block;font-size:1.2rem;margin-bottom:8px}.lmcMenuBtn span{display:block;color:#9fb3c4;font-weight:700;line-height:1.3}.lmcMenuBtn.green{background:#0f3322!important;border-color:#22c55e}.lmcMenuBtn.blue{background:#0d2b4d!important;border-color:#3b82f6}.lmcMenuBtn.amber{background:#31240e!important;border-color:#f59e0b}@media(max-width:700px){.lmcMenuGrid{grid-template-columns:1fr}.lmcMenuTop{flex-direction:column}}`}</style>
+    <div className="lmcMenuCard"><div className="lmcMenuTop"><div><h1>Live Match Coaching</h1><p className="lmcMenuMuted">Choose the input stream. Guided tags remain the primary coaching engine; trace is the spatial evidence layer.</p></div><button className="lmcTraceBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="lmcMenuGrid">
+      <button className="lmcMenuBtn green" onClick={()=>setMode('tap')}><strong>Guided Tap Analysis</strong><span>Opponent advantage → zone → problem stem chain → point lost → between-game instruction.</span></button>
+      <button className="lmcMenuBtn blue" onClick={()=>setMode('trace')}><strong>Shot Mapping / Trace</strong><span>Continuous drag trace for rally shape, central corridor load and heat map evidence.</span></button>
+      <button className="lmcMenuBtn" onClick={copyTraceLink}><strong>Copy Second Coach Display Link</strong><span>Opens a read-only trace display on another iPad using the live player display room.</span></button>
+      <button className="lmcMenuBtn amber" onClick={()=>setMode('report')}><strong>Between Game Report</strong><span>Combines tags and trace evidence. Parked until road-test data confirms the workflow.</span></button>
+    </div></div></div>;
+}
+
+function LiveMatchTraceModule({setScreen}){
   const mapRef=useRef(null);
   const drawRef=useRef(null);
   const heatRef=useRef(null);
@@ -15362,6 +15380,7 @@ function LiveMatchCoaching({setScreen}){
   const [showLog,setShowLog]=useState(false);
   useEffect(()=>{const oldOverflow=document.body.style.overflow;const oldTouch=document.body.style.touchAction;document.body.style.overflow='hidden';document.body.style.touchAction='none';return()=>{document.body.style.overflow=oldOverflow;document.body.style.touchAction=oldTouch;};},[]);
   useEffect(()=>{lmcTraceSave(rallies);},[rallies]);
+  useEffect(()=>{const t=setTimeout(()=>{try{writeLivePlayerRoom(getPersistentLiveRoomId(),'matchTrace',{type:'matchTrace',rallies:rallies.slice(-40),path:(path||[]).map(q=>({nx:q.nx,ny:q.ny,time:q.time})),pending,outcome,heatOn,updatedAt:new Date().toISOString()});}catch{}},300);return()=>clearTimeout(t);},[rallies,path,pending,outcome,heatOn]);
   useEffect(()=>{function resize(){const el=mapRef.current;if(!el)return;const r=el.getBoundingClientRect();setSize({w:Math.max(1,r.width),h:Math.max(1,r.height)});}resize();window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);return()=>{window.removeEventListener('resize',resize);window.removeEventListener('orientationchange',resize);};},[]);
   function setupCanvas(canvas){if(!canvas||!size.w||!size.h)return null;const ratio=window.devicePixelRatio||1;canvas.width=Math.round(size.w*ratio);canvas.height=Math.round(size.h*ratio);canvas.style.width=size.w+'px';canvas.style.height=size.h+'px';const ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,size.w,size.h);return ctx;}
   function drawOne(ctx,pts,color,width,alpha){if(!ctx||!pts||pts.length<2)return;ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();ctx.restore();}
@@ -15394,7 +15413,7 @@ function LiveMatchCoaching({setScreen}){
 `}</style>
     <div className="lmcTraceTop">
       <div className="lmcTraceTitle"><h1>Live Match Coaching · Continuous Trace</h1><p>Trace the full rally. Lift finger to end. Outcome → Save + New Rally.</p></div>
-      <div className="lmcTraceActions"><button type="button" className="lmcTraceBtn" onClick={()=>setScreen('home')}>Home</button><button type="button" className="lmcTraceBtn red" onClick={undoLast}>Undo Last</button><button type="button" className="lmcTraceBtn red" onClick={clearCurrent}>Clear Trace</button><button type="button" className={'lmcTraceBtn '+(heatOn?'on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="lmcTraceBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} Log</button></div>
+      <div className="lmcTraceActions"><button type="button" className="lmcTraceBtn" onClick={()=>{const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch{}alert('Second coach display link copied.');}}>Copy Display</button><button type="button" className="lmcTraceBtn" onClick={()=>setScreen('home')}>Home</button><button type="button" className="lmcTraceBtn red" onClick={undoLast}>Undo Last</button><button type="button" className="lmcTraceBtn red" onClick={clearCurrent}>Clear Trace</button><button type="button" className={'lmcTraceBtn '+(heatOn?'on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="lmcTraceBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} Log</button></div>
     </div>
     <div className="lmcTraceMain lmcTraceNoScroll">
       <div className="lmcTraceMapWrap" ref={mapRef} onPointerDown={beginTrace} onPointerMove={moveTrace} onPointerUp={endTrace} onPointerCancel={endTrace} onContextMenu={e=>e.preventDefault()}>
@@ -15502,8 +15521,8 @@ if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <Disruptio
 if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeReturnPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='pattern'){return <PatternLabPlayerDisplay payload={livePayload}/>;}
-if(screen==='playerDisplay'&&livePayload?.type==='cbblind'){return <CbBlindPlayerDisplay payload={livePayload} setScreen={go}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='courtstandings'){return <CourtStandingsPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='matchTrace'){return <MatchTracePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
