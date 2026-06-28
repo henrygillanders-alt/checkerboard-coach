@@ -4024,6 +4024,9 @@ function BlindCheckerboardAllocation({level=2}){
   const [history,setHistory]=useState([]);
   const [present,setPresent]=useState(()=>cbReadPresentPlayers());
   const [pushed,setPushed]=useState(false);
+  const [peek,setPeek]=useState('');
+  const peekTimer=useRef(null);
+  function peekPlayer(n){if(peekTimer.current)clearTimeout(peekTimer.current);setPeek(n);peekTimer.current=setTimeout(()=>setPeek(''),4000);}
   const levelInfo=CHECKERBOARD_LEVELS.find(l=>l.level===Number(level))||CHECKERBOARD_LEVELS[1];
   function refreshPresent(){const p=cbReadPresentPlayers();setPresent(p);return p;}
   function persistAndPush(nextAlloc,nextMode,reveal){
@@ -4058,12 +4061,13 @@ function BlindCheckerboardAllocation({level=2}){
     </div>
     {pushed&&<div className="statusBox"><strong>Pushed to Player View.</strong> Players open <strong>/live</strong> and tap their name to see only their own code.</div>}
     <div className="statusBox"><strong>Present players:</strong> {present.length?present.join(' · '):'None present — mark players Present in Players / Attendance.'}</div>
-    {names.length>0&&<div className="cbBlindGrid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'8px',marginTop:'8px'}}>
-      {names.map(n=><div key={n} style={{border:'1px solid #2d4766',borderRadius:'12px',padding:'10px',background:'#0c1a2c'}}>
+    {names.length>0&&<><p className="mutedText" style={{marginTop:'8px',marginBottom:'4px'}}>Single iPad: tap a player's card to reveal only their code for 4 seconds, then hand the device on. "Reveal All" is the coach overview.</p>
+    <div className="cbBlindGrid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))',gap:'8px'}}>
+      {names.map(n=>{const open=revealed||peek===n;return <div key={n} role="button" tabIndex={0} onClick={()=>peekPlayer(n)} style={{border:'1px solid '+(open?'#22c55e':'#2d4766'),borderRadius:'12px',padding:'10px',background:'#0c1a2c',cursor:'pointer'}}>
         <div style={{fontWeight:800,color:'#eaf4fb'}}>{n}</div>
-        <div style={{marginTop:'4px',fontSize:'1.1rem',fontWeight:900,color:revealed?'#22c55e':'#9fb0c2'}}>{revealed?alloc[n]:'🔒 Hidden'}</div>
-      </div>)}
-    </div>}
+        <div style={{marginTop:'4px',fontSize:'1.1rem',fontWeight:900,color:open?'#22c55e':'#9fb0c2'}}>{open?alloc[n]:'🔒 Tap to reveal'}</div>
+      </div>;})}
+    </div></>}
     <div className="infoBox" style={{marginTop:'10px'}}><strong>{levelInfo.label}</strong><p>{Number(level)<=3?'Levels 1–3: completed challenges are banked.':'Levels 4–5: challenge resets if not converted inside the conversion window.'} Clean winner bonus remains separate.{Number(level)>=3?' T-zone prevention applies from Level 3.':''}</p></div>
   </div>;
 }
