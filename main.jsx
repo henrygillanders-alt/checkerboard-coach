@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v229 Corner mode · protect & exploit';
+const APP_VERSION='v230 Checkerboard · custom code + tile contrast';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3528,6 +3528,11 @@ return <div className="homeGrid homeGridV99h52">
         </div>
       </button>
 
+      <style>{`
+.checkerboardHomeCard{background-color:#0e141b !important;background-image:linear-gradient(135deg, rgba(12,18,26,.72), rgba(28,79,102,.74)), repeating-conic-gradient(#eef2f6 0% 25%, #11161c 0% 50%) !important;background-size:auto, 22px 22px !important;border:2px solid #2E6E8E !important;box-shadow:0 4px 16px rgba(0,0,0,.42) !important;}
+.checkerboardHomeCard h2{color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,.7) !important;}
+.checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
+`}</style>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -4132,7 +4137,9 @@ return <div className="checkerboardEngine">
 
 // ── v225 PER-PLAYER CHECKERBOARD ALLOCATION ──────────────────────────────────
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
-const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]'];
+// Quick banks: only combinations achievable for level-3 players (canonical diagonals
+// + same-rail pairs). Anything beyond these can be entered via the Custom field.
+const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]','[5-4] + [6-3]','[8-1] + [7-2]'];
 const CB_TRIPLE_BANK=['[5-4] + [8-1] + [6-3]','[6-3] + [7-2] + [5-4]','[5-3] + [8-4] + [6-4]'];
 const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
 const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
@@ -4223,6 +4230,10 @@ const CB_SET_CSS=`
 .cbsetMiniBtn{background:#13202c;border:1px solid #2a3e52;color:#bcd2e4;border-radius:8px;padding:6px 11px;font-size:.78rem;font-weight:700;cursor:pointer;}
 .cbsetMiniBtn.mirror{border-color:#7a5cc4;color:#d7c8f4;}
 .cbsetNext{color:#9fb4c6;font-size:.74rem;margin-left:4px;}
+.cbsetCustomRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.cbsetCustomInput{flex:1;min-width:160px;background:#0a121b;border:1px solid #25394c;color:#eaf4fb;border-radius:8px;padding:8px 11px;font-size:.9rem;font-weight:600;letter-spacing:.02em;}
+.cbsetCustomInput::placeholder{color:#5f7588;}
+.cbsetCustomHint{color:#7c92a6;font-size:.72rem;margin:5px 0 0;}
 .cbsetLinkBox{background:#0a121b;border:1px solid #213040;border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cbsetLinkBox span{color:#cfe6f4;font-weight:700;font-size:.84rem;}
 .cbsetLinkBox .u{color:#6b8299;font-size:.72rem;word-break:break-all;flex:1;min-width:120px;}
@@ -4238,6 +4249,18 @@ const CB_SET_CSS=`
 .cbsetCourtCard>h3{margin:0 0 4px;color:#7fb6d6;font-size:.95rem;}
 .cbsetCourtPlayers{color:#9fb4c6;font-size:.8rem;margin:0 0 10px;}
 `;
+
+function CbCustomInput({optional,next,onAdd}){
+  const [v,setV]=useState('');
+  function add(){const t=v.trim();if(t){onAdd(t);setV('');}}
+  return <div className="cbsetField"><label>Custom code{optional?<span className="cbsetNext">next → Option {next}</span>:null}</label>
+    <div className="cbsetCustomRow">
+      <input className="cbsetCustomInput" value={v} placeholder="e.g. [5-4] + [8-1]" onChange={e=>setV(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add();}}/>
+      <button type="button" className="cbsetMiniBtn" onClick={add}>Add</button>
+    </div>
+    <p className="cbsetCustomHint">Type any code — single, pair or triple — and tap Add.</p>
+  </div>;
+}
 
 function CheckerboardSetup({setScreen}){
   const [presents,setPresents]=useState(cbReadPresents);
@@ -4356,6 +4379,7 @@ function CheckerboardSetup({setScreen}){
       </div>
       <div className="cbsetField"><label>Tap a code{optional?<span className="cbsetNext">next → Option {row.optNext}</span>:null}</label>
         <div className="cbsetBank">{cbBankFor(row.type).map(code=><button type="button" key={code} className="cbsetCodeBtn" onClick={()=>api.tapCode(code)}>{code}</button>)}</div></div>
+      <CbCustomInput optional={optional} next={row.optNext} onAdd={api.tapCode}/>
       <div className="cbsetRowActions">
         <button type="button" className="cbsetMiniBtn mirror" onClick={()=>api.mirror()}>↔ Mirror</button>
         {!optional&&row.optionB&&<button type="button" className="cbsetMiniBtn" onClick={()=>api.useMirrorAlt()}>Use mirror</button>}
