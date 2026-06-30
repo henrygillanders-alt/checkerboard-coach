@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v225 Per-Player Checkerboard Allocation';
+const APP_VERSION='v226 Checkerboard Allocation · player/group/court';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4133,13 +4133,14 @@ return <div className="checkerboardEngine">
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
 const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]'];
 const CB_TRIPLE_BANK=['[5-4] + [8-1] + [6-3]','[6-3] + [7-2] + [5-4]','[5-3] + [8-4] + [6-4]'];
-const CB_CHALLENGE_TYPES=['Single','Pair','Triple','Optional Pair','Optional Triple'];
+const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
 const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
+const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court','Per-Court']];
 
-function cbIsOptional(type){return type==='Optional Pair'||type==='Optional Triple';}
+function cbIsOptional(type){return type==='Optional Single'||type==='Optional Pair'||type==='Optional Triple';}
 function cbBaseKind(type){
-  if(type==='Single')return 'single';
+  if(type==='Single'||type==='Optional Single')return 'single';
   if(type==='Pair'||type==='Optional Pair')return 'pair';
   return 'triple';
 }
@@ -4160,8 +4161,9 @@ function cbRandomFrom(pool,avoid){
   const list=choices.length?choices:pool;
   return list[Math.floor(Math.random()*list.length)];
 }
-// Geometric left/right mirror across the court: front wall 5↔8, 6↔7; floor 1↔4, 2↔3.
-const CB_MIRROR_MAP={'5':'8','8':'5','6':'7','7':'6','1':'4','4':'1','2':'3','3':'2'};
+// Mirror = the complementary diagonal: front wall 5↔6, 7↔8; floor 1↔2, 3↔4.
+// e.g. [5-4] + [8-1]  ↔  [6-3] + [7-2]
+const CB_MIRROR_MAP={'5':'6','6':'5','7':'8','8':'7','1':'2','2':'1','3':'4','4':'3'};
 function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=>CB_MIRROR_MAP[d]||d);}
 function cbBlankAlloc(){return {type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
 function cbReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
@@ -4170,6 +4172,16 @@ function cbRollFor(type){
   if(cbIsOptional(type)){const a=cbRandomFrom(pool);const b=cbRandomFrom(pool,a);return {optionA:a,optionB:b,optNext:'A',assigned:'',hidden:true,revealed:false};}
   return {assigned:cbRandomFrom(pool),optionA:'',optionB:'',hidden:true,revealed:false};
 }
+// Pure row transformers (reused by player / group / court targets)
+function cbTxSetType(row,type){const r={...row,type,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};if(cbIsOptional(type)&&r.mode==='Manual')r.mode='Optional A/B';if(!cbIsOptional(type)&&r.mode==='Optional A/B')r.mode='Manual';return r;}
+function cbTxSetMode(row,mode){return {...row,mode};}
+function cbTxTap(row,code){const r={...row};if(cbIsOptional(r.type)){if(r.optNext==='A'){r.optionA=code;r.optNext='B';}else{r.optionB=code;r.optNext='A';}}else{r.assigned=code;}r.hidden=false;r.revealed=true;return r;}
+function cbTxMirror(row){const r={...row};if(cbIsOptional(r.type)){const a=r.optionA||cbRandomFrom(cbPoolFor(r.type));r.optionA=a;r.optionB=cbMirrorCode(a);r.optNext='A';}else{const a=r.assigned||cbRandomFrom(cbPoolFor(r.type));r.assigned=a;r.optionA=a;r.optionB=cbMirrorCode(a);}r.hidden=false;r.revealed=true;r.mode='Mirror';return r;}
+function cbTxUseMirror(row){const r={...row};if(r.optionB){const keep=r.optionA;r.assigned=r.optionB;r.optionA=r.optionB;r.optionB=keep;}return r;}
+function cbTxClear(row){return {...row,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
+function cbTxRoll(row){return {...row,...cbRollFor(row.type)};}
+function cbTxReveal(row){return {...row,revealed:true};}
+function cbTxHide(row){return {...row,revealed:false,hidden:true};}
 
 const CB_SET_CSS=`
 .cbsetPage{max-width:880px;margin:0 auto;padding:4px 0 40px;}
@@ -4213,11 +4225,27 @@ const CB_SET_CSS=`
 .cbsetLinkBox{background:#0a121b;border:1px solid #213040;border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cbsetLinkBox span{color:#cfe6f4;font-weight:700;font-size:.84rem;}
 .cbsetLinkBox .u{color:#6b8299;font-size:.72rem;word-break:break-all;flex:1;min-width:120px;}
+.cbsetScopeNote{color:#9fb4c6;font-size:.8rem;margin:6px 0 12px;background:#0a141d;border-left:3px solid #2E6E8E;padding:8px 12px;border-radius:0 8px 8px 0;}
+.cbsetCourtCtrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+.cbsetCourtCtrl label{color:#7c92a6;font-size:.8rem;}
+.cbsetAssignList{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.cbsetAssignList .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.cbsetAssignList .nm{color:#cfe6f4;font-weight:600;min-width:90px;font-size:.85rem;}
+.cbsetCourtBtn{background:#0f1c28;border:1px solid #25394c;color:#b9cee0;border-radius:7px;padding:4px 10px;font-size:.78rem;font-weight:700;cursor:pointer;}
+.cbsetCourtBtn.on{background:#2E6E8E;border-color:#48a0c4;color:#fff;}
+.cbsetCourtCard{background:#0c141d;border:1px solid #213040;border-radius:12px;padding:12px;margin-bottom:12px;}
+.cbsetCourtCard>h3{margin:0 0 4px;color:#7fb6d6;font-size:.95rem;}
+.cbsetCourtPlayers{color:#9fb4c6;font-size:.8rem;margin:0 0 10px;}
 `;
 
 function CheckerboardSetup({setScreen}){
   const [presents,setPresents]=useState(cbReadPresents);
+  const [scope,setScope]=useState('player');
   const [alloc,setAlloc]=useState(()=>{try{return JSON.parse(localStorage.getItem(CB_ALLOC_KEY))||{};}catch{return {};}});
+  const [group,setGroup]=useState(cbBlankAlloc);
+  const [courtCount,setCourtCount]=useState(2);
+  const [courtChallenges,setCourtChallenges]=useState(()=>[cbBlankAlloc(),cbBlankAlloc()]);
+  const [courtOf,setCourtOf]=useState({});
   const [history,setHistory]=useState([]);
   const [modifier,setModifier]=useState(()=>emptyModifierConfig());
   const [status,setStatus]=useState('');
@@ -4229,93 +4257,68 @@ function CheckerboardSetup({setScreen}){
 
   useEffect(()=>{try{localStorage.setItem(CB_ALLOC_KEY,JSON.stringify(alloc));}catch{}},[alloc]);
 
-  function snapshot(){setHistory(h=>[...h.slice(-9),JSON.stringify(alloc)]);}
+  // keep court challenge slots sized to courtCount
+  useEffect(()=>{
+    setCourtChallenges(prev=>{const next=prev.slice(0,courtCount);while(next.length<courtCount)next.push(cbBlankAlloc());return next;});
+  },[courtCount]);
+
+  // auto-assign present players to courts (round-robin), prune absent
+  useEffect(()=>{
+    setCourtOf(prev=>{
+      const next={...prev};
+      presents.forEach((n,i)=>{if(next[n]==null||next[n]>=courtCount)next[n]=i%courtCount;});
+      Object.keys(next).forEach(n=>{if(!presents.includes(n))delete next[n];});
+      return next;
+    });
+  },[presents.join('|'),courtCount]);
+
+  function fullState(){return JSON.stringify({alloc,group,courtChallenges,courtOf,courtCount});}
+  function snapshot(){setHistory(h=>[...h.slice(-9),fullState()]);}
   function undo(){
     setHistory(h=>{
       if(!h.length){setStatus('Nothing to undo.');return h;}
-      const last=h[h.length-1];
-      try{setAlloc(JSON.parse(last));setStatus('Undid last change.');}catch{}
+      try{const s=JSON.parse(h[h.length-1]);setAlloc(s.alloc||{});setGroup(s.group||cbBlankAlloc());setCourtChallenges(s.courtChallenges||[cbBlankAlloc()]);setCourtOf(s.courtOf||{});setCourtCount(s.courtCount||2);setStatus('Undid last change.');}catch{}
       return h.slice(0,-1);
     });
   }
-  function patch(name,fields){setAlloc(prev=>({...prev,[name]:{...prev[name],...fields}}));}
 
-  function setType(name,type){
-    snapshot();
-    setAlloc(prev=>{
-      const row={...prev[name],type,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};
-      if(cbIsOptional(type)&&row.mode==='Manual')row.mode='Optional A/B';
-      if(!cbIsOptional(type)&&row.mode==='Optional A/B')row.mode='Manual';
-      return {...prev,[name]:row};
-    });
+  // Target APIs — apply a transformer to the right store
+  function playerApi(name){
+    const apply=tx=>{snapshot();setAlloc(prev=>({...prev,[name]:tx(prev[name]||cbBlankAlloc())}));};
+    return {
+      setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),
+      mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),
+      reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide),
+      copyLink:()=>copyLink(name)
+    };
   }
-  function setMode(name,mode){snapshot();patch(name,{mode});}
+  function groupApi(){
+    const apply=tx=>{snapshot();setGroup(prev=>tx(prev||cbBlankAlloc()));};
+    return {setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
+  }
+  function courtApi(i){
+    const apply=tx=>{snapshot();setCourtChallenges(prev=>prev.map((c,idx)=>idx===i?tx(c||cbBlankAlloc()):c));};
+    return {setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
+  }
 
-  function tapCode(name,code){
+  // Scope-aware bulk blind tools
+  function eachTarget(tx){
     snapshot();
-    setAlloc(prev=>{
-      const row={...prev[name]};
-      if(cbIsOptional(row.type)){
-        if(row.optNext==='A'){row.optionA=code;row.optNext='B';}
-        else{row.optionB=code;row.optNext='A';}
-      }else{row.assigned=code;}
-      row.hidden=false;row.revealed=true;
-      return {...prev,[name]:row};
-    });
+    if(scope==='group'){setGroup(prev=>tx(prev));return;}
+    if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>tx(c)));return;}
+    setAlloc(prev=>{const next={};Object.keys(prev).forEach(n=>next[n]=tx(prev[n]));return next;});
   }
-  function mirrorRow(name){
-    snapshot();
-    setAlloc(prev=>{
-      const row={...prev[name]};
-      if(cbIsOptional(row.type)){
-        const a=row.optionA||cbRandomFrom(cbPoolFor(row.type));
-        row.optionA=a;row.optionB=cbMirrorCode(a);row.optNext='A';
-      }else{
-        const a=row.assigned||cbRandomFrom(cbPoolFor(row.type));
-        row.assigned=a;row.optionA=a;row.optionB=cbMirrorCode(a);
-      }
-      row.hidden=false;row.revealed=true;row.mode='Mirror';
-      return {...prev,[name]:row};
-    });
-  }
-  function useMirrorAlt(name){
-    snapshot();
-    setAlloc(prev=>{
-      const row={...prev[name]};
-      if(row.optionB){row.assigned=row.optionB;const keep=row.optionA;row.optionA=row.optionB;row.optionB=keep;}
-      return {...prev,[name]:row};
-    });
-  }
-  function clearRow(name){snapshot();patch(name,{assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false});}
-
-  function allocBlindAll(){
-    snapshot();
-    setAlloc(prev=>{
-      const next={...prev};
-      presents.forEach(n=>{const row=next[n];if(!row||row.mode!=='Random Blind')return;next[n]={...row,...cbRollFor(row.type)};});
-      return next;
-    });
-    setStatus('Blind challenges allocated to all Random Blind players.');
-  }
-  function rerollAll(){
-    snapshot();
-    setAlloc(prev=>{
-      const next={...prev};
-      presents.forEach(n=>{const row=next[n];if(!row||row.mode!=='Random Blind')return;next[n]={...row,...cbRollFor(row.type)};});
-      return next;
-    });
-    setStatus('Re-rolled all blind players.');
-  }
-  function revealAll(){snapshot();setAlloc(prev=>{const next={};Object.keys(prev).forEach(n=>next[n]={...prev[n],revealed:true});return next;});setStatus('All challenges revealed (coach view).');}
-  function rerollOne(name){snapshot();patch(name,cbRollFor(alloc[name]?.type||'Single'));}
-  function revealOne(name){snapshot();patch(name,{revealed:true});}
-  function reHideOne(name){snapshot();patch(name,{revealed:false,hidden:true});}
+  function allocBlindAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Blind challenges allocated to Random Blind targets.');}
+  function rerollAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Re-rolled all blind targets.');}
+  function revealAll(){eachTarget(cbTxReveal);setStatus('All challenges revealed (coach view).');}
 
   function reloadPresents(){const p=cbReadPresents();setPresents(p);setStatus(p.length?`Reloaded ${p.length} present player${p.length===1?'':'s'}.`:'No players marked present yet.');}
+  function setPlayerCourt(name,i){snapshot();setCourtOf(prev=>({...prev,[name]:i}));}
 
   async function publishLive(){
     const room=getPersistentLiveRoomId();
-    const payload={type:'checkerboard',allocation:alloc,title:'Checkerboard Allocation'};
+    const courts=courtChallenges.map((c,i)=>({challenge:c,players:presents.filter(n=>(courtOf[n]||0)===i)}));
+    const payload={type:'checkerboard',scope,allocation:alloc,group,courts,title:'Checkerboard Allocation'};
     let ok=false;
     try{ok=await writeLivePlayerRoom(room,'checkerboard',payload);}catch{ok=false;}
     const url=buildLivePlayerViewUrl(room);
@@ -4332,9 +4335,40 @@ function CheckerboardSetup({setScreen}){
     return null;
   }
 
+  // Reusable challenge controls for any target (player / group / court)
+  function controls(row,api){
+    const optional=cbIsOptional(row.type);
+    const showHidden=row.hidden&&!row.revealed;
+    return <>
+      <div className="cbsetField"><label>Challenge Type</label>
+        <div className="cbsetChips">{CB_CHALLENGE_TYPES.map(t=><button type="button" key={t} className={row.type===t?'cbsetChip on':'cbsetChip'} onClick={()=>api.setType(t)}>{t}</button>)}</div></div>
+      <div className="cbsetField"><label>Allocation Mode</label>
+        <div className="cbsetChips">{CB_ALLOC_MODES.map(m=><button type="button" key={m} className={row.mode===m?'cbsetChip on':'cbsetChip'} onClick={()=>m==='Mirror'?api.mirror():api.setMode(m)}>{m}</button>)}</div></div>
+      <div className="cbsetAssign">
+        {optional?<>
+          <div className="cbsetAssignBox"><small>Option A</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.optionA||'—')}</strong></div>
+          <div className="cbsetAssignBox"><small>Option B</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.optionB||'—')}</strong></div>
+        </>:<>
+          <div className="cbsetAssignBox"><small>Assigned</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.assigned||'—')}</strong></div>
+          {row.optionB&&!showHidden&&<div className="cbsetAssignBox"><small>↔ Mirror alt</small><strong>{row.optionB}</strong></div>}
+        </>}
+      </div>
+      <div className="cbsetField"><label>Tap a code{optional?<span className="cbsetNext">next → Option {row.optNext}</span>:null}</label>
+        <div className="cbsetBank">{cbBankFor(row.type).map(code=><button type="button" key={code} className="cbsetCodeBtn" onClick={()=>api.tapCode(code)}>{code}</button>)}</div></div>
+      <div className="cbsetRowActions">
+        <button type="button" className="cbsetMiniBtn mirror" onClick={()=>api.mirror()}>↔ Mirror</button>
+        {!optional&&row.optionB&&<button type="button" className="cbsetMiniBtn" onClick={()=>api.useMirrorAlt()}>Use mirror</button>}
+        <button type="button" className="cbsetMiniBtn" onClick={()=>api.reroll()}>🎲 Re-roll</button>
+        {showHidden?<button type="button" className="cbsetMiniBtn" onClick={()=>api.reveal()}>👁 Reveal</button>:<button type="button" className="cbsetMiniBtn" onClick={()=>api.hide()}>🙈 Hide</button>}
+        <button type="button" className="cbsetMiniBtn" onClick={()=>api.clear()}>Clear</button>
+        {api.copyLink&&liveUrl&&<button type="button" className="cbsetMiniBtn" onClick={api.copyLink}>🔗 Copy link</button>}
+      </div>
+    </>;
+  }
+
   return <div className="page cbsetPage">
     <style>{CB_SET_CSS}</style>
-    <div className="pageTop"><div><h1>Checkerboard</h1><p className="cbsetIntro">Flagship challenge protocol — allocate singles, pairs, triples, blind and optional challenges per player.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Checkerboard</h1><p className="cbsetIntro">Flagship challenge protocol — allocate singles, pairs, triples, blind and optional challenges per player, per group or per court.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
 
     {/* 1 — PRESENT PLAYERS */}
     <div className="cbsetSection">
@@ -4346,61 +4380,54 @@ function CheckerboardSetup({setScreen}){
       <div style={{marginTop:'12px'}}><button className="cbsetReload" onClick={reloadPresents}>↻ Reload Present Players</button></div>
     </div>
 
-    {/* 2 — PER-PLAYER ALLOCATION */}
+    {/* 2 — CHALLENGE ALLOCATION */}
     <div className="cbsetSection">
-      <h2>2 · Per-Player Checkerboard Challenge Allocation</h2>
-      <p className="cbsetSub">Set each player's challenge type, then tap a code to assign. Optional types fill Option A then Option B.</p>
-      {presents.length===0
+      <h2>2 · Checkerboard Challenge Allocation</h2>
+      <div className="cbsetField"><label>Challenge Scope</label>
+        <div className="cbsetChips">{CB_SCOPES.map(([v,l])=><button type="button" key={v} className={scope===v?'cbsetChip on':'cbsetChip'} onClick={()=>setScope(v)}>{l}</button>)}</div></div>
+      <p className="cbsetScopeNote">↔ <strong>Mirror</strong> gives the complementary diagonal — e.g. [5-4] + [8-1] ↔ [6-3] + [7-2]. Optional types hold an Option A and Option B.</p>
+
+      {scope==='player'&&(presents.length===0
         ? <p className="cbsetEmpty">Add present players above to allocate challenges.</p>
         : presents.map(name=>{
           const row=alloc[name]||cbBlankAlloc();
-          const optional=cbIsOptional(row.type);
-          const showHidden=row.hidden&&!row.revealed;
           return <div className="cbsetCard" key={name}>
             <div className="cbsetCardTop"><span className="cbsetName">{name}</span>{badgeFor(row)}</div>
+            {controls(row,playerApi(name))}
+          </div>;
+        }))}
 
-            <div className="cbsetField"><label>Challenge Type</label>
-              <div className="cbsetChips">{CB_CHALLENGE_TYPES.map(t=>
-                <button type="button" key={t} className={row.type===t?'cbsetChip on':'cbsetChip'} onClick={()=>setType(name,t)}>{t}</button>)}</div>
-            </div>
+      {scope==='group'&&<div className="cbsetCard">
+        <div className="cbsetCardTop"><span className="cbsetName">Group Challenge — all present players</span>{badgeFor(group)}</div>
+        <p className="cbsetSub">Every present player receives this same challenge.</p>
+        {controls(group,groupApi())}
+      </div>}
 
-            <div className="cbsetField"><label>Allocation Mode</label>
-              <div className="cbsetChips">{CB_ALLOC_MODES.map(m=>
-                <button type="button" key={m} className={row.mode===m?'cbsetChip on':'cbsetChip'} onClick={()=>m==='Mirror'?mirrorRow(name):setMode(name,m)}>{m}</button>)}</div>
-            </div>
-
-            <div className="cbsetAssign">
-              {optional?<>
-                <div className="cbsetAssignBox"><small>Option A</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.optionA||'—')}</strong></div>
-                <div className="cbsetAssignBox"><small>Option B</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.optionB||'—')}</strong></div>
-              </>:<>
-                <div className="cbsetAssignBox"><small>Assigned</small><strong className={showHidden?'hidden':''}>{showHidden?'🙈 hidden':(row.assigned||'—')}</strong></div>
-                {row.optionB&&!showHidden&&<div className="cbsetAssignBox"><small>↔ Mirror alt</small><strong>{row.optionB}</strong></div>}
-              </>}
-            </div>
-
-            <div className="cbsetField"><label>Tap a code{optional?<span className="cbsetNext">next → Option {row.optNext}</span>:null}</label>
-              <div className="cbsetBank">{cbBankFor(row.type).map(code=>
-                <button type="button" key={code} className="cbsetCodeBtn" onClick={()=>tapCode(name,code)}>{code}</button>)}</div>
-            </div>
-
-            <div className="cbsetRowActions">
-              {!optional&&<button type="button" className="cbsetMiniBtn mirror" onClick={()=>mirrorRow(name)}>↔ Mirror</button>}
-              {!optional&&row.optionB&&<button type="button" className="cbsetMiniBtn" onClick={()=>useMirrorAlt(name)}>Use mirror</button>}
-              <button type="button" className="cbsetMiniBtn" onClick={()=>rerollOne(name)}>🎲 Re-roll</button>
-              {showHidden?<button type="button" className="cbsetMiniBtn" onClick={()=>revealOne(name)}>👁 Reveal</button>
-                        :<button type="button" className="cbsetMiniBtn" onClick={()=>reHideOne(name)}>🙈 Hide</button>}
-              <button type="button" className="cbsetMiniBtn" onClick={()=>clearRow(name)}>Clear</button>
-              {liveUrl&&<button type="button" className="cbsetMiniBtn" onClick={()=>copyLink(name)}>🔗 Copy link</button>}
-            </div>
+      {scope==='court'&&<>
+        <div className="cbsetCourtCtrl">
+          <label>Number of courts</label>
+          <div className="cbsetChips">{[1,2,3,4,5,6].map(n=><button type="button" key={n} className={courtCount===n?'cbsetChip on':'cbsetChip'} onClick={()=>setCourtCount(n)}>{n}</button>)}</div>
+        </div>
+        {presents.length>0&&<div className="cbsetAssignList">
+          <label className="cbsetField" style={{marginBottom:'2px'}}><span style={{color:'#7c92a6',fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.04em'}}>Assign players to courts</span></label>
+          {presents.map(n=><div className="row" key={n}><span className="nm">{n}</span>{Array.from({length:courtCount}).map((_,i)=><button type="button" key={i} className={(courtOf[n]||0)===i?'cbsetCourtBtn on':'cbsetCourtBtn'} onClick={()=>setPlayerCourt(n,i)}>Court {i+1}</button>)}</div>)}
+        </div>}
+        {courtChallenges.map((c,i)=>{
+          const courtPlayers=presents.filter(n=>(courtOf[n]||0)===i);
+          return <div className="cbsetCourtCard" key={i}>
+            <h3>Court {i+1}</h3>
+            <p className="cbsetCourtPlayers">{courtPlayers.length?courtPlayers.join(' · '):'No players assigned'}</p>
+            <div className="cbsetCardTop" style={{marginBottom:'2px'}}><span/>{badgeFor(c)}</div>
+            {controls(c,courtApi(i))}
           </div>;
         })}
+      </>}
     </div>
 
     {/* 3 — BLIND ALLOCATION TOOLS */}
     <div className="cbsetSection">
       <h2>3 · Blind Allocation Tools</h2>
-      <p className="cbsetSub">Set players to Random Blind above, then allocate. Each player gets a hidden challenge matching their type.</p>
+      <p className="cbsetSub">Set targets to Random Blind above, then allocate. Acts on the active scope ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
       <div className="cbsetTools">
         <button type="button" className="cbsetToolBtn good" onClick={allocBlindAll}>Allocate Blind (All)</button>
         <button type="button" className="cbsetToolBtn" onClick={rerollAll}>🎲 Re-roll All</button>
@@ -4420,10 +4447,10 @@ function CheckerboardSetup({setScreen}){
     {/* PLAYER VIEW */}
     <div className="cbsetSection">
       <h2>Player View</h2>
-      <p className="cbsetSub">Send the current allocation to the player display. Each player opens their own link and sees only their challenge.</p>
+      <p className="cbsetSub">Send the current allocation to the player display. Each player opens their own link and sees only their own challenge ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
       <div className="cbsetTools"><button type="button" className="cbsetToolBtn good" onClick={publishLive}>📡 Send To Player View</button></div>
       {liveUrl&&<>
-        <div className="cbsetLinkBox"><span>Coach view (all players)</span><span className="u">{liveUrl}</span><button type="button" className="cbsetMiniBtn" onClick={()=>{if(navigator.clipboard){navigator.clipboard.writeText(liveUrl);setStatus('Copied coach view link.');}}}>Copy</button></div>
+        <div className="cbsetLinkBox"><span>Coach view (all)</span><span className="u">{liveUrl}</span><button type="button" className="cbsetMiniBtn" onClick={()=>{if(navigator.clipboard){navigator.clipboard.writeText(liveUrl);setStatus('Copied coach view link.');}}}>Copy</button></div>
         {presents.map(n=><div className="cbsetLinkBox" key={n}><span>{n}</span><span className="u">{playerLink(n)}</span><button type="button" className="cbsetMiniBtn" onClick={()=>copyLink(n)}>Copy</button></div>)}
       </>}
     </div>
@@ -4455,26 +4482,34 @@ const CB_PD_CSS=`
 `;
 
 function cbPlayerFromUrl(){try{return new URLSearchParams(window.location.search||'').get('player')||'';}catch{return '';}}
+function cbCodeText(r){if(!r)return '—';return cbIsOptional(r.type)?((r.optionA||'—')+(r.optionB?' / '+r.optionB:'')):(r.assigned||'—');}
 
 function CheckerboardPlayerDisplay({payload}){
   const player=cbPlayerFromUrl();
+  const scope=payload?.scope||'player';
   const alloc=payload?.allocation||{};
+  const group=payload?.group||null;
+  const courts=payload?.courts||[];
   const [localReveal,setLocalReveal]=useState(false);
 
+  // Resolve the row + context for a given player under the active scope
+  function rowFor(name){
+    if(scope==='group')return {row:group,ctx:'Group challenge'};
+    if(scope==='court'){const idx=courts.findIndex(c=>(c.players||[]).includes(name));return {row:idx>=0?courts[idx].challenge:null,ctx:idx>=0?`Court ${idx+1}`:''};}
+    return {row:alloc[name],ctx:'Your challenge'};
+  }
+
   if(!player){
-    const names=Object.keys(alloc);
+    // coach / all view
     return <div className="cbPdPage"><style>{CB_PD_CSS}</style>
-      <div className="cbPdHead"><span>Checkerboard · Coach View</span><h1>All Players</h1></div>
-      {names.length===0?<p className="cbPdEmpty">No allocation published yet.</p>:
-        <div className="cbPdAllGrid">{names.map(n=>{
-          const r=alloc[n]||{};const hidden=r.hidden&&!r.revealed;
-          const code=cbIsOptional(r.type)?((r.optionA||'—')+(r.optionB?' / '+r.optionB:'')):(r.assigned||'—');
-          return <div className="cbPdAllCard" key={n}><strong>{n}</strong><div className="t">{r.type||'—'}</div><div className={hidden?'c h':'c'}>{hidden?'🙈 hidden':code}</div></div>;
-        })}</div>}
+      <div className="cbPdHead"><span>Checkerboard · Coach View</span><h1>{scope==='group'?'Group':scope==='court'?'Courts':'All Players'}</h1></div>
+      {scope==='group'?(()=>{const r=group||{};const hidden=r.hidden&&!r.revealed;return <div className="cbPdCard"><div className="cbPdLabel">All present players</div><div className={hidden?'cbPdCode':'cbPdCode'} style={hidden?{color:'#f0d79a'}:null}>{hidden?'🙈 hidden':cbCodeText(r)}</div><div className="cbPdLabel">{r.type||'—'}</div></div>;})()
+        :scope==='court'?<div className="cbPdAllGrid">{courts.length===0?<p className="cbPdEmpty">No allocation published yet.</p>:courts.map((c,i)=>{const r=c.challenge||{};const hidden=r.hidden&&!r.revealed;return <div className="cbPdAllCard" key={i}><strong>Court {i+1}</strong><div className="t">{(c.players||[]).join(' · ')||'—'}</div><div className={hidden?'c h':'c'}>{hidden?'🙈 hidden':cbCodeText(r)}</div></div>;})}</div>
+        :<div className="cbPdAllGrid">{Object.keys(alloc).length===0?<p className="cbPdEmpty">No allocation published yet.</p>:Object.keys(alloc).map(n=>{const r=alloc[n]||{};const hidden=r.hidden&&!r.revealed;return <div className="cbPdAllCard" key={n}><strong>{n}</strong><div className="t">{r.type||'—'}</div><div className={hidden?'c h':'c'}>{hidden?'🙈 hidden':cbCodeText(r)}</div></div>;})}</div>}
     </div>;
   }
 
-  const row=alloc[player];
+  const {row,ctx}=rowFor(player);
   if(!row){
     return <div className="cbPdPage"><style>{CB_PD_CSS}</style>
       <div className="cbPdHead"><span>Checkerboard</span><h1>{player}</h1></div>
@@ -4486,7 +4521,7 @@ function CheckerboardPlayerDisplay({payload}){
   const blindLocked=row.hidden&&!row.revealed&&!localReveal;
 
   return <div className="cbPdPage"><style>{CB_PD_CSS}</style>
-    <div className="cbPdHead"><span>Checkerboard · Your Challenge</span><h1>{player}</h1><div className="ty">{row.type}</div></div>
+    <div className="cbPdHead"><span>Checkerboard · {ctx}</span><h1>{player}</h1><div className="ty">{row.type}</div></div>
     <div className="cbPdCard">
       {blindLocked?<div className="cbPdHint">🙈 Hidden challenge — tap below to reveal</div>:
         optional?<div className="cbPdOpt">
