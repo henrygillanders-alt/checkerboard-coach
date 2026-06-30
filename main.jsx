@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v232 Checkerboard · sensible codes only';
+const APP_VERSION='v234 Checkerboard · ATL context note';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4172,15 +4172,16 @@ function cbRandomFrom(pool,avoid){
 // e.g. [5-4] + [8-1]  ↔  [6-3] + [7-2]
 const CB_MIRROR_MAP={'5':'6','6':'5','7':'8','8':'7','1':'2','2':'1','3':'4','4':'3'};
 function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=>CB_MIRROR_MAP[d]||d);}
-// Flags geometrically implausible targets: a front-short landing (floor 1=front-right,
-// 2=front-left) can only be reached from certain walls. e.g. [6-1] (front wall left →
-// front right) or [5-2] (front wall right → front left) are not sensible.
+// Front-floor landings (1=front-right, 2=front-left) are only sensible as a boast off
+// the opposite side wall: [8-1] and [7-2]. A high front-wall shot can't sit in the front
+// floor in OPEN play — but these patterns ARE viable in constraint games (ATL/BTL), so
+// this is a non-blocking warning only, and ATL_CB_ZONE_OPTIONS must keep them.
 function cbCodeIssue(code){
   const bad=[];const re=/\[(\d)-(\d)\]/g;let m;
   while((m=re.exec(code||''))){
     const w=m[1],f=m[2];
-    if(f==='1'&&!(w==='5'||w==='8'))bad.push(`[${w}-${f}]`);
-    if(f==='2'&&!(w==='6'||w==='7'))bad.push(`[${w}-${f}]`);
+    if(f==='1'&&w!=='8')bad.push(`[${w}-${f}]`);
+    if(f==='2'&&w!=='7')bad.push(`[${w}-${f}]`);
   }
   return bad;
 }
@@ -4272,7 +4273,7 @@ function CbCustomInput({optional,next,onAdd}){
       <button type="button" className="cbsetMiniBtn" onClick={add}>Add</button>
     </div>
     {issues.length>0
-      ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')} looks geometrically off — a front-short landing can't be reached from that wall. You can still add it if intended.</p>
+      ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')}: front-floor off the front wall isn't sensible in open play (only as a boast — [8-1]/[7-2]). It's valid in constraint games like ATL, so add it if that's the context.</p>
       : <p className="cbsetCustomHint">Type any code — single, pair or triple — and tap Add.</p>}
   </div>;
 }
