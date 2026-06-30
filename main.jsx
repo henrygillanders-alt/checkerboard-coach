@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v230 Checkerboard · custom code + tile contrast';
+const APP_VERSION='v232 Checkerboard · sensible codes only';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4137,10 +4137,9 @@ return <div className="checkerboardEngine">
 
 // ── v225 PER-PLAYER CHECKERBOARD ALLOCATION ──────────────────────────────────
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
-// Quick banks: only combinations achievable for level-3 players (canonical diagonals
-// + same-rail pairs). Anything beyond these can be entered via the Custom field.
-const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]','[5-4] + [6-3]','[8-1] + [7-2]'];
-const CB_TRIPLE_BANK=['[5-4] + [8-1] + [6-3]','[6-3] + [7-2] + [5-4]','[5-3] + [8-4] + [6-4]'];
+// Quick banks: only sensible, achievable combinations. Anything else via Custom.
+const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]'];
+const CB_TRIPLE_BANK=['[5-4] + [5-4] + [8-1]','[5-4] + [5-4] + [7-2]','[5-4] + [5-4] + [5-4]','[6-3] + [6-3] + [7-2]','[6-3] + [6-3] + [8-1]','[6-3] + [6-3] + [6-3]'];
 const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
 const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
@@ -4161,8 +4160,8 @@ function cbBankFor(type){
 function cbPoolFor(type){
   const kind=cbBaseKind(type);
   if(kind==='single')return CB_SINGLE_BANK;
-  if(kind==='pair')return CHECKERBOARD_PAIR_OPTIONS.filter(c=>c!=='Custom');
-  return CHECKERBOARD_TRIPLE_OPTIONS.slice();
+  if(kind==='pair')return CB_PAIR_BANK;
+  return CB_TRIPLE_BANK;
 }
 function cbRandomFrom(pool,avoid){
   const choices=pool.filter(c=>c!==avoid);
@@ -4173,6 +4172,18 @@ function cbRandomFrom(pool,avoid){
 // e.g. [5-4] + [8-1]  ↔  [6-3] + [7-2]
 const CB_MIRROR_MAP={'5':'6','6':'5','7':'8','8':'7','1':'2','2':'1','3':'4','4':'3'};
 function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=>CB_MIRROR_MAP[d]||d);}
+// Flags geometrically implausible targets: a front-short landing (floor 1=front-right,
+// 2=front-left) can only be reached from certain walls. e.g. [6-1] (front wall left →
+// front right) or [5-2] (front wall right → front left) are not sensible.
+function cbCodeIssue(code){
+  const bad=[];const re=/\[(\d)-(\d)\]/g;let m;
+  while((m=re.exec(code||''))){
+    const w=m[1],f=m[2];
+    if(f==='1'&&!(w==='5'||w==='8'))bad.push(`[${w}-${f}]`);
+    if(f==='2'&&!(w==='6'||w==='7'))bad.push(`[${w}-${f}]`);
+  }
+  return bad;
+}
 function cbBlankAlloc(){return {type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
 function cbReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function cbRollFor(type){
@@ -4234,6 +4245,7 @@ const CB_SET_CSS=`
 .cbsetCustomInput{flex:1;min-width:160px;background:#0a121b;border:1px solid #25394c;color:#eaf4fb;border-radius:8px;padding:8px 11px;font-size:.9rem;font-weight:600;letter-spacing:.02em;}
 .cbsetCustomInput::placeholder{color:#5f7588;}
 .cbsetCustomHint{color:#7c92a6;font-size:.72rem;margin:5px 0 0;}
+.cbsetCustomWarn{color:#f0c178;font-size:.74rem;margin:5px 0 0;}
 .cbsetLinkBox{background:#0a121b;border:1px solid #213040;border-radius:10px;padding:8px 10px;margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
 .cbsetLinkBox span{color:#cfe6f4;font-weight:700;font-size:.84rem;}
 .cbsetLinkBox .u{color:#6b8299;font-size:.72rem;word-break:break-all;flex:1;min-width:120px;}
@@ -4252,13 +4264,16 @@ const CB_SET_CSS=`
 
 function CbCustomInput({optional,next,onAdd}){
   const [v,setV]=useState('');
+  const issues=cbCodeIssue(v);
   function add(){const t=v.trim();if(t){onAdd(t);setV('');}}
   return <div className="cbsetField"><label>Custom code{optional?<span className="cbsetNext">next → Option {next}</span>:null}</label>
     <div className="cbsetCustomRow">
       <input className="cbsetCustomInput" value={v} placeholder="e.g. [5-4] + [8-1]" onChange={e=>setV(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add();}}/>
       <button type="button" className="cbsetMiniBtn" onClick={add}>Add</button>
     </div>
-    <p className="cbsetCustomHint">Type any code — single, pair or triple — and tap Add.</p>
+    {issues.length>0
+      ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')} looks geometrically off — a front-short landing can't be reached from that wall. You can still add it if intended.</p>
+      : <p className="cbsetCustomHint">Type any code — single, pair or triple — and tap Add.</p>}
   </div>;
 }
 
