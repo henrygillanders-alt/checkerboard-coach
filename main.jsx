@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v234 Checkerboard · ATL context note';
+const APP_VERSION='v235 Checkerboard · custom code auto-brackets';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4177,13 +4177,19 @@ function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=
 // floor in OPEN play — but these patterns ARE viable in constraint games (ATL/BTL), so
 // this is a non-blocking warning only, and ATL_CB_ZONE_OPTIONS must keep them.
 function cbCodeIssue(code){
-  const bad=[];const re=/\[(\d)-(\d)\]/g;let m;
+  const bad=[];const re=/(\d)\s*-\s*(\d)/g;let m;
   while((m=re.exec(code||''))){
     const w=m[1],f=m[2];
     if(f==='1'&&w!=='8')bad.push(`[${w}-${f}]`);
     if(f==='2'&&w!=='7')bad.push(`[${w}-${f}]`);
   }
   return bad;
+}
+// Brackets are implied — turn "5-4+6-2" or "5-4 8-1" into "[5-4] + [6-2]".
+function cbNormalizeCode(code){
+  const out=[];const re=/(\d)\s*-\s*(\d)/g;let m;
+  while((m=re.exec(code||'')))out.push(`[${m[1]}-${m[2]}]`);
+  return out.length?out.join(' + '):(code||'').trim();
 }
 function cbBlankAlloc(){return {type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
 function cbReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
@@ -4266,15 +4272,15 @@ const CB_SET_CSS=`
 function CbCustomInput({optional,next,onAdd}){
   const [v,setV]=useState('');
   const issues=cbCodeIssue(v);
-  function add(){const t=v.trim();if(t){onAdd(t);setV('');}}
+  function add(){const t=cbNormalizeCode(v);if(t){onAdd(t);setV('');}}
   return <div className="cbsetField"><label>Custom code{optional?<span className="cbsetNext">next → Option {next}</span>:null}</label>
     <div className="cbsetCustomRow">
-      <input className="cbsetCustomInput" value={v} placeholder="e.g. [5-4] + [8-1]" onChange={e=>setV(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add();}}/>
+      <input className="cbsetCustomInput" value={v} placeholder="e.g. 5-4 + 8-1  (brackets optional)" onChange={e=>setV(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add();}}/>
       <button type="button" className="cbsetMiniBtn" onClick={add}>Add</button>
     </div>
     {issues.length>0
       ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')}: front-floor off the front wall isn't sensible in open play (only as a boast — [8-1]/[7-2]). It's valid in constraint games like ATL, so add it if that's the context.</p>
-      : <p className="cbsetCustomHint">Type any code — single, pair or triple — and tap Add.</p>}
+      : <p className="cbsetCustomHint">Type any code — single, pair or triple. Just numbers, e.g. 5-4 6-3 8-1; brackets are added for you.</p>}
   </div>;
 }
 
