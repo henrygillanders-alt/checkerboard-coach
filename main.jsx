@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v236 Shot Bonus Rally';
+const APP_VERSION='v237 Shot Bonus full registry · Game Builder space/CB';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3567,13 +3567,11 @@ return <div className="homeGrid homeGridV99h52">
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('stabilise');
   return <div className="page gamesLibraryPage">
-    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete · Game Errors</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="universalFamilyTabs gamesLibraryTabs">
       <button className={tab==='explore'?'activeFamilyTab':''} onClick={()=>setTab('explore')}>🔍 Explore</button>
       <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
       <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
-      <button className={tab==='errors'?'activeFamilyTab':''} onClick={()=>setTab('errors')}>⚠️ Common Game Errors</button>
-      <button className={tab==='shotbonus'?'activeFamilyTab':''} onClick={()=>setTab('shotbonus')}>⭐ Shot Bonus</button>
     </div>
     {tab==='explore'&&<div>
       <div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks. The entry point for beginner coaching.</p></div>
@@ -3594,8 +3592,6 @@ function GamesLibrary({setScreen,setSession}){
     </div>}
     {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
     {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
-    {tab==='errors'&&<CommonGameErrors setSession={setSession}/>}
-    {tab==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
   </div>;
 }
 
@@ -3608,10 +3604,26 @@ function GamesLibrary({setScreen,setSession}){
 // gate so the bonus only counts when the shot is taken at a sound moment, with
 // optional behavioural-tag add-ons layered on top.
 const SHOT_BONUS_REGISTRY=[
-  {id:'straight-drop',label:'Straight Drop',zones:['1','2','3','4'],note:'Straight drop or drive played down the same-side wall, landing in the target floor zone.'},
-  {id:'central-front',label:'Central Corridor — Front',zones:[],note:'Shot played down the central corridor into the front of the court.'},
-  {id:'central-back',label:'Central Corridor — Back',zones:[],note:'Shot played down the central corridor into the back of the court.'},
-  {id:'rb-8-1',label:'Two-Wall Volley Boast (RB 8-1)',zones:['8','1'],cbCode:'[8-1]',note:'Two-wall volley boast, wall zone 8 into floor zone 1.'}
+  {id:'straight-drop',label:'Straight Drop',note:'Straight drop played tight down the same-side wall.'},
+  {id:'cross-drop',label:'Crosscourt Drop',note:'Crosscourt drop landing away from the opponent, beating the cut.'},
+  {id:'straight-kill',label:'Straight Kill',note:'Straight hard, low finish with no bounce for the opponent.'},
+  {id:'cross-kill',label:'Crosscourt Kill',note:'Crosscourt hard, low finish with no bounce for the opponent.'},
+  {id:'straight-volley-drive',label:'Straight Volley Drive',note:'Straight drive taken in the air, holding depth and pace.'},
+  {id:'cross-volley-drive',label:'Crosscourt Volley Drive',note:'Crosscourt drive taken in the air.'},
+  {id:'straight-volley-drop',label:'Straight Volley Drop',note:'Straight drop taken in the air, early and tight.'},
+  {id:'cross-volley-drop',label:'Crosscourt Volley Drop',note:'Crosscourt drop taken in the air.'},
+  {id:'lob-front',label:'Lob — From Front',note:'Lob played from the front of the court, high and deep.'},
+  {id:'lob-back',label:'Lob — From Back',note:'Lob played from the back of the court to regain the T.'},
+  {id:'working-boast',label:'Working Boast',note:'Boast that genuinely escapes trouble and forces the opponent to move.'},
+  {id:'trickle-boast',label:'Trickle Boast',note:'Soft, tight boast that dies in the front corner.'},
+  {id:'aussie-boast',label:'Aussie / Reverse Boast',note:'Reverse-angle boast played off the opposite side wall.'},
+  {id:'corkscrew-boast',label:'Corkscrew Boast',note:'Boast played from deep, wrapping around off the back and side wall into the front.'},
+  {id:'two-wall-volley-boast',label:'Two-Wall Volley Boast (RB 8-1)',cbCode:'[8-1]',note:'Two-wall volley boast, wall zone 8 into floor zone 1.'},
+  {id:'working-drive',label:'Working Drive',note:'Drive that re-establishes length and pins the opponent deep.'},
+  {id:'penetrating-drive',label:'Penetrating Drive',note:'Deep, tight drive that beats the volley and denies the T.'},
+  {id:'nick',label:'Nick',note:'Shot landing in the seam between floor and side wall — dies dead, no playable bounce.'},
+  {id:'central-front',label:'Central Corridor — Front',note:'Shot played down the central corridor into the front of the court.'},
+  {id:'central-back',label:'Central Corridor — Back',note:'Shot played down the central corridor into the back of the court.'}
 ];
 const SHOT_BONUS_ZONES=['1','2','3','4','5','6','7','8'];
 const SHOT_BONUS_POINT_CHOICES=['+1','+2','+3'];
@@ -3632,7 +3644,7 @@ function ShotBonusRally({setSession}){
   function toggleShot(id){setSelectedShots(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
   function toggleTag(tag){setTags(prev=>prev.includes(tag)?prev.filter(x=>x!==tag):[...prev,tag]);}
   function toggleZone(z){setZoneRestrict(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
-  function bumpTally(name,kind){setTally(prev=>({...prev,[name]:{rep:(prev[name]?.rep||0),finish:(prev[name]?.finish||0),[kind]:(prev[name]?.[kind]||0)+1}}));}
+  function bumpTally(name,kind){setTally(prev=>({...prev,[name]:{rep:(prev[name]?.rep||0),finish:(prev[name]?.finish||0),win:(prev[name]?.win||0),[kind]:(prev[name]?.[kind]||0)+1}}));}
   function resetTally(){setTally({});}
   const restricted=zoneRestrict.length>0&&zoneRestrict.length<SHOT_BONUS_ZONES.length;
   const chosen=SHOT_BONUS_REGISTRY.filter(s=>selectedShots.includes(s.id));
@@ -3645,7 +3657,7 @@ function ShotBonusRally({setSession}){
     return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}`;
   }
   function buildScoring(){
-    return `Rep tap: ${repPoints} every successful completion of the target shot, rally continues. Finish bonus: additional ${finishBonus} on top of the rep point if that same shot also ends the rally as the winner (stacks, not either/or). Tallied by an off-court waiting player, attributed to the current striker.`;
+    return `Win the rally = 1 point. Rep tap: ${repPoints} every successful completion of the target shot, rally continues. Finish bonus: additional ${finishBonus} on top of the rep point if that same shot also ends the rally as the winner (stacks, not either/or, and stacks on top of the rally-win point). Tallied by an off-court waiting player, attributed to the current striker.`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
@@ -3682,6 +3694,7 @@ function ShotBonusRally({setSession}){
 .sbrTallyRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;}
 .sbrTapBtn{flex:1;background:#0c2418;border:1px solid #34e07a;color:#bff0d0;border-radius:10px;padding:10px 8px;font-weight:800;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
 .sbrTapBtn.finish{background:#2a1a3a;border-color:#a06bd6;color:#dcc4f0;}
+.sbrTapBtn.win{background:#1a2a3a;border-color:#4a90d6;color:#bcd6f5;}
 .sbrTapCount{min-width:26px;text-align:center;color:#eaf4fb;font-weight:800;}
 .sbrBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}`;
   if(liveMode){
@@ -3690,13 +3703,14 @@ function ShotBonusRally({setSession}){
       <div className="sbrBack" role="button" tabIndex={0} onClick={()=>setLiveMode(false)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setLiveMode(false);}}>← Back to setup</div>
       <div className="sbrWrap">
         <h2 style={{margin:'0 0 4px',color:'#fff'}}>Live Tally</h2>
-        <p className="sbrHint">Rep tap every time the shot is completed in the rally. Finish tap only if that shot also won the rally — it stacks on top of the rep tap already earned.</p>
+        <p className="sbrHint">Rally Win taps score every rally winner, 1 point, regardless of shot. Rep tap every time the target shot is completed in the rally. Finish tap only if that shot also won the rally — it stacks on top of both the rep tap and the rally-win point.</p>
         {present.length===0&&<div className="placeholder">No present players found. Mark attendance to tally by name.</div>}
         <div className="sbrTallyGrid">
           {present.map(name=>{
-            const t=tally[name]||{rep:0,finish:0};
+            const t=tally[name]||{rep:0,finish:0,win:0};
             return <div className="sbrTallyCard" key={name}>
               <div className="sbrTallyName">{name}</div>
+              <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn win" onClick={()=>bumpTally(name,'win')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'win');}}>Rally Win +1</div><span className="sbrTapCount">{t.win}</span></div>
               <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn" onClick={()=>bumpTally(name,'rep')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'rep');}}>Rep +1</div><span className="sbrTapCount">{t.rep}</span></div>
               <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn finish" onClick={()=>bumpTally(name,'finish')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'finish');}}>Finish +1</div><span className="sbrTapCount">{t.finish}</span></div>
             </div>;
@@ -8408,15 +8422,18 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
     return {...base,
       modifier: base.modifier||{...emptyModifierConfig(),constraints:(base.layers||[])},
       appliesTo: base.appliesTo||'Everyone',
-      namedPlayer: base.namedPlayer||''};
+      namedPlayer: base.namedPlayer||'',
+      spaceZones: Array.isArray(base.spaceZones)&&base.spaceZones.length?base.spaceZones:[...SHOT_BONUS_ZONES]};
   });
   const [status,setStatus]=useState('');
   const presentPlayers=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const COURT_AREAS=['Full court','3/4 Court','Egyptian 3/4','Front 3/4','Back 3/4','Half court'];
   function update(key,value){setDraft(prev=>({...prev,[key]:value}));}
+  function toggleSpaceZone(z){setDraft(prev=>({...prev,spaceZones:prev.spaceZones.includes(z)?prev.spaceZones.filter(x=>x!==z):[...prev.spaceZones,z]}));}
   function onModifierChange(next){setDraft(prev=>({...prev,modifier:next,layers:next.constraints||[]}));}
   function doSaveCard(){if(onSaveCard){onSaveCard(normaliseGameCard(draft));setStatus('Saved as a card in the library.');}}
   function doAddToSession(){if(onAddToSession){onAddToSession(normaliseGameCard(draft));setStatus('Added to the current session.');}}
+  const spaceRestricted=draft.spaceZones.length>0&&draft.spaceZones.length<SHOT_BONUS_ZONES.length;
   return <div className="universalEditor customGameBuilder">
     <h2>{draft.id===game.id?'Edit Game':'New Game'}</h2>
 
@@ -8426,10 +8443,16 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
       <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
       <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
       <label>RLD level<select value={draft.rld===''||draft.rld===undefined?4:Number(draft.rld)} onChange={e=>update('rld',Number(e.target.value))}>{RLD_LEVELS.map(r=><option key={r.level} value={r.level}>{r.short} — {r.label}</option>)}</select></label>
+      <label>Checkerboard Code<select value={draft.cbCode||'None'} onChange={e=>update('cbCode',e.target.value)}>{CB_CODES.map(code=><option key={code} value={code}>{code}</option>)}</select></label>
     </div>
     <div className="courtAreaBlock">
       <strong>Court Area</strong>
       <div className="meChipRow">{COURT_AREAS.map(c=><button type="button" key={c} className={(draft.courtFormat||'Full court')===c?'meChip meChipOn':'meChip'} onClick={()=>update('courtFormat',c)}>{c}</button>)}</div>
+    </div>
+    <div className="courtAreaBlock">
+      <strong>Game Space — restrict to Checkerboard zones</strong>
+      <div className="meChipRow">{SHOT_BONUS_ZONES.map(z=><button type="button" key={z} className={draft.spaceZones.includes(z)?'meChip meChipOn':'meChip'} onClick={()=>toggleSpaceZone(z)}>{z}</button>)}</div>
+      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.82rem'}}>{spaceRestricted?`Ball must land in zone${draft.spaceZones.length>1?'s':''} ${draft.spaceZones.join('/')} — outside is out and doesn't count. Rule-based, no court markings needed.`:'All zones active — no space restriction. Deselect zones to manipulate how often an affordance appears.'}</p>
     </div>
 
     <div className="editorGrid">
@@ -9804,6 +9827,8 @@ function Games({setSession,setScreen}){
     {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
     {id:'tinwar',label:'Tin War',category:'Tin War'},
     {id:'rotations',label:'Rotations',category:'Rotations'},
+    {id:'errors',label:'Common Game Errors',category:'Common Game Errors'},
+    {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally'},
     {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -9897,10 +9922,12 @@ function Games({setSession,setScreen}){
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
     {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — FINAL 6 GAME SUITE:</strong> Court rotations, not timed rotations. Players carry Tin state. Climb starts FULL WALL and each win removes more bottom wall. Earn the Drop uses coach-selected winning-shot protocols.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
+    {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
+    {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
