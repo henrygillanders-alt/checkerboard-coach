@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v237 Shot Bonus full registry · Game Builder space/CB';
+const APP_VERSION='v238 Fast Capture · No build-up skip';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16027,7 +16027,7 @@ function LiveMatchCoaching({setScreen}){
   function Progress(){return <div className="lmfProgress"><span className={current.winner?'done':''}>Winner</span><span className={current.pressureZone?'done':''}>Start</span><span className={current.cause?'done':''}>Cause</span><span className={current.outcome?'done':''}>End</span></div>;}
   function CurrentStrip(){const loser=current.winner?loserFromWinner(state,current.winner):'';return <div className="lmfEventPath"><span>{current.winner?'Winner: '+current.winner:'Winner?'}</span><span>{loser?'Loser problem: '+loser:'Loser?'}</span><span>{current.pressureZone||'Start?'}</span><span>{current.cause||'Cause?'}</span><span>{current.outcome||'End?'}</span></div>;}
   function QuestionPanel(){if(captureStep==='winner')return <div className="lmfQuestionCard"><div className="lmfStep"><span>1</span><h2>Who won the point?</h2></div><div className="lmfButtons two big">{playerLabels.map(p=><Btn key={p} onClick={()=>setCurrent('winner',p)}>{p}</Btn>)}</div></div>;
-    if(captureStep==='zone')return <div className="lmfQuestionCard"><div className="lmfStep"><span>2</span><h2>Where did the loser’s problem start?</h2></div><p className="lmfMuted">Tap one simple area: 1, 2, 3, 4, central corridor or T-zone.</p><SimplePressureMap/></div>;
+    if(captureStep==='zone')return <div className="lmfQuestionCard"><div className="lmfStep"><span>2</span><h2>Where did the loser’s problem start?</h2></div><p className="lmfMuted">Tap one simple area: 1, 2, 3, 4, central corridor or T-zone — or No build-up for a clean error.</p><SimplePressureMap/><div style={{marginTop:'10px',display:'flex',justifyContent:'center'}}><Btn onClick={()=>setCurrent('pressureZone','No build-up')}>No build-up — skip</Btn></div></div>;
     if(captureStep==='cause')return <div className="lmfQuestionCard"><div className="lmfStep"><span>3</span><h2>What caused the problem?</h2></div><p className="lmfMuted">One primary tag only. These will be refined through road testing.</p><div className="lmfButtons tags v223">{TAGS.map(t=><Btn key={t} onClick={()=>setCurrent('cause',t)}>{t}</Btn>)}</div></div>;
     if(captureStep==='outcome')return <div className="lmfQuestionCard"><div className="lmfStep"><span>4</span><h2>How did the point end?</h2></div><div className="lmfButtons outcomes v224 big"><Btn onClick={()=>setCurrent('outcome','Forced Error')}>Forced Error</Btn><Btn onClick={()=>setCurrent('outcome','Unforced Error')}>Unforced Error</Btn><Btn onClick={()=>setCurrent('outcome','Tin')}>Tin</Btn><Btn onClick={()=>setCurrent('outcome','Out')}>Out</Btn><Btn wide onClick={()=>setCurrent('outcome','Stroke')}>Stroke</Btn><Btn cls="win" onClick={()=>setCurrent('outcome','Winner short')}>Winner short</Btn><Btn cls="win" onClick={()=>setCurrent('outcome','Winner long')}>Winner long</Btn></div></div>;
     return <div className="lmfQuestionCard"><div className="lmfStep"><span>✓</span><h2>Save this rally event?</h2></div><CurrentStrip/><div className="lmfActions"><Btn wide onClick={saveEvent}>Save event</Btn><Btn wide onClick={backStep}>Back one step</Btn></div></div>;}
