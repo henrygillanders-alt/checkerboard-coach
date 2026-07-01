@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v235 Checkerboard · custom code auto-brackets';
+const APP_VERSION='v236 Shot Bonus Rally';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3573,6 +3573,7 @@ function GamesLibrary({setScreen,setSession}){
       <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
       <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
       <button className={tab==='errors'?'activeFamilyTab':''} onClick={()=>setTab('errors')}>⚠️ Common Game Errors</button>
+      <button className={tab==='shotbonus'?'activeFamilyTab':''} onClick={()=>setTab('shotbonus')}>⭐ Shot Bonus</button>
     </div>
     {tab==='explore'&&<div>
       <div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks. The entry point for beginner coaching.</p></div>
@@ -3594,9 +3595,158 @@ function GamesLibrary({setScreen,setSession}){
     {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
     {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
     {tab==='errors'&&<CommonGameErrors setSession={setSession}/>}
+    {tab==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
   </div>;
 }
 
+
+// ── SHOT BONUS RALLY ─────────────────────────────────────────────────────────
+// Standalone games-library module (kept OUT of the Universal Modifier Engine).
+// 2-tier shot training: Tier 1 rewards repetition of the target shot wherever it
+// occurs in a live opposed rally (exploring/stabilising the shot under varying
+// conditions — not fixed-pattern drilling); Tier 2 adds a tactical-appropriateness
+// gate so the bonus only counts when the shot is taken at a sound moment, with
+// optional behavioural-tag add-ons layered on top.
+const SHOT_BONUS_REGISTRY=[
+  {id:'straight-drop',label:'Straight Drop',zones:['1','2','3','4'],note:'Straight drop or drive played down the same-side wall, landing in the target floor zone.'},
+  {id:'central-front',label:'Central Corridor — Front',zones:[],note:'Shot played down the central corridor into the front of the court.'},
+  {id:'central-back',label:'Central Corridor — Back',zones:[],note:'Shot played down the central corridor into the back of the court.'},
+  {id:'rb-8-1',label:'Two-Wall Volley Boast (RB 8-1)',zones:['8','1'],cbCode:'[8-1]',note:'Two-wall volley boast, wall zone 8 into floor zone 1.'}
+];
+const SHOT_BONUS_ZONES=['1','2','3','4','5','6','7','8'];
+const SHOT_BONUS_POINT_CHOICES=['+1','+2','+3'];
+const SHOT_BONUS_TAGS=['T-Zone Recovery','Volley Before Short Line'];
+function ShotBonusRally({setSession}){
+  const [selectedShots,setSelectedShots]=useState(['straight-drop']);
+  const [tier,setTier]=useState('1');
+  const [tags,setTags]=useState([]);
+  const [customTag,setCustomTag]=useState('');
+  const [zoneRestrict,setZoneRestrict]=useState([...SHOT_BONUS_ZONES]);
+  const [repPoints,setRepPoints]=useState('+1');
+  const [finishBonus,setFinishBonus]=useState('+1');
+  const [added,setAdded]=useState('');
+  const [liveMode,setLiveMode]=useState(false);
+  const [tally,setTally]=useState({});
+  const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
+  useBackIntercept(liveMode,()=>{setLiveMode(false);return true;});
+  function toggleShot(id){setSelectedShots(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
+  function toggleTag(tag){setTags(prev=>prev.includes(tag)?prev.filter(x=>x!==tag):[...prev,tag]);}
+  function toggleZone(z){setZoneRestrict(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
+  function bumpTally(name,kind){setTally(prev=>({...prev,[name]:{rep:(prev[name]?.rep||0),finish:(prev[name]?.finish||0),[kind]:(prev[name]?.[kind]||0)+1}}));}
+  function resetTally(){setTally({});}
+  const restricted=zoneRestrict.length>0&&zoneRestrict.length<SHOT_BONUS_ZONES.length;
+  const chosen=SHOT_BONUS_REGISTRY.filter(s=>selectedShots.includes(s.id));
+  function buildTask(){
+    const shotList=chosen.map(s=>s.label).join(' · ')||'a target shot';
+    const t1='Normal rally, opposed play. Every time the selected shot is successfully completed from live rally play it scores a rep point — the shot counts wherever/however it occurs, not from self-feed.';
+    const t2='As Tier 1, but the rep point only counts when the shot is also taken at a tactically sound moment (opponent out of position, genuine opportunity created) rather than just mechanically produced.';
+    const tagNote=tier==='2'&&(tags.length||customTag.trim())?` Behavioural add-on in play: ${[...tags,customTag.trim()].filter(Boolean).join(', ')}.`:'';
+    const zoneNote=restricted?` Space manipulation: ball must land in Checkerboard zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside these zones the ball is out and does not count.`:'';
+    return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}`;
+  }
+  function buildScoring(){
+    return `Rep tap: ${repPoints} every successful completion of the target shot, rally continues. Finish bonus: additional ${finishBonus} on top of the rep point if that same shot also ends the rally as the winner (stacks, not either/or). Tallied by an off-court waiting player, attributed to the current striker.`;
+  }
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const layers=tier==='2'?['Tactical: Shot Selection',...tags]:['Shot Repetition'];
+    const card={id:Date.now()+Math.random(),title:`Shot Bonus Rally — ${chosen.map(s=>s.label).join(' + ')||'Shot'}`,category:'Shot Bonus Rally',format:'Rally + Live Tally',duration:9,task:buildTask(),rationale:'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition, with an optional tactical-appropriateness gate.',coach:'Let the rep tap run freely in Tier 1. Move to Tier 2 once the shot is reliably produced, so the reward tightens to tactically sound moments.',playerFocus:tier==='1'?'Get the shot in as often as the rally allows.':'Only claim the tap when the moment is actually on.',scoring:buildScoring(),layers,rld:tier==='2'?4:3};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const STYLE=`
+.sbrWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #34a0e0;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.sbrSection{margin:14px 0;}
+.sbrLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.sbrChips{display:flex;flex-wrap:wrap;gap:8px;}
+.sbrChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.sbrChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.sbrTierRow{display:flex;gap:8px;}
+.sbrTierBtn{flex:1;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
+.sbrTierBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
+.sbrTierBtn.on{border-color:#34e07a;background:#0c2418;}
+.sbrZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;}
+.sbrZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 0;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.sbrZoneBtn.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.sbrHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}
+.sbrCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:9px 11px;color:#dbe6f2;font-size:0.88rem;margin-top:8px;}
+.sbrBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.sbrBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.sbrBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.sbrAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.sbrAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.sbrLiveBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.sbrTallyGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px;}
+.sbrTallyCard{background:#0d1722;border:1px solid #2a3a4f;border-radius:12px;padding:12px 14px;}
+.sbrTallyName{color:#eaf4fb;font-weight:800;margin-bottom:8px;font-size:1rem;}
+.sbrTallyRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;}
+.sbrTapBtn{flex:1;background:#0c2418;border:1px solid #34e07a;color:#bff0d0;border-radius:10px;padding:10px 8px;font-weight:800;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
+.sbrTapBtn.finish{background:#2a1a3a;border-color:#a06bd6;color:#dcc4f0;}
+.sbrTapCount{min-width:26px;text-align:center;color:#eaf4fb;font-weight:800;}
+.sbrBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}`;
+  if(liveMode){
+    return <div>
+      <style>{STYLE}</style>
+      <div className="sbrBack" role="button" tabIndex={0} onClick={()=>setLiveMode(false)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setLiveMode(false);}}>← Back to setup</div>
+      <div className="sbrWrap">
+        <h2 style={{margin:'0 0 4px',color:'#fff'}}>Live Tally</h2>
+        <p className="sbrHint">Rep tap every time the shot is completed in the rally. Finish tap only if that shot also won the rally — it stacks on top of the rep tap already earned.</p>
+        {present.length===0&&<div className="placeholder">No present players found. Mark attendance to tally by name.</div>}
+        <div className="sbrTallyGrid">
+          {present.map(name=>{
+            const t=tally[name]||{rep:0,finish:0};
+            return <div className="sbrTallyCard" key={name}>
+              <div className="sbrTallyName">{name}</div>
+              <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn" onClick={()=>bumpTally(name,'rep')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'rep');}}>Rep +1</div><span className="sbrTapCount">{t.rep}</span></div>
+              <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn finish" onClick={()=>bumpTally(name,'finish')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'finish');}}>Finish +1</div><span className="sbrTapCount">{t.finish}</span></div>
+            </div>;
+          })}
+        </div>
+        <div className="sbrAddRow"><button className="secondaryBtn" onClick={resetTally}>Reset Tally</button></div>
+      </div>
+    </div>;
+  }
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>⭐ Shot Bonus Rally</h2><p>Normal, opposed rally play with a live bonus tally on a chosen shot — repetition of the shot in a representative setting rather than many reps from self-feed. Tier 1 rewards every completion; Tier 2 gates the bonus to tactically sound moments.</p></div>
+    <div className="sbrWrap">
+      <div className="sbrSection">
+        <div className="sbrLabel">1. Target shot(s)</div>
+        <div className="sbrChips">{SHOT_BONUS_REGISTRY.map(s=><div key={s.id} role="button" tabIndex={0} className={selectedShots.includes(s.id)?'sbrChip on':'sbrChip'} onClick={()=>toggleShot(s.id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleShot(s.id);}}>{s.label}</div>)}</div>
+        {chosen.length>0&&<p className="sbrHint">{chosen.map(s=>s.note).join(' ')}</p>}
+      </div>
+      <div className="sbrSection">
+        <div className="sbrLabel">2. Tier</div>
+        <div className="sbrTierRow">
+          <div role="button" tabIndex={0} className={tier==='1'?'sbrTierBtn on':'sbrTierBtn'} onClick={()=>setTier('1')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('1');}}>Tier 1 — Repetition<span>Shot counts wherever/however it occurs</span></div>
+          <div role="button" tabIndex={0} className={tier==='2'?'sbrTierBtn on':'sbrTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>Tier 2 — Tactical<span>Bonus only when tactically sound</span></div>
+        </div>
+        {tier==='2'&&<div style={{marginTop:10}}>
+          <div className="sbrLabel">Optional behavioural add-ons</div>
+          <div className="sbrChips">{SHOT_BONUS_TAGS.map(tag=><div key={tag} role="button" tabIndex={0} className={tags.includes(tag)?'sbrChip on':'sbrChip'} onClick={()=>toggleTag(tag)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleTag(tag);}}>{tag}</div>)}</div>
+          <input className="sbrCustom" placeholder="Custom behavioural tag (optional)" value={customTag} onChange={ev=>setCustomTag(ev.target.value)}/>
+        </div>}
+      </div>
+      <div className="sbrSection">
+        <div className="sbrLabel">3. Space manipulation — restrict to Checkerboard zones</div>
+        <div className="sbrZoneGrid">{SHOT_BONUS_ZONES.map(z=><div key={z} role="button" tabIndex={0} className={zoneRestrict.includes(z)?'sbrZoneBtn on':'sbrZoneBtn'} onClick={()=>toggleZone(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleZone(z);}}>{z}</div>)}</div>
+        <p className="sbrHint">{restricted?`Ball must land in zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside is out and doesn't count. Rule-based, no court markings needed.`:'All zones active — no space restriction. Deselect zones to manipulate how often the shot\u2019s affordance appears.'}</p>
+      </div>
+      <div className="sbrSection">
+        <div className="sbrLabel">4. Points</div>
+        <div className="sbrChips">{SHOT_BONUS_POINT_CHOICES.map(p=><div key={'rep'+p} role="button" tabIndex={0} className={repPoints===p?'sbrChip on':'sbrChip'} onClick={()=>setRepPoints(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setRepPoints(p);}}>Rep {p}</div>)}</div>
+        <div className="sbrChips" style={{marginTop:8}}>{SHOT_BONUS_POINT_CHOICES.map(p=><div key={'fin'+p} role="button" tabIndex={0} className={finishBonus===p?'sbrChip on':'sbrChip'} onClick={()=>setFinishBonus(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setFinishBonus(p);}}>Finish bonus {p}</div>)}</div>
+      </div>
+      <div className="sbrBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="sbrBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+      <div className="sbrAddRow">
+        <button className="primaryBtn" onClick={addToSession} disabled={selectedShots.length===0}>Add To Session</button>
+        <button className="sbrLiveBtn" role="button" tabIndex={0} onClick={()=>setLiveMode(true)}>Start Live Tally</button>
+        {added&&<span className="sbrAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
 
 function CommonGameErrors({setSession}){
   const errors=[
@@ -14799,6 +14949,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal',screen:'games',classId:'doubleBounce'},
   {label:'Tin War',sub:'Games Library',kw:'tin war height ladder climb',screen:'games',classId:'tinwar'},
   {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
+  {label:'Shot Bonus Rally',sub:'Games Library · Standalone',kw:'shot bonus rally repetition finish tactical live tally zone restriction affordance straight drop central corridor volley boast',screen:'gamesLibrary'},
 ];
 
 function buildSearchIndex(){
