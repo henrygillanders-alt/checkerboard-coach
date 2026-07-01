@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v240 Dual Court Trace';
+const APP_VERSION='v242 Court Trace · heat map';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16036,7 +16036,7 @@ function LiveMatchCoaching({setScreen}){
   if(state.mode==='map')return <DualCourtTraceModule onBack={()=>setMode('menu')} setScreen={setScreen} seedNames={state.playerNames}/>;
   if(state.mode==='report')return <div className="lmfPage"><style>{lmfCss}</style><div className="lmfShell"><div className="lmfTop"><div><h1>Between Game Report</h1><p>{lens==='corner'?'Corner view — protect your player, exploit the opponent.':'Group view — develop both players.'}</p></div><div className="lmfTopBtns"><Btn onClick={()=>setMode('fast')}>Fast Capture</Btn><Btn onClick={()=>setMode('menu')}>Menu</Btn></div></div><div className="lmfCard lmfLensBar"><div className="lmfLensRow"><span className="lmfMiniLabel">View</span><div className="lmfToggleSet"><Btn active={lens==='corner'} onClick={()=>setMeta('reportLens','corner')}>Corner</Btn><Btn active={lens==='group'} onClick={()=>setMeta('reportLens','group')}>Group</Btn></div></div>{lens==='corner'&&<div className="lmfLensRow"><span className="lmfMiniLabel">My player</span><div className="lmfToggleSet"><Btn active={myKey==='playerA'} onClick={()=>setMeta('myPlayer','playerA')}>{nameA}</Btn><Btn active={myKey==='playerB'} onClick={()=>setMeta('myPlayer','playerB')}>{nameB}</Btn></div></div>}</div>{!state.events.length&&<div className="lmfCard"><p className="lmfMuted">No RallyEvents captured yet. Use Fast Capture to record points, then return here between games.</p></div>}{state.events.length>0&&lens==='corner'&&<div className="lmfPlayerGrid"><div className="lmfCard lmfPlayerCard protect"><div className="lmfPlayerHead"><h2>Protect · {myReport.name}</h2><span className="lmfPlayerTotal">{myReport.total} leak {myReport.total===1?'event':'events'}</span></div><div className="lmfMiniLabel">Shore up first</div>{myReport.total===0?<div className="lmfAdvice second">No leak events for your player yet.</div>:myReport.locked&&myReport.adv?<><div className="lmfAdvice second"><small>{myReport.domCause} · {myReport.domN}×</small>{myReport.adv.primary}</div><div className="lmfAdvice second"><small>Backup</small>{myReport.adv.secondary}</div>{myReport.adv.prescribe&&myReport.adv.prescribe.length>0&&<><div className="lmfMiniLabel">Constraint Activities to shore up</div><div className="lmfPills">{myReport.adv.prescribe.map(x=><span key={x}>{x}</span>)}</div></>}</>:<div className="lmfAdvice second"><small>{myReport.domCause?myReport.domCause+' · '+myReport.domN+'×':'Building pattern'}</small>Not stable yet — needs the same leak 3+ times.{myReport.adv?' Likely: '+myReport.adv.primary:''}</div>}<div className="lmfMiniLabel">Recurring leaks</div>{myReport.causes.length?myReport.causes.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">Where they're pressured</div>{myReport.zones.length?myReport.zones.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">How they lose points</div><div className="lmfDist">{OUTCOMES.map(o=>{const v=myReport.outcomeCounts[o]||0;return <div className="lmfDistRow" key={o}><span className="lmfDistLab">{o}</span><span className="lmfDistBar"><span className="lmfDistFill" style={{width:(v/myReport.maxOut*100)+'%',opacity:v?1:.25}}></span></span><b className="lmfDistVal">{v}</b></div>;})}</div><div className="lmfMiniLabel">Recent (last 10)</div><div className="lmfLog">{myReport.recentLog.length?myReport.recentLog.map(e=><div className="lmfLogItem" key={e.id}><b>R{e.rallyNo} · G{e.gameNo} · {e.score}</b><br/>{e.pressureZone||'No zone'} · {e.cause}<br/><span>{e.pointOutcome}{e.winner?' · won by '+e.winner:''}</span></div>):<p className="lmfMuted">No events yet.</p>}</div></div><div className="lmfCard lmfPlayerCard exploit"><div className="lmfPlayerHead"><h2>Exploit · {oppReport.name}</h2><span className="lmfPlayerTotal">{oppReport.total} weakness {oppReport.total===1?'event':'events'}</span></div><div className="lmfMiniLabel">Attack plan</div>{oppReport.total===0?<div className="lmfAdvice second">No weakness events for the opponent yet.</div>:oppReport.locked&&oppExploit?<><div className="lmfAdvice primary"><small>{oppReport.domCause} · {oppReport.domN}×</small>{oppExploit.primary}</div><div className="lmfAdvice primary"><small>Backup</small>{oppExploit.secondary}</div>{oppExploit.exploit&&oppExploit.exploit.length>0&&<><div className="lmfMiniLabel">Constraint Activities to rehearse</div><div className="lmfPills">{oppExploit.exploit.map(x=><span key={x}>{x}</span>)}</div></>}</>:<div className="lmfAdvice second"><small>{oppReport.domCause?oppReport.domCause+' · '+oppReport.domN+'×':'Building pattern'}</small>Not stable yet — needs the same weakness 3+ times.{oppExploit?' Likely: '+oppExploit.primary:''}</div>}<div className="lmfMiniLabel">Their weaknesses</div>{oppReport.causes.length?oppReport.causes.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">Where they crack</div>{oppReport.zones.length?oppReport.zones.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">How they lose points</div><div className="lmfDist">{OUTCOMES.map(o=>{const v=oppReport.outcomeCounts[o]||0;return <div className="lmfDistRow" key={o}><span className="lmfDistLab">{o}</span><span className="lmfDistBar"><span className="lmfDistFill" style={{width:(v/oppReport.maxOut*100)+'%',opacity:v?1:.25}}></span></span><b className="lmfDistVal">{v}</b></div>;})}</div><div className="lmfMiniLabel">Recent (last 10)</div><div className="lmfLog">{oppReport.recentLog.length?oppReport.recentLog.map(e=><div className="lmfLogItem" key={e.id}><b>R{e.rallyNo} · G{e.gameNo} · {e.score}</b><br/>{e.pressureZone||'No zone'} · {e.cause}<br/><span>{e.pointOutcome}{e.winner?' · won by '+e.winner:''}</span></div>):<p className="lmfMuted">No events yet.</p>}</div></div></div>}{state.events.length>0&&lens==='group'&&<div className="lmfPlayerGrid">{playerReports.map(pr=>{return <div className="lmfCard lmfPlayerCard" key={pr.name}><div className="lmfPlayerHead"><h2>{pr.name}</h2><span className="lmfPlayerTotal">{pr.total} problem {pr.total===1?'event':'events'}</span></div><div className="lmfMiniLabel">Primary instruction</div>{pr.total===0?<div className="lmfAdvice second">No problem events for this player yet.</div>:pr.locked&&pr.adv?<><div className="lmfAdvice primary"><small>{pr.domCause} · {pr.domN}×</small>{pr.adv.primary}</div><div className="lmfAdvice second"><small>Secondary</small>{pr.adv.secondary}</div>{pr.adv.prescribe&&pr.adv.prescribe.length>0&&<><div className="lmfMiniLabel">Constraint Activities</div><div className="lmfPills">{pr.adv.prescribe.map(x=><span key={x}>{x}</span>)}</div></>}</>:<div className="lmfAdvice second"><small>{pr.domCause?pr.domCause+' · '+pr.domN+'×':'Building pattern'}</small>Pattern not stable yet — needs the same cause 3+ times before advice locks.{pr.adv?' Likely line: '+pr.adv.primary:''}</div>}<div className="lmfMiniLabel">Top recurring causes</div>{pr.causes.length?pr.causes.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">Pressure-origin locations</div>{pr.zones.length?pr.zones.map(([k,v])=><div className="lmfRow" key={k}><span>{k}</span><b>{v}</b></div>):<p className="lmfMuted">None yet.</p>}<div className="lmfMiniLabel">Point-ending distribution</div><div className="lmfDist">{OUTCOMES.map(o=>{const v=pr.outcomeCounts[o]||0;return <div className="lmfDistRow" key={o}><span className="lmfDistLab">{o}</span><span className="lmfDistBar"><span className="lmfDistFill" style={{width:(v/pr.maxOut*100)+'%',opacity:v?1:.25}}></span></span><b className="lmfDistVal">{v}</b></div>;})}</div><div className="lmfMiniLabel">Recent events (last 10)</div><div className="lmfLog">{pr.recentLog.length?pr.recentLog.map(e=><div className="lmfLogItem" key={e.id}><b>R{e.rallyNo} · G{e.gameNo} · {e.score}</b><br/>{e.pressureZone||'No zone'} · {e.cause}<br/><span>{e.pointOutcome}{e.winner?' · won by '+e.winner:''}</span></div>):<p className="lmfMuted">No events yet.</p>}</div></div>;})}</div>}</div></div>;
   if(state.mode==='fast')return <div className="lmfPage"><style>{lmfCss}</style><div className="lmfShell"><div className="lmfTop"><div><h1>Fast Capture</h1><p>One question at a time. Tap once and the next panel appears.</p></div><div className="lmfTopBtns"><Btn onClick={()=>setMode('menu')}>Menu</Btn><Btn onClick={backStep}>Undo step</Btn></div></div><div className="lmfStatus"><div><b>Game {state.gameNo}</b><span>Rally {state.rallyNo}</span></div><div className="lmfScore"><input value={state.scoreA} onChange={e=>setMeta('scoreA',e.target.value)} placeholder="A" inputMode="numeric"/><span>–</span><input value={state.scoreB} onChange={e=>setMeta('scoreB',e.target.value)} placeholder="B" inputMode="numeric"/></div></div><div className="lmfNameBar compact"><label>Player A<input value={state.playerNames?.playerA||''} onChange={e=>setPlayerName('playerA',e.target.value)} placeholder="Player A"/></label><label>Player B<input value={state.playerNames?.playerB||''} onChange={e=>setPlayerName('playerB',e.target.value)} placeholder="Player B"/></label></div><Progress/><div className="lmfCaptureGrid v223"><div><QuestionPanel/></div><div className="lmfCard"><h2>Live advice</h2><div className="lmfAdvice primary"><small>Primary line</small>{primaryAdvice}</div><div className="lmfAdvice second"><small>Secondary line</small>{secondaryAdvice}</div><p className="lmfMuted">Advice uses the current tag immediately, then locks to the dominant pattern after 3 repeats.</p><h2>Current event</h2><CurrentStrip/><div className="lmfActions"><Btn wide onClick={backStep}>Undo step</Btn><Btn wide onClick={clearCurrent}>Clear current</Btn></div><h2>Recent log</h2><div className="lmfLog">{state.events.slice().reverse().slice(0,8).map(e=><div className="lmfLogItem" key={e.id}><b>R{e.rallyNo} · G{e.gameNo} · {e.score}</b><br/>Winner: {e.winner||'—'} · Loser: {e.player}<br/>{e.pressureZone} · {e.cause}<br/><span>{e.pointOutcome}</span></div>)}{!state.events.length&&<p className="lmfMuted">No RallyEvents saved yet.</p>}</div></div></div></div></div>;
-  return <div className="lmfPage"><style>{lmfCss}</style><div className="lmfShell narrow"><div className="lmfTop"><div><h1>Live Match Coaching</h1><p>v224 Fast Capture: winner first + simple start map + cleaner ending.</p></div><Btn onClick={()=>setScreen('home')}>Home</Btn></div><div className="lmfMenu"><Btn wide onClick={()=>setMode('fast')}><strong>Fast Capture (Live)</strong><em>One question at a time: winner → loser start → cause → ending.</em></Btn><Btn wide onClick={()=>setMode('deep')}><strong>Deep Capture (Post-match)</strong><em>Parked: full sequence for video review.</em></Btn><Btn wide onClick={()=>setMode('map')}><strong>Dual Court Trace</strong><em>Two courts · trace shots · single winner or full rally.</em></Btn><Btn wide onClick={()=>setMode('report')}><strong>Between Game Report</strong><em>Current Fast Capture summary and advice.</em></Btn></div><div className="lmfCard"><h2>Shared RallyEvent store</h2><p className="lmfMuted">Saved events: {state.events.length}. This is the base record that later mapping and second-coach sync will merge into.</p><div className="lmfActions"><Btn wide onClick={undoLastEvent}>Undo last saved event</Btn><Btn wide onClick={reset}>Reset match</Btn></div></div></div></div>;
+  return <div className="lmfPage"><style>{lmfCss}</style><div className="lmfShell narrow"><div className="lmfTop"><div><h1>Live Match Coaching</h1><p>v224 Fast Capture: winner first + simple start map + cleaner ending.</p></div><Btn onClick={()=>setScreen('home')}>Home</Btn></div><div className="lmfMenu"><Btn wide onClick={()=>setMode('fast')}><strong>Fast Capture (Live)</strong><em>One question at a time: winner → loser start → cause → ending.</em></Btn><Btn wide onClick={()=>setMode('deep')}><strong>Deep Capture (Post-match)</strong><em>Parked: full sequence for video review.</em></Btn><Btn wide onClick={()=>setMode('map')}><strong>Court Trace</strong><em>One or two courts · trace rallies · server-first.</em></Btn><Btn wide onClick={()=>setMode('report')}><strong>Between Game Report</strong><em>Current Fast Capture summary and advice.</em></Btn></div><div className="lmfCard"><h2>Shared RallyEvent store</h2><p className="lmfMuted">Saved events: {state.events.length}. This is the base record that later mapping and second-coach sync will merge into.</p><div className="lmfActions"><Btn wide onClick={undoLastEvent}>Undo last saved event</Btn><Btn wide onClick={reset}>Reset match</Btn></div></div></div></div>;
 }
 
 const lmfCss=`
@@ -16055,14 +16055,20 @@ const DUAL_OUTCOMES=['Winner','Unforced error','Forced error','Out','Tin','Strok
 function dualTraceLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_TRACE_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
 function dualTraceSave(x){try{localStorage.setItem(DUAL_TRACE_KEY,JSON.stringify(x||[]));}catch{}}
 function dualPts(path){return (path||[]).map(p=>(p.nx*1347)+','+(p.ny*1743)).join(' ');}
+function shotPlayer(s){return s.player||s.court||'a';}
 const dctCss=`
 .dctPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:14px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.dctTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.dctTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
 .dctTitle h1{margin:0;font-size:1.4rem}.dctTitle p{margin:3px 0 0;color:#9fb3c4;font-size:.86rem;max-width:64ch;line-height:1.35}
 .dctActions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .dctBtn{appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;padding:9px 13px;font-weight:800;font-size:.82rem;cursor:pointer}
 .dctBtn.on{background:#2563eb;border-color:#60a5fa}.dctBtn.green{background:#0f3a24;border-color:#22c55e}.dctBtn.red{background:#3a1018;border-color:#fb7185}.dctBtn:disabled{opacity:.45}
+.dctBtn.svrA.on{background:#123b4f;border-color:#57b0dd;color:#dff2fb}.dctBtn.svrB.on{background:#3a2a0c;border-color:#f1b84b;color:#ffe9bd}
+.dctSelRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#0b1624;border:1px solid #20364f;border-radius:14px;padding:10px 12px;margin-bottom:12px}
+.dctSelLabel{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb3c4;font-weight:900;margin-right:2px}
+.dctSelSep{width:1px;align-self:stretch;background:#20364f;margin:0 4px}
 .dctMaps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dctMaps.one{grid-template-columns:1fr;max-width:520px;margin:0 auto}
 @media(max-width:760px){.dctMaps{grid-template-columns:1fr}}
 .dctCol{background:#0b1624;border:1px solid #20364f;border-radius:16px;padding:10px}
 .dctHead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -16086,7 +16092,9 @@ const dctCss=`
 `;
 function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const [names,setNames]=useState(()=>({a:seedNames&&seedNames.playerA?seedNames.playerA:'Player A',b:seedNames&&seedNames.playerB?seedNames.playerB:'Player B'}));
-  const [mode,setMode]=useState('single');
+  const [mode,setMode]=useState('rally');
+  const [courts,setCourts]=useState(1);
+  const [server,setServer]=useState('a');
   const [rallies,setRallies]=useState(()=>dualTraceLoad());
   const [active,setActive]=useState('a');
   const [shots,setShots]=useState([]);
@@ -16094,56 +16102,87 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const [pending,setPending]=useState(false);
   const [outcome,setOutcome]=useState('');
   const [showLog,setShowLog]=useState(false);
+  const [heatOn,setHeatOn]=useState(false);
   const drawing=useRef(false);
   const curRef=useRef(null);
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
   useEffect(()=>{const oO=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=oO;};},[]);
   const stroke={a:'#57b0dd',b:'#f1b84b'};
+  const other=p=>p==='a'?'b':'a';
+  function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setActive(s);}
+  function pickServer(s){setServer(s);resetRally(s);}
   function ptFromEvent(e){const r=e.currentTarget.getBoundingClientRect();const x=Math.max(0,Math.min(r.width,e.clientX-r.left));const y=Math.max(0,Math.min(r.height,e.clientY-r.top));return {nx:x/r.width,ny:y/r.height};}
-  function canDraw(court){if(pending)return false;if(mode==='single')return true;if(shots.length===0)return true;return court===active;}
-  function begin(court,e){if(!canDraw(court))return;e.preventDefault();try{e.currentTarget.setPointerCapture(e.pointerId);}catch(err){}drawing.current=true;if(mode==='rally'&&shots.length===0)setActive(court);const p=ptFromEvent(e);curRef.current={court,path:[p]};setCur({court,path:[p]});}
-  function move(court,e){if(!drawing.current||!curRef.current||curRef.current.court!==court)return;e.preventDefault();const p=ptFromEvent(e);const path=curRef.current.path;const last=path[path.length-1];if(!last||Math.hypot((p.nx-last.nx)*1347,(p.ny-last.ny)*1743)>4){curRef.current={court,path:[...path,p]};setCur({court,path:curRef.current.path});}}
-  function end(court,e){if(!drawing.current)return;e.preventDefault();drawing.current=false;try{e.currentTarget.releasePointerCapture(e.pointerId);}catch(err){}const c=curRef.current;if(!c||c.path.length<3){curRef.current=null;setCur(null);return;}if(mode==='single'){setActive(court);setPending(true);setOutcome('');}else{setShots(prev=>[...prev,c]);setActive(court==='a'?'b':'a');curRef.current=null;setCur(null);}}
-  function ghostFor(court){if(mode!=='rally'||!shots.length)return null;const last=shots[shots.length-1];const other=last.court==='a'?'b':'a';if(other!==court)return null;return last.path[last.path.length-1];}
-  function savedShotsFor(court){const out=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(s.court===court)out.push(s);});});return out;}
+  function playerForSurface(surface){return courts===1?active:surface;}
+  function canDraw(surface){if(pending)return false;if(courts===1)return true;if(mode==='single')return true;if(shots.length===0)return true;return surface===active;}
+  function begin(surface,e){if(!canDraw(surface))return;e.preventDefault();try{e.currentTarget.setPointerCapture(e.pointerId);}catch(err){}drawing.current=true;const player=playerForSurface(surface);if(courts===2&&mode==='rally'&&shots.length===0){setServer(surface);setActive(surface);}const p=ptFromEvent(e);curRef.current={player,path:[p]};setCur({player,path:[p]});}
+  function move(surface,e){if(!drawing.current||!curRef.current)return;e.preventDefault();const p=ptFromEvent(e);const path=curRef.current.path;const last=path[path.length-1];if(!last||Math.hypot((p.nx-last.nx)*1347,(p.ny-last.ny)*1743)>4){curRef.current={player:curRef.current.player,path:[...path,p]};setCur({player:curRef.current.player,path:curRef.current.path});}}
+  function end(surface,e){if(!drawing.current)return;e.preventDefault();drawing.current=false;try{e.currentTarget.releasePointerCapture(e.pointerId);}catch(err){}const c=curRef.current;if(!c||c.path.length<3){curRef.current=null;setCur(null);return;}if(mode==='single'){setActive(c.player);setPending(true);setOutcome('');}else{setShots(prev=>[...prev,c]);setActive(other(c.player));curRef.current=null;setCur(null);}}
+  function savedShotsFor(player){const out=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player)out.push(s);});});return out;}
+  function endpointsFor(player){const pts=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});});shots.forEach(s=>{if(s.player===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});return pts;}
   function endRally(){if(mode==='rally'&&(shots.length||cur)){setPending(true);setOutcome('');}}
-  function save(){if(!outcome)return;if(mode==='single'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'single',outcome,player:names[cur.court],court:cur.court,shots:[cur]}]);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'rally',outcome,shots:all}]);}curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setActive('a');}
+  function save(){if(!outcome)return;if(mode==='single'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'single',layout:courts,outcome,player:cur.player,shots:[cur]}]);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'rally',layout:courts,server,outcome,shots:all}]);}resetRally(server);}
   function cancel(){curRef.current=null;setCur(null);setPending(false);setOutcome('');}
-  function clearRally(){curRef.current=null;setCur(null);setShots([]);setActive('a');setPending(false);setOutcome('');}
-  function undoShot(){if(mode==='rally'&&shots.length){setShots(prev=>prev.slice(0,-1));setActive(a=>a==='a'?'b':'a');}else{cancel();}}
+  function undoShot(){if(mode==='rally'&&shots.length){const last=shots[shots.length-1];setShots(prev=>prev.slice(0,-1));setActive(shotPlayer(last));}else{cancel();}}
   function undoRally(){setRallies(prev=>prev.slice(0,-1));}
-  function clearAll(){if(confirm('Clear all saved dual-court rallies?')){setRallies([]);clearRally();}}
-  function Court({court}){const ghost=ghostFor(court);const saved=savedShotsFor(court);const isCur=cur&&cur.court===court;const isLive=mode==='rally'&&active===court&&!pending;
+  function clearAll(){if(confirm('Clear all saved court-trace rallies?')){setRallies([]);resetRally(server);}}
+
+  function Surface({surface}){
+    // surface is 'a'/'b' in two-court, or 'one' in single-court
+    const single=courts===1;
+    const isLive=mode==='rally'&&!pending&&(single||surface===active);
+    const showSaved=single?rallies.flatMap(r=>r.shots||[]):savedShotsFor(surface);
+    const committed=single?shots:shots.filter(s=>s.player===surface);
+    const curShown=cur&&(single||cur.player===surface);
+    // contact circles: one-court = endpoint of every committed shot (next player's contact); two-court = ghost of last shot on the receiving court
+    let contacts=[];
+    if(single){contacts=shots.map((s,i)=>({pt:s.path[s.path.length-1],player:other(s.player),last:i===shots.length-1}));}
+    else if(mode==='rally'&&shots.length){const last=shots[shots.length-1];if(other(last.player)===surface)contacts=[{pt:last.path[last.path.length-1],player:surface,last:true}];}
+    const headName=single?(names.a+' vs '+names.b):names[surface];
     return <div className="dctCol">
-      <div className="dctHead"><span className="dctDot" style={{background:stroke[court]}}></span><input value={names[court]} onChange={e=>setNames(n=>({...n,[court]:e.target.value}))}/>{isLive&&<span className="dctActive">tracing</span>}</div>
-      <div className={"dctCourt"+(isLive?' live':'')} onPointerDown={e=>begin(court,e)} onPointerMove={e=>move(court,e)} onPointerUp={e=>end(court,e)} onPointerCancel={e=>end(court,e)} onContextMenu={e=>e.preventDefault()}>
+      <div className="dctHead"><span className="dctDot" style={{background:single?'#8aa0b6':stroke[surface]}}></span>
+        {single?<div style={{flex:1,fontWeight:850}}>{headName}</div>:<input value={names[surface]} onChange={e=>setNames(n=>({...n,[surface]:e.target.value}))}/>}
+        {isLive&&<span className="dctActive" style={{background:stroke[single?active:surface]}}>{single?names[active]:'tracing'}</span>}</div>
+      <div className={"dctCourt"+(isLive?' live':'')} onPointerDown={e=>begin(surface,e)} onPointerMove={e=>move(surface,e)} onPointerUp={e=>end(surface,e)} onPointerCancel={e=>end(surface,e)} onContextMenu={e=>e.preventDefault()}>
         <img src={LMC_TRACE_MAP_DATA_URL} alt="court" draggable={false}/>
         <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
-          {saved.map((s,i)=><polyline key={'s'+i} points={dualPts(s.path)} fill="none" stroke={stroke[court]} strokeWidth="6" strokeOpacity="0.18" strokeLinecap="round" strokeLinejoin="round"/>)}
-          {isCur&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[court]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
-          {ghost&&<circle cx={ghost.nx*1347} cy={ghost.ny*1743} r="22" fill="none" stroke={stroke[court==='a'?'b':'a']} strokeWidth="5" strokeDasharray="7 7"/>}
+          {!heatOn&&showSaved.map((s,i)=><polyline key={'sv'+i} points={dualPts(s.path)} fill="none" stroke={stroke[shotPlayer(s)]} strokeWidth="6" strokeOpacity="0.16" strokeLinecap="round" strokeLinejoin="round"/>)}
+          {!heatOn&&committed.map((s,i)=><polyline key={'c'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="8" strokeOpacity="0.75" strokeLinecap="round" strokeLinejoin="round"/>)}
+          {heatOn&&(single?['a','b']:[surface]).map(pl=>{const gid='hg_'+surface+'_'+pl;const pts=endpointsFor(pl);return <g key={gid}><defs><radialGradient id={gid}><stop offset="0%" stopColor={stroke[pl]} stopOpacity="0.42"/><stop offset="65%" stopColor={stroke[pl]} stopOpacity="0.13"/><stop offset="100%" stopColor={stroke[pl]} stopOpacity="0"/></radialGradient></defs>{pts.map((p,i)=><circle key={i} cx={p.nx*1347} cy={p.ny*1743} r="95" fill={'url(#'+gid+')'}/>)}</g>;})}
+          {contacts.map((g,i)=><circle key={'g'+i} cx={g.pt.nx*1347} cy={g.pt.ny*1743} r={g.last?24:16} fill="none" stroke={stroke[g.player]} strokeWidth={g.last?6:4} strokeDasharray={g.last?'0':'6 6'} strokeOpacity={g.last?1:0.7}/>)}
+          {curShown&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[cur.player]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
         </svg>
       </div>
     </div>;
   }
+
+  const showServerSel = courts===1 || mode==='rally';
   return <div className="dctPage"><style>{dctCss}</style>
     <div className="dctTop">
-      <div className="dctTitle"><h1>Dual Court Trace</h1><p>{mode==='single'?'Single winner — trace the deciding shot on either court.':'Rally — trace a shot; the dashed ring shows where the reply is played from on the other court.'}</p></div>
+      <div className="dctTitle"><h1>Court Trace</h1><p>{mode==='single'?'Single winner — trace the deciding shot.':(courts===1?'Rally on one court — server hits first; lift your finger and a contact ring drops where the receiver takes it, then trace their reply. Players alternate.':'Rally on two courts — trace a shot; the ring shows where the reply is played from on the other court.')}</p></div>
       <div className="dctActions">
-        <button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');clearRally();}}>Single</button>
-        <button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');clearRally();}}>Rally</button>
+        <button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button>
+        <button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button>
         <button type="button" className="dctBtn" onClick={()=>{const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(err){}alert('Second coach display link copied.');}}>Copy Display</button>
         <button type="button" className="dctBtn" onClick={()=>onBack?onBack():setScreen('home')}>Back</button>
         <button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button>
-        <button type="button" className="dctBtn red" onClick={clearRally}>Clear</button>
+        <button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button>
+        <button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button>
         <button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button>
       </div>
     </div>
-    <div className="dctMaps"><Court court="a"/><Court court="b"/></div>
+    <div className="dctSelRow">
+      <span className="dctSelLabel">Courts</span>
+      <button type="button" className={'dctBtn'+(courts===1?' on':'')} onClick={()=>{setCourts(1);resetRally(server);}}>1 Court</button>
+      <button type="button" className={'dctBtn'+(courts===2?' on':'')} onClick={()=>{setCourts(2);resetRally(server);}}>2 Courts</button>
+      {showServerSel&&<><span className="dctSelSep"></span><span className="dctSelLabel">{mode==='rally'?'Server (first hitter)':'Hitter'}</span>
+        <button type="button" className={'dctBtn svrA'+(server==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button>
+        <button type="button" className={'dctBtn svrB'+(server==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>}
+    </div>
+    <div className={"dctMaps"+(courts===1?' one':'')}>{courts===1?<Surface surface="one"/>:<><Surface surface="a"/><Surface surface="b"/></>}</div>
     {mode==='rally'&&!pending&&<div className="dctBar"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>}
     {pending&&<div className="dctOutcome"><div className="dctLabel">Outcome</div><div className="dctOutGrid">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><div className="dctRow2"><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div></div>}
     <div className="dctSide"><div className="dctCard"><b>{rallies.length}</b> saved rallies<button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>
-      {showLog&&<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>Rally {rallies.length-i}</b> · {r.mode==='rally'?(r.shots.length+' shots'):(names[r.court]||r.player||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>}
+      {showLog&&<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>Rally {rallies.length-i}</b> · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):(names[r.player]||r.player||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>}
     </div>
   </div>;
 }
