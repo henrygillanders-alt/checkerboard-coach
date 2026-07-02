@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v251 Court Trace · between-game player display';
+const APP_VERSION='v252 Court Trace · display heat map, server fix, dock inset';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -15888,37 +15888,62 @@ function CourtTraceGamePlayerDisplay({payload}){
   const allGames=Array.isArray(payload?.allGames)?payload.allGames:[];
   const outcomesForGame=payload?.outcomesForGame||{};
   const gameNum=payload?.gameNum||1;
+  const heatOn=!!payload?.heatOn;
+  const shotsForGame=Array.isArray(payload?.shotsForGame)?payload.shotsForGame:[];
+  const stroke={a:'#57b0dd',b:'#f1b84b'};
+  const other=p=>p==='a'?'b':'a';
   const outcomeEntries=Object.entries(outcomesForGame).sort((a,b)=>b[1]-a[1]);
   return <div className="courtDisplayPage"><style>{`
-.courtDisplayPage{min-height:100dvh;background:#061020;color:#eaf4fb;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-.courtDisplayShell{max-width:900px;margin:0 auto}
+.courtDisplayPage{min-height:100dvh;background:#061020;color:#eaf4fb;padding:18px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.courtDisplayShell{max-width:1200px;margin:0 auto;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.courtDisplayCol{flex:1 1 320px;min-width:280px}
+.courtDisplayMapCol{flex:1 1 360px;max-width:460px;margin:0 auto}
 .courtDisplayTop{text-align:center;margin-bottom:10px}
 .courtDisplayTop h1{margin:0;font-size:1.1rem;color:#9fb3c4;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
-.courtDisplayScore{display:flex;align-items:center;justify-content:center;gap:28px;margin:14px 0 22px}
+.courtDisplayScore{display:flex;align-items:center;justify-content:center;gap:22px;margin:14px 0 18px}
 .courtDisplaySide{text-align:center}
-.courtDisplayName{font-size:1.3rem;font-weight:850;color:#cfe0ee}
-.courtDisplayNum{font-size:5rem;font-weight:1000;line-height:1;margin-top:6px}
-.courtDisplayVs{font-size:1.4rem;color:#5c7188;font-weight:900}
-.courtDisplayBanner{text-align:center;background:#0f3a24;border:1px solid #22c55e;border-radius:16px;padding:14px;margin-bottom:20px;font-size:1.15rem;font-weight:850}
-.courtDisplayGamesRow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.courtDisplayName{font-size:1.15rem;font-weight:850;color:#cfe0ee}
+.courtDisplayNum{font-size:3.6rem;font-weight:1000;line-height:1;margin-top:6px}
+.courtDisplayVs{font-size:1.1rem;color:#5c7188;font-weight:900}
+.courtDisplayBanner{text-align:center;background:#0f3a24;border:1px solid #22c55e;border-radius:16px;padding:12px;margin-bottom:16px;font-size:1.05rem;font-weight:850}
+.courtDisplayGamesRow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .courtDisplayGameChip{background:#0b1624;border:1px solid #20364f;border-radius:999px;padding:8px 14px;font-weight:800;font-size:.9rem}
-.courtDisplayCard{background:#0b1624;border:1px solid #20364f;border-radius:16px;padding:16px}
+.courtDisplayCard{background:#0b1624;border:1px solid #20364f;border-radius:16px;padding:16px;margin-bottom:14px}
 .courtDisplayLabel{font-size:.75rem;color:#8ea8bd;text-transform:uppercase;letter-spacing:.08em;font-weight:900;margin-bottom:10px}
 .courtDisplayRow{display:flex;justify-content:space-between;padding:7px 0;border-top:1px solid #1a2c42;font-size:1rem}
 .courtDisplayRow:first-child{border-top:none}
 .courtDisplayMuted{color:#9fb3c4}
-@media(max-width:640px){.courtDisplayNum{font-size:3.2rem}.courtDisplayScore{gap:16px}}
+.courtDisplayLegend{display:flex;justify-content:center;gap:16px;margin-top:10px;font-size:.85rem}
+.courtDisplayLegend span{display:inline-flex;align-items:center;gap:6px}
+.courtDisplayDot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.courtDisplayMap{position:relative;aspect-ratio:1347/1743;border-radius:12px;overflow:hidden;background:#fff}
+.courtDisplayMap img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.courtDisplayMap svg{position:absolute;inset:0;width:100%;height:100%}
+@media(max-width:640px){.courtDisplayNum{font-size:2.6rem}.courtDisplayScore{gap:14px}.courtDisplayShell{flex-direction:column}.courtDisplayMapCol{max-width:100%}}
 `}</style>
     <div className="courtDisplayShell">
-      <div className="courtDisplayTop"><h1>Court Trace</h1></div>
-      {justFinished&&<div className="courtDisplayBanner">Game {justFinished.num} final: {justFinished.names?.a||names.a} {justFinished.a} – {justFinished.b} {justFinished.names?.b||names.b}</div>}
-      <div className="courtDisplayScore">
-        <div className="courtDisplaySide"><div className="courtDisplayName">{names.a}</div><div className="courtDisplayNum">{score.a}</div></div>
-        <div className="courtDisplayVs">GAME {gameNum}</div>
-        <div className="courtDisplaySide"><div className="courtDisplayName">{names.b}</div><div className="courtDisplayNum">{score.b}</div></div>
+      <div className="courtDisplayCol">
+        <div className="courtDisplayTop"><h1>Court Trace</h1></div>
+        {justFinished&&<div className="courtDisplayBanner">Game {justFinished.num} final: {justFinished.names?.a||names.a} {justFinished.a} – {justFinished.b} {justFinished.names?.b||names.b}</div>}
+        <div className="courtDisplayScore">
+          <div className="courtDisplaySide"><div className="courtDisplayName">{names.a}</div><div className="courtDisplayNum">{score.a}</div></div>
+          <div className="courtDisplayVs">GAME {gameNum}</div>
+          <div className="courtDisplaySide"><div className="courtDisplayName">{names.b}</div><div className="courtDisplayNum">{score.b}</div></div>
+        </div>
+        {allGames.length>0&&<div className="courtDisplayGamesRow">{allGames.map((g,i)=><div className="courtDisplayGameChip" key={i}>Game {g.num}: {g.a}–{g.b}</div>)}</div>}
+        <div className="courtDisplayCard"><div className="courtDisplayLabel">This game — rally outcomes</div>{outcomeEntries.length?outcomeEntries.map(([k,v])=><div className="courtDisplayRow" key={k}><span>{k}</span><span>{v}</span></div>):<div className="courtDisplayMuted">No rallies logged yet.</div>}</div>
       </div>
-      {allGames.length>0&&<div className="courtDisplayGamesRow">{allGames.map((g,i)=><div className="courtDisplayGameChip" key={i}>Game {g.num}: {g.a}–{g.b}</div>)}</div>}
-      <div className="courtDisplayCard"><div className="courtDisplayLabel">This game — rally outcomes</div>{outcomeEntries.length?outcomeEntries.map(([k,v])=><div className="courtDisplayRow" key={k}><span>{k}</span><span>{v}</span></div>):<div className="courtDisplayMuted">No rallies logged yet.</div>}</div>
+      <div className="courtDisplayMapCol">
+        <div className="courtDisplayMap">
+          <img src={LMC_TRACE_MAP_DATA_URL} alt="court" draggable={false}/>
+          <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
+            {!heatOn&&shotsForGame.map((s,i)=><polyline key={'l'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="7" strokeOpacity="0.55" strokeLinecap="round" strokeLinejoin="round"/>)}
+            {shotsForGame.map((s,i)=>{const e=s.path&&s.path[s.path.length-1];if(!e)return null;const pl=other(s.player);return <circle key={'d'+i} cx={e.nx*1347} cy={e.ny*1743} r="16" fill={stroke[pl]} fillOpacity="0.78" stroke="#ffffff" strokeOpacity="0.55" strokeWidth="2"/>;})}
+          </svg>
+        </div>
+        <div className="courtDisplayLegend"><span><span className="courtDisplayDot" style={{background:stroke.a}}></span>{names.a}</span><span><span className="courtDisplayDot" style={{background:stroke.b}}></span>{names.b}</span></div>
+        {!shotsForGame.length&&<div className="courtDisplayMuted" style={{textAlign:'center',marginTop:10}}>No traced shots yet this game.</div>}
+      </div>
     </div>
   </div>;
 }
@@ -16132,7 +16157,7 @@ const dctCss=`
 .dctDock{position:static;width:100%;max-width:1040px;margin:0 auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctDockInner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1040px;margin:0 auto}
 .dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-.dctCourtOverlay{position:absolute;left:0;right:0;bottom:0;z-index:40;display:flex;flex-direction:column;align-items:center;padding:10px 10px 14px;pointer-events:none}
+.dctCourtOverlay{position:absolute;left:0;right:0;bottom:16px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
 .dctCourtOverlay>*{pointer-events:auto}
 .dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
@@ -16144,7 +16169,7 @@ const dctCss=`
 .dctRailFloat .dctBtn{width:100%;text-align:center}
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
 .dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100dvh - 24px)}
-.dctFullWrap .dctCourt{flex:0 0 auto;height:min(92dvh,calc(100dvh - 8px));width:min(74dvh,calc((100dvh - 8px)*0.7728));max-width:97vw}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(86dvh,calc(100dvh - 8px));width:min(66dvh,calc((100dvh - 8px)*0.7728));max-width:94vw}
 @media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:60%}.dctRailFloat{width:170px}}
 .dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;max-width:640px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:9px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-bottom:12px}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
@@ -16200,13 +16225,16 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   }
   function adjustScore(p,delta){setScore(s=>({...s,[p]:Math.max(0,s[p]+delta)}));}
   function pushCourtDisplay(justFinished){
-    const outcomesForGame={};rallies.filter(r=>r.game===(justFinished?justFinished.num:gameNum)).forEach(r=>{outcomesForGame[r.outcome]=(outcomesForGame[r.outcome]||0)+1;});
-    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,updatedAt:new Date().toISOString()};
+    const gameForPush=justFinished?justFinished.num:gameNum;
+    const outcomesForGame={};
+    const shotsForGame=[];
+    rallies.filter(r=>r.game===gameForPush).forEach(r=>{outcomesForGame[r.outcome]=(outcomesForGame[r.outcome]||0)+1;(r.shots||[]).forEach(s=>shotsForGame.push({player:shotPlayer(s),path:s.path}));});
+    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,updatedAt:new Date().toISOString()};
     try{writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{}
   }
   function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});}
   function pickOutcome(o){setOutcome(o);const all=mode==='single'?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
-  function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setWinnerPick(null);setActive(s);}
+  function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setWinnerPick(null);setActive(s);setServer(s);}
   function pickServer(s){setServer(s);resetRally(s);}
   function ptFromEvent(e){const r=e.currentTarget.getBoundingClientRect();const x=Math.max(0,Math.min(r.width,e.clientX-r.left));const y=Math.max(0,Math.min(r.height,e.clientY-r.top));return {nx:x/r.width,ny:y/r.height};}
   function playerForSurface(surface){return courts===1?active:surface;}
