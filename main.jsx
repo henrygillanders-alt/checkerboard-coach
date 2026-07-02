@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v253 Court Trace · push failure visibility, vh fallback';
+const APP_VERSION='v254 Court Trace · narrower rail, dock repositioned beside it';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16154,23 +16154,23 @@ const dctCss=`
 .dctLogItem{border:1px solid #21364f;background:#07111f;border-radius:12px;padding:8px;margin-top:7px;font-size:.85rem}
 .dctPill{display:inline-block;border:1px solid #3b82f6;background:#10294a;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.78rem}
 .dctMuted{color:#9fb3c4}
-.dctDock{position:static;width:100%;max-width:1040px;margin:0 auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.dctDock{position:static;width:100%;max-width:1040px;margin:0 auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctDockInner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1040px;margin:0 auto}
 .dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-.dctCourtOverlay{position:absolute;left:0;right:0;bottom:28px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
+.dctCourtOverlay{position:absolute;left:28%;right:0;bottom:90px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
 .dctCourtOverlay>*{pointer-events:auto}
 .dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
-.dctCourtLeftOverlay{position:absolute;left:0;top:78px;bottom:96px;z-index:45;display:flex;align-items:flex-start;max-width:32%;padding:8px;pointer-events:none}
+.dctCourtLeftOverlay{position:absolute;left:0;top:78px;bottom:96px;z-index:45;display:flex;align-items:flex-start;max-width:26%;padding:6px;pointer-events:none}
 .dctCourtLeftOverlay>*{pointer-events:auto}
 .dctRailFloatWrap{display:flex;flex-direction:column;gap:6px;max-height:100%;min-width:0}
 .dctRailToggle{align-self:flex-start;appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;padding:8px 12px;font-weight:850;font-size:.76rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}
-.dctRailFloat{display:flex;flex-direction:column;gap:7px;width:200px;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.dctRailFloat .dctBtn{width:100%;text-align:center}
+.dctRailFloat{display:flex;flex-direction:column;gap:6px;width:100%;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.dctRailFloat .dctBtn{width:100%;text-align:center;font-size:.8rem;padding:8px 6px}
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
 .dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}
 .dctFullWrap .dctCourt{flex:0 0 auto;height:min(74vh,calc(100vh - 110px));width:min(57vh,calc((100vh - 110px)*0.7728));max-width:90vw;height:min(74dvh,calc(100dvh - 110px));width:min(57dvh,calc((100dvh - 110px)*0.7728))}
-@media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:60%}.dctRailFloat{width:170px}}
+@media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:48%}}
 .dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;max-width:640px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:9px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-bottom:12px}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
 .dctScoreName{font-weight:850;font-size:.82rem;color:#cfe0ee;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
