@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v248 Court Trace · confirm who won the rally';
+const APP_VERSION='v249 Court Trace · full-bleed court, floating rail menu';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16095,6 +16095,16 @@ const dctCss=`
 .dctCourtOverlay>*{pointer-events:auto}
 .dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
+.dctCourtLeftOverlay{position:absolute;left:0;top:78px;bottom:96px;z-index:45;display:flex;align-items:flex-start;max-width:32%;padding:8px;pointer-events:none}
+.dctCourtLeftOverlay>*{pointer-events:auto}
+.dctRailFloatWrap{display:flex;flex-direction:column;gap:6px;max-height:100%;min-width:0}
+.dctRailToggle{align-self:flex-start;appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;padding:8px 12px;font-weight:850;font-size:.76rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.dctRailFloat{display:flex;flex-direction:column;gap:7px;width:200px;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.dctRailFloat .dctBtn{width:100%;text-align:center}
+.dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
+.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 24px)}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(98vh,calc(100vh - 8px));width:min(80vh,calc((100vh - 8px)*0.7728));max-width:99vw}
+@media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:60%}.dctRailFloat{width:170px}}
 .dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;max-width:640px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:9px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-bottom:12px}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
 .dctScoreName{font-weight:850;font-size:.82rem;color:#cfe0ee;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -16133,6 +16143,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const [gameNum,setGameNum]=useState(1);
   const [games,setGames]=useState([]);
   const [winnerPick,setWinnerPick]=useState(null);
+  const [railOpen,setRailOpen]=useState(true);
   const drawing=useRef(false);
   const curRef=useRef(null);
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
@@ -16167,7 +16178,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function undoRally(){setRallies(prev=>{if(!prev.length)return prev;const last=prev[prev.length-1];if(last.winner)setScore(s=>({...s,[last.winner]:Math.max(0,s[last.winner]-1)}));return prev.slice(0,-1);});}
   function clearAll(){if(confirm('Clear all saved court-trace rallies? This also resets the score.')){setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);resetRally(server);}}
 
-  function Surface({surface,overlay,topOverlay}){
+  function Surface({surface,overlay,topOverlay,leftOverlay}){
     const single=courts===1;
     const isLive=mode==='rally'&&!pending&&(single||surface===active);
     const showSaved=single?rallies.flatMap(r=>r.shots||[]):savedShotsFor(surface);
@@ -16188,6 +16199,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
           {!heatOn&&curShown&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[cur.player]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
         </svg>
         {topOverlay&&<div className="dctCourtTopOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{topOverlay}</div>}
+        {leftOverlay&&<div className="dctCourtLeftOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{leftOverlay}</div>}
         {overlay&&<div className="dctCourtOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{overlay}</div>}
       </div>
     </div>;
@@ -16212,23 +16224,24 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const gamesCard=games.length?(<div className="dctCard" style={{display:'block'}}><b>Completed games</b>{games.map((g,i)=><div className="dctLogItem" key={i}>Game {g.num}: {g.names.a} {g.a} – {g.b} {g.names.b}</div>)}</div>):null;
   const savedCard=(<div className="dctCard"><b>{rallies.length}</b> saved rallies<button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>);
   const logCard=showLog?(<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>Rally {rallies.length-i}</b> · {(r.names?r.names.a:names.a)+' v '+(r.names?r.names.b:names.b)} · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):((r.names?r.names[r.player]:names[r.player])||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>):null;
+  const railPanel=(<div className="dctRailFloatWrap">
+    <button type="button" className="dctRailToggle" onClick={()=>setRailOpen(v=>!v)}>{railOpen?'✕ Hide menu':'☰ Menu'}</button>
+    {railOpen&&<div className="dctRailFloat">
+      {backBtn}
+      <div className="dctRailLabel">Capture</div>{modeSel}
+      <div className="dctRailLabel">Courts</div>{courtSel}
+      {nameEditor}
+      <div className="dctRailLabel">{mode==='rally'?'Server override (auto-follows winner)':'Hitter'}</div>{serverSel}
+      <div className="dctRailLabel">Tools</div>{utilBtns}
+      {savedCard}
+      {gamesCard}
+      {logCard}
+    </div>}
+  </div>);
 
   if(courts===1){
     return <div className="dctPage"><style>{dctCss}</style>
-      <div className="dctStage">
-        <div className="dctRail">
-          {backBtn}
-          <div className="dctRailLabel">Capture</div>{modeSel}
-          <div className="dctRailLabel">Courts</div>{courtSel}
-          {nameEditor}
-          <div className="dctRailLabel">{mode==='rally'?'Server override (auto-follows winner)':'Hitter'}</div>{serverSel}
-          <div className="dctRailLabel">Tools</div>{utilBtns}
-          {savedCard}
-          {gamesCard}
-          {logCard}
-        </div>
-        <div className="dctStageMid"><Surface surface="one" overlay={dock} topOverlay={scoreBar}/></div>
-      </div>
+      <div className="dctFullWrap"><Surface surface="one" overlay={dock} topOverlay={scoreBar} leftOverlay={railPanel}/></div>
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
