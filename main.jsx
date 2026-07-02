@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v244 Court Trace · fix court render';
+const APP_VERSION='v245 Court Trace · dock + scatter heat';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16057,7 +16057,7 @@ function dualTraceSave(x){try{localStorage.setItem(DUAL_TRACE_KEY,JSON.stringify
 function dualPts(path){return (path||[]).map(p=>(p.nx*1347)+','+(p.ny*1743)).join(' ');}
 function shotPlayer(s){return s.player||s.court||'a';}
 const dctCss=`
-.dctPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.dctPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:12px 12px 108px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 .dctTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
 .dctTitle h1{margin:0;font-size:1.4rem}.dctTitle p{margin:3px 0 0;color:#9fb3c4;font-size:.86rem;max-width:64ch;line-height:1.35}
 .dctActions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
@@ -16088,15 +16088,18 @@ const dctCss=`
 .dctLogItem{border:1px solid #21364f;background:#07111f;border-radius:12px;padding:8px;margin-top:7px;font-size:.85rem}
 .dctPill{display:inline-block;border:1px solid #3b82f6;background:#10294a;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.78rem}
 .dctMuted{color:#9fb3c4}
+.dctDock{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(6,16,32,.97);border-top:1px solid #22405f;padding:10px 12px;box-shadow:0 -8px 20px rgba(0,0,0,.35)}
+.dctDockInner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1040px;margin:0 auto}
+.dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
 /* single-court stage */
-.dctStage{display:flex;gap:12px;align-items:stretch;min-height:calc(100vh - 24px)}
+.dctStage{display:flex;gap:12px;align-items:stretch;min-height:calc(100vh - 150px)}
 .dctRail{display:flex;flex-direction:column;gap:7px;width:200px;flex:0 0 auto}
 .dctRail.right{width:230px}
 .dctRail .dctBtn{width:100%;text-align:center}
 .dctRail input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
 .dctRailLabel{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#8ea6bc;font-weight:900;margin:8px 0 -1px}
 .dctStageMid{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
-.dctStageMid .dctCourt{flex:0 0 auto;height:min(92vh,calc(100vh - 20px));width:min(71vh,calc((100vh - 20px)*0.7728));max-width:94vw}
+.dctStageMid .dctCourt{flex:0 0 auto;height:min(80vh,calc(100vh - 165px));width:min(62vh,calc((100vh - 165px)*0.7728));max-width:94vw}
 @media(max-width:820px){.dctStage{flex-direction:column;min-height:0}.dctRail,.dctRail.right{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center}.dctRail .dctBtn{width:auto}.dctRail input{width:150px}.dctStageMid .dctCourt{height:auto;width:100%}}
 `;
 function DualCourtTraceModule({onBack,setScreen,seedNames}){
@@ -16115,7 +16118,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const drawing=useRef(false);
   const curRef=useRef(null);
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
-  
+  useEffect(()=>{const oO=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=oO;};},[]);
   const stroke={a:'#57b0dd',b:'#f1b84b'};
   const other=p=>p==='a'?'b':'a';
   function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setActive(s);}
@@ -16127,6 +16130,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function move(surface,e){if(!drawing.current||!curRef.current)return;e.preventDefault();const p=ptFromEvent(e);const path=curRef.current.path;const last=path[path.length-1];if(!last||Math.hypot((p.nx-last.nx)*1347,(p.ny-last.ny)*1743)>4){curRef.current={player:curRef.current.player,path:[...path,p]};setCur({player:curRef.current.player,path:curRef.current.path});}}
   function end(surface,e){if(!drawing.current)return;e.preventDefault();drawing.current=false;try{e.currentTarget.releasePointerCapture(e.pointerId);}catch(err){}const c=curRef.current;if(!c||c.path.length<3){curRef.current=null;setCur(null);return;}if(mode==='single'){setActive(c.player);setPending(true);setOutcome('');}else{setShots(prev=>[...prev,c]);setActive(other(c.player));curRef.current=null;setCur(null);}}
   function endpointsFor(player){const pts=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});});shots.forEach(s=>{if(s.player===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});return pts;}
+  function heatDots(surface){const out=[];const push=(shot)=>{const e=shot.path&&shot.path[shot.path.length-1];if(!e)return;const pl=other(shotPlayer(shot));if(surface&&pl!==surface)return;out.push({pt:e,player:pl});};rallies.forEach(r=>(r.shots||[]).forEach(push));shots.forEach(push);return out;}
   function savedShotsFor(player){const out=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player)out.push(s);});});return out;}
   function endRally(){if(mode==='rally'&&(shots.length||cur)){setPending(true);setOutcome('');}}
   function save(){if(!outcome)return;if(mode==='single'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'single',layout:courts,outcome,player:cur.player,names:{...names},shots:[cur]}]);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'rally',layout:courts,server,outcome,names:{...names},shots:all}]);}resetRally(server);}
@@ -16151,7 +16155,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
         <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
           {!heatOn&&showSaved.map((s,i)=><polyline key={'sv'+i} points={dualPts(s.path)} fill="none" stroke={stroke[shotPlayer(s)]} strokeWidth="6" strokeOpacity="0.16" strokeLinecap="round" strokeLinejoin="round"/>)}
           {!heatOn&&committed.map((s,i)=><polyline key={'c'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="8" strokeOpacity="0.75" strokeLinecap="round" strokeLinejoin="round"/>)}
-          {heatOn&&(single?['a','b']:[surface]).map(pl=>{const gid='hg_'+surface+'_'+pl;const pts=endpointsFor(pl);return <g key={gid}><defs><radialGradient id={gid}><stop offset="0%" stopColor={stroke[pl]} stopOpacity="0.42"/><stop offset="65%" stopColor={stroke[pl]} stopOpacity="0.13"/><stop offset="100%" stopColor={stroke[pl]} stopOpacity="0"/></radialGradient></defs>{pts.map((p,i)=><circle key={i} cx={p.nx*1347} cy={p.ny*1743} r="95" fill={'url(#'+gid+')'}/>)}</g>;})}
+          {heatOn&&heatDots(single?null:surface).map((d,i)=><circle key={'h'+i} cx={d.pt.nx*1347} cy={d.pt.ny*1743} r="15" fill={stroke[d.player]} fillOpacity="0.72" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="2"/>)}
           {!heatOn&&contacts.map((g,i)=><circle key={'g'+i} cx={g.pt.nx*1347} cy={g.pt.ny*1743} r={g.last?24:16} fill="none" stroke={stroke[g.player]} strokeWidth={g.last?6:4} strokeDasharray={g.last?'0':'6 6'} strokeOpacity={g.last?1:0.7}/>)}
           {!heatOn&&curShown&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[cur.player]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
         </svg>
@@ -16168,6 +16172,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const nameEditor=(<><div className="dctRailLabel">Players · A = your player</div><input value={names.a} onChange={e=>setNames(n=>({...n,a:e.target.value}))} placeholder="Player A"/><input value={names.b} onChange={e=>setNames(n=>({...n,b:e.target.value}))} placeholder="Player B"/></>);
   const rallyBar=(mode==='rally'&&!pending)?(<div className="dctBar"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):null;
   const outcomePanel=pending?(<div className="dctOutcome"><div className="dctLabel">Outcome</div><div className="dctOutGrid">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><div className="dctRow2"><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div></div>):null;
+  const dock=(<div className="dctDock">{pending?(<div className="dctDockInner"><div className="dctDockOut">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div>):(mode==='rally'?(<div className="dctDockInner"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):(<div className="dctDockInner"><span className="dctMuted">Trace the deciding shot, then choose the outcome.</span></div>))}</div>);
   const savedCard=(<div className="dctCard"><b>{rallies.length}</b> saved rallies<button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>);
   const logCard=showLog?(<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>Rally {rallies.length-i}</b> · {(r.names?r.names.a:names.a)+' v '+(r.names?r.names.b:names.b)} · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):((r.names?r.names[r.player]:names[r.player])||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>):null;
 
@@ -16181,15 +16186,12 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
           {nameEditor}
           <div className="dctRailLabel">{mode==='rally'?'Server (first hitter)':'Hitter'}</div>{serverSel}
           <div className="dctRailLabel">Tools</div>{utilBtns}
-        </div>
-        <div className="dctStageMid"><Surface surface="one"/></div>
-        <div className="dctRail right">
-          {rallyBar}
-          {outcomePanel}
           {savedCard}
           {logCard}
         </div>
+        <div className="dctStageMid"><Surface surface="one"/></div>
       </div>
+      {dock}
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
@@ -16199,9 +16201,8 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     </div>
     <div className="dctSelRow"><span className="dctSelLabel">Courts</span>{courtSel}{showServerSel&&<><span className="dctSelSep"></span><span className="dctSelLabel">{mode==='rally'?'Server':'Hitter'}</span>{serverSel}</>}</div>
     <div className="dctMaps"><Surface surface="a"/><Surface surface="b"/></div>
-    {rallyBar}
-    {outcomePanel}
     <div className="dctSide">{savedCard}{logCard}</div>
+    {dock}
   </div>;
 }
 
