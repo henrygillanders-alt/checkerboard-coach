@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v257 Court Trace · 3-way capture: Single/Rally/Strike tap';
+const APP_VERSION='v258 Court Trace · contact-only taps, decisive-shot scatter';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -15890,6 +15890,8 @@ function CourtTraceGamePlayerDisplay({payload}){
   const gameNum=payload?.gameNum||1;
   const heatOn=!!payload?.heatOn;
   const shotsForGame=Array.isArray(payload?.shotsForGame)?payload.shotsForGame:[];
+  const regularContacts=Array.isArray(payload?.regularContacts)?payload.regularContacts:[];
+  const finalContacts=Array.isArray(payload?.finalContacts)?payload.finalContacts:[];
   const stroke={a:'#57b0dd',b:'#f1b84b'};
   const other=p=>p==='a'?'b':'a';
   const outcomeEntries=Object.entries(outcomesForGame).sort((a,b)=>b[1]-a[1]);
@@ -15939,11 +15941,12 @@ function CourtTraceGamePlayerDisplay({payload}){
           <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
             {!heatOn&&shotsForGame.filter(s=>!s.strike).map((s,i)=><polyline key={'l'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="7" strokeOpacity="0.55" strokeLinecap="round" strokeLinejoin="round"/>)}
             {heatOn&&shotsForGame.filter(s=>!s.strike).map((s,i)=>{const e=s.path&&s.path[s.path.length-1];if(!e)return null;const pl=other(s.player);return <circle key={'d'+i} cx={e.nx*1347} cy={e.ny*1743} r="9" fill={stroke[pl]} fillOpacity="0.68" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1.5"/>;})}
-            {shotsForGame.map((s,i)=>{if(!s.contact)return null;return <rect key={'ct'+i} x={s.contact.nx*1347-6} y={s.contact.ny*1743-6} width="12" height="12" fill={stroke[s.player]} fillOpacity="0.55" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1.3" transform={`rotate(45 ${s.contact.nx*1347} ${s.contact.ny*1743})`}/>;})}
+            {regularContacts.map((d,i)=><rect key={'rc'+i} x={d.pt.nx*1347-6} y={d.pt.ny*1743-6} width="12" height="12" fill={stroke[d.player]} fillOpacity="0.55" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1.3" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
+            {finalContacts.map((d,i)=><rect key={'fc'+i} x={d.pt.nx*1347-9} y={d.pt.ny*1743-9} width="18" height="18" fill={OUTCOME_COLORS[d.outcome]||stroke[d.player]} fillOpacity="0.9" stroke="#ffffff" strokeOpacity="0.9" strokeWidth="2" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
           </svg>
         </div>
         <div className="courtDisplayLegend"><span><span className="courtDisplayDot" style={{background:stroke.a}}></span>{names.a}</span><span><span className="courtDisplayDot" style={{background:stroke.b}}></span>{names.b}</span></div>
-        <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:2,fontSize:'.7rem'}}>● landing point &nbsp; ◆ contact point</div>
+        <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:2,fontSize:'.7rem'}}>◆ contact point &nbsp; ⬥ decisive contact (colored by outcome)</div>
         <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:6,fontSize:'.8rem'}}>{shotsForGame.length} shot{shotsForGame.length===1?'':'s'} plotted this game{payload?.updatedAt?' · updated '+new Date(payload.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</div>
       </div>
     </div>
@@ -16120,6 +16123,7 @@ const lmfCss=`
 
 const DUAL_TRACE_KEY='checkerboard_dual_trace_v240';
 const DUAL_OUTCOMES=['Winner','Unforced error','Forced error','Out','Tin','Stroke','Let'];
+const OUTCOME_COLORS={'Winner':'#22c55e','Unforced error':'#ef4444','Forced error':'#f97316','Out':'#94a3b8','Tin':'#eab308','Stroke':'#38bdf8','Let':'#a78bfa'};
 function dualTraceLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_TRACE_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
 function dualTraceSave(x){try{localStorage.setItem(DUAL_TRACE_KEY,JSON.stringify(x||[]));}catch{}}
 function dualPts(path){return (path||[]).map(p=>(p.nx*1347)+','+(p.ny*1743)).join(' ');}
@@ -16230,12 +16234,23 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     const gameForPush=justFinished?justFinished.num:gameNum;
     const outcomesForGame={};
     const shotsForGame=[];
-    rallies.filter(r=>r.game===gameForPush).forEach(r=>{outcomesForGame[r.outcome]=(outcomesForGame[r.outcome]||0)+1;(r.shots||[]).forEach(s=>shotsForGame.push({player:shotPlayer(s),path:s.path,contact:s.contact||null,strike:!!s.strike}));});
-    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
+    const regularContacts=[];
+    const finalContacts=[];
+    rallies.filter(r=>r.game===gameForPush).forEach(r=>{
+      outcomesForGame[r.outcome]=(outcomesForGame[r.outcome]||0)+1;
+      const arr=r.shots||[];
+      arr.forEach((s,i)=>{
+        shotsForGame.push({player:shotPlayer(s),path:s.path,strike:!!s.strike});
+        if(!s.contact)return;
+        if(i===arr.length-1)finalContacts.push({pt:s.contact,player:shotPlayer(s),outcome:r.outcome});
+        else regularContacts.push({pt:s.contact,player:shotPlayer(s)});
+      });
+    });
+    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,regularContacts,finalContacts,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
     try{return await writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{return false;}
   }
   function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});}
-  function pickOutcome(o){setOutcome(o);const all=(mode==='single'||mode==='strike')?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
+  function pickOutcome(o){setOutcome(o);const all=mode==='single'?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
   function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setWinnerPick(null);setActive(s);setServer(s);}
   function pickServer(s){setServer(s);resetRally(s);}
   function ptFromEvent(e){const r=e.currentTarget.getBoundingClientRect();const x=Math.max(0,Math.min(r.width,e.clientX-r.left));const y=Math.max(0,Math.min(r.height,e.clientY-r.top));return {nx:x/r.width,ny:y/r.height};}
@@ -16244,16 +16259,17 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function begin(surface,e){if(!canDraw(surface))return;e.preventDefault();try{e.currentTarget.setPointerCapture(e.pointerId);}catch(err){}drawing.current=true;const player=playerForSurface(surface);if(courts===2&&mode==='rally'&&shots.length===0){setServer(surface);setActive(surface);}const p=ptFromEvent(e);curRef.current={player,path:[p]};setCur({player,path:[p]});}
   function move(surface,e){if(!drawing.current||!curRef.current)return;e.preventDefault();const p=ptFromEvent(e);const path=curRef.current.path;const last=path[path.length-1];if(!last||Math.hypot((p.nx-last.nx)*1347,(p.ny-last.ny)*1743)>4){curRef.current={player:curRef.current.player,path:[...path,p]};setCur({player:curRef.current.player,path:curRef.current.path});}}
   function end(surface,e){if(!drawing.current)return;e.preventDefault();drawing.current=false;try{e.currentTarget.releasePointerCapture(e.pointerId);}catch(err){}const c=curRef.current;
-    if(mode==='strike'){if(!c||!c.path.length){curRef.current=null;setCur(null);return;}const p=c.path[0];const shotObj={player:c.player,path:[p,p],contact:p,strike:true};setPending(true);setOutcome('');setActive(shotObj.player);curRef.current=shotObj;setCur(shotObj);return;}
+    if(mode==='strike'){if(!c||!c.path.length){curRef.current=null;setCur(null);return;}const p=c.path[0];const shotObj={player:c.player,path:[p,p],contact:p,strike:true};setShots(prev=>[...prev,shotObj]);setActive(other(shotObj.player));curRef.current=null;setCur(null);return;}
     if(!c||c.path.length<3){curRef.current=null;setCur(null);return;}const shotObj=c;if(mode==='single'){setActive(shotObj.player);setPending(true);setOutcome('');curRef.current=shotObj;setCur(shotObj);}else{setShots(prev=>[...prev,shotObj]);setActive(other(shotObj.player));curRef.current=null;setCur(null);}}
   function endpointsFor(player){const pts=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});});shots.forEach(s=>{if(s.player===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});return pts;}
   function heatDots(surface){const out=[];const push=(shot)=>{if(shot.strike)return;const e=shot.path&&shot.path[shot.path.length-1];if(!e)return;const pl=other(shotPlayer(shot));if(surface&&pl!==surface)return;out.push({pt:e,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;(r.shots||[]).forEach(push);});shots.forEach(push);return out;}
-  function contactHeatDots(surface){const out=[];const push=(shot)=>{if(!shot.contact)return;const pl=shotPlayer(shot);if(surface&&pl!==surface)return;out.push({pt:shot.contact,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;(r.shots||[]).forEach(push);});shots.forEach(push);return out;}
+  function contactHeatDots(surface){const out=[];const push=(shot,isLast)=>{if(!shot.contact||isLast)return;const pl=shotPlayer(shot);if(surface&&pl!==surface)return;out.push({pt:shot.contact,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;const arr=r.shots||[];arr.forEach((s,i)=>push(s,i===arr.length-1));});shots.forEach((s,i)=>push(s,false));return out;}
+  function finalContactDots(surface){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;const arr=r.shots||[];if(!arr.length)return;const last=arr[arr.length-1];if(!last.contact)return;const pl=shotPlayer(last);if(surface&&pl!==surface)return;out.push({pt:last.contact,player:pl,outcome:r.outcome});});return out;}
   function savedShotsFor(player){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player)out.push(s);});});return out;}
-  function endRally(){if(mode==='rally'&&(shots.length||cur)){setPending(true);setOutcome('');}}
-  function save(){if(!outcome)return;if(outcome!=='Let'&&!winnerPick)return;const w=outcome==='Let'?null:winnerPick;if(mode==='single'||mode==='strike'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode,layout:courts,outcome,player:cur.player,winner:w,game:gameNum,names:{...names},shots:[cur]}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode:'rally',layout:courts,server,outcome,winner:w,game:gameNum,names:{...names},shots:all}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}}
+  function endRally(){if((mode==='rally'||mode==='strike')&&(shots.length||cur)){setPending(true);setOutcome('');}}
+  function save(){if(!outcome)return;if(outcome!=='Let'&&!winnerPick)return;const w=outcome==='Let'?null:winnerPick;if(mode==='single'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode,layout:courts,outcome,player:cur.player,winner:w,game:gameNum,names:{...names},shots:[cur]}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode,layout:courts,server,outcome,winner:w,game:gameNum,names:{...names},shots:all}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}}
   function cancel(){curRef.current=null;setCur(null);setPending(false);setOutcome('');setWinnerPick(null);}
-  function undoShot(){if(mode==='rally'&&shots.length){const last=shots[shots.length-1];setShots(prev=>prev.slice(0,-1));setActive(shotPlayer(last));}else{cancel();}}
+  function undoShot(){if((mode==='rally'||mode==='strike')&&shots.length){const last=shots[shots.length-1];setShots(prev=>prev.slice(0,-1));setActive(shotPlayer(last));}else{cancel();}}
   function undoRally(){setRallies(prev=>{if(!prev.length)return prev;const last=prev[prev.length-1];if(last.game!==gameNum){alert('No rallies to undo in the current game yet.');return prev;}if(last.winner)setScore(s=>({...s,[last.winner]:Math.max(0,s[last.winner]-1)}));return prev.slice(0,-1);});}
   function clearAll(){if(confirm('Clear all saved court-trace rallies? This also resets the score.')){setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);resetRally(server);}}
 
@@ -16271,10 +16287,11 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       <div className={"dctCourt"+(isLive?' live':'')} onPointerDown={e=>begin(surface,e)} onPointerMove={e=>move(surface,e)} onPointerUp={e=>end(surface,e)} onPointerCancel={e=>end(surface,e)} onContextMenu={e=>e.preventDefault()}>
         <img src={LMC_TRACE_MAP_DATA_URL} alt="court" draggable={false}/>
         <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
-          {!heatOn&&showSaved.map((s,i)=><polyline key={'sv'+i} points={dualPts(s.path)} fill="none" stroke={stroke[shotPlayer(s)]} strokeWidth="6" strokeOpacity="0.16" strokeLinecap="round" strokeLinejoin="round"/>)}
-          {!heatOn&&committed.map((s,i)=><polyline key={'c'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="8" strokeOpacity="0.75" strokeLinecap="round" strokeLinejoin="round"/>)}
+          {!heatOn&&showSaved.filter(s=>!s.strike).map((s,i)=><polyline key={'sv'+i} points={dualPts(s.path)} fill="none" stroke={stroke[shotPlayer(s)]} strokeWidth="6" strokeOpacity="0.16" strokeLinecap="round" strokeLinejoin="round"/>)}
+          {!heatOn&&committed.filter(s=>!s.strike).map((s,i)=><polyline key={'c'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="8" strokeOpacity="0.75" strokeLinecap="round" strokeLinejoin="round"/>)}
           {heatOn&&heatDots(single?null:surface).map((d,i)=><circle key={'h'+i} cx={d.pt.nx*1347} cy={d.pt.ny*1743} r="9" fill={stroke[d.player]} fillOpacity="0.68" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1.5"/>)}
           {contactHeatDots(single?null:surface).map((d,i)=><rect key={'ct'+i} x={d.pt.nx*1347-6} y={d.pt.ny*1743-6} width="12" height="12" fill={stroke[d.player]} fillOpacity="0.55" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1.3" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
+          {finalContactDots(single?null:surface).map((d,i)=><rect key={'fc'+i} x={d.pt.nx*1347-9} y={d.pt.ny*1743-9} width="18" height="18" fill={OUTCOME_COLORS[d.outcome]||stroke[d.player]} fillOpacity="0.9" stroke="#ffffff" strokeOpacity="0.9" strokeWidth="2" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
           {!heatOn&&contacts.map((g,i)=><circle key={'g'+i} cx={g.pt.nx*1347} cy={g.pt.ny*1743} r={g.last?24:16} fill="none" stroke={stroke[g.player]} strokeWidth={g.last?6:4} strokeDasharray={g.last?'0':'6 6'} strokeOpacity={g.last?1:0.7}/>)}
           {!heatOn&&curShown&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[cur.player]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
         </svg>
@@ -16286,7 +16303,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   }
 
   const showServerSel = courts===1 || mode==='rally';
-  const modeSel=(<><button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button><button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button><button type="button" className={'dctBtn'+(mode==='strike'?' on':'')} onClick={()=>{setMode('strike');resetRally(server);}}>Strike tap</button></>);
+  const modeSel=(<><button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button><button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button><button type="button" className={'dctBtn'+(mode==='strike'?' on':'')} onClick={()=>{setMode('strike');resetRally(server);}}>Contact tap</button></>);
   const courtSel=(<><button type="button" className={'dctBtn'+(courts===1?' on':'')} onClick={()=>{setCourts(1);resetRally(server);}}>1 Court</button><button type="button" className={'dctBtn'+(courts===2?' on':'')} onClick={()=>{setCourts(2);resetRally(server);}}>2 Courts</button></>);
   const serverSel=(<><button type="button" className={'dctBtn svrA'+(server==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(server==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>);
   const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={async()=>{const n=rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]).length;const ok=await pushCourtDisplay();const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(err){}if(ok){alert('Player display updated with '+n+' shot'+(n===1?'':'s')+' this game. Link copied — open it on the projector or second screen.');}else{alert('Push FAILED — the display was not updated (check network/VPN). Link copied anyway, but it may show old data.');}}}>Push + Copy Display</button></>);
@@ -16295,7 +16312,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const rallyBar=(mode==='rally'&&!pending)?(<div className="dctBar"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):null;
   const outcomePanel=pending?(<div className="dctOutcome"><div className="dctLabel">Outcome</div><div className="dctOutGrid">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><div className="dctRow2"><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div></div>):null;
   const winnerRow=outcome?(outcome==='Let'?(<div className="dctMuted" style={{textAlign:'center'}}>Let — replay, no winner, server unchanged.</div>):(<div className="dctWinnerRow"><span className="dctLabel" style={{margin:0}}>Who won the rally?</span><div className="dctWinnerBtns"><button type="button" className={'dctBtn svrA'+(winnerPick==='a'?' on':'')} onClick={()=>setWinnerPick('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(winnerPick==='b'?' on':'')} onClick={()=>setWinnerPick('b')}>{names.b}</button></div></div>)):null;
-  const dock=(<div className="dctDock">{pending?(<div className="dctDockInner"><div className="dctDockOut">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>pickOutcome(o)}>{o}</button>)}</div>{winnerRow}<button type="button" className="dctBtn green" disabled={!outcome||(outcome!=='Let'&&!winnerPick)} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div>):(mode==='rally'?(<div className="dctDockInner"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):mode==='strike'?(<div className="dctDockInner"><span className="dctMuted">Tap the strike/contact location — no trace needed.</span></div>):(<div className="dctDockInner"><span className="dctMuted">Trace the deciding shot, then choose the outcome.</span></div>))}</div>);
+  const dock=(<div className="dctDock">{pending?(<div className="dctDockInner"><div className="dctDockOut">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>pickOutcome(o)}>{o}</button>)}</div>{winnerRow}<button type="button" className="dctBtn green" disabled={!outcome||(outcome!=='Let'&&!winnerPick)} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div>):((mode==='rally'||mode==='strike')?(<div className="dctDockInner"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):(<div className="dctDockInner"><span className="dctMuted">Trace the deciding shot, then choose the outcome.</span></div>))}</div>);
   const scoreBar=(<div className="dctScoreBar">
     <div className="dctScoreSide"><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',-1)}>−</button><div className="dctScoreName">{names.a}</div><div className="dctScoreNum">{score.a}</div><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',1)}>+</button></div>
     <div className="dctScoreMid"><span className="dctGameTag">Game {gameNum}</span><button type="button" className="dctBtn" onClick={()=>{if(confirm('End Game '+gameNum+' — '+names.a+' '+score.a+' : '+score.b+' '+names.b+'? Score resets for a new game.'))endGame();}}>End Game</button></div>
