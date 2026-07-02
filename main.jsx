@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v252 Court Trace · display heat map, server fix, dock inset';
+const APP_VERSION='v253 Court Trace · push failure visibility, vh fallback';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -15942,7 +15942,7 @@ function CourtTraceGamePlayerDisplay({payload}){
           </svg>
         </div>
         <div className="courtDisplayLegend"><span><span className="courtDisplayDot" style={{background:stroke.a}}></span>{names.a}</span><span><span className="courtDisplayDot" style={{background:stroke.b}}></span>{names.b}</span></div>
-        {!shotsForGame.length&&<div className="courtDisplayMuted" style={{textAlign:'center',marginTop:10}}>No traced shots yet this game.</div>}
+        <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:8,fontSize:'.8rem'}}>{shotsForGame.length} shot{shotsForGame.length===1?'':'s'} plotted this game{payload?.updatedAt?' · updated '+new Date(payload.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</div>
       </div>
     </div>
   </div>;
@@ -16157,7 +16157,7 @@ const dctCss=`
 .dctDock{position:static;width:100%;max-width:1040px;margin:0 auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctDockInner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1040px;margin:0 auto}
 .dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
-.dctCourtOverlay{position:absolute;left:0;right:0;bottom:16px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
+.dctCourtOverlay{position:absolute;left:0;right:0;bottom:28px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
 .dctCourtOverlay>*{pointer-events:auto}
 .dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
@@ -16168,8 +16168,8 @@ const dctCss=`
 .dctRailFloat{display:flex;flex-direction:column;gap:7px;width:200px;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctRailFloat .dctBtn{width:100%;text-align:center}
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
-.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100dvh - 24px)}
-.dctFullWrap .dctCourt{flex:0 0 auto;height:min(86dvh,calc(100dvh - 8px));width:min(66dvh,calc((100dvh - 8px)*0.7728));max-width:94vw}
+.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(74vh,calc(100vh - 110px));width:min(57vh,calc((100vh - 110px)*0.7728));max-width:90vw;height:min(74dvh,calc(100dvh - 110px));width:min(57dvh,calc((100dvh - 110px)*0.7728))}
 @media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:60%}.dctRailFloat{width:170px}}
 .dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;max-width:640px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:9px 14px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-bottom:12px}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
@@ -16224,13 +16224,13 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     return null; // Let = replay, no winner, server unchanged
   }
   function adjustScore(p,delta){setScore(s=>({...s,[p]:Math.max(0,s[p]+delta)}));}
-  function pushCourtDisplay(justFinished){
+  async function pushCourtDisplay(justFinished){
     const gameForPush=justFinished?justFinished.num:gameNum;
     const outcomesForGame={};
     const shotsForGame=[];
     rallies.filter(r=>r.game===gameForPush).forEach(r=>{outcomesForGame[r.outcome]=(outcomesForGame[r.outcome]||0)+1;(r.shots||[]).forEach(s=>shotsForGame.push({player:shotPlayer(s),path:s.path}));});
-    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,updatedAt:new Date().toISOString()};
-    try{writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{}
+    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
+    try{return await writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{return false;}
   }
   function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});}
   function pickOutcome(o){setOutcome(o);const all=mode==='single'?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
@@ -16283,7 +16283,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const modeSel=(<><button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button><button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button></>);
   const courtSel=(<><button type="button" className={'dctBtn'+(courts===1?' on':'')} onClick={()=>{setCourts(1);resetRally(server);}}>1 Court</button><button type="button" className={'dctBtn'+(courts===2?' on':'')} onClick={()=>{setCourts(2);resetRally(server);}}>2 Courts</button></>);
   const serverSel=(<><button type="button" className={'dctBtn svrA'+(server==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(server==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>);
-  const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={()=>{pushCourtDisplay();const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(err){}alert('Player display updated with the current score. Link copied — open it on the projector or second screen.');}}>Push + Copy Display</button></>);
+  const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={async()=>{const n=rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]).length;const ok=await pushCourtDisplay();const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(err){}if(ok){alert('Player display updated with '+n+' shot'+(n===1?'':'s')+' this game. Link copied — open it on the projector or second screen.');}else{alert('Push FAILED — the display was not updated (check network/VPN). Link copied anyway, but it may show old data.');}}}>Push + Copy Display</button></>);
   const backBtn=(<button type="button" className="dctBtn back" onClick={()=>onBack?onBack():setScreen('home')}>← Menu</button>);
   const nameEditor=(<><div className="dctRailLabel">Players · A = your player</div><input value={names.a} onChange={e=>setNames(n=>({...n,a:e.target.value}))} placeholder="Player A"/><input value={names.b} onChange={e=>setNames(n=>({...n,b:e.target.value}))} placeholder="Player B"/></>);
   const rallyBar=(mode==='rally'&&!pending)?(<div className="dctBar"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):null;
