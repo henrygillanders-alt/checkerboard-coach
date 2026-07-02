@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v243 Court Trace · big single + names';
+const APP_VERSION='v244 Court Trace · fix court render';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16096,7 +16096,7 @@ const dctCss=`
 .dctRail input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:9px;font-weight:850;font-size:.9rem}
 .dctRailLabel{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#8ea6bc;font-weight:900;margin:8px 0 -1px}
 .dctStageMid{flex:1;display:flex;align-items:center;justify-content:center;min-width:0}
-.dctStageMid .dctCourt{height:min(94vh,calc(100vh - 20px));width:auto;max-width:100%}
+.dctStageMid .dctCourt{flex:0 0 auto;height:min(92vh,calc(100vh - 20px));width:min(71vh,calc((100vh - 20px)*0.7728));max-width:94vw}
 @media(max-width:820px){.dctStage{flex-direction:column;min-height:0}.dctRail,.dctRail.right{width:auto;flex-direction:row;flex-wrap:wrap;align-items:center}.dctRail .dctBtn{width:auto}.dctRail input{width:150px}.dctStageMid .dctCourt{height:auto;width:100%}}
 `;
 function DualCourtTraceModule({onBack,setScreen,seedNames}){
@@ -16115,7 +16115,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const drawing=useRef(false);
   const curRef=useRef(null);
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
-  useEffect(()=>{const oO=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=oO;};},[]);
+  
   const stroke={a:'#57b0dd',b:'#f1b84b'};
   const other=p=>p==='a'?'b':'a';
   function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setActive(s);}
