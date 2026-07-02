@@ -16057,7 +16057,7 @@ function dualTraceSave(x){try{localStorage.setItem(DUAL_TRACE_KEY,JSON.stringify
 function dualPts(path){return (path||[]).map(p=>(p.nx*1347)+','+(p.ny*1743)).join(' ');}
 function shotPlayer(s){return s.player||s.court||'a';}
 const dctCss=`
-.dctPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:12px 12px 108px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.dctPage{min-height:100vh;background:#061020;color:#eaf4fb;padding:12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
 .dctTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
 .dctTitle h1{margin:0;font-size:1.4rem}.dctTitle p{margin:3px 0 0;color:#9fb3c4;font-size:.86rem;max-width:64ch;line-height:1.35}
 .dctActions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
@@ -16088,9 +16088,11 @@ const dctCss=`
 .dctLogItem{border:1px solid #21364f;background:#07111f;border-radius:12px;padding:8px;margin-top:7px;font-size:.85rem}
 .dctPill{display:inline-block;border:1px solid #3b82f6;background:#10294a;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.78rem}
 .dctMuted{color:#9fb3c4}
-.dctDock{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(6,16,32,.97);border-top:1px solid #22405f;padding:10px 12px;box-shadow:0 -8px 20px rgba(0,0,0,.35)}
+.dctDock{position:static;width:100%;max-width:1040px;margin:0 auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctDockInner{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;max-width:1040px;margin:0 auto}
 .dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.dctCourtOverlay{position:absolute;left:0;right:0;bottom:0;z-index:40;display:flex;flex-direction:column;align-items:center;padding:10px 10px 14px;pointer-events:none}
+.dctCourtOverlay>*{pointer-events:auto}
 /* single-court stage */
 .dctStage{display:flex;gap:12px;align-items:stretch;min-height:calc(100vh - 150px)}
 .dctRail{display:flex;flex-direction:column;gap:7px;width:200px;flex:0 0 auto}
@@ -16139,7 +16141,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function undoRally(){setRallies(prev=>prev.slice(0,-1));}
   function clearAll(){if(confirm('Clear all saved court-trace rallies?')){setRallies([]);resetRally(server);}}
 
-  function Surface({surface}){
+  function Surface({surface,overlay}){
     const single=courts===1;
     const isLive=mode==='rally'&&!pending&&(single||surface===active);
     const showSaved=single?rallies.flatMap(r=>r.shots||[]):savedShotsFor(surface);
@@ -16159,6 +16161,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
           {!heatOn&&contacts.map((g,i)=><circle key={'g'+i} cx={g.pt.nx*1347} cy={g.pt.ny*1743} r={g.last?24:16} fill="none" stroke={stroke[g.player]} strokeWidth={g.last?6:4} strokeDasharray={g.last?'0':'6 6'} strokeOpacity={g.last?1:0.7}/>)}
           {!heatOn&&curShown&&<polyline points={dualPts(cur.path)} fill="none" stroke={stroke[cur.player]} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>}
         </svg>
+        {overlay&&<div className="dctCourtOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{overlay}</div>}
       </div>
     </div>;
   }
@@ -16189,9 +16192,8 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
           {savedCard}
           {logCard}
         </div>
-        <div className="dctStageMid"><Surface surface="one"/></div>
+        <div className="dctStageMid"><Surface surface="one" overlay={dock}/></div>
       </div>
-      {dock}
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
