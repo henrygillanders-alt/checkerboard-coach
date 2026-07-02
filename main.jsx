@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v258 Court Trace · contact-only taps, decisive-shot scatter';
+const APP_VERSION='v260 Press Call · advantage shot-clock (Self/Coach/Opponent-called)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3757,6 +3757,184 @@ function ShotBonusRally({setSession}){
         <button className="primaryBtn" onClick={addToSession} disabled={selectedShots.length===0}>Add To Session</button>
         <button className="sbrLiveBtn" role="button" tabIndex={0} onClick={()=>setLiveMode(true)}>Start Live Tally</button>
         {added&&<span className="sbrAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// Standalone games-library module (kept OUT of the Universal Modifier Engine).
+// Restricted-zone play with a configurable "breakout" mechanic. Players are
+// confined to a restricted Checkerboard zone / zone-set; either player may play
+// one breakout shot out into a target zone / zone-set. Tier 1 = base rule (one-shot
+// finish pressure only triggers if the opponent recovers the ball and returns it
+// back into the restricted zone). Tier 2 = the breakout shot must land in a
+// nominated target zone and starts an unconditional shot-count pressure window
+// (win within N shots or the point is forfeit, regardless of what happens in play).
+const BREAKOUT_ZONE_PRESETS=[
+  {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],note:'Players restricted to the front-left quarter (zone 2). Breakout shot escapes into the front-right quarter (zone 1).'},
+  {id:'egyptian',label:'Egyptian Half-Court (Zone 2/3)',restricted:['2','3'],breakout:['1','4'],note:'Players restricted to the diagonal half-court (front-left + back-right, zones 2/3). Breakout escapes into the opposite diagonal (zones 1/4).'},
+  {id:'custom',label:'Custom Pairing',restricted:[],breakout:[],note:'Pick your own restricted zone(s) and breakout target zone(s) below.'}
+];
+const BREAKOUT_ZONES=['1','2','3','4'];
+const BREAKOUT_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
+const BREAKOUT_SHOT_LIMITS=['2','3','4','5'];
+function BreakoutSquash({setSession}){
+  const [presetId,setPresetId]=useState('base');
+  const [restrictedZones,setRestrictedZones]=useState(['2']);
+  const [breakoutZones,setBreakoutZones]=useState(['1']);
+  const [tier,setTier]=useState('1');
+  const [shotLimit,setShotLimit]=useState('3');
+  const [added,setAdded]=useState('');
+  function choosePreset(p){
+    setPresetId(p.id);
+    if(p.id!=='custom'){setRestrictedZones([...p.restricted]);setBreakoutZones([...p.breakout]);}
+  }
+  function toggleRestricted(z){setPresetId('custom');setRestrictedZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
+  function toggleBreakout(z){setPresetId('custom');setBreakoutZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
+  const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${BREAKOUT_ZONE_DESC[z]})`).join(' / '):'—';
+  const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${BREAKOUT_ZONE_DESC[z]})`).join(' / '):'—';
+  function buildTask(){
+    const base=`Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>BREAKOUT_ZONE_DESC[z]).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>BREAKOUT_ZONE_DESC[z]).join(' / ')||'none set'}).`;
+    if(tier==='1'){
+      return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must finish the rally in ONE shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
+    }
+    return `${base} The breakout shot must land in the nominated target zone(s) above to count. Once it lands, an unconditional pressure window starts: the breakout player must win the rally within ${shotLimit} shots of play (counting both players' shots from the breakout shot onward) or the point is forfeit to the opponent automatically — regardless of who is on top in the rally when the window closes.`;
+  }
+  function buildScoring(){
+    if(tier==='1')return `Normal rally scoring. Breakout pressure triggered = win rally in 1 shot for the point; fail to finish in 1 shot after the opponent restores the restricted zone = automatic loss of rally.`;
+    return `Normal rally scoring. Breakout pressure triggered on landing = win rally within ${shotLimit} shots for the point; rally reaching shot ${Number(shotLimit)+1} without a finish = automatic loss of rally to the opponent.`;
+  }
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside the count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const STYLE=`
+.brkWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #e08a34;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.brkSection{margin:14px 0;}
+.brkLabel{color:#f0c49c;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.brkChips{display:flex;flex-wrap:wrap;gap:8px;}
+.brkChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.brkChip.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
+.brkTierRow{display:flex;gap:8px;}
+.brkTierBtn{flex:1;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
+.brkTierBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
+.brkTierBtn.on{border-color:#e08a34;background:#2a1c0c;}
+.brkZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:320px;}
+.brkZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 4px;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;font-size:0.78rem;}
+.brkZoneBtn.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
+.brkZoneBtn.restrictedOn{border-color:#4a90d6;background:#0c1e2e;color:#bcd6f5;}
+.brkHint{color:#9fb6cf;font-size:0.82rem;margin:6px 0 0;line-height:1.4;}
+.brkBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.brkBox strong{display:block;color:#f0c49c;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.brkBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.brkAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.brkAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}`;
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>🚪 Breakout Squash</h2><p>Restricted-zone rally with a configurable breakout mechanic. Either player may escape the restricted zone with one shot — but escaping brings pressure with it.</p></div>
+    <div className="brkWrap">
+      <div className="brkSection">
+        <div className="brkLabel">1. Zone pairing</div>
+        <div className="brkChips">{BREAKOUT_ZONE_PRESETS.map(p=><div key={p.id} role="button" tabIndex={0} className={presetId===p.id?'brkChip on':'brkChip'} onClick={()=>choosePreset(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePreset(p);}}>{p.label}</div>)}</div>
+        <p className="brkHint">{BREAKOUT_ZONE_PRESETS.find(p=>p.id===presetId)?.note||''}</p>
+        <div style={{marginTop:12}}>
+          <div className="brkLabel">Restricted zone(s)</div>
+          <div className="brkZoneGrid">{BREAKOUT_ZONES.map(z=><div key={'r'+z} role="button" tabIndex={0} className={restrictedZones.includes(z)?'brkZoneBtn restrictedOn':'brkZoneBtn'} onClick={()=>toggleRestricted(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleRestricted(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
+        </div>
+        <div style={{marginTop:12}}>
+          <div className="brkLabel">Breakout target zone(s)</div>
+          <div className="brkZoneGrid">{BREAKOUT_ZONES.map(z=><div key={'b'+z} role="button" tabIndex={0} className={breakoutZones.includes(z)?'brkZoneBtn on':'brkZoneBtn'} onClick={()=>toggleBreakout(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleBreakout(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
+        </div>
+        <p className="brkHint">Restricted: {restrictedLabel} · Breakout target: {breakoutLabel}</p>
+      </div>
+      <div className="brkSection">
+        <div className="brkLabel">2. Tier</div>
+        <div className="brkTierRow">
+          <div role="button" tabIndex={0} className={tier==='1'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('1')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('1');}}>Tier 1 — Breakout & Return<span>One-shot finish only if opponent restores the restricted zone</span></div>
+          <div role="button" tabIndex={0} className={tier==='2'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>Tier 2 — Nominated Zone<span>Land it in the target zone, then win within N shots</span></div>
+        </div>
+        {tier==='2'&&<div style={{marginTop:10}}>
+          <div className="brkLabel">Shot-count window</div>
+          <div className="brkChips">{BREAKOUT_SHOT_LIMITS.map(n=><div key={n} role="button" tabIndex={0} className={shotLimit===n?'brkChip on':'brkChip'} onClick={()=>setShotLimit(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotLimit(n);}}>{n} shots</div>)}</div>
+        </div>}
+      </div>
+      <div className="brkBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="brkBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+      <div className="brkAddRow">
+        <button className="primaryBtn" onClick={addToSession} disabled={restrictedZones.length===0||breakoutZones.length===0}>Add To Session</button>
+        {added&&<span className="brkAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// Standalone games-library module (kept OUT of the Universal Modifier Engine).
+// The advantage-pressing counterpart to Breakout Squash. No zone restriction —
+// normal open rally play. At any point a "Press" is called (self, coach, or
+// opponent) and from that moment the pressing player must win the rally within
+// a configurable shot count or the point is forfeit automatically. Where
+// Breakout is an escape bet (get out of trouble), Press Call is an advantage
+// bet (cash in a moment already created) — same shot-clock mechanic, opposite
+// psychological trigger, so the two must stay separate games with separate names.
+const PRESS_CALL_MODES=[
+  {id:'self',label:'Self-Call',desc:'The player calls "Press" the moment they judge that advantage has been created. Tests judgement of when the moment is actually on.'},
+  {id:'coach',label:'Coach-Called',desc:'The coach calls "Press" for a player at a moment of the coach\u2019s choosing — removes self-judgement and tests execution under an externally imposed clock.'},
+  {id:'opponent',label:'Opponent-Called',desc:'The opponent calls "Press" on their rival mid-rally — tests composure and finishing under a clock the player did not choose to start.'}
+];
+const PRESS_CALL_SHOT_LIMITS=['2','3','4','5'];
+function PressCallModule({setSession}){
+  const [modeId,setModeId]=useState('self');
+  const [shotLimit,setShotLimit]=useState('3');
+  const [added,setAdded]=useState('');
+  const mode=PRESS_CALL_MODES.find(m=>m.id===modeId);
+  function buildTask(){
+    const who=modeId==='self'?'Either player, at any point in normal open rally play, may call "Press" the moment they judge they have created a genuine advantage.':modeId==='coach'?'The coach calls "Press" for a designated player at a moment of the coach\u2019s choosing during normal open rally play.':'Either player may call "Press" on their opponent mid-rally during normal open rally play — the call is made by the opponent, not the player under pressure.';
+    return `${who} No court zone restriction. The moment "Press" is called, the pressing player must win the rally within ${shotLimit} shots (counting both players' shots from the call onward) or the point is forfeit automatically — regardless of who is on top in the rally when the count ends. This is an advantage bet, not an escape: the call should only be made when the advantage is real, because the clock starts the instant it's declared.`;
+  }
+  function buildScoring(){
+    return `Normal rally scoring until a Press is called. From the call: win the rally within ${shotLimit} shots for the point; rally reaching shot ${Number(shotLimit)+1} without a finish = automatic loss of rally, even if the pressing player is still in control of the point.`;
+  }
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const card={id:Date.now()+Math.random(),title:`Press Call — ${mode.label} (${shotLimit}-shot)`,category:'Press Call',format:'Open Rally + Shot Clock',duration:9,task:buildTask(),rationale:'Trains the decision to press an advantage rather than just rallying opportunistically — the shot-clock cost of a wrong or early call teaches players to wait for a real opening before committing.',coach:modeId==='self'?'Do not coach the timing of the call directly — let bad calls (pressing too early, with no real advantage) cost the point and let that feedback do the teaching. Ask after a lost press: "was that advantage, or just aggression?"':modeId==='coach'?'Use this to test finishing under a clock the player did not choose to start — useful once self-call judgement is already solid and you want pure execution data.':'Use sparingly — this tests composure under an externally imposed clock and can feel punitive if overused. Best as an occasional layer once Self-Call is well established.',playerFocus:modeId==='self'?'Only call it when the advantage is real — then finish.':'Finish inside the count, however the pressure arrived.',scoring:buildScoring(),layers:['Decision Making','Shot Economy','Composure Under Pressure'],rld:modeId==='self'?4:5};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const STYLE=`
+.pcWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #34e07a;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.pcSection{margin:14px 0;}
+.pcLabel{color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.pcChips{display:flex;flex-wrap:wrap;gap:8px;}
+.pcChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.pcChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.pcModeRow{display:flex;flex-direction:column;gap:8px;}
+.pcModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
+.pcModeBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
+.pcModeBtn.on{border-color:#34e07a;background:#0c2418;}
+.pcBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.pcBox strong{display:block;color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.pcBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.pcAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.pcAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}`;
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>⚡ Press Call</h2><p>Normal open rally play with a self-declared (or coach/opponent-declared) shot-clock. Calling "Press" is a bet that advantage has already been created — get it wrong and the clock costs you the point.</p></div>
+    <div className="pcWrap">
+      <div className="pcSection">
+        <div className="pcLabel">1. Who calls Press</div>
+        <div className="pcModeRow">{PRESS_CALL_MODES.map(m=><div key={m.id} role="button" tabIndex={0} className={modeId===m.id?'pcModeBtn on':'pcModeBtn'} onClick={()=>setModeId(m.id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setModeId(m.id);}}>{m.label}<span>{m.desc}</span></div>)}</div>
+      </div>
+      <div className="pcSection">
+        <div className="pcLabel">2. Shot-count window</div>
+        <div className="pcChips">{PRESS_CALL_SHOT_LIMITS.map(n=><div key={n} role="button" tabIndex={0} className={shotLimit===n?'pcChip on':'pcChip'} onClick={()=>setShotLimit(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotLimit(n);}}>{n} shots</div>)}</div>
+      </div>
+      <div className="pcBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="pcBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+      <div className="pcAddRow">
+        <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
+        {added&&<span className="pcAdded">Added: {added}</span>}
       </div>
     </div>
   </div>;
@@ -9829,6 +10007,8 @@ function Games({setSession,setScreen}){
     {id:'rotations',label:'Rotations',category:'Rotations'},
     {id:'errors',label:'Common Game Errors',category:'Common Game Errors'},
     {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally'},
+    {id:'breakout',label:'Breakout Squash',category:'Breakout Squash'},
+    {id:'presscall',label:'Press Call',category:'Press Call'},
     {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -9924,10 +10104,12 @@ function Games({setSession,setScreen}){
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
     {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
     {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
+    {activeClassId==='breakout'&&<BreakoutSquash setSession={setSession}/>}
+    {activeClassId==='presscall'&&<PressCallModule setSession={setSession}/>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -14977,6 +15159,8 @@ const SEARCH_DESTINATIONS=[
   {label:'Tin War',sub:'Games Library',kw:'tin war height ladder climb',screen:'games',classId:'tinwar'},
   {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
   {label:'Shot Bonus Rally',sub:'Games Library · Standalone',kw:'shot bonus rally repetition finish tactical live tally zone restriction affordance straight drop central corridor volley boast',screen:'gamesLibrary'},
+  {label:'Breakout Squash',sub:'Games Library · Standalone',kw:'breakout squash restricted zone escape egyptian half court nominated zone shot limit pressure',screen:'games',classId:'breakout'},
+  {label:'Press Call',sub:'Games Library · Standalone',kw:'press call cash in advantage shot clock self call coach called opponent called finish',screen:'games',classId:'presscall'},
 ];
 
 function buildSearchIndex(){
