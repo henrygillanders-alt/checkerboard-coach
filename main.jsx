@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v260 Press Call · advantage shot-clock (Self/Coach/Opponent-called)';
+const APP_VERSION='v261 Press Call + Court Trace legend/save-match/fixes merged';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16306,6 +16306,9 @@ const lmfCss=`
 `;
 
 const DUAL_TRACE_KEY='checkerboard_dual_trace_v240';
+const DUAL_MATCHES_KEY='checkerboard_dual_trace_matches_v1';
+function dualMatchesLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_MATCHES_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
+function dualMatchesSave(x){try{localStorage.setItem(DUAL_MATCHES_KEY,JSON.stringify(x||[]));}catch{}}
 const DUAL_OUTCOMES=['Winner','Unforced error','Forced error','Out','Tin','Stroke','Let'];
 const OUTCOME_COLORS={'Winner':'#22c55e','Unforced error':'#ef4444','Forced error':'#f97316','Out':'#94a3b8','Tin':'#eab308','Stroke':'#38bdf8','Let':'#a78bfa'};
 function dualTraceLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_TRACE_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
@@ -16353,6 +16356,16 @@ const dctCss=`
 .dctCourtTopOverlay>*{pointer-events:auto}
 .dctCourtLeftOverlay{position:absolute;left:0;top:78px;bottom:96px;z-index:45;display:flex;align-items:flex-start;max-width:20%;padding:6px;pointer-events:none}
 .dctCourtLeftOverlay>*{pointer-events:auto}
+.dctCourtLegend{position:absolute;right:0;top:0;z-index:45;padding:8px;pointer-events:none;max-width:34%}
+.dctCourtLegend>*{pointer-events:auto}
+.dctLegend{display:flex;flex-direction:column;gap:5px;background:rgba(6,16,32,.93);border:1px solid #22405f;border-radius:14px;padding:9px 11px;box-shadow:0 8px 22px rgba(0,0,0,.35);font-size:.72rem;color:#cfe0ee}
+.dctLegendRow{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.dctLegendDot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.dctLegendDiamond{width:10px;height:10px;flex:0 0 auto;transform:rotate(45deg)}
+.dctLegendDiamond.small{width:7px;height:7px}
+.dctLegendCircle{width:10px;height:10px;border-radius:50%;background:#57b0dd;flex:0 0 auto}
+.dctLegendSep{height:1px;background:#22405f;margin:2px 0}
+@media(max-width:820px){.dctCourtLegend{max-width:50%}.dctLegend{font-size:.65rem}}
 .dctRailFloatWrap{display:flex;flex-direction:column;gap:6px;max-height:100%;min-width:0}
 .dctRailToggle{align-self:flex-start;appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;padding:8px 12px;font-weight:850;font-size:.76rem;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .dctRailFloat{display:flex;flex-direction:column;gap:6px;width:100%;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
@@ -16388,6 +16401,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const [courts,setCourts]=useState(1);
   const [server,setServer]=useState('a');
   const [rallies,setRallies]=useState(()=>dualTraceLoad());
+  const [matches,setMatches]=useState(()=>dualMatchesLoad());
   const [active,setActive]=useState('a');
   const [shots,setShots]=useState([]);
   const [cur,setCur]=useState(null);
@@ -16403,6 +16417,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const drawing=useRef(false);
   const curRef=useRef(null);
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
+  useEffect(()=>{dualMatchesSave(matches);},[matches]);
   useEffect(()=>{const oO=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=oO;};},[]);
   const stroke={a:'#57b0dd',b:'#f1b84b'};
   const other=p=>p==='a'?'b':'a';
@@ -16434,6 +16449,20 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     try{return await writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{return false;}
   }
   function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});}
+  function saveMatch(){
+    let gList=games;
+    if(score.a>0||score.b>0){
+      if(!confirm('Game '+gameNum+' is still in progress ('+score.a+'–'+score.b+'). End it and include it in the match before saving?'))return;
+      gList=[...games,{num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()}];
+    }
+    if(!gList.length){alert('No completed games to save yet — play at least one game first.');return;}
+    const winsA=gList.filter(g=>g.a>g.b).length;
+    const winsB=gList.filter(g=>g.b>g.a).length;
+    const matchRecord={id:Date.now(),names:{...names},games:gList,winsA,winsB,endedAt:new Date().toISOString()};
+    setMatches(prev=>[...prev,matchRecord]);
+    setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);resetRally(server);
+    alert('Match saved — '+gList.length+' game'+(gList.length===1?'':'s')+' ('+names.a+' '+winsA+' – '+winsB+' '+names.b+'). Board cleared for a new match.');
+  }
   function pickOutcome(o){setOutcome(o);const all=mode==='single'?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
   function resetRally(nextServer){const s=nextServer||server;curRef.current=null;setCur(null);setShots([]);setPending(false);setOutcome('');setWinnerPick(null);setActive(s);setServer(s);}
   function pickServer(s){setServer(s);resetRally(s);}
@@ -16457,7 +16486,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function undoRally(){setRallies(prev=>{if(!prev.length)return prev;const last=prev[prev.length-1];if(last.game!==gameNum){alert('No rallies to undo in the current game yet.');return prev;}if(last.winner)setScore(s=>({...s,[last.winner]:Math.max(0,s[last.winner]-1)}));return prev.slice(0,-1);});}
   function clearAll(){if(confirm('Clear all saved court-trace rallies? This also resets the score.')){setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);resetRally(server);}}
 
-  function Surface({surface,overlay,topOverlay,leftOverlay}){
+  function Surface({surface,overlay,topOverlay,leftOverlay,legend}){
     const single=courts===1;
     const isLive=mode==='rally'&&!pending&&(single||surface===active);
     const showSaved=single?rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]):savedShotsFor(surface);
@@ -16481,6 +16510,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
         </svg>
         {topOverlay&&<div className="dctCourtTopOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{topOverlay}</div>}
         {leftOverlay&&<div className="dctCourtLeftOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{leftOverlay}</div>}
+        {legend&&<div className="dctCourtLegend" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{legend}</div>}
         {overlay&&<div className="dctCourtOverlay" onPointerDown={e=>e.stopPropagation()} onPointerMove={e=>e.stopPropagation()} onPointerUp={e=>e.stopPropagation()} onPointerCancel={e=>e.stopPropagation()}>{overlay}</div>}
       </div>
     </div>;
@@ -16490,18 +16520,33 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const modeSel=(<><button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button><button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button><button type="button" className={'dctBtn'+(mode==='strike'?' on':'')} onClick={()=>{setMode('strike');resetRally(server);}}>Contact tap</button></>);
   const courtSel=(<><button type="button" className={'dctBtn'+(courts===1?' on':'')} onClick={()=>{setCourts(1);resetRally(server);}}>1 Court</button><button type="button" className={'dctBtn'+(courts===2?' on':'')} onClick={()=>{setCourts(2);resetRally(server);}}>2 Courts</button></>);
   const serverSel=(<><button type="button" className={'dctBtn svrA'+(server==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(server==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>);
-  const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={async()=>{const n=rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]).length;const ok=await pushCourtDisplay();const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());try{navigator.clipboard&&navigator.clipboard.writeText(u);}catch(err){}if(ok){alert('Player display updated with '+n+' shot'+(n===1?'':'s')+' this game. Link copied — open it on the projector or second screen.');}else{alert('Push FAILED — the display was not updated (check network/VPN). Link copied anyway, but it may show old data.');}}}>Push + Copy Display</button></>);
+  const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={()=>{const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());let copied=false;try{navigator.clipboard&&navigator.clipboard.writeText(u);copied=true;}catch(err){}const n=rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]).length;pushCourtDisplay().then(ok=>{if(ok){alert((copied?'Link copied. ':'Could not copy link — open manually: '+u+'. ')+'Player display updated with '+n+' shot'+(n===1?'':'s')+' this game.');}else{alert((copied?'Link copied, but the ':'Could not copy link, and the ')+'push FAILED — display may show old data (check network/VPN).');}});}}>Push + Copy Display</button></>);
   const backBtn=(<button type="button" className="dctBtn back" onClick={()=>onBack?onBack():setScreen('home')}>← Menu</button>);
-  const nameEditor=(<><div className="dctRailLabel">Players · A = your player</div><input value={names.a} onChange={e=>setNames(n=>({...n,a:e.target.value}))} placeholder="Player A"/><input value={names.b} onChange={e=>setNames(n=>({...n,b:e.target.value}))} placeholder="Player B"/></>);
+  const nameEditor=(<><div className="dctRailLabel">Players · A = your player</div><input value={names.a} onChange={e=>setNames(n=>({...n,a:e.target.value}))} onPointerDown={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()} autoComplete="off" autoCorrect="off" autoCapitalize="words" spellCheck="false" placeholder="Player A"/><input value={names.b} onChange={e=>setNames(n=>({...n,b:e.target.value}))} onPointerDown={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()} autoComplete="off" autoCorrect="off" autoCapitalize="words" spellCheck="false" placeholder="Player B"/></>);
   const rallyBar=(mode==='rally'&&!pending)?(<div className="dctBar"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):null;
   const outcomePanel=pending?(<div className="dctOutcome"><div className="dctLabel">Outcome</div><div className="dctOutGrid">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><div className="dctRow2"><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div></div>):null;
   const winnerRow=outcome?(outcome==='Let'?(<div className="dctMuted" style={{textAlign:'center'}}>Let — replay, no winner, server unchanged.</div>):(<div className="dctWinnerRow"><span className="dctLabel" style={{margin:0}}>Who won the rally?</span><div className="dctWinnerBtns"><button type="button" className={'dctBtn svrA'+(winnerPick==='a'?' on':'')} onClick={()=>setWinnerPick('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(winnerPick==='b'?' on':'')} onClick={()=>setWinnerPick('b')}>{names.b}</button></div></div>)):null;
   const dock=(<div className="dctDock">{pending?(<div className="dctDockInner"><div className="dctDockOut">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>pickOutcome(o)}>{o}</button>)}</div>{winnerRow}<button type="button" className="dctBtn green" disabled={!outcome||(outcome!=='Let'&&!winnerPick)} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div>):((mode==='rally'||mode==='strike')?(<div className="dctDockInner"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):(<div className="dctDockInner"><span className="dctMuted">Trace the deciding shot, then choose the outcome.</span></div>))}</div>);
+  const legendPanel=(<div className="dctLegend">
+    <div className="dctLegendRow"><span className="dctLegendDot" style={{background:stroke.a}}></span>{names.a}</div>
+    <div className="dctLegendRow"><span className="dctLegendDot" style={{background:stroke.b}}></span>{names.b}</div>
+    <div className="dctLegendSep"></div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond small" style={{background:'#8ea8bd'}}></span>Contact (in rally)</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Winner']}}></span>Winner</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Unforced error']}}></span>Unforced error</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Forced error']}}></span>Forced error</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Tin']}}></span>Tin</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Out']}}></span>Out</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Stroke']}}></span>Stroke</div>
+    <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Let']}}></span>Let</div>
+    {heatOn&&<><div className="dctLegendSep"></div><div className="dctLegendRow"><span className="dctLegendCircle"></span>Landing heat (traced shots)</div></>}
+  </div>);
   const scoreBar=(<div className="dctScoreBar">
     <div className="dctScoreSide"><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',-1)}>−</button><div className="dctScoreName">{names.a}</div><div className="dctScoreNum">{score.a}</div><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',1)}>+</button></div>
-    <div className="dctScoreMid"><span className="dctGameTag">Game {gameNum}</span><button type="button" className="dctBtn" onClick={()=>{if(confirm('End Game '+gameNum+' — '+names.a+' '+score.a+' : '+score.b+' '+names.b+'? Score resets for a new game.'))endGame();}}>End Game</button></div>
+    <div className="dctScoreMid"><span className="dctGameTag">Game {gameNum}</span><button type="button" className="dctBtn" onClick={()=>{if(confirm('Save Game '+gameNum+' — '+names.a+' '+score.a+' : '+score.b+' '+names.b+'? Score resets for a new game.'))endGame();}}>Save + New Game</button><button type="button" className="dctBtn green" onClick={saveMatch}>Save Match</button></div>
     <div className="dctScoreSide"><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('b',-1)}>−</button><div className="dctScoreName">{names.b}</div><div className="dctScoreNum">{score.b}</div><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('b',1)}>+</button></div>
   </div>);
+  const matchesCard=matches.length?(<div className="dctCard" style={{display:'block'}}><b>Saved matches</b>{matches.slice().reverse().map(m=><div className="dctLogItem" key={m.id}>{m.names.a} {m.winsA} – {m.winsB} {m.names.b} ({m.games.length} game{m.games.length===1?'':'s'})</div>)}</div>):null;
   const gamesCard=games.length?(<div className="dctCard" style={{display:'block'}}><b>Completed games</b>{games.map((g,i)=><div className="dctLogItem" key={i}>Game {g.num}: {g.names.a} {g.a} – {g.b} {g.names.b}</div>)}</div>):null;
   const gameRallyCount=rallies.filter(r=>r.game===gameNum).length;
   const savedCard=(<div className="dctCard"><b>{gameRallyCount}</b> this game · <span className="dctMuted">{rallies.length} total</span><button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>);
@@ -16517,13 +16562,14 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       <div className="dctRailLabel">Tools</div>{utilBtns}
       {savedCard}
       {gamesCard}
+      {matchesCard}
       {logCard}
     </div>}
   </div>);
 
   if(courts===1){
     return <div className="dctPage"><style>{dctCss}</style>
-      <div className="dctFullWrap"><Surface surface="one" overlay={dock} topOverlay={scoreBar} leftOverlay={railPanel}/></div>
+      <div className="dctFullWrap"><Surface surface="one" overlay={dock} topOverlay={scoreBar} leftOverlay={railPanel} legend={legendPanel}/></div>
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
@@ -16534,7 +16580,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     <div className="dctSelRow"><span className="dctSelLabel">Courts</span>{courtSel}{showServerSel&&<><span className="dctSelSep"></span><span className="dctSelLabel">{mode==='rally'?'Server override':'Hitter'}</span>{serverSel}</>}</div>
     {scoreBar}
     <div className="dctMaps"><Surface surface="a"/><Surface surface="b"/></div>
-    <div className="dctSide">{savedCard}{gamesCard}{logCard}</div>
+    <div className="dctSide">{savedCard}{gamesCard}{matchesCard}{logCard}</div>
     {dock}
   </div>;
 }
