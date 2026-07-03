@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v265 Court Trace: live-display connection diagnostics';
+const APP_VERSION='v266 Court Trace: header row (no more score/court overlap), faster live-connect';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16373,9 +16373,9 @@ const dctCss=`
 .dctCourtOverlay>*{pointer-events:auto}
 .dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
-.dctCourtLeftOverlay{position:absolute;left:0;top:78px;bottom:96px;z-index:45;display:flex;align-items:flex-start;max-width:20%;padding:6px;pointer-events:none}
+.dctCourtLeftOverlay{position:absolute;left:0;top:10px;bottom:56px;z-index:45;display:flex;align-items:flex-start;max-width:20%;padding:6px;pointer-events:none}
 .dctCourtLeftOverlay>*{pointer-events:auto}
-.dctCourtLegend{position:absolute;right:0;top:78px;z-index:45;padding:8px;pointer-events:none;max-width:34%}
+.dctCourtLegend{position:absolute;right:0;top:10px;z-index:45;padding:8px;pointer-events:none;max-width:34%}
 .dctCourtLegend>*{pointer-events:auto}
 .dctLegendWrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .dctLegend{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;background:rgba(6,16,32,.93);border:1px solid #22405f;border-radius:12px;padding:8px 10px;box-shadow:0 8px 22px rgba(0,0,0,.35);font-size:.66rem;color:#cfe0ee}
@@ -16391,10 +16391,12 @@ const dctCss=`
 .dctRailFloat{display:flex;flex-direction:column;gap:6px;width:100%;max-width:100%;max-height:100%;overflow-y:auto;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:16px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctRailFloat .dctBtn{width:100%;text-align:center;font-size:.72rem;padding:7px 4px;line-height:1.15}
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:7px;font-weight:850;font-size:.8rem}
-.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}
-.dctFullWrap .dctCourt{flex:0 0 auto;height:min(74vh,calc(100vh - 110px));width:min(57vh,calc((100vh - 110px)*0.7728));max-width:90vw;height:min(74dvh,calc(100dvh - 110px));width:min(57dvh,calc((100dvh - 110px)*0.7728))}
+.dctHeaderRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.dctHeaderToggles{display:flex;gap:8px}
+.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 100px);min-height:calc(100dvh - 100px)}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(68vh,calc(100vh - 190px));width:min(52vh,calc((100vh - 190px)*0.7728));max-width:90vw;height:min(68dvh,calc(100dvh - 190px));width:min(52dvh,calc((100dvh - 190px)*0.7728))}
 @media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:48%}}
-.dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:520px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:14px;padding:7px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4);margin-bottom:10px}
+.dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:520px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:14px;padding:7px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
 .dctScoreName{font-weight:850;font-size:.82rem;color:#cfe0ee;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dctScoreNum{font-weight:950;font-size:1.5rem;color:#fff;min-width:32px;text-align:center}
@@ -16549,9 +16551,8 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const outcomePanel=pending?(<div className="dctOutcome"><div className="dctLabel">Outcome</div><div className="dctOutGrid">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>setOutcome(o)}>{o}</button>)}</div><div className="dctRow2"><button type="button" className="dctBtn green" disabled={!outcome} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div></div>):null;
   const winnerRow=outcome?(outcome==='Let'?(<div className="dctMuted" style={{textAlign:'center'}}>Let — replay, no winner, server unchanged.</div>):(<div className="dctWinnerRow"><span className="dctLabel" style={{margin:0}}>Who won the rally?</span><div className="dctWinnerBtns"><button type="button" className={'dctBtn svrA'+(winnerPick==='a'?' on':'')} onClick={()=>setWinnerPick('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(winnerPick==='b'?' on':'')} onClick={()=>setWinnerPick('b')}>{names.b}</button></div></div>)):null;
   const dock=(<div className="dctDock">{pending?(<div className="dctDockInner"><div className="dctDockOut">{DUAL_OUTCOMES.map(o=><button type="button" key={o} className={'dctBtn'+(outcome===o?' on':'')} onClick={()=>pickOutcome(o)}>{o}</button>)}</div>{winnerRow}<button type="button" className="dctBtn green" disabled={!outcome||(outcome!=='Let'&&!winnerPick)} onClick={save}>Save + New</button><button type="button" className="dctBtn red" onClick={cancel}>Cancel</button></div>):((mode==='rally'||mode==='strike')?(<div className="dctDockInner"><span>{shots.length} shot{shots.length===1?'':'s'} · next: <b>{names[active]}</b></span><button type="button" className="dctBtn green" onClick={endRally} disabled={!shots.length&&!cur}>End rally</button></div>):(<div className="dctDockInner"><span className="dctMuted">Trace the deciding shot, then choose the outcome.</span></div>))}</div>);
-  const legendPanel=(<div className="dctLegendWrap">
-    <button type="button" className="dctRailToggle" onClick={()=>setLegendOpen(v=>!v)}>{legendOpen?'✕ Hide key':'ⓘ Key'}</button>
-    {legendOpen&&<div className="dctLegend">
+  const legendToggle=(<button type="button" className="dctRailToggle" onClick={()=>setLegendOpen(v=>!v)}>{legendOpen?'✕ Hide key':'ⓘ Key'}</button>);
+  const legendPanel=legendOpen?(<div className="dctLegend">
       <div className="dctLegendRow"><span className="dctLegendDot" style={{background:stroke.a}}></span>{names.a}</div>
       <div className="dctLegendRow"><span className="dctLegendDot" style={{background:stroke.b}}></span>{names.b}</div>
       <div className="dctLegendRow"><span className="dctLegendDiamond small" style={{background:'#8ea8bd'}}></span>Contact</div>
@@ -16563,8 +16564,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Stroke']}}></span>Stroke</div>
       <div className="dctLegendRow"><span className="dctLegendDiamond" style={{background:OUTCOME_COLORS['Let']}}></span>Let</div>
       {heatOn&&<div className="dctLegendRow"><span className="dctLegendCircle"></span>Heat</div>}
-    </div>}
-  </div>);
+    </div>):null;
   const scoreBar=(<div className="dctScoreBar">
     <div className="dctScoreSide"><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',-1)}>−</button><div className="dctScoreName">{names.a}</div><div className="dctScoreNum">{score.a}</div><button type="button" className="dctScoreAdj" onClick={()=>adjustScore('a',1)}>+</button></div>
     <div className="dctScoreMid"><span className="dctGameTag">Game {gameNum}</span><button type="button" className="dctBtn" onClick={()=>{if(confirm('Save Game '+gameNum+' — '+names.a+' '+score.a+' : '+score.b+' '+names.b+'? Score resets for a new game.'))endGame();}}>Save + New Game</button><button type="button" className="dctBtn green" onClick={saveMatch}>Save Match</button></div>
@@ -16575,9 +16575,8 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const gameRallyCount=rallies.filter(r=>r.game===gameNum).length;
   const savedCard=(<div className="dctCard"><b>{gameRallyCount}</b> this game · <span className="dctMuted">{rallies.length} total</span><button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>);
   const logCard=showLog?(<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>G{r.game||1}·Rally {rallies.length-i}</b> · {(r.names?r.names.a:names.a)+' v '+(r.names?r.names.b:names.b)} · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):((r.names?r.names[r.player]:names[r.player])||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>):null;
-  const railPanel=(<div className="dctRailFloatWrap">
-    <button type="button" className="dctRailToggle" onClick={()=>setRailOpen(v=>!v)}>{railOpen?'✕ Hide menu':'☰ Menu'}</button>
-    {railOpen&&<div className="dctRailFloat">
+  const railToggle=(<button type="button" className="dctRailToggle" onClick={()=>setRailOpen(v=>!v)}>{railOpen?'✕ Hide menu':'☰ Menu'}</button>);
+  const railPanel=railOpen?(<div className="dctRailFloat">
       {backBtn}
       <div className="dctRailLabel">Capture</div>{modeSel}
       <div className="dctRailLabel">Courts</div>{courtSel}
@@ -16588,12 +16587,12 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       {gamesCard}
       {matchesCard}
       {logCard}
-    </div>}
-  </div>);
+    </div>):null;
 
   if(courts===1){
     return <div className="dctPage"><style>{dctCss}</style>
-      <div className="dctFullWrap"><Surface surface="one" overlay={dock} topOverlay={scoreBar} leftOverlay={railPanel} legend={legendPanel}/></div>
+      <div className="dctHeaderRow">{scoreBar}<div className="dctHeaderToggles">{railToggle}{legendToggle}</div></div>
+      <div className="dctFullWrap"><Surface surface="one" overlay={dock} leftOverlay={railPanel} legend={legendPanel}/></div>
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
@@ -16705,7 +16704,7 @@ useEffect(()=>{
     else setLiveStatus('Waiting for coach device…');
   }
   load();
-  const id=setInterval(load,2000);
+  const id=setInterval(load,1200);
   return ()=>{cancelled=true;clearInterval(id);};
 },[liveRoomParam]);
 useEffect(()=>{
@@ -16766,7 +16765,7 @@ if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
   try{lastError=localStorage.getItem('checkerboardLiveLastError');}catch{}
-  const stuck=livePollAttempts>=4;
+  const stuck=livePollAttempts>=3;
   return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p>
     {stuck&&<div style={{marginTop:'20px',textAlign:'left',background:'#0b1624',border:'1px solid #20364f',borderRadius:'12px',padding:'14px',fontSize:'.8rem',color:'#9fb3c4',maxWidth:'520px'}}>
       <div style={{color:'#fca5a5',fontWeight:800,marginBottom:'6px'}}>No data arrived after {livePollAttempts} tries — diagnostics:</div>
