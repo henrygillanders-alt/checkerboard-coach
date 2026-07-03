@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v266 Court Trace: header row (no more score/court overlap), faster live-connect';
+const APP_VERSION='v267 Court Trace: court sits directly under header, bigger box, rail panel fix';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16393,8 +16393,8 @@ const dctCss=`
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:7px;font-weight:850;font-size:.8rem}
 .dctHeaderRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .dctHeaderToggles{display:flex;gap:8px}
-.dctFullWrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 100px);min-height:calc(100dvh - 100px)}
-.dctFullWrap .dctCourt{flex:0 0 auto;height:min(68vh,calc(100vh - 190px));width:min(52vh,calc((100vh - 190px)*0.7728));max-width:90vw;height:min(68dvh,calc(100dvh - 190px));width:min(52dvh,calc((100dvh - 190px)*0.7728))}
+.dctFullWrap{display:flex;align-items:flex-start;justify-content:center;min-height:calc(100vh - 100px);min-height:calc(100dvh - 100px)}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(80vh,calc(100vh - 120px));width:min(62vh,calc((100vh - 120px)*0.7728));max-width:90vw;height:min(80dvh,calc(100dvh - 120px));width:min(62dvh,calc((100dvh - 120px)*0.7728))}
 @media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:48%}}
 .dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:520px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:14px;padding:7px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
