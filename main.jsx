@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v264 Court Trace: collapsible legend, compact scoreboard, auto-open display';
+const APP_VERSION='v265 Court Trace: live-display connection diagnostics';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16693,12 +16693,14 @@ const liveCompetition=livePayload?.type==='competition'?(livePayload.competition
 const liveGame=livePayload?.type==='game'?normaliseGameCard(livePayload.game):null;
 const initialPlayerDisplay=!!liveRoomParam||!!sharedPlayerGame||!!sharedPlayerCompetition;
 const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
+const[livePollAttempts,setLivePollAttempts]=useState(0);
 useEffect(()=>{
   if(!liveRoomParam) return;
   let cancelled=false;
   async function load(){
     const row=await readLivePlayerRoom(liveRoomParam);
     if(cancelled) return;
+    setLivePollAttempts(n=>n+1);
     if(row?.payload){setLivePayload(row.payload);setLiveStatus('Live');}
     else setLiveStatus('Waiting for coach device…');
   }
@@ -16760,7 +16762,21 @@ useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[sess
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
-if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p></div></div></div>;}
+if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
+  let lastWrite=null,lastError=null;
+  try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
+  try{lastError=localStorage.getItem('checkerboardLiveLastError');}catch{}
+  const stuck=livePollAttempts>=4;
+  return <div className="playerDisplayPage"><div className="playerDisplayShell competitionPlayerDisplayShell"><div className="playerDisplayTop"><span>LIVE PLAYER DISPLAY</span><h1>Checkerboard Live</h1><p>{liveStatus}</p>
+    {stuck&&<div style={{marginTop:'20px',textAlign:'left',background:'#0b1624',border:'1px solid #20364f',borderRadius:'12px',padding:'14px',fontSize:'.8rem',color:'#9fb3c4',maxWidth:'520px'}}>
+      <div style={{color:'#fca5a5',fontWeight:800,marginBottom:'6px'}}>No data arrived after {livePollAttempts} tries — diagnostics:</div>
+      <div>Room: {liveRoomParam}</div>
+      <div>Last successful write on this device: {lastWrite?`${lastWrite.mode} at ${lastWrite.at}`:'none recorded'}</div>
+      {lastError&&<div style={{color:'#fca5a5'}}>Last write error: {lastError}</div>}
+      <div style={{marginTop:'8px'}}>If this is a second device, check it's connected to the internet. If it's the same device/browser as the coach tab, try Push again from the coach screen.</div>
+    </div>}
+  </div></div></div>;
+}
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
