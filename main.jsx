@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v270 Court Trace: drop unreliable auto-open, clipboard-only display link';
+const APP_VERSION='v271 Court Trace: scoreboard back on white space, compact, court maximized';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16371,7 +16371,7 @@ const dctCss=`
 .dctDockOut{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
 .dctCourtOverlay{position:absolute;left:22%;right:0;bottom:90px;z-index:40;display:flex;flex-direction:column;align-items:center;padding:0 10px;pointer-events:none}
 .dctCourtOverlay>*{pointer-events:auto}
-.dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:10px 10px 0;pointer-events:none}
+.dctCourtTopOverlay{position:absolute;left:0;right:0;top:0;z-index:40;display:flex;justify-content:center;padding:6px 6px 0;pointer-events:none}
 .dctCourtTopOverlay>*{pointer-events:auto}
 .dctCourtLeftOverlay{position:absolute;left:0;top:10px;bottom:56px;z-index:45;display:flex;align-items:flex-start;max-width:20%;padding:6px;pointer-events:none}
 .dctCourtLeftOverlay>*{pointer-events:auto}
@@ -16393,17 +16393,17 @@ const dctCss=`
 .dctRailFloat input{width:100%;background:#061020;color:#fff;border:1px solid #2b4a66;border-radius:10px;padding:7px;font-weight:850;font-size:.8rem}
 .dctHeaderRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 8px;max-width:820px}
 .dctHeaderToggles{display:flex;gap:8px}
-.dctFullWrap{display:flex;align-items:flex-start;justify-content:center;min-height:calc(100vh - 100px);min-height:calc(100dvh - 100px)}
-.dctFullWrap .dctCourt{flex:0 0 auto;height:min(80vh,calc(100vh - 120px));width:min(62vh,calc((100vh - 120px)*0.7728));max-width:90vw;height:min(80dvh,calc(100dvh - 120px));width:min(62dvh,calc((100dvh - 120px)*0.7728))}
+.dctFullWrap{display:flex;align-items:flex-start;justify-content:center;min-height:calc(100vh - 24px);min-height:calc(100dvh - 24px)}
+.dctFullWrap .dctCourt{flex:0 0 auto;height:min(94vh,calc(100vh - 16px));width:min(72vh,calc((100vh - 16px)*0.7728));max-width:96vw;height:min(94dvh,calc(100dvh - 16px));width:min(72dvh,calc((100dvh - 16px)*0.7728))}
 @media(max-width:820px){.dctFullWrap .dctCourt{height:auto;width:100%}.dctCourtLeftOverlay{max-width:48%}}
-.dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:520px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:14px;padding:7px 12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.dctScoreBar{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;max-width:420px;background:rgba(6,16,32,.95);border:1px solid #22405f;border-radius:10px;padding:4px 8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
 .dctScoreSide{display:flex;align-items:center;gap:8px}
-.dctScoreName{font-weight:850;font-size:.82rem;color:#cfe0ee;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dctScoreNum{font-weight:950;font-size:1.5rem;color:#fff;min-width:32px;text-align:center}
-.dctScoreAdj{appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;width:28px;height:28px;font-weight:900;font-size:1.05rem;line-height:1;cursor:pointer;flex:0 0 auto}
-.dctScoreMid{display:flex;flex-direction:column;align-items:center;gap:4px}
-.dctScoreMid .dctBtn{padding:6px 10px;font-size:.72rem;min-height:0}
-.dctGameTag{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb3c4;font-weight:900}
+.dctScoreName{font-weight:850;font-size:.62rem;color:#cfe0ee;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dctScoreNum{font-weight:950;font-size:1rem;color:#fff;min-width:16px;text-align:center}
+.dctScoreAdj{appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;width:18px;height:18px;font-weight:900;font-size:.8rem;line-height:1;cursor:pointer;flex:0 0 auto;padding:0}
+.dctScoreMid{display:flex;flex-direction:row;align-items:center;gap:3px}
+.dctScoreMid .dctBtn{padding:3px 6px;font-size:.56rem;min-height:0}
+.dctGameTag{display:none}
 @media(max-width:620px){.dctScoreBar{flex-wrap:wrap}.dctScoreName{max-width:70px}}
 .dctWinnerRow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:4px}
 .dctWinnerBtns{display:flex;gap:8px}
@@ -16591,8 +16591,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
 
   if(courts===1){
     return <div className="dctPage"><style>{dctCss}</style>
-      <div className="dctHeaderRow">{scoreBar}<div className="dctHeaderToggles">{railToggle}{legendToggle}</div></div>
-      <div className="dctFullWrap"><Surface surface="one" overlay={dock} leftOverlay={railPanel} legend={legendPanel}/></div>
+      <div className="dctFullWrap"><Surface surface="one" overlay={dock} topOverlay={scoreBar} leftOverlay={<div className="dctRailFloatWrap">{railToggle}{railPanel}</div>} legend={<div className="dctLegendWrap">{legendToggle}{legendPanel}</div>}/></div>
     </div>;
   }
   return <div className="dctPage"><style>{dctCss}</style>
