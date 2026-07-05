@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v288 Court Trace: rally pace/duration + Live Coaching: Match History browser with search';
+const APP_VERSION='v289 Breakout Squash · Egyptian 3/4 court geometry fix (partial zone 3/4 depth)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3791,9 +3791,9 @@ function ShotBonusRally({setSession}){
 // nominated target zone and starts an unconditional shot-count pressure window
 // (win within N shots or the point is forfeit, regardless of what happens in play).
 const BREAKOUT_ZONE_PRESETS=[
-  {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],note:'Players restricted to the front-left quarter (zone 2). Breakout shot escapes into the front-right quarter (zone 1).'},
-  {id:'egyptian',label:'Egyptian Half-Court (Zone 2/3)',restricted:['2','3'],breakout:['1','4'],note:'Players restricted to the diagonal half-court (front-left + back-right, zones 2/3). Breakout escapes into the opposite diagonal (zones 1/4).'},
-  {id:'custom',label:'Custom Pairing',restricted:[],breakout:[],note:'Pick your own restricted zone(s) and breakout target zone(s) below.'}
+  {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],partialDepth:false,note:'Players restricted to the front-left quarter (zone 2). Breakout shot escapes into the front-right quarter (zone 1).'},
+  {id:'egyptian',label:'Egyptian 3/4 Court (Zone 2 + partial Zone 3)',restricted:['2','3'],breakout:['1','4'],partialDepth:true,note:'Restricted area = zone 2 in full, plus zone 3 limited to the short-line-to-back-of-service-box depth only (NOT the full zone to the back wall) — that partial back depth is what makes this a 3/4 court, not a true half-court. Breakout escapes into the opposite-side Egyptian area: zone 1 in full, plus zone 4 to the same partial depth. Deselect a zone below to breakout into just Zone 1 or just Zone 2 instead of the full opposite Egyptian area.'},
+  {id:'custom',label:'Custom Pairing',restricted:[],breakout:[],partialDepth:false,note:'Pick your own restricted zone(s) and breakout target zone(s) below.'}
 ];
 const BREAKOUT_ZONES=['1','2','3','4'];
 const BREAKOUT_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
@@ -3802,19 +3802,23 @@ function BreakoutSquash({setSession}){
   const [presetId,setPresetId]=useState('base');
   const [restrictedZones,setRestrictedZones]=useState(['2']);
   const [breakoutZones,setBreakoutZones]=useState(['1']);
+  const [partialDepth,setPartialDepth]=useState(false);
   const [tier,setTier]=useState('1');
   const [shotLimit,setShotLimit]=useState('3');
   const [added,setAdded]=useState('');
   function choosePreset(p){
     setPresetId(p.id);
     if(p.id!=='custom'){setRestrictedZones([...p.restricted]);setBreakoutZones([...p.breakout]);}
+    setPartialDepth(!!p.partialDepth);
   }
   function toggleRestricted(z){setPresetId('custom');setRestrictedZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
   function toggleBreakout(z){setPresetId('custom');setBreakoutZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
-  const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${BREAKOUT_ZONE_DESC[z]})`).join(' / '):'—';
-  const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${BREAKOUT_ZONE_DESC[z]})`).join(' / '):'—';
+  const backZonesInPlay=[...restrictedZones,...breakoutZones].some(z=>z==='3'||z==='4');
+  function zoneDesc(z){return (partialDepth&&(z==='3'||z==='4'))?`${BREAKOUT_ZONE_DESC[z]} — 3/4 depth only (short line to back of service box, not full zone to back wall)`:BREAKOUT_ZONE_DESC[z];}
+  const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
+  const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   function buildTask(){
-    const base=`Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>BREAKOUT_ZONE_DESC[z]).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>BREAKOUT_ZONE_DESC[z]).join(' / ')||'none set'}).`;
+    const base=`Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
     if(tier==='1'){
       return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must finish the rally in ONE shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
     }
@@ -3846,6 +3850,8 @@ function BreakoutSquash({setSession}){
 .brkZoneBtn.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
 .brkZoneBtn.restrictedOn{border-color:#4a90d6;background:#0c1e2e;color:#bcd6f5;}
 .brkHint{color:#9fb6cf;font-size:0.82rem;margin:6px 0 0;line-height:1.4;}
+.brkDepthBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 14px;color:#dbe6f2;font-weight:700;font-size:0.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;display:inline-block;}
+.brkDepthBtn.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
 .brkBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .brkBox strong{display:block;color:#f0c49c;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .brkBox p{margin:0;color:#dbe6f2;line-height:1.45;}
@@ -3867,6 +3873,10 @@ function BreakoutSquash({setSession}){
           <div className="brkLabel">Breakout target zone(s)</div>
           <div className="brkZoneGrid">{BREAKOUT_ZONES.map(z=><div key={'b'+z} role="button" tabIndex={0} className={breakoutZones.includes(z)?'brkZoneBtn on':'brkZoneBtn'} onClick={()=>toggleBreakout(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleBreakout(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
         </div>
+        {backZonesInPlay&&<div style={{marginTop:12}}>
+          <div className="brkLabel">3/4 court depth (applies to zone 3 / zone 4 only)</div>
+          <div role="button" tabIndex={0} className={partialDepth?'brkDepthBtn on':'brkDepthBtn'} onClick={()=>setPartialDepth(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setPartialDepth(v=>!v);}}>{partialDepth?'✓ ':''}Limit zone 3/4 to short-line-to-service-box depth (3/4 court, not full back wall)</div>
+        </div>}
         <p className="brkHint">Restricted: {restrictedLabel} · Breakout target: {breakoutLabel}</p>
       </div>
       <div className="brkSection">
