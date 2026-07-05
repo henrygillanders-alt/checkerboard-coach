@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v282 Court Trace: player filter (All/A/B) for map + player display';
+const APP_VERSION='v283 Court Trace: click a rally in the log to isolate it on the map';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16488,6 +16488,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const [showLog,setShowLog]=useState(false);
   const [heatOn,setHeatOn]=useState(false);
   const [dotFilter,setDotFilter]=useState('all');
+  const [selectedRallyId,setSelectedRallyId]=useState(null);
   const [score,setScore]=useState({a:0,b:0});
   const [gameNum,setGameNum]=useState(1);
   const [games,setGames]=useState([]);
@@ -16530,7 +16531,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,dotFilter,shotsForGame,regularContacts,finalContacts,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
     try{return await writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{return false;}
   }
-  function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});}
+  function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});setSelectedRallyId(null);}
   function saveMatch(){
     let gList=games;
     if(score.a>0||score.b>0){
@@ -16542,7 +16543,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     const winsB=gList.filter(g=>g.b>g.a).length;
     const matchRecord={id:Date.now(),names:{...names},games:gList,winsA,winsB,endedAt:new Date().toISOString()};
     setMatches(prev=>[...prev,matchRecord]);
-    setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);resetRally(server);
+    setRallies([]);setScore({a:0,b:0});setGames([]);setGameNum(1);setSelectedRallyId(null);resetRally(server);
     alert('Match saved — '+gList.length+' game'+(gList.length===1?'':'s')+' ('+names.a+' '+winsA+' – '+winsB+' '+names.b+'). Board cleared for a new match.');
   }
   function pickOutcome(o){setOutcome(o);const all=mode==='single'?(cur?[cur]:[]):(cur?[...shots,cur]:shots);setWinnerPick(o==='Let'?null:rallyWinner(all,o));}
@@ -16557,10 +16558,10 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
     if(mode==='strike'){if(!c||!c.path.length){curRef.current=null;setCur(null);return;}const p=c.path[0];const shotObj={player:c.player,path:[p,p],contact:p,strike:true};setShots(prev=>[...prev,shotObj]);setActive(other(shotObj.player));curRef.current=null;setCur(null);return;}
     if(!c||c.path.length<3){curRef.current=null;setCur(null);return;}const shotObj=c;if(mode==='single'){setActive(shotObj.player);setPending(true);setOutcome('');curRef.current=shotObj;setCur(shotObj);}else{setShots(prev=>[...prev,shotObj]);setActive(other(shotObj.player));curRef.current=null;setCur(null);}}
   function endpointsFor(player){const pts=[];rallies.forEach(r=>{(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});});shots.forEach(s=>{if(s.player===player){const e=s.path[s.path.length-1];if(e)pts.push(e);}});return pts;}
-  function heatDots(surface){const out=[];const push=(shot)=>{if(shot.strike)return;const e=shot.path&&shot.path[shot.path.length-1];if(!e)return;const pl=other(shotPlayer(shot));if(surface&&pl!==surface)return;out.push({pt:e,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;(r.shots||[]).forEach(push);});shots.forEach(push);return out;}
-  function contactHeatDots(surface){const out=[];const push=(shot,isLast)=>{if(!shot.contact||isLast)return;const pl=shotPlayer(shot);if(surface&&pl!==surface)return;out.push({pt:shot.contact,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;const arr=r.shots||[];arr.forEach((s,i)=>push(s,i===arr.length-1));});shots.forEach((s,i)=>push(s,false));return out;}
-  function finalContactDots(surface){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;const arr=r.shots||[];if(!arr.length)return;const last=arr[arr.length-1];if(!last.contact)return;const pl=shotPlayer(last);if(surface&&pl!==surface)return;out.push({pt:last.contact,player:pl,outcome:r.outcome});});return out;}
-  function savedShotsFor(player){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player)out.push(s);});});return out;}
+  function heatDots(surface){const out=[];const push=(shot)=>{if(shot.strike)return;const e=shot.path&&shot.path[shot.path.length-1];if(!e)return;const pl=other(shotPlayer(shot));if(surface&&pl!==surface)return;out.push({pt:e,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;if(selectedRallyId&&r.id!==selectedRallyId)return;(r.shots||[]).forEach(push);});if(!selectedRallyId)shots.forEach(push);return out;}
+  function contactHeatDots(surface){const out=[];const push=(shot,isLast)=>{if(!shot.contact||isLast)return;const pl=shotPlayer(shot);if(surface&&pl!==surface)return;out.push({pt:shot.contact,player:pl});};rallies.forEach(r=>{if(r.game!==gameNum)return;if(selectedRallyId&&r.id!==selectedRallyId)return;const arr=r.shots||[];arr.forEach((s,i)=>push(s,i===arr.length-1));});if(!selectedRallyId)shots.forEach((s,i)=>push(s,false));return out;}
+  function finalContactDots(surface){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;if(selectedRallyId&&r.id!==selectedRallyId)return;const arr=r.shots||[];if(!arr.length)return;const last=arr[arr.length-1];if(!last.contact)return;const pl=shotPlayer(last);if(surface&&pl!==surface)return;out.push({pt:last.contact,player:pl,outcome:r.outcome});});return out;}
+  function savedShotsFor(player){const out=[];rallies.forEach(r=>{if(r.game!==gameNum)return;if(selectedRallyId&&r.id!==selectedRallyId)return;(r.shots||[]).forEach(s=>{if(shotPlayer(s)===player)out.push(s);});});return out;}
   function endRally(){if((mode==='rally'||mode==='strike')&&(shots.length||cur)){setPending(true);setOutcome('');}}
   function save(){if(!outcome)return;if(outcome!=='Let'&&!winnerPick)return;const w=outcome==='Let'?null:winnerPick;if(mode==='single'){if(!cur)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode,layout:courts,outcome,player:cur.player,winner:w,game:gameNum,names:{...names},shots:[cur]}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}else{const all=cur?[...shots,cur]:shots;if(!all.length)return;setRallies(prev=>[...prev,{id:Date.now(),created:new Date().toISOString(),mode,layout:courts,server,outcome,winner:w,game:gameNum,names:{...names},shots:all}]);if(w)setScore(s=>({...s,[w]:s[w]+1}));resetRally(w||server);}}
   function cancel(){curRef.current=null;setCur(null);setPending(false);setOutcome('');setWinnerPick(null);}
@@ -16571,7 +16572,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   function Surface({surface,overlay,topOverlay,leftOverlay,legend}){
     const single=courts===1;
     const isLive=mode==='rally'&&!pending&&(single||surface===active);
-    const showSaved=single?rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]):savedShotsFor(surface);
+    const showSaved=single?rallies.filter(r=>r.game===gameNum&&(!selectedRallyId||r.id===selectedRallyId)).flatMap(r=>r.shots||[]):savedShotsFor(surface);
     const committed=single?shots:shots.filter(s=>s.player===surface);
     const curShown=cur&&(single||cur.player===surface);
     let contacts=[];
@@ -16632,7 +16633,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const gamesCard=games.length?(<div className="dctCard" style={{display:'block'}}><b>Completed games</b>{games.map((g,i)=><div className="dctLogItem" key={i}>Game {g.num}: {g.names.a} {g.a} – {g.b} {g.names.b}</div>)}</div>):null;
   const gameRallyCount=rallies.filter(r=>r.game===gameNum).length;
   const savedCard=(<div className="dctCard"><b>{gameRallyCount}</b> this game · <span className="dctMuted">{rallies.length} total</span><button type="button" className="dctBtn red" onClick={undoRally}>Undo last</button><button type="button" className="dctBtn red" onClick={clearAll}>Clear all</button></div>);
-  const logCard=showLog?(<div className="dctCard" style={{display:'block'}}>{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i}><b>G{r.game||1}·Rally {rallies.length-i}</b> · {(r.names?r.names.a:names.a)+' v '+(r.names?r.names.b:names.b)} · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):((r.names?r.names[r.player]:names[r.player])||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>):null;
+  const logCard=showLog?(<div className="dctCard" style={{display:'block'}}>{selectedRallyId&&<button type="button" className="dctBtn on" style={{width:'100%',marginBottom:'8px'}} onClick={()=>setSelectedRallyId(null)}>✕ Showing 1 rally only — tap to show all</button>}{rallies.slice().reverse().map((r,i)=><div className="dctLogItem" key={r.id||i} style={{cursor:'pointer',outline:selectedRallyId===r.id?'2px solid #60a5fa':'none'}} onClick={()=>setSelectedRallyId(selectedRallyId===r.id?null:r.id)}><b>G{r.game||1}·Rally {rallies.length-i}</b> · {(r.names?r.names.a:names.a)+' v '+(r.names?r.names.b:names.b)} · {r.mode==='rally'?((r.shots?r.shots.length:0)+' shots'):((r.names?r.names[r.player]:names[r.player])||'—')} · <span className="dctPill">{r.outcome}</span></div>)}{!rallies.length&&<span className="dctMuted">No saved rallies yet.</span>}</div>):null;
   const railToggle=(<button type="button" className="dctRailToggle" onClick={()=>setRailOpen(v=>!v)}>{railOpen?'✕ Hide menu':'☰ Menu'}</button>);
   const railPanel=railOpen?(<div className="dctRailFloat">
       {backBtn}
