@@ -122,7 +122,7 @@ async function readLivePlayerRoom(roomId){
 }
 
 
-const APP_VERSION='v283 Court Trace: click a rally in the log to isolate it on the map';
+const APP_VERSION='v285 Court Trace: player display gets its own independent shot filter';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -16077,7 +16077,10 @@ function CourtTraceGamePlayerDisplay({payload}){
   const shotsForGame=Array.isArray(payload?.shotsForGame)?payload.shotsForGame:[];
   const regularContacts=Array.isArray(payload?.regularContacts)?payload.regularContacts:[];
   const finalContacts=Array.isArray(payload?.finalContacts)?payload.finalContacts:[];
-  const dotFilter=payload?.dotFilter||'all';
+  const [localFilter,setLocalFilter]=useState('all');
+  const shotsShown=localFilter==='all'?shotsForGame:shotsForGame.filter(s=>s.player===localFilter);
+  const regularContactsShown=localFilter==='all'?regularContacts:regularContacts.filter(d=>d.player===localFilter);
+  const finalContactsShown=localFilter==='all'?finalContacts:finalContacts.filter(d=>d.player===localFilter);
   const stroke={a:'#57b0dd',b:'#f1b84b'};
   const other=p=>p==='a'?'b':'a';
   const outcomeEntries=Object.entries(outcomesForGame).sort((a,b)=>b[1]-a[1]);
@@ -16102,6 +16105,9 @@ function CourtTraceGamePlayerDisplay({payload}){
 .courtDisplayRow:first-child{border-top:none}
 .courtDisplayMuted{color:#9fb3c4}
 .courtDisplayLegend{display:flex;justify-content:center;gap:16px;margin-top:10px;font-size:.85rem}
+.courtDisplayFilterRow{display:flex;justify-content:center;gap:8px;margin:8px 0}
+.courtDisplayFilterBtn{appearance:none;background:#0b1624;color:#cfe0ee;border:1px solid #20364f;border-radius:999px;padding:8px 16px;font-weight:850;font-size:.85rem;cursor:pointer}
+.courtDisplayFilterBtn.on{background:#2563eb;border-color:#60a5fa;color:#fff}
 .courtDisplayLegend span{display:inline-flex;align-items:center;gap:6px}
 .courtDisplayKeyDiamond{width:11px;height:11px;display:inline-block;transform:rotate(45deg);background:#8ea8bd;margin-right:4px}
 .courtDisplayKeyDiamond.small{width:7px;height:7px}
@@ -16139,15 +16145,16 @@ function CourtTraceGamePlayerDisplay({payload}){
         <div className="courtDisplayMap">
           <img src={LMC_TRACE_MAP_DATA_URL} alt="court" draggable={false}/>
           <svg viewBox="0 0 1347 1743" preserveAspectRatio="none">
-            {!heatOn&&shotsForGame.filter(s=>!s.strike).map((s,i)=><polyline key={'l'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="7" strokeOpacity="0.55" strokeLinecap="round" strokeLinejoin="round"/>)}
-            {heatOn&&shotsForGame.filter(s=>!s.strike).map((s,i)=>{const e=s.path&&s.path[s.path.length-1];if(!e)return null;const pl=other(s.player);return <circle key={'d'+i} cx={e.nx*1347} cy={e.ny*1743} r="9" fill={stroke[pl]} fillOpacity="0.68" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1.5"/>;})}
-            {regularContacts.map((d,i)=><rect key={'rc'+i} x={d.pt.nx*1347-6} y={d.pt.ny*1743-6} width="12" height="12" fill={stroke[d.player]} fillOpacity="0.55" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1.3" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
-            {finalContacts.map((d,i)=><rect key={'fc'+i} x={d.pt.nx*1347-9} y={d.pt.ny*1743-9} width="18" height="18" fill={OUTCOME_COLORS[d.outcome]||stroke[d.player]} fillOpacity="0.9" stroke="#ffffff" strokeOpacity="0.9" strokeWidth="2" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
+            {!heatOn&&shotsShown.filter(s=>!s.strike).map((s,i)=><polyline key={'l'+i} points={dualPts(s.path)} fill="none" stroke={stroke[s.player]} strokeWidth="7" strokeOpacity="0.55" strokeLinecap="round" strokeLinejoin="round"/>)}
+            {heatOn&&shotsShown.filter(s=>!s.strike).map((s,i)=>{const e=s.path&&s.path[s.path.length-1];if(!e)return null;const pl=other(s.player);return <circle key={'d'+i} cx={e.nx*1347} cy={e.ny*1743} r="9" fill={stroke[pl]} fillOpacity="0.68" stroke="#ffffff" strokeOpacity="0.5" strokeWidth="1.5"/>;})}
+            {regularContactsShown.map((d,i)=><rect key={'rc'+i} x={d.pt.nx*1347-6} y={d.pt.ny*1743-6} width="12" height="12" fill={stroke[d.player]} fillOpacity="0.55" stroke="#ffffff" strokeOpacity="0.6" strokeWidth="1.3" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
+            {finalContactsShown.map((d,i)=><rect key={'fc'+i} x={d.pt.nx*1347-9} y={d.pt.ny*1743-9} width="18" height="18" fill={OUTCOME_COLORS[d.outcome]||stroke[d.player]} fillOpacity="0.9" stroke="#ffffff" strokeOpacity="0.9" strokeWidth="2" transform={`rotate(45 ${d.pt.nx*1347} ${d.pt.ny*1743})`}/>)}
           </svg>
         </div>
         <div className="courtDisplayLegend"><span><span className="courtDisplayDot" style={{background:stroke.a}}></span>{names.a}</span><span><span className="courtDisplayDot" style={{background:stroke.b}}></span>{names.b}</span></div>
         <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:2,fontSize:'.7rem'}}>◆ contact point &nbsp; ⬥ decisive contact (colored by outcome)</div>
-        <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:6,fontSize:'.8rem'}}>{shotsForGame.length} shot{shotsForGame.length===1?'':'s'} plotted this game{dotFilter!=='all'?' · showing '+(dotFilter==='a'?names.a:names.b)+' only':''}{payload?.updatedAt?' · updated '+new Date(payload.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</div>
+        <div className="courtDisplayFilterRow"><button type="button" className={'courtDisplayFilterBtn'+(localFilter==='all'?' on':'')} onClick={()=>setLocalFilter('all')}>All</button><button type="button" className={'courtDisplayFilterBtn'+(localFilter==='a'?' on':'')} onClick={()=>setLocalFilter('a')}>{names.a}</button><button type="button" className={'courtDisplayFilterBtn'+(localFilter==='b'?' on':'')} onClick={()=>setLocalFilter('b')}>{names.b}</button></div>
+        <div className="courtDisplayMuted" style={{textAlign:'center',marginTop:6,fontSize:'.8rem'}}>{shotsShown.length} shot{shotsShown.length===1?'':'s'} plotted this game{localFilter!=='all'?' · showing '+(localFilter==='a'?names.a:names.b)+' only':''}{payload?.updatedAt?' · updated '+new Date(payload.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):''}</div>
       </div>
     </div>
   </div>;
@@ -16521,14 +16528,13 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       const arr=r.shots||[];
       arr.forEach((s,i)=>{
         const pl=shotPlayer(s);
-        if(dotFilter!=='all'&&pl!==dotFilter)return;
         shotsForGame.push({player:pl,path:s.path,strike:!!s.strike});
         if(!s.contact)return;
         if(i===arr.length-1)finalContacts.push({pt:s.contact,player:pl,outcome:r.outcome});
         else regularContacts.push({pt:s.contact,player:pl});
       });
     });
-    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,dotFilter,shotsForGame,regularContacts,finalContacts,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
+    const payload={type:'courtTraceGame',names:{...names},score:justFinished?{a:0,b:0}:{...score},gameNum:justFinished?justFinished.num+1:gameNum,allGames:justFinished?[...games,justFinished]:games,justFinished:justFinished||null,outcomesForGame,heatOn,shotsForGame,regularContacts,finalContacts,shotCount:shotsForGame.length,updatedAt:new Date().toISOString()};
     try{return await writeLivePlayerRoom(getPersistentLiveRoomId(),'courtTraceGame',payload);}catch{return false;}
   }
   function endGame(){const finished={num:gameNum,a:score.a,b:score.b,names:{...names},endedAt:new Date().toISOString()};setGames(prev=>[...prev,finished]);pushCourtDisplay(finished);setGameNum(n=>n+1);setScore({a:0,b:0});setSelectedRallyId(null);}
@@ -16602,7 +16608,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   const showServerSel = courts===1 || mode==='rally';
   const modeSel=(<><button type="button" className={'dctBtn'+(mode==='single'?' on':'')} onClick={()=>{setMode('single');resetRally(server);}}>Single</button><button type="button" className={'dctBtn'+(mode==='rally'?' on':'')} onClick={()=>{setMode('rally');resetRally(server);}}>Rally</button><button type="button" className={'dctBtn'+(mode==='strike'?' on':'')} onClick={()=>{setMode('strike');resetRally(server);}}>Contact tap</button></>);
   const courtSel=(<><button type="button" className={'dctBtn'+(courts===1?' on':'')} onClick={()=>{setCourts(1);resetRally(server);}}>1 Court</button><button type="button" className={'dctBtn'+(courts===2?' on':'')} onClick={()=>{setCourts(2);resetRally(server);}}>2 Courts</button></>);
-  const serverSel=(<><button type="button" className={'dctBtn svrA'+(server==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(server==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>);
+  const serverSel=(<><button type="button" className={'dctBtn svrA'+(active==='a'?' on':'')} onClick={()=>pickServer('a')}>{names.a}</button><button type="button" className={'dctBtn svrB'+(active==='b'?' on':'')} onClick={()=>pickServer('b')}>{names.b}</button></>);
   const utilBtns=(<><button type="button" className={'dctBtn'+(heatOn?' on':'')} onClick={()=>setHeatOn(v=>!v)}>Heat {heatOn?'On':'Off'}</button><div className="dctRailLabel">Show shots</div><div style={{display:'flex',gap:'3px'}}><button type="button" className={'dctBtn'+(dotFilter==='all'?' on':'')} style={{flex:1,padding:'6px 3px',fontSize:'.62rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} onClick={()=>setDotFilter('all')}>All</button><button type="button" className={'dctBtn'+(dotFilter==='a'?' on':'')} style={{flex:1,padding:'6px 3px',fontSize:'.62rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} onClick={()=>setDotFilter('a')}>{names.a}</button><button type="button" className={'dctBtn'+(dotFilter==='b'?' on':'')} style={{flex:1,padding:'6px 3px',fontSize:'.62rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} onClick={()=>setDotFilter('b')}>{names.b}</button></div><button type="button" className="dctBtn red" onClick={undoShot}>Undo shot</button><button type="button" className="dctBtn red" onClick={()=>resetRally(server)}>Clear</button><button type="button" className="dctBtn" onClick={()=>setShowLog(v=>!v)}>{showLog?'Hide':'Show'} log</button><button type="button" className="dctBtn" onClick={()=>{const u=buildLivePlayerViewUrl(getPersistentLiveRoomId());let copied=false;try{navigator.clipboard&&navigator.clipboard.writeText(u);copied=true;}catch(err){}const n=rallies.filter(r=>r.game===gameNum).flatMap(r=>r.shots||[]).length;pushCourtDisplay().then(ok=>{if(ok){alert((copied?'Link copied — paste it into a tab on the display device and leave it open (it auto-updates on every Save).\\n\\n':'Copy failed — open this link manually:\\n\\n')+u+'\\n\\nUpdated with '+n+' shot'+(n===1?'':'s')+' this game.');}else{alert('Push FAILED — the display may show old data (check network/VPN).\\n\\nLink: '+u);}});}}>Push + Copy Display Link</button></>);
   const backBtn=(<button type="button" className="dctBtn back" onClick={()=>onBack?onBack():setScreen('home')}>← Menu</button>);
   const nameEditor=(<><div className="dctRailLabel">Players · A = your player</div><input value={names.a} onChange={e=>setNames(n=>({...n,a:e.target.value}))} onPointerDown={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()} autoComplete="off" autoCorrect="off" autoCapitalize="words" spellCheck="false" placeholder="Player A"/><input value={names.b} onChange={e=>setNames(n=>({...n,b:e.target.value}))} onPointerDown={e=>e.stopPropagation()} onFocus={e=>e.stopPropagation()} onClick={e=>e.stopPropagation()} autoComplete="off" autoCorrect="off" autoCapitalize="words" spellCheck="false" placeholder="Player B"/></>);
@@ -16640,7 +16646,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       <div className="dctRailLabel">Capture</div>{modeSel}
       <div className="dctRailLabel">Courts</div>{courtSel}
       {nameEditor}
-      <div className="dctRailLabel">{mode==='rally'?'Server override (auto-follows winner)':'Hitter'}</div>{serverSel}
+      <div className="dctRailLabel">{mode==='rally'?'Current hitter (tap to override)':'Hitter'}</div>{serverSel}
       <div className="dctRailLabel">Tools</div>{utilBtns}
       {savedCard}
       {gamesCard}
@@ -16658,7 +16664,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
       <div className="dctTitle"><h1>Court Trace</h1><p>Rally on two courts — trace a shot; the ring shows where the reply is played from on the other court.</p></div>
       <div className="dctActions">{modeSel}{utilBtns}{backBtn}</div>
     </div>
-    <div className="dctSelRow"><span className="dctSelLabel">Courts</span>{courtSel}{showServerSel&&<><span className="dctSelSep"></span><span className="dctSelLabel">{mode==='rally'?'Server override':'Hitter'}</span>{serverSel}</>}</div>
+    <div className="dctSelRow"><span className="dctSelLabel">Courts</span>{courtSel}{showServerSel&&<><span className="dctSelSep"></span><span className="dctSelLabel">{mode==='rally'?'Current hitter':'Hitter'}</span>{serverSel}</>}</div>
     {scoreBar}
     <div className="dctMaps">{Surface({surface:"a"})}{Surface({surface:"b"})}</div>
     <div className="dctSide">{savedCard}{gamesCard}{matchesCard}{logCard}</div>
