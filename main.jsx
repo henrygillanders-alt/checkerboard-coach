@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v290 Player Display: CLA Rationale + RPAT-based RLD badge on every game';
+const APP_VERSION='v291 CLA Rationale audit: Checkerboard Engine + Power Play custom fixed, boxed rationale in Player Display';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -608,7 +608,12 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText,rationale,rldLevel}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
+  const CLA_BOX_STYLE=`
+.claRationaleBox{background:#0c1f1a!important;border:1px solid #1d4a38!important;border-left:4px solid #34e0a0!important;border-radius:12px!important;padding:14px 16px!important;margin:10px 0!important;}
+.claRationaleBox h2{color:#7fe8bf!important;font-size:0.78rem!important;text-transform:uppercase!important;letter-spacing:0.05em!important;font-weight:800!important;margin:0 0 6px!important;}
+.claRationaleBox p{color:#dbf2e8!important;line-height:1.5!important;margin:0!important;}`;
   return <div className="playerDisplayShell">
+    <style>{CLA_BOX_STYLE}</style>
     <div className="playerDisplayTop">
       <span>PLAYER DISPLAY</span>
       <h1>{title}</h1>
@@ -621,10 +626,10 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section><h2>WHAT TO DO</h2><p>{what}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
-      <section><h2>CLA RATIONALE</h2><p>{rationale}</p></section>
       {layers.length===0&&constraintText&&constraintText!=='No extra constraints selected.'&&<section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>}
       {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
+    <div className="claRationaleBox"><h2>CLA Rationale</h2><p>{rationale}</p></div>
     {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
   </div>;
 }
@@ -4389,7 +4394,21 @@ function buildCheckerboardGame(config){
   ].filter(Boolean);
   const scoring=['Win rally = 1',level.challenge==='single'?'Complete single = +1':level.challenge==='pair'?'Complete pair = +2':'Complete triple = +3','Win after completing challenge = +3'];
   if(completion.includes('Clean winner')) scoring.push('Clean winner = +2 and sits on top of all scoring');
-  return {id:Date.now()+Math.random(),title:`Checkerboard · ${level.label}`,category:'Checkerboard',duration:Number(config.duration)||8,format:config.format||'King of Court',task:taskParts.join(' '),rationale:'Uses the agreed checkerboard level progression so the tactical complexity, T-zone prevention and conversion windows scale automatically.',coach:'Coach the recognition of the affordance, not just the code. At Levels 4–5, remind players that the challenge resets if they do not convert within the shot window.',layers,cbCode:sequence,scoring:scoring.join(' · ')};
+  function buildCheckerboardRationale(){
+    const parts=[];
+    if(level.challenge==='single')parts.push('A single challenge keeps the perceptual problem simple: the player is searching for one affordance, not holding a relational pattern in mind — appropriate early in the progression before the demand on working memory increases.');
+    else if(level.challenge==='pair')parts.push('A pair challenge requires the player to hold two connected zones as one relational unit rather than two isolated targets — the tactical structure itself becomes the information the player must perceive and complete.');
+    else parts.push('A triple challenge raises the perceptual and memory load further: three zones must be held as a single connected structure and recognised live, under real rally pressure, before it can be completed.');
+    if(level.tZone)parts.push('T-zone prevention is active automatically at this level, so the player cannot solve the challenge from a position of comfort — the constraint forces genuine movement and recovery, not just shot selection.');
+    if(level.window==='4-shot window')parts.push('The 4-shot conversion window gives the player time to search for and build the challenge without collapsing the rally into a single forced moment, while still demanding conversion rather than open-ended repetition.');
+    else if(level.window==='2-shot window')parts.push('The 2-shot conversion window tightens the timeframe considerably — the affordance has to be recognised and converted almost immediately, closer to the urgency of live match tactics.');
+    else parts.push('With no conversion window, the challenge is banked as soon as it is completed rather than needing to be converted within a shot count — appropriate while the player is still learning to recognise the pattern itself.');
+    if(config.deliveryMode==='Blind')parts.push('Blind delivery removes advance knowledge of the target sequence, so the player must adapt shot selection in the moment the card is revealed rather than pre-planning a route to a known pattern.');
+    if(completion.includes('Clean winner'))parts.push('The clean-winner completion constraint means the challenge only counts if it also ends the rally outright — rewarding a genuinely decisive shot rather than merely landing in the right zone.');
+    if(completion.includes('Volley finish'))parts.push('The volley-finish completion constraint ties the challenge to taking the ball early and in the air — connecting the tactical pattern to a specific technical execution demand rather than treating them separately.');
+    return parts.join(' ');
+  }
+  return {id:Date.now()+Math.random(),title:`Checkerboard · ${level.label}`,category:'Checkerboard',duration:Number(config.duration)||8,format:config.format||'King of Court',task:taskParts.join(' '),rationale:buildCheckerboardRationale(),coach:'Coach the recognition of the affordance, not just the code. At Levels 4–5, remind players that the challenge resets if they do not convert within the shot window.',layers,cbCode:sequence,scoring:scoring.join(' · ')};
 }
 
 function CheckerboardEngine({onAddToSession}){
@@ -7804,14 +7823,23 @@ function PowerPlayBuilder({onAddToSession}){
       :`${config.durationValue} ${config.durationValue===1?'rally':'rallies'}`;
     const task=`${engine==='blind'?'BLIND ':''}Power Play · ${config.format||format} · ${config.tokens} token${config.tokens!==1?'s':''} · ${durationLabel}${overlayLabels.length?' · Overlays: '+overlayLabels.join(', '):''}`;
     const scoring=config.scoring||`${scoringMode==='exclusive'?'Exclusive scoring — only PP player scores during Power Play.':scoringMode==='bonus'?'Bonus scoring — both players score, PP player gets bonuses.':'Custom scoring.'} Break: ${config.breakCondition||breakCondition}.`;
+    function buildCustomPpRationale(){
+      const parts=[`A declared Power Play window (${config.tokens} token${config.tokens!==1?'s':''}, ${durationLabel}) creates a real decision about when to commit rather than a fixed condition applied to every rally — the player must judge the moment, not just execute a rule.`];
+      if(engine==='blind')parts.push('Blind delivery means the opponent does not know when the window is active, so the pressure comes from genuine uncertainty rather than a visibly signalled state.');
+      else parts.push('Open delivery means both players know the window is live, so the pressure is shared: the PP player must convert while the opponent knows exactly when to defend hardest.');
+      if(scoringMode==='exclusive')parts.push('Exclusive scoring raises the stakes of the declaration itself — nothing is banked for either player until the window resolves.');
+      else if(scoringMode==='bonus')parts.push('Bonus scoring keeps the rally live for both players while still rewarding the declaring player extra for conversion, so the window adds incentive without removing the opponent\u2019s ability to score.');
+      if(overlayLabels.length)parts.push(`Layered with ${overlayLabels.join(', ')}, which adds a further representative constraint on top of the timing decision itself.`);
+      return parts.join(' ');
+    }
     return {
       id:Date.now()+Math.random(),
       category:'Power Play',
       title,
       task,
       scoring,
-      rationale:config.rationale||'',
-      coach:config.coach||'',
+      rationale:config.rationale||buildCustomPpRationale(),
+      coach:config.coach||'Do not coach the moment to declare directly — let good and bad declarations play out and debrief the timing decision after, not during.',
       player:config.player||'',
       duration:15,
       layers:['Power Play',...overlayLabels],
@@ -8591,22 +8619,27 @@ function normaliseGameCard(card={}){
   const title=card.title||card.name||'Custom Game';
   const rawRld=card.rld!==undefined&&card.rld!==null&&card.rld!==''?card.rld:(card.rldLevel!==undefined&&card.rldLevel!==null&&card.rldLevel!==''?card.rldLevel:3);
   const finalRld=Number.isFinite(Number(rawRld))?Number(rawRld):3;
+  const finalRationale=card.rationale||card.description||card.logic||'Use the task constraints to shape player behaviour.';
+  const finalTask=card.task||card.description||card.quick||'Run the selected game.';
+  const finalCoach=card.coach||card.coachMsg||card.focus||'Set the constraint clearly, then observe the solution.';
+  const finalScoring=card.scoring||card.score||'Base scoring applies unless modified by the coach.';
+  const finalPlayerFocus=card.playerFocus||card.focus||'Solve the game problem, not a fixed technical shape.';
   return {
     id:card.id||now,
     title,
     category:card.category||card.type||'Custom',
     duration:card.duration||8,
     format:card.format||card.category||'Coach Card',
-    task:card.task||card.description||card.quick||'Run the selected game.',
-    rationale:card.rationale||card.description||card.logic||'Use the task constraints to shape player behaviour.',
-    coach:card.coach||card.coachMsg||card.focus||'Set the constraint clearly, then observe the solution.',
-    scoring:card.scoring||card.score||'Base scoring applies unless modified by the coach.',
-    playerFocus:card.playerFocus||card.focus||'Solve the game problem, not a fixed technical shape.',
     layers,
     modifierScores:{...Object.fromEntries(layers.map(layer=>[layer,defaultModifierScore(layer)])),...(card.modifierScores||{})},
     cbCode:card.cbCode||'None',
     ...card,
-    rld:finalRld
+    rld:finalRld,
+    rationale:finalRationale,
+    task:finalTask,
+    coach:finalCoach,
+    scoring:finalScoring,
+    playerFocus:finalPlayerFocus
   };
 }
 
