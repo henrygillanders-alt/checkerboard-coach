@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v289 Breakout Squash · Egyptian 3/4 court geometry fix (partial zone 3/4 depth)';
+const APP_VERSION='v290 Player Display: CLA Rationale + RPAT-based RLD badge on every game';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -525,7 +525,10 @@ function getPlayerDisplayFields(game){
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
   const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
   const score=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
-  return {item,title,what,score,focus,layers,dbText,constraintText,layerScoring};
+  const rationale=item.rationale||'Use the task constraints to shape player behaviour.';
+  const rldLevelRaw=Number(item.rld);
+  const rldLevel=Number.isFinite(rldLevelRaw)?Math.max(0,Math.min(6,Math.round(rldLevelRaw))):3;
+  return {item,title,what,score,focus,layers,dbText,constraintText,layerScoring,rationale,rldLevel};
 }
 function encodePlayerGame(game){
   try{
@@ -603,12 +606,13 @@ function buildPlayerCompetitionUrl(state){
 }
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
-  const {title,what,score,focus,layers,dbText,constraintText}=getPlayerDisplayFields(chosen);
+  const {title,what,score,focus,layers,dbText,constraintText,rationale,rldLevel}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
   return <div className="playerDisplayShell">
     <div className="playerDisplayTop">
       <span>PLAYER DISPLAY</span>
       <h1>{title}</h1>
+      <div style={{margin:'6px 0 0'}}><RLDBadge level={rldLevel} size="lg"/></div>
       {hasSession&&<select value={selectedIndex} onChange={e=>onSelect&&onSelect(Number(e.target.value))}>
         {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
       </select>}
@@ -617,6 +621,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       <section><h2>WHAT TO DO</h2><p>{what}</p></section>
       <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
       <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
+      <section><h2>CLA RATIONALE</h2><p>{rationale}</p></section>
       {layers.length===0&&constraintText&&constraintText!=='No extra constraints selected.'&&<section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>}
       {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
@@ -8584,6 +8589,8 @@ function normaliseGameCard(card={}){
   const now=Date.now()+Math.random();
   const layers=Array.isArray(card.layers)?card.layers:(card.layers?[card.layers]:[]);
   const title=card.title||card.name||'Custom Game';
+  const rawRld=card.rld!==undefined&&card.rld!==null&&card.rld!==''?card.rld:(card.rldLevel!==undefined&&card.rldLevel!==null&&card.rldLevel!==''?card.rldLevel:3);
+  const finalRld=Number.isFinite(Number(rawRld))?Number(rawRld):3;
   return {
     id:card.id||now,
     title,
@@ -8598,8 +8605,8 @@ function normaliseGameCard(card={}){
     layers,
     modifierScores:{...Object.fromEntries(layers.map(layer=>[layer,defaultModifierScore(layer)])),...(card.modifierScores||{})},
     cbCode:card.cbCode||'None',
-    rld:card.rld||card.rldLevel||'',
-    ...card
+    ...card,
+    rld:finalRld
   };
 }
 
