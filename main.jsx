@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v293 Breakout Squash bonus scoring (risk/defence) + own-shots-only fix (Breakout & Press Call)';
+const APP_VERSION='v295 Unified modifier panel look across all games (CollapsibleLayer -> clean mePanel style)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3836,7 +3836,8 @@ function BreakoutSquash({setSession}){
   const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   function buildTask(){
-    const base=`Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
+    const presetLabel=presetId==='egyptian'?'Egyptian 3/4 Court — ':'';
+    const base=`${presetLabel}Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
     if(tier==='1'){
       return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must win the point with their very next shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
     }
@@ -3851,7 +3852,8 @@ function BreakoutSquash({setSession}){
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
+    const presetTitleTag=presetId==='egyptian'?' (Egyptian 3/4 Court)':'';
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -5024,25 +5026,18 @@ const ATL_CB_ZONE_OPTIONS=[
 
 // ─── COLLAPSIBLE LAYER PANEL ─────────────────────────────────────────────────
 function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
-  const [open,setOpen]=useState(defaultOpen||false);
-  const colors={
-    green:{bg:'#0a1a0e',border:'#4ade80',label:'#4ade80',numBg:'#166534'},
-    gold:{bg:'#0e0c00',border:'#ffd980',label:'#ffd980',numBg:'#78350f'},
-    blue:{bg:'#071015',border:'#9bc1ff',label:'#9bc1ff',numBg:'#1e3a8a'},
-    purple:{bg:'#0b0820',border:'#c4b5fd',label:'#c4b5fd',numBg:'#4c1d95'},
-    teal:{bg:'#071015',border:'#22d3ee',label:'#22d3ee',numBg:'#0e7490'},
-  };
-  const c=colors[color]||colors.blue;
-  return <div className="collapsibleLayer" style={{borderColor:c.border,background:c.bg}}>
-    <div className="collapsibleLayerHeader" onClick={()=>setOpen(!open)} role="button" tabIndex={0} onKeyDown={e=>e.key==='Enter'&&setOpen(!open)}>
-      <span className="collapsibleLayerNum" style={{background:c.numBg}}>{num}</span>
-      <div className="collapsibleLayerTitle">
-        <strong style={{color:c.label}}>{title}</strong>
-        {subtitle&&<span className="collapsibleLayerSub">{subtitle}</span>}
-      </div>
-      <span className="collapsibleLayerChevron" style={{color:c.label}}>{open?'▲':'▼'}</span>
-    </div>
-    {open&&<div className="collapsibleLayerBody">{children}</div>}
+  // Unified with MEPanel's clean look (see Checkerboard / Universal Modifier Engine) so every
+  // builder screen shares one consistent accordion style. `color` is accepted but no longer used —
+  // kept in the signature so existing call sites don't need to change.
+  const [open,setOpen]=useState(!!defaultOpen);
+  const fullTitle=num?`${num}. ${title}`:title;
+  return <div className={open?'mePanel meOpen':'mePanel'}>
+    <button type="button" className="mePanelHead" onClick={()=>setOpen(o=>!o)}>
+      <span className="mePanelTitle">{fullTitle}</span>
+      {subtitle&&<span className="mePanelSub">{subtitle}</span>}
+      <span className="mePanelChevron">{open?'▾':'▸'}</span>
+    </button>
+    {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
 // ─────────────────────────────────────────────────────────────────────────────
