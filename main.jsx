@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v291 CLA Rationale audit: Checkerboard Engine + Power Play custom fixed, boxed rationale in Player Display';
+const APP_VERSION='v293 Breakout Squash bonus scoring (risk/defence) + own-shots-only fix (Breakout & Press Call)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -630,6 +630,11 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
     </div>
     <div className="claRationaleBox"><h2>CLA Rationale</h2><p>{rationale}</p></div>
+    {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
+      <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
+        <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
+        <CheckerboardCourtMap compact/>
+      </div>}
     {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
   </div>;
 }
@@ -3808,6 +3813,7 @@ const BREAKOUT_ZONE_PRESETS=[
 const BREAKOUT_ZONES=['1','2','3','4'];
 const BREAKOUT_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
 const BREAKOUT_SHOT_LIMITS=['2','3','4','5'];
+const BREAKOUT_BONUS_POINTS=['0','1','2','3'];
 function BreakoutSquash({setSession}){
   const [presetId,setPresetId]=useState('base');
   const [restrictedZones,setRestrictedZones]=useState(['2']);
@@ -3815,6 +3821,8 @@ function BreakoutSquash({setSession}){
   const [partialDepth,setPartialDepth]=useState(false);
   const [tier,setTier]=useState('1');
   const [shotLimit,setShotLimit]=useState('3');
+  const [breakoutBonus,setBreakoutBonus]=useState('2');
+  const [defenceBonus,setDefenceBonus]=useState('2');
   const [added,setAdded]=useState('');
   function choosePreset(p){
     setPresetId(p.id);
@@ -3830,17 +3838,20 @@ function BreakoutSquash({setSession}){
   function buildTask(){
     const base=`Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
     if(tier==='1'){
-      return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must finish the rally in ONE shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
+      return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must win the point with their very next shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
     }
-    return `${base} The breakout shot must land in the nominated target zone(s) above to count. Once it lands, an unconditional pressure window starts: the breakout player must win the rally within ${shotLimit} shots of play (counting both players' shots from the breakout shot onward) or the point is forfeit to the opponent automatically — regardless of who is on top in the rally when the window closes.`;
+    return `${base} The breakout shot must land in the nominated target zone(s) above to count. Once it lands, an unconditional pressure window starts: the breakout player must win the point within their own next ${shotLimit} shots (the opponent's shots in between do NOT count against the window) or the point is forfeit to the opponent automatically — regardless of who is on top in the rally when the window closes.`;
   }
   function buildScoring(){
-    if(tier==='1')return `Normal rally scoring. Breakout pressure triggered = win rally in 1 shot for the point; fail to finish in 1 shot after the opponent restores the restricted zone = automatic loss of rally.`;
-    return `Normal rally scoring. Breakout pressure triggered on landing = win rally within ${shotLimit} shots for the point; rally reaching shot ${Number(shotLimit)+1} without a finish = automatic loss of rally to the opponent.`;
+    const bb=Number(breakoutBonus)||0,db=Number(defenceBonus)||0;
+    const bbLine=bb>0?` Breakout player wins within the window = +${bb} bonus on top of the point (reward for taking the risk).`:'';
+    const dbLine=db>0?` Opponent successfully prevents the breakout player from converting = +${db} bonus on top of the point (reward for the defensive read/effort).`:'';
+    if(tier==='1')return `Normal rally scoring. Breakout pressure triggered = win the point with the very next shot for the point.${bbLine} Fail to finish with that next shot after the opponent restores the restricted zone = automatic loss of the point to the opponent.${dbLine}`;
+    return `Normal rally scoring. Breakout pressure triggered on landing = win the point within the breakout player's own next ${shotLimit} shots.${bbLine} Breakout player fails to convert within their own ${shotLimit} shots = automatic loss of the point to the opponent.${dbLine}`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside the count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -3900,6 +3911,18 @@ function BreakoutSquash({setSession}){
           <div className="brkChips">{BREAKOUT_SHOT_LIMITS.map(n=><div key={n} role="button" tabIndex={0} className={shotLimit===n?'brkChip on':'brkChip'} onClick={()=>setShotLimit(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotLimit(n);}}>{n} shots</div>)}</div>
         </div>}
       </div>
+      <div className="brkSection">
+        <div className="brkLabel">3. Bonus scoring (risk / reward weighting)</div>
+        <p className="brkHint">Bonus points on top of the normal point — so both taking the breakout risk and defending it well are worth something.</p>
+        <div style={{marginTop:8}}>
+          <div className="brkLabel">Breakout player bonus (converts within window)</div>
+          <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'bb'+n} role="button" tabIndex={0} className={breakoutBonus===n?'brkChip on':'brkChip'} onClick={()=>setBreakoutBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setBreakoutBonus(n);}}>+{n}</div>)}</div>
+        </div>
+        <div style={{marginTop:10}}>
+          <div className="brkLabel">Opponent defence bonus (prevents the conversion)</div>
+          <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'db'+n} role="button" tabIndex={0} className={defenceBonus===n?'brkChip on':'brkChip'} onClick={()=>setDefenceBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDefenceBonus(n);}}>+{n}</div>)}</div>
+        </div>
+      </div>
       <div className="brkBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="brkBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
       <div className="brkAddRow">
@@ -3931,10 +3954,10 @@ function PressCallModule({setSession}){
   const mode=PRESS_CALL_MODES.find(m=>m.id===modeId);
   function buildTask(){
     const who=modeId==='self'?'Either player, at any point in normal open rally play, may call "Press" the moment they judge they have created a genuine advantage.':modeId==='coach'?'The coach calls "Press" for a designated player at a moment of the coach\u2019s choosing during normal open rally play.':'Either player may call "Press" on their opponent mid-rally during normal open rally play — the call is made by the opponent, not the player under pressure.';
-    return `${who} No court zone restriction. The moment "Press" is called, the pressing player must win the rally within ${shotLimit} shots (counting both players' shots from the call onward) or the point is forfeit automatically — regardless of who is on top in the rally when the count ends. This is an advantage bet, not an escape: the call should only be made when the advantage is real, because the clock starts the instant it's declared.`;
+    return `${who} No court zone restriction. The moment "Press" is called, the pressing player must win the point within their own next ${shotLimit} shots (the opponent's shots in between do NOT count against the window) or the point is forfeit automatically — regardless of who is on top in the rally when the count ends. This is an advantage bet, not an escape: the call should only be made when the advantage is real, because the clock starts the instant it's declared.`;
   }
   function buildScoring(){
-    return `Normal rally scoring until a Press is called. From the call: win the rally within ${shotLimit} shots for the point; rally reaching shot ${Number(shotLimit)+1} without a finish = automatic loss of rally, even if the pressing player is still in control of the point.`;
+    return `Normal rally scoring until a Press is called. From the call: win the point within the pressing player's own next ${shotLimit} shots for the point; pressing player fails to convert within their own ${shotLimit} shots = automatic loss of the point, even if the pressing player is still in control of the rally.`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
@@ -4812,6 +4835,12 @@ function CheckerboardSetup({setScreen}){
   return <div className="page cbsetPage">
     <style>{CB_SET_CSS}</style>
     <div className="pageTop"><div><h1>Checkerboard</h1><p className="cbsetIntro">Flagship challenge protocol — allocate singles, pairs, triples, blind and optional challenges per player, per group or per court.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+
+    <div className="cbsetSection">
+      <h2>Court Map Reference</h2>
+      <p className="cbsetSub">Full zone map — floor 1–4, front wall 5–8, side walls A–C (front→back) split High/Low, back wall BL/BR.</p>
+      <CheckerboardCourtMap/>
+    </div>
 
     {/* 1 — PRESENT PLAYERS */}
     <div className="cbsetSection">
@@ -8612,6 +8641,90 @@ function AroundTheBoardBuilder({onAddToSession}){
   </div>;
 }
 
+
+// Full Checkerboard court map — matches "checkerboard-court-map-definitive" reference.
+// Unfolded schematic: centre strip = TIN / front wall (5,6 / 7,8) / floor (1,2 / 3,4) / back wall (BL,BR).
+// Left flank = LEFT SIDE WALL, three depth bands A/B/C (front→back) each split HI/LO.
+// Right flank = RIGHT SIDE WALL, mirrored (LO/HI column order reversed vs left).
+function CheckerboardCourtMap({width='100%',compact=false}){
+  const H=compact?230:300;
+  const CENTER_W=170,FLANK_W=140,GAP=6;
+  const totalW=FLANK_W*2+CENTER_W+GAP*2;
+  const tinH=compact?12:18,frontRowH=compact?34:44,floorRowH=compact?46:60,backH=compact?26:34;
+  const cx0=FLANK_W+GAP;
+  let y=0;
+  const tinY=y; y+=tinH;
+  const fwY1=y; y+=frontRowH;
+  const fwY2=y; y+=frontRowH;
+  const flY1=y; y+=floorRowH;
+  const flY2=y; y+=floorRowH;
+  const bwY=y; y+=backH;
+  const totalH=y;
+  const flankY0=flY1,flankH=floorRowH*2,bandH=flankH/3;
+  const topMargin=compact?0:14,bottomMargin=compact?0:16;
+  const viewH=totalH+topMargin+bottomMargin;
+  const cellStyle={stroke:'#2a3a4f',strokeWidth:1};
+  const zoneText={fontSize:compact?10:13,fontWeight:800,fill:'#0b1622',textAnchor:'middle',dominantBaseline:'middle'};
+  const smallText={fontSize:compact?7:9,fontWeight:700,fill:'#dbe6f2',textAnchor:'middle'};
+  const floorFill='#c9d8e6',frontFill='#e3c98a',backFill='#a9b7c4',flankFill='#7fa0c0',tinFill='#3a2a1a';
+  const leftBands=['A','B','C'];
+  const rightBands=['A','B','C'];
+  return <svg width={width} viewBox={`0 0 ${totalW} ${viewH}`} style={{maxWidth:520,display:'block',margin:'0 auto'}}>
+    <g transform={`translate(0, ${topMargin})`}>
+    {/* TIN */}
+    <rect x={cx0} y={tinY} width={CENTER_W} height={tinH} fill={tinFill} stroke="#2a3a4f"/>
+    <text x={cx0+CENTER_W/2} y={tinY+tinH/2+3} style={{...smallText,fill:'#f5d3a8'}}>TIN</text>
+    {/* Front wall 5,6 / 7,8 */}
+    <rect x={cx0} y={fwY1} width={CENTER_W/2} height={frontRowH} fill={frontFill} {...cellStyle}/>
+    <text x={cx0+CENTER_W/4} y={fwY1+frontRowH/2} style={zoneText}>5</text>
+    <rect x={cx0+CENTER_W/2} y={fwY1} width={CENTER_W/2} height={frontRowH} fill={frontFill} {...cellStyle}/>
+    <text x={cx0+3*CENTER_W/4} y={fwY1+frontRowH/2} style={zoneText}>6</text>
+    <rect x={cx0} y={fwY2} width={CENTER_W/2} height={frontRowH} fill={frontFill} {...cellStyle}/>
+    <text x={cx0+CENTER_W/4} y={fwY2+frontRowH/2} style={zoneText}>7</text>
+    <rect x={cx0+CENTER_W/2} y={fwY2} width={CENTER_W/2} height={frontRowH} fill={frontFill} {...cellStyle}/>
+    <text x={cx0+3*CENTER_W/4} y={fwY2+frontRowH/2} style={zoneText}>8</text>
+    {/* Floor 1,2 / 3,4 (1=front-right,2=front-left,3=back-right,4=back-left -> right col first) */}
+    <rect x={cx0+CENTER_W/2} y={flY1} width={CENTER_W/2} height={floorRowH} fill={floorFill} {...cellStyle}/>
+    <text x={cx0+3*CENTER_W/4} y={flY1+floorRowH/2} style={zoneText}>1</text>
+    <rect x={cx0} y={flY1} width={CENTER_W/2} height={floorRowH} fill={floorFill} {...cellStyle}/>
+    <text x={cx0+CENTER_W/4} y={flY1+floorRowH/2} style={zoneText}>2</text>
+    <rect x={cx0+CENTER_W/2} y={flY2} width={CENTER_W/2} height={floorRowH} fill={floorFill} {...cellStyle}/>
+    <text x={cx0+3*CENTER_W/4} y={flY2+floorRowH/2} style={zoneText}>3</text>
+    <rect x={cx0} y={flY2} width={CENTER_W/2} height={floorRowH} fill={floorFill} {...cellStyle}/>
+    <text x={cx0+CENTER_W/4} y={flY2+floorRowH/2} style={zoneText}>4</text>
+    {/* Back wall BL / BR */}
+    <rect x={cx0} y={bwY} width={CENTER_W/2} height={backH} fill={backFill} {...cellStyle}/>
+    <text x={cx0+CENTER_W/4} y={bwY+backH/2} style={{...zoneText,fontSize:compact?9:11}}>BL</text>
+    <rect x={cx0+CENTER_W/2} y={bwY} width={CENTER_W/2} height={backH} fill={backFill} {...cellStyle}/>
+    <text x={cx0+3*CENTER_W/4} y={bwY+backH/2} style={{...zoneText,fontSize:compact?9:11}}>BR</text>
+    {/* Left side wall: 3 bands (A,B,C front->back) x HI/LO */}
+    {leftBands.map((b,i)=>{
+      const by=flankY0+i*bandH;
+      return <g key={'L'+b}>
+        <rect x={0} y={by} width={FLANK_W/2} height={bandH} fill={flankFill} {...cellStyle}/>
+        <text x={FLANK_W/4} y={by+bandH/2} style={smallText}>L{b}-HI</text>
+        <rect x={FLANK_W/2} y={by} width={FLANK_W/2} height={bandH} fill={flankFill} {...cellStyle}/>
+        <text x={3*FLANK_W/4} y={by+bandH/2} style={smallText}>L{b}-LO</text>
+      </g>;
+    })}
+    {/* Right side wall: mirrored column order LO then HI */}
+    {rightBands.map((b,i)=>{
+      const by=flankY0+i*bandH;
+      const rx=cx0+CENTER_W+GAP;
+      return <g key={'R'+b}>
+        <rect x={rx} y={by} width={FLANK_W/2} height={bandH} fill={flankFill} {...cellStyle}/>
+        <text x={rx+FLANK_W/4} y={by+bandH/2} style={smallText}>R{b}-LO</text>
+        <rect x={rx+FLANK_W/2} y={by} width={FLANK_W/2} height={bandH} fill={flankFill} {...cellStyle}/>
+        <text x={rx+3*FLANK_W/4} y={by+bandH/2} style={smallText}>R{b}-HI</text>
+      </g>;
+    })}
+    {!compact&&<>
+      <text x={cx0+CENTER_W/2} y={-4} style={{...smallText,fill:'#9fb6cf'}}>FRONT WALL</text>
+      <text x={cx0+CENTER_W/2} y={totalH+12} style={{...smallText,fill:'#9fb6cf'}}>BACK WALL</text>
+    </>}
+    </g>
+  </svg>;
+}
 
 function normaliseGameCard(card={}){
   const now=Date.now()+Math.random();
