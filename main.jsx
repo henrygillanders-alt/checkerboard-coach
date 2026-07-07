@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v299 Court Trace map: transparent background, coordinate alignment preserved (1347×1743 uncropped)';
+const APP_VERSION='v300 Tin War rebuilt as static rules-card display (all 6 games)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9442,62 +9442,31 @@ function TinWarStyles(){
 .twNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
 .twSettings{display:flex;flex-wrap:wrap;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;align-items:flex-end;}
 .twSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
-.twSettings select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:7px 9px;font-size:0.95rem;}
-.twToggleLabel button{margin-top:2px;padding:6px 14px;}
-.twRosterEdit{display:flex;flex-direction:column;gap:8px;background:#1a1206;border:1px solid #4a3a12;border-radius:10px;padding:11px 13px;}
-.twNameRow{display:flex;gap:8px;flex-wrap:wrap;}
-.twNameRow input{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:8px 10px;font-size:0.95rem;}
-.twControls{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
-.twPlayerCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.twPlayerTop{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-.twPlayerTop strong{font-size:1.1rem;}
-.twChips{display:flex;gap:6px;flex-wrap:wrap;}
-.twChip{font-size:0.72rem;font-weight:700;border-radius:999px;padding:3px 9px;}
-.twChipLock{color:#f5c542;background:#2a2206;border:1px solid #6a5410;}
-.twChipFreeze{color:#8fd0ee;background:#0b2530;border:1px solid #2E6E8E;}
-.twChipToken{color:#c5b3ff;background:#1c1630;border:1px solid #4a3a7a;}
-.twChipPeak{color:#86efac;background:#0b1f14;border:1px solid #1d3a28;}
-.twMain{display:flex;gap:12px;align-items:stretch;}
-.twLadder{display:flex;flex-direction:column;gap:3px;flex:1;}
-.twRung{display:flex;justify-content:space-between;align-items:center;border:1px solid #223044;border-radius:7px;padding:5px 9px;font-size:0.8rem;color:#7c8ea0;background:#0b1118;}
-.twRung b{font-weight:700;letter-spacing:0.04em;}
-.twRung span{font-size:0.72rem;opacity:0.8;}
-.twRungActive{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
-.twRungActive span{color:#8fd0ee;opacity:1;}
-.twNudge{display:flex;flex-direction:column;gap:7px;justify-content:center;min-width:104px;}
-.twNudgeBtn{background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px;font-size:0.82rem;font-weight:600;cursor:pointer;}
 .twActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
 .twActionBtn{flex:1;min-width:120px;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px 10px;font-size:0.84rem;font-weight:600;cursor:pointer;}
 .twActionGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
-.twActionDanger{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
-.twPickStrip{display:flex;gap:7px;flex-wrap:wrap;background:#0b1118;border:1px dashed #3a5a8e;border-radius:9px;padding:8px;}
-.twMenu{display:flex;flex-direction:column;gap:6px;background:#0b1118;border:1px dashed #3a5a8e;border-radius:9px;padding:9px;}
 .twBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .twBottomBar .primaryBtn{margin-left:auto;}
-.twUndoBtn{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;}
-.twUndoBtn:disabled{opacity:0.4;cursor:default;}
-.twAdvanceBtn{background:#161b22;border:1px solid #3a4a5e;color:#cdd9e6;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;}
-.twSummit{text-align:center;background:#2a2206;border:1px solid #6a5410;border-radius:12px;padding:12px;color:#f5c542;font-weight:700;}
-.twLog{display:flex;flex-direction:column;gap:3px;background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;}
-.twLogRow{font-size:0.82rem;color:#9fb0c2;font-family:ui-monospace,monospace;}
 
 .twDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#0d1b2a 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
-.twDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:30px;}
+.twDisplayShell{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:26px;}
 .twDisplayTop{text-align:center;}
 .twDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#5e89b0;}
 .twDisplayTop h1{margin:6px 0 4px;font-size:3rem;color:#eaf4fb;}
-.twDisplayTop p{margin:0;font-size:1.2rem;color:#9fc4dc;font-style:italic;}
-.twDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;}
-.twDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;}
-.twDisplayName{font-size:1.5rem;font-weight:700;color:#eaf4fb;text-align:center;}
-.twDisplayLadder{display:flex;flex-direction:column;gap:4px;}
-.twDispRung{display:flex;justify-content:space-between;border:1px solid #21384e;border-radius:8px;padding:8px 12px;font-size:1rem;color:#5e89b0;}
-.twDispRungActive{background:#16466a;border-color:#7db8ff;color:#eaf4fb;font-weight:800;}
-.twDisplayChips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
-.twDispChip{font-size:0.95rem;font-weight:700;padding:4px 12px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
-@media (max-width:600px){
+.twDisplayTop p{margin:0;font-size:1.25rem;color:#9fc4dc;font-style:italic;}
+.twDisplayRules{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:18px;}
+.twDisplaySection{background:#0f1c2b;border:1px solid #21384e;border-radius:16px;padding:18px 20px;}
+.twDisplaySection h4{margin:0 0 8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:#5e89b0;}
+.twDisplaySection p{margin:0;font-size:1.1rem;line-height:1.5;color:#eaf4fb;}
+.twDisplayTriggers{background:#0f1c2b;border:1px solid #21384e;border-radius:16px;padding:16px 20px;display:flex;flex-direction:column;gap:10px;}
+.twDisplayTriggers h4{margin:0;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:#5e89b0;}
+.twDisplayTriggerRow{display:flex;flex-wrap:wrap;gap:9px;}
+.twDispChip{font-size:1rem;font-weight:700;padding:6px 14px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
+.twDisplayNote{margin:0;text-align:center;font-size:1.05rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:12px;padding:14px 18px;}
+@media (max-width:700px){
   .twGameTabs{grid-template-columns:repeat(2,1fr);}
   .twInfoGrid{grid-template-columns:1fr;gap:10px;}
+  .twDisplayRules{grid-template-columns:1fr;}
   .twDisplayTop h1{font-size:2.1rem;}
 }
 `}</style>;
@@ -9516,134 +9485,98 @@ const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
 const TINWAR_GAMES=[
-  {id:'tw1',title:'Earn the Drop',tag:'Shot trigger',start:0,
-   principle:'Win rally = 1. Win using the selected shot protocol = 1 plus a Tin choice.',
-   player:'Win with the coach-selected shot. Then choose: remove more of your wall, or remove more of your opponent’s wall.',
-   logic:'Court rotation game. Tin belongs to the player and travels with them. Coach selects the trigger shots before play. Normal rally win scores only. Protocol win scores and unlocks a Tin choice.',
-   scoring:'Normal win = +1. Protocol win = +1 plus Tin choice.',
+  {id:'tw1',title:'Earn the Drop',tag:'Shot trigger',
+   principle:'Winning earns pressure, not relief. Losing costs points. The task never gets easier for the player who is behind.',
+   player:'Win a rally normally = 1 point. Win with one of the coach-nominated shots = your own wall gets one level harder, and the reward grows with how hard your wall already is. Lose a rally = −1 point, and your wall never gets easier just because you lost.',
+   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A normal win only scores. A win with a nominated shot both scores and steps the winner\u2019s own wall up one level — the reward is tied to the winner escalating their own difficulty, never to easing the opponent\u2019s.',
+   scoring:'Normal win = +1. Trigger-shot win = +1 plus a bonus equal to the wall level just reached (so the harder your wall already is, the more the next step is worth). Loss = −1, floored at 0.',
    note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner.'},
-  {id:'tw2',title:'Climb',tag:'Full wall leveller',start:0,
+  {id:'tw2',title:'Climb',tag:'Full wall leveller',
    principle:'The more you win, the less bottom wall you have.',
-   player:'Start with full wall. Each win removes more of your bottom front wall. You carry your wall restriction when you rotate.',
-   logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not reset automatically. Reset only by coach or new game.',
+   player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction with you all session.',
+   logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Reset only between games.',
    scoring:'Rally win = +1. Each win also removes one more level of your own bottom wall.',
-   note:'This is the base leveller game. The player who keeps winning must solve a harder finishing problem.'},
-  {id:'tw3',title:'King Hunt',tag:'Promotion / relegation',start:0,
-   principle:'Beat the current King for the bonus. King carries their Tin pressure.',
-   player:'King stays on. Challenger enters. Beat the King = 3 points. If the King loses, they rotate out but keep their Tin state.',
-   logic:'Court rotation game. Current winner is King. King carries their current Tin restriction. Challenger keeps their own Tin. Beating the King gives the hunt bonus and the challenger becomes King.',
-   scoring:'Normal win = +1. Beat King = +3.',
-   note:'Do not reset the King’s Tin when they lose. The player carries pressure with them.'},
-  {id:'tw4',title:'Target Hunter',tag:'Public target',start:0,
+   note:'This is the base leveller game. The player who keeps winning must solve a harder finishing problem — winning never gets easier here.'},
+  {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
+   principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
+   player:'The first player to get a strict points lead becomes King. If another player only draws level with the King\u2019s score, the King keeps the crown. The moment a player\u2019s score goes strictly above the King\u2019s score, they become the new King — and that specific winning point scores the bonus instead of the normal point.',
+   logic:'This is a running score comparison, not a court-position rule. Track it out loud: first to lead = King. Ties never dethrone. Only a strict overtake dethrones, and it\u2019s the win that causes the overtake which earns the bonus.',
+   scoring:'Normal win = +1. The win that overtakes the King\u2019s score = bonus instead of the normal point (coach sets the bonus value below).',
+   note:'Worked example: Alice wins first, 1–0, becomes King. Bob wins twice to reach 2, overtakes — that 2nd win scores the bonus, Bob is King. Carl reaches 2 — only draws level, Bob stays King. Carl wins again to reach 3 — overtakes, that win scores the bonus, Carl is King.'},
+  {id:'tw4',title:'Target Hunter',tag:'Public target',
    principle:'Opponent knows the target. Can you still finish?',
-   player:'Normal win = 1. Win in your active legal target band = 3. Opponent knows where you want to finish.',
-   logic:'Each player’s Tin restriction creates a public finishing target. A normal rally win scores 1. A win that clearly hits the active target band scores 3.',
+   player:'Normal win = 1. Win in your active legal target band = 3. Opponent knows exactly where you want to finish.',
+   logic:'Each player\u2019s Tin restriction creates a public finishing target. A normal rally win scores 1. A win that clearly hits the active target band scores 3.',
    scoring:'Normal win = +1. Target win = +3.',
-   note:'This creates disguise and anticipation pressure because the opponent can protect the known target.'},
-  {id:'tw5',title:'Lockdown',tag:'Pressure trap',start:0,
-   principle:'Win two in a row and trap the current opponent.',
-   player:'Win 2 rallies in a row to put the current opponent in Lockdown for 3 rallies. Lockdown ends when that opponent rotates out.',
-   logic:'Court rotation game. A player who wins two consecutive rallies activates Lockdown on the current opponent. During Lockdown, the opponent cannot improve or reset their Tin. Countdown lasts 3 rallies or ends when that opponent leaves the court.',
-   scoring:'Normal win = +1. Lockdown is the pressure reward.',
-   note:'Lockdown does not carry into the queue. It is only for the current on-court opponent.'},
-  {id:'tw6',title:'Last Window',tag:'Maximum pressure',start:0,
+   note:'This creates disguise and anticipation pressure because the opponent can see and protect the known target.'},
+  {id:'tw5',title:'Lockdown',tag:'Pressure trap',
+   principle:'Win two in a row against the same opponent and trap them.',
+   player:'Win 2 rallies in a row against the same opponent and they go into Lockdown for the next 3 rallies on that court. While locked down, their wall cannot be eased or tightened — it stays exactly where it is, whether they are on court or waiting.',
+   logic:'Self-officiated. Track consecutive wins against the same opponent out loud. On the 2nd straight win, that opponent is locked for 3 more rallies on that court — the countdown keeps ticking even while they are waiting their turn, not just while they are on.',
+   scoring:'Normal win = +1. Lockdown itself is the pressure reward, not points.',
+   note:'Lockdown is opponent-specific — it only applies to the player who was just beaten twice in a row, not to anyone else on the court.'},
+  {id:'tw6',title:'Last Window',tag:'Maximum pressure',
    principle:'At the hardest level, only the target finish counts.',
-   player:'When you reach Top Window, normal rally wins no longer score. You must win by hitting the active target.',
-   logic:'Court rotation game. If a player is at TOP WINDOW, their ordinary rally wins do not score. They only score by winning in the active target band. Other players follow their own current Tin state.',
-   scoring:'Below Top Window: normal win = +1. At Top Window: target win only = +3.',
-   note:'This is the maximum-pressure version. It should be used after players understand Climb.'},
+   player:'Below Top Window, a normal rally win scores. Once you reach Top Window, ordinary wins no longer score — you must win by hitting the active target band.',
+   logic:'If a player is at TOP WINDOW, their ordinary rally wins do not score at all. They only score by winning in the active target band. Other players keep following their own current Tin state and scoring rules as normal.',
+   scoring:'Below Top Window: normal win = +1. At Top Window: only a target win scores, worth +3.',
+   note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
 ];
 
 function TinWarModule({setScreen,embedded=false,setSession}){
-  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
-  const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2','Player 3','Player 4','Player 5']);
   const [gameId,setGameId]=useState('tw1');
   const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
-  const namesKey=names.join('|');
-  const [tin,setTin]=useState({});
-  const [score,setScore]=useState({});
-  const [streak,setStreak]=useState({});
-  const [locked,setLocked]=useState({});
-  const [king,setKing]=useState('');
   const [selectedTriggers,setSelectedTriggers]=useState(()=>['Volley winner','Straight drop winner','Boast winner','Trickle boast winner','Straight kill winner']);
-  const [pending,setPending]=useState(null);
-  const [log,setLog]=useState([]);
-  const [undoStack,setUndoStack]=useState([]);
+  const [kingBonus,setKingBonus]=useState(3);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
-
-  useEffect(()=>{resetAll(false);},[gameId,namesKey]);
-  function baseState(){const t={},s={},st={},lo={};names.forEach(n=>{t[n]=game.start||0;s[n]=0;st[n]=0;lo[n]=0;});return {t,s,st,lo};}
-  function resetAll(push=true){if(push)pushUndo();const b=baseState();setTin(b.t);setScore(b.s);setStreak(b.st);setLocked(b.lo);setKing(names[0]||'');setPending(null);setLog([]);}
-  function snap(){return {tin:{...tin},score:{...score},streak:{...streak},locked:{...locked},king,pending,log:[...log]};}
-  function pushUndo(){setUndoStack(p=>[...p.slice(-29),snap()]);}
-  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setTin(s.tin);setScore(s.score);setStreak(s.streak);setLocked(s.locked);setKing(s.king);setPending(s.pending);setLog(s.log);return prev.slice(0,-1);});}
-  function addLog(m){setLog(p=>[m,...p].slice(0,8));}
-  function harder(i){return Math.min(TIN_HARDEST,(Number(i)||0)+1);}
-  function easier(i){return Math.max(TIN_OPEN,(Number(i)||0)-1);}
-  function addScore(n,pts){setScore(p=>({...p,[n]:(p[n]||0)+pts}));}
-  function removeOwnWall(n){setTin(p=>({...p,[n]:harder(p[n])}));}
-  function restoreOwnWall(n){setTin(p=>({...p,[n]:easier(p[n])}));}
-  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
-  function chooseOpponent(self,action){const others=names.filter(n=>n!==self); if(others.length===1){action(others[0]);} else {setPending({self,action});}}
-  function applyPending(opp){if(!pending)return; pending.action(opp); setPending(null);}
-
-  function normalWin(n){
-    pushUndo();
-    let pts=1;
-    if(gameId==='tw3' && king && n!==king){pts=3;setKing(n);addLog(n+' beat the King +3');}
-    else {addLog(n+' normal win +1'); if(gameId==='tw3')setKing(n);}
-    if(gameId==='tw6' && (tin[n]||0)>=TIN_HARDEST){addLog(n+' is at TOP WINDOW — normal win does not score');pts=0;}
-    addScore(n,pts);
-    if(gameId==='tw2'){removeOwnWall(n);addLog(n+' climbed: bottom wall removed one level');}
-    const resets={};names.forEach(x=>{if(x!==n)resets[x]=0;});
-    const ns=(streak[n]||0)+1;setStreak(p=>({...p,...resets,[n]:ns}));
-    if(gameId==='tw5' && ns>=2){chooseOpponent(n,(opp)=>{setLocked(p=>({...p,[opp]:3}));addLog(opp+' locked down for 3 rallies');});setStreak(p=>({...p,[n]:0}));}
-    setLocked(p=>{const o={...p};Object.keys(o).forEach(k=>{if(o[k]>0)o[k]=Math.max(0,o[k]-1);});return o;});
-  }
-  function protocolWin(n){
-    pushUndo();addScore(n,1);addLog(n+' protocol win +1 — choose Tin action');setPending({self:n,protocol:true});
-  }
-  function targetWin(n){
-    pushUndo();addScore(n,3);addLog(n+' target win +3');
-    if(gameId==='tw3' && king && n!==king)setKing(n);
-    if(gameId==='tw2')removeOwnWall(n);
-  }
-  function resolveProtocol(self,mode){
-    if(mode==='self'){removeOwnWall(self);addLog(self+' removed more of own wall');setPending(null);}
-    if(mode==='opp'){chooseOpponent(self,(opp)=>{setTin(p=>({...p,[opp]:harder(p[opp])}));addLog(self+' removed more of '+opp+'’s wall');});}
-  }
-  function rotateOut(n){pushUndo();setStreak(p=>({...p,[n]:0}));setLocked(p=>({...p,[n]:0}));if(king===n)setKing('');addLog(n+' rotated out — Tin state carried, Lockdown cleared');}
-  function playerStatus(n){const i=tin[n]||0;return TIN_LADDER[i]||TIN_LADDER[0];}
+  const scoringText=useMemo(()=>gameId==='tw3'?game.scoring.replace('coach sets the bonus value below',kingBonus+' points'):game.scoring,[gameId,game,kingBonus]);
 
   useEffect(()=>{
     if(!projecting)return;
-    const payload={type:'tinwar',game:{title:game.title,tag:game.tag,principle:game.player||game.principle},ladder:TIN_LADDER,
-      players:names.map(n=>({name:n,idx:tin[n]||0,score:score[n]||0,locked:locked[n]||0,king:n===king})),
-      king,displayNote:'Court rotation: players carry Tin. Win +1. Target +3. Beat King +3.'};
+    const payload={type:'tinwar',game:{title:game.title,tag:game.tag,principle:game.principle,player:game.player,logic:game.logic,scoring:scoringText,note:game.note},
+      triggers:gameId==='tw1'?selectedTriggers:null,kingBonus:gameId==='tw3'?kingBonus:null};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
-  },[projecting,tin,score,locked,king,gameId,namesKey]);
+  },[projecting,gameId,selectedTriggers,kingBonus,scoringText,game]);
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Live player link copied.');}catch{window.prompt('LIVE Tin War player link:',url);}}
 
   return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
     <TinWarStyles/>
-    {!embedded&&<div className="moduleHead"><div><h1>Tin War™ — FINAL 6 GAME SUITE</h1><p className="mutedText">Court-rotation Tin War. Players carry Tin. Climb starts FULL WALL and each win removes more bottom wall.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
-    {embedded&&<div className="twSuiteHeading"><h2>Tin War™ — FINAL 6 GAME SUITE</h2><p className="mutedText">Court rotations, not timed rotations. Tin belongs to each player and travels with them. Win +1. Protocol or target wins create Tin pressure.</p></div>}
+    {!embedded&&<div className="moduleHead"><div><h1>Tin War™ — FINAL 6 GAME SUITE</h1><p className="mutedText">Constraint rules card. Coaches and players run the scoring on court — this screen keeps the rule and rationale clear.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="twSuiteHeading"><h2>Tin War™ — FINAL 6 GAME SUITE</h2><p className="mutedText">Pick a game. The screen shows the constraint clearly for players and coaches — scoring is kept on court, not in the app.</p></div>}
     <div className="twGameTabs">{TINWAR_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'twGameTab twGameTabActive':'twGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}</div>
-    <div className="twGameInfo"><div className="twGameInfoHead"><h2>{game.title}</h2><span className="twTag">{game.tag}</span></div><p className="twPrinciple">{game.player}</p><div className="twInfoGrid"><div><h4>Player rule</h4><p>{game.player}</p></div><div><h4>Step by step</h4><p>{game.logic}</p></div><div><h4>Scoring</h4><p>{game.scoring}</p></div></div><p className="twNote">{game.note}</p></div>
+    <div className="twGameInfo">
+      <div className="twGameInfoHead"><h2>{game.title}</h2><span className="twTag">{game.tag}</span></div>
+      <p className="twPrinciple">{game.principle}</p>
+      <div className="twInfoGrid">
+        <div><h4>Player rule</h4><p>{game.player}</p></div>
+        <div><h4>Step by step</h4><p>{game.logic}</p></div>
+        <div><h4>Scoring</h4><p>{scoringText}</p></div>
+      </div>
+      <p className="twNote">{game.note}</p>
+    </div>
     {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
-    {presents.length<2&&<div className="twRosterEdit"><span className="mutedText">Edit rotation players:</span><div className="twNameRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)}/>)}</div></div>}
-    {pending&&pending.action&&<div className="twPickStrip"><span className="mutedText">Pick opponent for {pending.self}:</span>{names.filter(n=>n!==pending.self).map(n=><button type="button" className="twActionBtn" key={n} onClick={()=>applyPending(n)}>{n}</button>)}<button className="twUndoBtn" onClick={()=>setPending(null)}>Cancel</button></div>}
-    {pending&&pending.protocol&&<div className="twPickStrip"><span className="mutedText">{pending.self} protocol win — choose:</span><button className="twActionBtn twActionGood" onClick={()=>resolveProtocol(pending.self,'self')}>Remove more of my wall</button><button className="twActionBtn twActionDanger" onClick={()=>resolveProtocol(pending.self,'opp')}>Remove more of opponent wall</button><button className="twUndoBtn" onClick={()=>setPending(null)}>Cancel</button></div>}
-    <div className="twControls">{names.map(n=>{const st=playerStatus(n);return <div className="twPlayerCard" key={n}><div className="twPlayerTop"><strong>{n}</strong><div className="twChips"><span className="twChip twChipToken">{score[n]||0} pts</span>{n===king&&<span className="twChip twChipLock">KING</span>}{locked[n]>0&&<span className="twChip twChipFreeze">LOCKDOWN {locked[n]}</span>}</div></div><div className="twMain"><div className="twLadder">{TIN_LADDER.map((r,i)=><div key={r.key} className={i===(tin[n]||0)?'twRung twRungActive':'twRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div><div className="twNudge"><button className="twNudgeBtn" onClick={()=>{pushUndo();removeOwnWall(n);}}>▲ Remove wall</button><button className="twNudgeBtn" onClick={()=>{pushUndo();restoreOwnWall(n);}}>▼ Restore wall</button><button className="twNudgeBtn" onClick={()=>rotateOut(n)}>Rotate out</button></div></div><div className="twActionStrip"><button type="button" className="twActionBtn twActionGood" onClick={()=>normalWin(n)}>Normal win +1</button>{gameId==='tw1'&&<button type="button" className="twActionBtn" onClick={()=>protocolWin(n)}>Protocol win + choice</button>}{(gameId==='tw4'||gameId==='tw6')&&<button type="button" className="twActionBtn" onClick={()=>targetWin(n)}>Target win +3</button>}{gameId==='tw3'&&<button type="button" className="twActionBtn" onClick={()=>{pushUndo();setKing(n);addLog(n+' set as King');}}>Set King</button>}</div><p className="mutedText" style={{fontSize:'0.8rem',margin:'6px 0 0'}}>Active: {st.label} — {st.desc}</p></div>})}</div>
-    <div className="twBottomBar"><button type="button" className="twUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button><button type="button" className="secondaryBtn" onClick={()=>resetAll(true)}>Reset Tin War</button>{typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'Court rotation',duration:10,task:game.player,scoring:game.scoring,rationale:'Player-carried Tin constraints in court rotations.',coach:'Use clear wins and coach-selected protocols only.',playerFocus:game.player,layers:['Tin War'],rld:4}));alert(game.title+' added to session.');}}>Add to Session</button>}<button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button></div>
-    {log.length>0&&<div className="twLog">{log.map((l,i)=><div key={i} className="twLogRow">{l}</div>)}</div>}
+    {gameId==='tw3'&&<div className="twSettings"><strong>Bonus for overtaking the King:</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={kingBonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setKingBonus(v)}>{v} pts</button>)}</div></div>}
+    <div className="twBottomBar">
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'Constraint game',duration:10,task:game.player,scoring:scoringText,rationale:game.logic,coach:game.note,playerFocus:game.player,layers:['Tin War'],rld:4}));alert(game.title+' added to session.');}}>Add to Session</button>}
+      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
+    </div>
   </div>;
 }
 
 function TinWarPlayerDisplay({payload={}}){
-  const game=payload.game||{};const players=payload.players||[];const ladder=payload.ladder||TIN_LADDER;
-  return <div className="playerDisplayPage twDisplayPage"><TinWarStyles/><div className="twDisplayShell"><div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||payload.displayNote||''}</p></div><div className="twDisplayGrid">{players.map((p,i)=><div className="twDisplayCard" key={i}><div className="twDisplayName">{p.name}</div><div className="twDisplayChips"><span className="twDispChip">{p.score||0} pts</span>{p.king&&<span className="twDispChip">KING</span>}{p.locked>0&&<span className="twDispChip">LOCKDOWN {p.locked}</span>}</div><div className="twDisplayLadder">{ladder.map((r,j)=><div key={r.key} className={j===p.idx?'twDispRung twDispRungActive':'twDispRung'}><b>{r.label}</b><span>{r.cm}</span></div>)}</div></div>)}</div></div></div>;
+  const game=payload.game||{};const triggers=payload.triggers;const kingBonus=payload.kingBonus;
+  return <div className="playerDisplayPage twDisplayPage"><TinWarStyles/><div className="twDisplayShell">
+    <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
+    <div className="twDisplayRules">
+      <div className="twDisplaySection"><h4>Player rule</h4><p>{game.player}</p></div>
+      <div className="twDisplaySection"><h4>Step by step</h4><p>{game.logic}</p></div>
+      <div className="twDisplaySection"><h4>Scoring</h4><p>{game.scoring}</p></div>
+    </div>
+    {triggers&&triggers.length>0&&<div className="twDisplayTriggers"><h4>Winning-shot protocol</h4><div className="twDisplayTriggerRow">{triggers.map(t=><span key={t} className="twDispChip">{t}</span>)}</div></div>}
+    {kingBonus&&<div className="twDisplayTriggers"><h4>Bonus for overtaking the King</h4><span className="twDispChip">{kingBonus} pts</span></div>}
+    {game.note&&<p className="twDisplayNote">{game.note}</p>}
+  </div></div>;
 }
 
 
