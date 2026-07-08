@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v315 Snakes & Ladders: stations mode \u2014 when courts>1, every court now projects live simultaneously to its own link (Copy link per court), same pattern as Tin War, feeding the existing Court Monitor master screen';
+const APP_VERSION='v317 Snakes & Ladders: added 50-square board option, fixed partial-board-on-phone (Player Display board now wrapped in a horizontal-scroll container with responsive cell sizing instead of overflowing off-screen)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8794,7 +8794,7 @@ function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({nam
 function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null}){
   const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
-  const cols=size===15?5:size===30?6:7;
+  const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
   const [board,setBoard]=useState(()=>slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
   const [roster,setRoster]=useState(()=>players.map(n=>({name:n,pos:1})));
@@ -8998,7 +8998,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {showSettings&&<div className="slSettings">
       <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
       {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
-      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
+      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
       <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
       <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
       <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
@@ -9035,7 +9035,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 function SnakesLaddersPlayerDisplay({payload={}}){
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
   const size=payload.size||21;
-  const cols=size===15?5:size===30?6:7;
+  const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
   const board=payload.board||{snakes:{},ladders:{}};
   const players=payload.players||[];
@@ -9047,27 +9047,38 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
   return <div className="playerDisplayPage slDisplayPage">
     <style>{`
+.slDisplayBoardWrap{width:100%;max-width:100vw;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:2px;}
+.slDisplayBoard{display:grid !important;gap:6px !important;width:100%;min-width:${cols*46}px;box-sizing:border-box;}
+.slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
 .slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
 .slDisplayBoard .slTok{font-size:1.5rem !important;min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+@media (max-width:640px){
+  .slDisplayBoard{min-width:${cols*40}px;gap:4px !important;}
+  .slDisplayBoard .slMark{font-size:1.15rem !important;}
+  .slDisplayBoard .slNum{font-size:1.15rem !important;}
+  .slDisplayBoard .slTok{font-size:0.85rem !important;min-width:1.5rem !important;height:1.5rem !important;line-height:1.5rem !important;}
+}
 `}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
       :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
     <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
-    <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
-      {grid.flat().map((n,idx)=>{
-        if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
-        const ci=cellInfo(n);
-        const here=players.map(p=>p.pos===n?p.name:null).filter(Boolean);
-        return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
-          <span className="slNum">{n}</span>
-          {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
-          {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
-          {n===size&&<span className="slMark">🏁</span>}
-          {here.length>0&&<span className="slTokens">{here.map(nm=><b key={nm} className="slTok" style={{background:SL_COLORS[(idxByName[nm]||0)%SL_COLORS.length]}}>{nm[0].toUpperCase()}</b>)}</span>}
-        </div>;
-      })}
+    <div className="slDisplayBoardWrap">
+      <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
+        {grid.flat().map((n,idx)=>{
+          if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
+          const ci=cellInfo(n);
+          const here=players.map(p=>p.pos===n?p.name:null).filter(Boolean);
+          return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
+            <span className="slNum">{n}</span>
+            {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
+            {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
+            {n===size&&<span className="slMark">🏁</span>}
+            {here.length>0&&<span className="slTokens">{here.map(nm=><b key={nm} className="slTok" style={{background:SL_COLORS[(idxByName[nm]||0)%SL_COLORS.length]}}>{nm[0].toUpperCase()}</b>)}</span>}
+          </div>;
+        })}
+      </div>
     </div>
   </div>;
 }
@@ -16910,7 +16921,8 @@ function LiveMatchTraceModule({setScreen}){
 
 
 function App(){
-const[liveRoomParam]=useState(()=>getLiveRoomFromUrl());
+const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
+const[liveRoomParam]=useState(()=>getLiveRoomFromUrl()||(courtMode?courtRoomId(courtMode.host,courtMode.court):''));
 const[livePayload,setLivePayload]=useState(null);
 const[liveStatus,setLiveStatus]=useState(liveRoomParam?'Connecting live display…':'');
 const[sharedPlayerPayload]=useState(()=>decodePlayerPayloadFromUrl());
@@ -16946,7 +16958,6 @@ useEffect(()=>{
   return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
 },[screen]);
 const[backStack,setBackStack]=useState([]);
-const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
