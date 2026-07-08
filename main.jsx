@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v303 Tin War: Climb moved to first (entry game), added Race to 25 (score-threshold ladder), game count now dynamic';
+const APP_VERSION='v305 Rising Tax: bonus only ever applies to trigger-shot wins, ordinary wins always flat points, no bonus/tax bleed';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9484,7 +9484,7 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
-const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1}};
+const TINWAR_DEFAULTS={tw1:{win:1,loss:1,bonus:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1}};
 const TINWAR_GAMES=[
   {id:'tw2',title:'Climb',tag:'Full wall leveller',
    principle:'The more you win, the less bottom wall you have.',
@@ -9494,12 +9494,12 @@ const TINWAR_GAMES=[
    scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
    note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
   {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
-   principle:'The more you win, the more tax you pay — but the reward rises with the tax.',
+   principle:'The higher your tax climbs, the bigger the bonus on your next trigger-shot win — but an ordinary win never pays tax or bonus, it\u2019s always just the flat point.',
    setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins — that\u2019s the only thing set in advance.',
-   player:'Win a rally normally = {WIN} point(s), no tax. Win with one of the coach-nominated shots = you pay tax: your own wall gets one level harder, and your bonus grows with how high the tax has climbed. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
-   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A normal win only scores — no tax. A win with a nominated shot both scores and raises the winner\u2019s own tax one level — the higher the tax already is, the bigger the payout for the next trigger-shot win.',
-   scoring:'Normal win = +{WIN}, no tax. Trigger-shot win = +{WIN} plus a bonus equal to the tax level just reached. Loss = \u2212{LOSS}, floored at 0.',
-   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner.'},
+   player:'Win a rally with an ordinary shot (not on the coach\u2019s nominated list) = {WIN} point(s) flat — no tax, no bonus, ever. Win with one of the coach-nominated shots = {WIN} point(s) plus a bonus for your current tax height, and your tax then climbs one more height for next time. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
+   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A win with any other shot only ever scores the flat {WIN} point — never a bonus, never a tax change. A win with a nominated shot scores {WIN} plus {BONUS} point(s) per tax height already reached, then raises that height by one ready for the next trigger-shot win.',
+   scoring:'Ordinary win = +{WIN} flat. Trigger-shot win = +{WIN} plus ({BONUS} \u00d7 current tax height), then tax height +1. Loss = \u2212{LOSS}, floored at 0, no change to tax.',
+   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. Worked example (bonus \u00d71 per height): trigger-shot win at height 0 scores 1+0=1pt and climbs to height 1. Any ordinary win in between always just scores 1pt flat, tax untouched. Next trigger-shot win, now at height 1, scores 1+1=2pts and climbs to height 2. Once at the top height, further trigger-shot wins keep paying that top bonus every time.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
    setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
@@ -9578,7 +9578,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
     <div className="twSettings">
       <div><strong>Win points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.win===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('win',v)}>{v} pt{v>1?'s':''}</button>)}</div></div>
       {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>{'\u2212'}{v}</button>)}</div></div>}
-      {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pts</button>)}</div></div>}
+      {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':gameId==='tw1'?'Bonus per tax height:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pt{v>1?'s':''}{gameId==='tw1'?' / height':''}</button>)}</div></div>}
     </div>
     <div className="twBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+resolvedGame.title,category:'Tin War',format:'Constraint game',duration:10,task:resolvedGame.player,scoring:resolvedGame.scoring,rationale:resolvedGame.logic,coach:resolvedGame.note,playerFocus:resolvedGame.player,layers:['Tin War'],rld:4}));alert(resolvedGame.title+' added to session.');}}>Add to Session</button>}
