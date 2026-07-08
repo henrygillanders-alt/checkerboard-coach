@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v307 Tin War: Last Window clarifies target band = own current Tin height, added DB Handicap panel to Tin War';
+const APP_VERSION='v311 Tin War: added All or Nothing (tw8) \u2014 Target Hunter variant where a winning shot outside your target band hands the point to the opponent instead';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4559,8 +4559,8 @@ return <div className="checkerboardEngine">
 // ── v225 PER-PLAYER CHECKERBOARD ALLOCATION ──────────────────────────────────
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
 // Quick banks: only sensible, achievable combinations. Anything else via Custom.
-const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]'];
-const CB_TRIPLE_BANK=['[5-4] + [5-4] + [8-1]','[5-4] + [5-4] + [7-2]','[5-4] + [5-4] + [5-4]','[6-3] + [6-3] + [7-2]','[6-3] + [6-3] + [8-1]','[6-3] + [6-3] + [6-3]'];
+const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]','[6-4] + [8-1]','[5-3] + [7-2]','[5-4] + [6-3]','[8-1] + [7-2]','[5-1] + [6-2]','[5-2] + [6-1]','[7-3] + [8-4]','[7-4] + [8-3]','[5-4] + [7-2]','[6-3] + [8-1]','[6-3] + [5-4]','[7-2] + [8-1]'];
+const CB_TRIPLE_BANK=['[5-4] + [5-4] + [8-1]','[5-4] + [5-4] + [7-2]','[5-4] + [5-4] + [5-4]','[6-3] + [6-3] + [7-2]','[6-3] + [6-3] + [8-1]','[6-3] + [6-3] + [6-3]','[6-4] + [8-1] + [5-3]','[5-3] + [7-2] + [8-1]','[6-3] + [8-1] + [5-4]','[7-2] + [5-4] + [6-3]'];
 const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
 const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
@@ -9484,55 +9484,63 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
-const TINWAR_DEFAULTS={tw1:{win:1,loss:1,bonus:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1}};
+const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
+const TINWAR_BONUS_TABLE_DEFAULT={1:1,2:2,3:3,4:4,5:5};
 const TINWAR_GAMES=[
   {id:'tw2',title:'Climb',tag:'Full wall leveller',
    principle:'The more you win, the less bottom wall you have.',
    setup:'All players start on Full Wall. No shots need to be nominated — every win moves the winner\u2019s own wall, whoever wins it.',
    player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction for the whole rotation period, until courts change.',
-   logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Resets fresh at the start of the next rotation period, when courts change.',
+   logic:'WALL RULE: applies to every shot in the rally, not just the finish. While you\u2019re at a given level, every shot you hit for the whole point must clear that raised line or it\u2019s a fault — self-officiated, like a real tin. Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Resets fresh at the start of the next rotation period, when courts change.',
    scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
    note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
   {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
-   principle:'The higher your tax climbs, the bigger the bonus on your next trigger-shot win — but an ordinary win never pays tax or bonus, it\u2019s always just the flat point.',
-   setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins — that\u2019s the only thing set in advance.',
-   player:'Win a rally with an ordinary shot (not on the coach\u2019s nominated list) = {WIN} point(s) flat — no tax, no bonus, ever. Win with one of the coach-nominated shots = {WIN} point(s) plus a bonus for your current tax height, and your tax then climbs one more height for next time. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
-   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A win with any other shot only ever scores the flat {WIN} point — never a bonus, never a tax change. A win with a nominated shot scores {WIN} plus {BONUS} point(s) per tax height already reached, then raises that height by one ready for the next trigger-shot win.',
-   scoring:'Ordinary win = +{WIN} flat. Trigger-shot win = +{WIN} plus ({BONUS} \u00d7 current tax height), then tax height +1. Loss = \u2212{LOSS}, floored at 0, no change to tax.',
-   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. Worked example (bonus \u00d71 per height): trigger-shot win at height 0 scores 1+0=1pt and climbs to height 1. Any ordinary win in between always just scores 1pt flat, tax untouched. Next trigger-shot win, now at height 1, scores 1+1=2pts and climbs to height 2. Once at the top height, further trigger-shot wins keep paying that top bonus every time.'},
+   principle:'The higher your tax climbs, the bigger the bonus on your next trigger-shot win — set independently for each height, since the climb isn\u2019t equally hard at every step. An ordinary win never pays tax or bonus, it\u2019s always just the flat point.',
+   setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins, and sets the bonus for each tax height below — that\u2019s the only thing set in advance.',
+   player:'Win a rally with an ordinary shot (not on the coach\u2019s nominated list) = {WIN} point(s) flat — no tax, no bonus, ever. Win with one of the coach-nominated shots = {WIN} point(s) plus the bonus set for your current tax height, and your tax then climbs one more height for next time. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
+   logic:'WALL RULE: applies to every shot in the rally, not just the finish — the same standing restriction as Climb, just tied to trigger-shot scoring instead of every win. Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner) and sets a bonus value for each of the five tax heights individually — they don\u2019t have to rise in equal steps. A win with any other shot only ever scores the flat {WIN} point — never a bonus, never a tax change. A win with a nominated shot scores {WIN} plus that height\u2019s bonus, then raises the height by one ready for the next trigger-shot win.',
+   scoring:'Ordinary win = +{WIN} flat. Trigger-shot win = +{WIN} plus the bonus set for the height just reached (see table below), then tax height +1. Loss = \u2212{LOSS}, floored at 0, no change to tax.',
+   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. Worked example: trigger-shot win climbs to height 1, scoring {WIN} plus whatever height 1\u2019s bonus is set to. Any ordinary win in between always just scores {WIN} flat, tax untouched. The next trigger-shot win climbs to height 2 and pays height 2\u2019s bonus instead — which need not simply be one more than height 1\u2019s.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
    setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
    player:'The first player to get a strict points lead becomes King. If another player only draws level with the King\u2019s score, the King keeps the crown. The moment a player\u2019s score goes strictly above the King\u2019s score, they become the new King — and that specific winning point scores the bonus instead of the normal point.',
-   logic:'This is a running score comparison, not a court-position rule. Track it out loud: first to lead = King. Ties never dethrone. Only a strict overtake dethrones, and it\u2019s the win that causes the overtake which earns the bonus.',
+   logic:'WALL RULE: none — King Hunt runs entirely on the scoreboard, not on a Tin restriction. Play with whatever wall height the group already has from elsewhere (or Full Wall if nothing else is set). This is a running score comparison, not a court-position rule. Track it out loud: first to lead = King. Ties never dethrone. Only a strict overtake dethrones, and it\u2019s the win that causes the overtake which earns the bonus.',
    scoring:'Normal win = +{WIN}. The win that overtakes the King\u2019s score = +{BONUS} instead of the normal point.',
    note:'Worked example: Alice wins first, 1–0, becomes King. Bob wins twice to reach 2, overtakes — that 2nd win scores the bonus, Bob is King. Carl reaches 2 — only draws level, Bob stays King. Carl wins again to reach 3 — overtakes, that win scores the bonus, Carl is King.'},
   {id:'tw4',title:'Target Hunter',tag:'Public target',
    principle:'Opponent knows the target. Can you still finish?',
    setup:'Coach sets (or carries over) each player\u2019s current Tin level before play — that band becomes their public target for this game.',
-   player:'Normal win = {WIN}. Win in your active legal target band = {BONUS}. Opponent knows exactly where you want to finish.',
-   logic:'Each player\u2019s Tin restriction creates a public finishing target. A normal rally win scores {WIN}. A win that clearly hits the active target band scores {BONUS}.',
-   scoring:'Normal win = +{WIN}. Target win = +{BONUS}.',
+   player:'The wall is fully open for every rally \u2014 nothing is off-limits while the point is being played. What matters is only where your WINNING shot lands. A winning shot anywhere on the wall scores {WIN}. A winning shot that specifically lands in your own target band scores {BONUS} instead. Opponent knows exactly where you want to finish.',
+   logic:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally. Every other shot in the point can go anywhere on the wall — full court, no restriction. This is a finish-zone rule, not a whole-rally wall restriction \u2014 nothing is checked until the rally is already won. Then look at where the winning shot landed: anywhere on the wall scores the normal point; landing specifically in the active target band scores the bonus instead.',
+   scoring:'Winning shot anywhere on the wall = +{WIN}. Winning shot in your own target band = +{BONUS} instead.',
    note:'This creates disguise and anticipation pressure because the opponent can see and protect the known target.'},
+  {id:'tw8',title:'All or Nothing',tag:'Commit to the target',
+   principle:'Finish in your target window or hand the point straight to your opponent — a clean winner outside your zone still costs you the rally.',
+   setup:'Coach sets (or carries over) each player\u2019s current Tin level before play — that band becomes their mandatory finishing target for this game.',
+   player:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally — every other shot in the point is full court, no restriction, same as Target Hunter. If you win the rally and the winning shot lands in your own target band, you score {WIN}. If you win the rally but the winning shot lands anywhere else on the wall, the point goes to your opponent instead — the same {WIN} you would have scored. If your opponent errors or hits the tin themselves, with no shot of yours to judge, you simply win the point as normal.',
+   logic:'This is Target Hunter\u2019s finish-zone rule with the safety net removed. Nothing is checked until the rally ends. If the rally ended on YOUR winning shot: landing in your own target band keeps the point for you; landing anywhere else flips the point to your opponent instead. If the rally ended on an opponent error or fault with no shot of yours involved, the target check does not apply and you keep the point as normal.',
+   scoring:'Your winning shot in your own target band = +{WIN} for you. Your winning shot outside your target band = +{WIN} for your opponent instead. Opponent error/fault with no shot of yours to judge = +{WIN} for you as normal.',
+   note:'This raises the stakes of Target Hunter considerably — use once players are comfortable finishing under a known target, since a near-miss winner is now a lost rally, not just a smaller reward. Worked example: Alice\u2019s target is the top window. Her drop winner lands mid-court instead — point goes to Bob even though Alice technically won the rally. Next rally her volley kill lands exactly in the top window — she scores as normal.'},
   {id:'tw5',title:'Lockdown',tag:'Pressure trap',
    principle:'Win two in a row against the same opponent and trap them.',
    setup:'No wall setup needed — this game is about who\u2019s beaten twice in a row, not Tin height. Start from whatever Tin level the group is already using.',
    player:'Win 2 rallies in a row against the same opponent and they go into Lockdown for the next 3 rallies on that court. While locked down, their wall cannot be eased or tightened — it stays exactly where it is, whether they are on court or waiting.',
-   logic:'Self-officiated. Track consecutive wins against the same opponent out loud. On the 2nd straight win, that opponent is locked for 3 more rallies on that court — the countdown keeps ticking even while they are waiting their turn, not just while they are on.',
+   logic:'WALL RULE: none of its own — Lockdown is layered on top of whichever wall game you\u2019re already running (usually Climb) and simply freezes that wall exactly where it is for the locked player. Self-officiated. Track consecutive wins against the same opponent out loud. On the 2nd straight win, that opponent is locked for 3 more rallies on that court — the countdown keeps ticking even while they are waiting their turn, not just while they are on.',
    scoring:'Normal win = +{WIN}. Lockdown itself is the pressure reward, not points.',
    note:'Lockdown is opponent-specific — it only applies to the player who was just beaten twice in a row, not to anyone else on the court.'},
   {id:'tw6',title:'Last Window',tag:'Maximum pressure',
-   principle:'At the hardest level, only the target finish counts.',
+   principle:'At the hardest level, only a finish inside your own band counts as a point — the wall itself stays fully open throughout every rally.',
    setup:'Typically run after Climb, so players may already be partway up their own wall. If starting fresh, everyone begins on Full Wall as usual.',
-   player:'Your target band is simply your own current Tin height \u2014 nobody sets it separately. Below Top Window, a normal rally win scores {WIN}. Once you reach Top Window, ordinary wins no longer score \u2014 you must win by hitting your own current band for {BONUS}.',
-   logic:'The active band is always just wherever a player\u2019s own wall already sits \u2014 the same height Climb would put them at, not a separate coach-assigned target. If a player is at TOP WINDOW, their ordinary rally wins do not score at all; they only score by winning in that top band. Other players keep following their own current Tin state and scoring rules as normal.',
-   scoring:'Below Top Window: normal win = +{WIN}. At Top Window: only a win in your own current band scores, worth +{BONUS}.',
+   player:'The wall is fully open for every rally \u2014 nothing is off-limits while the point is being played. What matters is only where the WINNING shot lands. Below Top Window: a winning shot anywhere on the wall scores {WIN}. At Top Window: a winning shot only scores if it lands specifically in your own current band, worth {BONUS} \u2014 a winning shot anywhere else on the wall scores nothing.',
+   logic:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally — every other shot in the point is full court, no restriction, exactly like Target Hunter. This is a finish-zone rule, not a whole-rally wall restriction like Climb \u2014 nothing is off-limits during the rally itself. Once the rally is won, check where the winning shot landed: below Top Window, any winning shot scores as normal. At Top Window, only a winning shot landing in the player\u2019s own current band counts \u2014 anything else, even a clean winner, scores nothing. The band itself is always just wherever that player\u2019s own wall already sits, not a separate coach-assigned target.',
+   scoring:'Below Top Window: winning shot anywhere on the wall = +{WIN}. At Top Window: winning shot in your own current band = +{BONUS}; winning shot anywhere else = 0.',
    note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
   {id:'tw7',title:'Race to 25',tag:'Score-threshold ladder',
    principle:'Your own score decides your own wall. The closer you get to winning, the harder your finish becomes.',
    setup:'All players start at zero, Full Wall. First player to reach 25 wins the court — then it rotates as normal.',
    player:'Every rally you win adds {WIN} to your own score. Your wall climbs automatically as your score crosses each band: 0\u20134 = Full Wall, 5\u20139 = 15cm removed, 10\u201314 = 30cm removed, 15\u201319 = 65cm removed, 20\u201324 = service line removed, 25+ = Top Window. First to 25 wins the court outright.',
-   logic:'Self-officiated, tracked out loud like a running score. The band your score currently sits in is your live wall for every rally, win or lose. Reaching 25 ends the court immediately, whatever the other players\u2019 scores are \u2014 winner up, others rotate down, same as any other court result.',
+   logic:'WALL RULE: applies to every shot in the rally, not just the finish — the same standing restriction as Climb, just driven by your running score instead of a win-count. Self-officiated, tracked out loud like a running score. The band your score currently sits in is your live wall for every rally, win or lose. Reaching 25 ends the court immediately, whatever the other players\u2019 scores are \u2014 winner up, others rotate down, same as any other court result.',
    scoring:'Rally win = +{WIN} to your own running score. Wall level is read directly off the score band above, no separate tracking needed. First to 25 wins the court.',
    note:'Named after the classic race-to-25 conditioning format \u2014 a big early lead is never safe here, because the closer you get to the finish line, the smaller your own target gets.'},
 ];
@@ -9545,6 +9553,8 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [stationCourts,setStationCourts]=useState(()=>[]);
   const [copiedCourt,setCopiedCourt]=useState(null);
+  const [bonusTable,setBonusTable]=useState(()=>({...TINWAR_BONUS_TABLE_DEFAULT}));
+  function setBonusHeight(h,val){setBonusTable(p=>({...p,[h]:val}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
   function toggleCourt(n){setStationCourts(p=>p.includes(n)?p.filter(x=>x!==n):[...p,n].sort((a,b)=>a-b));}
@@ -9557,13 +9567,13 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   useEffect(()=>{
     if(!projecting)return;
     const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,note:resolvedGame.note},
-      triggers:gameId==='tw1'?selectedTriggers:null};
+      triggers:gameId==='tw1'?selectedTriggers:null,bonusTable:gameId==='tw1'?bonusTable:null};
     if(stationCourts.length>0){
       stationCourts.forEach(n=>writeLivePlayerRoom(courtRoomId(base,n),'tinwar',payload));
     }else{
       writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
     }
-  },[projecting,gameId,selectedTriggers,resolvedGame,stationCourts,base]);
+  },[projecting,gameId,selectedTriggers,resolvedGame,stationCourts,base,bonusTable]);
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Live player link copied.');}catch{window.prompt('LIVE Tin War player link:',url);}}
   async function copyCourtLink(n){setProjecting(true);const url=buildCourtLink(n,base);try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}}
 
@@ -9584,6 +9594,17 @@ function TinWarModule({setScreen,embedded=false,setSession}){
       <p className="twNote">{resolvedGame.note}</p>
     </div>
     {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
+    {gameId==='tw1'&&<div className="twSettings">
+      <div style={{flex:'1 1 100%'}}>
+        <strong>Bonus per tax height (set each independently):</strong>
+        <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
+          {[1,2,3,4,5].map(h=><div key={h} style={{display:'flex',alignItems:'center',gap:'10px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',minWidth:'110px'}}>Height {h}{h===5?' (Top Window)':''}:</span>
+            <div className="twActionStrip">{[1,2,3,5,8].map(v=><button type="button" key={v} className={bonusTable[h]===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setBonusHeight(h,v)}>{v} pt{v>1?'s':''}</button>)}</div>
+          </div>)}
+        </div>
+      </div>
+    </div>}
     <div className="twSettings">
       <div><strong>Win points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.win===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('win',v)}>{v} pt{v>1?'s':''}</button>)}</div></div>
       {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>{'\u2212'}{v}</button>)}</div></div>}
@@ -9615,7 +9636,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
 }
 
 function TinWarPlayerDisplay({payload={}}){
-  const game=payload.game||{};const triggers=payload.triggers;
+  const game=payload.game||{};const triggers=payload.triggers;const bonusTable=payload.bonusTable;
   return <div className="playerDisplayPage twDisplayPage"><TinWarStyles/><div className="twDisplayShell">
     <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
     <div className="twDisplayRules">
@@ -9625,6 +9646,7 @@ function TinWarPlayerDisplay({payload={}}){
       <div className="twDisplaySection"><h4>Scoring</h4><p>{game.scoring}</p></div>
     </div>
     {triggers&&triggers.length>0&&<div className="twDisplayTriggers"><h4>Winning-shot protocol</h4><div className="twDisplayTriggerRow">{triggers.map(t=><span key={t} className="twDispChip">{t}</span>)}</div></div>}
+    {bonusTable&&<div className="twDisplayTriggers"><h4>Bonus per tax height</h4><div className="twDisplayTriggerRow">{[1,2,3,4,5].map(h=><span key={h} className="twDispChip">H{h}: {bonusTable[h]}pt{bonusTable[h]>1?'s':''}</span>)}</div></div>}
     {game.note&&<p className="twDisplayNote">{game.note}</p>}
   </div></div>;
 }
@@ -16200,7 +16222,7 @@ function CourtTraceGamePlayerDisplay({payload}){
 .courtDisplayKeyTab:active{background:rgba(255,255,255,.06)}
 .courtDisplayKeyTab.on{background:rgba(37,99,235,.25);font-weight:850}
 .courtDisplayDot{width:12px;height:12px;border-radius:50%;display:inline-block}
-.courtDisplayMap{position:relative;aspect-ratio:1347/1743;border-radius:12px;overflow:hidden;background:#fff}
+.courtDisplayMap{position:relative;aspect-ratio:1347/1743;border-radius:12px;overflow:hidden;background:transparent}
 .courtDisplayMap img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
 .courtDisplayMap svg{position:absolute;inset:0;width:100%;height:100%}
 @media(max-width:640px){.courtDisplayNum{font-size:2.6rem}.courtDisplayScore{gap:14px}.courtDisplayShell{flex-direction:column}.courtDisplayMapCol{max-width:100%}}
@@ -16309,7 +16331,7 @@ function LiveMatchTapAnalysis({setScreen}){
 function LiveMatchCoaching({setScreen}){
   const FAST_KEY='checkerboard_live_match_fast_v224';
   const LOSER_CAUSES=['Return Of Serve – No Volley','Loose Boast','Loose Drop','Loose Drive','Loose Mid-court','Loose Lob','Forced Loose Return','Non-Functional Cross Court','No T Recovery','Vision – Not Reading Opponent','Self Created Pressure Attacking','Opponent Set When Attacking','Hitting Back To Opponent'];
-  const WINNER_CAUSES=['Tight Ball','High Quality Shot','Deception Hold'];
+  const WINNER_CAUSES=['Tight Ball','High Quality Shot','Deception Hold','Unreachable Quality','Quality Forced A Loose Reply','Quality Moved Player Out Of Position'];
   const OUTCOMES=['Forced Error','Unforced Error','Tin','Out','Stroke','Let','No Let','Winner short straight','Winner short cross','Winner long straight','Winner long cross'];
   const ADVICE={
     'Non-Functional Cross Court':{primary:'Stay straighter before changing direction.',secondary:'If you go crosscourt, make it wider or higher so it moves them off the central corridor.',prescribe:['Break the Corridor','Functional Crosscourt','Return to Sender']},
@@ -16324,7 +16346,10 @@ function LiveMatchCoaching({setScreen}){
     'Defensive Boast':{primary:'Use the boast to change pressure, not to escape too early.',secondary:'If the ball is still playable for length, rebuild before boasting.',prescribe:['Defensive Boast Decision','Back-court Pressure','Move Them First']},
     'Return Of Serve – No Volley':{primary:'Take the return earlier when the ball is available.',secondary:'Look to volley or hold position rather than dropping deep immediately.',prescribe:['Return of Serve Volley','Early Pickup','T Zone Return']},
     'Late Contact When Attacking':{primary:'Attack earlier or rebuild; do not force a late contact.',secondary:'If contact is late, choose control rather than a winner attempt.',prescribe:['Early Contact Attack','Finish in 4','Volley Conversion']},
-    'Deception Hold By Opponent':{primary:'Delay your movement until the opponent commits.',secondary:'Stay balanced and pick up the hitting shape before moving early.',prescribe:['Hold Read','Split Step Timing','Early Information Pickup']}
+    'Deception Hold By Opponent':{primary:'Delay your movement until the opponent commits.',secondary:'Stay balanced and pick up the hitting shape before moving early.',prescribe:['Hold Read','Split Step Timing','Early Information Pickup']},
+    'Unreachable Quality':{primary:'Anticipate the winning line earlier — expect it before it opens.',secondary:'Cut off the angle before it fully develops rather than chasing the finished shot.',prescribe:['Early Interception','Anticipation Drill','Cover the Angle']},
+    'Quality Forced A Loose Reply':{primary:'Expect the pressure and prepare a controlled reply rather than a rushed one.',secondary:'Recover your shape before playing the return instead of reaching for it.',prescribe:['Pressure Recovery','Controlled Return Under Pressure','Reset and Rebuild']},
+    'Quality Moved Player Out Of Position':{primary:'Recover to the T immediately after being moved — do not chase the next ball off balance.',secondary:'Cover the space you are most likely to be exposed in next.',prescribe:['T Recovery Under Pressure','Cover the Space','Movement Efficiency']}
   };
   const empty={mode:'menu',gameNo:1,scoreA:'',scoreB:'',rallyNo:1,server:'',playerNames:{playerA:'Player A',playerB:'Player B'},current:{winner:'',player:'',cause:'',outcome:'',pressureZone:'',causeSel:[],outcomeSel:[]},events:[],myPlayer:'playerA',reportLens:'corner',completedGames:[],matches:[]};
   const [state,setState]=useState(()=>{try{const saved=JSON.parse(localStorage.getItem(FAST_KEY)||'null');if(saved&&Array.isArray(saved.events))return {...empty,...saved,mode:'menu',current:{...empty.current,...(saved.current||{})}};const old=JSON.parse(localStorage.getItem('checkerboard_live_match_fast_v222')||'null');return old&&Array.isArray(old.events)?{...empty,...old,mode:'menu',current:{...empty.current,...(old.current||{})}}:empty;}catch{return empty;}});
@@ -16360,7 +16385,10 @@ function LiveMatchCoaching({setScreen}){
     'Ball Focused Decisions':{primary:'They react to the ball, not you — change shape and disguise.',secondary:'Show length, play short; their late read costs them.',exploit:['Disguise the Drive','Hold and Deceive','Shape Change']},
     'Self Created Pressure Attacking':{primary:'Stay solid — they over-attack, so make them force it.',secondary:'Tighten length and let their forced attacks miss.',exploit:['Tight Length Trap','Provoke the Force','Patience Pressure']},
     'Hitting Back To Opponent':{primary:'Accept the gift — they recycle to you, so attack it.',secondary:'Take the ball they keep feeding and change the direction.',exploit:['Punish the Feed','Change Direction','Attack the Recycle']},
-    'Opponent Set When Attacking':{primary:'Hold the T — they attack into you, so intercept.',secondary:'Stay set and read; their early attack feeds your volley.',exploit:['Hold the T','Volley Intercept','Read and Punish']}
+    'Opponent Set When Attacking':{primary:'Hold the T — they attack into you, so intercept.',secondary:'Stay set and read; their early attack feeds your volley.',exploit:['Hold the T','Volley Intercept','Read and Punish']},
+    'Unreachable Quality':{primary:'Your accuracy is landing — keep targeting the same line.',secondary:'They cannot reach it, so repeat the pattern until they adjust.',exploit:['Repeat the Winning Line','Target the Gap','Press the Advantage']},
+    'Quality Forced A Loose Reply':{primary:'Your quality is forcing loose replies — keep applying it.',secondary:'Follow the loose ball in and finish it off.',exploit:['Follow the Pressure','Finish the Loose Reply','Sustain the Attack']},
+    'Quality Moved Player Out Of Position':{primary:'Your movement of the opponent is working — keep opening the court.',secondary:'Once they are out of position, attack the space you created.',exploit:['Open the Court','Attack the Space','Sustain Movement Pressure']}
   };
   const lens=state.reportLens==='group'?'group':'corner';
   const myKey=state.myPlayer==='playerB'?'playerB':'playerA';const oppKey=myKey==='playerA'?'playerB':'playerA';
