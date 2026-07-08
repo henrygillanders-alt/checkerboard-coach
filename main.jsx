@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v305 Rising Tax: bonus only ever applies to trigger-shot wins, ordinary wins always flat points, no bonus/tax bleed';
+const APP_VERSION='v306 Tin War stations mode: Court selector (All / pick 1-6), per-court links, wired into existing Court Monitor master screen (fixed stale tinwar payload matcher)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9543,7 +9543,11 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [selectedTriggers,setSelectedTriggers]=useState(()=>[]);
   const [cfgByGame,setCfgByGame]=useState({});
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const [stationCourts,setStationCourts]=useState(()=>[]);
+  const [copiedCourt,setCopiedCourt]=useState(null);
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
+  function toggleCourt(n){setStationCourts(p=>p.includes(n)?p.filter(x=>x!==n):[...p,n].sort((a,b)=>a-b));}
   const defaults=TINWAR_DEFAULTS[gameId]||{win:1};
   const cfg={...defaults,...(cfgByGame[gameId]||{})};
   function setCfgVal(key,val){setCfgByGame(p=>({...p,[gameId]:{...(p[gameId]||{}),[key]:val}}));}
@@ -9554,9 +9558,14 @@ function TinWarModule({setScreen,embedded=false,setSession}){
     if(!projecting)return;
     const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,note:resolvedGame.note},
       triggers:gameId==='tw1'?selectedTriggers:null};
-    writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
-  },[projecting,gameId,selectedTriggers,resolvedGame]);
+    if(stationCourts.length>0){
+      stationCourts.forEach(n=>writeLivePlayerRoom(courtRoomId(base,n),'tinwar',payload));
+    }else{
+      writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
+    }
+  },[projecting,gameId,selectedTriggers,resolvedGame,stationCourts,base]);
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Live player link copied.');}catch{window.prompt('LIVE Tin War player link:',url);}}
+  async function copyCourtLink(n){setProjecting(true);const url=buildCourtLink(n,base);try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}}
 
   return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
     <TinWarStyles/>
@@ -9580,9 +9589,26 @@ function TinWarModule({setScreen,embedded=false,setSession}){
       {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>{'\u2212'}{v}</button>)}</div></div>}
       {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':gameId==='tw1'?'Bonus per tax height:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pt{v>1?'s':''}{gameId==='tw1'?' / height':''}</button>)}</div></div>}
     </div>
+    <div className="twSettings">
+      <div style={{flex:'1 1 100%'}}>
+        <strong>Court{stationCourts.length>0?' (stations mode)':''}:</strong>
+        <div className="twActionStrip">
+          <button type="button" className={stationCourts.length===0?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setStationCourts([])}>All courts</button>
+          {[1,2,3,4,5,6].map(n=><button type="button" key={n} className={stationCourts.includes(n)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleCourt(n)}>Court {n}</button>)}
+        </div>
+        {stationCourts.length>0&&<p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.82rem'}}>Running only on the courts selected above. Send each court its own link below, and use Court Monitor for a master overview of every court, whatever game each is running.</p>}
+        {stationCourts.length>0&&<div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
+          {stationCourts.map(n=><div key={n} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'7px 11px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {n}</span>
+            <button type="button" className="twActionBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copyCourtLink(n)}>{copiedCourt===n?'Copied ✓':'Copy link'}</button>
+          </div>)}
+          {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" style={{marginTop:'4px'}} onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+        </div>}
+      </div>
+    </div>
     <div className="twBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+resolvedGame.title,category:'Tin War',format:'Constraint game',duration:10,task:resolvedGame.player,scoring:resolvedGame.scoring,rationale:resolvedGame.logic,coach:resolvedGame.note,playerFocus:resolvedGame.player,layers:['Tin War'],rld:4}));alert(resolvedGame.title+' added to session.');}}>Add to Session</button>}
-      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
+      {stationCourts.length===0&&<button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>}
     </div>
   </div>;
 }
@@ -15629,10 +15655,7 @@ function normalizeCourtPayload(row){
     leaderName=lead?lead.name:'';target=p.size||50;headline=lead?('Square '+lead.score):'';pct=lead&&target?lead.score/target:null;
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
-    game='Tin War';const ladder=p.ladder||[];const max=Math.max(1,ladder.length-1);
-    players=(p.players||[]).map(x=>({name:x.name,score:max-(x.peak??x.idx??max)}));
-    const lead=(p.players||[]).reduce((a,b)=>{const ai=a?(a.peak??a.idx??max):99;const bi=(b.peak??b.idx??max);return bi<ai?b:a;},null);
-    const li=lead?(lead.peak??lead.idx??max):max;leaderName=lead?lead.name:'';headline=ladder[li]?ladder[li].label:'';target='HIGH';pct=(max-li)/max;
+    game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
   }else if(t==='disruption'&&p.battle){
     game='Court Battle';const cs=p.battle.courts||[];const best=cs.reduce((m,c)=>Math.max(m,c.best||0),0);
     headline=best+' streak';target=p.battle.target;pct=p.battle.target?best/p.battle.target:null;
