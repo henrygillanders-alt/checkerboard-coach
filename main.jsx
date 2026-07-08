@@ -22,6 +22,8 @@ function getNsslMasterFromUrl(){try{const p=new URLSearchParams(window.location.
 function buildNsslCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?nsslCourt=${n}&host=${encodeURIComponent(base)}`;}
 function buildNsslMasterLink(base){const b=window.location.origin+window.location.pathname;return `${b}?nsslMaster=${encodeURIComponent(base)}`;}
 function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
+function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function buildSlScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}`;}
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
   if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
@@ -142,7 +144,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v317 Snakes & Ladders: added 50-square board option, fixed partial-board-on-phone (Player Display board now wrapped in a horizontal-scroll container with responsive cell sizing instead of overflowing off-screen)';
+const APP_VERSION='v318 Snakes & Ladders: built a real Court Scorer mode (mirrors NSSL) \u2014 each court gets its own Scoring link where the device tapping there becomes the sole scorer for that court, separate from the read-only View link; coach device auto-hands-off writing once a scoring link is copied, with Take back control to reclaim it';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8791,18 +8793,18 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null}){
   const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
-  const [board,setBoard]=useState(()=>slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
-  const [roster,setRoster]=useState(()=>players.map(n=>({name:n,pos:1})));
-  const [queue,setQueue]=useState(()=>players.map((_,i)=>i));
-  const [winner,setWinner]=useState(null);
-  const [revealed,setRevealed]=useState(new Set());
+  const [board,setBoard]=useState(()=>seed?seed.board:slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  const [roster,setRoster]=useState(()=>seed?seed.roster:players.map(n=>({name:n,pos:1})));
+  const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
+  const [winner,setWinner]=useState(()=>seed?seed.winner:null);
+  const [revealed,setRevealed]=useState(()=>seed?new Set(seed.revealed):new Set());
   const [events,setEvents]=useState([]);
-  const [streak,setStreak]=useState({holder:null,n:0});
+  const [streak,setStreak]=useState(()=>seed?seed.streak:{holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
   const [undoStack,setUndoStack]=useState([]);
 
@@ -8850,9 +8852,10 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
+      settings,streak,
       courtLabel};
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId]);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak]);
 
   return <div className="slCourt">
     <style>{`
@@ -8922,6 +8925,8 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [showRationale,setShowRationale]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
+  const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
+  const [handedOff,setHandedOff]=useState(()=>new Set());
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
   async function copySLPlayerLink(){
@@ -8937,6 +8942,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     const url=buildCourtLink(n,base);
     try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}
   }
+  async function copySLScoreLink(n){
+    setProjecting(true);
+    const url=buildSlScoreLink(n,base);
+    setHandedOff(prev=>new Set(prev).add(n));
+    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+  }
+  function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
 
   const allocation=useMemo(()=>{
     if(usingAttendance)return rankedBlockCourtAllocation(presentsObj,courtCount);
@@ -8983,7 +8995,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
-      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>
+      {courts>1&&handedOff.has(i+1)
+        ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
+        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>}
     </div>)}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
@@ -9019,11 +9033,18 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
     {courts>1&&<div className="slSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
-      <strong>Court links — every court runs its own board live, simultaneously:</strong>
+      <strong>Court links:</strong>
+      <p className="mutedText" style={{margin:0}}>Give each court's device its own <strong>Scoring link</strong> — that device becomes the one tapping winners for that court. The <strong>View link</strong> is read-only, for a spectator screen or projector.</p>
       <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-        {allocation.map((g,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'7px 11px'}}>
-          <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players)</span>
-          <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy link'}</button>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players){handedOff.has(i+1)?' — scoring handed off':''}</span>
+          </div>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
+            {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
+          </div>
         </div>)}
       </div>
       {projecting&&<span className="slDisplayHint">🟢 Live on all {courts} courts · each board updates independently as you tap winners on that court's tab</span>}
@@ -15923,6 +15944,53 @@ function CourtStandingsPlayerDisplay({payload={}}){
   </div>;
 }
 
+function SnakesLaddersCourtScorer({court,host}){
+  const roomId=courtRoomId(host,court);
+  const [seedData,setSeedData]=useState(null);
+  const [status,setStatus]=useState('Connecting…');
+  useEffect(()=>{
+    if(seedData)return;
+    let cancelled=false;
+    async function load(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled)return;
+      const p=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;
+      if(p){
+        const roster=p.players||[];
+        const names=roster.map(x=>x.name);
+        const idxOf=nm=>names.indexOf(nm);
+        const onCourtIdx=(p.onCourt||[]).map(idxOf).filter(i=>i>=0);
+        const queueIdx=(p.queueNames||[]).map(idxOf).filter(i=>i>=0);
+        const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
+        const seed={
+          board:p.board||{snakes:{},ladders:{}},
+          roster,
+          queue:[...onCourtIdx,...queueIdx],
+          winner:winnerIdx>=0?winnerIdx:null,
+          revealed:p.revealed||[],
+          streak:p.streak||{holder:null,n:0}
+        };
+        setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
+        setStatus('Live');
+      }else setStatus('Waiting for coach device to set up this court…');
+    }
+    load();
+    const id=setInterval(load,1500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[roomId,seedData]);
+
+  if(!seedData){
+    return <div className="playerDisplayPage slDisplayPage">
+      <div className="slDisplayHead"><span className="slDisplayLive">● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Snakes &amp; Ladders — Court {court}</h1><p>{status}</p></div>
+    </div>;
+  }
+  return <div className="gameCard slGame">
+    <div className="slDisplayHead" style={{marginBottom:'6px'}}><span className="slDisplayLive">● SCORING — Court {court}</span><h1>Snakes &amp; Ladders</h1></div>
+    <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court — the board updates live for anyone watching this court's Player Display.</p>
+    <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+  </div>;
+}
+
 function NsslCourtScorer({court,host}){
   const roomId=nsslCourtRoomId(host,court);
   const [clock,setClock]=useState(null);
@@ -16960,6 +17028,7 @@ useEffect(()=>{
 const[backStack,setBackStack]=useState([]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
+const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -17000,6 +17069,7 @@ useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[sess
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
+if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
