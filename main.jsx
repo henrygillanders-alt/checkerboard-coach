@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v306 Tin War stations mode: Court selector (All / pick 1-6), per-court links, wired into existing Court Monitor master screen (fixed stale tinwar payload matcher)';
+const APP_VERSION='v307 Tin War: Last Window clarifies target band = own current Tin height, added DB Handicap panel to Tin War';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9524,9 +9524,9 @@ const TINWAR_GAMES=[
   {id:'tw6',title:'Last Window',tag:'Maximum pressure',
    principle:'At the hardest level, only the target finish counts.',
    setup:'Typically run after Climb, so players may already be partway up their own wall. If starting fresh, everyone begins on Full Wall as usual.',
-   player:'Below Top Window, a normal rally win scores {WIN}. Once you reach Top Window, ordinary wins no longer score — you must win by hitting the active target band for {BONUS}.',
-   logic:'If a player is at TOP WINDOW, their ordinary rally wins do not score at all. They only score by winning in the active target band. Other players keep following their own current Tin state and scoring rules as normal.',
-   scoring:'Below Top Window: normal win = +{WIN}. At Top Window: only a target win scores, worth +{BONUS}.',
+   player:'Your target band is simply your own current Tin height \u2014 nobody sets it separately. Below Top Window, a normal rally win scores {WIN}. Once you reach Top Window, ordinary wins no longer score \u2014 you must win by hitting your own current band for {BONUS}.',
+   logic:'The active band is always just wherever a player\u2019s own wall already sits \u2014 the same height Climb would put them at, not a separate coach-assigned target. If a player is at TOP WINDOW, their ordinary rally wins do not score at all; they only score by winning in that top band. Other players keep following their own current Tin state and scoring rules as normal.',
+   scoring:'Below Top Window: normal win = +{WIN}. At Top Window: only a win in your own current band scores, worth +{BONUS}.',
    note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
   {id:'tw7',title:'Race to 25',tag:'Score-threshold ladder',
    principle:'Your own score decides your own wall. The closer you get to winning, the harder your finish becomes.',
@@ -9606,6 +9606,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
         </div>}
       </div>
     </div>
+    <UniversalDBHandicapPanel setScreen={setScreen}/>
     <div className="twBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+resolvedGame.title,category:'Tin War',format:'Constraint game',duration:10,task:resolvedGame.player,scoring:resolvedGame.scoring,rationale:resolvedGame.logic,coach:resolvedGame.note,playerFocus:resolvedGame.player,layers:['Tin War'],rld:4}));alert(resolvedGame.title+' added to session.');}}>Add to Session</button>}
       {stationCourts.length===0&&<button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>}
