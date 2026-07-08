@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v313 Snakes & Ladders: moved Copy Player Link / Add to Session to the bottom bar (was mid-page), added DB Handicap and Tin Height leveller panels';
+const APP_VERSION='v315 Snakes & Ladders: stations mode \u2014 when courts>1, every court now projects live simultaneously to its own link (Copy link per court), same pattern as Tin War, feeding the existing Court Monitor master screen';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8791,7 +8791,7 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null}){
   const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:7;
@@ -8821,8 +8821,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
     const next=roster.map(p=>({...p}));
     const W=next[wIdx],L=next[lIdx];
     const ev=[],reveal=new Set(revealed);
-    if(board.ladders[W.pos]){const top=board.ladders[W.pos];ev.push(`${W.name} climbed a ladder · ${W.pos}→${top}`);reveal.add(W.pos);W.pos=top;}
-    else{W.pos=applyMove(W.pos+1);}
+    const moved=applyMove(W.pos+1);
+    if(board.ladders[moved]){const top=board.ladders[moved];ev.push(`${W.name} climbed a ladder · ${moved}→${top}`);reveal.add(moved);W.pos=top;}
+    else{W.pos=moved;}
     const extra=(settings.bonuses||[]).reduce((sum,b)=>activeBonuses.has(b.label)?sum+(Number(b.squares)||0):sum,0);
     if(extra>0){W.pos=applyMove(W.pos+extra);if(board.ladders[W.pos]){const t=board.ladders[W.pos];ev.push(`${W.name} bonus +${extra} → ladder ${W.pos}→${t}`);reveal.add(W.pos);W.pos=t;}else{ev.push(`${W.name} bonus +${extra} square${extra===1?'':'s'}`);}}
     if(activeBonuses.size>0)setActiveBonuses(new Set());
@@ -8850,8 +8851,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
       courtLabel};
-    writeLivePlayerRoom(getPersistentLiveRoomId(),'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel]);
+    writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId]);
 
   return <div className="slCourt">
     <style>{`
@@ -8903,7 +8904,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel=''}){
   </div>;
 }
 
-function SnakesLaddersGame({setSession}={}){
+function SnakesLaddersGame({setSession,setScreen}={}){
   const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
@@ -8920,6 +8921,8 @@ function SnakesLaddersGame({setSession}={}){
   const [showSettings,setShowSettings]=useState(false);
   const [showRationale,setShowRationale]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const [copiedCourt,setCopiedCourt]=useState(null);
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
   async function copySLPlayerLink(){
     setProjecting(true);
@@ -8928,6 +8931,11 @@ function SnakesLaddersGame({setSession}={}){
     try{ if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; } }catch{}
     if(copied){ alert('Live player link copied. Open it on the second device — the Snakes & Ladders board updates live as you tap winners.'); }
     else{ window.prompt('LIVE Snakes & Ladders player link — open this on the second device:', url); }
+  }
+  async function copySLCourtLink(n){
+    setProjecting(true);
+    const url=buildCourtLink(n,base);
+    try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}
   }
 
   const allocation=useMemo(()=>{
@@ -8975,7 +8983,7 @@ function SnakesLaddersGame({setSession}={}){
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
-      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={projecting&&i===active} courtLabel={courts>1?`Court ${i+1}`:''}/>
+      <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>
     </div>)}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
@@ -9006,10 +9014,21 @@ function SnakesLaddersGame({setSession}={}){
     <UniversalTinHeightPanel/>
 
     <div className="slDisplayBar">
-      <button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));alert('Snakes & Ladders added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
-      {projecting&&<span className="slDisplayHint">🟢 Live{courts>1?` — Court ${active+1}`:''} · board updates as you tap winners</span>}
+      {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
+    {courts>1&&<div className="slSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
+      <strong>Court links — every court runs its own board live, simultaneously:</strong>
+      <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'7px 11px'}}>
+          <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players)</span>
+          <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy link'}</button>
+        </div>)}
+      </div>
+      {projecting&&<span className="slDisplayHint">🟢 Live on all {courts} courts · each board updates independently as you tap winners on that court's tab</span>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+    </div>}
   </div>;
 }
 
@@ -10224,7 +10243,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession}/>}
+    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession} setScreen={setScreen}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
