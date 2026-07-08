@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v300 Tin War rebuilt as static rules-card display (all 6 games)';
+const APP_VERSION='v301 Tin War: Rising Tax rename, Setup section, configurable win/loss/bonus points';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9435,7 +9435,7 @@ function TinWarStyles(){
 .twGameInfoHead h2{margin:0;font-size:1.35rem;}
 .twTag{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;background:#123040;border:1px solid #2E6E8E;color:#8fd0ee;padding:3px 9px;border-radius:999px;}
 .twPrinciple{margin:0;font-style:italic;color:#9fc4dc;font-size:1.02rem;}
-.twInfoGrid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:4px;}
+.twInfoGrid{display:grid;grid-template-columns:1fr 1.4fr 1fr 1fr;gap:16px;margin-top:4px;}
 .twInfoGrid h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;}
 .twInfoGrid p,.twInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
 .twInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
@@ -9484,42 +9484,49 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
+const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3}};
 const TINWAR_GAMES=[
-  {id:'tw1',title:'Earn the Drop',tag:'Shot trigger',
-   principle:'Winning earns pressure, not relief. Losing costs points. The task never gets easier for the player who is behind.',
-   player:'Win a rally normally = 1 point. Win with one of the coach-nominated shots = your own wall gets one level harder, and the reward grows with how hard your wall already is. Lose a rally = −1 point, and your wall never gets easier just because you lost.',
-   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A normal win only scores. A win with a nominated shot both scores and steps the winner\u2019s own wall up one level — the reward is tied to the winner escalating their own difficulty, never to easing the opponent\u2019s.',
-   scoring:'Normal win = +1. Trigger-shot win = +1 plus a bonus equal to the wall level just reached (so the harder your wall already is, the more the next step is worth). Loss = −1, floored at 0.',
+  {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
+   principle:'The more you win, the more tax you pay — but the reward rises with the tax.',
+   setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins — that\u2019s the only thing set in advance.',
+   player:'Win a rally normally = {WIN} point(s), no tax. Win with one of the coach-nominated shots = you pay tax: your own wall gets one level harder, and your bonus grows with how high the tax has climbed. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
+   logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A normal win only scores — no tax. A win with a nominated shot both scores and raises the winner\u2019s own tax one level — the higher the tax already is, the bigger the payout for the next trigger-shot win.',
+   scoring:'Normal win = +{WIN}, no tax. Trigger-shot win = +{WIN} plus a bonus equal to the tax level just reached. Loss = \u2212{LOSS}, floored at 0.',
    note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner.'},
   {id:'tw2',title:'Climb',tag:'Full wall leveller',
    principle:'The more you win, the less bottom wall you have.',
+   setup:'All players start on Full Wall. No shots need to be nominated — every win moves the winner\u2019s own wall, whoever wins it.',
    player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction with you all session.',
    logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Reset only between games.',
-   scoring:'Rally win = +1. Each win also removes one more level of your own bottom wall.',
+   scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
    note:'This is the base leveller game. The player who keeps winning must solve a harder finishing problem — winning never gets easier here.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
+   setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
    player:'The first player to get a strict points lead becomes King. If another player only draws level with the King\u2019s score, the King keeps the crown. The moment a player\u2019s score goes strictly above the King\u2019s score, they become the new King — and that specific winning point scores the bonus instead of the normal point.',
    logic:'This is a running score comparison, not a court-position rule. Track it out loud: first to lead = King. Ties never dethrone. Only a strict overtake dethrones, and it\u2019s the win that causes the overtake which earns the bonus.',
-   scoring:'Normal win = +1. The win that overtakes the King\u2019s score = bonus instead of the normal point (coach sets the bonus value below).',
+   scoring:'Normal win = +{WIN}. The win that overtakes the King\u2019s score = +{BONUS} instead of the normal point.',
    note:'Worked example: Alice wins first, 1–0, becomes King. Bob wins twice to reach 2, overtakes — that 2nd win scores the bonus, Bob is King. Carl reaches 2 — only draws level, Bob stays King. Carl wins again to reach 3 — overtakes, that win scores the bonus, Carl is King.'},
   {id:'tw4',title:'Target Hunter',tag:'Public target',
    principle:'Opponent knows the target. Can you still finish?',
-   player:'Normal win = 1. Win in your active legal target band = 3. Opponent knows exactly where you want to finish.',
-   logic:'Each player\u2019s Tin restriction creates a public finishing target. A normal rally win scores 1. A win that clearly hits the active target band scores 3.',
-   scoring:'Normal win = +1. Target win = +3.',
+   setup:'Coach sets (or carries over) each player\u2019s current Tin level before play — that band becomes their public target for this game.',
+   player:'Normal win = {WIN}. Win in your active legal target band = {BONUS}. Opponent knows exactly where you want to finish.',
+   logic:'Each player\u2019s Tin restriction creates a public finishing target. A normal rally win scores {WIN}. A win that clearly hits the active target band scores {BONUS}.',
+   scoring:'Normal win = +{WIN}. Target win = +{BONUS}.',
    note:'This creates disguise and anticipation pressure because the opponent can see and protect the known target.'},
   {id:'tw5',title:'Lockdown',tag:'Pressure trap',
    principle:'Win two in a row against the same opponent and trap them.',
+   setup:'No wall setup needed — this game is about who\u2019s beaten twice in a row, not Tin height. Start from whatever Tin level the group is already using.',
    player:'Win 2 rallies in a row against the same opponent and they go into Lockdown for the next 3 rallies on that court. While locked down, their wall cannot be eased or tightened — it stays exactly where it is, whether they are on court or waiting.',
    logic:'Self-officiated. Track consecutive wins against the same opponent out loud. On the 2nd straight win, that opponent is locked for 3 more rallies on that court — the countdown keeps ticking even while they are waiting their turn, not just while they are on.',
-   scoring:'Normal win = +1. Lockdown itself is the pressure reward, not points.',
+   scoring:'Normal win = +{WIN}. Lockdown itself is the pressure reward, not points.',
    note:'Lockdown is opponent-specific — it only applies to the player who was just beaten twice in a row, not to anyone else on the court.'},
   {id:'tw6',title:'Last Window',tag:'Maximum pressure',
    principle:'At the hardest level, only the target finish counts.',
-   player:'Below Top Window, a normal rally win scores. Once you reach Top Window, ordinary wins no longer score — you must win by hitting the active target band.',
+   setup:'Typically run after Climb, so players may already be partway up their own wall. If starting fresh, everyone begins on Full Wall as usual.',
+   player:'Below Top Window, a normal rally win scores {WIN}. Once you reach Top Window, ordinary wins no longer score — you must win by hitting the active target band for {BONUS}.',
    logic:'If a player is at TOP WINDOW, their ordinary rally wins do not score at all. They only score by winning in the active target band. Other players keep following their own current Tin state and scoring rules as normal.',
-   scoring:'Below Top Window: normal win = +1. At Top Window: only a target win scores, worth +3.',
+   scoring:'Below Top Window: normal win = +{WIN}. At Top Window: only a target win scores, worth +{BONUS}.',
    note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
 ];
 
@@ -9527,17 +9534,21 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [gameId,setGameId]=useState('tw1');
   const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
   const [selectedTriggers,setSelectedTriggers]=useState(()=>['Volley winner','Straight drop winner','Boast winner','Trickle boast winner','Straight kill winner']);
-  const [kingBonus,setKingBonus]=useState(3);
+  const [cfgByGame,setCfgByGame]=useState({});
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
-  const scoringText=useMemo(()=>gameId==='tw3'?game.scoring.replace('coach sets the bonus value below',kingBonus+' points'):game.scoring,[gameId,game,kingBonus]);
+  const defaults=TINWAR_DEFAULTS[gameId]||{win:1};
+  const cfg={...defaults,...(cfgByGame[gameId]||{})};
+  function setCfgVal(key,val){setCfgByGame(p=>({...p,[gameId]:{...(p[gameId]||{}),[key]:val}}));}
+  function resolveText(t){if(!t)return t;let r=t;if(cfg.win!=null)r=r.split('{WIN}').join(cfg.win);if(cfg.loss!=null)r=r.split('{LOSS}').join(cfg.loss);if(cfg.bonus!=null)r=r.split('{BONUS}').join(cfg.bonus);return r;}
+  const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:resolveText(game.player),logic:resolveText(game.logic),scoring:resolveText(game.scoring)}),[game,cfg.win,cfg.loss,cfg.bonus]);
 
   useEffect(()=>{
     if(!projecting)return;
-    const payload={type:'tinwar',game:{title:game.title,tag:game.tag,principle:game.principle,player:game.player,logic:game.logic,scoring:scoringText,note:game.note},
-      triggers:gameId==='tw1'?selectedTriggers:null,kingBonus:gameId==='tw3'?kingBonus:null};
+    const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,note:resolvedGame.note},
+      triggers:gameId==='tw1'?selectedTriggers:null};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
-  },[projecting,gameId,selectedTriggers,kingBonus,scoringText,game]);
+  },[projecting,gameId,selectedTriggers,resolvedGame]);
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Live player link copied.');}catch{window.prompt('LIVE Tin War player link:',url);}}
 
   return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
@@ -9546,38 +9557,44 @@ function TinWarModule({setScreen,embedded=false,setSession}){
     {embedded&&<div className="twSuiteHeading"><h2>Tin War™ — FINAL 6 GAME SUITE</h2><p className="mutedText">Pick a game. The screen shows the constraint clearly for players and coaches — scoring is kept on court, not in the app.</p></div>}
     <div className="twGameTabs">{TINWAR_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'twGameTab twGameTabActive':'twGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}</div>
     <div className="twGameInfo">
-      <div className="twGameInfoHead"><h2>{game.title}</h2><span className="twTag">{game.tag}</span></div>
-      <p className="twPrinciple">{game.principle}</p>
+      <div className="twGameInfoHead"><h2>{resolvedGame.title}</h2><span className="twTag">{resolvedGame.tag}</span></div>
+      <p className="twPrinciple">{resolvedGame.principle}</p>
       <div className="twInfoGrid">
-        <div><h4>Player rule</h4><p>{game.player}</p></div>
-        <div><h4>Step by step</h4><p>{game.logic}</p></div>
-        <div><h4>Scoring</h4><p>{scoringText}</p></div>
+        <div><h4>Setup</h4><p>{resolvedGame.setup}</p></div>
+        <div><h4>Player rule</h4><p>{resolvedGame.player}</p></div>
+        <div><h4>Step by step</h4><p>{resolvedGame.logic}</p></div>
+        <div><h4>Scoring</h4><p>{resolvedGame.scoring}</p></div>
       </div>
-      <p className="twNote">{game.note}</p>
+      <p className="twNote">{resolvedGame.note}</p>
     </div>
     {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
-    {gameId==='tw3'&&<div className="twSettings"><strong>Bonus for overtaking the King:</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={kingBonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setKingBonus(v)}>{v} pts</button>)}</div></div>}
+    <div className="twSettings">
+      <div><strong>Win points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.win===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('win',v)}>{v} pt{v>1?'s':''}</button>)}</div></div>
+      {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>\u2212{v}</button>)}</div></div>}
+      {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pts</button>)}</div></div>}
+    </div>
     <div className="twBottomBar">
-      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+game.title,category:'Tin War',format:'Constraint game',duration:10,task:game.player,scoring:scoringText,rationale:game.logic,coach:game.note,playerFocus:game.player,layers:['Tin War'],rld:4}));alert(game.title+' added to session.');}}>Add to Session</button>}
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+resolvedGame.title,category:'Tin War',format:'Constraint game',duration:10,task:resolvedGame.player,scoring:resolvedGame.scoring,rationale:resolvedGame.logic,coach:resolvedGame.note,playerFocus:resolvedGame.player,layers:['Tin War'],rld:4}));alert(resolvedGame.title+' added to session.');}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
   </div>;
 }
 
 function TinWarPlayerDisplay({payload={}}){
-  const game=payload.game||{};const triggers=payload.triggers;const kingBonus=payload.kingBonus;
+  const game=payload.game||{};const triggers=payload.triggers;
   return <div className="playerDisplayPage twDisplayPage"><TinWarStyles/><div className="twDisplayShell">
     <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
     <div className="twDisplayRules">
+      <div className="twDisplaySection"><h4>Setup</h4><p>{game.setup}</p></div>
       <div className="twDisplaySection"><h4>Player rule</h4><p>{game.player}</p></div>
       <div className="twDisplaySection"><h4>Step by step</h4><p>{game.logic}</p></div>
       <div className="twDisplaySection"><h4>Scoring</h4><p>{game.scoring}</p></div>
     </div>
     {triggers&&triggers.length>0&&<div className="twDisplayTriggers"><h4>Winning-shot protocol</h4><div className="twDisplayTriggerRow">{triggers.map(t=><span key={t} className="twDispChip">{t}</span>)}</div></div>}
-    {kingBonus&&<div className="twDisplayTriggers"><h4>Bonus for overtaking the King</h4><span className="twDispChip">{kingBonus} pts</span></div>}
     {game.note&&<p className="twDisplayNote">{game.note}</p>}
   </div></div>;
 }
+
 
 
 function DisruptionStyles(){
@@ -10136,7 +10153,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
-    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — FINAL 6 GAME SUITE:</strong> Court rotations, not timed rotations. Players carry Tin state. Climb starts FULL WALL and each win removes more bottom wall. Earn the Drop uses coach-selected winning-shot protocols.</p><TinWarModule embedded setSession={setSession}/></div>}
+    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — FINAL 6 GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
     {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
     {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
