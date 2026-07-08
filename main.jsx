@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v311 Tin War: added All or Nothing (tw8) \u2014 Target Hunter variant where a winning shot outside your target band hands the point to the opponent instead';
+const APP_VERSION='v313 Snakes & Ladders: moved Copy Player Link / Add to Session to the bottom bar (was mid-page), added DB Handicap and Tin Height leveller panels';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8972,11 +8972,6 @@ function SnakesLaddersGame({setSession}={}){
 
     {courts>1&&<div className="slCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'slCourtTab slCourtTabOn':'slCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
 
-    <div className="slDisplayBar">
-      <button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>
-      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));alert('Snakes & Ladders added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
-      {projecting&&<span className="slDisplayHint">🟢 Live{courts>1?` — Court ${active+1}`:''} · board updates as you tap winners</span>}
-    </div>
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
@@ -9006,6 +9001,15 @@ function SnakesLaddersGame({setSession}={}){
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
       <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. Changing courts re-deals the players.</p>
     </div>}
+
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+
+    <div className="slDisplayBar">
+      <button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));alert('Snakes & Ladders added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
+      {projecting&&<span className="slDisplayHint">🟢 Live{courts>1?` — Court ${active+1}`:''} · board updates as you tap winners</span>}
+    </div>
   </div>;
 }
 
@@ -9440,6 +9444,9 @@ function TinWarStyles(){
 .twInfoGrid p,.twInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
 .twInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
 .twNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
+.twExample{background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 13px;}
+.twExample h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#8fd0ee;}
+.twExample p{margin:0;font-size:0.88rem;line-height:1.45;color:#dbeeff;}
 .twSettings{display:flex;flex-wrap:wrap;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;align-items:flex-end;}
 .twSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
 .twActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
@@ -9462,6 +9469,9 @@ function TinWarStyles(){
 .twDisplayTriggers h4{margin:0;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:#5e89b0;}
 .twDisplayTriggerRow{display:flex;flex-wrap:wrap;gap:9px;}
 .twDispChip{font-size:1rem;font-weight:700;padding:6px 14px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
+.twDisplayExample{background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:18px 20px;}
+.twDisplayExample h4{margin:0 0 8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:#8fd0ee;}
+.twDisplayExample p{margin:0;font-size:1.05rem;line-height:1.5;color:#dbeeff;}
 .twDisplayNote{margin:0;text-align:center;font-size:1.05rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:12px;padding:14px 18px;}
 @media (max-width:700px){
   .twGameTabs{grid-template-columns:repeat(2,1fr);}
@@ -9493,27 +9503,31 @@ const TINWAR_GAMES=[
    player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction for the whole rotation period, until courts change.',
    logic:'WALL RULE: applies to every shot in the rally, not just the finish. While you\u2019re at a given level, every shot you hit for the whole point must clear that raised line or it\u2019s a fault — self-officiated, like a real tin. Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Resets fresh at the start of the next rotation period, when courts change.',
    scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
+   example:'Alice starts on Full Wall. She wins rally 1 — her wall steps up to 15cm removed, so every shot she plays from now on, builds and finishers alike, must clear that line. She wins rally 2 — 30cm removed. She loses rally 3 — no change, her wall stays at 30cm removed. She wins rally 4 — 65cm removed, and the game keeps getting harder only for her, only because she keeps winning.',
    note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
   {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
-   principle:'The higher your tax climbs, the bigger the bonus on your next trigger-shot win — set independently for each height, since the climb isn\u2019t equally hard at every step. An ordinary win never pays tax or bonus, it\u2019s always just the flat point.',
+   principle:'Your tax height only ever applies to the specific shot you\u2019re nominated to trigger with — clear it and the bonus grows; miss it and it\u2019s a fault, exactly like your own personal tin. Every other shot in the rally is unrestricted.',
    setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins, and sets the bonus for each tax height below — that\u2019s the only thing set in advance.',
-   player:'Win a rally with an ordinary shot (not on the coach\u2019s nominated list) = {WIN} point(s) flat — no tax, no bonus, ever. Win with one of the coach-nominated shots = {WIN} point(s) plus the bonus set for your current tax height, and your tax then climbs one more height for next time. Lose a rally = \u2212{LOSS} point(s), no change to your tax.',
-   logic:'WALL RULE: applies to every shot in the rally, not just the finish — the same standing restriction as Climb, just tied to trigger-shot scoring instead of every win. Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner) and sets a bonus value for each of the five tax heights individually — they don\u2019t have to rise in equal steps. A win with any other shot only ever scores the flat {WIN} point — never a bonus, never a tax change. A win with a nominated shot scores {WIN} plus that height\u2019s bonus, then raises the height by one ready for the next trigger-shot win.',
-   scoring:'Ordinary win = +{WIN} flat. Trigger-shot win = +{WIN} plus the bonus set for the height just reached (see table below), then tax height +1. Loss = \u2212{LOSS}, floored at 0, no change to tax.',
-   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. Worked example: trigger-shot win climbs to height 1, scoring {WIN} plus whatever height 1\u2019s bonus is set to. Any ordinary win in between always just scores {WIN} flat, tax untouched. The next trigger-shot win climbs to height 2 and pays height 2\u2019s bonus instead — which need not simply be one more than height 1\u2019s.'},
+   player:'Ordinary shots (not on the coach\u2019s nominated list) are always full court, no restriction — win with one and you score {WIN} flat, tax untouched. When you go for one of the nominated trigger shots, your current tax height applies to that shot only: clear it and it\u2019s a trigger-shot win — {WIN} plus the bonus for your current height, and your tax climbs one more height for next time. Fail to clear it and it\u2019s a fault, same as hitting your own tin — the rally is lost like any other loss: \u2212{LOSS} points, tax unchanged.',
+   logic:'WALL RULE: applies only at the moment you attempt a nominated trigger shot — nowhere else in the rally. This is why a shot like a kill, which is naturally played low, gets genuinely risky to use once your tax height is high: it may no longer be physically possible to land it above your line. At that point, switch to a nominated shot that can still clear the height — a drop played with more loop, or a straight winner hit higher — rather than forcing the kill. Coach sets a bonus value for each of the five tax heights individually; they don\u2019t have to rise in equal steps, since climbing from height 4 to 5 is harder than climbing from 0 to 1.',
+   scoring:'Ordinary win (non-nominated shot, full court) = +{WIN} flat, tax untouched. Trigger shot clearing your tax height = +{WIN} plus that height\u2019s bonus, tax height +1. Trigger shot failing to clear your tax height = fault, rally lost like any other loss: \u2212{LOSS}, tax unchanged. Loss on a non-trigger rally = \u2212{LOSS}, floored at 0.',
+   example:'Alice\u2019s tax height is 3 (65cm removed). She goes for a straight kill winner — one of the nominated shots — but a kill is naturally low, and it lands below her raised line. That\u2019s a fault, same as hitting the tin: rally lost to Bob, no bonus, tax stays at 3. Next rally, she instead plays a straight drop winner with more height, clearing her line comfortably — trigger-shot win: {WIN} plus height 3\u2019s bonus, tax climbs to 4. In between, an ordinary rally win (any shot not on the nominated list) always just scores {WIN} flat, full court, no height check at all.',
+   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. If a nominated shot becomes impossible to land at the group\u2019s highest tax heights, swap it out for one that stays viable.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
    setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
    player:'The first player to get a strict points lead becomes King. If another player only draws level with the King\u2019s score, the King keeps the crown. The moment a player\u2019s score goes strictly above the King\u2019s score, they become the new King — and that specific winning point scores the bonus instead of the normal point.',
    logic:'WALL RULE: none — King Hunt runs entirely on the scoreboard, not on a Tin restriction. Play with whatever wall height the group already has from elsewhere (or Full Wall if nothing else is set). This is a running score comparison, not a court-position rule. Track it out loud: first to lead = King. Ties never dethrone. Only a strict overtake dethrones, and it\u2019s the win that causes the overtake which earns the bonus.',
    scoring:'Normal win = +{WIN}. The win that overtakes the King\u2019s score = +{BONUS} instead of the normal point.',
-   note:'Worked example: Alice wins first, 1–0, becomes King. Bob wins twice to reach 2, overtakes — that 2nd win scores the bonus, Bob is King. Carl reaches 2 — only draws level, Bob stays King. Carl wins again to reach 3 — overtakes, that win scores the bonus, Carl is King.'},
+   example:'Alice wins first, 1–0, becomes King. Bob wins twice to reach 2, overtakes — that 2nd win scores the bonus, Bob is King. Carl reaches 2 — only draws level, Bob stays King. Carl wins again to reach 3 — overtakes, that win scores the bonus, Carl is King.',
+   note:'No Tin restriction to manage here — just track the scoreboard out loud.'},
   {id:'tw4',title:'Target Hunter',tag:'Public target',
    principle:'Opponent knows the target. Can you still finish?',
    setup:'Coach sets (or carries over) each player\u2019s current Tin level before play — that band becomes their public target for this game.',
    player:'The wall is fully open for every rally \u2014 nothing is off-limits while the point is being played. What matters is only where your WINNING shot lands. A winning shot anywhere on the wall scores {WIN}. A winning shot that specifically lands in your own target band scores {BONUS} instead. Opponent knows exactly where you want to finish.',
    logic:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally. Every other shot in the point can go anywhere on the wall — full court, no restriction. This is a finish-zone rule, not a whole-rally wall restriction \u2014 nothing is checked until the rally is already won. Then look at where the winning shot landed: anywhere on the wall scores the normal point; landing specifically in the active target band scores the bonus instead.',
    scoring:'Winning shot anywhere on the wall = +{WIN}. Winning shot in your own target band = +{BONUS} instead.',
+   example:'Bob\u2019s current Tin level is 30cm removed — that\u2019s his public target for this game. He wins a rally with a shot that lands well above that line but not exactly inside the band — he scores the normal {WIN}. Next rally, his winner lands exactly inside the 30cm-removed band — he scores {BONUS} instead. His opponent knows exactly where he wants to finish and can set up to defend it.',
    note:'This creates disguise and anticipation pressure because the opponent can see and protect the known target.'},
   {id:'tw8',title:'All or Nothing',tag:'Commit to the target',
    principle:'Finish in your target window or hand the point straight to your opponent — a clean winner outside your zone still costs you the rally.',
@@ -9521,13 +9535,15 @@ const TINWAR_GAMES=[
    player:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally — every other shot in the point is full court, no restriction, same as Target Hunter. If you win the rally and the winning shot lands in your own target band, you score {WIN}. If you win the rally but the winning shot lands anywhere else on the wall, the point goes to your opponent instead — the same {WIN} you would have scored. If your opponent errors or hits the tin themselves, with no shot of yours to judge, you simply win the point as normal.',
    logic:'This is Target Hunter\u2019s finish-zone rule with the safety net removed. Nothing is checked until the rally ends. If the rally ended on YOUR winning shot: landing in your own target band keeps the point for you; landing anywhere else flips the point to your opponent instead. If the rally ended on an opponent error or fault with no shot of yours involved, the target check does not apply and you keep the point as normal.',
    scoring:'Your winning shot in your own target band = +{WIN} for you. Your winning shot outside your target band = +{WIN} for your opponent instead. Opponent error/fault with no shot of yours to judge = +{WIN} for you as normal.',
-   note:'This raises the stakes of Target Hunter considerably — use once players are comfortable finishing under a known target, since a near-miss winner is now a lost rally, not just a smaller reward. Worked example: Alice\u2019s target is the top window. Her drop winner lands mid-court instead — point goes to Bob even though Alice technically won the rally. Next rally her volley kill lands exactly in the top window — she scores as normal.'},
+   example:'Alice\u2019s target is the top window. Her drop winner lands mid-court instead of the top window — the point goes to Bob even though Alice technically won the rally. Next rally her volley kill lands exactly in the top window — she scores {WIN} as normal.',
+   note:'This raises the stakes of Target Hunter considerably — use once players are comfortable finishing under a known target, since a near-miss winner is now a lost rally, not just a smaller reward.'},
   {id:'tw5',title:'Lockdown',tag:'Pressure trap',
    principle:'Win two in a row against the same opponent and trap them.',
    setup:'No wall setup needed — this game is about who\u2019s beaten twice in a row, not Tin height. Start from whatever Tin level the group is already using.',
    player:'Win 2 rallies in a row against the same opponent and they go into Lockdown for the next 3 rallies on that court. While locked down, their wall cannot be eased or tightened — it stays exactly where it is, whether they are on court or waiting.',
    logic:'WALL RULE: none of its own — Lockdown is layered on top of whichever wall game you\u2019re already running (usually Climb) and simply freezes that wall exactly where it is for the locked player. Self-officiated. Track consecutive wins against the same opponent out loud. On the 2nd straight win, that opponent is locked for 3 more rallies on that court — the countdown keeps ticking even while they are waiting their turn, not just while they are on.',
    scoring:'Normal win = +{WIN}. Lockdown itself is the pressure reward, not points.',
+   example:'Carl beats Dana twice in a row. On that 2nd win, Dana is locked for the next 3 rallies on that court — her wall cannot move at all during that window, even while she\u2019s waiting in the queue. Three rallies later on that court, whoever played them, Dana\u2019s lock expires and her wall is free to move normally again.',
    note:'Lockdown is opponent-specific — it only applies to the player who was just beaten twice in a row, not to anyone else on the court.'},
   {id:'tw6',title:'Last Window',tag:'Maximum pressure',
    principle:'At the hardest level, only a finish inside your own band counts as a point — the wall itself stays fully open throughout every rally.',
@@ -9535,6 +9551,7 @@ const TINWAR_GAMES=[
    player:'The wall is fully open for every rally \u2014 nothing is off-limits while the point is being played. What matters is only where the WINNING shot lands. Below Top Window: a winning shot anywhere on the wall scores {WIN}. At Top Window: a winning shot only scores if it lands specifically in your own current band, worth {BONUS} \u2014 a winning shot anywhere else on the wall scores nothing.',
    logic:'WALL RULE: applies ONLY to the winning shot, not the rest of the rally — every other shot in the point is full court, no restriction, exactly like Target Hunter. This is a finish-zone rule, not a whole-rally wall restriction like Climb \u2014 nothing is off-limits during the rally itself. Once the rally is won, check where the winning shot landed: below Top Window, any winning shot scores as normal. At Top Window, only a winning shot landing in the player\u2019s own current band counts \u2014 anything else, even a clean winner, scores nothing. The band itself is always just wherever that player\u2019s own wall already sits, not a separate coach-assigned target.',
    scoring:'Below Top Window: winning shot anywhere on the wall = +{WIN}. At Top Window: winning shot in your own current band = +{BONUS}; winning shot anywhere else = 0.',
+   example:'Eve has climbed to Top Window through Climb-style wins. She wins a rally cleanly, but the shot lands outside her tiny legal window — it scores nothing. Next rally her winner lands exactly inside the top window — she scores {BONUS}. Below Top Window, either of those winning shots would simply have scored {WIN} regardless of where it landed.',
    note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
   {id:'tw7',title:'Race to 25',tag:'Score-threshold ladder',
    principle:'Your own score decides your own wall. The closer you get to winning, the harder your finish becomes.',
@@ -9542,6 +9559,7 @@ const TINWAR_GAMES=[
    player:'Every rally you win adds {WIN} to your own score. Your wall climbs automatically as your score crosses each band: 0\u20134 = Full Wall, 5\u20139 = 15cm removed, 10\u201314 = 30cm removed, 15\u201319 = 65cm removed, 20\u201324 = service line removed, 25+ = Top Window. First to 25 wins the court outright.',
    logic:'WALL RULE: applies to every shot in the rally, not just the finish — the same standing restriction as Climb, just driven by your running score instead of a win-count. Self-officiated, tracked out loud like a running score. The band your score currently sits in is your live wall for every rally, win or lose. Reaching 25 ends the court immediately, whatever the other players\u2019 scores are \u2014 winner up, others rotate down, same as any other court result.',
    scoring:'Rally win = +{WIN} to your own running score. Wall level is read directly off the score band above, no separate tracking needed. First to 25 wins the court.',
+   example:'Frank starts at 0, Full Wall. He wins rallies to reach 5 — his wall steps up to 15cm removed for every rally from here on, win or lose. He keeps winning, crossing 10 (30cm removed), 15 (65cm removed), 20 (service line removed), then reaches 25 — by then he\u2019s playing at Top Window. The court ends immediately: Frank moves up, the others rotate down.',
    note:'Named after the classic race-to-25 conditioning format \u2014 a big early lead is never safe here, because the closer you get to the finish line, the smaller your own target gets.'},
 ];
 
@@ -9562,11 +9580,11 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const cfg={...defaults,...(cfgByGame[gameId]||{})};
   function setCfgVal(key,val){setCfgByGame(p=>({...p,[gameId]:{...(p[gameId]||{}),[key]:val}}));}
   function resolveText(t){if(!t)return t;let r=t;if(cfg.win!=null)r=r.split('{WIN}').join(cfg.win);if(cfg.loss!=null)r=r.split('{LOSS}').join(cfg.loss);if(cfg.bonus!=null)r=r.split('{BONUS}').join(cfg.bonus);return r;}
-  const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:resolveText(game.player),logic:resolveText(game.logic),scoring:resolveText(game.scoring)}),[game,cfg.win,cfg.loss,cfg.bonus]);
+  const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:resolveText(game.player),logic:resolveText(game.logic),scoring:resolveText(game.scoring),example:resolveText(game.example)}),[game,cfg.win,cfg.loss,cfg.bonus]);
 
   useEffect(()=>{
     if(!projecting)return;
-    const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,note:resolvedGame.note},
+    const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,example:resolvedGame.example,note:resolvedGame.note},
       triggers:gameId==='tw1'?selectedTriggers:null,bonusTable:gameId==='tw1'?bonusTable:null};
     if(stationCourts.length>0){
       stationCourts.forEach(n=>writeLivePlayerRoom(courtRoomId(base,n),'tinwar',payload));
@@ -9591,6 +9609,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
         <div><h4>Step by step</h4><p>{resolvedGame.logic}</p></div>
         <div><h4>Scoring</h4><p>{resolvedGame.scoring}</p></div>
       </div>
+      <div className="twExample"><h4>Worked example</h4><p>{resolvedGame.example}</p></div>
       <p className="twNote">{resolvedGame.note}</p>
     </div>
     {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
@@ -9647,6 +9666,7 @@ function TinWarPlayerDisplay({payload={}}){
     </div>
     {triggers&&triggers.length>0&&<div className="twDisplayTriggers"><h4>Winning-shot protocol</h4><div className="twDisplayTriggerRow">{triggers.map(t=><span key={t} className="twDispChip">{t}</span>)}</div></div>}
     {bonusTable&&<div className="twDisplayTriggers"><h4>Bonus per tax height</h4><div className="twDisplayTriggerRow">{[1,2,3,4,5].map(h=><span key={h} className="twDispChip">H{h}: {bonusTable[h]}pt{bonusTable[h]>1?'s':''}</span>)}</div></div>}
+    {game.example&&<div className="twDisplayExample"><h4>Worked example</h4><p>{game.example}</p></div>}
     {game.note&&<p className="twDisplayNote">{game.note}</p>}
   </div></div>;
 }
