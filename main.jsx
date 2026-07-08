@@ -142,7 +142,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v301 Tin War: Rising Tax rename, Setup section, configurable win/loss/bonus points';
+const APP_VERSION='v303 Tin War: Climb moved to first (entry game), added Race to 25 (score-threshold ladder), game count now dynamic';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9484,8 +9484,15 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
-const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3}};
+const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1}};
 const TINWAR_GAMES=[
+  {id:'tw2',title:'Climb',tag:'Full wall leveller',
+   principle:'The more you win, the less bottom wall you have.',
+   setup:'All players start on Full Wall. No shots need to be nominated — every win moves the winner\u2019s own wall, whoever wins it.',
+   player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction for the whole rotation period, until courts change.',
+   logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Resets fresh at the start of the next rotation period, when courts change.',
+   scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
+   note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
   {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
    principle:'The more you win, the more tax you pay — but the reward rises with the tax.',
    setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins — that\u2019s the only thing set in advance.',
@@ -9493,13 +9500,6 @@ const TINWAR_GAMES=[
    logic:'Self-officiated on court. Coach nominates the trigger shots before play (e.g. straight drop winner, volley winner). A normal win only scores — no tax. A win with a nominated shot both scores and raises the winner\u2019s own tax one level — the higher the tax already is, the bigger the payout for the next trigger-shot win.',
    scoring:'Normal win = +{WIN}, no tax. Trigger-shot win = +{WIN} plus a bonus equal to the tax level just reached. Loss = \u2212{LOSS}, floored at 0.',
    note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner.'},
-  {id:'tw2',title:'Climb',tag:'Full wall leveller',
-   principle:'The more you win, the less bottom wall you have.',
-   setup:'All players start on Full Wall. No shots need to be nominated — every win moves the winner\u2019s own wall, whoever wins it.',
-   player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction with you all session.',
-   logic:'Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Reset only between games.',
-   scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
-   note:'This is the base leveller game. The player who keeps winning must solve a harder finishing problem — winning never gets easier here.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
    setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
@@ -9528,12 +9528,19 @@ const TINWAR_GAMES=[
    logic:'If a player is at TOP WINDOW, their ordinary rally wins do not score at all. They only score by winning in the active target band. Other players keep following their own current Tin state and scoring rules as normal.',
    scoring:'Below Top Window: normal win = +{WIN}. At Top Window: only a target win scores, worth +{BONUS}.',
    note:'This is the maximum-pressure version. Use it after players already understand Climb.'},
+  {id:'tw7',title:'Race to 25',tag:'Score-threshold ladder',
+   principle:'Your own score decides your own wall. The closer you get to winning, the harder your finish becomes.',
+   setup:'All players start at zero, Full Wall. First player to reach 25 wins the court — then it rotates as normal.',
+   player:'Every rally you win adds {WIN} to your own score. Your wall climbs automatically as your score crosses each band: 0\u20134 = Full Wall, 5\u20139 = 15cm removed, 10\u201314 = 30cm removed, 15\u201319 = 65cm removed, 20\u201324 = service line removed, 25+ = Top Window. First to 25 wins the court outright.',
+   logic:'Self-officiated, tracked out loud like a running score. The band your score currently sits in is your live wall for every rally, win or lose. Reaching 25 ends the court immediately, whatever the other players\u2019 scores are \u2014 winner up, others rotate down, same as any other court result.',
+   scoring:'Rally win = +{WIN} to your own running score. Wall level is read directly off the score band above, no separate tracking needed. First to 25 wins the court.',
+   note:'Named after the classic race-to-25 conditioning format \u2014 a big early lead is never safe here, because the closer you get to the finish line, the smaller your own target gets.'},
 ];
 
 function TinWarModule({setScreen,embedded=false,setSession}){
   const [gameId,setGameId]=useState('tw1');
   const game=TINWAR_GAMES.find(g=>g.id===gameId)||TINWAR_GAMES[0];
-  const [selectedTriggers,setSelectedTriggers]=useState(()=>['Volley winner','Straight drop winner','Boast winner','Trickle boast winner','Straight kill winner']);
+  const [selectedTriggers,setSelectedTriggers]=useState(()=>[]);
   const [cfgByGame,setCfgByGame]=useState({});
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
@@ -9553,8 +9560,8 @@ function TinWarModule({setScreen,embedded=false,setSession}){
 
   return <div className={embedded?'twSuite twSuiteEmbedded':'gameCard twSuite'}>
     <TinWarStyles/>
-    {!embedded&&<div className="moduleHead"><div><h1>Tin War™ — FINAL 6 GAME SUITE</h1><p className="mutedText">Constraint rules card. Coaches and players run the scoring on court — this screen keeps the rule and rationale clear.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
-    {embedded&&<div className="twSuiteHeading"><h2>Tin War™ — FINAL 6 GAME SUITE</h2><p className="mutedText">Pick a game. The screen shows the constraint clearly for players and coaches — scoring is kept on court, not in the app.</p></div>}
+    {!embedded&&<div className="moduleHead"><div><h1>Tin War™ — {TINWAR_GAMES.length} GAME SUITE</h1><p className="mutedText">Constraint rules card. Coaches and players run the scoring on court — this screen keeps the rule and rationale clear.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>}
+    {embedded&&<div className="twSuiteHeading"><h2>Tin War™ — {TINWAR_GAMES.length} GAME SUITE</h2><p className="mutedText">Pick a game. The screen shows the constraint clearly for players and coaches — scoring is kept on court, not in the app.</p></div>}
     <div className="twGameTabs">{TINWAR_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'twGameTab twGameTabActive':'twGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}</div>
     <div className="twGameInfo">
       <div className="twGameInfoHead"><h2>{resolvedGame.title}</h2><span className="twTag">{resolvedGame.tag}</span></div>
@@ -9570,7 +9577,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
     {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
     <div className="twSettings">
       <div><strong>Win points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.win===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('win',v)}>{v} pt{v>1?'s':''}</button>)}</div></div>
-      {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>\u2212{v}</button>)}</div></div>}
+      {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>{'\u2212'}{v}</button>)}</div></div>}
       {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pts</button>)}</div></div>}
     </div>
     <div className="twBottomBar">
@@ -10153,7 +10160,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
     {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen}/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
-    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — FINAL 6 GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>}
+    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
     {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
     {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
