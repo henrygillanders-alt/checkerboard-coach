@@ -149,7 +149,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v320 Shared Competition: fixed missing board grid \u2014 both the per-court scorer and the shared leaderboard now actually render the board (same layout everywhere, sourced from the one shared board), not just pairings/standings text';
+const APP_VERSION='v321 Shared Competition: coach\u2019s own screen now shows the live shared board + leaderboard inline once started, instead of disappearing after switching to shared mode (was only viewable via the separate projector link before)';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9090,6 +9090,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
             <button type="button" className="secondaryBtn" style={{marginTop:'8px',alignSelf:'flex-start'}} onClick={()=>setSharedStarted(false)}>Reset / start a new shared competition</button>
           </>}
     </div>}
+    {competitionMode==='shared'&&courts>1&&sharedStarted&&<SnakesLaddersSharedLeaderboard host={base}/>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
     {showBonuses&&<div className="slBonuses">
