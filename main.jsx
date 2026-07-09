@@ -146,7 +146,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v324 Fixed the mode-toggle white background \u2014 it was using Tin War\u2019s CSS classes which aren\u2019t loaded in Snakes & Ladders, so buttons had zero styling and no selected-state feedback (looked unclickable). Now has its own proper dark-themed toggle styling.';
+const APP_VERSION='v325 Snakes & Ladders: ladders now land-then-pend instead of climbing instantly \u2014 landing puts you on the ladder square; win your next rally and you climb, lose it and the ladder is forfeited. Visible on the roster list (\u23f3) and in the log.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8809,13 +8809,14 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [events,setEvents]=useState([]);
   const [streak,setStreak]=useState(()=>seed?seed.streak:{holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
+  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {rosterIdx: ladderTargetSquare} — landed on a ladder, awaiting their own next result
   const [undoStack,setUndoStack]=useState([]);
 
-  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses)};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);return prev.slice(0,-1);});}
+  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending}};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
-  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setUndoStack([]);}
+  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot){
@@ -8826,14 +8827,45 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const next=roster.map(p=>({...p}));
     const W=next[wIdx],L=next[lIdx];
     const ev=[],reveal=new Set(revealed);
-    const moved=applyMove(W.pos+1);
-    if(board.ladders[moved]){const top=board.ladders[moved];ev.push(`${W.name} climbed a ladder · ${moved}→${top}`);reveal.add(moved);W.pos=top;}
-    else{W.pos=moved;}
+    const nextPending={...pending};
+
+    if(nextPending[wIdx]!=null){
+      const top=nextPending[wIdx],fromSquare=W.pos;
+      ev.push(`${W.name} wins the climb · ${fromSquare}→${top}`);
+      reveal.add(fromSquare);
+      W.pos=top;
+      delete nextPending[wIdx];
+    }else{
+      const moved=applyMove(W.pos+1);
+      if(board.ladders[moved]){
+        const top=board.ladders[moved];
+        ev.push(`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next, forfeits it if they lose next`);
+        reveal.add(moved);
+        W.pos=moved;
+        nextPending[wIdx]=top;
+      }else{
+        W.pos=moved;
+      }
+    }
     const extra=(settings.bonuses||[]).reduce((sum,b)=>activeBonuses.has(b.label)?sum+(Number(b.squares)||0):sum,0);
-    if(extra>0){W.pos=applyMove(W.pos+extra);if(board.ladders[W.pos]){const t=board.ladders[W.pos];ev.push(`${W.name} bonus +${extra} → ladder ${W.pos}→${t}`);reveal.add(W.pos);W.pos=t;}else{ev.push(`${W.name} bonus +${extra} square${extra===1?'':'s'}`);}}
+    if(extra>0){
+      W.pos=applyMove(W.pos+extra);
+      if(board.ladders[W.pos]&&nextPending[wIdx]==null){
+        const top=board.ladders[W.pos];
+        ev.push(`${W.name} bonus +${extra} → lands on a ladder at ${W.pos}, pending`);
+        reveal.add(W.pos);
+        nextPending[wIdx]=top;
+      }else{
+        ev.push(`${W.name} bonus +${extra} square${extra===1?'':'s'}`);
+      }
+    }
     if(activeBonuses.size>0)setActiveBonuses(new Set());
+    if(nextPending[lIdx]!=null){
+      ev.push(`${L.name} loses while pending — their ladder is forfeited`);
+      delete nextPending[lIdx];
+    }
     if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
-    setRoster(next);setRevealed(reveal);
+    setRoster(next);setRevealed(reveal);setPending(nextPending);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
     if(W.pos>=size){setWinner(wIdx);return;}
     let newStreak={holder:wIdx,n:streak.holder===wIdx?streak.n+1:1};
@@ -8850,15 +8882,17 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
   useEffect(()=>{
     if(!project)return;
+    const pendingByName={};
+    Object.keys(pending).forEach(idx=>{ if(roster[idx])pendingByName[roster[idx].name]=pending[idx]; });
     const payload={type:'snakesladders',size,board,visible:settings.visible,revealed:[...revealed],
       players:roster.map(p=>({name:p.name,pos:p.pos})),
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
-      settings,streak,
+      settings,streak,pending:pendingByName,
       courtLabel};
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak]);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending]);
 
   return <div className="slCourt">
     <style>{`
@@ -8884,7 +8918,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#f5c542',fontWeight:700}}> ⏳ climbs to {pending[i]} if they win next</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -16018,13 +16052,16 @@ function SnakesLaddersCourtScorer({court,host}){
         const onCourtIdx=(p.onCourt||[]).map(idxOf).filter(i=>i>=0);
         const queueIdx=(p.queueNames||[]).map(idxOf).filter(i=>i>=0);
         const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
+        const pendingByIdx={};
+        Object.keys(p.pending||{}).forEach(nm=>{ const i=idxOf(nm); if(i>=0)pendingByIdx[i]=p.pending[nm]; });
         const seed={
           board:p.board||{snakes:{},ladders:{}},
           roster,
           queue:[...onCourtIdx,...queueIdx],
           winner:winnerIdx>=0?winnerIdx:null,
           revealed:p.revealed||[],
-          streak:p.streak||{holder:null,n:0}
+          streak:p.streak||{holder:null,n:0},
+          pending:pendingByIdx
         };
         setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
