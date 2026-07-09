@@ -24,11 +24,8 @@ function buildNsslMasterLink(base){const b=window.location.origin+window.locatio
 function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
 function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function buildSlScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}`;}
-function slSharedRoomId(base){return `${base}__slshared`;}
-function getSlSharedScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slSharedScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
-function buildSlSharedScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?slSharedScore=${n}&host=${encodeURIComponent(base)}`;}
-function getSlSharedBoardFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('slSharedBoard');if(h)return {host:h};}catch{}return null;}
-function buildSlSharedBoardLink(base){const b=window.location.origin+window.location.pathname;return `${b}?slSharedBoard=${encodeURIComponent(base)}`;}
+function getSlRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('slRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function buildSlRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?slRace=${encodeURIComponent(base)}&n=${courtCount}`;}
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
   if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
@@ -149,7 +146,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v322 Shared Competition: initial pairing now seeded by ranking (top 2 to Court 1, next 2 to Court 2, etc.) instead of raw unordered presence list; added visible waiting-queue display (next up first) and other-courts status on every screen so it\u2019s always clear who\u2019s where';
+const APP_VERSION='v324 Fixed the mode-toggle white background \u2014 it was using Tin War\u2019s CSS classes which aren\u2019t loaded in Snakes & Ladders, so buttons had zero styling and no selected-state feedback (looked unclickable). Now has its own proper dark-themed toggle styling.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8798,43 +8795,13 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function slApplyMoveShared(pos,size,exactFinish){if(pos>size){return exactFinish?size-(pos-size):size;}return pos;}
-function slResolveSharedRally(state,court,winSlot){
-  // state: {size,board,settings,roster,queue,courts,winner,revealed,streak,events}
-  // winSlot: 'a' or 'b' — which player in this court's current pair won
-  const s={...state,roster:state.roster.map(p=>({...p})),queue:[...state.queue],courts:state.courts.map(c=>({...c})),revealed:[...(state.revealed||[])],events:[...(state.events||[])]};
-  if(s.winner!=null)return s; // competition already over
-  const pair=s.courts[court-1];
-  if(!pair||pair.a==null||pair.b==null)return s; // this court isn't ready to score
-  const wIdx=winSlot==='a'?pair.a:pair.b, lIdx=winSlot==='a'?pair.b:pair.a;
-  const W=s.roster[wIdx],L=s.roster[lIdx];
-  const moved=slApplyMoveShared(W.pos+1,s.size,s.settings.exactFinish);
-  if(s.board.ladders[moved]){const top=s.board.ladders[moved];s.events.unshift(`${W.name} climbed a ladder · ${moved}→${top}`);if(!s.revealed.includes(moved))s.revealed.push(moved);W.pos=top;}
-  else{W.pos=moved;}
-  if(s.board.snakes[L.pos]){const tail=s.board.snakes[L.pos];s.events.unshift(`${L.name} hit a snake · ${L.pos}→${tail}`);if(!s.revealed.includes(L.pos))s.revealed.push(L.pos);L.pos=tail;}
-  s.events=s.events.slice(0,8);
-  if(W.pos>=s.size){s.winner=wIdx;return s;}
-  let newStreak={holder:wIdx,n:s.streak.holder===wIdx?s.streak.n+1:1};
-  const capHit=s.settings.mode==='winner'&&s.settings.streakCap>0&&newStreak.n>=s.settings.streakCap;
-  if(s.settings.mode==='rotation'||capHit){
-    s.queue.push(wIdx,lIdx);
-    pair.a=s.queue.length>0?s.queue.shift():null;
-    pair.b=s.queue.length>0?s.queue.shift():null;
-    if(capHit)newStreak={holder:null,n:0};
-  }else{
-    s.queue.push(lIdx);
-    pair.a=wIdx;
-    pair.b=s.queue.length>0?s.queue.shift():null;
-  }
-  s.streak=newStreak;
-  return s;
-}
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null}){
   const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
-  const [board,setBoard]=useState(()=>seed?seed.board:slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  const [board,setBoard]=useState(()=>seed?seed.board:fixedBoard?fixedBoard:slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  useEffect(()=>{ if(!seed&&fixedBoard)setBoard(fixedBoard); },[fixedBoard]);
   const [roster,setRoster]=useState(()=>seed?seed.roster:players.map(n=>({name:n,pos:1})));
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
   const [winner,setWinner]=useState(()=>seed?seed.winner:null);
@@ -8964,30 +8931,14 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
   const [competitionMode,setCompetitionMode]=useState('separate');
-  const [sharedStarted,setSharedStarted]=useState(false);
-  const [copiedSharedCourt,setCopiedSharedCourt]=useState(null);
-  const [copiedSharedBoard,setCopiedSharedBoard]=useState(false);
+  const [raceBoard,setRaceBoard]=useState(null);
+  const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
-  async function startSharedCompetition(){
-    const sourcePlayers=usingAttendance
-      ?[...presentsObj].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)).map(p=>playerDisplayName(p))
-      :manualNames.slice(0,manualCount);
-    const roster=sourcePlayers.map(n=>({name:n,pos:1}));
-    const board=slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise);
-    const queue=roster.map((_,i)=>i);
-    const courtsArr=[];
-    for(let c=0;c<courtCount;c++){courtsArr.push({a:queue.length?queue.shift():null,b:queue.length?queue.shift():null});}
-    const state={type:'slshared',size:settings.size,board,settings,roster,queue,courts:courtsArr,winner:null,revealed:[],streak:{holder:null,n:0},events:[],updatedAt:new Date().toISOString()};
-    await writeLivePlayerRoom(slSharedRoomId(base),'slshared',state);
-    setSharedStarted(true);
-  }
-  async function copySharedScoreLink(n){
-    const url=buildSlSharedScoreLink(n,base);
-    try{await navigator.clipboard.writeText(url);setCopiedSharedCourt(n);setTimeout(()=>setCopiedSharedCourt(null),1500);}catch{window.prompt('Court '+n+' shared scoring link:',url);}
-  }
-  async function copySharedBoardLink(){
-    const url=buildSlSharedBoardLink(base);
-    try{await navigator.clipboard.writeText(url);setCopiedSharedBoard(true);setTimeout(()=>setCopiedSharedBoard(false),1500);}catch{window.prompt('Shared leaderboard link:',url);}
+  function startRace(){setRaceBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));}
+  function resetRace(){setRaceBoard(null);setHandedOff(new Set());}
+  async function copyRaceLink(){
+    const url=buildSlRaceLink(base,courtCount);
+    try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
   }
   const liveUrl=useMemo(()=>{try{return buildLivePlayerViewUrl();}catch{return '';}},[]);
   async function copySLPlayerLink(){
@@ -9012,9 +8963,12 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
 
   const allocation=useMemo(()=>{
-    if(usingAttendance)return rankedBlockCourtAllocation(presentsObj,courtCount);
+    if(usingAttendance){
+      if(competitionMode==='race')return snakeSeedPlayers(presentsObj,courtCount);
+      return rankedBlockCourtAllocation(presentsObj,courtCount);
+    }
     return [manualNames.slice(0,manualCount)];
-  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount]);
+  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount,competitionMode]);
   const courts=allocation.length;
   const active=Math.min(activeCourt,courts-1);
 
@@ -9052,17 +9006,28 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     </div>}
 
     {courts>1&&<div className="slSettings" style={{alignItems:'flex-start'}}>
+      <style>{`
+.slModeStrip{display:flex;gap:8px;flex-wrap:wrap;}
+.slModeBtn{flex:1;min-width:180px;background:#0b1118;border:1px solid #2c3c4e;color:#cdd9e6;border-radius:9px;padding:11px 14px;font-size:0.9rem;font-weight:600;cursor:pointer;text-align:center;}
+.slModeBtnOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+`}</style>
       <div>
         <strong>How should these {courts} courts relate to each other?</strong>
-        <div className="twActionStrip" style={{marginTop:'8px'}}>
-          <button type="button" className={competitionMode==='separate'?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCompetitionMode('separate')}>Separate games per court</button>
-          <button type="button" className={competitionMode==='shared'?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCompetitionMode('shared')}>One shared competition — all courts compete together</button>
+        <div className="slModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={competitionMode==='separate'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>{setCompetitionMode('separate');resetRace();}}>Separate games per court</button>
+          <button type="button" className={competitionMode==='race'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setCompetitionMode('race')}>Race — same board, one winner overall</button>
         </div>
-        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and roster.':'One board, one shared field of players. Each court scores its own pair from the same shared queue — everyone is racing toward the same finish.'}</p>
+        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and roster — unrelated games.':`Fixed group per court (balanced so both courts are similarly matched), each running its own winner-stays-on rotation as normal — but every court plays on the identical board, and whoever reaches the finish first on ANY court wins the whole race.`}</p>
       </div>
     </div>}
 
-    {(competitionMode==='separate'||courts<=1)&&<>
+    {competitionMode==='race'&&courts>1&&!raceBoard&&<div className="slSettings" style={{flexDirection:'column',alignItems:'flex-start'}}>
+      <strong>Start the race</strong>
+      <p className="mutedText">Groups are seeded for balance (Court 1: {allocation[0]?allocation[0].join(', '):''}{allocation[1]?' · Court 2: '+allocation[1].join(', '):''}{allocation[2]?' · Court 3: '+allocation[2].join(', '):''}). Each court plays winner-stays-on among its own group, on one identical board.</p>
+      <button type="button" className="primaryBtn" onClick={startRace}>Start race — lock the board</button>
+    </div>}
+
+    {(competitionMode==='separate'||(competitionMode==='race'&&raceBoard)||courts<=1)&&<>
     {courts>1&&<div className="slCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'slCourtTab slCourtTabOn':'slCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
 
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
@@ -9070,29 +9035,26 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {courts>1&&handedOff.has(i+1)
         ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>}
+        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}-${competitionMode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null} fixedBoard={competitionMode==='race'?raceBoard:null}/>}
     </div>)}
     </>}
 
-    {competitionMode==='shared'&&courts>1&&<div className="slSettings" style={{flexDirection:'column',alignItems:'stretch'}}>
-      {!sharedStarted
-        ? <><strong>Start the shared competition</strong>
-            <p className="mutedText">All {usingAttendance?presentsObj.length:manualCount} players go into one shared board and queue. {courtCount} pairs play simultaneously, one per court, drawing from that same queue as rallies finish.</p>
-            <button type="button" className="primaryBtn" onClick={startSharedCompetition}>Start shared competition</button></>
-        : <>
-            <strong>Shared competition is running — send each court its own Scoring link:</strong>
-            <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
-              {Array.from({length:courtCount}).map((_,i)=><div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'7px 11px'}}>
-                <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1}</span>
-                <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySharedScoreLink(i+1)}>{copiedSharedCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
-              </div>)}
-            </div>
-            <button type="button" className="secondaryBtn" style={{marginTop:'10px',alignSelf:'flex-start'}} onClick={copySharedBoardLink}>{copiedSharedBoard?'Copied ✓':'Copy shared leaderboard link (projector)'}</button>
-            <p className="mutedText" style={{marginTop:'8px'}}>Each court's device becomes the scorer for that court only, but all of them write into the same shared board — that's genuinely concurrent, so a clash if two courts finish within the same second is possible, though rare.</p>
-            <button type="button" className="secondaryBtn" style={{marginTop:'8px',alignSelf:'flex-start'}} onClick={()=>setSharedStarted(false)}>Reset / start a new shared competition</button>
-          </>}
+    {competitionMode==='race'&&courts>1&&raceBoard&&<div className="slSettings" style={{flexDirection:'column',alignItems:'stretch'}}>
+      <strong>Race is live — send each court its own Scoring link:</strong>
+      <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
+          <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1}: {g.join(', ')}{handedOff.has(i+1)?' — scoring handed off':''}</span>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
+            {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
+          </div>
+        </div>)}
+      </div>
+      <button type="button" className="secondaryBtn" style={{marginTop:'10px',alignSelf:'flex-start'}} onClick={copyRaceLink}>{copiedRaceLink?'Copied ✓':'Copy Race Display link (projector — combined board, all courts)'}</button>
+      <button type="button" className="secondaryBtn" style={{marginTop:'8px',alignSelf:'flex-start'}} onClick={resetRace}>New race (reshuffle board)</button>
     </div>}
-    {competitionMode==='shared'&&courts>1&&sharedStarted&&<SnakesLaddersSharedLeaderboard host={base}/>}
+    {competitionMode==='race'&&courts>1&&raceBoard&&<SnakesLaddersRaceDisplay host={base} courtCount={courtCount}/>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
     {showBonuses&&<div className="slBonuses">
@@ -16085,117 +16047,43 @@ function SnakesLaddersCourtScorer({court,host}){
   </div>;
 }
 
-function SnakesLaddersSharedScorer({court,host}){
-  const roomId=slSharedRoomId(host);
-  const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
-  const [state,setState]=useState(null);
-  const [status,setStatus]=useState('Connecting…');
-  const [busy,setBusy]=useState(false);
+function SnakesLaddersRaceDisplay({host,courtCount}){
+  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff','#6bd6d6','#ff8a80'];
+  const [courts,setCourts]=useState([]); // array of payloads, one per court, index 0 = Court 1
   useEffect(()=>{
     let cancelled=false;
     async function load(){
-      const row=await readLivePlayerRoom(roomId);
+      const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(host,i+1))));
       if(cancelled)return;
-      if(row&&row.payload&&row.payload.type==='slshared'){setState(row.payload);setStatus('Live');}
-      else setStatus('Waiting for coach device to start the shared competition…');
+      setCourts(rows.map(row=>row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null));
     }
     load();
     const id=setInterval(load,1400);
     return ()=>{cancelled=true;clearInterval(id);};
-  },[roomId]);
+  },[host,courtCount]);
 
-  async function tap(slot){
-    if(busy)return;
-    setBusy(true);
-    try{
-      const row=await readLivePlayerRoom(roomId);
-      const fresh=row&&row.payload&&row.payload.type==='slshared'?row.payload:state;
-      if(!fresh){setBusy(false);return;}
-      const next=slResolveSharedRally(fresh,court,slot);
-      await writeLivePlayerRoom(roomId,'slshared',{...next,type:'slshared',updatedAt:new Date().toISOString()});
-      setState(next);
-    }catch{}
-    setBusy(false);
+  const anyData=courts.some(Boolean);
+  if(!anyData){
+    return <div className="playerDisplayPage slDisplayPage"><div className="slDisplayHead"><span className="slDisplayLive">● CONNECTING</span><h1>Snakes &amp; Ladders — Race</h1><p>Waiting for courts to start…</p></div></div>;
   }
-
-  const size=state?state.size:21;
+  const first=courts.find(Boolean);
+  const size=first.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
-  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
-
-  if(!state){
-    return <div className="playerDisplayPage slDisplayPage">
-      <div className="slDisplayHead"><span className="slDisplayLive">● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Shared Competition — Court {court}</h1><p>{status}</p></div>
-    </div>;
-  }
-  const pair=state.courts&&state.courts[court-1]?state.courts[court-1]:{a:null,b:null};
-  const nameOf=idx=>idx!=null&&state.roster[idx]?state.roster[idx].name:null;
-  const sorted=[...state.roster].map((p,i)=>({...p,i})).sort((a,b)=>b.pos-a.pos);
-  const board=state.board||{snakes:{},ladders:{}};
-  const revealedSet=new Set(state.revealed||[]);
-  const visible=state.settings?state.settings.visible!==false:true;
+  const grid=slSerpentine(size,cols);
+  const board=first.board||{snakes:{},ladders:{}};
+  const revealedSet=new Set(first.revealed||[]);
+  const visible=first.settings?first.settings.visible!==false:true;
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealedSet.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
-  return <div className="gameCard slGame">
-    <style>{`.slSharedLb{display:flex;flex-direction:column;gap:3px;margin:10px 0;}
-.slSharedLbRow{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:7px;background:#0b1118;border:1px solid #1d2935;font-size:0.85rem;}
-.slSharedLbRow b{width:1.7rem;height:1.7rem;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#0a1322;font-weight:800;}
-.slBoard .slCell{background:#1a2942 !important;border:1.5px solid #3a5a8c !important;}
-.slBoard .slCell.slLadder{background:#12592f !important;border-color:#38d074 !important;}
-.slBoard .slCell.slSnake{background:#5e1633 !important;border-color:#ff5fa2 !important;}
-.slBoard .slCell.slFinish{background:#5f4d0f !important;border-color:#ffd400 !important;}
-.slBoard .slNum{font-size:1.1rem !important;font-weight:800 !important;color:#f2f7ff !important;line-height:1.05 !important;}
-.slBoard .slTok{font-size:0.85rem !important;min-width:1.5rem !important;height:1.5rem !important;line-height:1.5rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
-.slBoard .slMark{font-size:1rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.1 !important;}`}</style>
-    <div className="slDisplayHead" style={{marginBottom:'6px'}}><span className="slDisplayLive">● SCORING — Court {court}</span><h1>Shared Competition</h1></div>
-    {state.winner!=null
-      ? <div className="slWinBanner">🏆 {nameOf(state.winner)} wins the overall competition!</div>
-      : (pair.a==null||pair.b==null)
-        ? <p className="mutedText">Waiting for the next players from the shared queue…</p>
-        : <div className="slOnCourt">
-            <span className="slOnCourtLabel">On this court</span>
-            <button type="button" className="primaryBtn" disabled={busy} onClick={()=>tap('a')}>{nameOf(pair.a)} won</button>
-            <span className="slVs">vs</span>
-            <button type="button" className="primaryBtn" disabled={busy} onClick={()=>tap('b')}>{nameOf(pair.b)} won</button>
-          </div>}
-    <p className="mutedText" style={{marginTop:'8px',marginBottom:'0'}}><strong>Other courts:</strong> {(state.courts||[]).map((c,i)=>i+1===court?null:(c.a!=null&&c.b!=null?`Court ${i+1}: ${nameOf(c.a)} vs ${nameOf(c.b)}`:`Court ${i+1}: waiting`)).filter(Boolean).join(' · ')}</p>
-    {(state.queue||[]).length>0&&<p className="mutedText" style={{marginTop:'4px'}}><strong>Waiting (next up first):</strong> {state.queue.map(idx=>nameOf(idx)).join(' → ')}</p>}
-    <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`,marginTop:'12px'}}>
-      {grid.flat().map((n,idx)=>{
-        if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
-        const ci=cellInfo(n);
-        const here=state.roster.map((p,i)=>p.pos===n?i:-1).filter(i=>i>=0);
-        return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
-          <span className="slNum">{n}</span>
-          {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
-          {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
-          {n===size&&<span className="slMark">🏁</span>}
-          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(state.roster[i].name||'P')[0].toUpperCase()}</b>)}</span>}
-        </div>;
-      })}
-    </div>
-    <p className="mutedText" style={{marginTop:'10px'}}><strong>Overall standings</strong> (top 8 shown):</p>
-    <div className="slSharedLb">{sorted.slice(0,8).map((p,ci)=><div key={p.i} className="slSharedLbRow"><b style={{background:SL_COLORS[p.i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span>{p.name}</span><span style={{marginLeft:'auto',color:'#7c8ea0'}}>Sq {p.pos}</span></div>)}</div>
-  </div>;
-}
 
-function SnakesLaddersSharedLeaderboard({host}){
-  const roomId=slSharedRoomId(host);
-  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
-  const [state,setState]=useState(null);
-  useEffect(()=>{
-    let cancelled=false;
-    async function load(){const row=await readLivePlayerRoom(roomId);if(cancelled)return;if(row&&row.payload&&row.payload.type==='slshared')setState(row.payload);}
-    load();const id=setInterval(load,1500);return ()=>{cancelled=true;clearInterval(id);};
-  },[roomId]);
-  const size=state?state.size:21;
-  const cols=size===15?5:size===30?6:size===50?10:7;
-  const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
-  if(!state)return <div className="playerDisplayPage slDisplayPage"><div className="slDisplayHead"><span className="slDisplayLive">● CONNECTING</span><h1>Shared Competition</h1></div></div>;
-  const nameOf=idx=>idx!=null&&state.roster[idx]?state.roster[idx].name:null;
-  const sorted=[...state.roster].map((p,i)=>({...p,i})).sort((a,b)=>b.pos-a.pos);
-  const board=state.board||{snakes:{},ladders:{}};
-  const revealedSet=new Set(state.revealed||[]);
-  const visible=state.settings?state.settings.visible!==false:true;
-  const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealedSet.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
+  // merge every court's roster into one combined list, tagging each player with their court + colour
+  const combined=[];
+  courts.forEach((c,ci)=>{
+    if(!c)return;
+    (c.players||[]).forEach(p=>combined.push({name:p.name,pos:p.pos,court:ci+1,colorIdx:combined.length}));
+  });
+  const sorted=[...combined].sort((a,b)=>b.pos-a.pos);
+  const overallWinner=courts.map((c,i)=>c&&c.winnerName?{name:c.winnerName,court:i+1}:null).find(Boolean);
+
   return <div className="playerDisplayPage slDisplayPage">
     <style>{`
 .slDisplayBoardWrap{width:100%;max-width:100vw;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:2px;}
@@ -16203,40 +16091,39 @@ function SnakesLaddersSharedLeaderboard({host}){
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
 .slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
-.slDisplayBoard .slTok{font-size:1.5rem !important;min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slDisplayBoard .slTok{font-size:1.3rem !important;min-width:2.3rem !important;height:2.3rem !important;line-height:2.3rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
 @media (max-width:640px){
   .slDisplayBoard{min-width:${cols*40}px;gap:4px !important;}
   .slDisplayBoard .slMark{font-size:1.15rem !important;}
   .slDisplayBoard .slNum{font-size:1.15rem !important;}
-  .slDisplayBoard .slTok{font-size:0.85rem !important;min-width:1.5rem !important;height:1.5rem !important;line-height:1.5rem !important;}
+  .slDisplayBoard .slTok{font-size:0.8rem !important;min-width:1.5rem !important;height:1.5rem !important;line-height:1.5rem !important;}
 }
 `}</style>
-    <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Shared Competition</h1><p>All courts, one leaderboard</p></div>
-    {state.winner!=null&&<div className="slWinBanner slDisplayWin">🏆 {nameOf(state.winner)} wins!</div>}
+    <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders — Race</h1><p>{courtCount} courts, one board, one race to {size}</p></div>
+    {overallWinner&&<div className="slWinBanner slDisplayWin">🏆 {overallWinner.name} (Court {overallWinner.court}) wins the whole race!</div>}
     <div className="slDisplayOnCourt" style={{flexWrap:'wrap',gap:'14px'}}>
-      {(state.courts||[]).map((c,i)=><div key={i} style={{textAlign:'center'}}><div style={{fontSize:'0.8rem',color:'#5e89b0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Court {i+1}</div><div>{c.a!=null&&c.b!=null?`${nameOf(c.a)} vs ${nameOf(c.b)}`:'Waiting for players'}</div></div>)}
+      {courts.map((c,i)=><div key={i} style={{textAlign:'center'}}>
+        <div style={{fontSize:'0.8rem',color:'#5e89b0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Court {i+1}</div>
+        <div>{c?(c.winnerName?`🏆 ${c.winnerName}`:(c.onCourt&&c.onCourt.length>=2?`${c.onCourt[0]} vs ${c.onCourt[1]}`:'—')):'Not started'}</div>
+      </div>)}
     </div>
-    {(state.queue||[]).length>0&&<div style={{textAlign:'center',margin:'6px 0 0',color:'#9fb0c2'}}>
-      <span style={{fontSize:'0.8rem',textTransform:'uppercase',letterSpacing:'0.05em',color:'#5e89b0'}}>Waiting (next up first)</span>
-      <div style={{fontSize:'1rem',marginTop:'2px'}}>{state.queue.map(idx=>nameOf(idx)).join(' → ')}</div>
-    </div>}
     <div className="slDisplayBoardWrap">
       <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
         {grid.flat().map((n,idx)=>{
           if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
           const ci=cellInfo(n);
-          const here=state.roster.map((p,i)=>p.pos===n?i:-1).filter(i=>i>=0);
+          const here=combined.filter(p=>p.pos===n);
           return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
             <span className="slNum">{n}</span>
             {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
             {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
             {n===size&&<span className="slMark">🏁</span>}
-            {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(state.roster[i].name||'P')[0].toUpperCase()}</b>)}</span>}
+            {here.length>0&&<span className="slTokens">{here.map(p=><b key={p.name+p.court} className="slTok" title={`Court ${p.court}`} style={{background:SL_COLORS[p.colorIdx%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b>)}</span>}
           </div>;
         })}
       </div>
     </div>
-    <div className="slDisplayLeaderboard">{sorted.map(p=><div key={p.i} className="slLbRow"><b className="slTok" style={{background:SL_COLORS[p.i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>)}</div>
+    <div className="slDisplayLeaderboard">{sorted.map(p=><div key={p.name+p.court} className="slLbRow"><b className="slTok" style={{background:SL_COLORS[p.colorIdx%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name} <span style={{color:'#5e89b0',fontWeight:400}}>(Court {p.court})</span></span><span className="slLbPos">Sq {p.pos}</span></div>)}</div>
   </div>;
 }
 
@@ -17278,8 +17165,7 @@ const[backStack,setBackStack]=useState([]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
 const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
-const slSharedScoreParam=useMemo(()=>getSlSharedScoreFromUrl(),[]);
-const slSharedBoardParam=useMemo(()=>getSlSharedBoardFromUrl(),[]);
+const slRaceParam=useMemo(()=>getSlRaceFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -17321,8 +17207,7 @@ useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasio
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
 if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host}/>;}
-if(slSharedScoreParam){return <SnakesLaddersSharedScorer court={slSharedScoreParam.court} host={slSharedScoreParam.host}/>;}
-if(slSharedBoardParam){return <SnakesLaddersSharedLeaderboard host={slSharedBoardParam.host}/>;}
+if(slRaceParam){return <SnakesLaddersRaceDisplay host={slRaceParam.host} courtCount={slRaceParam.courtCount}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
