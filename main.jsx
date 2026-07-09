@@ -146,7 +146,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v325 Snakes & Ladders: ladders now land-then-pend instead of climbing instantly \u2014 landing puts you on the ladder square; win your next rally and you climb, lose it and the ladder is forfeited. Visible on the roster list (\u23f3) and in the log.';
+const APP_VERSION='v326 Snakes & Ladders: fixed Race mode allocation \u2014 reverted from snake/draft seeding back to ranked-block (top group\u2192Court 1, next\u2192Court 2, ordered by level), added Manual allocation option (coach assigns each player to a court directly), moved Board settings above the mode toggle so board size is always set before Start race';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8965,6 +8965,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
   const [competitionMode,setCompetitionMode]=useState('separate');
+  const [allocMode,setAllocMode]=useState('auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
+  const [manualAssign,setManualAssign]=useState({}); // playerName -> courtIndex (0-based)
+  function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const [raceBoard,setRaceBoard]=useState(null);
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
@@ -8998,11 +9001,23 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
   const allocation=useMemo(()=>{
     if(usingAttendance){
-      if(competitionMode==='race')return snakeSeedPlayers(presentsObj,courtCount);
+      if(allocMode==='manual'){
+        const groups=Array.from({length:courtCount},()=>[]);
+        presentsObj.map(p=>playerDisplayName(p)).forEach(name=>{
+          const ci=manualAssign[name];
+          if(ci!=null&&ci<courtCount)groups[ci].push(name);
+        });
+        return groups;
+      }
       return rankedBlockCourtAllocation(presentsObj,courtCount);
     }
     return [manualNames.slice(0,manualCount)];
-  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount,competitionMode]);
+  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount,allocMode,manualAssign]);
+  const unassigned=useMemo(()=>{
+    if(!usingAttendance||allocMode!=='manual')return [];
+    const names=presentsObj.map(p=>playerDisplayName(p));
+    return names.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount);
+  },[usingAttendance,allocMode,presentsObj,manualAssign,courtCount]);
   const courts=allocation.length;
   const active=Math.min(activeCourt,courts-1);
 
@@ -9039,6 +9054,22 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <div className="slNameGrid">{Array.from({length:manualCount}).map((_,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={manualNames[i]||''} onChange={e=>setManualName(i,e.target.value)}/></label>)}</div>
     </div>}
 
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
+    {showSettings&&<div className="slSettings">
+      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
+      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
+      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
+      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
+      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
+      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
+      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,max:Number(e.target.value)||1}}))}/></label>
+      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,min:Number(e.target.value)||1}}))}/></label>
+      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
+      <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
+      <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
+      <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
+    </div>}
+
     {courts>1&&<div className="slSettings" style={{alignItems:'flex-start'}}>
       <style>{`
 .slModeStrip{display:flex;gap:8px;flex-wrap:wrap;}
@@ -9051,13 +9082,27 @@ function SnakesLaddersGame({setSession,setScreen}={}){
           <button type="button" className={competitionMode==='separate'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>{setCompetitionMode('separate');resetRace();}}>Separate games per court</button>
           <button type="button" className={competitionMode==='race'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setCompetitionMode('race')}>Race — same board, one winner overall</button>
         </div>
-        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and roster — unrelated games.':`Fixed group per court (balanced so both courts are similarly matched), each running its own winner-stays-on rotation as normal — but every court plays on the identical board, and whoever reaches the finish first on ANY court wins the whole race.`}</p>
+        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and roster — unrelated games.':'Fixed group per court, each running its own winner-stays-on rotation as normal — but every court plays on the identical board, and whoever reaches the finish first on ANY court wins the whole race.'}</p>
       </div>
+      {usingAttendance&&<div style={{marginTop:'10px'}}>
+        <strong>Court allocation:</strong>
+        <div className="slModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={allocMode==='auto'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level (top group → Court 1, next → Court 2…)</button>
+          <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I\u2019ll allocate</button>
+        </div>
+        {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
+            <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
+          </div>)}
+        </div>}
+      </div>}
     </div>}
 
     {competitionMode==='race'&&courts>1&&!raceBoard&&<div className="slSettings" style={{flexDirection:'column',alignItems:'flex-start'}}>
       <strong>Start the race</strong>
-      <p className="mutedText">Groups are seeded for balance (Court 1: {allocation[0]?allocation[0].join(', '):''}{allocation[1]?' · Court 2: '+allocation[1].join(', '):''}{allocation[2]?' · Court 3: '+allocation[2].join(', '):''}). Each court plays winner-stays-on among its own group, on one identical board.</p>
+      <p className="mutedText">Court 1: {allocation[0]?allocation[0].join(', '):''}{allocation[1]?' · Court 2: '+allocation[1].join(', '):''}{allocation[2]?' · Court 3: '+allocation[2].join(', '):''}. Each court plays winner-stays-on among its own group, on one identical board.</p>
       <button type="button" className="primaryBtn" onClick={startRace}>Start race — lock the board</button>
     </div>}
 
@@ -9096,22 +9141,6 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       {(settings.bonuses||[]).map((b,i)=><div key={i} className="slBonusEdit"><span className="slBonusName">{b.label}</span><label>+<input type="number" min="0" max="9" value={b.squares} onChange={e=>setBonusSquares(i,e.target.value)}/> sq</label><button type="button" className="slBonusRemove" onClick={()=>removeBonus(i)}>✕</button></div>)}
       <div className="slBonusQuick">{COMPLETION_CONSTRAINTS.map(c=><button type="button" key={c} className="meChip" disabled={(settings.bonuses||[]).some(b=>b.label===c)} onClick={()=>addBonus(c,2)}>+ {c}</button>)}</div>
       <div className="overlayCustomAdd"><input value={bonusLabel} onChange={e=>setBonusLabel(e.target.value)} placeholder="Custom constraint" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addBonus(bonusLabel,bonusSq);}}}/><input type="number" min="0" max="9" value={bonusSq} onChange={e=>setBonusSq(Number(e.target.value)||0)} style={{maxWidth:'70px'}}/><button type="button" className="meChip meChipOn" onClick={()=>addBonus(bonusLabel,bonusSq)}>+ Add</button></div>
-    </div>}
-
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
-    {showSettings&&<div className="slSettings">
-      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
-      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
-      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
-      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
-      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
-      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
-      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,max:Number(e.target.value)||1}}))}/></label>
-      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,min:Number(e.target.value)||1}}))}/></label>
-      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
-      <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
-      <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
-      <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. Changing courts re-deals the players.</p>
     </div>}
 
     <UniversalDBHandicapPanel/>
