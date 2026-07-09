@@ -149,7 +149,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v321 Shared Competition: coach\u2019s own screen now shows the live shared board + leaderboard inline once started, instead of disappearing after switching to shared mode (was only viewable via the separate projector link before)';
+const APP_VERSION='v322 Shared Competition: initial pairing now seeded by ranking (top 2 to Court 1, next 2 to Court 2, etc.) instead of raw unordered presence list; added visible waiting-queue display (next up first) and other-courts status on every screen so it\u2019s always clear who\u2019s where';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8969,8 +8969,10 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [copiedSharedBoard,setCopiedSharedBoard]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   async function startSharedCompetition(){
-    const names=usingAttendance?presentsObj.map(p=>p.name):manualNames.slice(0,manualCount);
-    const roster=names.map(n=>({name:n,pos:1}));
+    const sourcePlayers=usingAttendance
+      ?[...presentsObj].sort((a,b)=>playerSeedValue(a)-playerSeedValue(b)).map(p=>playerDisplayName(p))
+      :manualNames.slice(0,manualCount);
+    const roster=sourcePlayers.map(n=>({name:n,pos:1}));
     const board=slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise);
     const queue=roster.map((_,i)=>i);
     const courtsArr=[];
@@ -16154,6 +16156,8 @@ function SnakesLaddersSharedScorer({court,host}){
             <span className="slVs">vs</span>
             <button type="button" className="primaryBtn" disabled={busy} onClick={()=>tap('b')}>{nameOf(pair.b)} won</button>
           </div>}
+    <p className="mutedText" style={{marginTop:'8px',marginBottom:'0'}}><strong>Other courts:</strong> {(state.courts||[]).map((c,i)=>i+1===court?null:(c.a!=null&&c.b!=null?`Court ${i+1}: ${nameOf(c.a)} vs ${nameOf(c.b)}`:`Court ${i+1}: waiting`)).filter(Boolean).join(' · ')}</p>
+    {(state.queue||[]).length>0&&<p className="mutedText" style={{marginTop:'4px'}}><strong>Waiting (next up first):</strong> {state.queue.map(idx=>nameOf(idx)).join(' → ')}</p>}
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`,marginTop:'12px'}}>
       {grid.flat().map((n,idx)=>{
         if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
@@ -16210,8 +16214,12 @@ function SnakesLaddersSharedLeaderboard({host}){
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Shared Competition</h1><p>All courts, one leaderboard</p></div>
     {state.winner!=null&&<div className="slWinBanner slDisplayWin">🏆 {nameOf(state.winner)} wins!</div>}
     <div className="slDisplayOnCourt" style={{flexWrap:'wrap',gap:'14px'}}>
-      {(state.courts||[]).map((c,i)=><div key={i} style={{textAlign:'center'}}><div style={{fontSize:'0.8rem',color:'#5e89b0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Court {i+1}</div><div>{c.a!=null&&c.b!=null?`${nameOf(c.a)} vs ${nameOf(c.b)}`:'—'}</div></div>)}
+      {(state.courts||[]).map((c,i)=><div key={i} style={{textAlign:'center'}}><div style={{fontSize:'0.8rem',color:'#5e89b0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Court {i+1}</div><div>{c.a!=null&&c.b!=null?`${nameOf(c.a)} vs ${nameOf(c.b)}`:'Waiting for players'}</div></div>)}
     </div>
+    {(state.queue||[]).length>0&&<div style={{textAlign:'center',margin:'6px 0 0',color:'#9fb0c2'}}>
+      <span style={{fontSize:'0.8rem',textTransform:'uppercase',letterSpacing:'0.05em',color:'#5e89b0'}}>Waiting (next up first)</span>
+      <div style={{fontSize:'1rem',marginTop:'2px'}}>{state.queue.map(idx=>nameOf(idx)).join(' → ')}</div>
+    </div>}
     <div className="slDisplayBoardWrap">
       <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
         {grid.flat().map((n,idx)=>{
