@@ -26,6 +26,10 @@ function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.sea
 function buildSlScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}`;}
 function getSlRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('slRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildSlRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?slRace=${encodeURIComponent(base)}&n=${courtCount}`;}
+function getLudoScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('ludoScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function buildLudoScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ludoScore=${n}&host=${encodeURIComponent(base)}`;}
+function getLudoRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ludoRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function buildLudoRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ludoRace=${encodeURIComponent(base)}&n=${courtCount}`;}
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
   if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
@@ -146,7 +150,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v326 Snakes & Ladders: fixed Race mode allocation \u2014 reverted from snake/draft seeding back to ranked-block (top group\u2192Court 1, next\u2192Court 2, ordered by level), added Manual allocation option (coach assigns each player to a court directly), moved Board settings above the mode toggle so board size is always set before Start race';
+const APP_VERSION='v327 New game: Ludo Squash\u2122 (v1) \u2014 earned-movement board race built on the Snakes & Ladders multi-court pattern (Court selector, Auto/Manual allocation, Separate/Race modes, Scoring + View links, Court Monitor integration). Core loop: win the rally AND achieve the coach objective to move one piece; first to get all 4 pieces Home wins. Capturing is PENDING not instant \u2014 landing on an opponent threatens it, confirmed only if the attacker earns their next move first, evaded if the target moves away first \u2014 same live-stakes design as the S&L pending-ladder mechanic. Beginner/Intermediate difficulty shipped; Advanced (Bonus Challenge) deferred to a future build. Piece count, board size, safe-square editing, Team Mode and full stats suite also deferred \u2014 see brief.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10296,6 +10300,7 @@ function Games({setSession,setScreen}){
     {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
+    {id:'ludosquash',label:'Ludo Squash',category:'Ludo Squash'},
     {id:'blindtarget',label:'Poker',category:'Blind Target'},
     {id:'serveReturn',label:'Serve & Return',category:'Serve & Return'},
     {id:'technical',label:'Technical',category:'Technical'},
@@ -10395,6 +10400,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession} setScreen={setScreen}/>}
+    {activeClassId==='ludosquash'&&<LudoSquashGame key="ludosquash-engine" setSession={setSession} setScreen={setScreen}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
@@ -15452,6 +15458,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Tactical Pressure',sub:'Games Library',kw:'tactical pressure',screen:'games',classId:'tacticalpressure'},
   {label:'Classic Games',sub:'Games Library',kw:'classic traditional',screen:'games',classId:'classic'},
   {label:'Snakes & Ladders',sub:'Games Library',kw:'snakes ladders climb',screen:'games',classId:'snakesladders'},
+  {label:'Ludo Squash',sub:'Games Library',kw:'ludo race board pieces capture threat',screen:'games',classId:'ludosquash'},
   {label:'Custom Game Builder',sub:'Games Library',kw:'custom build your own game',screen:'games',classId:'custom'},
   {label:'Information / Anticipation',sub:'Games Library',kw:'information anticipation early read pattern',screen:'games',classId:'information'},
   {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal',screen:'games',classId:'doubleBounce'},
@@ -15856,6 +15863,608 @@ function LobPlayerDisplay({payload={}}){
 /* ───────────────────── COURT MONITOR (King of Courts) ───────────────────── */
 function cmOrdinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 
+// ── LUDO SQUASH™ — v1 build ──────────────────────────────────────────────
+const LUDO_LOOP_LEN=24;
+const LUDO_HOME_STRETCH=6;
+const LUDO_FINISH=LUDO_LOOP_LEN+LUDO_HOME_STRETCH; // piece distance value meaning "Home"
+const LUDO_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0'];
+const LUDO_SAFE_SQUARES=[1,4,7,10,13,16,19,22];
+function ludoEntry(playerIdx){return 1+((playerIdx%4)*(LUDO_LOOP_LEN/4));}
+function ludoPieceSquare(playerIdx,d){
+  if(d==null||d<0||d>=LUDO_LOOP_LEN)return null;
+  return ((ludoEntry(playerIdx)-1+d)%LUDO_LOOP_LEN)+1;
+}
+function ludoPieceLabel(d){
+  if(d==null||d<0)return 'Start';
+  if(d>=LUDO_FINISH)return 'Home';
+  if(d>=LUDO_LOOP_LEN)return `Stretch ${d-LUDO_LOOP_LEN+1}/${LUDO_HOME_STRETCH}`;
+  return `Step ${d+1}/${LUDO_LOOP_LEN}`; // progress-relative — actual board square depends on the player's own entry offset
+}
+function ludoDefaultRoster(names){return names.map(n=>({name:n,pieces:[{d:-1},{d:-1},{d:-1},{d:-1}]}));}
+
+const LUDO_OBJECTIVES={
+  Tactical:['Keep opponent outside the T Corridor','Force opponent into a back corner','Force opponent into a front corner','Win after sustained pressure (5+ shot rally)','Win after moving opponent through all four court quadrants'],
+  Technical:['Straight drive winner','Volley winner','Successful drop','Successful boast','Successful lob'],
+  Checkerboard:['Complete assigned Checkerboard challenge','Complete Blind Checkerboard challenge','Complete Double Bounce objective']
+};
+
+function LudoStyles(){return <style>{`
+.ludoCourt{display:flex;flex-direction:column;gap:12px;}
+.ludoObjective{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;font-size:0.9rem;color:#cdd9e6;}
+.ludoObjective b{color:#ffd479;}
+.ludoOnCourt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ludoOnCourtLabel{font-size:0.8rem;color:#6b8299;text-transform:uppercase;letter-spacing:0.06em;}
+.ludoVs{color:#6b8299;font-weight:700;}
+.ludoConfirmRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 14px;}
+.ludoPieceRow{display:flex;gap:8px;flex-wrap:wrap;}
+.ludoPieceBtn{background:#0b1118;border:1.5px solid #3a5a8c;color:#eaf4fb;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;font-size:0.85rem;}
+.ludoPieceBtn:disabled{opacity:0.35;cursor:not-allowed;}
+.ludoQueue{font-size:0.85rem;color:#9fb0c2;}
+.ludoWinBanner{background:#5f4d0f;border:1px solid #ffd400;color:#ffe9a8;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
+.ludoLeaderboard{display:flex;flex-direction:column;gap:6px;}
+.ludoLbRow{display:flex;align-items:center;gap:10px;background:#0f1822;border:1px solid #223044;border-radius:9px;padding:8px 12px;flex-wrap:wrap;}
+.ludoLbRow.ludoLbOn{border-color:#2E6E8E;background:#12203a;}
+.ludoTok{min-width:2.1rem;height:2.1rem;line-height:2.1rem;text-align:center;font-weight:800;color:#0a1322;border-radius:50%;flex:none;}
+.ludoLbName{flex:1;font-size:0.9rem;color:#eaf4fb;}
+.ludoLbThreat{color:#ff8a80;font-weight:700;font-size:0.78rem;}
+.ludoPieces{display:flex;gap:4px;flex-wrap:wrap;}
+.ludoPieceChip{font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
+.ludoPieceChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
+.ludoPieceChip.stretch{background:#3a2f0f;border-color:#ffd400;color:#ffe9a8;}
+.ludoBoard{display:grid;gap:6px;}
+.ludoCell{aspect-ratio:1/1;background:#1a2942;border:1.5px solid #3a5a8c;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:2px;}
+.ludoCell.safe{background:#12592f;border-color:#38d074;}
+.ludoCellNum{font-size:0.9rem;font-weight:800;color:#f2f7ff;}
+.ludoSafeMark{font-size:0.6rem;color:#8fe3ab;}
+.ludoTokens{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;position:absolute;bottom:2px;}
+.ludoTokens .ludoTok{min-width:1.3rem;height:1.3rem;line-height:1.3rem;font-size:0.65rem;}
+.ludoControls{display:flex;gap:8px;flex-wrap:wrap;}
+.ludoEvents{display:flex;flex-direction:column;gap:4px;}
+.ludoEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
+.ludoEvent.ludoEventNew{color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;}
+.ludoSessionBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;margin:10px 0;}
+.ludoInlineField{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:#9fb0c2;}
+.ludoManualNames{margin:10px 0;}
+.ludoNameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px;}
+.ludoNameField{display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:#6b8299;}
+.ludoNameField input{background:#0b1118;border:1px solid #223044;border-radius:7px;padding:7px 9px;color:#eaf4fb;}
+.ludoSettings{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.ludoSettings label{display:flex;flex-direction:column;gap:4px;font-size:0.8rem;color:#9fb0c2;}
+.ludoSettings select,.ludoSettings input[type=number]{background:#0f1822;border:1px solid #2c3c4e;border-radius:7px;padding:6px 8px;color:#eaf4fb;}
+.ludoCheck{flex-direction:row !important;align-items:center;gap:8px !important;}
+.ludoModeStrip{display:flex;gap:8px;flex-wrap:wrap;}
+.ludoModeBtn{flex:1;min-width:160px;background:#0b1118;border:1px solid #2c3c4e;color:#cdd9e6;border-radius:9px;padding:9px 13px;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:center;}
+.ludoModeBtnOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.ludoCourtTabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+.ludoCourtTab{background:#0b1118;border:1px solid #223044;color:#9fb0c2;border-radius:8px;padding:7px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;}
+.ludoCourtTabOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;}
+.ludoAllocation{display:flex;flex-direction:column;gap:6px;margin:10px 0;}
+.ludoAllocRow{display:flex;justify-content:space-between;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:8px 12px;font-size:0.82rem;color:#9fb0c2;flex-wrap:wrap;}
+.ludoAllocRowOn{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
+.ludoDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.ludoDisplayHint{font-size:0.8rem;color:#8fe3ab;}
+.ludoDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;}
+.ludoDisplayHead{margin-bottom:18px;}
+.ludoDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
+.ludoDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
+.ludoDisplayHead p{color:#9fb0c2;}
+.ludoRaceGrid{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto;}
+.ludoRaceRow{display:flex;align-items:center;gap:10px;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:10px 14px;}
+.ludoRaceRow.lead{border-color:#1d6b3f;background:#0d2417;}
+.ludoRaceName{flex:1;font-size:1.1rem;color:#eaf4fb;font-weight:700;}
+.ludoRaceCourt{font-size:0.8rem;color:#6b8299;}
+.ludoRaceHome{font-size:0.9rem;color:#8fe3ab;font-weight:800;}
+.ludoDisplayGrid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto;}
+.ludoDisplayRow{display:flex;align-items:center;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 18px;flex-wrap:wrap;}
+.ludoDisplayRow.on{border-color:#2E6E8E;background:#12203a;}
+.ludoDisplayName{flex:1;font-size:1.3rem;font-weight:800;color:#eaf4fb;text-align:left;}
+.ludoDisplayPieces{display:flex;gap:6px;flex-wrap:wrap;}
+.ludoDisplayChip{font-size:0.8rem;padding:4px 9px;border-radius:8px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
+.ludoDisplayChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
+.ludoDisplayThreat{color:#ff8a80;font-weight:700;font-size:0.85rem;}
+`}</style>;}
+
+// ── Per-court engine ─────────────────────────────────────────────────────
+function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null}){
+  const [roster,setRoster]=useState(()=>seed?seed.roster:ludoDefaultRoster(players));
+  const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
+  const [winner,setWinner]=useState(()=>seed?seed.winner:null);
+  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {attackerIdx:[{targetIdx,targetPieceIdx,atSquare}]}
+  const [events,setEvents]=useState([]);
+  const [pendingRally,setPendingRally]=useState(null); // {wIdx,lIdx,stage:'confirm'|'choose'}
+  const [undoStack,setUndoStack]=useState([]);
+
+  function snapshot(){return {roster:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>({...pc}))})),queue:[...queue],winner,pending:JSON.parse(JSON.stringify(pending)),events:[...events]};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setPending(s.pending);setEvents(s.events);setPendingRally(null);return prev.slice(0,-1);});}
+  function resetGame(){setRoster(ludoDefaultRoster(players));setQueue(players.map((_,i)=>i));setWinner(null);setPending({});setEvents([]);setPendingRally(null);setUndoStack([]);}
+
+  function startRally(slot){
+    if(winner!=null||queue.length<2||pendingRally)return;
+    const A=queue[0],B=queue[1];
+    const wIdx=slot===0?A:B,lIdx=slot===0?B:A;
+    if(settings.difficulty==='beginner'){finalizeRally(wIdx,lIdx,true,wIdx,null,true);}
+    else{setPendingRally({wIdx,lIdx,stage:'confirm'});}
+  }
+  function confirmObjective(achieved){
+    if(!pendingRally)return;
+    if(achieved){setPendingRally(p=>({...p,stage:'choose'}));}
+    else{finalizeRally(pendingRally.wIdx,pendingRally.lIdx,false,null,null,false);setPendingRally(null);}
+  }
+  function choosePiece(pieceIdx){
+    if(!pendingRally)return;
+    finalizeRally(pendingRally.wIdx,pendingRally.lIdx,true,pendingRally.wIdx,pieceIdx,false);
+    setPendingRally(null);
+  }
+
+  // autoPick lets Beginner mode (no piece-choice UI shown yet) fall through to a
+  // piece-choice step too, rather than silently auto-selecting — keeps the coach in control.
+  function finalizeRally(wIdx,lIdx,achieved,moverIdx,pieceIdx,needsPieceChoice){
+    if(achieved&&needsPieceChoice){
+      setPendingRally({wIdx,lIdx,stage:'choose'});
+      return;
+    }
+    setUndoStack(prev=>[...prev.slice(-29),snapshot()]);
+    const nextRoster=roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>({...pc}))}));
+    const nextPending=JSON.parse(JSON.stringify(pending));
+    const ev=[];
+    let newWinner=winner;
+
+    if(achieved&&moverIdx!=null&&pieceIdx!=null){
+      const mover=nextRoster[moverIdx];
+      const piece=mover.pieces[pieceIdx];
+
+      // 1) does this move evade a threat against this exact piece?
+      Object.keys(nextPending).forEach(atkIdx=>{
+        nextPending[atkIdx]=(nextPending[atkIdx]||[]).filter(t=>{
+          const evades=t.targetIdx===moverIdx&&t.targetPieceIdx===pieceIdx;
+          if(evades)ev.push(`${mover.name} moves their threatened piece to safety!`);
+          return !evades;
+        });
+        if(nextPending[atkIdx].length===0)delete nextPending[atkIdx];
+      });
+
+      // 2) does this player have a live pending capture to confirm?
+      if(nextPending[moverIdx]&&nextPending[moverIdx].length){
+        nextPending[moverIdx].forEach(t=>{
+          const targetPiece=nextRoster[t.targetIdx].pieces[t.targetPieceIdx];
+          if(targetPiece.d>=0&&targetPiece.d<LUDO_LOOP_LEN&&ludoPieceSquare(t.targetIdx,targetPiece.d)===t.atSquare){
+            ev.push(`${mover.name}'s threat is confirmed — ${nextRoster[t.targetIdx].name}'s piece is sent back to Start!`);
+            targetPiece.d=-1;
+          }
+        });
+        delete nextPending[moverIdx];
+      }
+
+      // 3) apply the actual move (always +1 — no dice; Bonus Challenge is a future build)
+      const newD=Math.min(piece.d+1,LUDO_FINISH);
+      piece.d=newD;
+      ev.push(`${mover.name} moves a piece — ${ludoPieceLabel(newD)}`);
+
+      // 4) landing on the shared loop — check capture (pending, not instant)
+      if(settings.captureOn&&newD>=0&&newD<LUDO_LOOP_LEN){
+        const square=ludoPieceSquare(moverIdx,newD);
+        if(!LUDO_SAFE_SQUARES.includes(square)){
+          nextRoster.forEach((opp,oppIdx)=>{
+            if(oppIdx===moverIdx)return;
+            opp.pieces.forEach((oppPiece,oppPieceIdx)=>{
+              if(oppPiece.d>=0&&oppPiece.d<LUDO_LOOP_LEN&&ludoPieceSquare(oppIdx,oppPiece.d)===square){
+                nextPending[moverIdx]=nextPending[moverIdx]||[];
+                const already=nextPending[moverIdx].some(t=>t.targetIdx===oppIdx&&t.targetPieceIdx===oppPieceIdx);
+                if(!already){
+                  nextPending[moverIdx].push({targetIdx:oppIdx,targetPieceIdx:oppPieceIdx,atSquare:square});
+                  ev.push(`${mover.name} lands on ${opp.name} at square ${square} — confirmed if ${mover.name} wins their next earned move, safe if ${opp.name} moves it first`);
+                }
+              }
+            });
+          });
+        }
+      }
+
+      // 5) winner check
+      if(mover.pieces.every(pc=>pc.d>=LUDO_FINISH))newWinner=moverIdx;
+    }else if(!achieved){
+      ev.push(`${nextRoster[wIdx].name} won the rally — objective not achieved, no movement`);
+    }
+
+    setRoster(nextRoster);setPending(nextPending);
+    if(ev.length)setEvents(prev=>[...ev.slice().reverse(),...prev].slice(0,6));
+    if(newWinner!=null){setWinner(newWinner);return;}
+
+    const rest=queue.slice(2);
+    const nq=settings.mode==='rotation'?[...rest,wIdx,lIdx]:[wIdx,...rest,lIdx];
+    setQueue(nq);
+  }
+
+  const onA=queue[0],onB=queue[1];
+
+  useEffect(()=>{
+    if(!project)return;
+    const pendingByName={};
+    Object.keys(pending).forEach(idx=>{
+      pendingByName[roster[idx].name]=(pending[idx]||[]).map(t=>({targetName:roster[t.targetIdx].name,atSquare:t.atSquare}));
+    });
+    const payload={type:'ludosquash',
+      objective:settings.objective,objectiveGroup:settings.objectiveGroup,difficulty:settings.difficulty,captureOn:settings.captureOn,
+      players:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>pc.d)})),
+      onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
+      queueNames:queue.slice(2).map(i=>roster[i].name),
+      winnerName:winner!=null?roster[winner].name:null,
+      pending:pendingByName,
+      courtLabel};
+    writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'ludosquash',payload);
+  },[project,roster,queue,winner,pending,courtLabel,roomId,settings]);
+
+  return <div className="ludoCourt">
+    <div className="ludoObjective">Movement earned when: <b>{settings.objective}</b>{settings.difficulty==='beginner'?' (Beginner — every rally win earns a move)':''}</div>
+
+    {winner==null&&queue.length>=2&&!pendingRally&&<div className="ludoOnCourt">
+      <span className="ludoOnCourtLabel">On court</span>
+      <button type="button" className="primaryBtn" onClick={()=>startRally(0)}>{roster[onA].name} won</button>
+      <span className="ludoVs">vs</span>
+      <button type="button" className="primaryBtn" onClick={()=>startRally(1)}>{roster[onB].name} won</button>
+    </div>}
+
+    {pendingRally&&pendingRally.stage==='confirm'&&<div className="ludoConfirmRow">
+      <span>Did <b>{roster[pendingRally.wIdx].name}</b> achieve the objective?</span>
+      <button type="button" className="primaryBtn" onClick={()=>confirmObjective(true)}>Yes — earn movement</button>
+      <button type="button" className="secondaryBtn" onClick={()=>confirmObjective(false)}>No movement</button>
+    </div>}
+
+    {pendingRally&&pendingRally.stage==='choose'&&<div className="ludoConfirmRow" style={{flexDirection:'column',alignItems:'flex-start'}}>
+      <span>Which piece should <b>{roster[pendingRally.wIdx].name}</b> move?</span>
+      <div className="ludoPieceRow">
+        {roster[pendingRally.wIdx].pieces.map((pc,i)=><button type="button" key={i} className="ludoPieceBtn" disabled={pc.d>=LUDO_FINISH} onClick={()=>choosePiece(i)}>Piece {i+1} · {ludoPieceLabel(pc.d)}</button>)}
+      </div>
+    </div>}
+
+    {queue.length>2&&winner==null&&<div className="ludoQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
+    {queue.length<2&&<div className="ludoQueue">Needs at least 2 players on this court.</div>}
+
+    {winner!=null&&<div className="ludoWinBanner">🏆 {roster[winner].name} gets all 4 pieces Home and wins!</div>}
+
+    <div className="ludoLeaderboard">
+      {[...roster].map((p,i)=>i).sort((a,b)=>{
+        const score=idx=>roster[idx].pieces.reduce((s,pc)=>s+Math.max(0,pc.d)+1,0);
+        return score(b)-score(a);
+      }).map(i=>{
+        const p=roster[i];
+        const threats=pending[i]?pending[i].length:0;
+        return <div key={i} className={`ludoLbRow${(i===onA||i===onB)&&winner==null?' ludoLbOn':''}`}>
+          <b className="ludoTok" style={{background:LUDO_COLORS[i%LUDO_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b>
+          <span className="ludoLbName">{p.name}{threats>0?<span className="ludoLbThreat"> ⚠ {threats} piece{threats===1?'':'s'} threatened</span>:null}</span>
+          <div className="ludoPieces">{p.pieces.map((pc,pi)=><span key={pi} className={`ludoPieceChip${pc.d>=LUDO_FINISH?' home':pc.d>=LUDO_LOOP_LEN?' stretch':''}`}>{ludoPieceLabel(pc.d)}</span>)}</div>
+        </div>;
+      })}
+    </div>
+
+    <div className="ludoBoard" style={{gridTemplateColumns:'repeat(6,1fr)'}}>
+      {Array.from({length:LUDO_LOOP_LEN},(_,i)=>i+1).map(n=>{
+        const safe=LUDO_SAFE_SQUARES.includes(n);
+        const here=[];
+        roster.forEach((p,pi)=>p.pieces.forEach((pc)=>{if(ludoPieceSquare(pi,pc.d)===n)here.push(pi);}));
+        return <div key={n} className={`ludoCell${safe?' safe':''}`}>
+          <span className="ludoCellNum">{n}</span>
+          {safe&&<span className="ludoSafeMark">★ safe</span>}
+          {here.length>0&&<span className="ludoTokens">{here.map((pi,k)=><b key={k} className="ludoTok" style={{background:LUDO_COLORS[pi%LUDO_COLORS.length]}}>{(roster[pi].name||'P')[0].toUpperCase()}</b>)}</span>}
+        </div>;
+      })}
+    </div>
+
+    <div className="ludoControls">
+      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
+      <button type="button" className="secondaryBtn" onClick={resetGame}>New Game</button>
+    </div>
+    {events.length>0&&<div className="ludoEvents">{events.map((e,i)=><div key={i} className={i===0?'ludoEvent ludoEventNew':'ludoEvent'}>{e}</div>)}</div>}
+  </div>;
+}
+
+// ── Coach setup screen ───────────────────────────────────────────────────
+function LudoSquashGame({setSession,setScreen}={}){
+  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const usingAttendance=presentsObj.length>=2;
+  const [courtCount,setCourtCount]=useState(1);
+  const [activeCourt,setActiveCourt]=useState(0);
+  const [manualCount,setManualCount]=useState(4);
+  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2','Player 3','Player 4']);
+  const [objectiveGroup,setObjectiveGroup]=useState('Tactical');
+  const [objective,setObjective]=useState(LUDO_OBJECTIVES.Tactical[0]);
+  const [difficulty,setDifficulty]=useState('intermediate');
+  const [captureOn,setCaptureOn]=useState(true);
+  const [mode,setMode]=useState('winner');
+  const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode}),[objectiveGroup,objective,difficulty,captureOn,mode]);
+  const [showSettings,setShowSettings]=useState(false);
+  const [showRationale,setShowRationale]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const [copiedCourt,setCopiedCourt]=useState(null);
+  const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
+  const [handedOff,setHandedOff]=useState(()=>new Set());
+  const [competitionMode,setCompetitionMode]=useState('separate');
+  const [copiedRaceLink,setCopiedRaceLink]=useState(false);
+  const [allocMode,setAllocMode]=useState('auto');
+  const [manualAssign,setManualAssign]=useState({});
+  function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
+
+  async function copyLudoPlayerLink(){
+    setProjecting(true);
+    const url=buildLivePlayerViewUrl();
+    let copied=false;
+    try{ if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; } }catch{}
+    if(copied){ alert('Live player link copied. Open it on the second device — the Ludo board updates live as you tap winners.'); }
+    else{ window.prompt('LIVE Ludo Squash player link — open this on the second device:', url); }
+  }
+  async function copyLudoCourtLink(n){
+    setProjecting(true);
+    const url=buildCourtLink(n,base);
+    try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}
+  }
+  async function copyLudoScoreLink(n){
+    setProjecting(true);
+    const url=buildLudoScoreLink(n,base);
+    setHandedOff(prev=>new Set(prev).add(n));
+    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+  }
+  async function copyLudoRaceLink(){
+    const url=buildLudoRaceLink(base,courtCount);
+    try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
+  }
+  function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
+
+  const allocation=useMemo(()=>{
+    if(usingAttendance){
+      if(allocMode==='manual'){
+        const groups=Array.from({length:courtCount},()=>[]);
+        presentsObj.map(p=>playerDisplayName(p)).forEach(name=>{
+          const ci=manualAssign[name];
+          if(ci!=null&&ci<courtCount)groups[ci].push(name);
+        });
+        return groups;
+      }
+      return rankedBlockCourtAllocation(presentsObj,courtCount);
+    }
+    return [manualNames.slice(0,manualCount)];
+  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount,allocMode,manualAssign]);
+  const unassigned=useMemo(()=>{
+    if(!usingAttendance||allocMode!=='manual')return [];
+    const names=presentsObj.map(p=>playerDisplayName(p));
+    return names.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount);
+  },[usingAttendance,allocMode,presentsObj,manualAssign,courtCount]);
+  const courts=allocation.length;
+  const active=Math.min(activeCourt,courts-1);
+
+  function setManualName(i,v){setManualNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+
+  return <div className="gameCard ludoGame">
+    <LudoStyles/>
+    <div className="categoryTag">Ludo Squash™</div>
+    <h2>Ludo Squash</h2>
+    <p className="mutedText">Race game — movement is earned, not automatic. Win the rally AND achieve the objective to move one piece. First to get all 4 pieces Home wins.</p>
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
+    {showRationale&&<div className="ludoRationale mutedText" style={{background:'#0b1118',border:'1px solid #223044',borderRadius:'10px',padding:'12px 14px'}}>
+      <p>Ludo Squash™ rewards tactical behaviours rather than simply winning points — movement is only earned when the coaching objective is achieved, so players must combine winning the rally with playing the right way.</p>
+      <p><strong>What it trains:</strong></p>
+      <ul>
+        <li><strong>Delayed gratification</strong> — winning alone isn't enough; the right shot pattern is what earns progress.</li>
+        <li><strong>Risk versus reward</strong> — choosing which piece to move under a live capture threat.</li>
+        <li><strong>Shared stakes</strong> — a threatened piece creates a visible, live, next-moment consequence for both players, not an instant automatic outcome.</li>
+        <li><strong>Planning ahead</strong> — several pieces in play at once means genuine tactical sequencing, not just reaction.</li>
+      </ul>
+      <p>Captures are pending, not instant: landing on an opponent's piece threatens it — the threatened player can move it to safety on their next earned move, or the attacker can confirm the capture by earning another move first. Same live-stakes design as the Snakes &amp; Ladders pending-ladder mechanic.</p>
+    </div>}
+
+    <div className="ludoSessionBar">
+      <div>{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
+      {usingAttendance
+        ? <label className="ludoInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        : <label className="ludoInlineField">Players<select value={manualCount} onChange={e=>setManualCount(Number(e.target.value))}>{[2,3,4].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+    </div>
+
+    {!usingAttendance&&<div className="ludoManualNames">
+      <p className="mutedText">Mark players present in the Players screen to auto-split them across courts. For now, name them here (max 4 — Ludo Squash uses 4 piece colours):</p>
+      <div className="ludoNameGrid">{Array.from({length:manualCount}).map((_,i)=><label key={i} className="ludoNameField"><span>P{i+1}</span><input value={manualNames[i]||''} onChange={e=>setManualName(i,e.target.value)}/></label>)}</div>
+    </div>}
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide game settings':'⚙ Objective & difficulty settings'}</button>
+    {showSettings&&<div className="ludoSettings">
+      <label>Objective group<select value={objectiveGroup} onChange={e=>{const g=e.target.value;setObjectiveGroup(g);setObjective(LUDO_OBJECTIVES[g][0]);}}>{Object.keys(LUDO_OBJECTIVES).map(g=><option key={g} value={g}>{g}</option>)}</select></label>
+      <label>Objective<select value={objective} onChange={e=>setObjective(e.target.value)}>{LUDO_OBJECTIVES[objectiveGroup].map(o=><option key={o} value={o}>{o}</option>)}</select></label>
+      <label>Difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="beginner">Beginner — move after every rally win</option><option value="intermediate">Intermediate — move only when objective achieved</option></select></label>
+      <label>Rotation<select value={mode} onChange={e=>setMode(e.target.value)}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
+      <label className="ludoCheck"><input type="checkbox" checked={captureOn} onChange={e=>setCaptureOn(e.target.checked)}/> Capturing on (landing on an opponent's piece threatens it)</label>
+      <p className="mutedText" style={{flexBasis:'100%'}}>Advanced difficulty (Bonus Challenge for 2-square moves) is a future build — not in this version.</p>
+    </div>}
+
+    {courts>1&&<div className="ludoSettings" style={{alignItems:'flex-start',flexDirection:'column'}}>
+      <div>
+        <strong>How should these {courts} courts relate to each other?</strong>
+        <div className="ludoModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={competitionMode==='separate'?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} onClick={()=>setCompetitionMode('separate')}>Separate games per court</button>
+          <button type="button" className={competitionMode==='race'?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} onClick={()=>setCompetitionMode('race')}>Race — same board, one winner overall</button>
+        </div>
+        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent race — unrelated games.':'Every court plays the identical board and objective; whoever gets all 4 pieces Home first on ANY court wins the whole race.'}</p>
+      </div>
+      {usingAttendance&&<div style={{marginTop:'4px'}}>
+        <strong>Court allocation:</strong>
+        <div className="ludoModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={allocMode==='auto'?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level</button>
+          <button type="button" className={allocMode==='manual'?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
+        </div>
+        {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
+            <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
+          </div>)}
+        </div>}
+      </div>}
+    </div>}
+
+    {courts>1&&<div className="ludoCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'ludoCourtTab ludoCourtTabOn':'ludoCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
+
+    {usingAttendance&&<div className="ludoAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'ludoAllocRow ludoAllocRowOn':'ludoAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}{g.length>4?' — ⚠ max 4 players/colours per court, add more courts to split further':''}</span></div>)}</div>}
+
+    {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
+      {courts>1&&handedOff.has(i+1)
+        ? <div className="ludoAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
+        : (g.length>=2?<LudoSquashCourt key={`c-${i}-${g.join('|')}-${objective}-${difficulty}-${captureOn}-${mode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<div className="ludoQueue">Needs at least 2 players on this court.</div>)}
+    </div>)}
+
+    {competitionMode==='race'&&courts>1&&<LudoSquashRaceDisplay host={base} courtCount={courtCount}/>}
+
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+
+    <div className="ludoDisplayBar">
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copyLudoPlayerLink}>COPY PLAYER LINK</button>}
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Ludo Squash',category:'Ludo Squash',format:'Earned-movement board race',duration:15,task:`Win the rally and achieve: ${objective}. If achieved, move one piece.`,scoring:'First player to get all 4 pieces Home wins.',rationale:'Rewards tactical behaviour, not just winning points — a live capture-threat mechanic gives every rally visible, next-moment stakes.',coach:'Debrief piece choices under threat, not just wins/losses.',playerFocus:'Movement is earned, not automatic — play the objective, not just the rally.',layers:['Tactical Behaviour'],rld:4}));alert('Ludo Squash added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
+      {projecting&&courts===1&&<span className="ludoDisplayHint">🟢 Live · board updates as you tap winners</span>}
+    </div>
+
+    {courts>1&&<div className="ludoSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
+      <strong>Court links:</strong>
+      <p className="mutedText" style={{margin:0}}>Give each court's device its own <strong>Scoring link</strong> — that device becomes the one tapping winners for that court. The <strong>View link</strong> is read-only, for a spectator screen or projector.</p>
+      <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
+          <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players){handedOff.has(i+1)?' — scoring handed off':''}</span>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copyLudoScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copyLudoCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
+            {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
+          </div>
+        </div>)}
+      </div>
+      {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyLudoRaceLink}>{copiedRaceLink?'Copied ✓':'Copy Race Display link (projector — combined view, all courts)'}</button>}
+      {projecting&&<span className="ludoDisplayHint">🟢 Live on all {courts} courts · each board updates independently as you tap winners on that court's tab</span>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+    </div>}
+  </div>;
+}
+
+// ── Per-court scoring device (reads room once, becomes sole writer) ───────
+function LudoSquashCourtScorer({court,host}){
+  const roomId=courtRoomId(host,court);
+  const [seedData,setSeedData]=useState(null);
+  const [status,setStatus]=useState('Connecting…');
+  useEffect(()=>{
+    if(seedData)return;
+    let cancelled=false;
+    async function load(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled)return;
+      const p=row&&row.payload&&row.payload.type==='ludosquash'?row.payload:null;
+      if(p){
+        const roster=(p.players||[]).map(x=>({name:x.name,pieces:(x.pieces||[-1,-1,-1,-1]).map(d=>({d}))}));
+        const names=roster.map(x=>x.name);
+        const idxOf=nm=>names.indexOf(nm);
+        const onCourtIdx=(p.onCourt||[]).map(idxOf).filter(i=>i>=0);
+        const queueIdx=(p.queueNames||[]).map(idxOf).filter(i=>i>=0);
+        const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
+        const pendingByIdx={};
+        Object.keys(p.pending||{}).forEach(nm=>{
+          const i=idxOf(nm);
+          if(i<0)return;
+          const list=(p.pending[nm]||[]).map(t=>{
+            const targetIdx=idxOf(t.targetName);
+            if(targetIdx<0)return null;
+            const targetPieceIdx=roster[targetIdx].pieces.findIndex(pc=>ludoPieceSquare(targetIdx,pc.d)===t.atSquare);
+            if(targetPieceIdx<0)return null; // piece already moved on — stale pending, drop it
+            return {targetIdx,targetPieceIdx,atSquare:t.atSquare};
+          }).filter(Boolean);
+          if(list.length)pendingByIdx[i]=list;
+        });
+        const seed={roster,queue:[...onCourtIdx,...queueIdx],winner:winnerIdx>=0?winnerIdx:null,pending:pendingByIdx};
+        setSeedData({seed,names,settings:{objective:p.objective,objectiveGroup:p.objectiveGroup,difficulty:p.difficulty,captureOn:p.captureOn,mode:'winner'},courtLabel:p.courtLabel||('Court '+court)});
+        setStatus('Live');
+      }else setStatus('Waiting for coach device to set up this court…');
+    }
+    load();
+    const id=setInterval(load,1500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[roomId,seedData]);
+
+  if(!seedData){
+    return <div className="ludoDisplayPage"><LudoStyles/>
+      <div className="ludoDisplayHead"><span className="ludoDisplayLive">● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Ludo Squash — Court {court}</h1><p>{status}</p></div>
+    </div>;
+  }
+  return <div className="gameCard ludoGame">
+    <LudoStyles/>
+    <div className="ludoDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ludoDisplayLive">● SCORING — Court {court}</span><h1>Ludo Squash</h1></div>
+    <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court.</p>
+    <LudoSquashCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+  </div>;
+}
+
+// ── Combined read-only Race Display (polls every court's own room) ────────
+function LudoSquashRaceDisplay({host,courtCount}){
+  const [courts,setCourts]=useState([]);
+  useEffect(()=>{
+    let cancelled=false;
+    async function load(){
+      const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(host,i+1))));
+      if(cancelled)return;
+      setCourts(rows.map(row=>row&&row.payload&&row.payload.type==='ludosquash'?row.payload:null));
+    }
+    load();
+    const id=setInterval(load,1400);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[host,courtCount]);
+
+  const anyData=courts.some(Boolean);
+  if(!anyData){
+    return <div className="ludoDisplayPage"><LudoStyles/><div className="ludoDisplayHead"><span className="ludoDisplayLive">● CONNECTING</span><h1>Ludo Squash — Race</h1><p>Waiting for courts to start…</p></div></div>;
+  }
+  const combined=[];
+  courts.forEach((c,ci)=>{
+    if(!c)return;
+    (c.players||[]).forEach(p=>{
+      const homeCount=(p.pieces||[]).filter(d=>d>=LUDO_FINISH).length;
+      const progress=(p.pieces||[]).reduce((s,d)=>s+Math.max(0,d)+1,0);
+      combined.push({name:p.name,court:ci+1,homeCount,progress});
+    });
+  });
+  const sorted=[...combined].sort((a,b)=>b.progress-a.progress);
+  const overallWinner=courts.map((c,i)=>c&&c.winnerName?{name:c.winnerName,court:i+1}:null).find(Boolean);
+
+  return <div className="ludoDisplayPage">
+    <LudoStyles/>
+    <div className="ludoDisplayHead"><span className="ludoDisplayLive">{overallWinner?'🏆 RACE COMPLETE':'● LIVE RACE'}</span><h1>Ludo Squash — Race</h1>
+      {overallWinner?<p>{overallWinner.name} (Court {overallWinner.court}) gets all 4 pieces Home first and wins the race!</p>:<p>First player, on any court, to get all 4 pieces Home wins.</p>}
+    </div>
+    <div className="ludoRaceGrid">
+      {sorted.map((p,i)=><div key={p.name+p.court} className={`ludoRaceRow${(i===0&&!overallWinner)||(overallWinner&&overallWinner.name===p.name)?' lead':''}`}>
+        <span className="ludoRaceName">{i===0&&!overallWinner?'👑 ':''}{p.name}</span>
+        <span className="ludoRaceCourt">Court {p.court}</span>
+        <span className="ludoRaceHome">{p.homeCount}/4 Home</span>
+      </div>)}
+    </div>
+  </div>;
+}
+
+// ── Big-screen single-court Player Display (?liveRoom= route) ─────────────
+function LudoSquashPlayerDisplay({payload={}}){
+  const players=payload.players||[];
+  const onCourt=payload.onCourt||[];
+  const winnerName=payload.winnerName||null;
+  const pending=payload.pending||{};
+  return <div className="ludoDisplayPage">
+    <LudoStyles/>
+    <div className="ludoDisplayHead"><span className="ludoDisplayLive">{winnerName?'🏆 WINNER':'● LIVE'}</span><h1>Ludo Squash{payload.courtLabel?' — '+payload.courtLabel:''}</h1>
+      <p>{winnerName?`${winnerName} gets all 4 pieces Home and wins!`:`Movement earned when: ${payload.objective||''}`}</p>
+    </div>
+    <div className="ludoDisplayGrid">
+      {players.map(p=>{
+        const threats=pending[p.name]?pending[p.name].length:0;
+        return <div key={p.name} className={`ludoDisplayRow${onCourt.includes(p.name)?' on':''}`}>
+          <span className="ludoDisplayName">{p.name}{threats>0?<span className="ludoDisplayThreat"> ⚠ {threats} threatened</span>:null}</span>
+          <div className="ludoDisplayPieces">{(p.pieces||[]).map((d,i)=><span key={i} className={`ludoDisplayChip${d>=LUDO_FINISH?' home':''}`}>{ludoPieceLabel(d)}</span>)}</div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
 function normalizeCourtPayload(row){
   if(!row||!row.payload)return null;
   const p=row.payload,t=p.type;
@@ -15866,6 +16475,11 @@ function normalizeCourtPayload(row){
     game='Snakes & Ladders';players=(p.players||[]).map(x=>({name:x.name,score:x.pos}));
     const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
     leaderName=lead?lead.name:'';target=p.size||50;headline=lead?('Square '+lead.score):'';pct=lead&&target?lead.score/target:null;
+    if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
+  }else if(t==='ludosquash'){
+    game='Ludo Squash';players=(p.players||[]).map(x=>({name:x.name,score:(x.pieces||[]).filter(d=>d>=LUDO_FINISH).length}));
+    const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
+    leaderName=lead?lead.name:'';target=4;headline=lead?(lead.score+'/4 Home'):'';pct=lead?lead.score/4:null;
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
     game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
@@ -17232,6 +17846,8 @@ const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
 const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
 const slRaceParam=useMemo(()=>getSlRaceFromUrl(),[]);
+const ludoScoreParam=useMemo(()=>getLudoScoreFromUrl(),[]);
+const ludoRaceParam=useMemo(()=>getLudoRaceFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -17274,6 +17890,8 @@ if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={ns
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
 if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host}/>;}
 if(slRaceParam){return <SnakesLaddersRaceDisplay host={slRaceParam.host} courtCount={slRaceParam.courtCount}/>;}
+if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} host={ludoScoreParam.host}/>;}
+if(ludoRaceParam){return <LudoSquashRaceDisplay host={ludoRaceParam.host} courtCount={ludoRaceParam.courtCount}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
@@ -17290,6 +17908,7 @@ if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   </div></div></div>;
 }
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='ludosquash'){return <LudoSquashPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
