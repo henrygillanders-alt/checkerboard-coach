@@ -150,7 +150,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v327 New game: Ludo Squash\u2122 (v1) \u2014 earned-movement board race built on the Snakes & Ladders multi-court pattern (Court selector, Auto/Manual allocation, Separate/Race modes, Scoring + View links, Court Monitor integration). Core loop: win the rally AND achieve the coach objective to move one piece; first to get all 4 pieces Home wins. Capturing is PENDING not instant \u2014 landing on an opponent threatens it, confirmed only if the attacker earns their next move first, evaded if the target moves away first \u2014 same live-stakes design as the S&L pending-ladder mechanic. Beginner/Intermediate difficulty shipped; Advanced (Bonus Challenge) deferred to a future build. Piece count, board size, safe-square editing, Team Mode and full stats suite also deferred \u2014 see brief.';
+const APP_VERSION='v328 Ludo Squash: rebuilt the board to look like an actual Ludo board \\u2014 an 8x8 cross layout with 4 colour-coded corner home bases (one per player), a centre Home zone showing pieces finished, and the 24-square ring running between them (same underlying loop/entry/safe-square logic, purely a visual change) on both the coach screen and the big-screen Player Display. Also finished wiring the always-visible rules card started last session (Setup / Player rule / Step-by-step / Scoring / Worked example / coach rationale, all shown up front like Tin War \\u2014 no more collapsed \\u201cWhy this game\\u201d toggle) so the step-by-step is clear to players, not just coaches.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -15888,6 +15888,74 @@ const LUDO_OBJECTIVES={
   Checkerboard:['Complete assigned Checkerboard challenge','Complete Blind Checkerboard challenge','Complete Double Bounce objective']
 };
 
+function ludoRules(settings){
+  const beginner=settings.difficulty==='beginner';
+  const captureOn=settings.captureOn!==false;
+  const principle='Winning the rally isn\u2019t enough on its own \u2014 you only earn a move when you also play the way we\u2019re training. First to get all 4 pieces Home wins.';
+  const setup='Each player starts with 4 pieces waiting in Start. Before you begin, the coach sets the objective and difficulty below \u2014 that\u2019s what earns movement, not just winning the point.';
+  const player=beginner
+    ? 'Win the rally \u2192 move one piece forward one square. Every rally win earns a move.'
+    : `Win the rally AND achieve the objective (${settings.objective}) \u2192 move one piece forward one square. Win the rally but don\u2019t achieve the objective \u2192 no movement, next pair plays.`;
+  const steps=[
+    'Two players play a normal rally.',
+    'Coach calls the winner.',
+    beginner?'Every rally winner earns a move \u2014 no extra check needed.':`Coach checks: did the winner also achieve the objective \u2014 ${settings.objective}?`,
+    beginner?'The winner picks which of their 4 pieces to move forward one square.':'If yes, the winner picks which of their 4 pieces to move forward one square. If no, no movement \u2014 next pair plays.',
+    captureOn?'If that piece lands on an opponent\u2019s piece (not on a \u2605 safe square), the opponent\u2019s piece is threatened \u2014 not captured yet.':null,
+    captureOn?'The threatened player can move that exact piece to safety on their own next earned move. If the threatening player earns another move first, the capture is confirmed and the opponent\u2019s piece is sent back to Start.':null,
+    'First player to get all 4 pieces Home wins.'
+  ].filter(Boolean);
+  const scoring='No points \u2014 progress is entirely pieces on the board. Get all 4 pieces safely Home and you win the game outright.';
+  const example=captureOn
+    ? 'Player A and Player B play a rally. Player A wins and achieves the objective \u2014 they move Piece 2, landing on a square Player B already occupies. Player B\u2019s piece is now threatened, not captured. Next rally, Player B wins but doesn\u2019t achieve the objective \u2014 no movement, so the threatened piece stays exactly where it is. The rally after that, Player A wins and achieves the objective again \u2014 the threat is confirmed, and Player B\u2019s piece is sent back to Start.'
+    : 'Player A and Player B play a rally. Player A wins and achieves the objective \u2014 they move Piece 2 forward one square. Player B then wins the next rally but doesn\u2019t achieve the objective \u2014 no movement, so play passes back. Progress only ever comes from winning AND achieving the objective, never from winning alone.';
+  const rationale={
+    lead:'Ludo Squash\u2122 rewards tactical behaviour rather than simply winning points \u2014 movement is only earned when the coaching objective is achieved, so players must combine winning the rally with playing the right way.',
+    bullets:[
+      ['Delayed gratification','winning alone isn\u2019t enough; the right shot pattern is what earns progress.'],
+      ['Risk versus reward','choosing which piece to move under a live capture threat.'],
+      ['Shared stakes','a threatened piece creates a visible, live, next-moment consequence for both players, not an instant automatic outcome.'],
+      ['Planning ahead','several pieces in play at once means genuine tactical sequencing, not just reaction.']
+    ],
+    note:captureOn?'Captures are pending, not instant: landing on an opponent\u2019s piece threatens it \u2014 the threatened player can move it to safety on their next earned move, or the attacker can confirm the capture by earning another move first. Same live-stakes design as the Snakes & Ladders pending-ladder mechanic.':'Capturing is switched off for this session \u2014 pieces pass each other freely on the shared loop.'
+  };
+  return {principle,setup,player,steps,scoring,example,rationale};
+}
+
+// ── Cross-shaped board layout (visual only — underlying loop/entry/safe-square
+// logic above is unchanged). 8x8 grid: four 3x3 colour corner bases (players
+// 0=TL,1=TR,2=BR,3=BL), four 6-cell arms forming the 24-square ring, 2x2 centre
+// Home zone. Entries (1,7,13,19) land adjacent to each player's own corner.
+const LUDO_RING_COORDS=[[1,4],[1,5],[2,4],[2,5],[3,4],[3,5],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8],[8,5],[8,4],[7,5],[7,4],[6,5],[6,4],[5,3],[5,2],[5,1],[4,3],[4,2],[4,1]];
+const LUDO_CORNER_COORDS=[{r1:1,r2:3,c1:1,c2:3},{r1:1,r2:3,c1:6,c2:8},{r1:6,r2:8,c1:6,c2:8},{r1:6,r2:8,c1:1,c2:3}];
+function LudoBoardGrid({roster}){
+  const startCounts=LUDO_CORNER_COORDS.map((_,pi)=>roster[pi]?roster[pi].pieces.filter(pc=>pc.d<0).length:0);
+  const homeCounts=roster.reduce((s,p)=>s+p.pieces.filter(pc=>pc.d>=LUDO_FINISH).length,0);
+  const ringOccupants=Array.from({length:LUDO_LOOP_LEN},()=>[]);
+  roster.forEach((p,pi)=>p.pieces.forEach(pc=>{
+    const sq=ludoPieceSquare(pi,pc.d);
+    if(sq!=null)ringOccupants[sq-1].push(pi);
+  }));
+  return <div className="ludoBoardGrid">
+    {LUDO_CORNER_COORDS.map((c,pi)=><div key={'corner'+pi} className="ludoCorner" style={{gridRow:`${c.r1} / span ${c.r2-c.r1+1}`,gridColumn:`${c.c1} / span ${c.c2-c.c1+1}`,borderColor:LUDO_COLORS[pi],background:LUDO_COLORS[pi]+'26'}}>
+      <span className="ludoCornerName" style={{color:LUDO_COLORS[pi]}}>{roster[pi]?roster[pi].name:'—'}</span>
+      {roster[pi]&&startCounts[pi]>0&&<span className="ludoCornerStart">{startCounts[pi]} waiting</span>}
+    </div>)}
+    <div className="ludoHomeCenter" style={{gridRow:'4 / span 2',gridColumn:'4 / span 2'}}>
+      <span>🏠</span>{homeCounts>0&&<span className="ludoHomeCount">{homeCounts}</span>}
+    </div>
+    {LUDO_RING_COORDS.map(([r,c],idx)=>{
+      const n=idx+1;
+      const safe=LUDO_SAFE_SQUARES.includes(n);
+      const here=ringOccupants[idx];
+      return <div key={'ring'+n} className={`ludoRingCell${safe?' safe':''}`} style={{gridRow:r,gridColumn:c}}>
+        {safe&&<span className="ludoSafeMark">★</span>}
+        {here.length>0&&<span className="ludoTokens">{here.map((pi,k)=><b key={k} className="ludoTok" style={{background:LUDO_COLORS[pi%LUDO_COLORS.length]}}>{(roster[pi]?.name||'P')[0].toUpperCase()}</b>)}</span>}
+      </div>;
+    })}
+  </div>;
+}
+
 function LudoStyles(){return <style>{`
 .ludoCourt{display:flex;flex-direction:column;gap:12px;}
 .ludoObjective{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;font-size:0.9rem;color:#cdd9e6;}
@@ -15911,18 +15979,36 @@ function LudoStyles(){return <style>{`
 .ludoPieceChip{font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
 .ludoPieceChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
 .ludoPieceChip.stretch{background:#3a2f0f;border-color:#ffd400;color:#ffe9a8;}
-.ludoBoard{display:grid;gap:6px;}
-.ludoCell{aspect-ratio:1/1;background:#1a2942;border:1.5px solid #3a5a8c;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:2px;}
-.ludoCell.safe{background:#12592f;border-color:#38d074;}
-.ludoCellNum{font-size:0.9rem;font-weight:800;color:#f2f7ff;}
-.ludoSafeMark{font-size:0.6rem;color:#8fe3ab;}
-.ludoTokens{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;position:absolute;bottom:2px;}
-.ludoTokens .ludoTok{min-width:1.3rem;height:1.3rem;line-height:1.3rem;font-size:0.65rem;}
+.ludoBoardGrid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:3px;aspect-ratio:1/1;max-width:460px;margin:0 auto;}
+.ludoCorner{border:2px solid;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;overflow:hidden;text-align:center;}
+.ludoCornerName{font-size:0.68rem;font-weight:800;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.ludoCornerStart{font-size:0.6rem;color:#9fb0c2;margin-top:2px;}
+.ludoHomeCenter{display:flex;align-items:center;justify-content:center;gap:3px;font-size:1.3rem;background:#1a2942;border-radius:8px;border:1px solid #3a5a8c;}
+.ludoHomeCount{font-size:0.85rem;font-weight:800;color:#ffe9a8;}
+.ludoRingCell{background:#1a2942;border:1.5px solid #3a5a8c;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;}
+.ludoRingCell.safe{background:#12592f;border-color:#38d074;}
+.ludoRingCell .ludoSafeMark{position:absolute;top:1px;left:2px;font-size:0.5rem;color:#8fe3ab;}
+.ludoRingCell .ludoTokens{display:flex;gap:1px;flex-wrap:wrap;justify-content:center;}
+.ludoRingCell .ludoTok{min-width:1rem;height:1rem;line-height:1rem;font-size:0.5rem;}
 .ludoControls{display:flex;gap:8px;flex-wrap:wrap;}
 .ludoEvents{display:flex;flex-direction:column;gap:4px;}
 .ludoEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
 .ludoEvent.ludoEventNew{color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;}
-.ludoSessionBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;margin:10px 0;}
+.ludoGameInfo{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 18px;margin:12px 0;}
+.ludoPrinciple{color:#ffd479;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
+.ludoInfoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
+.ludoInfoGrid h4{margin:0 0 4px;color:#9cc4ec;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ludoInfoGrid p,.ludoInfoGrid ol{margin:0;color:#cdd9e6;font-size:0.88rem;line-height:1.5;}
+.ludoInfoGrid ol{padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+.ludoExample{background:#0b1118;border:1px dashed #2c4a6e;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+.ludoExample h4{margin:0 0 6px;color:#8fe3ab;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ludoExample p{margin:0;color:#cdd9e6;font-size:0.86rem;line-height:1.5;}
+.ludoRationaleBox{border-top:1px solid #223044;margin-top:12px;padding-top:12px;}
+.ludoRationaleBox p{color:#9fb0c2;font-size:0.86rem;line-height:1.5;margin:0 0 8px;}
+.ludoRationaleBox ul{margin:0 0 8px;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+.ludoRationaleBox li{color:#9fb0c2;font-size:0.86rem;line-height:1.4;}
+.ludoRationaleBox li strong{color:#cdd9e6;}
+
 .ludoInlineField{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:#9fb0c2;}
 .ludoManualNames{margin:10px 0;}
 .ludoNameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px;}
@@ -16137,18 +16223,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       })}
     </div>
 
-    <div className="ludoBoard" style={{gridTemplateColumns:'repeat(6,1fr)'}}>
-      {Array.from({length:LUDO_LOOP_LEN},(_,i)=>i+1).map(n=>{
-        const safe=LUDO_SAFE_SQUARES.includes(n);
-        const here=[];
-        roster.forEach((p,pi)=>p.pieces.forEach((pc)=>{if(ludoPieceSquare(pi,pc.d)===n)here.push(pi);}));
-        return <div key={n} className={`ludoCell${safe?' safe':''}`}>
-          <span className="ludoCellNum">{n}</span>
-          {safe&&<span className="ludoSafeMark">★ safe</span>}
-          {here.length>0&&<span className="ludoTokens">{here.map((pi,k)=><b key={k} className="ludoTok" style={{background:LUDO_COLORS[pi%LUDO_COLORS.length]}}>{(roster[pi].name||'P')[0].toUpperCase()}</b>)}</span>}
-        </div>;
-      })}
-    </div>
+    <LudoBoardGrid roster={roster}/>
 
     <div className="ludoControls">
       <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
@@ -16172,8 +16247,8 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [captureOn,setCaptureOn]=useState(true);
   const [mode,setMode]=useState('winner');
   const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode}),[objectiveGroup,objective,difficulty,captureOn,mode]);
+  const rules=useMemo(()=>ludoRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
-  const [showRationale,setShowRationale]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
@@ -16238,20 +16313,24 @@ function LudoSquashGame({setSession,setScreen}={}){
     <LudoStyles/>
     <div className="categoryTag">Ludo Squash™</div>
     <h2>Ludo Squash</h2>
-    <p className="mutedText">Race game — movement is earned, not automatic. Win the rally AND achieve the objective to move one piece. First to get all 4 pieces Home wins.</p>
+    <p className="mutedText">Race game — movement is earned, not automatic. First to get all 4 pieces Home wins.</p>
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
-    {showRationale&&<div className="ludoRationale mutedText" style={{background:'#0b1118',border:'1px solid #223044',borderRadius:'10px',padding:'12px 14px'}}>
-      <p>Ludo Squash™ rewards tactical behaviours rather than simply winning points — movement is only earned when the coaching objective is achieved, so players must combine winning the rally with playing the right way.</p>
-      <p><strong>What it trains:</strong></p>
-      <ul>
-        <li><strong>Delayed gratification</strong> — winning alone isn't enough; the right shot pattern is what earns progress.</li>
-        <li><strong>Risk versus reward</strong> — choosing which piece to move under a live capture threat.</li>
-        <li><strong>Shared stakes</strong> — a threatened piece creates a visible, live, next-moment consequence for both players, not an instant automatic outcome.</li>
-        <li><strong>Planning ahead</strong> — several pieces in play at once means genuine tactical sequencing, not just reaction.</li>
-      </ul>
-      <p>Captures are pending, not instant: landing on an opponent's piece threatens it — the threatened player can move it to safety on their next earned move, or the attacker can confirm the capture by earning another move first. Same live-stakes design as the Snakes &amp; Ladders pending-ladder mechanic.</p>
-    </div>}
+    <div className="ludoGameInfo">
+      <p className="ludoPrinciple">{rules.principle}</p>
+      <div className="ludoInfoGrid">
+        <div><h4>Setup</h4><p>{rules.setup}</p></div>
+        <div><h4>Player rule</h4><p>{rules.player}</p></div>
+        <div><h4>Step by step</h4><ol>{rules.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
+        <div><h4>Scoring</h4><p>{rules.scoring}</p></div>
+      </div>
+      <div className="ludoExample"><h4>Worked example</h4><p>{rules.example}</p></div>
+      <div className="ludoRationaleBox">
+        <p>{rules.rationale.lead}</p>
+        <p style={{margin:'0 0 4px'}}><strong>What it trains:</strong></p>
+        <ul>{rules.rationale.bullets.map(([t,d],i)=><li key={i}><strong>{t}</strong> — {d}</li>)}</ul>
+        <p style={{marginBottom:0}}>{rules.rationale.note}</p>
+      </div>
+    </div>
 
     <div className="ludoSessionBar">
       <div>{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
@@ -16448,12 +16527,14 @@ function LudoSquashPlayerDisplay({payload={}}){
   const onCourt=payload.onCourt||[];
   const winnerName=payload.winnerName||null;
   const pending=payload.pending||{};
+  const boardRoster=useMemo(()=>players.map(p=>({name:p.name,pieces:(p.pieces||[]).map(d=>({d}))})),[players]);
   return <div className="ludoDisplayPage">
     <LudoStyles/>
     <div className="ludoDisplayHead"><span className="ludoDisplayLive">{winnerName?'🏆 WINNER':'● LIVE'}</span><h1>Ludo Squash{payload.courtLabel?' — '+payload.courtLabel:''}</h1>
       <p>{winnerName?`${winnerName} gets all 4 pieces Home and wins!`:`Movement earned when: ${payload.objective||''}`}</p>
     </div>
-    <div className="ludoDisplayGrid">
+    <LudoBoardGrid roster={boardRoster}/>
+    <div className="ludoDisplayGrid" style={{marginTop:'18px'}}>
       {players.map(p=>{
         const threats=pending[p.name]?pending[p.name].length:0;
         return <div key={p.name} className={`ludoDisplayRow${onCourt.includes(p.name)?' on':''}`}>
