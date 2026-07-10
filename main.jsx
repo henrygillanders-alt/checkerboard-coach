@@ -161,7 +161,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v329 MERGED two diverged v328 branches (this chat\u2019s Snakes & Ladders fixes + the other chat\u2019s Ludo Squash build) \u2014 re-applied the chained-ladder fix and the wake-lock fix (now also covering Ludo Squash\u2019s Court Scorer/Race Display, which had the identical missing-wake-lock bug) on top of the Ludo Squash + finished rules-card work from the other session';
+const APP_VERSION='v330 Added WHY CLA? module (new home tile + WhyCLAScreen: origins/principles/squash application chapter) and fixed versionStamp to render only the short version number instead of the full changelog narrative';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2906,6 +2906,96 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
     </div>
   </div>;
 }
+function WhyCLAScreen({setScreen}){
+  const sections=[
+    {id:'why',title:'Why This Matters',body:[
+      'The Constraints-Led Approach (CLA) is not simply a collection of games or activities. It is a scientific framework explaining how people learn movement skills through interaction with their environment.',
+      'Rather than prescribing one perfect technique, CLA helps players discover effective movement solutions that work under the constantly changing demands of sport.',
+      'Modern CLA has developed over almost one hundred years of scientific research.',
+    ]},
+    {id:'bernstein',title:'Nikolai Bernstein (1896–1966)',body:[
+      'The foundations of CLA began with the work of Russian neuroscientist Nikolai Bernstein.',
+      'Bernstein studied skilled blacksmiths and discovered that expert performers never repeated exactly the same movement twice. Instead, every swing was slightly different, yet consistently successful — what became known as "repetition without repetition."',
+      'Rather than producing identical movements, skilled performers continually adapt to small changes in themselves and the environment. Bernstein proposed that movement emerges through the cooperation of many body systems rather than being controlled by a single central programme.',
+      'His work introduced degrees of freedom, self-organisation, adaptability and functional variability — ideas that became the foundation of modern motor learning.',
+    ]},
+    {id:'gibson',title:'James Gibson (1904–1979)',body:[
+      'American psychologist James J. Gibson transformed how researchers understood perception. Traditional theories suggested the brain builds internal models of the world before acting — Gibson argued instead that performers perceive useful information directly from their environment while they move. This became known as Ecological Psychology.',
+      'Central ideas: perception and action are inseparable; movement continuously updates perception; information exists within the environment; players learn by interacting with that information.',
+      'One of Gibson\'s most influential concepts is the Affordance — an opportunity for action offered by the environment. In squash: an opponent standing deep affords a drop shot; a loose ball affords an attack; a poor return affords a volley; an open back corner affords length.',
+      'Expert players become better because they detect these affordances earlier and more consistently.',
+    ]},
+    {id:'dst',title:'Dynamic Systems Theory',body:[
+      'During the 1970s and 1980s researchers studying physics, biology and mathematics discovered that complex systems often organise themselves without a central controller. Human movement behaves in exactly this way.',
+      'Coordination emerges from interactions between the performer, the task and the environment — a process called self-organisation. Small changes in constraints can produce completely different movement solutions.',
+      'For coaches, this means changing the environment often changes behaviour more effectively than giving more instructions.',
+    ]},
+    {id:'birth',title:'The Birth of the Constraints-Led Approach',body:[
+      'During the 1980s researchers began combining Bernstein\'s work, Gibson\'s ecological psychology and Dynamic Systems Theory into what would become the Constraints-Led Approach.',
+      'Karl Newell (1986) laid the theoretical foundation, proposing that movement emerges through the interaction of three categories of constraints — Performer (height, strength, fatigue, confidence, skill level, motivation), Environmental (court size, temperature, lighting, opponent, crowd, ball speed) and Task (target areas, scoring systems, time limits, equipment, court restrictions, tactical objectives).',
+      'By manipulating constraints, coaches shape behaviour without prescribing movement.',
+      'This theoretical foundation was later formalised into a practical coaching framework — the Constraints-Led Approach — by Keith Davids, Chris Button and Simon Bennett (2008).',
+    ]},
+    {id:'ecodyn',title:'Ecological Dynamics',body:[
+      'Modern CLA is now commonly described as Ecological Dynamics — a field combining Bernstein\'s motor control, Gibson\'s ecological psychology, Dynamic Systems Theory and skill acquisition research.',
+      'It explains how athletes continuously adapt to changing environments. Rather than searching for one perfect technique, players develop adaptable movement solutions — particularly important in sports like squash, where every rally is different.',
+    ]},
+    {id:'research',title:'What Does the Research Show?',body:[
+      'Across many sports, research consistently demonstrates that athletes improve when practice preserves the important information found in competition. Contributors including Keith Davids, Ian Renshaw, Chris Button, Duarte Araújo, Joe Baker and Rob Gray have shown that representative practice environments improve the transfer of learning to competition.',
+      'Evidence supports that CLA can improve decision making, anticipation, adaptability, perception-action coupling, tactical awareness, creativity, skill transfer to competition, retention of learning, and robust performance under pressure.',
+      'Importantly, CLA does not reject technical coaching. Technique is viewed as a functional solution that emerges from solving movement problems — the coach still guides learning, but primarily through designing effective practice environments rather than prescribing every movement.',
+    ]},
+    {id:'vs',title:'Traditional Coaching vs CLA',body:[
+      'Traditional coaching often asks: "How should the player move?"',
+      'CLA asks: "What practice environment will encourage the player to discover an effective movement solution?"',
+      'Instead of building technique first and hoping it transfers to competition, CLA develops technique within representative game situations from the beginning.',
+    ]},
+    {id:'squash',title:'What This Means for Squash',body:[
+      'Squash is an ideal environment for CLA because every rally presents unique problems. The best players are not those who reproduce identical swings — they are those who continually adapt to ball speed, ball height, ball spin, opponent positioning, time pressure, fatigue and tactical opportunities.',
+      'Checkerboard Squash™ has been designed around these principles. Games manipulate constraints to encourage players to perceive information, make decisions and adapt their movements — while still developing high-quality technical actions.',
+      'The goal is not to produce one perfect movement. The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.',
+    ]},
+  ];
+  const takeaways=[
+    'Bernstein showed that expert movement involves "repetition without repetition."',
+    'Gibson demonstrated that perception and action work together.',
+    'Dynamic Systems Theory explains how movement self-organises.',
+    'Newell (1986) laid the theoretical foundation showing how performer, environment and task constraints shape behaviour.',
+    'Davids, Button & Bennett (2008) formalised this into the Constraints-Led Approach as a coaching framework.',
+    'Ecological Dynamics integrates these ideas into a modern theory of skill acquisition.',
+    'CLA uses carefully designed practice environments to develop adaptable, intelligent performers.',
+    'Scientific research supports CLA as an effective framework for learning skills that transfer to real competition.',
+  ];
+  return <div className="page whyCLAPage">
+    <style>{`
+.whyCLAPage .pageTop h1{color:#eaf4fb}
+.whyCLASection{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.whyCLASection h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
+.whyCLASection p{color:#c7d6e2;line-height:1.55;margin:0 0 10px 0}
+.whyCLASection p:last-child{margin-bottom:0}
+.whyCLAQuote{color:#9fd3f0;font-style:italic}
+.whyCLATakeaways{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:18px 20px;margin-top:6px}
+.whyCLATakeaways h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
+.whyCLATakeaways ul{margin:0;padding-left:20px;color:#c7e2cf}
+.whyCLATakeaways li{margin-bottom:7px;line-height:1.5}
+.whyCLAClose{color:#9fb3c4;font-style:italic;margin-top:14px;text-align:center}
+`}</style>
+    <div className="pageTop">
+      <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    {sections.map(s=><div key={s.id} className="whyCLASection">
+      <h2>{s.title}</h2>
+      {s.body.map((p,i)=><p key={i}>{p}</p>)}
+    </div>)}
+    <div className="whyCLATakeaways">
+      <h2>Key Takeaways</h2>
+      <ul>{takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
+    </div>
+    <p className="whyCLAClose">Ultimately, CLA is not a departure from science — it is built upon decades of research into how humans perceive, move and learn.</p>
+  </div>;
+}
+
 function RLDScreen({setScreen}){
   const [activeSection,setActiveSection]=useState('rld');
   const RPAT_DIMS=[
@@ -3588,6 +3678,8 @@ return <div className="homeGrid homeGridV99h52">
 .checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
 `}</style>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
+      <style>{`.whyCLAHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.whyCLAHomeCard h2{color:#eaf4fb!important}.whyCLAHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
+      <button className="homeCard whyCLAHomeCard homeTitleOnly" onClick={()=>setScreen('whyCLA')}><h2>WHY CLA?</h2><span className="homeTileSubtitle">Origins · principles · the science behind Checkerboard</span></button>
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
@@ -18029,7 +18121,7 @@ if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={sessio
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
-<div className="versionStamp" title="Deployed build">{APP_VERSION}</div>
+<div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
   <div onClick={e=>e.stopPropagation()} style={{maxWidth:'620px',margin:'60px auto 0',width:'92%',background:'#0d1722',border:'1px solid #243140',borderRadius:'16px',padding:'14px',boxShadow:'0 20px 60px rgba(0,0,0,0.6)',maxHeight:'82vh',display:'flex',flexDirection:'column'}}>
     <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
@@ -18073,6 +18165,7 @@ return <div>
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
+      {screen==='whyCLA'&&<WhyCLAScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
