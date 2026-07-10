@@ -161,7 +161,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v330 Added WHY CLA? module (new home tile + WhyCLAScreen: origins/principles/squash application chapter) and fixed versionStamp to render only the short version number instead of the full changelog narrative';
+const APP_VERSION='v332 Restored full WHY CLA? content — bullet lists, quotes and the Modern Researchers section that had been condensed into prose in v330; nothing from the original chapter removed, only attribution/terminology corrections kept';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2908,52 +2908,98 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
 }
 function WhyCLAScreen({setScreen}){
   const sections=[
-    {id:'why',title:'Why This Matters',body:[
-      'The Constraints-Led Approach (CLA) is not simply a collection of games or activities. It is a scientific framework explaining how people learn movement skills through interaction with their environment.',
-      'Rather than prescribing one perfect technique, CLA helps players discover effective movement solutions that work under the constantly changing demands of sport.',
-      'Modern CLA has developed over almost one hundred years of scientific research.',
+    {id:'why',title:'Why This Matters',blocks:[
+      {t:'p',v:'The Constraints-Led Approach (CLA) is not simply a collection of games or activities. It is a scientific framework explaining how people learn movement skills through interaction with their environment.'},
+      {t:'p',v:'Rather than prescribing one perfect technique, CLA helps players discover effective movement solutions that work under the constantly changing demands of sport.'},
+      {t:'p',v:'Modern CLA has developed over almost one hundred years of scientific research.'},
     ]},
-    {id:'bernstein',title:'Nikolai Bernstein (1896–1966)',body:[
-      'The foundations of CLA began with the work of Russian neuroscientist Nikolai Bernstein.',
-      'Bernstein studied skilled blacksmiths and discovered that expert performers never repeated exactly the same movement twice. Instead, every swing was slightly different, yet consistently successful — what became known as "repetition without repetition."',
-      'Rather than producing identical movements, skilled performers continually adapt to small changes in themselves and the environment. Bernstein proposed that movement emerges through the cooperation of many body systems rather than being controlled by a single central programme.',
-      'His work introduced degrees of freedom, self-organisation, adaptability and functional variability — ideas that became the foundation of modern motor learning.',
+    {id:'bernstein',title:'Nikolai Bernstein (1896–1966)',blocks:[
+      {t:'p',v:'The foundations of CLA began with the work of Russian neuroscientist Nikolai Bernstein.'},
+      {t:'p',v:'Bernstein studied skilled blacksmiths and discovered that expert performers never repeated exactly the same movement twice. Instead, every swing was slightly different, yet consistently successful.'},
+      {t:'p',v:'This became known as:'},
+      {t:'quote',v:'"Repetition without repetition."'},
+      {t:'p',v:'Rather than producing identical movements, skilled performers continually adapt to small changes in themselves and the environment.'},
+      {t:'p',v:'Bernstein proposed that movement emerges through the cooperation of many body systems rather than being controlled by a single central programme.'},
+      {t:'p',v:'His work introduced ideas including:'},
+      {t:'ul',v:['Degrees of freedom','Self-organisation','Adaptability','Functional variability']},
+      {t:'p',v:'These ideas became the foundation of modern motor learning.'},
     ]},
-    {id:'gibson',title:'James Gibson (1904–1979)',body:[
-      'American psychologist James J. Gibson transformed how researchers understood perception. Traditional theories suggested the brain builds internal models of the world before acting — Gibson argued instead that performers perceive useful information directly from their environment while they move. This became known as Ecological Psychology.',
-      'Central ideas: perception and action are inseparable; movement continuously updates perception; information exists within the environment; players learn by interacting with that information.',
-      'One of Gibson\'s most influential concepts is the Affordance — an opportunity for action offered by the environment. In squash: an opponent standing deep affords a drop shot; a loose ball affords an attack; a poor return affords a volley; an open back corner affords length.',
-      'Expert players become better because they detect these affordances earlier and more consistently.',
+    {id:'gibson',title:'James Gibson (1904–1979)',blocks:[
+      {t:'p',v:'American psychologist James J. Gibson transformed how researchers understood perception.'},
+      {t:'p',v:'Traditional theories suggested that the brain builds internal models of the world before acting.'},
+      {t:'p',v:'Gibson proposed something different.'},
+      {t:'p',v:'He argued that performers perceive useful information directly from their environment while they move.'},
+      {t:'p',v:'This became known as Ecological Psychology.'},
+      {t:'p',v:'Central ideas include:'},
+      {t:'ul',v:['Perception and action are inseparable.','Movement continuously updates perception.','Information exists within the environment.','Players learn by interacting with that information.']},
+      {t:'p',v:"One of Gibson's most influential concepts is Affordances."},
+      {t:'p',v:'An affordance is an opportunity for action offered by the environment.'},
+      {t:'p',v:'Examples in squash include:'},
+      {t:'ul',v:['An opponent standing deep creates an opportunity for a drop shot.','A loose ball affords an attack.','A poor return affords a volley.','An open back corner affords length.']},
+      {t:'p',v:'Expert players become better because they detect these affordances earlier and more consistently.'},
     ]},
-    {id:'dst',title:'Dynamic Systems Theory',body:[
-      'During the 1970s and 1980s researchers studying physics, biology and mathematics discovered that complex systems often organise themselves without a central controller. Human movement behaves in exactly this way.',
-      'Coordination emerges from interactions between the performer, the task and the environment — a process called self-organisation. Small changes in constraints can produce completely different movement solutions.',
-      'For coaches, this means changing the environment often changes behaviour more effectively than giving more instructions.',
+    {id:'dst',title:'Dynamic Systems Theory',blocks:[
+      {t:'p',v:'During the 1970s and 1980s researchers studying physics, biology and mathematics discovered that complex systems often organise themselves without a central controller.'},
+      {t:'p',v:'This became known as Dynamic Systems Theory.'},
+      {t:'p',v:'Human movement behaves in exactly this way.'},
+      {t:'p',v:'Movement is not controlled by a fixed programme.'},
+      {t:'p',v:'Instead, coordination emerges from interactions between:'},
+      {t:'ul',v:['The performer','The task','The environment']},
+      {t:'p',v:'This process is called self-organisation.'},
+      {t:'p',v:'Small changes in constraints can produce completely different movement solutions.'},
+      {t:'p',v:'For coaches, this means changing the environment often changes behaviour more effectively than giving more instructions.'},
     ]},
-    {id:'birth',title:'The Birth of the Constraints-Led Approach',body:[
-      'During the 1980s researchers began combining Bernstein\'s work, Gibson\'s ecological psychology and Dynamic Systems Theory into what would become the Constraints-Led Approach.',
-      'Karl Newell (1986) laid the theoretical foundation, proposing that movement emerges through the interaction of three categories of constraints — Performer (height, strength, fatigue, confidence, skill level, motivation), Environmental (court size, temperature, lighting, opponent, crowd, ball speed) and Task (target areas, scoring systems, time limits, equipment, court restrictions, tactical objectives).',
-      'By manipulating constraints, coaches shape behaviour without prescribing movement.',
-      'This theoretical foundation was later formalised into a practical coaching framework — the Constraints-Led Approach — by Keith Davids, Chris Button and Simon Bennett (2008).',
+    {id:'birth',title:'The Birth of the Constraints-Led Approach',blocks:[
+      {t:'p',v:"During the 1980s researchers began combining Bernstein's work, Gibson's ecological psychology and Dynamic Systems Theory into what would become the Constraints-Led Approach."},
+      {t:'p',v:'Karl Newell (1986) laid the theoretical foundation, proposing that movement emerges through the interaction of three categories of constraints:'},
+      {t:'h3',v:'Performer Constraints'},
+      {t:'p',v:'Characteristics of the individual.'},
+      {t:'ul',v:['Height','Strength','Fatigue','Confidence','Skill level','Motivation']},
+      {t:'h3',v:'Environmental Constraints'},
+      {t:'p',v:'Factors outside the performer.'},
+      {t:'ul',v:['Court size','Temperature','Lighting','Opponent','Crowd','Ball speed']},
+      {t:'h3',v:'Task Constraints'},
+      {t:'p',v:'The rules and objectives created by the coach.'},
+      {t:'ul',v:['Target areas','Scoring systems','Time limits','Equipment','Court restrictions','Tactical objectives']},
+      {t:'p',v:'By manipulating constraints, coaches shape behaviour without prescribing movement.'},
+      {t:'p',v:'This theoretical foundation was later formalised into a practical coaching framework — the Constraints-Led Approach — by Keith Davids, Chris Button and Simon Bennett (2008).'},
     ]},
-    {id:'ecodyn',title:'Ecological Dynamics',body:[
-      'Modern CLA is now commonly described as Ecological Dynamics — a field combining Bernstein\'s motor control, Gibson\'s ecological psychology, Dynamic Systems Theory and skill acquisition research.',
-      'It explains how athletes continuously adapt to changing environments. Rather than searching for one perfect technique, players develop adaptable movement solutions — particularly important in sports like squash, where every rally is different.',
+    {id:'ecodyn',title:'Ecological Dynamics',blocks:[
+      {t:'p',v:'Modern CLA is now commonly described as Ecological Dynamics.'},
+      {t:'p',v:'This field combines:'},
+      {t:'ul',v:["Bernstein's motor control","Gibson's ecological psychology",'Dynamic Systems Theory','Skill acquisition research']},
+      {t:'p',v:'It explains how athletes continuously adapt to changing environments.'},
+      {t:'p',v:'Rather than searching for one perfect technique, players develop adaptable movement solutions.'},
+      {t:'p',v:'This is particularly important in sports like squash where every rally is different.'},
     ]},
-    {id:'research',title:'What Does the Research Show?',body:[
-      'Across many sports, research consistently demonstrates that athletes improve when practice preserves the important information found in competition. Contributors including Keith Davids, Ian Renshaw, Chris Button, Duarte Araújo, Joe Baker and Rob Gray have shown that representative practice environments improve the transfer of learning to competition.',
-      'Evidence supports that CLA can improve decision making, anticipation, adaptability, perception-action coupling, tactical awareness, creativity, skill transfer to competition, retention of learning, and robust performance under pressure.',
-      'Importantly, CLA does not reject technical coaching. Technique is viewed as a functional solution that emerges from solving movement problems — the coach still guides learning, but primarily through designing effective practice environments rather than prescribing every movement.',
+    {id:'researchers',title:'Modern Researchers',blocks:[
+      {t:'p',v:'Many researchers have expanded CLA into practical coaching methods. Important contributors include:'},
+      {t:'ul',v:['Keith Davids','Ian Renshaw','Chris Button','Duarte Araújo','Joe Baker','Rob Gray']},
+      {t:'p',v:'Their research has demonstrated that representative practice environments improve the transfer of learning to competition.'},
     ]},
-    {id:'vs',title:'Traditional Coaching vs CLA',body:[
-      'Traditional coaching often asks: "How should the player move?"',
-      'CLA asks: "What practice environment will encourage the player to discover an effective movement solution?"',
-      'Instead of building technique first and hoping it transfers to competition, CLA develops technique within representative game situations from the beginning.',
+    {id:'research',title:'What Does the Research Show?',blocks:[
+      {t:'p',v:'Across many sports, research consistently demonstrates that athletes improve when practice preserves the important information found in competition.'},
+      {t:'p',v:'Evidence supports that CLA can improve:'},
+      {t:'ul',v:['Decision making','Anticipation','Adaptability','Perception-action coupling','Tactical awareness','Creativity','Skill transfer to competition','Retention of learning','Robust performance under pressure']},
+      {t:'p',v:'Importantly, CLA does not reject technical coaching. Instead, technique is viewed as a functional solution that emerges from solving movement problems.'},
+      {t:'p',v:'The coach still guides learning — but primarily through designing effective practice environments rather than prescribing every movement.'},
     ]},
-    {id:'squash',title:'What This Means for Squash',body:[
-      'Squash is an ideal environment for CLA because every rally presents unique problems. The best players are not those who reproduce identical swings — they are those who continually adapt to ball speed, ball height, ball spin, opponent positioning, time pressure, fatigue and tactical opportunities.',
-      'Checkerboard Squash™ has been designed around these principles. Games manipulate constraints to encourage players to perceive information, make decisions and adapt their movements — while still developing high-quality technical actions.',
-      'The goal is not to produce one perfect movement. The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.',
+    {id:'vs',title:'Traditional Coaching vs CLA',blocks:[
+      {t:'p',v:'Traditional coaching often asks:'},
+      {t:'quote',v:'"How should the player move?"'},
+      {t:'p',v:'CLA asks:'},
+      {t:'quote',v:'"What practice environment will encourage the player to discover an effective movement solution?"'},
+      {t:'p',v:'Instead of building technique first and hoping it transfers to competition, CLA develops technique within representative game situations from the beginning.'},
+    ]},
+    {id:'squash',title:'What This Means for Squash',blocks:[
+      {t:'p',v:'Squash is an ideal environment for CLA because every rally presents unique problems.'},
+      {t:'p',v:'The best players are not those who reproduce identical swings.'},
+      {t:'p',v:'They are those who continually adapt to:'},
+      {t:'ul',v:['Ball speed','Ball height','Ball spin','Opponent positioning','Time pressure','Fatigue','Tactical opportunities']},
+      {t:'p',v:'Checkerboard Squash™ has been designed around these principles.'},
+      {t:'p',v:'Games manipulate constraints to encourage players to perceive information, make decisions and adapt their movements while still developing high-quality technical actions.'},
+      {t:'p',v:'The goal is not to produce one perfect movement.'},
+      {t:'p',v:'The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.'},
     ]},
   ];
   const takeaways=[
@@ -2966,14 +3012,25 @@ function WhyCLAScreen({setScreen}){
     'CLA uses carefully designed practice environments to develop adaptable, intelligent performers.',
     'Scientific research supports CLA as an effective framework for learning skills that transfer to real competition.',
   ];
+  const renderBlock=(b,i)=>{
+    if(b.t==='p')return <p key={i}>{b.v}</p>;
+    if(b.t==='quote')return <p key={i} className="whyCLAQuote">{b.v}</p>;
+    if(b.t==='h3')return <h3 key={i}>{b.v}</h3>;
+    if(b.t==='ul')return <ul key={i}>{b.v.map((li,j)=><li key={j}>{li}</li>)}</ul>;
+    return null;
+  };
   return <div className="page whyCLAPage">
     <style>{`
 .whyCLAPage .pageTop h1{color:#eaf4fb}
 .whyCLASection{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:16px 18px;margin-bottom:12px}
 .whyCLASection h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
+.whyCLASection h3{color:#9fd3f0;margin:14px 0 6px 0;font-size:0.92rem}
 .whyCLASection p{color:#c7d6e2;line-height:1.55;margin:0 0 10px 0}
 .whyCLASection p:last-child{margin-bottom:0}
-.whyCLAQuote{color:#9fd3f0;font-style:italic}
+.whyCLASection ul{margin:0 0 10px 0;padding-left:20px;color:#c7d6e2}
+.whyCLASection ul:last-child{margin-bottom:0}
+.whyCLASection li{margin-bottom:5px;line-height:1.5}
+.whyCLAQuote{color:#9fd3f0;font-style:italic;font-weight:700}
 .whyCLATakeaways{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:18px 20px;margin-top:6px}
 .whyCLATakeaways h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
 .whyCLATakeaways ul{margin:0;padding-left:20px;color:#c7e2cf}
@@ -2986,7 +3043,7 @@ function WhyCLAScreen({setScreen}){
     </div>
     {sections.map(s=><div key={s.id} className="whyCLASection">
       <h2>{s.title}</h2>
-      {s.body.map((p,i)=><p key={i}>{p}</p>)}
+      {s.blocks.map((b,i)=>renderBlock(b,i))}
     </div>)}
     <div className="whyCLATakeaways">
       <h2>Key Takeaways</h2>
@@ -3662,6 +3719,12 @@ return <div className="homeGrid homeGridV99h52">
       <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
+      <style>{`.whyCLABrandTile{color:#eaf4fb!important}.whyCLABrandTile strong{color:#eaf4fb!important}.whyCLABrandTile p{color:#9fb3c4!important;margin:0}`}</style>
+      <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('whyCLA')}>
+        <strong>WHY CLA?</strong>
+        <p>Origins · principles · the science behind Checkerboard — the reason this app exists</p>
+      </button>
+
       <button className="homeRLDTile homeBrandCard" onClick={()=>setScreen('rld')}>
         <div className="homeRLDLeft">
           <strong>RLD & Challenge Point Framework</strong>
@@ -3678,8 +3741,6 @@ return <div className="homeGrid homeGridV99h52">
 .checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
 `}</style>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
-      <style>{`.whyCLAHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.whyCLAHomeCard h2{color:#eaf4fb!important}.whyCLAHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
-      <button className="homeCard whyCLAHomeCard homeTitleOnly" onClick={()=>setScreen('whyCLA')}><h2>WHY CLA?</h2><span className="homeTileSubtitle">Origins · principles · the science behind Checkerboard</span></button>
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
