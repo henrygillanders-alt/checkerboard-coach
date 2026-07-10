@@ -30,6 +30,17 @@ function getLudoScoreFromUrl(){try{const p=new URLSearchParams(window.location.s
 function buildLudoScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ludoScore=${n}&host=${encodeURIComponent(base)}`;}
 function getLudoRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ludoRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildLudoRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ludoRace=${encodeURIComponent(base)}&n=${courtCount}`;}
+function useWakeLock(){
+  useEffect(()=>{
+    if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
+    let lock=null;
+    async function acquire(){try{if(document.visibilityState==='visible'){lock=await navigator.wakeLock.request('screen');}}catch{}}
+    acquire();
+    const onVis=()=>{if(document.visibilityState==='visible')acquire();};
+    document.addEventListener('visibilitychange',onVis);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
+  },[]);
+}
 function getPersistentLiveRoomId(){
   const cm=getCourtModeFromUrl();
   if(cm&&cm.host&&cm.court)return courtRoomId(cm.host,cm.court);
@@ -150,7 +161,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v328 Ludo Squash: rebuilt the board to look like an actual Ludo board \\u2014 an 8x8 cross layout with 4 colour-coded corner home bases (one per player), a centre Home zone showing pieces finished, and the 24-square ring running between them (same underlying loop/entry/safe-square logic, purely a visual change) on both the coach screen and the big-screen Player Display. Also finished wiring the always-visible rules card started last session (Setup / Player rule / Step-by-step / Scoring / Worked example / coach rationale, all shown up front like Tin War \\u2014 no more collapsed \\u201cWhy this game\\u201d toggle) so the step-by-step is clear to players, not just coaches.';
+const APP_VERSION='v329 MERGED two diverged v328 branches (this chat\u2019s Snakes & Ladders fixes + the other chat\u2019s Ludo Squash build) \u2014 re-applied the chained-ladder fix and the wake-lock fix (now also covering Ludo Squash\u2019s Court Scorer/Race Display, which had the identical missing-wake-lock bug) on top of the Ludo Squash + finished rules-card work from the other session';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -8839,6 +8850,12 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       reveal.add(fromSquare);
       W.pos=top;
       delete nextPending[wIdx];
+      if(board.ladders[top]){
+        const nextTop=board.ladders[top];
+        ev.push(`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next, forfeits it if they lose next`);
+        reveal.add(top);
+        nextPending[wIdx]=nextTop;
+      }
     }else{
       const moved=applyMove(W.pos+1);
       if(board.ladders[moved]){
@@ -16422,6 +16439,7 @@ function LudoSquashGame({setSession,setScreen}={}){
 
 // ── Per-court scoring device (reads room once, becomes sole writer) ───────
 function LudoSquashCourtScorer({court,host}){
+  useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
   const [status,setStatus]=useState('Connecting…');
@@ -16477,6 +16495,7 @@ function LudoSquashCourtScorer({court,host}){
 
 // ── Combined read-only Race Display (polls every court's own room) ────────
 function LudoSquashRaceDisplay({host,courtCount}){
+  useWakeLock();
   const [courts,setCourts]=useState([]);
   useEffect(()=>{
     let cancelled=false;
@@ -16603,6 +16622,7 @@ function CMStyles(){return <style>{`
 `}</style>;}
 
 function CourtMonitor({setScreen}){
+  useWakeLock();
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   const [count,setCount]=useState(()=>{try{return Number(localStorage.getItem('cbCourtCount'))||3;}catch{return 3;}});
   const [rooms,setRooms]=useState({});
@@ -16759,6 +16779,7 @@ function CourtStandingsPlayerDisplay({payload={}}){
 }
 
 function SnakesLaddersCourtScorer({court,host}){
+  useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
   const [status,setStatus]=useState('Connecting…');
@@ -16809,6 +16830,7 @@ function SnakesLaddersCourtScorer({court,host}){
 }
 
 function SnakesLaddersRaceDisplay({host,courtCount}){
+  useWakeLock();
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff','#6bd6d6','#ff8a80'];
   const [courts,setCourts]=useState([]); // array of payloads, one per court, index 0 = Court 1
   useEffect(()=>{
@@ -16889,6 +16911,7 @@ function SnakesLaddersRaceDisplay({host,courtCount}){
 }
 
 function NsslCourtScorer({court,host}){
+  useWakeLock();
   const roomId=nsslCourtRoomId(host,court);
   const [clock,setClock]=useState(null);
   const [periods,setPeriods]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
@@ -17061,6 +17084,7 @@ function NsslCourtScorer({court,host}){
 }
 
 function NsslMasterDisplay({host}){
+  useWakeLock();
   const [clock,setClock]=useState(null);
   const [courts,setCourts]=useState({});
   const [status,setStatus]=useState('Connecting…');
