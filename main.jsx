@@ -167,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v337 New game: Noughts & Crosses Squash (v1) - claim squares by winning rallies and completing challenges, first to three in a row wins the board. Team-based winner-stays-on rotation (your own doubles-style pattern: winning side stays on court, losing side rotates their next player in from the bench) rather than a flat queue. Three challenge pools (Shot-Type/Checkerboard/CLA Outcome), every square individually tappable to swap in a pool challenge or type a custom one, global Require-challenge toggle (off = pure win-the-rally-claim-any-square), three scoring modes. Built on the S&L multi-court pattern: Multiplayer/Separate (independent boards per court) and One-board-3-court/Race (identical challenge layout forced across courts via fixedBoard, independent per-court state, combined read-only Race Display) - never a single shared board written to by multiple devices. UniversalDBHandicapPanel and UniversalTinHeightPanel included from the start. Also restored the Ludo Squash room-namespacing fix (Court Monitor now checks base/-ludo/-nc room spaces per court) which had regressed since v329 - Ludo and S&L court rooms were colliding again under the shared default room id.';
+const APP_VERSION='v339 Three fixes: (1) Fixed 10 numeric settings inputs across the app (S&L snake/ladder drop-rise/streak cap, session duration, bonus square, NSL min player mins) that could not be cleared and retyped on iPhone - the old pattern snapped straight back to the fallback value the instant the field went empty, so you could never delete a digit to type a new one; fields can now go empty while typing and only restore a sensible default on blur. (2) Fixed Ludo Squash and Noughts & Crosses boards running off screen in landscape - board sizing is now viewport-height-aware (min of vw/vh) so it can never exceed the visible screen regardless of orientation; also restored the Ludo board size increase from v329 which had regressed back to 460px, and pushed the Player Display variant much larger again (near-full-width, min(96vw,80vh)) with proportionally scaling text. (3) Added an ATL Count selector to the ATL/BTL builder (both instances), alongside the existing BTL Count - defaults to \"All shots\" (the classic full tape-drill baseline), with 0-3 options letting the coach reduce how many shots must clear the line so low drives can be trained instead of a habitual lob.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -254,6 +254,7 @@ const CB_CODES=[
 
 const ATL_LISTS={
 btlCount:['0 BTL shots','1 BTL shot','2 BTL shots','3 BTL shots'],
+atlCount:['All shots','3 ATL shots','2 ATL shots','1 ATL shot','0 ATL shots'],
 side:['Both sides','Right side only','Left side only'],
 consecutive:['No','Yes'],
 shotChoice:['Any shot','Straight drop','Crosscourt drop','Boast','Drive','Kill'],
@@ -261,7 +262,7 @@ method:['Players choice','Must be volley','No volley'],
 cbRef:CB_CODES
 };
 
-const DEFAULT_ATL={btlCount:'0 BTL shots',side:'Both sides',consecutive:'No',shot1:'Any shot',shot2:'Any shot',shot3:'Any shot',method1:'Players choice',method2:'Players choice',method3:'Players choice',cbRef:'None'};
+const DEFAULT_ATL={btlCount:'0 BTL shots',atlCount:'All shots',side:'Both sides',consecutive:'No',shot1:'Any shot',shot2:'Any shot',shot3:'Any shot',method1:'Players choice',method2:'Players choice',method3:'Players choice',cbRef:'None'};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -406,6 +407,13 @@ return `BTL shot ${index+1}: ${shot.toLowerCase()} (${method})`;
 const sideText=options.side==='Both sides'?'Applies on both sides.':`Applies on ${options.side.replace(' only','').toLowerCase()}.`;
 const consecutiveText=count<=1?'':options.consecutive==='Yes'?'BTL shots must be consecutive.':'BTL shots do not need to be consecutive.';
 const cbText=options.cbRef==='None'?'':` Checkerboard reference: ${options.cbRef}.`;
+const atlCountRaw=options.atlCount||'All shots';
+const atlNum=atlCountRaw==='All shots'?null:(atlCountRaw.startsWith('0')?0:atlCountRaw.startsWith('1')?1:atlCountRaw.startsWith('2')?2:3);
+const atlText=atlNum===null
+  ? 'All shots must clear the ATL line — the classic ATL/BTL tape drill — except the compulsory BTL shot(s) above.'
+  : atlNum===0
+    ? 'No shots are required above the line this session — play low drives freely instead of defaulting to a lob.'
+    : `Only ${atlNum} shot${atlNum===1?'':'s'} must clear the ATL line; the rest are free, so bring in low drives rather than defaulting to a lob.`;
 const rationale=['slows the rally problem down enough for players to attend to balance, vision and better information pick-up'];
 if(count===0)rationale.push('uses the cue without forcing a low shot');
 if(count===1)rationale.push('adds one simple low-trajectory decision inside live play');
@@ -418,13 +426,14 @@ if(shots.includes('Boast'))rationale.push('links BTL control to angle creation a
 if(shots.includes('Straight drop'))rationale.push('connects BTL control to front-court pressure');
 if(shots.includes('Crosscourt drop'))rationale.push('changes the opponent’s movement problem');
 if(options.cbRef!=='None')rationale.push(`${options.cbRef} gives a clear spatial reference`);
+if(atlNum!==null)rationale.push(atlNum===0?'removes the compulsory high-line requirement entirely so low, attacking drives replace the habitual lob':'reduces the compulsory high-line requirement so low, attacking drives get trained alongside it rather than defaulting to a lob');
 const autoLayers=[];
 if(methods.includes('Must be volley'))autoLayers.push('Volley Finish');
 if(shots.includes('Boast')||shots.includes('Crosscourt drop'))autoLayers.push('Blind Finish');
 if(count>=2)autoLayers.push('Opponent Off T');
 if(options.cbRef!=='None')autoLayers.push('CB Code');
 autoLayers.push('Clean Winner');
-return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:`${options.btlCount}: ${shotText}. ${consecutiveText} ${sideText}${cbText}`,rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
+return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:`${options.btlCount}: ${shotText}. ${atlText} ${consecutiveText} ${sideText}${cbText}`,rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
 }
 
 function standardGames(){
@@ -4654,6 +4663,7 @@ return <div>
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
 <div className="atlOptionsGrid">
 <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
+<label>ATL Count<select value={atl.atlCount} onChange={e=>setAtlOption('atlCount',e.target.value)}>{ATL_LISTS.atlCount.map(option=><option key={option}>{option}</option>)}</select></label>
 <label>Side<select value={atl.side} onChange={e=>setAtlOption('side',e.target.value)}>{ATL_LISTS.side.map(option=><option key={option}>{option}</option>)}</select></label>
 <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
 <label>CB Ref<select value={atl.cbRef} onChange={e=>setAtlOption('cbRef',e.target.value)}>{ATL_LISTS.cbRef.map(option=><option key={option}>{option}</option>)}</select></label>
@@ -5593,6 +5603,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
       <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
       <div className="atlOptionsGrid">
         <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
+        <label>ATL Count<select value={atl.atlCount} onChange={e=>setAtlOption('atlCount',e.target.value)}>{ATL_LISTS.atlCount.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
         {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
@@ -9195,7 +9206,7 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
     <div className="editorGrid">
       <label>Title<input value={draft.title||''} onChange={e=>update('title',e.target.value)}/></label>
       <label>Category<input value={draft.category||''} onChange={e=>update('category',e.target.value)}/></label>
-      <label>Duration<input type="number" min="0" value={draft.duration||0} onChange={e=>update('duration',Number(e.target.value)||0)}/></label>
+      <label>Duration<input type="number" min="0" value={draft.duration===''||draft.duration==null?'':draft.duration} onChange={e=>{const v=e.target.value;update('duration',v===''?'':Number(v));}} onBlur={e=>{if(e.target.value==='')update('duration',0);}}/></label>
       <label>Format<input value={draft.format||''} onChange={e=>update('format',e.target.value)}/></label>
       <label>RLD level<select value={draft.rld===''||draft.rld===undefined?4:Number(draft.rld)} onChange={e=>update('rld',Number(e.target.value))}>{RLD_LEVELS.map(r=><option key={r.level} value={r.level}>{r.short} — {r.label}</option>)}</select></label>
       <label>Checkerboard Code<select value={draft.cbCode||'None'} onChange={e=>update('cbCode',e.target.value)}>{CB_CODES.map(code=><option key={code} value={code}>{code}</option>)}</select></label>
@@ -9533,14 +9544,14 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
     {showSettings&&<div className="slSettings">
       <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
-      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>setSettings(s=>({...s,streakCap:Number(e.target.value)||0}))}/></label>}
+      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,streakCap:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,streakCap:0}));}}/></label>}
       <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
-      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>setSettings(s=>({...s,snakeCount:Number(e.target.value)||0}))}/></label>
-      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>setSettings(s=>({...s,ladderCount:Number(e.target.value)||0}))}/></label>
-      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,min:Number(e.target.value)||1}}))}/></label>
-      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>setSettings(s=>({...s,drop:{...s.drop,max:Number(e.target.value)||1}}))}/></label>
-      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,min:Number(e.target.value)||1}}))}/></label>
-      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>setSettings(s=>({...s,rise:{...s.rise,max:Number(e.target.value)||1}}))}/></label>
+      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,snakeCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,snakeCount:0}));}}/></label>
+      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,ladderCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,ladderCount:0}));}}/></label>
+      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,min:1}}));}}/></label>
+      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,max:1}}));}}/></label>
+      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,min:1}}));}}/></label>
+      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,max:1}}));}}/></label>
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
       <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
@@ -9616,7 +9627,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <p className="mutedText">Pure Snakes &amp; Ladders by default. Add a bonus to award extra squares when a finish or constraint is met on a winning rally — the coach taps the bonus chip before the winner.</p>
       {(settings.bonuses||[]).map((b,i)=><div key={i} className="slBonusEdit"><span className="slBonusName">{b.label}</span><label>+<input type="number" min="0" max="9" value={b.squares} onChange={e=>setBonusSquares(i,e.target.value)}/> sq</label><button type="button" className="slBonusRemove" onClick={()=>removeBonus(i)}>✕</button></div>)}
       <div className="slBonusQuick">{COMPLETION_CONSTRAINTS.map(c=><button type="button" key={c} className="meChip" disabled={(settings.bonuses||[]).some(b=>b.label===c)} onClick={()=>addBonus(c,2)}>+ {c}</button>)}</div>
-      <div className="overlayCustomAdd"><input value={bonusLabel} onChange={e=>setBonusLabel(e.target.value)} placeholder="Custom constraint" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addBonus(bonusLabel,bonusSq);}}}/><input type="number" min="0" max="9" value={bonusSq} onChange={e=>setBonusSq(Number(e.target.value)||0)} style={{maxWidth:'70px'}}/><button type="button" className="meChip meChipOn" onClick={()=>addBonus(bonusLabel,bonusSq)}>+ Add</button></div>
+      <div className="overlayCustomAdd"><input value={bonusLabel} onChange={e=>setBonusLabel(e.target.value)} placeholder="Custom constraint" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addBonus(bonusLabel,bonusSq);}}}/><input type="number" min="0" max="9" value={bonusSq} onChange={e=>{const v=e.target.value;setBonusSq(v===''?'':Number(v));}} onBlur={e=>{if(e.target.value==='')setBonusSq(0);}} style={{maxWidth:'70px'}}/><button type="button" className="meChip meChipOn" onClick={()=>addBonus(bonusLabel,bonusSq)}>+ Add</button></div>
     </div>}
 
     <UniversalDBHandicapPanel/>
@@ -13424,7 +13435,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:'10px',marginTop:'12px',flexWrap:'wrap'}}>
                     <span style={{fontWeight:700,color:'#bcd6f5'}}>Min court time / player:</span>
-                    <input type="number" min="0" step="0.5" value={nslMinPlayerMins} onChange={e=>setNslMinPlayerMins(Math.max(0,Number(e.target.value)||0))} style={{width:'80px',padding:'8px',borderRadius:'8px',border:'1px solid #2c3c4e',background:'#0f1822',color:'#eaf4fb',fontWeight:700}}/>
+                    <input type="number" min="0" step="0.5" value={nslMinPlayerMins} onChange={e=>{const v=e.target.value;setNslMinPlayerMins(v===''?'':Number(v));}} onBlur={e=>{if(e.target.value==='')setNslMinPlayerMins(0);}} style={{width:'80px',padding:'8px',borderRadius:'8px',border:'1px solid #2c3c4e',background:'#0f1822',color:'#eaf4fb',fontWeight:700}}/>
                     <span style={{color:'#8aa0b6'}}>min {Number(nslMinPlayerMins)>0?'· court devices warn captains when a player is under':'· 0 = off'}</span>
                   </div>
                   <p className="overlayExplain" style={{marginTop:'6px'}}>Court devices also count substitutions per period (2 · 2 · 4) and warn captains at the limit.</p>
@@ -16403,7 +16414,7 @@ function ludoRules(settings){
 // Home zone. Entries (1,7,13,19) land adjacent to each player's own corner.
 const LUDO_RING_COORDS=[[1,4],[1,5],[2,4],[2,5],[3,4],[3,5],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8],[8,5],[8,4],[7,5],[7,4],[6,5],[6,4],[5,3],[5,2],[5,1],[4,3],[4,2],[4,1]];
 const LUDO_CORNER_COORDS=[{r1:1,r2:3,c1:1,c2:3},{r1:1,r2:3,c1:6,c2:8},{r1:6,r2:8,c1:6,c2:8},{r1:6,r2:8,c1:1,c2:3}];
-function LudoBoardGrid({roster}){
+function LudoBoardGrid({roster,variant='coach'}){
   const startCounts=LUDO_CORNER_COORDS.map((_,pi)=>roster[pi]?roster[pi].pieces.filter(pc=>pc.d<0).length:0);
   const homeCounts=roster.reduce((s,p)=>s+p.pieces.filter(pc=>pc.d>=LUDO_FINISH).length,0);
   const ringOccupants=Array.from({length:LUDO_LOOP_LEN},()=>[]);
@@ -16411,7 +16422,7 @@ function LudoBoardGrid({roster}){
     const sq=ludoPieceSquare(pi,pc.d);
     if(sq!=null)ringOccupants[sq-1].push(pi);
   }));
-  return <div className="ludoBoardGrid">
+  return <div className={`ludoBoardGrid ludoBoardGrid-${variant}`}>
     {LUDO_CORNER_COORDS.map((c,pi)=><div key={'corner'+pi} className="ludoCorner" style={{gridRow:`${c.r1} / span ${c.r2-c.r1+1}`,gridColumn:`${c.c1} / span ${c.c2-c.c1+1}`,borderColor:LUDO_COLORS[pi],background:LUDO_COLORS[pi]+'26'}}>
       <span className="ludoCornerName" style={{color:LUDO_COLORS[pi]}}>{roster[pi]?roster[pi].name:'—'}</span>
       {roster[pi]&&startCounts[pi]>0&&<span className="ludoCornerStart">{startCounts[pi]} waiting</span>}
@@ -16454,17 +16465,19 @@ function LudoStyles(){return <style>{`
 .ludoPieceChip{font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
 .ludoPieceChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
 .ludoPieceChip.stretch{background:#3a2f0f;border-color:#ffd400;color:#ffe9a8;}
-.ludoBoardGrid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:3px;aspect-ratio:1/1;max-width:460px;margin:0 auto;}
-.ludoCorner{border:2px solid;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;overflow:hidden;text-align:center;}
-.ludoCornerName{font-size:0.68rem;font-weight:800;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
-.ludoCornerStart{font-size:0.6rem;color:#9fb0c2;margin-top:2px;}
-.ludoHomeCenter{display:flex;align-items:center;justify-content:center;gap:3px;font-size:1.3rem;background:#1a2942;border-radius:8px;border:1px solid #3a5a8c;}
-.ludoHomeCount{font-size:0.85rem;font-weight:800;color:#ffe9a8;}
+.ludoBoardGrid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:clamp(3px,0.6vw,7px);aspect-ratio:1/1;margin:0 auto;box-sizing:border-box;}
+.ludoBoardGrid-coach{width:min(94vw,58vh,640px);}
+.ludoBoardGrid-display{width:min(96vw,80vh,1100px);}
+.ludoCorner{border:2px solid;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(2px,0.6vw,8px);overflow:hidden;text-align:center;}
+.ludoCornerName{font-size:clamp(0.68rem,1.8vw,1.15rem);font-weight:800;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+.ludoCornerStart{font-size:clamp(0.58rem,1.2vw,0.85rem);color:#9fb0c2;margin-top:2px;}
+.ludoHomeCenter{display:flex;align-items:center;justify-content:center;gap:clamp(3px,0.6vw,8px);font-size:clamp(1.3rem,3vw,2.4rem);background:#1a2942;border-radius:8px;border:1px solid #3a5a8c;}
+.ludoHomeCount{font-size:clamp(0.85rem,1.8vw,1.4rem);font-weight:800;color:#ffe9a8;}
 .ludoRingCell{background:#1a2942;border:1.5px solid #3a5a8c;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;}
 .ludoRingCell.safe{background:#12592f;border-color:#38d074;}
-.ludoRingCell .ludoSafeMark{position:absolute;top:1px;left:2px;font-size:0.5rem;color:#8fe3ab;}
+.ludoRingCell .ludoSafeMark{position:absolute;top:1px;left:2px;font-size:clamp(0.5rem,1vw,0.8rem);color:#8fe3ab;}
 .ludoRingCell .ludoTokens{display:flex;gap:1px;flex-wrap:wrap;justify-content:center;}
-.ludoRingCell .ludoTok{min-width:1rem;height:1rem;line-height:1rem;font-size:0.5rem;}
+.ludoRingCell .ludoTok{min-width:clamp(1rem,2.2vw,1.7rem);height:clamp(1rem,2.2vw,1.7rem);line-height:clamp(1rem,2.2vw,1.7rem);font-size:clamp(0.5rem,1vw,0.8rem);}
 .ludoControls{display:flex;gap:8px;flex-wrap:wrap;}
 .ludoEvents{display:flex;flex-direction:column;gap:4px;}
 .ludoEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
@@ -16504,7 +16517,7 @@ function LudoStyles(){return <style>{`
 .ludoAllocRowOn{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
 .ludoDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
 .ludoDisplayHint{font-size:0.8rem;color:#8fe3ab;}
-.ludoDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;}
+.ludoDisplayPage{padding:24px 16px;max-width:1200px;margin:0 auto;text-align:center;overflow-x:hidden;box-sizing:border-box;}
 .ludoDisplayHead{margin-bottom:18px;}
 .ludoDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
 .ludoDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
@@ -17010,7 +17023,7 @@ function LudoSquashPlayerDisplay({payload={}}){
     <div className="ludoDisplayHead"><span className="ludoDisplayLive">{winnerName?'🏆 WINNER':'● LIVE'}</span><h1>Ludo Squash{payload.courtLabel?' — '+payload.courtLabel:''}</h1>
       <p>{winnerName?`${winnerName} gets all 4 pieces Home and wins!`:`Movement earned when: ${payload.objective||''}`}</p>
     </div>
-    <LudoBoardGrid roster={boardRoster}/>
+    <LudoBoardGrid roster={boardRoster} variant="display"/>
     <div className="ludoDisplayGrid" style={{marginTop:'18px'}}>
       {players.map(p=>{
         const threats=pending[p.name]?pending[p.name].length:0;
@@ -17024,14 +17037,23 @@ function LudoSquashPlayerDisplay({payload={}}){
 }
 
 // ── NOUGHTS & CROSSES SQUASH™ — v1 build ────────────────────────────────
-const NC_MODES={
-  'Shot-Type':['Straight drive','Crosscourt drive','Drop','Volley','Boast','Lob','Kill','Win after length','Win from T recovery'],
-  'Checkerboard':['5-4','6-3','7-2','8-1','5-3','6-4','7-3','8-4','Coach choice'],
-  'CLA Outcome':['Move opponent twice','Force weak return','Create front-court space','Win after recovering T','Win after opponent leaves T','Turn defence into attack','Hold and send opponent wrong way','Win with disguise','Win after pressure phase']
+const NC_MODES=['Technical','Tactical','Mental Performance','Diversity','Checkerboard'];
+const NC_FAMILIES={
+  'Technical':TECHNICAL_OVERLAYS.map(o=>o.title),
+  'Tactical':TACTICAL_OVERLAYS.map(o=>o.title),
+  'Mental Performance':UNIVERSAL_MENTAL_OVERLAYS.map(o=>o.name),
+  'Diversity':DIVERSITY_OVERLAYS.map(o=>o.title),
+  'Checkerboard':ATL_CB_ZONE_OPTIONS.filter(z=>z!=='None'&&z!=='Custom')
 };
+function ncBoardPicks(mode){
+  const pool=NC_FAMILIES[mode]||[];
+  const picks=pool.slice(0,9);
+  while(picks.length<9)picks.push('Coach choice');
+  return picks;
+}
 const NC_WIN_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 function ncShuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function ncDefaultBoard(mode){return NC_MODES[mode].map(c=>({challenge:c,claimedBy:null}));}
+function ncDefaultBoard(mode){return ncBoardPicks(mode).map(c=>({challenge:c,claimedBy:null}));}
 function ncBoardFromChallenges(list){return list.map(c=>({challenge:c,claimedBy:null}));}
 function ncCheckWin(board){
   for(const line of NC_WIN_LINES){
@@ -17116,7 +17138,7 @@ function NcStyles(){return <style>{`
 .ncScoreRow{display:flex;gap:10px;justify-content:center;font-size:0.95rem;font-weight:800;}
 .ncScoreRow .a{color:#7fbfff;}
 .ncScoreRow .b{color:#ff9de4;}
-.ncBoard{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px;margin:0 auto;}
+.ncBoard{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(90vw,60vh,420px);margin:0 auto;box-sizing:border-box;}
 .ncCell{aspect-ratio:1/1;background:#1a2942;border:2px solid #3a5a8c;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:6px;text-align:center;cursor:pointer;}
 .ncCell.claimedA{background:#12203a;border-color:#2f9bff;}
 .ncCell.claimedB{background:#3a1f2e;border-color:#ff5fd0;}
@@ -17152,7 +17174,7 @@ function NcStyles(){return <style>{`
 .ncCourtTabOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;}
 .ncDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
 .ncDisplayHint{font-size:0.8rem;color:#8fe3ab;}
-.ncDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;}
+.ncDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;overflow-x:hidden;box-sizing:border-box;}
 .ncDisplayHead{margin-bottom:18px;}
 .ncDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
 .ncDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
@@ -17180,7 +17202,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   function snapshot(){return {board:board.map(s=>({...s})),rosterA:[...rosterA],rosterB:[...rosterB],scoreA,scoreB,winner,events:[...events]};}
   function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setPendingRally(null);return prev.slice(0,-1);});}
   function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);}
-  function randomiseBoard(){if(board.some(s=>s.claimedBy))return;setBoard(prev=>ncShuffle(prev.map(s=>s.challenge)).map(c=>({challenge:c,claimedBy:null})));}
+  function randomiseBoard(){if(board.some(s=>s.claimedBy))return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setBoard(picks.map(c=>({challenge:c,claimedBy:null})));}
 
   function startRally(side){
     if(winner||pendingRally)return;
@@ -17296,7 +17318,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
         {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
         {!sq.claimedBy&&editingIdx!==i&&<span className="ncCellEdit">\u270e</span>}
         {editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
-          {NC_MODES[mode].map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
+          {(NC_FAMILIES[mode]||[]).map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
           <input className="ncEditInput" value={customText} onChange={e=>setCustomText(e.target.value)} placeholder="Custom..." onKeyDown={e=>{if(e.key==='Enter'&&customText.trim())applyEdit(i,customText.trim());}}/>
           <button type="button" className="ncEditOpt" onClick={()=>customText.trim()&&applyEdit(i,customText.trim())}>Save custom</button>
           <button type="button" className="ncEditOpt" onClick={()=>setEditingIdx(null)}>Cancel</button>
@@ -17325,7 +17347,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [manualCountB,setManualCountB]=useState(1);
   const [manualRosterA,setManualRosterA]=useState(['Player 1']);
   const [manualRosterB,setManualRosterB]=useState(['Player 2']);
-  const [mode,setMode]=useState('Shot-Type');
+  const [mode,setMode]=useState('Technical');
   const [requireChallenge,setRequireChallenge]=useState(true);
   const [scoringMode,setScoringMode]=useState('boardWin');
   const settings=useMemo(()=>({requireChallenge,scoringMode}),[requireChallenge,scoringMode]);
@@ -17340,12 +17362,12 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [allocMode,setAllocMode]=useState('auto');
   const [manualAssign,setManualAssign]=useState({});
   const [teamAssignOverrides,setTeamAssignOverrides]=useState({});
-  const [fixedChallenges,setFixedChallenges]=useState(()=>NC_MODES['Shot-Type']);
+  const [fixedChallenges,setFixedChallenges]=useState(()=>ncBoardPicks('Technical'));
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getNcLiveRoomId();},[]);
 
-  useEffect(()=>{setFixedChallenges(NC_MODES[mode]);},[mode]);
-  function randomiseSharedBoard(){setFixedChallenges(prev=>ncShuffle(NC_MODES[mode]));}
+  useEffect(()=>{setFixedChallenges(ncBoardPicks(mode));},[mode]);
+  function randomiseSharedBoard(){const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setFixedChallenges(picks);}
 
   async function copyNcPlayerLink(){
     setProjecting(true);
@@ -17453,7 +17475,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide game settings':'\u2699 Mode, challenge & scoring settings'}</button>
     {showSettings&&<div className="ncSettings">
-      <label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{Object.keys(NC_MODES).map(m=><option key={m} value={m}>{m}</option>)}</select></label>
+      <label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{NC_MODES.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
       <label>Scoring<select value={scoringMode} onChange={e=>setScoringMode(e.target.value)}><option value="boardWin">Board Win only</option><option value="rallyBoard">Rally + Board points</option><option value="pressure">Pressure Mode</option></select></label>
       <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require challenge to claim (off = win the rally, claim any square)</label>
       <p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one \u2014 works in every mode.</p>
