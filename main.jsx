@@ -161,7 +161,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v334 Merged second chat\u2019s evolution/animal-examples essay into WHY CLA? \u2014 reframed as a "have you ever wondered" intro (learning before coaches, nature\u2019s classroom, evolution and learning, murmurations vs military parade, squash as complex adaptive system) followed by all existing content, nothing removed from either source';
+const APP_VERSION='v335 WHY CLA? rebuilt as two full unedited essays back to back (nothing merged or paraphrased) — evolution/animal-examples essay first with hook framing, divider, then the full formal science chapter; short one-line "beat" sentences now styled distinctly, quotes are large pull-quotes, sections numbered';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2908,58 +2908,201 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
 }
 function WhyCLAScreen({setScreen}){
   const sections=[
-    {id:'wonder',title:'Have You Ever Wondered Why?',blocks:[
+    {id:'d2-intro',title:'Introduction',blocks:[
+      {t:'p',v:'The Constraints-Led Approach (CLA) is one of the most influential frameworks in modern skill acquisition.'},
+      {t:'p',v:'It is not simply a collection of games or a different style of coaching. It is built on decades of research from neuroscience, psychology, ecology, biomechanics and systems science.'},
+      {t:'p',v:'At its heart, CLA asks a simple question:'},
+      {t:'quote',v:'How do humans naturally learn to move and become skilful?'},
+      {t:'p',v:'To answer this, we need to look far beyond sport coaching.'},
+    ]},
+    {id:'d2-before-coaches',title:'Learning Before Coaches Existed',blocks:[
       {t:'p',v:'Have you ever noticed that no two rallies in squash are ever quite the same — that the best players never seem to hit the same shot in exactly the same way twice, yet still find a way to win the point?'},
-      {t:'p',v:'Have you ever wondered why a lion cub is never given a lesson in stalking, yet grows up to hunt effectively? Or why young wolves wrestle, young dolphins play with objects, and young birds repeatedly practise flying and landing?'},
-      {t:'p',v:'For almost all of human history there were no coaches, no textbooks, and for much of our evolution, no complex spoken language.'},
+      {t:'p',v:'For almost all of human history there were no coaches, no textbooks and, for much of our evolution, no complex spoken language.'},
       {t:'p',v:'Yet early humans learned to:'},
       {t:'ul',v:['Walk and run over difficult terrain.','Throw with remarkable accuracy.','Climb trees and rocks.','Hunt moving animals.','Avoid predators.','Fight.','Cooperate in groups.']},
-      {t:'p',v:'Nobody explained the perfect throwing technique. Nobody demonstrated the ideal running style.'},
-      {t:'p',v:'Instead, movement developed through continuous interaction with the environment. People explored. They experimented. They watched others. They copied successful behaviours. They adapted after failure.'},
-      {t:'p',v:'The environment itself became the teacher. This is one of the central ideas behind CLA.'},
+      {t:'beat',v:'Nobody explained the perfect throwing technique.'},
+      {t:'beat',v:'Nobody demonstrated the ideal running style.'},
+      {t:'p',v:'Instead, movement developed through continuous interaction with the environment.'},
+      {t:'beat',v:'People explored.'},
+      {t:'beat',v:'They experimented.'},
+      {t:'beat',v:'They watched others.'},
+      {t:'beat',v:'They copied successful behaviours.'},
+      {t:'beat',v:'They adapted after failure.'},
+      {t:'p',v:'The environment itself became the teacher.'},
+      {t:'p',v:'This is one of the central ideas behind CLA.'},
     ]},
-    {id:'nature',title:"Nature's Classroom",blocks:[
-      {t:'p',v:'Humans are not unique. Throughout the natural world, animals develop extraordinary movement skills without formal instruction.'},
-      {t:'p',v:'A lion cub is never given a lesson on stalking. Instead it:'},
+    {id:'d2-nature',title:"Nature's Classroom",blocks:[
+      {t:'p',v:'Have you ever wondered how a lion cub learns to hunt without a single lesson?'},
+      {t:'p',v:'Humans are not unique.'},
+      {t:'p',v:'Throughout the natural world, animals develop extraordinary movement skills without formal instruction.'},
+      {t:'p',v:'A lion cub is never given a lesson on stalking.'},
+      {t:'p',v:'Instead it:'},
       {t:'ul',v:['Watches adult lions.','Chases siblings.','Misses.','Falls.','Adjusts.','Tries again.']},
-      {t:'p',v:'Play gradually develops into hunting. Young wolves wrestle. Young dolphins play with objects. Young birds repeatedly practise flying and landing.'},
-      {t:'p',v:'These activities are not random. They provide opportunities to explore movement, solve problems and adapt to increasingly challenging situations. Play is nature\'s practice environment.'},
+      {t:'p',v:'Play gradually develops into hunting.'},
+      {t:'beat',v:'Young wolves wrestle.'},
+      {t:'beat',v:'Young dolphins play with objects.'},
+      {t:'beat',v:'Young birds repeatedly practise flying and landing.'},
+      {t:'p',v:'These activities are not random. They provide opportunities to explore movement, solve problems and adapt to increasingly challenging situations.'},
+      {t:'p',v:"Play is nature's practice environment."},
       {t:'p',v:'Similarly, CLA uses carefully designed games to create opportunities for players to discover effective movement solutions rather than simply copying instructions.'},
     ]},
-    {id:'evolutionlearning',title:'Evolution and Learning',blocks:[
-      {t:'p',v:'Evolution provides another useful way of thinking about CLA. Evolution does not design the perfect organism from the beginning. Instead: variation occurs, the environment creates challenges, successful adaptations survive, less effective adaptations gradually disappear.'},
-      {t:'p',v:'Learning works in much the same way. Players explore different movement solutions. Some are successful. Others fail. Successful solutions become stronger because they repeatedly solve the problem.'},
-      {t:'p',v:'This does not mean every player develops identical techniques. Different players often discover different movement solutions that are equally effective.'},
+    {id:'d2-evolution',title:'Evolution and Learning',blocks:[
+      {t:'p',v:'Evolution provides another useful way of thinking about CLA.'},
+      {t:'p',v:'Evolution does not design the perfect organism from the beginning.'},
+      {t:'p',v:'Instead:'},
+      {t:'beat',v:'Variation occurs.'},
+      {t:'beat',v:'The environment creates challenges.'},
+      {t:'beat',v:'Successful adaptations survive.'},
+      {t:'beat',v:'Less effective adaptations gradually disappear.'},
+      {t:'p',v:'Learning works in much the same way.'},
+      {t:'beat',v:'Players explore different movement solutions.'},
+      {t:'beat',v:'Some are successful.'},
+      {t:'beat',v:'Others fail.'},
+      {t:'p',v:'Successful solutions become stronger because they repeatedly solve the problem.'},
+      {t:'p',v:'This does not mean every player develops identical techniques.'},
+      {t:'p',v:'Different players often discover different movement solutions that are equally effective.'},
       {t:'p',v:'Think of elite squash players. Their swings, movement patterns and styles all differ slightly, yet they consistently solve the same performance problems.'},
       {t:'p',v:'Bernstein described this beautifully as:'},
       {t:'quote',v:'"Repetition without repetition."'},
       {t:'p',v:'Every movement is slightly different because every situation is slightly different.'},
     ]},
-    {id:'order',title:'Order Without Instructions',blocks:[
-      {t:'p',v:'Have you ever wondered how a school of fish, a swarm of bees, an ant colony, a human crowd or a flock of birds can move with such extraordinary coordination — without anyone in charge?'},
-      {t:'p',v:'One of the most spectacular examples is the murmuration of starlings. Thousands of birds appear to move as one. There is no leader directing the flock. Each bird simply responds to the movement of nearby birds.'},
-      {t:'p',v:'From these simple local interactions, beautiful coordinated movement emerges. Scientists call this self-organisation. Complex behaviour emerges naturally without detailed instructions.'},
+    {id:'d2-order',title:'Order Without Instructions',blocks:[
+      {t:'p',v:'Have you ever wondered how a school of fish, or a flock of birds, can move as one — with no leader calling the shots?'},
+      {t:'p',v:'Nature is full of examples where highly organised behaviour emerges without anyone being in charge.'},
+      {t:'p',v:'Consider:'},
+      {t:'ul',v:['Schools of fish.','Swarms of bees.','Ant colonies.','Human crowds.','Flocks of birds.']},
+      {t:'p',v:'One of the most spectacular examples is the murmuration of starlings.'},
+      {t:'beat',v:'Thousands of birds appear to move as one.'},
+      {t:'beat',v:'There is no leader directing the flock.'},
+      {t:'beat',v:'Each bird simply responds to the movement of nearby birds.'},
+      {t:'p',v:'From these simple local interactions, beautiful coordinated movement emerges.'},
+      {t:'p',v:'Scientists call this self-organisation.'},
+      {t:'p',v:'Complex behaviour emerges naturally without detailed instructions.'},
     ]},
-    {id:'parade',title:'A Murmuration or a Military Parade?',blocks:[
-      {t:'p',v:'Now compare a murmuration with a military parade. In a parade, every movement is prescribed, every step is rehearsed, and uniformity is the objective.'},
-      {t:'p',v:'Imagine one soldier in the middle suddenly turns and marches in the opposite direction. The surrounding soldiers continue following their predetermined instructions. The mistake disrupts the formation because the system depends on everyone performing exactly the same movement.'},
-      {t:'p',v:'A murmuration works differently. If one bird changes direction because of a gust of wind or a nearby predator, surrounding birds immediately adapt. The flock reorganises almost instantly. The overall pattern remains stable because the system is flexible rather than rigid.'},
-      {t:'p',v:'Many sporting environments resemble a murmuration far more than a military parade. Players must continuously adapt to changing information rather than simply reproduce rehearsed movements.'},
+    {id:'d2-parade',title:'A Murmuration or a Military Parade?',blocks:[
+      {t:'p',v:'Now compare a murmuration with a military parade.'},
+      {t:'p',v:'In a parade:'},
+      {t:'ul',v:['Every movement is prescribed.','Every step is rehearsed.','Uniformity is the objective.']},
+      {t:'p',v:'Imagine one soldier in the middle suddenly turns and marches in the opposite direction.'},
+      {t:'p',v:'The surrounding soldiers continue following their predetermined instructions.'},
+      {t:'p',v:'The mistake disrupts the formation because the system depends on everyone performing exactly the same movement.'},
+      {t:'p',v:'A murmuration works differently.'},
+      {t:'p',v:'If one bird changes direction because of a gust of wind or a nearby predator, surrounding birds immediately adapt.'},
+      {t:'p',v:'The flock reorganises almost instantly.'},
+      {t:'p',v:'The overall pattern remains stable because the system is flexible rather than rigid.'},
+      {t:'p',v:'Many sporting environments resemble a murmuration far more than a military parade.'},
+      {t:'p',v:'Players must continuously adapt to changing information rather than simply reproduce rehearsed movements.'},
     ]},
-    {id:'complexsystem',title:'Squash Is a Complex Adaptive System',blocks:[
-      {t:'p',v:'No squash rally is ever repeated exactly. Every shot changes the environment — the ball travels at a different speed, it bounces differently, the opponent moves, time pressure changes, fatigue changes, opportunities appear and disappear.'},
-      {t:'p',v:'Elite players are constantly adapting. Their movement is not memorised. It continuously reorganises in response to changing information. This is exactly what CLA is designed to develop.'},
+    {id:'d2-complexsystem',title:'Squash Is a Complex Adaptive System',blocks:[
+      {t:'p',v:'No squash rally is ever repeated exactly.'},
+      {t:'beat',v:'Every shot changes the environment.'},
+      {t:'beat',v:'The ball travels at a different speed.'},
+      {t:'beat',v:'It bounces differently.'},
+      {t:'beat',v:'The opponent moves.'},
+      {t:'beat',v:'Time pressure changes.'},
+      {t:'beat',v:'Fatigue changes.'},
+      {t:'beat',v:'Opportunities appear and disappear.'},
+      {t:'p',v:'Elite players are constantly adapting.'},
+      {t:'p',v:'Their movement is not memorised.'},
+      {t:'p',v:'It continuously reorganises in response to changing information.'},
+      {t:'p',v:'This is exactly what CLA is designed to develop.'},
     ]},
-    {id:'why',title:'Why This Matters',blocks:[
-      {t:'p',v:'The Constraints-Led Approach (CLA) is not simply a collection of games or activities, nor a different style of coaching. It is a scientific framework — built on decades of research from neuroscience, psychology, ecology, biomechanics and systems science — explaining how people learn movement skills through interaction with their environment.'},
-      {t:'p',v:'At its heart, CLA asks a simple question: how do humans naturally learn to move and become skilful? To answer this, we need to look far beyond sport coaching.'},
+    {id:'d2-bernstein',title:'Nikolai Bernstein — Movement Is Never Repeated',blocks:[
+      {t:'p',v:'The foundations of CLA began with the work of Russian neuroscientist Nikolai Bernstein.'},
+      {t:'p',v:'Studying skilled blacksmiths, Bernstein discovered that expert performers never produced exactly the same movement twice.'},
+      {t:'beat',v:'Every hammer strike differed slightly.'},
+      {t:'beat',v:'Yet every strike achieved the same goal.'},
+      {t:'p',v:'He concluded that skilled movement is adaptable rather than identical.'},
+      {t:'p',v:'His famous phrase,'},
+      {t:'quote',v:'"Repetition without repetition,"'},
+      {t:'p',v:'remains one of the cornerstones of modern motor learning.'},
+      {t:'p',v:'Bernstein also introduced ideas such as self-organisation, adaptability and functional variability.'},
+    ]},
+    {id:'d2-gibson',title:'James Gibson — Perception Drives Action',blocks:[
+      {t:'p',v:'American psychologist James J. Gibson transformed our understanding of perception.'},
+      {t:'p',v:'Rather than seeing perception and movement as separate processes, Gibson argued they are tightly linked.'},
+      {t:'p',v:'Players move because they detect opportunities for action within their environment.'},
+      {t:'p',v:'He called these opportunities affordances.'},
+      {t:'p',v:'In squash, affordances might include:'},
+      {t:'ul',v:['An opponent stranded in the back court.','A loose ball inviting a volley.','Space in the front corner for a drop shot.','An opening for a crosscourt attack.']},
+      {t:'p',v:'Expert players are not simply faster movers.'},
+      {t:'p',v:'They are better at recognising these opportunities.'},
+    ]},
+    {id:'d2-dst',title:'Dynamic Systems Theory',blocks:[
+      {t:'p',v:'Scientists studying physics, biology and mathematics discovered that many complex systems organise themselves without central control.'},
+      {t:'p',v:'Human movement behaves in the same way.'},
+      {t:'p',v:'Movement emerges through interaction between:'},
+      {t:'ul',v:['The performer.','The environment.','The task.']},
+      {t:'p',v:'This became known as Dynamic Systems Theory.'},
+      {t:'p',v:'Small changes in any of these areas can produce entirely different movement solutions.'},
+    ]},
+    {id:'d2-newell',title:'Karl Newell — The Constraints Framework',blocks:[
+      {t:'p',v:'Building on Bernstein and Gibson, Karl Newell proposed that behaviour emerges from the interaction of three types of constraints.'},
+      {t:'h3',v:'Performer Constraints'},
+      {t:'p',v:'Characteristics of the individual.'},
+      {t:'p',v:'Examples include:'},
+      {t:'ul',v:['Height','Strength','Fatigue','Skill level','Confidence','Motivation']},
+      {t:'h3',v:'Environmental Constraints'},
+      {t:'p',v:'Everything surrounding the performer.'},
+      {t:'p',v:'Examples include:'},
+      {t:'ul',v:['Court dimensions','Temperature','Lighting','Opponent behaviour','Ball characteristics']},
+      {t:'h3',v:'Task Constraints'},
+      {t:'p',v:'The practice conditions created by the coach.'},
+      {t:'p',v:'Examples include:'},
+      {t:'ul',v:['Rules','Targets','Scoring systems','Equipment','Time restrictions','Tactical objectives']},
+      {t:'p',v:'By manipulating constraints, coaches guide learning without prescribing every movement.'},
+    ]},
+    {id:'d2-ecodyn',title:'Ecological Dynamics',blocks:[
+      {t:'p',v:'Today these ideas have developed into a field known as Ecological Dynamics.'},
+      {t:'p',v:'Leading researchers such as Keith Davids, Ian Renshaw, Chris Button, Duarte Araújo and Rob Gray have shown how representative practice environments help athletes develop skills that transfer effectively to competition.'},
+    ]},
+    {id:'d2-research',title:'What Does the Research Tell Us?',blocks:[
+      {t:'p',v:'Research across many sports consistently shows that representative practice environments can improve:'},
+      {t:'ul',v:['Decision making.','Anticipation.','Adaptability.','Tactical awareness.','Creativity.','Perception-action coupling.','Transfer of learning to competition.','Long-term retention of skills.']},
+      {t:'p',v:'Importantly, CLA does not reject technical coaching.'},
+      {t:'p',v:'Instead, it views technique as a functional solution that emerges while solving meaningful performance problems.'},
+      {t:'p',v:'The coach still teaches.'},
+      {t:'p',v:'The difference is how learning is guided.'},
+    ]},
+    {id:'d2-forcoaches',title:'What This Means for Coaches',blocks:[
+      {t:'p',v:'Traditional coaching often asks:'},
+      {t:'quote',v:'"How should the player move?"'},
+      {t:'p',v:'CLA asks:'},
+      {t:'quote',v:'"What practice environment will encourage the player to discover an effective movement solution?"'},
+      {t:'p',v:'Instead of correcting every movement, the coach designs practice so that effective behaviours naturally emerge.'},
+      {t:'p',v:'The player remains an active problem solver rather than a passive recipient of instructions.'},
+    ]},
+    {id:'d2-checkerboard',title:'Checkerboard Squash™',blocks:[
+      {t:'p',v:'Checkerboard Squash™ has been designed around these scientific principles.'},
+      {t:'p',v:'Every game manipulates constraints to encourage players to:'},
+      {t:'ul',v:['Perceive important information.','Make decisions.','Solve tactical problems.','Adapt their movement.','Develop robust techniques that transfer to competition.']},
+      {t:'p',v:'Rather than rehearsing isolated movements, players learn within representative game situations that closely resemble the demands of real squash.'},
+    ]},
+  ];
+  const d2Takeaways=[
+    'Humans learned complex movement long before formal coaching or language.',
+    'Young animals develop skill through exploration, observation and play.',
+    'Evolution favours adaptable solutions rather than one perfect movement.',
+    'Nature shows that complex behaviour can emerge through self-organisation.',
+    'Squash is a dynamic environment that demands constant adaptation.',
+    'Bernstein showed that expert movement is "repetition without repetition."',
+    'Gibson demonstrated that perception and action are inseparable.',
+    'Newell explained how performer, environmental and task constraints shape behaviour.',
+    'Ecological Dynamics integrates these ideas into a modern framework for skill acquisition.',
+    'The Constraints-Led Approach applies these principles by designing practice environments that help players discover effective, adaptable and transferable movement solutions.',
+  ];
+  const d2Close='Ultimately, CLA is not simply another coaching philosophy. It reflects how humans and other animals have learned to move, adapt and become skilful throughout evolutionary history. By aligning coaching with these natural learning processes, CLA seeks to develop players who are not only technically capable, but also perceptive, adaptable and effective under the ever-changing demands of competition.';
+
+  const sections2=[
+    {id:'d1-why',title:'Why This Matters',blocks:[
+      {t:'p',v:'The Constraints-Led Approach (CLA) is not simply a collection of games or activities. It is a scientific framework explaining how people learn movement skills through interaction with their environment.'},
       {t:'p',v:'Rather than prescribing one perfect technique, CLA helps players discover effective movement solutions that work under the constantly changing demands of sport.'},
       {t:'p',v:'Modern CLA has developed over almost one hundred years of scientific research.'},
     ]},
-    {id:'bernstein',title:'Nikolai Bernstein (1896–1966) — Movement Is Never Repeated',blocks:[
+    {id:'d1-bernstein',title:'Nikolai Bernstein (1896–1966)',blocks:[
       {t:'p',v:'The foundations of CLA began with the work of Russian neuroscientist Nikolai Bernstein.'},
-      {t:'p',v:'Bernstein studied skilled blacksmiths and discovered that expert performers never repeated exactly the same movement twice. Every hammer strike differed slightly, yet every strike achieved the same goal.'},
-      {t:'p',v:'He concluded that skilled movement is adaptable rather than identical. This became known as:'},
+      {t:'p',v:'Bernstein studied skilled blacksmiths and discovered that expert performers never repeated exactly the same movement twice. Instead, every swing was slightly different, yet consistently successful.'},
+      {t:'p',v:'This became known as:'},
       {t:'quote',v:'"Repetition without repetition."'},
       {t:'p',v:'Rather than producing identical movements, skilled performers continually adapt to small changes in themselves and the environment.'},
       {t:'p',v:'Bernstein proposed that movement emerges through the cooperation of many body systems rather than being controlled by a single central programme.'},
@@ -2967,92 +3110,99 @@ function WhyCLAScreen({setScreen}){
       {t:'ul',v:['Degrees of freedom','Self-organisation','Adaptability','Functional variability']},
       {t:'p',v:'These ideas became the foundation of modern motor learning.'},
     ]},
-    {id:'gibson',title:'James Gibson (1904–1979) — Perception Drives Action',blocks:[
+    {id:'d1-gibson',title:'James Gibson (1904–1979)',blocks:[
       {t:'p',v:'American psychologist James J. Gibson transformed how researchers understood perception.'},
       {t:'p',v:'Traditional theories suggested that the brain builds internal models of the world before acting.'},
-      {t:'p',v:'Gibson proposed something different: rather than seeing perception and movement as separate processes, he argued they are tightly linked. Players move because they detect opportunities for action within their environment.'},
-      {t:'p',v:'This became known as Ecological Psychology. Central ideas include:'},
+      {t:'p',v:'Gibson proposed something different.'},
+      {t:'p',v:'He argued that performers perceive useful information directly from their environment while they move.'},
+      {t:'p',v:'This became known as Ecological Psychology.'},
+      {t:'p',v:'Central ideas include:'},
       {t:'ul',v:['Perception and action are inseparable.','Movement continuously updates perception.','Information exists within the environment.','Players learn by interacting with that information.']},
-      {t:'p',v:"One of Gibson's most influential concepts is Affordances — an opportunity for action offered by the environment."},
+      {t:'p',v:"One of Gibson's most influential concepts is Affordances."},
+      {t:'p',v:'An affordance is an opportunity for action offered by the environment.'},
       {t:'p',v:'Examples in squash include:'},
-      {t:'ul',v:['An opponent standing deep, or stranded in the back court, creates an opportunity for a drop shot or attack.','A loose ball invites an attack or a volley.','A poor return affords a volley.','An open back corner affords length.','Space in the front corner creates an opportunity for a drop shot.','An opening appears for a crosscourt attack.']},
-      {t:'p',v:'Expert players are not simply faster movers — they become better because they detect these affordances earlier and more consistently.'},
+      {t:'ul',v:['An opponent standing deep creates an opportunity for a drop shot.','A loose ball affords an attack.','A poor return affords a volley.','An open back corner affords length.']},
+      {t:'p',v:'Expert players become better because they detect these affordances earlier and more consistently.'},
     ]},
-    {id:'dst',title:'Dynamic Systems Theory',blocks:[
+    {id:'d1-dst',title:'Dynamic Systems Theory',blocks:[
       {t:'p',v:'During the 1970s and 1980s researchers studying physics, biology and mathematics discovered that complex systems often organise themselves without a central controller.'},
-      {t:'p',v:'This became known as Dynamic Systems Theory. Human movement behaves in exactly this way.'},
-      {t:'p',v:'Movement is not controlled by a fixed programme. Instead, coordination emerges from interactions between:'},
+      {t:'p',v:'This became known as Dynamic Systems Theory.'},
+      {t:'p',v:'Human movement behaves in exactly this way.'},
+      {t:'p',v:'Movement is not controlled by a fixed programme.'},
+      {t:'p',v:'Instead, coordination emerges from interactions between:'},
       {t:'ul',v:['The performer','The task','The environment']},
-      {t:'p',v:'This process is called self-organisation. Small changes in any of these areas — or in constraints more broadly — can produce completely different movement solutions.'},
+      {t:'p',v:'This process is called self-organisation.'},
+      {t:'p',v:'Small changes in constraints can produce completely different movement solutions.'},
       {t:'p',v:'For coaches, this means changing the environment often changes behaviour more effectively than giving more instructions.'},
     ]},
-    {id:'birth',title:'Karl Newell — The Constraints Framework',blocks:[
+    {id:'d1-birth',title:'The Birth of the Constraints-Led Approach',blocks:[
       {t:'p',v:"During the 1980s researchers began combining Bernstein's work, Gibson's ecological psychology and Dynamic Systems Theory into what would become the Constraints-Led Approach."},
-      {t:'p',v:'Karl Newell (1986) laid the theoretical foundation, proposing that behaviour emerges through the interaction of three categories of constraints:'},
+      {t:'p',v:'Karl Newell (1986) laid the theoretical foundation, proposing that movement emerges through the interaction of three categories of constraints:'},
       {t:'h3',v:'Performer Constraints'},
       {t:'p',v:'Characteristics of the individual.'},
       {t:'ul',v:['Height','Strength','Fatigue','Confidence','Skill level','Motivation']},
       {t:'h3',v:'Environmental Constraints'},
-      {t:'p',v:'Everything surrounding the performer.'},
-      {t:'ul',v:['Court size / dimensions','Temperature','Lighting','Opponent behaviour','Crowd','Ball speed and characteristics']},
+      {t:'p',v:'Factors outside the performer.'},
+      {t:'ul',v:['Court size','Temperature','Lighting','Opponent','Crowd','Ball speed']},
       {t:'h3',v:'Task Constraints'},
-      {t:'p',v:'The rules and practice conditions created by the coach.'},
-      {t:'ul',v:['Rules','Target areas','Scoring systems','Time limits','Equipment','Court restrictions','Tactical objectives']},
-      {t:'p',v:'By manipulating constraints, coaches guide learning and shape behaviour without prescribing every movement.'},
+      {t:'p',v:'The rules and objectives created by the coach.'},
+      {t:'ul',v:['Target areas','Scoring systems','Time limits','Equipment','Court restrictions','Tactical objectives']},
+      {t:'p',v:'By manipulating constraints, coaches shape behaviour without prescribing movement.'},
       {t:'p',v:'This theoretical foundation was later formalised into a practical coaching framework — the Constraints-Led Approach — by Keith Davids, Chris Button and Simon Bennett (2008).'},
     ]},
-    {id:'ecodyn',title:'Ecological Dynamics',blocks:[
-      {t:'p',v:'Today these ideas have developed into a field known as Ecological Dynamics — combining:'},
+    {id:'d1-ecodyn',title:'Ecological Dynamics',blocks:[
+      {t:'p',v:'Modern CLA is now commonly described as Ecological Dynamics.'},
+      {t:'p',v:'This field combines:'},
       {t:'ul',v:["Bernstein's motor control","Gibson's ecological psychology",'Dynamic Systems Theory','Skill acquisition research']},
       {t:'p',v:'It explains how athletes continuously adapt to changing environments.'},
-      {t:'p',v:'Rather than searching for one perfect technique, players develop adaptable movement solutions — particularly important in sports like squash where every rally is different.'},
+      {t:'p',v:'Rather than searching for one perfect technique, players develop adaptable movement solutions.'},
+      {t:'p',v:'This is particularly important in sports like squash where every rally is different.'},
     ]},
-    {id:'researchers',title:'Modern Researchers',blocks:[
-      {t:'p',v:'Many researchers have expanded CLA into practical coaching methods. Leading contributors include:'},
+    {id:'d1-researchers',title:'Modern Researchers',blocks:[
+      {t:'p',v:'Many researchers have expanded CLA into practical coaching methods. Important contributors include:'},
       {t:'ul',v:['Keith Davids','Ian Renshaw','Chris Button','Duarte Araújo','Joe Baker','Rob Gray']},
-      {t:'p',v:'Their research has demonstrated that representative practice environments help athletes develop skills that transfer effectively to competition.'},
+      {t:'p',v:'Their research has demonstrated that representative practice environments improve the transfer of learning to competition.'},
     ]},
-    {id:'research',title:'What Does the Research Show?',blocks:[
+    {id:'d1-research',title:'What Does the Research Show?',blocks:[
       {t:'p',v:'Across many sports, research consistently demonstrates that athletes improve when practice preserves the important information found in competition.'},
-      {t:'p',v:'Evidence supports that representative practice environments — and CLA — can improve:'},
-      {t:'ul',v:['Decision making','Anticipation','Adaptability','Perception-action coupling','Tactical awareness','Creativity','Skill transfer to competition','Long-term retention of skills','Robust performance under pressure']},
+      {t:'p',v:'Evidence supports that CLA can improve:'},
+      {t:'ul',v:['Decision making','Anticipation','Adaptability','Perception-action coupling','Tactical awareness','Creativity','Skill transfer to competition','Retention of learning','Robust performance under pressure']},
       {t:'p',v:'Importantly, CLA does not reject technical coaching. Instead, technique is viewed as a functional solution that emerges from solving movement problems.'},
-      {t:'p',v:'The coach still teaches — but primarily through designing effective practice environments rather than prescribing or correcting every movement.'},
+      {t:'p',v:'The coach still guides learning — but primarily through designing effective practice environments rather than prescribing every movement.'},
     ]},
-    {id:'vs',title:'Traditional Coaching vs CLA',blocks:[
+    {id:'d1-vs',title:'Traditional Coaching vs CLA',blocks:[
       {t:'p',v:'Traditional coaching often asks:'},
       {t:'quote',v:'"How should the player move?"'},
       {t:'p',v:'CLA asks:'},
       {t:'quote',v:'"What practice environment will encourage the player to discover an effective movement solution?"'},
-      {t:'p',v:'Instead of building technique first and hoping it transfers to competition — or correcting every movement — CLA develops technique within representative game situations from the beginning. The player remains an active problem solver rather than a passive recipient of instructions.'},
+      {t:'p',v:'Instead of building technique first and hoping it transfers to competition, CLA develops technique within representative game situations from the beginning.'},
     ]},
-    {id:'squash',title:'What This Means for Squash — Checkerboard Squash™',blocks:[
+    {id:'d1-squash',title:'What This Means for Squash',blocks:[
       {t:'p',v:'Squash is an ideal environment for CLA because every rally presents unique problems.'},
-      {t:'p',v:'The best players are not those who reproduce identical swings. They are those who continually adapt to:'},
+      {t:'p',v:'The best players are not those who reproduce identical swings.'},
+      {t:'p',v:'They are those who continually adapt to:'},
       {t:'ul',v:['Ball speed','Ball height','Ball spin','Opponent positioning','Time pressure','Fatigue','Tactical opportunities']},
-      {t:'p',v:'Checkerboard Squash™ has been designed around these scientific principles. Every game manipulates constraints to encourage players to:'},
-      {t:'ul',v:['Perceive important information.','Make decisions.','Solve tactical problems.','Adapt their movement.','Develop robust techniques that transfer to competition.']},
-      {t:'p',v:'Rather than rehearsing isolated movements, players learn within representative game situations that closely resemble the demands of real squash.'},
-      {t:'p',v:'The goal is not to produce one perfect movement. The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.'},
+      {t:'p',v:'Checkerboard Squash™ has been designed around these principles.'},
+      {t:'p',v:'Games manipulate constraints to encourage players to perceive information, make decisions and adapt their movements while still developing high-quality technical actions.'},
+      {t:'p',v:'The goal is not to produce one perfect movement.'},
+      {t:'p',v:'The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.'},
     ]},
   ];
-  const takeaways=[
-    'Humans learned complex movement long before formal coaching or language existed.',
-    'Young animals develop skill through exploration, observation and play.',
-    'Evolution favours adaptable solutions rather than one perfect movement.',
-    'Nature shows that complex, coordinated behaviour can emerge through self-organisation without central control.',
-    'Squash is a dynamic, complex adaptive system that demands constant adaptation.',
+  const d1Takeaways=[
     'Bernstein showed that expert movement involves "repetition without repetition."',
-    'Gibson demonstrated that perception and action are inseparable.',
+    'Gibson demonstrated that perception and action work together.',
     'Dynamic Systems Theory explains how movement self-organises.',
-    'Newell (1986) laid the theoretical foundation showing how performer, environmental and task constraints shape behaviour.',
+    'Newell (1986) laid the theoretical foundation showing how performer, environment and task constraints shape behaviour.',
     'Davids, Button & Bennett (2008) formalised this into the Constraints-Led Approach as a coaching framework.',
     'Ecological Dynamics integrates these ideas into a modern theory of skill acquisition.',
     'CLA uses carefully designed practice environments to develop adaptable, intelligent performers.',
     'Scientific research supports CLA as an effective framework for learning skills that transfer to real competition.',
   ];
+  const d1Close='Ultimately, CLA is not a departure from science — it is built upon decades of scientific research into how humans perceive, move and learn.';
+
   const renderBlock=(b,i)=>{
     if(b.t==='p')return <p key={i}>{b.v}</p>;
+    if(b.t==='beat')return <p key={i} className="whyCLABeat">{b.v}</p>;
     if(b.t==='quote')return <p key={i} className="whyCLAQuote">{b.v}</p>;
     if(b.t==='h3')return <h3 key={i}>{b.v}</h3>;
     if(b.t==='ul')return <ul key={i}>{b.v.map((li,j)=><li key={j}>{li}</li>)}</ul>;
@@ -3060,38 +3210,56 @@ function WhyCLAScreen({setScreen}){
   };
   return <div className="page whyCLAPage">
     <style>{`
+.whyCLAPage{counter-reset:whycla}
 .whyCLAPage .pageTop h1{color:#eaf4fb;font-size:3rem!important;line-height:1.1!important}
-.whyCLASection{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:16px 18px;margin-bottom:12px}
-.whyCLASection h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
-.whyCLASection h3{color:#9fd3f0;margin:14px 0 6px 0;font-size:0.92rem}
-.whyCLASection p{color:#c7d6e2;line-height:1.55;margin:0 0 10px 0}
+.whyCLASection{counter-increment:whycla;position:relative;background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:18px 20px 18px 54px;margin-bottom:14px}
+.whyCLASection::before{content:counter(whycla,decimal-leading-zero);position:absolute;left:14px;top:16px;font-size:0.72rem;font-weight:800;color:#4f7690;letter-spacing:0.05em}
+.whyCLASection h2{color:#eaf4fb;margin:0 0 12px 0;font-size:1.15rem;font-weight:800}
+.whyCLASection h3{color:#9fd3f0;margin:16px 0 6px 0;font-size:0.95rem;font-weight:800;text-transform:uppercase;letter-spacing:0.03em}
+.whyCLASection p{color:#c7d6e2;line-height:1.6;margin:0 0 9px 0;font-size:0.98rem}
 .whyCLASection p:last-child{margin-bottom:0}
 .whyCLASection ul{margin:0 0 10px 0;padding-left:20px;color:#c7d6e2}
 .whyCLASection ul:last-child{margin-bottom:0}
-.whyCLASection li{margin-bottom:5px;line-height:1.5}
-.whyCLAQuote{color:#9fd3f0;font-style:italic;font-weight:700}
-.whyCLATakeaways{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:18px 20px;margin-top:6px}
-.whyCLATakeaways h2{color:#eaf4fb;margin:0 0 10px 0;font-size:1.05rem}
+.whyCLASection li{margin-bottom:5px;line-height:1.55}
+.whyCLABeat{color:#eaf4fb!important;font-weight:700;font-size:1.02rem;margin:6px 0!important;padding-left:12px;border-left:2px solid #2E6E8E}
+.whyCLAQuote{color:#9fd3f0;font-style:italic;font-weight:800;font-size:1.5rem;line-height:1.35;text-align:center;margin:16px 0!important;padding:6px 10px}
+.whyCLADivider{display:flex;align-items:center;gap:14px;margin:34px 0 18px 0}
+.whyCLADivider::before,.whyCLADivider::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,transparent,#d9a441,transparent)}
+.whyCLADivider span{color:#d9a441;font-weight:900;letter-spacing:0.08em;font-size:0.95rem;white-space:nowrap;text-transform:uppercase}
+.whyCLATakeaways{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:20px 22px;margin-top:8px}
+.whyCLATakeaways h2{color:#eaf4fb;margin:0 0 12px 0;font-size:1.15rem;font-weight:800}
 .whyCLATakeaways ul{margin:0;padding-left:20px;color:#c7e2cf}
-.whyCLATakeaways li{margin-bottom:7px;line-height:1.5}
-.whyCLAClose{color:#9fb3c4;font-style:italic;margin-top:14px;text-align:center}
+.whyCLATakeaways li{margin-bottom:8px;line-height:1.55}
+.whyCLAClose{color:#9fb3c4;font-style:italic;margin-top:16px;text-align:center;line-height:1.6;font-size:1.02rem;padding:0 8px}
 `}</style>
     <div className="pageTop">
       <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
+
     {sections.map(s=><div key={s.id} className="whyCLASection">
       <h2>{s.title}</h2>
       {s.blocks.map((b,i)=>renderBlock(b,i))}
     </div>)}
     <div className="whyCLATakeaways">
       <h2>Key Takeaways</h2>
-      <ul>{takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
+      <ul>{d2Takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
     </div>
-    <p className="whyCLAClose">Ultimately, CLA is not a departure from science, and it is not simply another coaching philosophy — it reflects how humans and other animals have learned to move, adapt and become skilful throughout evolutionary history, built upon decades of research into how humans perceive, move and learn. By aligning coaching with these natural learning processes, CLA seeks to develop players who are not only technically capable, but also perceptive, adaptable and effective under the ever-changing demands of competition.</p>
+    <p className="whyCLAClose">{d2Close}</p>
+
+    <div className="whyCLADivider"><span>The Full Scientific Chapter</span></div>
+
+    {sections2.map(s=><div key={s.id} className="whyCLASection">
+      <h2>{s.title}</h2>
+      {s.blocks.map((b,i)=>renderBlock(b,i))}
+    </div>)}
+    <div className="whyCLATakeaways">
+      <h2>Key Takeaways</h2>
+      <ul>{d1Takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
+    </div>
+    <p className="whyCLAClose">{d1Close}</p>
   </div>;
 }
-
 function RLDScreen({setScreen}){
   const [activeSection,setActiveSection]=useState('rld');
   const RPAT_DIMS=[
