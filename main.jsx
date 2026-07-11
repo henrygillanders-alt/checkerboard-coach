@@ -30,6 +30,10 @@ function getLudoScoreFromUrl(){try{const p=new URLSearchParams(window.location.s
 function buildLudoScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ludoScore=${n}&host=${encodeURIComponent(base)}`;}
 function getLudoRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ludoRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildLudoRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ludoRace=${encodeURIComponent(base)}&n=${courtCount}`;}
+function getNcScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('ncScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function buildNcScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ncScore=${n}&host=${encodeURIComponent(base)}`;}
+function getNcRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ncRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function buildNcRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ncRace=${encodeURIComponent(base)}&n=${courtCount}`;}
 function useWakeLock(){
   useEffect(()=>{
     if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
@@ -52,6 +56,8 @@ function getPersistentLiveRoomId(){
 }
 function getLiveRoomFromUrl(){try{return new URLSearchParams(window.location.search||'').get('liveRoom')||'';}catch{return '';} }
 function buildLivePlayerViewUrl(roomId){const room=roomId||getPersistentLiveRoomId();const base=window.location.origin+window.location.pathname;return `${base}?liveRoom=${encodeURIComponent(room)}`;}
+function getLudoLiveRoomId(){return getPersistentLiveRoomId()+'-ludo';}
+function getNcLiveRoomId(){return getPersistentLiveRoomId()+'-nc';}
 const NSSL_PERIOD_KEYS=['p1','p2','p3','ot'];
 const NSSL_PP_ALLOW={p1:1,p2:1,p3:2,ot:1};
 const NSSL_PP_SECONDS=120;
@@ -161,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v336 Added OCCLUSION READ to PERCEPTION module: new section for goggle-controlled temporal occlusion training, live clean/not-clean tally per player, cut point label, simple per-session log, no RLD wiring';
+const APP_VERSION='v337 New game: Noughts & Crosses Squash (v1) - claim squares by winning rallies and completing challenges, first to three in a row wins the board. Team-based winner-stays-on rotation (your own doubles-style pattern: winning side stays on court, losing side rotates their next player in from the bench) rather than a flat queue. Three challenge pools (Shot-Type/Checkerboard/CLA Outcome), every square individually tappable to swap in a pool challenge or type a custom one, global Require-challenge toggle (off = pure win-the-rally-claim-any-square), three scoring modes. Built on the S&L multi-court pattern: Multiplayer/Separate (independent boards per court) and One-board-3-court/Race (identical challenge layout forced across courts via fixedBoard, independent per-court state, combined read-only Race Display) - never a single shared board written to by multiple devices. UniversalDBHandicapPanel and UniversalTinHeightPanel included from the start. Also restored the Ludo Squash room-namespacing fix (Court Monitor now checks base/-ludo/-nc room spaces per court) which had regressed since v329 - Ludo and S&L court rooms were colliding again under the shared default room id.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10767,6 +10773,7 @@ function Games({setSession,setScreen}){
     {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
     {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
     {id:'ludosquash',label:'Ludo Squash',category:'Ludo Squash'},
+    {id:'noughtscrosses',label:'Noughts & Crosses Squash',category:'Noughts & Crosses Squash'},
     {id:'blindtarget',label:'Poker',category:'Blind Target'},
     {id:'serveReturn',label:'Serve & Return',category:'Serve & Return'},
     {id:'technical',label:'Technical',category:'Technical'},
@@ -10867,6 +10874,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession} setScreen={setScreen}/>}
     {activeClassId==='ludosquash'&&<LudoSquashGame key="ludosquash-engine" setSession={setSession} setScreen={setScreen}/>}
+    {activeClassId==='noughtscrosses'&&<NoughtsCrossesGame key="noughtscrosses-engine" setSession={setSession} setScreen={setScreen}/>}
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
@@ -15925,6 +15933,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Classic Games',sub:'Games Library',kw:'classic traditional',screen:'games',classId:'classic'},
   {label:'Snakes & Ladders',sub:'Games Library',kw:'snakes ladders climb',screen:'games',classId:'snakesladders'},
   {label:'Ludo Squash',sub:'Games Library',kw:'ludo race board pieces capture threat',screen:'games',classId:'ludosquash'},
+  {label:'Noughts & Crosses Squash',sub:'Games Library',kw:'noughts crosses tic tac toe board team',screen:'games',classId:'noughtscrosses'},
   {label:'Custom Game Builder',sub:'Games Library',kw:'custom build your own game',screen:'games',classId:'custom'},
   {label:'Information / Anticipation',sub:'Games Library',kw:'information anticipation early read pattern',screen:'games',classId:'information'},
   {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal',screen:'games',classId:'doubleBounce'},
@@ -16643,7 +16652,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       winnerName:winner!=null?roster[winner].name:null,
       pending:pendingByName,
       courtLabel};
-    writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'ludosquash',payload);
+    writeLivePlayerRoom(roomId||getLudoLiveRoomId(),'ludosquash',payload);
   },[project,roster,queue,winner,pending,courtLabel,roomId,settings]);
 
   return <div className="ludoCourt">
@@ -16724,11 +16733,11 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [allocMode,setAllocMode]=useState('auto');
   const [manualAssign,setManualAssign]=useState({});
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
-  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getLudoLiveRoomId();},[]);
 
   async function copyLudoPlayerLink(){
     setProjecting(true);
-    const url=buildLivePlayerViewUrl();
+    const url=buildLivePlayerViewUrl(getLudoLiveRoomId());
     let copied=false;
     try{ if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; } }catch{}
     if(copied){ alert('Live player link copied. Open it on the second device — the Ludo board updates live as you tap winners.'); }
@@ -17014,6 +17023,626 @@ function LudoSquashPlayerDisplay({payload={}}){
   </div>;
 }
 
+// ── NOUGHTS & CROSSES SQUASH™ — v1 build ────────────────────────────────
+const NC_MODES={
+  'Shot-Type':['Straight drive','Crosscourt drive','Drop','Volley','Boast','Lob','Kill','Win after length','Win from T recovery'],
+  'Checkerboard':['5-4','6-3','7-2','8-1','5-3','6-4','7-3','8-4','Coach choice'],
+  'CLA Outcome':['Move opponent twice','Force weak return','Create front-court space','Win after recovering T','Win after opponent leaves T','Turn defence into attack','Hold and send opponent wrong way','Win with disguise','Win after pressure phase']
+};
+const NC_WIN_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function ncShuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function ncDefaultBoard(mode){return NC_MODES[mode].map(c=>({challenge:c,claimedBy:null}));}
+function ncBoardFromChallenges(list){return list.map(c=>({challenge:c,claimedBy:null}));}
+function ncCheckWin(board){
+  for(const line of NC_WIN_LINES){
+    const [a,b,c]=line;
+    if(board[a].claimedBy&&board[a].claimedBy===board[b].claimedBy&&board[b].claimedBy===board[c].claimedBy)return {winner:board[a].claimedBy,line};
+  }
+  if(board.every(sq=>sq.claimedBy))return {winner:'draw',line:null};
+  return null;
+}
+
+function ncRules(settings){
+  const rc=settings.requireChallenge!==false;
+  const sm=settings.scoringMode||'boardWin';
+  const principle='Winning the rally is only half the job \u2014 claim the square that matters, and watch the board for what your opponents are building too.';
+  const setup='Two teams take the court \u2014 1 or more players each. Each side\u2019s first-listed player starts on court; the rest wait on the bench. Before you begin, the coach picks the Mode (which challenge pool fills the board) and whether a challenge is required to claim a square.';
+  const player=rc
+    ? 'Win the rally AND complete a square\u2019s challenge \u2192 claim that square for your side. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.'
+    : 'Win the rally \u2192 claim any unclaimed square for your side. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.';
+  const steps=[
+    'Two players \u2014 one from each team \u2014 play a normal rally.',
+    'Coach calls the winner. That side\u2019s on-court player stays on \u2014 the losing side\u2019s player goes to the back of their own bench and the next teammate steps on.',
+    rc?'Coach checks: did the winning side also complete a square\u2019s challenge?':'The winning side may claim any unclaimed square.',
+    rc?'If yes, tap the square whose challenge they completed \u2014 it\u2019s claimed with their symbol. If no, no claim this rally.':'Tap the square they\u2019re claiming \u2014 it\u2019s marked with their symbol.',
+    'Check the board after every claim \u2014 three in a row (row, column or diagonal) wins.',
+    'If all 9 squares fill with no line, it\u2019s a draw.'
+  ];
+  const scoring=sm==='rallyBoard'
+    ? 'Win a rally \u2192 +1 point. Claim a square \u2192 +1 more. Win the whole board \u2192 +3 bonus.'
+    : sm==='pressure'
+      ? 'Pressure Mode: the challenge must be completed AND the rally won together \u2014 completing the challenge but losing the rally claims nothing.'
+      : 'No running score \u2014 the board itself is the prize. First to three in a row wins the board outright.';
+  const example=rc
+    ? 'Team A and Team B play a rally. Team A\u2019s on-court player wins and completes the Boast square\u2019s challenge \u2014 Team A claims it with an X. Team B\u2019s player rotates off; their next teammate comes on. Next rally, Team B wins but doesn\u2019t complete a challenge \u2014 no claim, but their winning player stays on. The rally after that, Team B wins and completes the Drop square \u2014 O goes there. Play continues until a line completes.'
+    : 'Team A and Team B play a rally. Team A\u2019s on-court player wins \u2014 they claim any unclaimed square with an X, tactically choosing one that also blocks a Team B line. Team B\u2019s player rotates off; their next teammate comes on. Play continues until a line completes.';
+  const rationale={
+    lead:'Noughts & Crosses Squash\u2122 turns every rally into a tactical decision, not just a point \u2014 players are trying to win the board, not just the rally.',
+    bullets:[
+      ['Plan ahead','which square do I need, and how do I win it?'],
+      ['Block awareness','recognising when an opponent is one square from a line and needing to respond.'],
+      ['Calculated risk','choosing between the best attacking square and the square that denies the opponent.'],
+      ['Representative pressure','the challenge ties shot execution directly to a visible tactical outcome, not an isolated drill.']
+    ],
+    note:'Coach should avoid over-instructing technique here \u2014 the challenge should guide behaviour, not a running commentary on shot mechanics. If a player is one square from winning, let the opponent work out for themselves that they need to block it.'
+  };
+  return {principle,setup,player,steps,scoring,example,rationale};
+}
+
+function NcStyles(){return <style>{`
+.ncCourt{display:flex;flex-direction:column;gap:12px;}
+.ncGameInfo{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 18px;margin:12px 0;}
+.ncPrinciple{color:#ffd479;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
+.ncInfoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
+.ncInfoGrid h4{margin:0 0 4px;color:#9cc4ec;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ncInfoGrid p,.ncInfoGrid ol{margin:0;color:#cdd9e6;font-size:0.88rem;line-height:1.5;}
+.ncInfoGrid ol{padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+.ncExample{background:#0b1118;border:1px dashed #2c4a6e;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+.ncExample h4{margin:0 0 6px;color:#8fe3ab;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ncExample p{margin:0;color:#cdd9e6;font-size:0.86rem;line-height:1.5;}
+.ncRationaleBox{border-top:1px solid #223044;margin-top:12px;padding-top:12px;}
+.ncRationaleBox p{color:#9fb0c2;font-size:0.86rem;line-height:1.5;margin:0 0 8px;}
+.ncRationaleBox ul{margin:0 0 8px;padding-left:18px;display:flex;flex-direction:column;gap:4px;}
+.ncRationaleBox li{color:#9fb0c2;font-size:0.86rem;line-height:1.4;}
+.ncRationaleBox li strong{color:#cdd9e6;}
+.ncOnCourt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;}
+.ncOnCourtLabel{font-size:0.8rem;color:#6b8299;text-transform:uppercase;letter-spacing:0.06em;}
+.ncVs{color:#6b8299;font-weight:700;}
+.ncSideBtn{border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;border:1.5px solid;font-size:0.9rem;}
+.ncSideBtn.a{background:#12203a;border-color:#2f9bff;color:#eaf4fb;}
+.ncSideBtn.b{background:#3a1f2e;border-color:#ff5fd0;color:#eaf4fb;}
+.ncConfirmRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 14px;}
+.ncSquareRow{display:flex;flex-direction:column;gap:8px;width:100%;}
+.ncSquareBtn{background:#0b1118;border:1.5px solid #3a5a8c;color:#eaf4fb;border-radius:9px;padding:10px 13px;font-weight:600;cursor:pointer;font-size:0.85rem;text-align:left;}
+.ncSquareBtn:hover{border-color:#5c85b8;}
+.ncBenches{display:flex;gap:10px;flex-wrap:wrap;}
+.ncBench{flex:1;min-width:200px;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:10px 12px;}
+.ncBench.a{border-color:#2f9bff44;}
+.ncBench.b{border-color:#ff5fd044;}
+.ncBenchTitle{font-size:0.8rem;font-weight:800;margin-bottom:4px;}
+.ncBenchTitle.a{color:#7fbfff;}
+.ncBenchTitle.b{color:#ff9de4;}
+.ncBenchList{font-size:0.82rem;color:#9fb0c2;}
+.ncScoreRow{display:flex;gap:10px;justify-content:center;font-size:0.95rem;font-weight:800;}
+.ncScoreRow .a{color:#7fbfff;}
+.ncScoreRow .b{color:#ff9de4;}
+.ncBoard{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px;margin:0 auto;}
+.ncCell{aspect-ratio:1/1;background:#1a2942;border:2px solid #3a5a8c;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:6px;text-align:center;cursor:pointer;}
+.ncCell.claimedA{background:#12203a;border-color:#2f9bff;}
+.ncCell.claimedB{background:#3a1f2e;border-color:#ff5fd0;}
+.ncCellSymbol{font-size:2.6rem;font-weight:900;}
+.ncCellSymbol.a{color:#5cb3ff;}
+.ncCellSymbol.b{color:#ff8fdc;}
+.ncCellChallenge{font-size:0.68rem;color:#cdd9e6;line-height:1.25;}
+.ncCellEdit{position:absolute;top:3px;right:5px;font-size:0.7rem;color:#6b8299;cursor:pointer;}
+.ncEditPanel{position:absolute;inset:0;background:#0b1118ee;border-radius:10px;display:flex;flex-direction:column;gap:3px;padding:5px;overflow-y:auto;z-index:5;}
+.ncEditOpt{background:#1a2942;border:1px solid #3a5a8c;color:#cdd9e6;border-radius:6px;padding:3px 5px;font-size:0.62rem;cursor:pointer;text-align:left;}
+.ncEditInput{background:#0f1822;border:1px solid #2c3c4e;border-radius:6px;color:#eaf4fb;padding:3px 5px;font-size:0.62rem;}
+.ncWinBanner{background:#5f4d0f;border:1px solid #ffd400;color:#ffe9a8;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
+.ncControls{display:flex;gap:8px;flex-wrap:wrap;}
+.ncEvents{display:flex;flex-direction:column;gap:4px;}
+.ncEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
+.ncEvent.new{color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;}
+.ncSessionBar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;margin:10px 0;}
+.ncInlineField{display:flex;align-items:center;gap:6px;font-size:0.85rem;color:#9fb0c2;}
+.ncTeamGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:10px 0;}
+.ncTeamBox{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 12px;}
+.ncTeamBox.a{border-color:#2f9bff44;}
+.ncTeamBox.b{border-color:#ff5fd044;}
+.ncTeamBox input{background:#0f1822;border:1px solid #2c3c4e;border-radius:7px;padding:6px 8px;color:#eaf4fb;width:100%;margin-bottom:6px;font-size:0.85rem;}
+.ncSettings{display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.ncSettings label{display:flex;flex-direction:column;gap:4px;font-size:0.8rem;color:#9fb0c2;}
+.ncSettings select{background:#0f1822;border:1px solid #2c3c4e;border-radius:7px;padding:6px 8px;color:#eaf4fb;}
+.ncCheck{flex-direction:row !important;align-items:center;gap:8px !important;}
+.ncModeStrip{display:flex;gap:8px;flex-wrap:wrap;}
+.ncModeBtn{flex:1;min-width:160px;background:#0b1118;border:1px solid #2c3c4e;color:#cdd9e6;border-radius:9px;padding:9px 13px;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:center;}
+.ncModeBtnOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.ncCourtTabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;}
+.ncCourtTab{background:#0b1118;border:1px solid #223044;color:#9fb0c2;border-radius:8px;padding:7px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;}
+.ncCourtTabOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;}
+.ncDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.ncDisplayHint{font-size:0.8rem;color:#8fe3ab;}
+.ncDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;}
+.ncDisplayHead{margin-bottom:18px;}
+.ncDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
+.ncDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
+.ncDisplayHead p{color:#9fb0c2;}
+.ncRaceGrid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:1000px;margin:0 auto;}
+.ncRaceCourt{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px;width:280px;}
+.ncRaceCourt.winner{border-color:#ffd400;background:#241d08;}
+.ncRaceLabel{font-size:0.85rem;font-weight:800;color:#9cc4ec;margin-bottom:8px;}
+`}</style>;}
+
+// ── Per-court engine ─────────────────────────────────────────────────────
+function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode='boardWin',fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
+  const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode)));
+  const [rosterA,setRosterA]=useState(()=>seed?seed.rosterA:[...teamA.roster]);
+  const [rosterB,setRosterB]=useState(()=>seed?seed.rosterB:[...teamB.roster]);
+  const [scoreA,setScoreA]=useState(()=>seed?seed.scoreA:0);
+  const [scoreB,setScoreB]=useState(()=>seed?seed.scoreB:0);
+  const [winner,setWinner]=useState(()=>seed?seed.winner:null);
+  const [events,setEvents]=useState([]);
+  const [pendingRally,setPendingRally]=useState(null);
+  const [undoStack,setUndoStack]=useState([]);
+  const [editingIdx,setEditingIdx]=useState(null);
+  const [customText,setCustomText]=useState('');
+
+  function snapshot(){return {board:board.map(s=>({...s})),rosterA:[...rosterA],rosterB:[...rosterB],scoreA,scoreB,winner,events:[...events]};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setPendingRally(null);return prev.slice(0,-1);});}
+  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);}
+  function randomiseBoard(){if(board.some(s=>s.claimedBy))return;setBoard(prev=>ncShuffle(prev.map(s=>s.challenge)).map(c=>({challenge:c,claimedBy:null})));}
+
+  function startRally(side){
+    if(winner||pendingRally)return;
+    setPendingRally(requireChallenge?{side,stage:'confirm'}:{side,stage:'choose'});
+  }
+  function confirmChallenge(achieved){
+    if(!pendingRally)return;
+    if(achieved){setPendingRally(p=>({...p,stage:'choose'}));}
+    else{finalizeRally(pendingRally.side,null);setPendingRally(null);}
+  }
+  function chooseSquare(idx){
+    if(!pendingRally)return;
+    finalizeRally(pendingRally.side,idx);
+    setPendingRally(null);
+  }
+  function skipClaim(){
+    if(!pendingRally)return;
+    finalizeRally(pendingRally.side,null);
+    setPendingRally(null);
+  }
+
+  function finalizeRally(side,squareIdx){
+    setUndoStack(prev=>[...prev.slice(-29),snapshot()]);
+    const nextBoard=board.map(s=>({...s}));
+    const ev=[];
+    const sideLabel=side==='A'?teamA.name:teamB.name;
+    let nextRosterA=rosterA,nextRosterB=rosterB;
+    if(side==='A'){nextRosterB=rosterB.length>1?[...rosterB.slice(1),rosterB[0]]:rosterB;}
+    else{nextRosterA=rosterA.length>1?[...rosterA.slice(1),rosterA[0]]:rosterA;}
+
+    let nextScoreA=scoreA,nextScoreB=scoreB;
+    if(scoringMode==='rallyBoard'){if(side==='A')nextScoreA+=1;else nextScoreB+=1;}
+    ev.push(`${sideLabel} won the rally`);
+
+    if(squareIdx!=null&&!nextBoard[squareIdx].claimedBy){
+      nextBoard[squareIdx].claimedBy=side;
+      ev.push(`${sideLabel} claims "${nextBoard[squareIdx].challenge}"`);
+      if(scoringMode==='rallyBoard'){if(side==='A')nextScoreA+=1;else nextScoreB+=1;}
+    }else if(squareIdx==null){
+      ev.push(`No claim this rally`);
+    }
+
+    let newWinner=null;
+    const result=ncCheckWin(nextBoard);
+    if(result){
+      newWinner=result.winner;
+      if(newWinner!=='draw'){
+        ev.push(`${newWinner==='A'?teamA.name:teamB.name} completes a line and wins the board!`);
+        if(scoringMode==='rallyBoard'){if(newWinner==='A')nextScoreA+=3;else nextScoreB+=3;}
+      }else{ev.push('Board full \u2014 draw.');}
+    }
+
+    setBoard(nextBoard);setRosterA(nextRosterA);setRosterB(nextRosterB);setScoreA(nextScoreA);setScoreB(nextScoreB);
+    if(ev.length)setEvents(prev=>[...ev.slice().reverse(),...prev].slice(0,6));
+    if(newWinner)setWinner(newWinner);
+  }
+
+  function applyEdit(idx,text){
+    if(board[idx].claimedBy)return;
+    setBoard(prev=>prev.map((s,i)=>i===idx?{...s,challenge:text}:s));
+    setEditingIdx(null);setCustomText('');
+  }
+
+  const onA=rosterA[0],onB=rosterB[0];
+  const unclaimed=board.map((s,i)=>({...s,idx:i})).filter(s=>!s.claimedBy);
+
+  useEffect(()=>{
+    if(!project)return;
+    const payload={type:'noughtscrosses',
+      mode,requireChallenge,scoringMode,
+      teamAName:teamA.name,teamBName:teamB.name,
+      board:board.map(s=>({challenge:s.challenge,claimedBy:s.claimedBy})),
+      rosterA,rosterB,scoreA,scoreB,
+      winnerName:winner?(winner==='draw'?'Draw':(winner==='A'?teamA.name:teamB.name)):null,
+      winnerSide:winner,
+      courtLabel};
+    writeLivePlayerRoom(roomId||getNcLiveRoomId(),'noughtscrosses',payload);
+  },[project,board,rosterA,rosterB,scoreA,scoreB,winner,courtLabel,roomId,mode,requireChallenge,scoringMode]);
+
+  return <div className="ncCourt">
+    {winner==null&&!pendingRally&&<div className="ncOnCourt">
+      <span className="ncOnCourtLabel">On court</span>
+      <button type="button" className="ncSideBtn a" onClick={()=>startRally('A')}>{onA} ({teamA.name}) won</button>
+      <span className="ncVs">vs</span>
+      <button type="button" className="ncSideBtn b" onClick={()=>startRally('B')}>{onB} ({teamB.name}) won</button>
+    </div>}
+
+    {pendingRally&&pendingRally.stage==='confirm'&&<div className="ncConfirmRow">
+      <span>Did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> also complete a square's challenge?</span>
+      <button type="button" className="primaryBtn" onClick={()=>confirmChallenge(true)}>Yes</button>
+      <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>No</button>
+    </div>}
+
+    {pendingRally&&pendingRally.stage==='choose'&&<div className="ncConfirmRow">
+      <div className="ncSquareRow">
+        <span>Which square did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> claim?</span>
+        {unclaimed.map(s=><button type="button" key={s.idx} className="ncSquareBtn" onClick={()=>chooseSquare(s.idx)}>{s.challenge}</button>)}
+        <button type="button" className="secondaryBtn" onClick={skipClaim}>No claim this rally</button>
+      </div>
+    </div>}
+
+    {winner!=null&&<div className="ncWinBanner">{winner==='draw'?'\ud83e\udd1d Board drawn \u2014 all squares filled, no line.':`\ud83c\udfc6 ${winner==='A'?teamA.name:teamB.name} completes a line and wins the board!`}</div>}
+
+    {scoringMode==='rallyBoard'&&<div className="ncScoreRow"><span className="a">{teamA.name}: {scoreA}pts</span><span className="b">{teamB.name}: {scoreB}pts</span></div>}
+
+    <div className="ncBenches">
+      <div className="ncBench a"><div className="ncBenchTitle a">{teamA.name}</div><div className="ncBenchList">On: {rosterA[0]}{rosterA.length>1?` \u00b7 Bench: ${rosterA.slice(1).join(' \u2192 ')}`:''}</div></div>
+      <div className="ncBench b"><div className="ncBenchTitle b">{teamB.name}</div><div className="ncBenchList">On: {rosterB[0]}{rosterB.length>1?` \u00b7 Bench: ${rosterB.slice(1).join(' \u2192 ')}`:''}</div></div>
+    </div>
+
+    <div className="ncBoard">
+      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}`} onClick={()=>{if(!sq.claimedBy&&editingIdx!==i){setEditingIdx(i);setCustomText(sq.challenge);}}}>
+        {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
+        {!sq.claimedBy&&editingIdx!==i&&<span className="ncCellEdit">\u270e</span>}
+        {editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
+          {NC_MODES[mode].map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
+          <input className="ncEditInput" value={customText} onChange={e=>setCustomText(e.target.value)} placeholder="Custom..." onKeyDown={e=>{if(e.key==='Enter'&&customText.trim())applyEdit(i,customText.trim());}}/>
+          <button type="button" className="ncEditOpt" onClick={()=>customText.trim()&&applyEdit(i,customText.trim())}>Save custom</button>
+          <button type="button" className="ncEditOpt" onClick={()=>setEditingIdx(null)}>Cancel</button>
+        </div>}
+      </div>)}
+    </div>
+
+    <div className="ncControls">
+      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>\u21b6 Undo last move</button>
+      {!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy)} style={{opacity:board.some(s=>s.claimedBy)?0.45:1}}>\ud83c\udfb2 Randomise board</button>}
+      <button type="button" className="secondaryBtn" onClick={resetGame}>New board</button>
+    </div>
+    {events.length>0&&<div className="ncEvents">{events.map((e,i)=><div key={i} className={i===0?'ncEvent new':'ncEvent'}>{e}</div>)}</div>}
+  </div>;
+}
+
+// ── Coach setup screen ───────────────────────────────────────────────────
+function NoughtsCrossesGame({setSession,setScreen}={}){
+  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const usingAttendance=presentsObj.length>=2;
+  const [courtCount,setCourtCount]=useState(1);
+  const [activeCourt,setActiveCourt]=useState(0);
+  const [teamAName,setTeamAName]=useState('Team A');
+  const [teamBName,setTeamBName]=useState('Team B');
+  const [manualCountA,setManualCountA]=useState(1);
+  const [manualCountB,setManualCountB]=useState(1);
+  const [manualRosterA,setManualRosterA]=useState(['Player 1']);
+  const [manualRosterB,setManualRosterB]=useState(['Player 2']);
+  const [mode,setMode]=useState('Shot-Type');
+  const [requireChallenge,setRequireChallenge]=useState(true);
+  const [scoringMode,setScoringMode]=useState('boardWin');
+  const settings=useMemo(()=>({requireChallenge,scoringMode}),[requireChallenge,scoringMode]);
+  const rules=useMemo(()=>ncRules(settings),[settings]);
+  const [showSettings,setShowSettings]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const [copiedCourt,setCopiedCourt]=useState(null);
+  const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
+  const [handedOff,setHandedOff]=useState(()=>new Set());
+  const [competitionMode,setCompetitionMode]=useState('separate');
+  const [copiedRaceLink,setCopiedRaceLink]=useState(false);
+  const [allocMode,setAllocMode]=useState('auto');
+  const [manualAssign,setManualAssign]=useState({});
+  const [teamAssignOverrides,setTeamAssignOverrides]=useState({});
+  const [fixedChallenges,setFixedChallenges]=useState(()=>NC_MODES['Shot-Type']);
+  function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getNcLiveRoomId();},[]);
+
+  useEffect(()=>{setFixedChallenges(NC_MODES[mode]);},[mode]);
+  function randomiseSharedBoard(){setFixedChallenges(prev=>ncShuffle(NC_MODES[mode]));}
+
+  async function copyNcPlayerLink(){
+    setProjecting(true);
+    const url=buildLivePlayerViewUrl(getNcLiveRoomId());
+    let copied=false;
+    try{ if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; } }catch{}
+    if(copied){ alert('Live player link copied. Open it on the second device \u2014 the board updates live as you tap winners.'); }
+    else{ window.prompt('LIVE Noughts & Crosses player link \u2014 open this on the second device:', url); }
+  }
+  async function copyNcCourtLink(n){
+    setProjecting(true);
+    const url=buildCourtLink(n,base);
+    try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}
+  }
+  async function copyNcScoreLink(n){
+    setProjecting(true);
+    const url=buildNcScoreLink(n,base);
+    setHandedOff(prev=>new Set(prev).add(n));
+    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link \u2014 open on the device standing at that court:',url);}
+  }
+  async function copyNcRaceLink(){
+    const url=buildNcRaceLink(base,courtCount);
+    try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
+  }
+  function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
+
+  const allocation=useMemo(()=>{
+    if(usingAttendance){
+      if(allocMode==='manual'){
+        const groups=Array.from({length:courtCount},()=>[]);
+        presentsObj.map(p=>playerDisplayName(p)).forEach(name=>{
+          const ci=manualAssign[name];
+          if(ci!=null&&ci<courtCount)groups[ci].push(name);
+        });
+        return groups;
+      }
+      return rankedBlockCourtAllocation(presentsObj,courtCount);
+    }
+    return [];
+  },[usingAttendance,presentsObj,courtCount,allocMode,manualAssign]);
+  const unassigned=useMemo(()=>{
+    if(!usingAttendance||allocMode!=='manual')return [];
+    const names=presentsObj.map(p=>playerDisplayName(p));
+    return names.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount);
+  },[usingAttendance,allocMode,presentsObj,manualAssign,courtCount]);
+  const courts=usingAttendance?allocation.length:1;
+  const active=Math.min(activeCourt,courts-1);
+
+  function getTeamForPlayer(name,groupIndex){
+    if(teamAssignOverrides[name])return teamAssignOverrides[name];
+    const group=allocation[groupIndex]||[];
+    const idx=group.indexOf(name);
+    return idx%2===0?'A':'B';
+  }
+  function toggleTeam(name,groupIndex){
+    const current=getTeamForPlayer(name,groupIndex);
+    setTeamAssignOverrides(prev=>({...prev,[name]:current==='A'?'B':'A'}));
+  }
+
+  function setManualRosterName(side,i,v){
+    const setter=side==='A'?setManualRosterA:setManualRosterB;
+    setter(prev=>{const c=[...prev];c[i]=v;return c;});
+  }
+
+  return <div className="gameCard ncGame">
+    <NcStyles/>
+    <div className="categoryTag">Noughts & Crosses Squash\u2122</div>
+    <h2>Noughts & Crosses Squash</h2>
+    <p className="mutedText">Claim squares by winning rallies and completing challenges. First to three in a row wins the board.</p>
+
+    <div className="ncGameInfo">
+      <p className="ncPrinciple">{rules.principle}</p>
+      <div className="ncInfoGrid">
+        <div><h4>Setup</h4><p>{rules.setup}</p></div>
+        <div><h4>Player rule</h4><p>{rules.player}</p></div>
+        <div><h4>Step by step</h4><ol>{rules.steps.map((s,i)=><li key={i}>{s}</li>)}</ol></div>
+        <div><h4>Scoring</h4><p>{rules.scoring}</p></div>
+      </div>
+      <div className="ncExample"><h4>Worked example</h4><p>{rules.example}</p></div>
+      <div className="ncRationaleBox">
+        <p>{rules.rationale.lead}</p>
+        <p style={{margin:'0 0 4px'}}><strong>What it trains:</strong></p>
+        <ul>{rules.rationale.bullets.map(([t,d],i)=><li key={i}><strong>{t}</strong> \u2014 {d}</li>)}</ul>
+        <p style={{marginBottom:0}}>{rules.rationale.note}</p>
+      </div>
+    </div>
+
+    <div className="ncSessionBar">
+      <div>{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
+      {usingAttendance&&<label className="ncInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+    </div>
+
+    {!usingAttendance&&<div className="ncTeamGrid">
+      <div className="ncTeamBox a">
+        <input value={teamAName} onChange={e=>setTeamAName(e.target.value)} placeholder="Team A name"/>
+        <label className="ncInlineField">Players<select value={manualCountA} onChange={e=>setManualCountA(Number(e.target.value))}>{[1,2,3].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        {Array.from({length:manualCountA}).map((_,i)=><input key={i} value={manualRosterA[i]||''} onChange={e=>setManualRosterName('A',i,e.target.value)} placeholder={`Player ${i+1}`}/>)}
+      </div>
+      <div className="ncTeamBox b">
+        <input value={teamBName} onChange={e=>setTeamBName(e.target.value)} placeholder="Team B name"/>
+        <label className="ncInlineField">Players<select value={manualCountB} onChange={e=>setManualCountB(Number(e.target.value))}>{[1,2,3].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        {Array.from({length:manualCountB}).map((_,i)=><input key={i} value={manualRosterB[i]||''} onChange={e=>setManualRosterName('B',i,e.target.value)} placeholder={`Player ${i+1}`}/>)}
+      </div>
+    </div>}
+
+    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide game settings':'\u2699 Mode, challenge & scoring settings'}</button>
+    {showSettings&&<div className="ncSettings">
+      <label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{Object.keys(NC_MODES).map(m=><option key={m} value={m}>{m}</option>)}</select></label>
+      <label>Scoring<select value={scoringMode} onChange={e=>setScoringMode(e.target.value)}><option value="boardWin">Board Win only</option><option value="rallyBoard">Rally + Board points</option><option value="pressure">Pressure Mode</option></select></label>
+      <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require challenge to claim (off = win the rally, claim any square)</label>
+      <p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one \u2014 works in every mode.</p>
+    </div>}
+
+    {courts>1&&<div className="ncSettings" style={{alignItems:'flex-start',flexDirection:'column'}}>
+      <div>
+        <strong>How should these {courts} courts relate to each other?</strong>
+        <div className="ncModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={competitionMode==='separate'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('separate')}>Multiplayer \u2014 separate boards per court</button>
+          <button type="button" className={competitionMode==='race'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('race')}>One board, {courtCount} courts \u2014 race</button>
+        </div>
+        <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and teams \u2014 unrelated games.':'Every court plays the identical challenge layout; whoever completes a line first on ANY court wins the whole race. Each court still keeps its own board state \u2014 not one shared board.'}</p>
+        {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={randomiseSharedBoard}>\ud83c\udfb2 Randomise shared board</button>}
+      </div>
+      {usingAttendance&&<div style={{marginTop:'4px'}}>
+        <strong>Court allocation:</strong>
+        <div className="ncModeStrip" style={{marginTop:'8px'}}>
+          <button type="button" className={allocMode==='auto'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('auto')}>Auto \u2014 ranked by level</button>
+          <button type="button" className={allocMode==='manual'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('manual')}>Manual \u2014 I'll allocate</button>
+        </div>
+        {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
+            <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'ncModeBtn ncModeBtnOn':'ncModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
+          </div>)}
+        </div>}
+      </div>}
+    </div>}
+
+    {courts>1&&<div className="ncCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'ncCourtTab ncCourtTabOn':'ncCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
+
+    {usingAttendance&&courts>0&&<div style={{margin:'10px 0'}}>
+      <strong style={{fontSize:'0.85rem',color:'#9fb0c2'}}>Team split for Court {active+1} \u2014 tap a name to switch side:</strong>
+      <div className="ncTeamGrid" style={{marginTop:'8px'}}>
+        <div className="ncTeamBox a"><input value={teamAName} onChange={e=>setTeamAName(e.target.value)} placeholder="Team A name"/>
+          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='A').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} \u2192 B</button>)}
+        </div>
+        <div className="ncTeamBox b"><input value={teamBName} onChange={e=>setTeamBName(e.target.value)} placeholder="Team B name"/>
+          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='B').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} \u2192 A</button>)}
+        </div>
+      </div>
+    </div>}
+
+    {usingAttendance
+      ? allocation.map((g,i)=>{
+          const rosterA=g.filter(n=>getTeamForPlayer(n,i)==='A');
+          const rosterB=g.filter(n=>getTeamForPlayer(n,i)==='B');
+          const teamA={name:teamAName,roster:rosterA};
+          const teamB={name:teamBName,roster:rosterB};
+          const fb=competitionMode==='race'&&courts>1?fixedChallenges:null;
+          return <div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
+            {courts>1&&handedOff.has(i+1)
+              ? <div className="ncBench" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} \u2014 scoring handed to a court device</strong></div>
+              : (rosterA.length&&rosterB.length?<NoughtsCrossesCourt key={`c-${i}-${g.join('|')}-${teamAssignOverrides&&JSON.stringify(teamAssignOverrides)}-${mode}-${requireChallenge}-${scoringMode}-${fb?fb.join('|'):''}`} teamA={teamA} teamB={teamB} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} fixedBoard={fb} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<p className="mutedText">Assign at least 1 player to each team on this court.</p>)}
+          </div>;
+        })
+      : <NoughtsCrossesCourt teamA={{name:teamAName,roster:manualRosterA.slice(0,manualCountA)}} teamB={{name:teamBName,roster:manualRosterB.slice(0,manualCountB)}} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} project={projecting}/>
+    }
+
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+
+    <div className="ncDisplayBar">
+      {courts<=1&&<button type="button" className="primaryBtn" onClick={copyNcPlayerLink}>COPY PLAYER LINK</button>}
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Noughts & Crosses Squash',category:'Noughts & Crosses Squash',format:'Team square-claiming board game',duration:15,task:`Win the rally${requireChallenge?' and complete a square\u2019s challenge':''} to claim it for your team. First to three in a row wins.`,scoring:rules.scoring,rationale:rules.rationale.lead,coach:rules.rationale.note,playerFocus:'Plan ahead \u2014 which square do you need, and how do you win it?',layers:['Tactical Behaviour'],rld:4}));alert('Noughts & Crosses Squash added to your session.');}}>Add to Session</button>}
+      {projecting&&courts<=1&&<span className="ncDisplayHint">\ud83d\udfe2 Live \u00b7 board updates as you tap winners</span>}
+    </div>
+
+    {courts>1&&<div className="ncSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
+      <strong>Court links:</strong>
+      <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
+          <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players){handedOff.has(i+1)?' \u2014 scoring handed off':''}</span>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copyNcScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied \u2713':'Copy Scoring link'}</button>
+            <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copyNcCourtLink(i+1)}>{copiedCourt===i+1?'Copied \u2713':'Copy View link'}</button>
+            {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
+          </div>
+        </div>)}
+      </div>
+      {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyNcRaceLink}>{copiedRaceLink?'Copied \u2713':'Copy Race Display link (projector \u2014 all courts)'}</button>}
+      {projecting&&<span className="ncDisplayHint">\ud83d\udfe2 Live on all {courts} courts</span>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+    </div>}
+  </div>;
+}
+
+// ── Per-court scoring device ────────────────────────────────────────────
+function NoughtsCrossesCourtScorer({court,host}){
+  const roomId=courtRoomId(host,court);
+  const [seedData,setSeedData]=useState(null);
+  const [status,setStatus]=useState('Connecting\u2026');
+  useEffect(()=>{
+    if(seedData)return;
+    let cancelled=false;
+    async function load(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled)return;
+      const p=row&&row.payload&&row.payload.type==='noughtscrosses'?row.payload:null;
+      if(p){
+        const seed={board:(p.board||[]).map(s=>({...s})),rosterA:p.rosterA||[],rosterB:p.rosterB||[],scoreA:p.scoreA||0,scoreB:p.scoreB||0,winner:p.winnerSide||null};
+        setSeedData({seed,teamA:{name:p.teamAName,roster:p.rosterA||[]},teamB:{name:p.teamBName,roster:p.rosterB||[]},mode:p.mode,requireChallenge:p.requireChallenge,scoringMode:p.scoringMode,courtLabel:p.courtLabel||('Court '+court)});
+        setStatus('Live');
+      }else setStatus('Waiting for coach device to set up this court\u2026');
+    }
+    load();
+    const id=setInterval(load,1500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[roomId,seedData]);
+
+  if(!seedData){
+    return <div className="ncDisplayPage"><NcStyles/>
+      <div className="ncDisplayHead"><span className="ncDisplayLive">\u25cf {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Noughts & Crosses \u2014 Court {court}</h1><p>{status}</p></div>
+    </div>;
+  }
+  return <div className="gameCard ncGame">
+    <NcStyles/>
+    <div className="ncDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ncDisplayLive">\u25cf SCORING \u2014 Court {court}</span><h1>Noughts & Crosses Squash</h1></div>
+    <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court.</p>
+    <NoughtsCrossesCourt teamA={seedData.teamA} teamB={seedData.teamB} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+  </div>;
+}
+
+// ── Combined read-only Race Display ─────────────────────────────────────
+function NoughtsCrossesRaceDisplay({host,courtCount}){
+  const [courts,setCourts]=useState([]);
+  useEffect(()=>{
+    let cancelled=false;
+    async function load(){
+      const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(host,i+1))));
+      if(cancelled)return;
+      setCourts(rows.map(row=>row&&row.payload&&row.payload.type==='noughtscrosses'?row.payload:null));
+    }
+    load();
+    const id=setInterval(load,1400);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[host,courtCount]);
+
+  const anyData=courts.some(Boolean);
+  if(!anyData){
+    return <div className="ncDisplayPage"><NcStyles/><div className="ncDisplayHead"><span className="ncDisplayLive">\u25cf CONNECTING</span><h1>Noughts & Crosses \u2014 Race</h1><p>Waiting for courts to start\u2026</p></div></div>;
+  }
+  const overallWinner=courts.map((c,i)=>c&&c.winnerName?{name:c.winnerName,court:i+1}:null).find(Boolean);
+
+  return <div className="ncDisplayPage">
+    <NcStyles/>
+    <div className="ncDisplayHead"><span className="ncDisplayLive">{overallWinner?'\ud83c\udfc6 RACE COMPLETE':'\u25cf LIVE RACE'}</span><h1>Noughts & Crosses \u2014 Race</h1>
+      {overallWinner?<p>{overallWinner.name} (Court {overallWinner.court}) completes a line first and wins the race!</p>:<p>Same board on every court \u2014 first to three in a row wins the whole race.</p>}
+    </div>
+    <div className="ncRaceGrid">
+      {courts.map((c,i)=>{
+        if(!c)return <div key={i} className="ncRaceCourt"><div className="ncRaceLabel">Court {i+1}</div><p className="mutedText">Waiting\u2026</p></div>;
+        return <div key={i} className={`ncRaceCourt${c.winnerName?' winner':''}`}>
+          <div className="ncRaceLabel">Court {i+1}{c.winnerName?` \u2014 ${c.winnerName==='Draw'?'Draw':c.winnerName+' wins'}`:''}</div>
+          <div className="ncBoard" style={{maxWidth:'240px'}}>
+            {(c.board||[]).map((sq,si)=><div key={si} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}`} style={{cursor:'default'}}>
+              {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`} style={{fontSize:'1.6rem'}}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge" style={{fontSize:'0.58rem'}}>{sq.challenge}</span>}
+            </div>)}
+          </div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+// ── Big-screen single-court Player Display ──────────────────────────────
+function NoughtsCrossesPlayerDisplay({payload={}}){
+  const board=payload.board||[];
+  const winnerName=payload.winnerName||null;
+  return <div className="ncDisplayPage">
+    <NcStyles/>
+    <div className="ncDisplayHead"><span className="ncDisplayLive">{winnerName?'\ud83c\udfc6 WINNER':'\u25cf LIVE'}</span><h1>Noughts & Crosses{payload.courtLabel?' \u2014 '+payload.courtLabel:''}</h1>
+      <p>{winnerName?(winnerName==='Draw'?'Board drawn \u2014 all squares filled, no line.':`${winnerName} completes a line and wins the board!`):`${payload.teamAName||'Team A'} (X) vs ${payload.teamBName||'Team B'} (O)`}</p>
+    </div>
+    {payload.scoringMode==='rallyBoard'&&<div className="ncScoreRow"><span className="a">{payload.teamAName}: {payload.scoreA||0}pts</span><span className="b">{payload.teamBName}: {payload.scoreB||0}pts</span></div>}
+    <div className="ncBoard">
+      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}`} style={{cursor:'default'}}>
+        {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
+      </div>)}
+    </div>
+    <div className="ncBenches" style={{marginTop:'16px'}}>
+      <div className="ncBench a"><div className="ncBenchTitle a">{payload.teamAName}</div><div className="ncBenchList">On: {(payload.rosterA||[])[0]}{(payload.rosterA||[]).length>1?` \u00b7 Bench: ${payload.rosterA.slice(1).join(' \u2192 ')}`:''}</div></div>
+      <div className="ncBench b"><div className="ncBenchTitle b">{payload.teamBName}</div><div className="ncBenchList">On: {(payload.rosterB||[])[0]}{(payload.rosterB||[]).length>1?` \u00b7 Bench: ${payload.rosterB.slice(1).join(' \u2192 ')}`:''}</div></div>
+    </div>
+  </div>;
+}
+
 function normalizeCourtPayload(row){
   if(!row||!row.payload)return null;
   const p=row.payload,t=p.type;
@@ -17030,6 +17659,14 @@ function normalizeCourtPayload(row){
     const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
     leaderName=lead?lead.name:'';target=4;headline=lead?(lead.score+'/4 Home'):'';pct=lead?lead.score/4:null;
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
+  }else if(t==='noughtscrosses'){
+    game='Noughts & Crosses';
+    const claimedA=(p.board||[]).filter(s=>s.claimedBy==='A').length;
+    const claimedB=(p.board||[]).filter(s=>s.claimedBy==='B').length;
+    players=[{name:p.teamAName||'Team A',score:claimedA},{name:p.teamBName||'Team B',score:claimedB}];
+    leaderName=claimedA===claimedB?'':(claimedA>claimedB?(p.teamAName||'Team A'):(p.teamBName||'Team B'));
+    target=5;headline=`X: ${claimedA} \u00b7 O: ${claimedB}`;pct=Math.max(claimedA,claimedB)/5;
+    if(p.winnerName){pct=1;headline=p.winnerName==='Draw'?'Draw':'Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
     game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
   }else if(t==='disruption'&&p.battle){
@@ -17075,6 +17712,7 @@ function CourtMonitor({setScreen}){
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   const [count,setCount]=useState(()=>{try{return Number(localStorage.getItem('cbCourtCount'))||3;}catch{return 3;}});
   const [rooms,setRooms]=useState({});
+  const [roomBase,setRoomBase]=useState({});
   const [copied,setCopied]=useState(null);
   const [showLinks,setShowLinks]=useState(true);
   const [pushDisplay,setPushDisplay]=useState(false);
@@ -17083,12 +17721,28 @@ function CourtMonitor({setScreen}){
 
   useEffect(()=>{
     let cancelled=false;
+    const ludoBase=base+'-ludo';
+    const ncBase=base+'-nc';
     async function load(){
       const ns=Array.from({length:count},(_,i)=>i+1);
       const out={};
-      await Promise.all(ns.map(async n=>{const row=await readLivePlayerRoom(courtRoomId(base,n));out[n]=normalizeCourtPayload(row);}));
+      const outBase={};
+      await Promise.all(ns.map(async n=>{
+        const [rowStd,rowLudo,rowNc]=await Promise.all([readLivePlayerRoom(courtRoomId(base,n)),readLivePlayerRoom(courtRoomId(ludoBase,n)),readLivePlayerRoom(courtRoomId(ncBase,n))]);
+        const normStd=normalizeCourtPayload(rowStd);
+        const normLudo=normalizeCourtPayload(rowLudo);
+        const normNc=normalizeCourtPayload(rowNc);
+        // Ludo and N&C each have their own namespaced court rooms so they can never
+        // collide with another module's court rooms — check all three and show whichever
+        // is actually live (freshest non-stale one wins if more than one has data).
+        let chosen=normStd,chosenBase=base;
+        [[normLudo,ludoBase],[normNc,ncBase]].forEach(([norm,nsBase])=>{
+          if(norm&&norm.game&&(!chosen||!chosen.game||(chosen.stale&&!norm.stale))){chosen=norm;chosenBase=nsBase;}
+        });
+        out[n]=chosen;outBase[n]=chosenBase;
+      }));
       if(cancelled)return;
-      setRooms(out);
+      setRooms(out);setRoomBase(outBase);
       const ranking=ns.map(n=>({court:n,pct:out[n]?out[n].pct:null,headline:out[n]?out[n].headline:'',leaderName:out[n]?out[n].leaderName:'',game:out[n]?out[n].game:null})).filter(r=>r.game).sort((a,b)=>((b.pct)||0)-((a.pct)||0));
       writeLivePlayerRoom(courtStandingsRoomId(base),'standings',{type:'standings',count,ranking,updatedAt:Date.now()});
       if(pushDisplay){
@@ -17104,7 +17758,7 @@ function CourtMonitor({setScreen}){
   const ranked=Array.from({length:count},(_,i)=>i+1).map(n=>({n,d:rooms[n]})).sort((a,b)=>{const ap=a.d?.pct,bp=b.d?.pct;if(ap==null&&bp==null)return a.n-b.n;if(ap==null)return 1;if(bp==null)return -1;return bp-ap;});
   const liveCourts=ranked.filter(r=>r.d&&r.d.game&&!r.d.stale);
   const leader=liveCourts.length?ranked.find(r=>r.d&&r.d.game):null;
-  function copyLink(n){try{navigator.clipboard.writeText(buildCourtLink(n,base));setCopied(n);setTimeout(()=>setCopied(null),1500);}catch{}}
+  function copyLink(n){try{navigator.clipboard.writeText(buildCourtLink(n,roomBase[n]||base));setCopied(n);setTimeout(()=>setCopied(null),1500);}catch{}}
 
   return <div className="page">
     <CMStyles/>
@@ -18402,6 +19056,8 @@ const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
 const slRaceParam=useMemo(()=>getSlRaceFromUrl(),[]);
 const ludoScoreParam=useMemo(()=>getLudoScoreFromUrl(),[]);
 const ludoRaceParam=useMemo(()=>getLudoRaceFromUrl(),[]);
+const ncScoreParam=useMemo(()=>getNcScoreFromUrl(),[]);
+const ncRaceParam=useMemo(()=>getNcRaceFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -18446,6 +19102,8 @@ if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} hos
 if(slRaceParam){return <SnakesLaddersRaceDisplay host={slRaceParam.host} courtCount={slRaceParam.courtCount}/>;}
 if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} host={ludoScoreParam.host}/>;}
 if(ludoRaceParam){return <LudoSquashRaceDisplay host={ludoRaceParam.host} courtCount={ludoRaceParam.courtCount}/>;}
+if(ncScoreParam){return <NoughtsCrossesCourtScorer court={ncScoreParam.court} host={ncScoreParam.host}/>;}
+if(ncRaceParam){return <NoughtsCrossesRaceDisplay host={ncRaceParam.host} courtCount={ncRaceParam.courtCount}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
@@ -18463,6 +19121,7 @@ if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
 }
 if(screen==='playerDisplay'&&livePayload?.type==='snakesladders'){return <SnakesLaddersPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='ludosquash'){return <LudoSquashPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='noughtscrosses'){return <NoughtsCrossesPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
