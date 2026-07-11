@@ -167,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v339 Three fixes: (1) Fixed 10 numeric settings inputs across the app (S&L snake/ladder drop-rise/streak cap, session duration, bonus square, NSL min player mins) that could not be cleared and retyped on iPhone - the old pattern snapped straight back to the fallback value the instant the field went empty, so you could never delete a digit to type a new one; fields can now go empty while typing and only restore a sensible default on blur. (2) Fixed Ludo Squash and Noughts & Crosses boards running off screen in landscape - board sizing is now viewport-height-aware (min of vw/vh) so it can never exceed the visible screen regardless of orientation; also restored the Ludo board size increase from v329 which had regressed back to 460px, and pushed the Player Display variant much larger again (near-full-width, min(96vw,80vh)) with proportionally scaling text. (3) Added an ATL Count selector to the ATL/BTL builder (both instances), alongside the existing BTL Count - defaults to \"All shots\" (the classic full tape-drill baseline), with 0-3 options letting the coach reduce how many shots must clear the line so low drives can be trained instead of a habitual lob.';
+const APP_VERSION='v341 WHY CLA? content corrections (both essays, the InfoButton library, and the comparison cards): added explicit reference to Gibson\'s "direct perception" under the Gibson sections \u2014 previously implied but never named as the actual term. Corrected/strengthened the Bernstein explanation: it previously only said every situation is different so every solution is different; added Bernstein\'s stronger point that even when the situation is exactly the same, the movement itself is never exactly the same \u2014 no two movements are ever identical. Terminology/attribution corrections only, per the standing rule \u2014 original examples, bullets and quotes left verbatim, nothing condensed or restructured.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2980,6 +2980,7 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'Bernstein described this beautifully as:'},
       {t:'quote',v:'"Repetition without repetition."'},
       {t:'p',v:'Every movement is slightly different because every situation is slightly different.'},
+      {t:'p',v:'Bernstein went further than this: even when the situation is exactly the same, the movement is still never exactly the same. No two movements are ever identical \u2014 not because the situation changed, but because the human system itself never produces perfect repetition.'},
     ]},
     {id:'d2-order',title:'Order Without Instructions',blocks:[
       {t:'p',v:'Have you ever wondered how a school of fish, or a flock of birds, can move as one — with no leader calling the shots?'},
@@ -3031,11 +3032,13 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'His famous phrase,'},
       {t:'quote',v:'"Repetition without repetition,"'},
       {t:'p',v:'remains one of the cornerstones of modern motor learning.'},
+      {t:'p',v:'Crucially, Bernstein\u2019s point goes beyond saying different situations produce different solutions. Even when the situation is identical, the movement itself is never identical \u2014 no two repetitions of the same action are ever exactly the same.'},
       {t:'p',v:'Bernstein also introduced ideas such as self-organisation, adaptability and functional variability.'},
     ]},
     {id:'d2-gibson',title:'James Gibson — Perception Drives Action',blocks:[
       {t:'p',v:'American psychologist James J. Gibson transformed our understanding of perception.'},
       {t:'p',v:'Rather than seeing perception and movement as separate processes, Gibson argued they are tightly linked.'},
+      {t:'p',v:'Gibson called this direct perception \u2014 the idea that players pick up meaningful information straight from the environment, without needing to consciously interpret or compute it first.'},
       {t:'p',v:'Players move because they detect opportunities for action within their environment.'},
       {t:'p',v:'He called these opportunities affordances.'},
       {t:'p',v:'In squash, affordances might include:'},
@@ -3120,6 +3123,7 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'This became known as:'},
       {t:'quote',v:'"Repetition without repetition."'},
       {t:'p',v:'Rather than producing identical movements, skilled performers continually adapt to small changes in themselves and the environment.'},
+      {t:'p',v:'Bernstein\u2019s insight was stronger than simply saying different situations require different solutions: even when a situation repeats exactly, the movement solution is still never identical. No two movements a performer produces are ever exactly the same.'},
       {t:'p',v:'Bernstein proposed that movement emerges through the cooperation of many body systems rather than being controlled by a single central programme.'},
       {t:'p',v:'His work introduced ideas including:'},
       {t:'ul',v:['Degrees of freedom','Self-organisation','Adaptability','Functional variability']},
@@ -3131,6 +3135,7 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'Gibson proposed something different.'},
       {t:'p',v:'He argued that performers perceive useful information directly from their environment while they move.'},
       {t:'p',v:'This became known as Ecological Psychology.'},
+      {t:'p',v:'Gibson called this direct perception \u2014 perceiving is not a two-step process of sensing then interpreting; meaning is picked up directly from the structure of the environment itself.'},
       {t:'p',v:'Central ideas include:'},
       {t:'ul',v:['Perception and action are inseparable.','Movement continuously updates perception.','Information exists within the environment.','Players learn by interacting with that information.']},
       {t:'p',v:"One of Gibson's most influential concepts is Affordances."},
@@ -14674,14 +14679,14 @@ function DiagnosticIntervention({setScreen}){
     gibson:{
       title:'James Gibson · Affordances',
       researcher:'James J. Gibson developed ecological psychology and the concept of affordances.',
-      core:'Players perceive opportunities for action directly in the environment.',
+      core:'Gibson called this direct perception: players perceive opportunities for action directly in the environment, without needing to first interpret or compute what they are seeing.',
       squash:'A loose ball may afford volley, kill, drop or deception depending on player ability, opponent position and available time.',
       takeaway:'Design games that help players perceive useful opportunities, not just repeat prescribed solutions.'
     },
     bernstein:{
       title:'Nikolai Bernstein · Repetition Without Repetition',
       researcher:'Nikolai Bernstein studied skilled movement, including expert blacksmiths.',
-      core:'Skilled players achieve stable outcomes through adaptable movement, not identical repetition.',
+      core:'Skilled players achieve stable outcomes through adaptable movement, not identical repetition. Bernstein\u2019s key insight was that even when the situation repeats exactly, the movement itself is never exactly the same twice.',
       squash:'Every drive, volley and lunge differs slightly because ball, opponent, time and body position are never identical.',
       takeaway:'Repeat the problem. Do not demand identical movement repetitions.'
     },
@@ -15014,8 +15019,8 @@ function DiagnosticIntervention({setScreen}){
       </div>
       <div className="errorComparisonGrid">
         <div className="claComparisonCard"><h3>Crossing a Busy Road</h3><p>It is easier to cross a busy road when you are already moving, adjusting and weaving than when you stand still and make one desperate run. As you move, gaps appear, speeds become clearer and options change. Squash works the same way.</p></div>
-        <div className="claComparisonCard"><h3>James Gibson · Affordances</h3><p>A door handle affords gripping and pulling. Stairs provide information about step height and how the body should organise. In squash, a loose ball affords volley, attack or deception if the player is attuned to it.</p><InfoButton id="gibson"/></div>
-        <div className="claComparisonCard"><h3>Nikolai Bernstein · Repetition Without Repetition</h3><p>Skilled blacksmiths produced consistent hammer outcomes even though every strike was different. Walking down a gravelly hill is similar: the goal is stable, but every step adapts to changing surface, slope and balance demands.</p><InfoButton id="bernstein"/></div>
+        <div className="claComparisonCard"><h3>James Gibson · Affordances</h3><p>Gibson's theory of direct perception: meaning is picked up straight from the environment, not built up through internal computation. A door handle affords gripping and pulling. Stairs provide information about step height and how the body should organise. In squash, a loose ball affords volley, attack or deception if the player is attuned to it.</p><InfoButton id="gibson"/></div>
+        <div className="claComparisonCard"><h3>Nikolai Bernstein · Repetition Without Repetition</h3><p>Skilled blacksmiths produced consistent hammer outcomes even though every strike was different. Walking down a gravelly hill is similar: the goal is stable, but every step adapts to changing surface, slope and balance demands. Bernstein's point goes further still: even repeating the exact same situation, the movement itself is never exactly the same twice.</p><InfoButton id="bernstein"/></div>
         <div className="claComparisonCard"><h3>Karl Newell · Constraints</h3><p>Movement emerges from interacting individual, task and environmental constraints. Coaches do not directly create movement; they manipulate constraints so useful solutions can emerge.</p><InfoButton id="newell"/></div>
         <div className="claComparisonCard"><h3>Keith Davids · Ecological Dynamics</h3><p>Skill develops through perception-action coupling inside representative environments. The closer practice preserves meaningful information, the more likely behaviour transfers to open play.</p><InfoButton id="davids"/></div>
       </div>
@@ -17045,7 +17050,8 @@ const NC_FAMILIES={
   'Diversity':DIVERSITY_OVERLAYS.map(o=>o.title),
   'Checkerboard':ATL_CB_ZONE_OPTIONS.filter(z=>z!=='None'&&z!=='Custom')
 };
-function ncBoardPicks(mode){
+function ncBoardPicks(mode,requireChallenge=true){
+  if(!requireChallenge)return Array.from({length:9},(_,i)=>`Square ${i+1}`);
   const pool=NC_FAMILIES[mode]||[];
   const picks=pool.slice(0,9);
   while(picks.length<9)picks.push('Coach choice');
@@ -17053,7 +17059,7 @@ function ncBoardPicks(mode){
 }
 const NC_WIN_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 function ncShuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function ncDefaultBoard(mode){return ncBoardPicks(mode).map(c=>({challenge:c,claimedBy:null}));}
+function ncDefaultBoard(mode,requireChallenge=true){return ncBoardPicks(mode,requireChallenge).map(c=>({challenge:c,claimedBy:null}));}
 function ncBoardFromChallenges(list){return list.map(c=>({challenge:c,claimedBy:null}));}
 function ncCheckWin(board){
   for(const line of NC_WIN_LINES){
@@ -17065,20 +17071,20 @@ function ncCheckWin(board){
 }
 
 function ncRules(settings){
-  const rc=settings.requireChallenge!==false;
+  const rc=settings.requireChallenge===true;
   const sm=settings.scoringMode||'boardWin';
-  const principle='Winning the rally is only half the job \u2014 claim the square that matters, and watch the board for what your opponents are building too.';
-  const setup='Two teams take the court \u2014 1 or more players each. Each side\u2019s first-listed player starts on court; the rest wait on the bench. Before you begin, the coach picks the Mode (which challenge pool fills the board) and whether a challenge is required to claim a square.';
+  const principle='Nominate your square before the rally, then win it \u2014 the board is a live tactical plan, not a scoreboard you fill in afterwards.';
+  const setup='Two teams take the court \u2014 1 or more players each. Each side\u2019s first-listed player starts on court; the rest wait on the bench. Default is a classic game with no challenges attached \u2014 turn on "Require a challenge" in settings if you want squares tied to a challenge pool.';
   const player=rc
-    ? 'Win the rally AND complete a square\u2019s challenge \u2192 claim that square for your side. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.'
-    : 'Win the rally \u2192 claim any unclaimed square for your side. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.';
+    ? 'Before each rally, both sides nominate which square they\u2019re going for. Win the rally AND complete your nominated square\u2019s challenge \u2192 claim it. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.'
+    : 'Before each rally, both sides nominate which square they\u2019re going for. Win the rally \u2192 claim your nominated square. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.';
   const steps=[
-    'Two players \u2014 one from each team \u2014 play a normal rally.',
+    'Before the rally, each side nominates the square they\u2019re going for (tap it on the board) \u2014 a side with no nomination can\u2019t claim anything that rally, even if they win.',
+    'Two players \u2014 one from each team \u2014 play the rally.',
     'Coach calls the winner. That side\u2019s on-court player stays on \u2014 the losing side\u2019s player goes to the back of their own bench and the next teammate steps on.',
-    rc?'Coach checks: did the winning side also complete a square\u2019s challenge?':'The winning side may claim any unclaimed square.',
-    rc?'If yes, tap the square whose challenge they completed \u2014 it\u2019s claimed with their symbol. If no, no claim this rally.':'Tap the square they\u2019re claiming \u2014 it\u2019s marked with their symbol.',
-    'Check the board after every claim \u2014 three in a row (row, column or diagonal) wins.',
-    'If all 9 squares fill with no line, it\u2019s a draw.'
+    rc?'Coach checks: did the winning side also complete the challenge on their nominated square?':'The winning side\u2019s nominated square is claimed automatically.',
+    rc?'If yes, their nominated square is claimed with their symbol. If no, no claim this rally.':'No extra check needed \u2014 winning the rally is enough.',
+    'Check the board after every claim \u2014 three in a row (row, column or diagonal) wins. If all 9 squares fill with no line, it\u2019s a draw.'
   ];
   const scoring=sm==='rallyBoard'
     ? 'Win a rally \u2192 +1 point. Claim a square \u2192 +1 more. Win the whole board \u2192 +3 bonus.'
@@ -17086,15 +17092,15 @@ function ncRules(settings){
       ? 'Pressure Mode: the challenge must be completed AND the rally won together \u2014 completing the challenge but losing the rally claims nothing.'
       : 'No running score \u2014 the board itself is the prize. First to three in a row wins the board outright.';
   const example=rc
-    ? 'Team A and Team B play a rally. Team A\u2019s on-court player wins and completes the Boast square\u2019s challenge \u2014 Team A claims it with an X. Team B\u2019s player rotates off; their next teammate comes on. Next rally, Team B wins but doesn\u2019t complete a challenge \u2014 no claim, but their winning player stays on. The rally after that, Team B wins and completes the Drop square \u2014 O goes there. Play continues until a line completes.'
-    : 'Team A and Team B play a rally. Team A\u2019s on-court player wins \u2014 they claim any unclaimed square with an X, tactically choosing one that also blocks a Team B line. Team B\u2019s player rotates off; their next teammate comes on. Play continues until a line completes.';
+    ? 'Before the rally, Team A nominates the Boast square and Team B nominates the centre square. Team A\u2019s on-court player wins and completes the Boast challenge \u2014 Team A claims it with an X. Team B\u2019s player rotates off; their next teammate comes on. Next rally, both re-nominate; Team B wins but doesn\u2019t complete their challenge \u2014 no claim, but their winning player stays on. Play continues until a line completes.'
+    : 'Before the rally, Team A nominates the centre square and Team B nominates a corner that blocks Team A\u2019s line. Team A\u2019s on-court player wins the rally \u2014 they claim the centre with an X. Team B\u2019s player rotates off; their next teammate comes on. Play continues until a line completes.';
   const rationale={
-    lead:'Noughts & Crosses Squash\u2122 turns every rally into a tactical decision, not just a point \u2014 players are trying to win the board, not just the rally.',
+    lead:'Noughts & Crosses Squash\u2122 turns every rally into a tactical decision, not just a point \u2014 nominating your square before the rally forces real planning, not hindsight.',
     bullets:[
-      ['Plan ahead','which square do I need, and how do I win it?'],
+      ['Plan ahead','which square do I need, and can I win it this rally?'],
       ['Block awareness','recognising when an opponent is one square from a line and needing to respond.'],
-      ['Calculated risk','choosing between the best attacking square and the square that denies the opponent.'],
-      ['Representative pressure','the challenge ties shot execution directly to a visible tactical outcome, not an isolated drill.']
+      ['Calculated risk','nominating the best attacking square versus the square that denies the opponent.'],
+      ['Representative pressure','the challenge (when switched on) ties shot execution directly to a visible tactical outcome, not an isolated drill.']
     ],
     note:'Coach should avoid over-instructing technique here \u2014 the challenge should guide behaviour, not a running commentary on shot mechanics. If a player is one square from winning, let the opponent work out for themselves that they need to block it.'
   };
@@ -17125,6 +17131,14 @@ function NcStyles(){return <style>{`
 .ncSideBtn.b{background:#3a1f2e;border-color:#ff5fd0;color:#eaf4fb;}
 .ncConfirmRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 14px;}
 .ncSquareRow{display:flex;flex-direction:column;gap:8px;width:100%;}
+.ncNominateRow{display:flex;flex-direction:column;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;}
+.ncPieceRow{display:flex;gap:6px;flex-wrap:wrap;}
+.ncNomBtn{background:#0f1822;border:1.5px solid #3a5a8c;color:#cdd9e6;border-radius:8px;padding:6px 10px;font-size:0.78rem;cursor:pointer;}
+.ncNomBtn.a.active{background:#12203a;border-color:#2f9bff;color:#eaf4fb;font-weight:700;}
+.ncNomBtn.b.active{background:#3a1f2e;border-color:#ff5fd0;color:#eaf4fb;font-weight:700;}
+.ncCell.nomA{box-shadow:0 0 0 3px #2f9bff inset;}
+.ncCell.nomB{box-shadow:0 0 0 3px #ff5fd0 inset;}
+.ncCell.nomA.nomB{box-shadow:0 0 0 3px #2f9bff inset,0 0 0 6px #ff5fd0 inset;}
 .ncSquareBtn{background:#0b1118;border:1.5px solid #3a5a8c;color:#eaf4fb;border-radius:9px;padding:10px 13px;font-weight:600;cursor:pointer;font-size:0.85rem;text-align:left;}
 .ncSquareBtn:hover{border-color:#5c85b8;}
 .ncBenches{display:flex;gap:10px;flex-wrap:wrap;}
@@ -17187,7 +17201,7 @@ function NcStyles(){return <style>{`
 
 // ── Per-court engine ─────────────────────────────────────────────────────
 function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode='boardWin',fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
-  const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode)));
+  const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge)));
   const [rosterA,setRosterA]=useState(()=>seed?seed.rosterA:[...teamA.roster]);
   const [rosterB,setRosterB]=useState(()=>seed?seed.rosterB:[...teamB.roster]);
   const [scoreA,setScoreA]=useState(()=>seed?seed.scoreA:0);
@@ -17198,29 +17212,29 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   const [undoStack,setUndoStack]=useState([]);
   const [editingIdx,setEditingIdx]=useState(null);
   const [customText,setCustomText]=useState('');
+  const [nomA,setNomA]=useState(null);
+  const [nomB,setNomB]=useState(null);
 
   function snapshot(){return {board:board.map(s=>({...s})),rosterA:[...rosterA],rosterB:[...rosterB],scoreA,scoreB,winner,events:[...events]};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setPendingRally(null);return prev.slice(0,-1);});}
-  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);}
-  function randomiseBoard(){if(board.some(s=>s.claimedBy))return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setBoard(picks.map(c=>({challenge:c,claimedBy:null})));}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setPendingRally(null);setNomA(null);setNomB(null);return prev.slice(0,-1);});}
+  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);setNomA(null);setNomB(null);}
+  function randomiseBoard(){if(!requireChallenge||board.some(s=>s.claimedBy))return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setBoard(picks.map(c=>({challenge:c,claimedBy:null})));}
+
+  function nominate(side,idx){
+    if(winner||pendingRally||board[idx].claimedBy)return;
+    if(side==='A')setNomA(prev=>prev===idx?null:idx);
+    else setNomB(prev=>prev===idx?null:idx);
+  }
 
   function startRally(side){
     if(winner||pendingRally)return;
-    setPendingRally(requireChallenge?{side,stage:'confirm'}:{side,stage:'choose'});
+    const myNom=side==='A'?nomA:nomB;
+    if(requireChallenge){setPendingRally({side,stage:'confirm',squareIdx:myNom});}
+    else{finalizeRally(side,myNom);}
   }
   function confirmChallenge(achieved){
     if(!pendingRally)return;
-    if(achieved){setPendingRally(p=>({...p,stage:'choose'}));}
-    else{finalizeRally(pendingRally.side,null);setPendingRally(null);}
-  }
-  function chooseSquare(idx){
-    if(!pendingRally)return;
-    finalizeRally(pendingRally.side,idx);
-    setPendingRally(null);
-  }
-  function skipClaim(){
-    if(!pendingRally)return;
-    finalizeRally(pendingRally.side,null);
+    finalizeRally(pendingRally.side,achieved?pendingRally.squareIdx:null);
     setPendingRally(null);
   }
 
@@ -17239,10 +17253,10 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
 
     if(squareIdx!=null&&!nextBoard[squareIdx].claimedBy){
       nextBoard[squareIdx].claimedBy=side;
-      ev.push(`${sideLabel} claims "${nextBoard[squareIdx].challenge}"`);
+      ev.push(`${sideLabel} claims their target — "${nextBoard[squareIdx].challenge}"`);
       if(scoringMode==='rallyBoard'){if(side==='A')nextScoreA+=1;else nextScoreB+=1;}
     }else if(squareIdx==null){
-      ev.push(`No claim this rally`);
+      ev.push(`${sideLabel} won but had no target nominated — no claim`);
     }
 
     let newWinner=null;
@@ -17258,6 +17272,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     setBoard(nextBoard);setRosterA(nextRosterA);setRosterB(nextRosterB);setScoreA(nextScoreA);setScoreB(nextScoreB);
     if(ev.length)setEvents(prev=>[...ev.slice().reverse(),...prev].slice(0,6));
     if(newWinner)setWinner(newWinner);
+    setNomA(null);setNomB(null);
   }
 
   function applyEdit(idx,text){
@@ -17267,7 +17282,6 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   }
 
   const onA=rosterA[0],onB=rosterB[0];
-  const unclaimed=board.map((s,i)=>({...s,idx:i})).filter(s=>!s.claimedBy);
 
   useEffect(()=>{
     if(!project)return;
@@ -17276,13 +17290,25 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
       teamAName:teamA.name,teamBName:teamB.name,
       board:board.map(s=>({challenge:s.challenge,claimedBy:s.claimedBy})),
       rosterA,rosterB,scoreA,scoreB,
+      nomA,nomB,nomAName:nomA!=null?board[nomA].challenge:null,nomBName:nomB!=null?board[nomB].challenge:null,
       winnerName:winner?(winner==='draw'?'Draw':(winner==='A'?teamA.name:teamB.name)):null,
       winnerSide:winner,
       courtLabel};
     writeLivePlayerRoom(roomId||getNcLiveRoomId(),'noughtscrosses',payload);
-  },[project,board,rosterA,rosterB,scoreA,scoreB,winner,courtLabel,roomId,mode,requireChallenge,scoringMode]);
+  },[project,board,rosterA,rosterB,scoreA,scoreB,winner,courtLabel,roomId,mode,requireChallenge,scoringMode,nomA,nomB]);
 
   return <div className="ncCourt">
+    {winner==null&&!pendingRally&&<div className="ncNominateRow">
+      <div className="ncSquareRow">
+        <span><b>{teamA.name}</b> is going for: {nomA==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomA].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} className={`ncNomBtn a${nomA===i?' active':''}`} onClick={()=>nominate('A',i)}>{sq.challenge}</button>)}</div>
+      </div>
+      <div className="ncSquareRow">
+        <span><b>{teamB.name}</b> is going for: {nomB==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomB].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} className={`ncNomBtn b${nomB===i?' active':''}`} onClick={()=>nominate('B',i)}>{sq.challenge}</button>)}</div>
+      </div>
+    </div>}
+
     {winner==null&&!pendingRally&&<div className="ncOnCourt">
       <span className="ncOnCourtLabel">On court</span>
       <button type="button" className="ncSideBtn a" onClick={()=>startRally('A')}>{onA} ({teamA.name}) won</button>
@@ -17291,17 +17317,12 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     </div>}
 
     {pendingRally&&pendingRally.stage==='confirm'&&<div className="ncConfirmRow">
-      <span>Did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> also complete a square's challenge?</span>
-      <button type="button" className="primaryBtn" onClick={()=>confirmChallenge(true)}>Yes</button>
-      <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>No</button>
-    </div>}
-
-    {pendingRally&&pendingRally.stage==='choose'&&<div className="ncConfirmRow">
-      <div className="ncSquareRow">
-        <span>Which square did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> claim?</span>
-        {unclaimed.map(s=><button type="button" key={s.idx} className="ncSquareBtn" onClick={()=>chooseSquare(s.idx)}>{s.challenge}</button>)}
-        <button type="button" className="secondaryBtn" onClick={skipClaim}>No claim this rally</button>
-      </div>
+      {pendingRally.squareIdx!=null
+        ? <><span>Did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> complete their target \u2014 <b>{board[pendingRally.squareIdx].challenge}</b>?</span>
+            <button type="button" className="primaryBtn" onClick={()=>confirmChallenge(true)}>Yes</button>
+            <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>No</button></>
+        : <><span><b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> won but had no target nominated \u2014 no claim this rally.</span>
+            <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>Continue</button></>}
     </div>}
 
     {winner!=null&&<div className="ncWinBanner">{winner==='draw'?'\ud83e\udd1d Board drawn \u2014 all squares filled, no line.':`\ud83c\udfc6 ${winner==='A'?teamA.name:teamB.name} completes a line and wins the board!`}</div>}
@@ -17314,10 +17335,10 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     </div>
 
     <div className="ncBoard">
-      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}`} onClick={()=>{if(!sq.claimedBy&&editingIdx!==i){setEditingIdx(i);setCustomText(sq.challenge);}}}>
+      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}${nomA===i?' nomA':''}${nomB===i?' nomB':''}`} onClick={()=>{if(!sq.claimedBy&&editingIdx!==i){setEditingIdx(i);setCustomText(sq.challenge);}}}>
         {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
         {!sq.claimedBy&&editingIdx!==i&&<span className="ncCellEdit">\u270e</span>}
-        {editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
+        {requireChallenge&&editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
           {(NC_FAMILIES[mode]||[]).map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
           <input className="ncEditInput" value={customText} onChange={e=>setCustomText(e.target.value)} placeholder="Custom..." onKeyDown={e=>{if(e.key==='Enter'&&customText.trim())applyEdit(i,customText.trim());}}/>
           <button type="button" className="ncEditOpt" onClick={()=>customText.trim()&&applyEdit(i,customText.trim())}>Save custom</button>
@@ -17328,7 +17349,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
 
     <div className="ncControls">
       <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>\u21b6 Undo last move</button>
-      {!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy)} style={{opacity:board.some(s=>s.claimedBy)?0.45:1}}>\ud83c\udfb2 Randomise board</button>}
+      {requireChallenge&&!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy)} style={{opacity:board.some(s=>s.claimedBy)?0.45:1}}>\ud83c\udfb2 Randomise board</button>}
       <button type="button" className="secondaryBtn" onClick={resetGame}>New board</button>
     </div>
     {events.length>0&&<div className="ncEvents">{events.map((e,i)=><div key={i} className={i===0?'ncEvent new':'ncEvent'}>{e}</div>)}</div>}
@@ -17348,7 +17369,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [manualRosterA,setManualRosterA]=useState(['Player 1']);
   const [manualRosterB,setManualRosterB]=useState(['Player 2']);
   const [mode,setMode]=useState('Technical');
-  const [requireChallenge,setRequireChallenge]=useState(true);
+  const [requireChallenge,setRequireChallenge]=useState(false);
   const [scoringMode,setScoringMode]=useState('boardWin');
   const settings=useMemo(()=>({requireChallenge,scoringMode}),[requireChallenge,scoringMode]);
   const rules=useMemo(()=>ncRules(settings),[settings]);
@@ -17362,12 +17383,12 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [allocMode,setAllocMode]=useState('auto');
   const [manualAssign,setManualAssign]=useState({});
   const [teamAssignOverrides,setTeamAssignOverrides]=useState({});
-  const [fixedChallenges,setFixedChallenges]=useState(()=>ncBoardPicks('Technical'));
+  const [fixedChallenges,setFixedChallenges]=useState(()=>ncBoardPicks('Technical',false));
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getNcLiveRoomId();},[]);
 
-  useEffect(()=>{setFixedChallenges(ncBoardPicks(mode));},[mode]);
-  function randomiseSharedBoard(){const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setFixedChallenges(picks);}
+  useEffect(()=>{setFixedChallenges(ncBoardPicks(mode,requireChallenge));},[mode,requireChallenge]);
+  function randomiseSharedBoard(){if(!requireChallenge)return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setFixedChallenges(picks);}
 
   async function copyNcPlayerLink(){
     setProjecting(true);
@@ -17475,10 +17496,10 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide game settings':'\u2699 Mode, challenge & scoring settings'}</button>
     {showSettings&&<div className="ncSettings">
-      <label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{NC_MODES.map(m=><option key={m} value={m}>{m}</option>)}</select></label>
+      <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require a challenge to claim (default off \u2014 classic noughts & crosses: nominate a square, win the rally, claim it)</label>
+      {requireChallenge&&<label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{NC_MODES.map(m=><option key={m} value={m}>{m}</option>)}</select></label>}
       <label>Scoring<select value={scoringMode} onChange={e=>setScoringMode(e.target.value)}><option value="boardWin">Board Win only</option><option value="rallyBoard">Rally + Board points</option><option value="pressure">Pressure Mode</option></select></label>
-      <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require challenge to claim (off = win the rally, claim any square)</label>
-      <p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one \u2014 works in every mode.</p>
+      {requireChallenge&&<p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one.</p>}
     </div>}
 
     {courts>1&&<div className="ncSettings" style={{alignItems:'flex-start',flexDirection:'column'}}>
@@ -17489,7 +17510,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
           <button type="button" className={competitionMode==='race'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('race')}>One board, {courtCount} courts \u2014 race</button>
         </div>
         <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and teams \u2014 unrelated games.':'Every court plays the identical challenge layout; whoever completes a line first on ANY court wins the whole race. Each court still keeps its own board state \u2014 not one shared board.'}</p>
-        {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={randomiseSharedBoard}>\ud83c\udfb2 Randomise shared board</button>}
+        {competitionMode==='race'&&requireChallenge&&<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={randomiseSharedBoard}>\ud83c\udfb2 Randomise shared board</button>}
       </div>
       {usingAttendance&&<div style={{marginTop:'4px'}}>
         <strong>Court allocation:</strong>
@@ -17647,14 +17668,20 @@ function NoughtsCrossesRaceDisplay({host,courtCount}){
 function NoughtsCrossesPlayerDisplay({payload={}}){
   const board=payload.board||[];
   const winnerName=payload.winnerName||null;
+  const nomA=payload.nomA;
+  const nomB=payload.nomB;
   return <div className="ncDisplayPage">
     <NcStyles/>
     <div className="ncDisplayHead"><span className="ncDisplayLive">{winnerName?'\ud83c\udfc6 WINNER':'\u25cf LIVE'}</span><h1>Noughts & Crosses{payload.courtLabel?' \u2014 '+payload.courtLabel:''}</h1>
       <p>{winnerName?(winnerName==='Draw'?'Board drawn \u2014 all squares filled, no line.':`${winnerName} completes a line and wins the board!`):`${payload.teamAName||'Team A'} (X) vs ${payload.teamBName||'Team B'} (O)`}</p>
     </div>
     {payload.scoringMode==='rallyBoard'&&<div className="ncScoreRow"><span className="a">{payload.teamAName}: {payload.scoreA||0}pts</span><span className="b">{payload.teamBName}: {payload.scoreB||0}pts</span></div>}
+    {winnerName==null&&(nomA!=null||nomB!=null)&&<div className="ncScoreRow" style={{fontSize:'0.85rem',fontWeight:600}}>
+      <span className="a">{payload.teamAName} going for: {nomA!=null?payload.nomAName:'\u2014 not nominated'}</span>
+      <span className="b">{payload.teamBName} going for: {nomB!=null?payload.nomBName:'\u2014 not nominated'}</span>
+    </div>}
     <div className="ncBoard">
-      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}`} style={{cursor:'default'}}>
+      {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}${nomA===i?' nomA':''}${nomB===i?' nomB':''}`} style={{cursor:'default'}}>
         {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
       </div>)}
     </div>
