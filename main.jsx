@@ -161,7 +161,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v335 WHY CLA? rebuilt as two full unedited essays back to back (nothing merged or paraphrased) — evolution/animal-examples essay first with hook framing, divider, then the full formal science chapter; short one-line "beat" sentences now styled distinctly, quotes are large pull-quotes, sections numbered';
+const APP_VERSION='v336 Added OCCLUSION READ to PERCEPTION module: new section for goggle-controlled temporal occlusion training, live clean/not-clean tally per player, cut point label, simple per-session log, no RLD wiring';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3556,7 +3556,8 @@ const PERCEPTION_SECTIONS=[
   {id:'quiet-eye',title:'QUIET EYE™',subtitle:'Visual attention, gaze control and head stability.',focus:'Where and when to look.',rld:1},
   {id:'tracking',title:'TRACKING™',subtitle:'Ball tracking, time-to-contact and chipping progressions.',focus:'Seeing ball flight and calibrating interception.',rld:0},
   {id:'interception',title:'INTERCEPTION™',subtitle:'Using information to gain time.',focus:'Early take, volley, T interception and court control.',rld:3},
-  {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4}
+  {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4},
+  {id:'occlusion-read',title:'OCCLUSION READ™',subtitle:'Goggle-controlled temporal occlusion — movement response only.',focus:'Clear → Occlude at contact → Earlier → Earlier again',rld:4,rationale:'Occlusion goggles (controlled from their own app, not this one) cut the player\u2019s vision at a chosen point in the rally. The player\u2019s response is movement only \u2014 footwork, split direction, racket prep \u2014 never a verbal call, because movement response keeps perception coupled to action. Set the cut point on the goggles first, then use this tool to judge and tally the response. Only move the cut point earlier once responses are mostly clean at the current point.'}
 ];
 
 function perceptionGames(){
@@ -3638,6 +3639,94 @@ function perceptionPlaceholderCards(section){
     ]
   };
   return all[section]||[];
+}
+
+// ── OCCLUSION READ™ ──────────────────────────────────────────────────────────
+// Live courtside tool for goggle-controlled temporal occlusion training.
+// The goggles (their own app, own remote) own the actual occlusion timing —
+// this tool only labels which cut point is in use, captures the coach's
+// clean/not-clean judgement of the player's MOVEMENT response, and stores one
+// simple "cut point reached" note per player per session. No verbal calls,
+// no RLD/ERG wiring — deliberately kept to the minimum needed courtside.
+const OCR_CUT_POINTS=['Clear (Baseline)','Contact','Contact + Early','Contact + Very Early'];
+const OCR_LOG_KEY='checkerboard_occlusion_read_log_v1';
+function OcclusionReadTool(){
+  const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
+  const [player,setPlayer]=useState(present[0]||'');
+  const [cutPoint,setCutPoint]=useState(OCR_CUT_POINTS[0]);
+  const [customCut,setCustomCut]=useState('');
+  const [tally,setTally]=useState({});
+  const [log,setLog]=useState(()=>{try{return JSON.parse(localStorage.getItem(OCR_LOG_KEY))||[];}catch{return[];}});
+  useEffect(()=>{if(!player&&present.length)setPlayer(present[0]);},[present.join('|')]);
+  const activeCut=customCut.trim()||cutPoint;
+  const t=tally[player]||{clean:0,notClean:0};
+  function bump(kind){
+    if(!player)return;
+    setTally(prev=>({...prev,[player]:{clean:(prev[player]?.clean||0),notClean:(prev[player]?.notClean||0),[kind]:(prev[player]?.[kind]||0)+1}}));
+  }
+  function resetBlock(){if(player)setTally(prev=>({...prev,[player]:{clean:0,notClean:0}}));}
+  function logCutPoint(){
+    if(!player)return;
+    const entry={date:new Date().toISOString().slice(0,10),player,cutPoint:activeCut,clean:t.clean,notClean:t.notClean};
+    const next=[entry,...log].slice(0,50);
+    setLog(next);
+    try{localStorage.setItem(OCR_LOG_KEY,JSON.stringify(next));}catch{}
+  }
+  const total=t.clean+t.notClean;
+  const pct=total?Math.round((t.clean/total)*100):null;
+  const playerLog=log.filter(e=>e.player===player).slice(0,5);
+  const STYLE=`
+.ocrWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #34a0e0;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.ocrSection{margin:14px 0;}
+.ocrLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.ocrChips{display:flex;flex-wrap:wrap;gap:8px;}
+.ocrChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ocrChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.ocrCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:9px 11px;color:#dbe6f2;font-size:0.88rem;margin-top:8px;}
+.ocrBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.ocrBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.ocrBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.ocrTallyRow{display:flex;gap:10px;margin-top:12px;}
+.ocrTapBtn{flex:1;border-radius:12px;padding:22px 8px;font-weight:800;font-size:1.05rem;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ocrTapBtn.clean{background:#0c2418;border:1px solid #34e07a;color:#bff0d0;}
+.ocrTapBtn.notclean{background:#2a1414;border:1px solid #e05a5a;color:#f0c4c4;}
+.ocrTapCount{display:block;font-size:1.6rem;margin-top:4px;}
+.ocrScoreLine{margin-top:12px;color:#eaf4fb;font-weight:800;font-size:0.95rem;}
+.ocrHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}
+.ocrLogList{margin-top:8px;font-size:0.85rem;color:#9fb6cf;}
+.ocrLogList div{padding:4px 0;border-bottom:1px solid #223044;}
+.ocrAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}`;
+  return <div className="perceptionOcclusionRead">
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>OCCLUSION READ™</h2><p>Goggles control the actual occlusion — set the cut point on the goggles' own app first. This tool is just for judging and tallying the player's movement response, and logging the cut point reached.</p></div>
+    <div className="ocrWrap">
+      <div className="ocrSection">
+        <div className="ocrLabel">1. Player</div>
+        <div className="ocrChips">{present.length===0&&<span className="ocrHint">No present players found. Mark attendance to tally by name.</span>}{present.map(name=><div key={name} role="button" tabIndex={0} className={player===name?'ocrChip on':'ocrChip'} onClick={()=>setPlayer(name)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setPlayer(name);}}>{name}</div>)}</div>
+      </div>
+      <div className="ocrSection">
+        <div className="ocrLabel">2. Cut point set on goggles</div>
+        <div className="ocrChips">{OCR_CUT_POINTS.map(cp=><div key={cp} role="button" tabIndex={0} className={!customCut.trim()&&cutPoint===cp?'ocrChip on':'ocrChip'} onClick={()=>{setCutPoint(cp);setCustomCut('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setCutPoint(cp);setCustomCut('');}}}>{cp}</div>)}</div>
+        <input className="ocrCustom" placeholder="Custom cut point label (optional)" value={customCut} onChange={ev=>setCustomCut(ev.target.value)}/>
+      </div>
+      <div className="ocrSection">
+        <div className="ocrLabel">3. Judge the movement response — clean or not clean</div>
+        <div className="ocrBox"><strong>Clean</strong><p>Correct direction, committed early, no hesitation or correction step.</p></div>
+        <div className="ocrBox"><strong>Not Clean</strong><p>Wrong direction, late, or a visible correction. A right guess with a correction step is not clean.</p></div>
+        <div className="ocrTallyRow">
+          <div role="button" tabIndex={0} className="ocrTapBtn clean" onClick={()=>bump('clean')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bump('clean');}}>Clean<span className="ocrTapCount">{t.clean}</span></div>
+          <div role="button" tabIndex={0} className="ocrTapBtn notclean" onClick={()=>bump('notClean')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bump('notClean');}}>Not Clean<span className="ocrTapCount">{t.notClean}</span></div>
+        </div>
+        {total>0&&<div className="ocrScoreLine">{player||'Player'}: {t.clean}/{total} clean ({pct}%) at {activeCut}</div>}
+        <p className="ocrHint">Mostly clean → move the cut point earlier on the goggles for the next block. Not mostly clean → stay here, more reps, next session too if needed.</p>
+      </div>
+      <div className="ocrAddRow">
+        <button className="secondaryBtn" onClick={resetBlock}>Reset Block</button>
+        <button className="primaryBtn" onClick={logCutPoint} disabled={!player}>Log Cut Point Reached</button>
+      </div>
+      {playerLog.length>0&&<div className="ocrSection"><div className="ocrLabel">Recent log — {player}</div><div className="ocrLogList">{playerLog.map((e,i)=><div key={i}>{e.date} · {e.cutPoint} · {e.clean}/{e.clean+e.notClean} clean</div>)}</div></div>}
+    </div>
+  </div>;
 }
 
 function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
@@ -3760,7 +3849,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
       <div><strong>3 · Directional Commitment</strong><p>The first visible expression of anticipation: movement toward the side or space the ball is going.</p></div>
       <div><strong>4 · Functional Advantage</strong><p>The read buys time: earlier contact, higher contact point, volley or attacking opportunity.</p></div>
     </div>
-    <div className="perceptionWorkArea">
+    {section==='occlusion-read'?<OcclusionReadTool/>:<div className="perceptionWorkArea">
       <div className="perceptionSidebar">
         <h3>{currentSection.title}</h3><p>{currentSection.subtitle}</p>
         <CoachRationale label="Why these games — coach rationale">
@@ -3832,7 +3921,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
         {status&&<div className="statusBox">{status}</div>}
       </div>}
-    </div>
+    </div>}
   </div>;
 }
 
