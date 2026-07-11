@@ -167,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v342 Noughts & Crosses Squash: added a genuine Free-for-all format alongside Teams - up to 4 individual players, each with their own symbol (X, O, \u25b3, \u25a1), single winner-stays-on queue same as Snakes & Ladders/Ludo rather than the team-bench rotation. Pre-rally nomination, requireChallenge, scoring modes and the editable challenge board all carry over unchanged. Combined with the existing multi-court Race pattern this covers both of the previously-unbuilt cases: multiple individual players on one court (Free-for-all format), and the same board raced across multiple courts with individual winners (Free-for-all + Race mode - identical board forced onto every court, each court its own independent state, first individual across ANY court to complete a line wins the whole race, never a single board written to by multiple devices at once). Court Monitor, the Scorer link, the Race Display and the Player Display all updated to read either format correctly.';
+const APP_VERSION='v346 Noughts & Crosses: added Best of 3 per pairing (Teams and Free-for-all both), the pinned pacing fix - a new toggle alongside Require a challenge. When on, the current on-court pairing plays a mini best-of-3 (first to 2 rally wins) before anything is claimed; nomination locks once the series starts, and only rotation/claim/challenge-confirm happen once it\'s decided. Board takes roughly 3x longer to fill instead of a single rally deciding a square. Stackable with Require a challenge for maximum pacing control. Live series score shown on the coach screen, scorer link and Player Display.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1383,7 +1383,8 @@ const TECHNICAL_OVERLAYS = [
  {id:'no-drifting',category:'Movement',title:'No Drifting',rule:'Player stops unnecessary movement drift after striking or recovering.',process:'Stopping drift improves readiness and stabilises perception while reading the opponent.',breakdown:'Player keeps floating and cannot split.',constraint:'Obvious drift during opponent strike = warning/loss.',checkerboard:'Useful after [6-3], [5-4] and cross-court recovery patterns.',pairings:['Split before opponent contact','Stable head through contact','Recover through central lane'],games:['ATL','Rotational pressure','Double Bounce']},
  {id:'same-prep',category:'Swing Shape',title:'Same Prep Different Shot',rule:'Player keeps preparation similar while preserving at least two shot options.',process:'Maintains informational uncertainty for the opponent and keeps multiple affordances open through preparation.',breakdown:'Shot intention is shown early.',constraint:'If preparation clearly gives away the shot, coach calls “shown”.',checkerboard:'Excellent with [6-3] or [6-1], [5-4] or [5-2].',pairings:['Quiet Eye','Second Eye Overlay','Prepared before leaving T'],games:['Checkerboard choice games','Double Bounce']},
  {id:'finish-front-wall',category:'Swing Shape',title:'Finish To Front Wall',rule:'Follow-through finishes toward the front wall/target line rather than wrapping around the body.',process:'Directs swing organisation toward intended affordance and helps players who over-rotate or pull away from target shape.',breakdown:'Swing wraps around waist/body.',constraint:'Wrap away from target line = “finish”.',checkerboard:'Useful for drives [6-3], [5-4].',pairings:['Stable head through contact','Non-playing arm active','Hit through the ball'],games:['Drive games','Progressive ATL']},
- {id:'hit-through',category:'Swing Shape',title:'Hit Through The Ball',rule:'Player sends energy through intended line/space rather than poking or steering.',process:'Strengthens coupling between target affordance, swing path and ball outcome, especially when depth/penetration is required.',breakdown:'Player pokes, decelerates or steers.',constraint:'Poked/held without tactical purpose = “through”.',checkerboard:'Useful on [6-3], [5-4], [6-4], [5-3].',pairings:['Finish to front wall','Racquet above wrist','Stable head through contact'],games:['Progressive ATL','Length games','Double Bounce']}
+ {id:'hit-through',category:'Swing Shape',title:'Hit Through The Ball',rule:'Player sends energy through intended line/space rather than poking or steering.',process:'Strengthens coupling between target affordance, swing path and ball outcome, especially when depth/penetration is required.',breakdown:'Player pokes, decelerates or steers.',constraint:'Poked/held without tactical purpose = “through”.',checkerboard:'Useful on [6-3], [5-4], [6-4], [5-3].',pairings:['Finish to front wall','Racquet above wrist','Stable head through contact'],games:['Progressive ATL','Length games','Double Bounce']},
+ {id:'return-to-t',category:'Movement',title:'Return To T Zone',rule:'Player returns to the T after every shot, before the opponent\u2019s next contact, rather than watching their own shot from wherever they finished.',process:'Establishes a consistent recovery target that maximises court coverage and keeps options open for the next ball, rather than recovery being incidental to where the shot happened to finish.',breakdown:'Player watches their own shot, recovers to the wrong spot, or is still arriving as the opponent strikes.',constraint:'Not back on/near the T before opponent contact = \u201cT\u201d.',checkerboard:'Useful after any finishing pattern, especially [8-1], [7-2], [6-3], [5-4].',pairings:['Recover Through Central Lane','Split Before Opponent Contact','Prepared Before Leaving T'],games:['Progressive ATL','Double Bounce','Rotational pressure']}
 ];
 
 
@@ -1397,7 +1398,10 @@ const TACTICAL_OVERLAYS = [
   {category:'Pressure', title:'Opponent Off T', rule:'Look to finish when the opponent is away from the T and unable to cover both sides.', coach:'Shapes recognition of when the opponent is genuinely out of position rather than just moving.', pairings:['Eagle','Tiger','Lion']},
   {category:'Pressure', title:'Opponent Off Balance', rule:'Attack when the opponent is reaching, stretched or unbalanced at contact.', coach:'Trains the player to read body shape, not just court position, before committing.', pairings:['Eagle','Tiger']},
   {category:'Pressure', title:'Opponent Moving Forward', rule:'Exploit the opponent travelling forward by changing length or lifting behind them.', coach:'Develops manipulation of opponent momentum rather than hitting into their movement.', pairings:['Owl','Dolphin']},
-  {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']}
+  {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']},
+  {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'A crosscourt only counts if it makes the opponent move more than 1 step \u2014 rather than being played by default or out of habit.', coach:'Ask: did that crosscourt move them more than a step? If not, it was non-functional.', pairings:['Route Breaker','Attack Only On Advantage']},
+  {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
+  {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']}
 ];
 
 const MENTAL_PERFORMANCE_OVERLAYS = [
@@ -9580,7 +9584,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         <strong>Court allocation:</strong>
         <div className="slModeStrip" style={{marginTop:'8px'}}>
           <button type="button" className={allocMode==='auto'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level (top group → Court 1, next → Court 2…)</button>
-          <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I\u2019ll allocate</button>
+          <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I’ll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
           {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
@@ -16374,8 +16378,8 @@ function ludoPieceLabel(d){
 function ludoDefaultRoster(names){return names.map(n=>({name:n,pieces:[{d:-1},{d:-1},{d:-1},{d:-1}]}));}
 
 const LUDO_OBJECTIVES={
-  Tactical:['Keep opponent outside the T Corridor','Force opponent into a back corner','Force opponent into a front corner','Win after sustained pressure (5+ shot rally)','Win after moving opponent through all four court quadrants'],
-  Technical:['Straight drive winner','Volley winner','Successful drop','Successful boast','Successful lob'],
+  Tactical:TACTICAL_OVERLAYS.map(o=>o.title),
+  Technical:TECHNICAL_OVERLAYS.map(o=>o.title),
   Checkerboard:['Complete assigned Checkerboard challenge','Complete Blind Checkerboard challenge','Complete Double Bounce objective']
 };
 
@@ -17074,10 +17078,12 @@ function ncRules(settings){
   const rc=settings.requireChallenge===true;
   const sm=settings.scoringMode||'boardWin';
   const ffa=settings.format==='ffa';
+  const b3=settings.bestOf3===true;
   const principle='Nominate your square before the rally, then win it \u2014 the board is a live tactical plan, not a scoreboard you fill in afterwards.';
-  const setup=ffa
+  const setup=(ffa
     ? 'Up to 4 individual players take the court, each with their own symbol. The first two in the queue start on court; the rest wait their turn. Default is a classic game with no challenges attached \u2014 turn on "Require a challenge" in settings if you want squares tied to a challenge pool.'
-    : 'Two teams take the court \u2014 1 or more players each. Each side\u2019s first-listed player starts on court; the rest wait on the bench. Default is a classic game with no challenges attached \u2014 turn on "Require a challenge" in settings if you want squares tied to a challenge pool.';
+    : 'Two teams take the court \u2014 1 or more players each. Each side\u2019s first-listed player starts on court; the rest wait on the bench. Default is a classic game with no challenges attached \u2014 turn on "Require a challenge" in settings if you want squares tied to a challenge pool.')
+    + (b3?' Best of 3 is on: nomination locks in once the series starts, and only the side that reaches 2 rally wins gets to resolve their claim.':'');
   const player=ffa
     ? (rc
         ? 'Before each rally, the two players on court nominate which square they\u2019re going for. Win the rally AND complete your nominated square\u2019s challenge \u2192 claim it with your own symbol. Winner stays on court; the loser goes to the back of the queue and the next player comes on \u2014 same rotation as Snakes & Ladders.'
@@ -17086,8 +17092,10 @@ function ncRules(settings){
         ? 'Before each rally, both sides nominate which square they\u2019re going for. Win the rally AND complete your nominated square\u2019s challenge \u2192 claim it. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.'
         : 'Before each rally, both sides nominate which square they\u2019re going for. Win the rally \u2192 claim your nominated square. Your on-court player stays on when your side wins; when your side loses, that player rotates to the back of your own bench and the next teammate comes on.');
   const steps=[
-    'Before the rally, each side nominates the square they\u2019re going for (tap it on the board) \u2014 a side with no nomination can\u2019t claim anything that rally, even if they win.',
-    'Two players \u2014 one from each team \u2014 play the rally.',
+    b3
+      ? 'Before the pairing\u2019s series starts, each side nominates the square they\u2019re going for \u2014 nomination then locks for the whole series.'
+      : 'Before the rally, each side nominates the square they\u2019re going for (tap it on the board) \u2014 a side with no nomination can\u2019t claim anything that rally, even if they win.',
+    b3?'The two players on court play a best-of-3 mini series \u2014 first to 2 rally wins takes the series.':'Two players \u2014 one from each team \u2014 play the rally.',
     'Coach calls the winner. That side\u2019s on-court player stays on \u2014 the losing side\u2019s player goes to the back of their own bench and the next teammate steps on.',
     rc?'Coach checks: did the winning side also complete the challenge on their nominated square?':'The winning side\u2019s nominated square is claimed automatically.',
     rc?'If yes, their nominated square is claimed with their symbol. If no, no claim this rally.':'No extra check needed \u2014 winning the rally is enough.',
@@ -17209,7 +17217,7 @@ function NcStyles(){return <style>{`
 const NC_FFA_SYMBOLS=['X','O','\u25b3','\u25a1'];
 
 // ── Per-court engine ─────────────────────────────────────────────────────
-function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode='boardWin',fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
+function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode='boardWin',bestOf3=false,fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
   const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge)));
   const [rosterA,setRosterA]=useState(()=>seed?seed.rosterA:[...teamA.roster]);
   const [rosterB,setRosterB]=useState(()=>seed?seed.rosterB:[...teamB.roster]);
@@ -17219,24 +17227,37 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   const [events,setEvents]=useState([]);
   const [pendingRally,setPendingRally]=useState(null);
   const [undoStack,setUndoStack]=useState([]);
+  const [seriesA,setSeriesA]=useState(()=>seed?(seed.seriesA||0):0);
+  const [seriesB,setSeriesB]=useState(()=>seed?(seed.seriesB||0):0);
+  const seriesLocked=bestOf3&&(seriesA>0||seriesB>0);
   const [editingIdx,setEditingIdx]=useState(null);
   const [customText,setCustomText]=useState('');
   const [nomA,setNomA]=useState(null);
   const [nomB,setNomB]=useState(null);
 
-  function snapshot(){return {board:board.map(s=>({...s})),rosterA:[...rosterA],rosterB:[...rosterB],scoreA,scoreB,winner,events:[...events]};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setPendingRally(null);setNomA(null);setNomB(null);return prev.slice(0,-1);});}
-  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);setNomA(null);setNomB(null);}
+  function snapshot(){return {board:board.map(s=>({...s})),rosterA:[...rosterA],rosterB:[...rosterB],scoreA,scoreB,winner,events:[...events],seriesA,seriesB};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setRosterA(s.rosterA);setRosterB(s.rosterB);setScoreA(s.scoreA);setScoreB(s.scoreB);setWinner(s.winner);setEvents(s.events);setSeriesA(s.seriesA||0);setSeriesB(s.seriesB||0);setPendingRally(null);setNomA(null);setNomB(null);return prev.slice(0,-1);});}
+  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge));setRosterA([...teamA.roster]);setRosterB([...teamB.roster]);setScoreA(0);setScoreB(0);setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);setNomA(null);setNomB(null);setSeriesA(0);setSeriesB(0);}
   function randomiseBoard(){if(!requireChallenge||board.some(s=>s.claimedBy))return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setBoard(picks.map(c=>({challenge:c,claimedBy:null})));}
 
   function nominate(side,idx){
-    if(winner||pendingRally||board[idx].claimedBy)return;
+    if(winner||pendingRally||board[idx].claimedBy||seriesLocked)return;
     if(side==='A')setNomA(prev=>prev===idx?null:idx);
     else setNomB(prev=>prev===idx?null:idx);
   }
 
   function startRally(side){
     if(winner||pendingRally)return;
+    if(bestOf3){
+      const nextA=side==='A'?seriesA+1:seriesA;
+      const nextB=side==='B'?seriesB+1:seriesB;
+      if(nextA<2&&nextB<2){
+        setUndoStack(prev=>[...prev.slice(-29),snapshot()]);
+        setSeriesA(nextA);setSeriesB(nextB);
+        setEvents(prev=>[`${side==='A'?teamA.name:teamB.name} wins a rally in the series (${nextA}-${nextB})`,...prev].slice(0,6));
+        return;
+      }
+    }
     const myNom=side==='A'?nomA:nomB;
     if(requireChallenge){setPendingRally({side,stage:'confirm',squareIdx:myNom});}
     else{finalizeRally(side,myNom);}
@@ -17258,7 +17279,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
 
     let nextScoreA=scoreA,nextScoreB=scoreB;
     if(scoringMode==='rallyBoard'){if(side==='A')nextScoreA+=1;else nextScoreB+=1;}
-    ev.push(`${sideLabel} won the rally`);
+    ev.push(bestOf3?`${sideLabel} wins the series`:`${sideLabel} won the rally`);
 
     if(squareIdx!=null&&!nextBoard[squareIdx].claimedBy){
       nextBoard[squareIdx].claimedBy=side;
@@ -17281,7 +17302,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     setBoard(nextBoard);setRosterA(nextRosterA);setRosterB(nextRosterB);setScoreA(nextScoreA);setScoreB(nextScoreB);
     if(ev.length)setEvents(prev=>[...ev.slice().reverse(),...prev].slice(0,6));
     if(newWinner)setWinner(newWinner);
-    setNomA(null);setNomB(null);
+    setNomA(null);setNomB(null);setSeriesA(0);setSeriesB(0);
   }
 
   function applyEdit(idx,text){
@@ -17295,7 +17316,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   useEffect(()=>{
     if(!project)return;
     const payload={type:'noughtscrosses',
-      mode,requireChallenge,scoringMode,
+      mode,requireChallenge,scoringMode,bestOf3,seriesA,seriesB,
       teamAName:teamA.name,teamBName:teamB.name,
       board:board.map(s=>({challenge:s.challenge,claimedBy:s.claimedBy})),
       rosterA,rosterB,scoreA,scoreB,
@@ -17304,17 +17325,21 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
       winnerSide:winner,
       courtLabel};
     writeLivePlayerRoom(roomId||getNcLiveRoomId(),'noughtscrosses',payload);
-  },[project,board,rosterA,rosterB,scoreA,scoreB,winner,courtLabel,roomId,mode,requireChallenge,scoringMode,nomA,nomB]);
+  },[project,board,rosterA,rosterB,scoreA,scoreB,winner,courtLabel,roomId,mode,requireChallenge,scoringMode,bestOf3,seriesA,seriesB,nomA,nomB]);
 
   return <div className="ncCourt">
-    {winner==null&&!pendingRally&&<div className="ncNominateRow">
+    {bestOf3&&winner==null&&!pendingRally&&<div className="ncConfirmRow" style={{justifyContent:'center'}}>
+      <span>Series (best of 3): <b>{teamA.name} {seriesA}</b> — <b>{seriesB} {teamB.name}</b>{seriesLocked?' — nomination locked for this series':''}</span>
+    </div>}
+
+    {winner==null&&!pendingRally&&<div className="ncNominateRow" style={seriesLocked?{opacity:0.6}:null}>
       <div className="ncSquareRow">
-        <span><b>{teamA.name}</b> is going for: {nomA==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomA].challenge}</b>}</span>
-        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} className={`ncNomBtn a${nomA===i?' active':''}`} onClick={()=>nominate('A',i)}>{sq.challenge}</button>)}</div>
+        <span><b>{teamA.name}</b> is going for: {nomA==null?<i>not nominated — tap a square below</i>:<b>{board[nomA].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} disabled={seriesLocked} className={`ncNomBtn a${nomA===i?' active':''}`} onClick={()=>nominate('A',i)}>{sq.challenge}</button>)}</div>
       </div>
       <div className="ncSquareRow">
-        <span><b>{teamB.name}</b> is going for: {nomB==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomB].challenge}</b>}</span>
-        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} className={`ncNomBtn b${nomB===i?' active':''}`} onClick={()=>nominate('B',i)}>{sq.challenge}</button>)}</div>
+        <span><b>{teamB.name}</b> is going for: {nomB==null?<i>not nominated — tap a square below</i>:<b>{board[nomB].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>!sq.claimedBy&&<button type="button" key={i} disabled={seriesLocked} className={`ncNomBtn b${nomB===i?' active':''}`} onClick={()=>nominate('B',i)}>{sq.challenge}</button>)}</div>
       </div>
     </div>}
 
@@ -17327,10 +17352,10 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
 
     {pendingRally&&pendingRally.stage==='confirm'&&<div className="ncConfirmRow">
       {pendingRally.squareIdx!=null
-        ? <><span>Did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> complete their target \u2014 <b>{board[pendingRally.squareIdx].challenge}</b>?</span>
+        ? <><span>Did <b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> complete their target — <b>{board[pendingRally.squareIdx].challenge}</b>?</span>
             <button type="button" className="primaryBtn" onClick={()=>confirmChallenge(true)}>Yes</button>
             <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>No</button></>
-        : <><span><b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> won but had no target nominated \u2014 no claim this rally.</span>
+        : <><span><b>{pendingRally.side==='A'?teamA.name:teamB.name}</b> won but had no target nominated — no claim this rally.</span>
             <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>Continue</button></>}
     </div>}
 
@@ -17346,7 +17371,7 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     <div className="ncBoard">
       {board.map((sq,i)=><div key={i} className={`ncCell${sq.claimedBy==='A'?' claimedA':''}${sq.claimedBy==='B'?' claimedB':''}${nomA===i?' nomA':''}${nomB===i?' nomB':''}`} onClick={()=>{if(!sq.claimedBy&&editingIdx!==i){setEditingIdx(i);setCustomText(sq.challenge);}}}>
         {sq.claimedBy?<span className={`ncCellSymbol ${sq.claimedBy==='A'?'a':'b'}`}>{sq.claimedBy==='A'?'X':'O'}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
-        {!sq.claimedBy&&editingIdx!==i&&<span className="ncCellEdit">\u270e</span>}
+        {!sq.claimedBy&&editingIdx!==i&&<span className="ncCellEdit">✎</span>}
         {requireChallenge&&editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
           {(NC_FAMILIES[mode]||[]).map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
           <input className="ncEditInput" value={customText} onChange={e=>setCustomText(e.target.value)} placeholder="Custom..." onKeyDown={e=>{if(e.key==='Enter'&&customText.trim())applyEdit(i,customText.trim());}}/>
@@ -17357,8 +17382,8 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
     </div>
 
     <div className="ncControls">
-      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>\u21b6 Undo last move</button>
-      {requireChallenge&&!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy)} style={{opacity:board.some(s=>s.claimedBy)?0.45:1}}>\ud83c\udfb2 Randomise board</button>}
+      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
+      {requireChallenge&&!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy)} style={{opacity:board.some(s=>s.claimedBy)?0.45:1}}>🎲 Randomise board</button>}
       <button type="button" className="secondaryBtn" onClick={resetGame}>New board</button>
     </div>
     {events.length>0&&<div className="ncEvents">{events.map((e,i)=><div key={i} className={i===0?'ncEvent new':'ncEvent'}>{e}</div>)}</div>}
@@ -17366,8 +17391,8 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
 }
 
 // ── Free-for-all per-court engine (2-4 individual players, own symbol each,
-// single flat winner-stays-on queue \u2014 same rotation pattern as S&L/Ludo) ────
-function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode='boardWin',fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
+// single flat winner-stays-on queue — same rotation pattern as S&L/Ludo) ────
+function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode='boardWin',bestOf3=false,fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
   const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge)));
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
   const [scores,setScores]=useState(()=>seed?seed.scores:players.map(()=>0));
@@ -17379,20 +17404,33 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
   const [customText,setCustomText]=useState('');
   const [nomA,setNomA]=useState(null);
   const [nomB,setNomB]=useState(null);
+  const [seriesA,setSeriesA]=useState(()=>seed?(seed.seriesA||0):0);
+  const [seriesB,setSeriesB]=useState(()=>seed?(seed.seriesB||0):0);
+  const seriesLocked=bestOf3&&(seriesA>0||seriesB>0);
 
-  function snapshot(){return {board:board.map(s=>({...s})),queue:[...queue],scores:[...scores],winner,events:[...events]};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setQueue(s.queue);setScores(s.scores);setWinner(s.winner);setEvents(s.events);setPendingRally(null);setNomA(null);setNomB(null);return prev.slice(0,-1);});}
-  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge));setQueue(players.map((_,i)=>i));setScores(players.map(()=>0));setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);setNomA(null);setNomB(null);}
+  function snapshot(){return {board:board.map(s=>({...s})),queue:[...queue],scores:[...scores],winner,events:[...events],seriesA,seriesB};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setBoard(s.board);setQueue(s.queue);setScores(s.scores);setWinner(s.winner);setEvents(s.events);setSeriesA(s.seriesA||0);setSeriesB(s.seriesB||0);setPendingRally(null);setNomA(null);setNomB(null);return prev.slice(0,-1);});}
+  function resetGame(){setBoard(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge));setQueue(players.map((_,i)=>i));setScores(players.map(()=>0));setWinner(null);setEvents([]);setPendingRally(null);setUndoStack([]);setNomA(null);setNomB(null);setSeriesA(0);setSeriesB(0);}
   function randomiseBoard(){if(!requireChallenge||board.some(s=>s.claimedBy!=null))return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setBoard(picks.map(c=>({challenge:c,claimedBy:null})));}
 
   function nominate(slot,idx){
-    if(winner!=null||pendingRally||board[idx].claimedBy!=null)return;
+    if(winner!=null||pendingRally||board[idx].claimedBy!=null||seriesLocked)return;
     if(slot==='A')setNomA(prev=>prev===idx?null:idx);
     else setNomB(prev=>prev===idx?null:idx);
   }
 
   function startRally(slot){
     if(winner!=null||pendingRally||queue.length<2)return;
+    if(bestOf3){
+      const nextA=slot==='A'?seriesA+1:seriesA;
+      const nextB=slot==='B'?seriesB+1:seriesB;
+      if(nextA<2&&nextB<2){
+        setUndoStack(prev=>[...prev.slice(-29),snapshot()]);
+        setSeriesA(nextA);setSeriesB(nextB);
+        setEvents(prev=>[`${players[slot==='A'?queue[0]:queue[1]].name} wins a rally in the series (${nextA}-${nextB})`,...prev].slice(0,6));
+        return;
+      }
+    }
     const myNom=slot==='A'?nomA:nomB;
     const playerIdx=slot==='A'?queue[0]:queue[1];
     if(requireChallenge){setPendingRally({slot,playerIdx,stage:'confirm',squareIdx:myNom});}
@@ -17415,7 +17453,7 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 
     const nextScores=[...scores];
     if(scoringMode==='rallyBoard')nextScores[playerIdx]+=1;
-    ev.push(`${name} won the rally`);
+    ev.push(bestOf3?`${name} wins the series`:`${name} won the rally`);
 
     if(squareIdx!=null&&nextBoard[squareIdx].claimedBy==null){
       nextBoard[squareIdx].claimedBy=playerIdx;
@@ -17438,7 +17476,7 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
     setBoard(nextBoard);setQueue(nextQueue);setScores(nextScores);
     if(ev.length)setEvents(prev=>[...ev.slice().reverse(),...prev].slice(0,6));
     if(newWinner!=null)setWinner(newWinner);
-    setNomA(null);setNomB(null);
+    setNomA(null);setNomB(null);setSeriesA(0);setSeriesB(0);
   }
 
   function applyEdit(idx,text){
@@ -17451,7 +17489,7 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 
   useEffect(()=>{
     if(!project)return;
-    const payload={type:'noughtscrosses',format:'ffa',
+    const payload={type:'noughtscrosses',format:'ffa',bestOf3,seriesA,seriesB,
       mode,requireChallenge,scoringMode,
       playerNames:players.map(p=>p.name),
       board:board.map(s=>({challenge:s.challenge,claimedBy:s.claimedBy})),
@@ -17461,19 +17499,23 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
       winnerIdx:winner,
       courtLabel};
     writeLivePlayerRoom(roomId||getNcLiveRoomId(),'noughtscrosses',payload);
-  },[project,board,queue,scores,winner,courtLabel,roomId,mode,requireChallenge,scoringMode,nomA,nomB]);
+  },[project,board,queue,scores,winner,courtLabel,roomId,mode,requireChallenge,scoringMode,bestOf3,seriesA,seriesB,nomA,nomB]);
 
   if(queue.length<2)return <p className="mutedText">Free-for-all needs at least 2 players on this court.</p>;
 
   return <div className="ncCourt">
-    {winner==null&&!pendingRally&&<div className="ncNominateRow">
+    {bestOf3&&winner==null&&!pendingRally&&<div className="ncConfirmRow" style={{justifyContent:'center'}}>
+      <span>Series (best of 3): <b style={{color:LUDO_COLORS[onA%4]}}>{players[onA].name} {seriesA}</b> — <b style={{color:LUDO_COLORS[onB%4]}}>{seriesB} {players[onB].name}</b>{seriesLocked?' — nomination locked for this series':''}</span>
+    </div>}
+
+    {winner==null&&!pendingRally&&<div className="ncNominateRow" style={seriesLocked?{opacity:0.6}:null}>
       <div className="ncSquareRow">
-        <span><b style={{color:LUDO_COLORS[onA%4]}}>{players[onA].name}</b> is going for: {nomA==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomA].challenge}</b>}</span>
-        <div className="ncPieceRow">{board.map((sq,i)=>sq.claimedBy==null&&<button type="button" key={i} className="ncNomBtn" style={nomA===i?{background:LUDO_COLORS[onA%4]+'33',borderColor:LUDO_COLORS[onA%4],color:'#eaf4fb',fontWeight:700}:null} onClick={()=>nominate('A',i)}>{sq.challenge}</button>)}</div>
+        <span><b style={{color:LUDO_COLORS[onA%4]}}>{players[onA].name}</b> is going for: {nomA==null?<i>not nominated — tap a square below</i>:<b>{board[nomA].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>sq.claimedBy==null&&<button type="button" key={i} disabled={seriesLocked} className="ncNomBtn" style={nomA===i?{background:LUDO_COLORS[onA%4]+'33',borderColor:LUDO_COLORS[onA%4],color:'#eaf4fb',fontWeight:700}:null} onClick={()=>nominate('A',i)}>{sq.challenge}</button>)}</div>
       </div>
       <div className="ncSquareRow">
-        <span><b style={{color:LUDO_COLORS[onB%4]}}>{players[onB].name}</b> is going for: {nomB==null?<i>not nominated \u2014 tap a square below</i>:<b>{board[nomB].challenge}</b>}</span>
-        <div className="ncPieceRow">{board.map((sq,i)=>sq.claimedBy==null&&<button type="button" key={i} className="ncNomBtn" style={nomB===i?{background:LUDO_COLORS[onB%4]+'33',borderColor:LUDO_COLORS[onB%4],color:'#eaf4fb',fontWeight:700}:null} onClick={()=>nominate('B',i)}>{sq.challenge}</button>)}</div>
+        <span><b style={{color:LUDO_COLORS[onB%4]}}>{players[onB].name}</b> is going for: {nomB==null?<i>not nominated — tap a square below</i>:<b>{board[nomB].challenge}</b>}</span>
+        <div className="ncPieceRow">{board.map((sq,i)=>sq.claimedBy==null&&<button type="button" key={i} disabled={seriesLocked} className="ncNomBtn" style={nomB===i?{background:LUDO_COLORS[onB%4]+'33',borderColor:LUDO_COLORS[onB%4],color:'#eaf4fb',fontWeight:700}:null} onClick={()=>nominate('B',i)}>{sq.challenge}</button>)}</div>
       </div>
     </div>}
 
@@ -17486,10 +17528,10 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 
     {pendingRally&&pendingRally.stage==='confirm'&&<div className="ncConfirmRow">
       {pendingRally.squareIdx!=null
-        ? <><span>Did <b>{players[pendingRally.playerIdx].name}</b> complete their target \u2014 <b>{board[pendingRally.squareIdx].challenge}</b>?</span>
+        ? <><span>Did <b>{players[pendingRally.playerIdx].name}</b> complete their target — <b>{board[pendingRally.squareIdx].challenge}</b>?</span>
             <button type="button" className="primaryBtn" onClick={()=>confirmChallenge(true)}>Yes</button>
             <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>No</button></>
-        : <><span><b>{players[pendingRally.playerIdx].name}</b> won but had no target nominated \u2014 no claim this rally.</span>
+        : <><span><b>{players[pendingRally.playerIdx].name}</b> won but had no target nominated — no claim this rally.</span>
             <button type="button" className="secondaryBtn" onClick={()=>confirmChallenge(false)}>Continue</button></>}
     </div>}
 
@@ -17507,7 +17549,7 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
     <div className="ncBoard">
       {board.map((sq,i)=><div key={i} className="ncCell" style={sq.claimedBy!=null?{background:LUDO_COLORS[sq.claimedBy%4]+'22',borderColor:LUDO_COLORS[sq.claimedBy%4]}:null} onClick={()=>{if(sq.claimedBy==null&&editingIdx!==i){setEditingIdx(i);setCustomText(sq.challenge);}}}>
         {sq.claimedBy!=null?<span className="ncCellSymbol" style={{color:LUDO_COLORS[sq.claimedBy%4]}}>{NC_FFA_SYMBOLS[sq.claimedBy]}</span>:<span className="ncCellChallenge">{sq.challenge}</span>}
-        {sq.claimedBy==null&&editingIdx!==i&&<span className="ncCellEdit">\u270e</span>}
+        {sq.claimedBy==null&&editingIdx!==i&&<span className="ncCellEdit">✎</span>}
         {requireChallenge&&editingIdx===i&&<div className="ncEditPanel" onClick={e=>e.stopPropagation()}>
           {(NC_FAMILIES[mode]||[]).map(opt=><button type="button" key={opt} className="ncEditOpt" onClick={()=>applyEdit(i,opt)}>{opt}</button>)}
           <input className="ncEditInput" value={customText} onChange={e=>setCustomText(e.target.value)} placeholder="Custom..." onKeyDown={e=>{if(e.key==='Enter'&&customText.trim())applyEdit(i,customText.trim());}}/>
@@ -17518,8 +17560,8 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
     </div>
 
     <div className="ncControls">
-      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>\u21b6 Undo last move</button>
-      {requireChallenge&&!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy!=null)} style={{opacity:board.some(s=>s.claimedBy!=null)?0.45:1}}>\ud83c\udfb2 Randomise board</button>}
+      <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
+      {requireChallenge&&!fixedBoard&&<button type="button" className="secondaryBtn" onClick={randomiseBoard} disabled={board.some(s=>s.claimedBy!=null)} style={{opacity:board.some(s=>s.claimedBy!=null)?0.45:1}}>🎲 Randomise board</button>}
       <button type="button" className="secondaryBtn" onClick={resetGame}>New board</button>
     </div>
     {events.length>0&&<div className="ncEvents">{events.map((e,i)=><div key={i} className={i===0?'ncEvent new':'ncEvent'}>{e}</div>)}</div>}
@@ -17543,8 +17585,9 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [manualRosterB,setManualRosterB]=useState(['Player 2']);
   const [mode,setMode]=useState('Technical');
   const [requireChallenge,setRequireChallenge]=useState(false);
+  const [bestOf3,setBestOf3]=useState(false);
   const [scoringMode,setScoringMode]=useState('boardWin');
-  const settings=useMemo(()=>({requireChallenge,scoringMode,format}),[requireChallenge,scoringMode,format]);
+  const settings=useMemo(()=>({requireChallenge,scoringMode,format,bestOf3}),[requireChallenge,scoringMode,format,bestOf3]);
   const rules=useMemo(()=>ncRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
@@ -17629,7 +17672,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
   return <div className="gameCard ncGame">
     <NcStyles/>
-    <div className="categoryTag">Noughts & Crosses Squash\u2122</div>
+    <div className="categoryTag">Noughts & Crosses Squash™</div>
     <h2>Noughts & Crosses Squash</h2>
     <p className="mutedText">Claim squares by winning rallies and completing challenges. First to three in a row wins the board.</p>
 
@@ -17645,7 +17688,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       <div className="ncRationaleBox">
         <p>{rules.rationale.lead}</p>
         <p style={{margin:'0 0 4px'}}><strong>What it trains:</strong></p>
-        <ul>{rules.rationale.bullets.map(([t,d],i)=><li key={i}><strong>{t}</strong> \u2014 {d}</li>)}</ul>
+        <ul>{rules.rationale.bullets.map(([t,d],i)=><li key={i}><strong>{t}</strong> — {d}</li>)}</ul>
         <p style={{marginBottom:0}}>{rules.rationale.note}</p>
       </div>
     </div>
@@ -17659,8 +17702,8 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       <div style={{flexBasis:'100%'}}>
         <strong>Format</strong>
         <div className="ncModeStrip" style={{marginTop:'8px'}}>
-          <button type="button" className={format==='teams'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setFormat('teams')}>Teams \u2014 X vs O</button>
-          <button type="button" className={format==='ffa'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setFormat('ffa')}>Free-for-all \u2014 every player their own symbol (2\u20134 players)</button>
+          <button type="button" className={format==='teams'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setFormat('teams')}>Teams — X vs O</button>
+          <button type="button" className={format==='ffa'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setFormat('ffa')}>Free-for-all — every player their own symbol (2–4 players)</button>
         </div>
         <p className="mutedText" style={{marginTop:'6px'}}>{format==='teams'?'Two teams, each with 1+ players sharing a symbol (X or O), doubles-style winner-stays-on rotation.':'Up to 4 individual players, each with their own symbol, single winner-stays-on queue \u2014 same rotation as Snakes & Ladders.'}</p>
       </div>
@@ -17687,7 +17730,8 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide game settings':'\u2699 Mode, challenge & scoring settings'}</button>
     {showSettings&&<div className="ncSettings">
-      <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require a challenge to claim (default off \u2014 classic noughts & crosses: nominate a square, win the rally, claim it)</label>
+      <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require a challenge to claim (default off — classic noughts & crosses: nominate a square, win the rally, claim it)</label>
+      <label className="ncCheck"><input type="checkbox" checked={bestOf3} onChange={e=>setBestOf3(e.target.checked)}/> Best of 3 per pairing (default off — a single rally decides a claim; switch on to make each on-court pairing play a mini best-of-3 series first, so a board takes longer to fill)</label>
       {requireChallenge&&<label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{NC_MODES.map(m=><option key={m} value={m}>{m}</option>)}</select></label>}
       <label>Scoring<select value={scoringMode} onChange={e=>setScoringMode(e.target.value)}><option value="boardWin">Board Win only</option><option value="rallyBoard">Rally + Board points</option><option value="pressure">Pressure Mode</option></select></label>
       {requireChallenge&&<p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one.</p>}
@@ -17697,17 +17741,17 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       <div>
         <strong>How should these {courts} courts relate to each other?</strong>
         <div className="ncModeStrip" style={{marginTop:'8px'}}>
-          <button type="button" className={competitionMode==='separate'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('separate')}>Multiplayer \u2014 separate boards per court</button>
-          <button type="button" className={competitionMode==='race'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('race')}>One board, {courtCount} courts \u2014 race</button>
+          <button type="button" className={competitionMode==='separate'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('separate')}>Multiplayer — separate boards per court</button>
+          <button type="button" className={competitionMode==='race'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setCompetitionMode('race')}>One board, {courtCount} courts — race</button>
         </div>
         <p className="mutedText" style={{marginTop:'6px'}}>{competitionMode==='separate'?'Each court runs its own independent board and teams \u2014 unrelated games.':'Every court plays the identical challenge layout; whoever completes a line first on ANY court wins the whole race. Each court still keeps its own board state \u2014 not one shared board.'}</p>
-        {competitionMode==='race'&&requireChallenge&&<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={randomiseSharedBoard}>\ud83c\udfb2 Randomise shared board</button>}
+        {competitionMode==='race'&&requireChallenge&&<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={randomiseSharedBoard}>🎲 Randomise shared board</button>}
       </div>
       {usingAttendance&&<div style={{marginTop:'4px'}}>
         <strong>Court allocation:</strong>
         <div className="ncModeStrip" style={{marginTop:'8px'}}>
-          <button type="button" className={allocMode==='auto'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('auto')}>Auto \u2014 ranked by level</button>
-          <button type="button" className={allocMode==='manual'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('manual')}>Manual \u2014 I'll allocate</button>
+          <button type="button" className={allocMode==='auto'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level</button>
+          <button type="button" className={allocMode==='manual'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
           {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
@@ -17722,13 +17766,13 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     {courts>1&&<div className="ncCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'ncCourtTab ncCourtTabOn':'ncCourtTab'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
 
     {usingAttendance&&courts>0&&format==='teams'&&<div style={{margin:'10px 0'}}>
-      <strong style={{fontSize:'0.85rem',color:'#9fb0c2'}}>Team split for Court {active+1} \u2014 tap a name to switch side:</strong>
+      <strong style={{fontSize:'0.85rem',color:'#9fb0c2'}}>Team split for Court {active+1} — tap a name to switch side:</strong>
       <div className="ncTeamGrid" style={{marginTop:'8px'}}>
         <div className="ncTeamBox a"><input value={teamAName} onChange={e=>setTeamAName(e.target.value)} placeholder="Team A name"/>
-          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='A').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} \u2192 B</button>)}
+          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='A').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} → B</button>)}
         </div>
         <div className="ncTeamBox b"><input value={teamBName} onChange={e=>setTeamBName(e.target.value)} placeholder="Team B name"/>
-          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='B').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} \u2192 A</button>)}
+          {(allocation[active]||[]).filter(n=>getTeamForPlayer(n,active)==='B').map(n=><button type="button" key={n} className="ncModeBtn" style={{width:'100%',marginBottom:'4px'}} onClick={()=>toggleTeam(n,active)}>{n} → A</button>)}
         </div>
       </div>
     </div>}
@@ -17745,8 +17789,8 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
             const ffaPlayers=g.slice(0,4).map(n=>({name:n}));
             return <div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
               {courts>1&&handedOff.has(i+1)
-                ? <div className="ncBench" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} \u2014 scoring handed to a court device</strong></div>
-                : (ffaPlayers.length>=2?<NoughtsCrossesCourtFFA key={`cffa-${i}-${g.join('|')}-${mode}-${requireChallenge}-${scoringMode}-${fb?fb.join('|'):''}`} players={ffaPlayers} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} fixedBoard={fb} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<p className="mutedText">Needs at least 2 players on this court.</p>)}
+                ? <div className="ncBench" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong></div>
+                : (ffaPlayers.length>=2?<NoughtsCrossesCourtFFA key={`cffa-${i}-${g.join('|')}-${mode}-${requireChallenge}-${scoringMode}-${bestOf3}-${fb?fb.join('|'):''}`} players={ffaPlayers} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} bestOf3={bestOf3} fixedBoard={fb} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<p className="mutedText">Needs at least 2 players on this court.</p>)}
             </div>;
           }
           const rosterA=g.filter(n=>getTeamForPlayer(n,i)==='A');
@@ -17755,13 +17799,13 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
           const teamB={name:teamBName,roster:rosterB};
           return <div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
             {courts>1&&handedOff.has(i+1)
-              ? <div className="ncBench" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} \u2014 scoring handed to a court device</strong></div>
-              : (rosterA.length&&rosterB.length?<NoughtsCrossesCourt key={`c-${i}-${g.join('|')}-${teamAssignOverrides&&JSON.stringify(teamAssignOverrides)}-${mode}-${requireChallenge}-${scoringMode}-${fb?fb.join('|'):''}`} teamA={teamA} teamB={teamB} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} fixedBoard={fb} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<p className="mutedText">Assign at least 1 player to each team on this court.</p>)}
+              ? <div className="ncBench" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong></div>
+              : (rosterA.length&&rosterB.length?<NoughtsCrossesCourt key={`c-${i}-${g.join('|')}-${teamAssignOverrides&&JSON.stringify(teamAssignOverrides)}-${mode}-${requireChallenge}-${scoringMode}-${bestOf3}-${fb?fb.join('|'):''}`} teamA={teamA} teamB={teamB} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} bestOf3={bestOf3} fixedBoard={fb} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>:<p className="mutedText">Assign at least 1 player to each team on this court.</p>)}
           </div>;
         })
       : format==='ffa'
-        ? <NoughtsCrossesCourtFFA players={manualRosterFfa.slice(0,manualCountFfa).map(n=>({name:n}))} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} project={projecting}/>
-        : <NoughtsCrossesCourt teamA={{name:teamAName,roster:manualRosterA.slice(0,manualCountA)}} teamB={{name:teamBName,roster:manualRosterB.slice(0,manualCountB)}} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} project={projecting}/>
+        ? <NoughtsCrossesCourtFFA players={manualRosterFfa.slice(0,manualCountFfa).map(n=>({name:n}))} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} bestOf3={bestOf3} project={projecting}/>
+        : <NoughtsCrossesCourt teamA={{name:teamAName,roster:manualRosterA.slice(0,manualCountA)}} teamB={{name:teamBName,roster:manualRosterB.slice(0,manualCountB)}} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} bestOf3={bestOf3} project={projecting}/>
     }
 
     <UniversalDBHandicapPanel/>
@@ -17770,7 +17814,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     <div className="ncDisplayBar">
       {courts<=1&&<button type="button" className="primaryBtn" onClick={copyNcPlayerLink}>COPY PLAYER LINK</button>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Noughts & Crosses Squash',category:'Noughts & Crosses Squash',format:'Team square-claiming board game',duration:15,task:`Win the rally${requireChallenge?' and complete a square\u2019s challenge':''} to claim it for your team. First to three in a row wins.`,scoring:rules.scoring,rationale:rules.rationale.lead,coach:rules.rationale.note,playerFocus:'Plan ahead \u2014 which square do you need, and how do you win it?',layers:['Tactical Behaviour'],rld:4}));alert('Noughts & Crosses Squash added to your session.');}}>Add to Session</button>}
-      {projecting&&courts<=1&&<span className="ncDisplayHint">\ud83d\udfe2 Live \u00b7 board updates as you tap winners</span>}
+      {projecting&&courts<=1&&<span className="ncDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
 
     {courts>1&&<div className="ncSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
@@ -17786,7 +17830,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
         </div>)}
       </div>
       {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyNcRaceLink}>{copiedRaceLink?'Copied \u2713':'Copy Race Display link (projector \u2014 all courts)'}</button>}
-      {projecting&&<span className="ncDisplayHint">\ud83d\udfe2 Live on all {courts} courts</span>}
+      {projecting&&<span className="ncDisplayHint">🟢 Live on all {courts} courts</span>}
       {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
     </div>}
   </div>;
@@ -17808,11 +17852,11 @@ function NoughtsCrossesCourtScorer({court,host}){
         if(p.format==='ffa'){
           const names=p.playerNames||[];
           const idxOf=nm=>names.indexOf(nm);
-          const seed={board:(p.board||[]).map(s=>({...s})),queue:(p.queueNames||[]).map(idxOf).filter(i=>i>=0),scores:p.scores||names.map(()=>0),winner:p.winnerIdx!=null?p.winnerIdx:(p.winnerName==='Draw'?'draw':null)};
-          setSeedData({seed,ffa:true,players:names.map(n=>({name:n})),mode:p.mode,requireChallenge:p.requireChallenge,scoringMode:p.scoringMode,courtLabel:p.courtLabel||('Court '+court)});
+          const seed={board:(p.board||[]).map(s=>({...s})),queue:(p.queueNames||[]).map(idxOf).filter(i=>i>=0),scores:p.scores||names.map(()=>0),winner:p.winnerIdx!=null?p.winnerIdx:(p.winnerName==='Draw'?'draw':null),seriesA:p.seriesA||0,seriesB:p.seriesB||0};
+          setSeedData({seed,ffa:true,players:names.map(n=>({name:n})),mode:p.mode,requireChallenge:p.requireChallenge,scoringMode:p.scoringMode,bestOf3:p.bestOf3,courtLabel:p.courtLabel||('Court '+court)});
         }else{
-          const seed={board:(p.board||[]).map(s=>({...s})),rosterA:p.rosterA||[],rosterB:p.rosterB||[],scoreA:p.scoreA||0,scoreB:p.scoreB||0,winner:p.winnerSide||null};
-          setSeedData({seed,ffa:false,teamA:{name:p.teamAName,roster:p.rosterA||[]},teamB:{name:p.teamBName,roster:p.rosterB||[]},mode:p.mode,requireChallenge:p.requireChallenge,scoringMode:p.scoringMode,courtLabel:p.courtLabel||('Court '+court)});
+          const seed={board:(p.board||[]).map(s=>({...s})),rosterA:p.rosterA||[],rosterB:p.rosterB||[],scoreA:p.scoreA||0,scoreB:p.scoreB||0,winner:p.winnerSide||null,seriesA:p.seriesA||0,seriesB:p.seriesB||0};
+          setSeedData({seed,ffa:false,teamA:{name:p.teamAName,roster:p.rosterA||[]},teamB:{name:p.teamBName,roster:p.rosterB||[]},mode:p.mode,requireChallenge:p.requireChallenge,scoringMode:p.scoringMode,bestOf3:p.bestOf3,courtLabel:p.courtLabel||('Court '+court)});
         }
         setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court\u2026');
@@ -17824,16 +17868,16 @@ function NoughtsCrossesCourtScorer({court,host}){
 
   if(!seedData){
     return <div className="ncDisplayPage"><NcStyles/>
-      <div className="ncDisplayHead"><span className="ncDisplayLive">\u25cf {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Noughts & Crosses \u2014 Court {court}</h1><p>{status}</p></div>
+      <div className="ncDisplayHead"><span className="ncDisplayLive">● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Noughts & Crosses — Court {court}</h1><p>{status}</p></div>
     </div>;
   }
   return <div className="gameCard ncGame">
     <NcStyles/>
-    <div className="ncDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ncDisplayLive">\u25cf SCORING \u2014 Court {court}</span><h1>Noughts & Crosses Squash</h1></div>
+    <div className="ncDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ncDisplayLive">● SCORING — Court {court}</span><h1>Noughts & Crosses Squash</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court.</p>
     {seedData.ffa
-      ? <NoughtsCrossesCourtFFA players={seedData.players} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
-      : <NoughtsCrossesCourt teamA={seedData.teamA} teamB={seedData.teamB} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>}
+      ? <NoughtsCrossesCourtFFA players={seedData.players} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} bestOf3={seedData.bestOf3} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+      : <NoughtsCrossesCourt teamA={seedData.teamA} teamB={seedData.teamB} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} bestOf3={seedData.bestOf3} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>}
   </div>;
 }
 
@@ -17854,18 +17898,18 @@ function NoughtsCrossesRaceDisplay({host,courtCount}){
 
   const anyData=courts.some(Boolean);
   if(!anyData){
-    return <div className="ncDisplayPage"><NcStyles/><div className="ncDisplayHead"><span className="ncDisplayLive">\u25cf CONNECTING</span><h1>Noughts & Crosses \u2014 Race</h1><p>Waiting for courts to start\u2026</p></div></div>;
+    return <div className="ncDisplayPage"><NcStyles/><div className="ncDisplayHead"><span className="ncDisplayLive">● CONNECTING</span><h1>Noughts & Crosses — Race</h1><p>Waiting for courts to start…</p></div></div>;
   }
   const overallWinner=courts.map((c,i)=>c&&c.winnerName?{name:c.winnerName,court:i+1}:null).find(Boolean);
 
   return <div className="ncDisplayPage">
     <NcStyles/>
-    <div className="ncDisplayHead"><span className="ncDisplayLive">{overallWinner?'\ud83c\udfc6 RACE COMPLETE':'\u25cf LIVE RACE'}</span><h1>Noughts & Crosses \u2014 Race</h1>
-      {overallWinner?<p>{overallWinner.name} (Court {overallWinner.court}) completes a line first and wins the race!</p>:<p>Same board on every court \u2014 first to three in a row wins the whole race.</p>}
+    <div className="ncDisplayHead"><span className="ncDisplayLive">{overallWinner?'\ud83c\udfc6 RACE COMPLETE':'\u25cf LIVE RACE'}</span><h1>Noughts & Crosses — Race</h1>
+      {overallWinner?<p>{overallWinner.name} (Court {overallWinner.court}) completes a line first and wins the race!</p>:<p>Same board on every court — first to three in a row wins the whole race.</p>}
     </div>
     <div className="ncRaceGrid">
       {courts.map((c,i)=>{
-        if(!c)return <div key={i} className="ncRaceCourt"><div className="ncRaceLabel">Court {i+1}</div><p className="mutedText">Waiting\u2026</p></div>;
+        if(!c)return <div key={i} className="ncRaceCourt"><div className="ncRaceLabel">Court {i+1}</div><p className="mutedText">Waiting…</p></div>;
         const isFfa=c.format==='ffa';
         return <div key={i} className={`ncRaceCourt${c.winnerName?' winner':''}`}>
           <div className="ncRaceLabel">Court {i+1}{c.winnerName?` \u2014 ${c.winnerName==='Draw'?'Draw':c.winnerName+' wins'}`:''}</div>
@@ -17901,6 +17945,7 @@ function NoughtsCrossesPlayerDisplay({payload={}}){
         <p>{winnerName?(winnerName==='Draw'?'Board drawn \u2014 all squares filled, no line.':`${winnerName} completes a line and wins the board!`):'Free-for-all \u2014 every player their own symbol'}</p>
       </div>
       {payload.scoringMode==='rallyBoard'&&<div className="ncScoreRow">{names.map((n,i)=><span key={i} style={{color:LUDO_COLORS[i%4]}}>{n}: {(payload.scores||[])[i]||0}pts</span>)}</div>}
+      {payload.bestOf3&&winnerName==null&&<div className="ncScoreRow" style={{fontSize:'0.9rem',fontWeight:700}}><span>Series (best of 3): {queueNames[0]} {payload.seriesA||0} — {payload.seriesB||0} {queueNames[1]}</span></div>}
       {winnerName==null&&(nomA!=null||nomB!=null)&&<div className="ncScoreRow" style={{fontSize:'0.85rem',fontWeight:600}}>
         <span>{queueNames[0]} going for: {nomA!=null?payload.nomAName:'\u2014 not nominated'}</span>
         <span>{queueNames[1]} going for: {nomB!=null?payload.nomBName:'\u2014 not nominated'}</span>
@@ -17930,6 +17975,7 @@ function NoughtsCrossesPlayerDisplay({payload={}}){
       <p>{winnerName?(winnerName==='Draw'?'Board drawn \u2014 all squares filled, no line.':`${winnerName} completes a line and wins the board!`):`${payload.teamAName||'Team A'} (X) vs ${payload.teamBName||'Team B'} (O)`}</p>
     </div>
     {payload.scoringMode==='rallyBoard'&&<div className="ncScoreRow"><span className="a">{payload.teamAName}: {payload.scoreA||0}pts</span><span className="b">{payload.teamBName}: {payload.scoreB||0}pts</span></div>}
+    {payload.bestOf3&&winnerName==null&&<div className="ncScoreRow" style={{fontSize:'0.9rem',fontWeight:700}}><span>Series (best of 3): {payload.teamAName} {payload.seriesA||0} — {payload.seriesB||0} {payload.teamBName}</span></div>}
     {winnerName==null&&(nomA!=null||nomB!=null)&&<div className="ncScoreRow" style={{fontSize:'0.85rem',fontWeight:600}}>
       <span className="a">{payload.teamAName} going for: {nomA!=null?payload.nomAName:'\u2014 not nominated'}</span>
       <span className="b">{payload.teamBName} going for: {nomB!=null?payload.nomBName:'\u2014 not nominated'}</span>
