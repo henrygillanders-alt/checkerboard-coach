@@ -34,6 +34,9 @@ function getNcScoreFromUrl(){try{const p=new URLSearchParams(window.location.sea
 function buildNcScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ncScore=${n}&host=${encodeURIComponent(base)}`;}
 function getNcRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ncRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildNcRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ncRace=${encodeURIComponent(base)}&n=${courtCount}`;}
+function getHsScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('hsScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function buildHsScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?hsScore=${n}&host=${encodeURIComponent(base)}`;}
+function getHangmanLiveRoomId(){return getPersistentLiveRoomId()+'-hangman';}
 function useWakeLock(){
   useEffect(()=>{
     if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
@@ -167,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v349 Quick Add Player rolled out to Snakes & Ladders, Ludo Squash, and Noughts & Crosses (Hangman Squash already had it) - a late arrival can be added without leaving the game screen, writes into shared attendance too. Tin War, Breakout, Press Call and Shot Bonus Rally have no player roster so this does not apply to them. Note: with Auto/ranked-block court allocation and multiple courts, adding a player mid-game re-shuffles all courts and can reset boards already in progress - switch to Manual allocation first if courts are live. A small hint about this now shows next to the button whenever courts>1.';
+const APP_VERSION='v352 Hangman Squash pacing mechanic replaced: Best of 3/5 (majority, early-stop) is now a windowed-fallback rule - a fixed window of 3 or 5 rallies is always played out in full against the same opponent. Safe if the challenge is met on ANY rally in the window, OR if they won more rallies than they lost across the window; fails only if neither is true (same rule for Individual and Teams - pairing is coach-judged, no on-court pairing selector built). New coach-selectable option: require at least one genuine attempt at the challenge during the window for the rally-count fallback to count (default off). Buttons per rally are now Met challenge / Won rally / Lost rally. Applies uniformly whether two individuals or two teams are paired on a court.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10811,6 +10814,7 @@ function HangmanStyles(){
 .hsTrackBtns{display:flex;gap:8px;flex:none;}
 .hsBtnSafe{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
 .hsBtnFail{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.hsBtnNeutral{background:#141c26;border:1px solid #3a4a5e;color:#c3d2e0;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
 .hsBtnEscapeGood{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
 .hsBtnEscapeBad{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
 .hsWinBanner{text-align:center;background:#0d2a18;border:1px solid #1d6b3f;border-radius:12px;padding:16px;color:#86efac;font-weight:800;font-size:1.15rem;}
@@ -10820,6 +10824,13 @@ function HangmanStyles(){
 .hsBottomBar .primaryBtn{margin-left:auto;}
 .hsControls{display:flex;gap:8px;flex-wrap:wrap;}
 .hsDisplayHint{font-size:0.82rem;color:#86efac;}
+.hsCourt{display:flex;flex-direction:column;gap:10px;}
+.hsCourtLabel{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#f0c49c;font-weight:800;}
+.hsCourtTabs{display:flex;gap:8px;flex-wrap:wrap;}
+.hsAllocation{display:flex;flex-direction:column;gap:6px;}
+.hsAllocRow{display:flex;align-items:center;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:9px;padding:8px 12px;font-size:0.85rem;color:#9fb0c2;}
+.hsAllocRow.on{border-color:#c2455a;background:#1a0c10;color:#eaf4fb;}
+.hsAllocRow strong{color:#f0c49c;}
 
 .hsDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#1a0d12 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
 .hsDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:24px;}
@@ -10847,8 +10858,7 @@ function HangmanStyles(){
 const HANGMAN_MAX_STEPS=7;
 const HANGMAN_ESCAPE_STEP=6;
 const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner — no let','Front-wall finish only'];
-const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Best of 3'},{n:5,label:'Best of 5'}];
-function hangmanSeriesMajority(n){return Math.ceil(n/2);}
+const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Window of 3'},{n:5,label:'Window of 5'}];
 
 function hangmanFigureParts(steps){
   // Non-linear staging, one body part per step: rope/beam(1) head(2) body(3) armL(4) armR(5) legL(6, last-chance) legR+face(7, out).
@@ -10894,133 +10904,202 @@ function hangmanStatusLabel(entity){
   return {text:`${entity.steps}/${HANGMAN_MAX_STEPS}`,cls:''};
 }
 
-function HangmanSquashGame({setSession,setScreen}={}){
-  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
-  const [teamMode,setTeamMode]=useState(false);
-  const [names,setNames]=useState(()=>{
-    const fromAttendance=presentsObj.map(p=>playerDisplayName(p));
-    return fromAttendance.length>=2?fromAttendance.slice(0,6):['Player 1','Player 2'];
-  });
-  const [teamOf,setTeamOf]=useState({}); // name -> 'A' | 'B'
-  const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
-  const [seriesLength,setSeriesLength]=useState(1); // 1 = single rally decides, 3 = best of 3, 5 = best of 5
-  const [entities,setEntities]=useState(null); // built on Start Game
-  const [eliminationLog,setEliminationLog]=useState([]);
-  const [projecting,setProjecting]=useState(false);
-  const base=useMemo(()=>getPersistentLiveRoomId()+'-hangman',[]);
-
-  function addNamePlayer(){setNames(prev=>prev.length>=8?prev:[...prev,`Player ${prev.length+1}`]);}
-  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
-  function removePlayer(i){setNames(prev=>prev.filter((_,idx)=>idx!==i));}
-  function setTeam(name,t){setTeamOf(prev=>({...prev,[name]:t}));}
-
-  function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,seriesW:0,seriesL:0};}
+// ── Per-court engine — one instance per court, own entities/state ──────────
+function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,project=false,courtLabel='',roomId=null,seed=null}){
+  function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
   function buildEntities(){
     if(!teamMode){
-      return names.filter(n=>n.trim()).map(n=>newEntity(n,n));
+      return players.filter(n=>n&&n.trim()).map(n=>newEntity(n,n));
     }
-    const teamA=names.filter(n=>n.trim()&&(teamOf[n]||'A')==='A');
-    const teamB=names.filter(n=>n.trim()&&teamOf[n]==='B');
+    const teamA=players.filter(n=>n&&n.trim()&&(teamOf[n]||'A')==='A');
+    const teamB=players.filter(n=>n&&n.trim()&&teamOf[n]==='B');
     const out=[];
     if(teamA.length)out.push(newEntity('A','Team A ('+teamA.join(', ')+')'));
     if(teamB.length)out.push(newEntity('B','Team B ('+teamB.join(', ')+')'));
     return out;
   }
-  function startGame(){setEntities(buildEntities());setEliminationLog([]);}
-  function resetGame(){setEntities(null);setEliminationLog([]);}
+  const [entities,setEntities]=useState(()=>seed?seed.entities:buildEntities());
+  const [eliminationLog,setEliminationLog]=useState(()=>seed?(seed.eliminationLog||[]):[]);
+  useEffect(()=>{ if(!seed) setEntities(buildEntities()); },[players.join('|'),teamMode,JSON.stringify(teamOf)]);
 
-  // Quick add — lets a late-arriving player join without leaving this screen.
-  // Also writes them into the shared attendance list so other screens see them too.
-  function quickAddPlayer(){
-    const nm=(window.prompt('New player name:')||'').trim();
-    if(!nm)return;
-    try{
-      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
-      if(!list.some(p=>p&&playerDisplayName(p)===nm)){
-        list.push({name:nm,present:true});
-        localStorage.setItem(PLAYER_KEY,JSON.stringify(list));
-      }
-    }catch{}
-    if(!entities){
-      setNames(prev=>prev.includes(nm)?prev:[...prev,nm]);
-      return;
-    }
-    setEntities(prev=>{
-      if(!prev||prev.some(e=>e.id===nm))return prev;
-      return [...prev,newEntity(nm,nm)];
-    });
-  }
-
-  const activeCount=entities?entities.filter(e=>!e.eliminated).length:0;
-  const winner=entities&&entities.length>1&&activeCount===1?entities.find(e=>!e.eliminated):null;
+  const activeCount=entities.filter(e=>!e.eliminated).length;
+  const winner=entities.length>1&&activeCount===1?entities.find(e=>!e.eliminated):null;
 
   function applyFailure(e){
     const nextSteps=Math.min(HANGMAN_MAX_STEPS,e.steps+1);
     if(nextSteps>=HANGMAN_ESCAPE_STEP&&!e.escapeUsed){
-      return {...e,steps:HANGMAN_ESCAPE_STEP,escapePending:true,seriesW:0,seriesL:0};
+      return {...e,steps:HANGMAN_ESCAPE_STEP,escapePending:true,windowResults:[],attempted:false};
     }
     if(nextSteps>=HANGMAN_MAX_STEPS){
       setEliminationLog(log=>[...log,`${e.name} — eliminated`]);
-      return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,seriesW:0,seriesL:0};
+      return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,windowResults:[],attempted:false};
     }
-    return {...e,steps:nextSteps,seriesW:0,seriesL:0};
+    return {...e,steps:nextSteps,windowResults:[],attempted:false};
   }
   // Single-rally mode: one tap decides the challenge outright.
-  function markSafe(id){ if(seriesLength>1) return; /* single rally, met = no-op, stays safe */ }
+  function markSafe(id){ if(seriesLength>1) return; }
   function markFailed(id){
     if(seriesLength>1) return;
-    setEntities(prev=>{
-      if(!prev)return prev;
-      return prev.map(e=>(e.id!==id||e.eliminated||e.escapePending)?e:applyFailure(e));
-    });
+    setEntities(prev=>prev.map(e=>(e.id!==id||e.eliminated||e.escapePending)?e:applyFailure(e)));
   }
-  // Best of 3/5 mode: each rally just adds to that entity's mini-series score;
-  // the challenge itself is only resolved (Met or Failed) once one side reaches the majority.
-  function recordRally(id,won){
+  // Windowed-fallback mode: always play out the full window (seriesLength rallies).
+  // At the end: safe if the CHALLENGE was met on any rally in the window, OR they won
+  // more rallies than they lost across the window. Fails only if neither is true.
+  // (If requireAttempt is on, the score fallback alone can't save them — they must
+  // have gone for the challenge at least once, even if they didn't land it.)
+  function recordWindowRally(id,outcome){ // outcome: 'met' | 'won' | 'lost'
     if(seriesLength<=1)return;
-    const majority=hangmanSeriesMajority(seriesLength);
-    setEntities(prev=>{
-      if(!prev)return prev;
-      return prev.map(e=>{
-        if(e.id!==id||e.eliminated||e.escapePending)return e;
-        const seriesW=e.seriesW+(won?1:0), seriesL=e.seriesL+(won?0:1);
-        if(seriesW>=majority)return {...e,seriesW:0,seriesL:0}; // series won — challenge Met, stays safe
-        if(seriesL>=majority)return applyFailure({...e,seriesW,seriesL});
-        return {...e,seriesW,seriesL};
-      });
-    });
+    setEntities(prev=>prev.map(e=>{
+      if(e.id!==id||e.eliminated||e.escapePending)return e;
+      const results=[...e.windowResults,outcome];
+      const attempted=e.attempted||outcome==='met';
+      if(results.length<seriesLength)return {...e,windowResults:results,attempted};
+      const met=results.includes('met');
+      const wins=results.filter(r=>r==='met'||r==='won').length;
+      const losses=results.filter(r=>r==='lost').length;
+      const safe=met||(wins>losses&&(!requireAttempt||attempted));
+      if(safe)return {...e,windowResults:[],attempted:false};
+      return applyFailure({...e,windowResults:results,attempted});
+    }));
   }
   function resolveEscape(id,succeeded){
-    setEntities(prev=>{
-      if(!prev)return prev;
-      return prev.map(e=>{
-        if(e.id!==id)return e;
-        if(succeeded)return {...e,steps:HANGMAN_ESCAPE_STEP-1,escapePending:false,escapeUsed:true};
-        setEliminationLog(log=>[...log,`${e.name} — eliminated (failed last-chance escape)`]);
-        return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,escapePending:false};
-      });
-    });
+    setEntities(prev=>prev.map(e=>{
+      if(e.id!==id)return e;
+      if(succeeded)return {...e,steps:HANGMAN_ESCAPE_STEP-1,escapePending:false,escapeUsed:true};
+      setEliminationLog(log=>[...log,`${e.name} — eliminated (failed last-chance escape)`]);
+      return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,escapePending:false};
+    }));
   }
+  function resetCourt(){setEntities(buildEntities());setEliminationLog([]);}
 
   useEffect(()=>{
-    if(!projecting||!entities)return;
-    const payload={type:'hangmansquash',challenge,seriesLength,entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,seriesW:e.seriesW,seriesL:e.seriesL})),winnerName:winner?winner.name:null,eliminationLog};
-    writeLivePlayerRoom(base,'hangmansquash',payload);
-  },[projecting,entities,challenge,seriesLength,eliminationLog,base,winner]);
+    if(!project)return;
+    const payload={type:'hangmansquash',challenge,seriesLength,requireAttempt,courtLabel,
+      entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,windowResults:e.windowResults,attempted:e.attempted})),
+      winnerName:winner?winner.name:null,eliminationLog};
+    writeLivePlayerRoom(roomId||getHangmanLiveRoomId(),'hangmansquash',payload);
+  },[project,entities,challenge,seriesLength,requireAttempt,eliminationLog,roomId,courtLabel,winner]);
 
-  async function copyPlayerLink(){
+  return <div className="hsCourt">
+    {courtLabel&&<div className="hsCourtLabel">{courtLabel}</div>}
+    {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
+    <div className="hsTracks">
+      {entities.map(e=>{
+        const status=hangmanStatusLabel(e);
+        const wins=(e.windowResults||[]).filter(r=>r==='met'||r==='won').length;
+        const losses=(e.windowResults||[]).filter(r=>r==='lost').length;
+        const windowNote=(!e.eliminated&&!e.escapePending&&seriesLength>1)?` · ${e.windowResults.length}/${seriesLength} played (${wins}W–${losses}L)${e.attempted?' · attempted ✓':''}`:'';
+        return <div key={e.id} className={`hsTrackCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
+          <div className="hsFigureBox"><HangmanFigure steps={e.steps}/></div>
+          <div className="hsTrackInfo">
+            <div className="hsTrackName">{e.name}</div>
+            <div className={`hsTrackStatus ${status.cls}`}>{status.text}{windowNote}</div>
+          </div>
+          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength===1&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnSafe" onClick={()=>markSafe(e.id)}>✓ Met</button>
+            <button type="button" className="hsBtnFail" onClick={()=>markFailed(e.id)}>✗ Failed</button>
+          </div>}
+          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength>1&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnSafe" onClick={()=>recordWindowRally(e.id,'met')}>✓ Met challenge</button>
+            <button type="button" className="hsBtnNeutral" onClick={()=>recordWindowRally(e.id,'won')}>➖ Won rally</button>
+            <button type="button" className="hsBtnFail" onClick={()=>recordWindowRally(e.id,'lost')}>✗ Lost rally</button>
+          </div>}
+          {e.escapePending&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnEscapeGood" onClick={()=>resolveEscape(e.id,true)}>Escape succeeded</button>
+            <button type="button" className="hsBtnEscapeBad" onClick={()=>resolveEscape(e.id,false)}>Escape failed</button>
+          </div>}
+        </div>;
+      })}
+    </div>
+    {eliminationLog.length>0&&<div className="hsEliminationLog">{eliminationLog.map((l,i)=><div key={i}>{l}</div>)}</div>}
+    <div className="hsControls"><button type="button" className="secondaryBtn" onClick={resetCourt}>New Game (this court)</button></div>
+  </div>;
+}
+
+// ── Coach setup + multi-court orchestrator (up to 6 courts) ────────────────
+function HangmanSquashGame({setSession,setScreen}={}){
+  const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  const usingAttendance=presentsObj.length>=2;
+  const [courtCount,setCourtCount]=useState(1);
+  const [activeCourt,setActiveCourt]=useState(0);
+  const [manualCount,setManualCount]=useState(2);
+  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2']);
+  const [teamMode,setTeamMode]=useState(false);
+  const [teamOf,setTeamOf]=useState({}); // name -> 'A' | 'B'
+  const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
+  const [seriesLength,setSeriesLength]=useState(1);
+  const [requireAttempt,setRequireAttempt]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const [copiedCourt,setCopiedCourt]=useState(null);
+  const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
+  const [handedOff,setHandedOff]=useState(()=>new Set());
+  const [allocMode,setAllocMode]=useState('auto');
+  const [manualAssign,setManualAssign]=useState({});
+  const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getHangmanLiveRoomId();},[]);
+
+  function setTeam(name,t){setTeamOf(prev=>({...prev,[name]:t}));}
+  function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
+
+  function quickAddPlayer(){
+    const nm=(window.prompt('New player name:')||'').trim();
+    if(!nm)return;
+    if(presentsObj.some(p=>playerDisplayName(p)===nm)){alert(nm+' is already on the list.');return;}
+    const rec={name:nm,present:true};
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
+      if(!list.some(p=>p&&playerDisplayName(p)===nm)){list.push(rec);localStorage.setItem(PLAYER_KEY,JSON.stringify(list));}
+    }catch{}
+    setPresentsObj(prev=>[...prev,rec]);
+  }
+
+  const allocation=useMemo(()=>{
+    if(usingAttendance){
+      if(allocMode==='manual'){
+        const groups=Array.from({length:courtCount},()=>[]);
+        presentsObj.map(p=>playerDisplayName(p)).forEach(name=>{
+          const ci=manualAssign[name];
+          if(ci!=null&&ci<courtCount)groups[ci].push(name);
+        });
+        return groups;
+      }
+      return rankedBlockCourtAllocation(presentsObj,courtCount);
+    }
+    return [manualNames.slice(0,manualCount)];
+  },[usingAttendance,presentsObj,courtCount,manualNames,manualCount,allocMode,manualAssign]);
+  const unassigned=useMemo(()=>{
+    if(!usingAttendance||allocMode!=='manual')return [];
+    const names=presentsObj.map(p=>playerDisplayName(p));
+    return names.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount);
+  },[usingAttendance,allocMode,presentsObj,manualAssign,courtCount]);
+  const courts=allocation.length;
+  const active=Math.min(activeCourt,courts-1);
+  function setManualName(i,v){setManualNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+
+  async function copyHsPlayerLink(){
     setProjecting(true);
     const url=buildLivePlayerViewUrl(base);
     try{await navigator.clipboard.writeText(url);alert('Live player link copied. Open it on the second device/projector — the hangman figures update live as you score.');}
     catch{window.prompt('LIVE Hangman Squash player link:',url);}
   }
+  async function copyHsCourtLink(n){
+    setProjecting(true);
+    const url=buildCourtLink(n,base);
+    try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}
+  }
+  async function copyHsScoreLink(n){
+    setProjecting(true);
+    const url=buildHsScoreLink(n,base);
+    setHandedOff(prev=>new Set(prev).add(n));
+    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+  }
+  function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
 
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const seriesNote=seriesLength>1?` Each challenge attempt is decided by a Best of ${seriesLength} mini-series (first to ${hangmanSeriesMajority(seriesLength)} rally wins) rather than a single rally, so the board lasts longer.`:'';
+    const seriesNote=seriesLength>1?` Each challenge attempt plays out over a window of ${seriesLength} rallies against the same opponent. Meeting the challenge at any point in the window keeps them safe outright; otherwise the player with more rally wins across the window stays safe and the other takes a step.${requireAttempt?' A player must attempt the challenge at least once in the window for the rally-count fallback to count — score alone cannot save them if they never went for it.':''}`:'';
     setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Hangman Squash',category:'Hangman Squash',format:'Escalating Jeopardy',duration:10,
-      task:`Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen, one body part at a time.${seriesNote} At the second-to-last step, one last-chance escape challenge is offered before elimination. Last player or team standing wins.`,
-      scoring:'Elimination order determines placing. Optional bonus for surviving with zero steps taken.',
+      task:`Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen, one body part at a time.${seriesNote} At the second-to-last step, one last-chance escape challenge is offered before elimination. Last player or team standing wins on each court. Runs on up to 6 courts simultaneously, each reporting to Court Monitor.`,
+      scoring:'Elimination order determines placing on each court. Optional bonus for surviving with zero steps taken.',
       rationale:'Keeps the challenge itself squash-representative while wrapping it in escalating public jeopardy — same underlying engine as Tin War (execute under rising consequence), different affective payload (a visible figure being drawn rather than a rising number).',
       coach:'Set a real tactical challenge, not just "win the rally" — a specific shot or zone creates a genuine problem for the opponent. Watch composure at the last-chance-escape moment.',
       playerFocus:'Meet the challenge, stay off the gallows.',
@@ -11032,90 +11111,152 @@ function HangmanSquashGame({setSession,setScreen}={}){
     <HangmanStyles/>
     <div className="hsIntro">
       <h2>💀 Hangman™ Squash</h2>
-      <p>Complete your challenge, avoid a step toward your hangman. Last player or team standing wins. Same escalating-consequence engine as Tin War — different, more visible, more public stake.</p>
+      <p>Complete your challenge, avoid a step toward your hangman. Last player or team standing wins. Runs on up to 6 courts simultaneously — same escalating-consequence engine as Tin War, different, more visible, more public stake.</p>
     </div>
 
-    {!entities&&<>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
+    </div>
+
     <div className="hsSetup">
       <div className="hsLabel">Mode</div>
       <div className="hsModeRow">
         <button type="button" className={teamMode?'hsModeBtn':'hsModeBtn on'} onClick={()=>setTeamMode(false)}>Individual</button>
-        <button type="button" className={teamMode?'hsModeBtn on':'hsModeBtn'} onClick={()=>setTeamMode(true)}>Teams (A/B) — shared track</button>
+        <button type="button" className={teamMode?'hsModeBtn on':'hsModeBtn'} onClick={()=>setTeamMode(true)}>Teams (A/B) — shared track per court</button>
       </div>
       <div className="hsLabel">Rally decision (pacing)</div>
       <div className="hsModeRow">{HANGMAN_SERIES_OPTIONS.map(o=><button type="button" key={o.n} className={seriesLength===o.n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSeriesLength(o.n)}>{o.label}</button>)}</div>
-      <div className="hsLabel">Players</div>
-      <div className="hsPlayerGrid">
-        {names.map((n,i)=><div key={i} className="hsPlayerRow">
-          <input type="text" value={n} onChange={e=>setName(i,e.target.value)} placeholder={`Player ${i+1}`}/>
+      {seriesLength>1&&<>
+        <p className="mutedText" style={{margin:'2px 0 0'}}>Each window plays out fully. Meeting the challenge on any rally keeps them safe outright; otherwise whoever won more rallies in the window stays safe.</p>
+        <div className="hsModeRow">
+          <button type="button" className={requireAttempt?'hsModeBtn':'hsModeBtn on'} onClick={()=>setRequireAttempt(false)}>Score alone can save you (default)</button>
+          <button type="button" className={requireAttempt?'hsModeBtn on':'hsModeBtn'} onClick={()=>setRequireAttempt(true)}>Must attempt the challenge to use score fallback</button>
+        </div>
+      </>}
+
+      <div className="hsLabel">Courts</div>
+      <div className="hsModeRow">{[1,2,3,4,5,6].map(c=><button type="button" key={c} className={courtCount===c?'hsModeBtn on':'hsModeBtn'} onClick={()=>setCourtCount(c)}>{c}</button>)}</div>
+
+      {!usingAttendance&&<div className="hsPlayerGrid">
+        <div className="hsLabel">Manual players (this court)</div>
+        {Array.from({length:manualCount},(_,i)=>manualNames[i]||`Player ${i+1}`).map((n,i)=><div key={i} className="hsPlayerRow">
+          <input type="text" value={n} onChange={e=>setManualName(i,e.target.value)}/>
           {teamMode&&<>
             <button type="button" className={(teamOf[n]||'A')==='A'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(n,'A')}>A</button>
             <button type="button" className={teamOf[n]==='B'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(n,'B')}>B</button>
           </>}
-          <button type="button" className="hsRemoveBtn" onClick={()=>removePlayer(i)}>✕</button>
         </div>)}
-      </div>
-      <div className="hsModeRow">
-        <button type="button" className="hsAddPlayerBtn" onClick={addNamePlayer}>+ Add player</button>
-        <button type="button" className="hsAddPlayerBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
-      </div>
+        <div className="hsModeRow">
+          <button type="button" className="hsAddPlayerBtn" onClick={()=>{setManualCount(c=>Math.min(8,c+1));}}>+ Add player</button>
+        </div>
+      </div>}
+
+      {usingAttendance&&<div style={{marginTop:'10px'}}>
+        <strong>Court allocation:</strong>
+        <div className="hsModeRow" style={{marginTop:'8px'}}>
+          <button type="button" className={allocMode==='auto'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level</button>
+          <button type="button" className={allocMode==='manual'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
+        </div>
+        {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} className="hsPlayerRow">
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
+            {teamMode&&<>
+              <button type="button" className={(teamOf[name]||'A')==='A'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(name,'A')}>A</button>
+              <button type="button" className={teamOf[name]==='B'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(name,'B')}>B</button>
+            </>}
+            <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
+          </div>)}
+        </div>}
+        {allocMode==='auto'&&teamMode&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+          <p className="mutedText" style={{margin:0}}>Assign each present player to Team A or B — teams apply within whichever court they land on.</p>
+          {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} className="hsPlayerRow">
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
+            <button type="button" className={(teamOf[name]||'A')==='A'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(name,'A')}>A</button>
+            <button type="button" className={teamOf[name]==='B'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(name,'B')}>B</button>
+          </div>)}
+        </div>}
+      </div>}
     </div>
+
     <div className="hsChallengeBox">
-      <div className="hsLabel">Starting challenge</div>
+      <div className="hsLabel">Current challenge — applies to all courts, update any time</div>
       <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
       <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
-    </div>
-    <button type="button" className="primaryBtn" onClick={startGame} disabled={names.filter(n=>n.trim()).length<2}>Start Game</button>
-    </>}
-
-    {entities&&<>
-    <div className="hsChallengeBox">
-      <div className="hsLabel">Current challenge — update any time</div>
-      <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
-      <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
-      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · Best of ${seriesLength} decides it`:''}</div>
+      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · window of ${seriesLength} rallies`:''}</div>
     </div>
 
-    {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
+    {courts>1&&<div className="hsCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'hsModeBtn on':'hsModeBtn'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
+    {usingAttendance&&<div className="hsAllocation">{allocation.map((g,i)=><div key={i} className={`hsAllocRow${i===active?' on':''}`}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
-    <div className="hsTracks">
-      {entities.map(e=>{
-        const status=hangmanStatusLabel(e);
-        return <div key={e.id} className={`hsTrackCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
-          <div className="hsFigureBox"><HangmanFigure steps={e.steps}/></div>
-          <div className="hsTrackInfo">
-            <div className="hsTrackName">{e.name}</div>
-            <div className={`hsTrackStatus ${status.cls}`}>{status.text}{(!e.eliminated&&!e.escapePending&&seriesLength>1)?` · series ${e.seriesW}–${e.seriesL}`:''}</div>
-          </div>
-          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength===1&&<div className="hsTrackBtns">
-            <button type="button" className="hsBtnSafe" onClick={()=>markSafe(e.id)}>✓ Met</button>
-            <button type="button" className="hsBtnFail" onClick={()=>markFailed(e.id)}>✗ Failed</button>
-          </div>}
-          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength>1&&<div className="hsTrackBtns">
-            <button type="button" className="hsBtnSafe" onClick={()=>recordRally(e.id,true)}>✓ Rally won</button>
-            <button type="button" className="hsBtnFail" onClick={()=>recordRally(e.id,false)}>✗ Rally lost</button>
-          </div>}
-          {e.escapePending&&<div className="hsTrackBtns">
-            <button type="button" className="hsBtnEscapeGood" onClick={()=>resolveEscape(e.id,true)}>Escape succeeded</button>
-            <button type="button" className="hsBtnEscapeBad" onClick={()=>resolveEscape(e.id,false)}>Escape failed</button>
-          </div>}
-        </div>;
-      })}
-    </div>
-
-    {eliminationLog.length>0&&<div className="hsEliminationLog">{eliminationLog.map((l,i)=><div key={i}>{l}</div>)}</div>}
-
-    <div className="hsControls">
-      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
-      <button type="button" className="secondaryBtn" onClick={resetGame}>New Game</button>
-    </div>
+    {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
+      {courts>1&&handedOff.has(i+1)
+        ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
+        : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null}/>}
+    </div>)}
 
     <div className="hsBottomBar">
-      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>COPY PLAYER LINK</button>
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copyHsPlayerLink}>COPY PLAYER LINK</button>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
-      {projecting&&<span className="hsDisplayHint">🟢 Live · figures update as you score</span>}
+      {projecting&&courts===1&&<span className="hsDisplayHint">🟢 Live · figures update as you score</span>}
     </div>
-    </>}
+
+    {courts>1&&<div className="hsSetup" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
+      <strong>Court links:</strong>
+      <p className="mutedText" style={{margin:0}}>Send each court its own <strong>Scoring link</strong> — that device becomes the scorer for that court. The <strong>View link</strong> is read-only, for a spectator screen or projector.</p>
+      <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+        {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px'}}>
+            <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players){handedOff.has(i+1)?' — scoring handed off':''}</span>
+          </div>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copyHsScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copyHsCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
+            {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
+          </div>
+        </div>)}
+      </div>
+      {projecting&&<span className="hsDisplayHint">🟢 Live on all {courts} courts · each figure updates independently as you score on that court's tab</span>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen — see every court's progress at once)</button>}
+    </div>}
+  </div>;
+}
+
+// ── Per-court scoring device (hand-off) ─────────────────────────────────
+function HangmanSquashCourtScorer({court,host}){
+  const roomId=courtRoomId(host,court);
+  const [seedData,setSeedData]=useState(null);
+  const [status,setStatus]=useState('Connecting…');
+  useEffect(()=>{
+    if(seedData)return;
+    let cancelled=false;
+    async function load(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled)return;
+      const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
+      if(p){
+        const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[]};
+        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,courtLabel:p.courtLabel||('Court '+court)});
+        setStatus('Live');
+      }else setStatus('Waiting for coach device to set up this court…');
+    }
+    load();
+    const id=setInterval(load,1500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[roomId,seedData]);
+
+  if(!seedData){
+    return <div className="hsDisplayPage"><HangmanStyles/>
+      <div className="hsDisplayTop"><span>● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>💀 Hangman Squash — Court {court}</h1><p style={{color:'#9fb0c2'}}>{status}</p></div>
+    </div>;
+  }
+  return <div className="hsWrap">
+    <HangmanStyles/>
+    <div className="hsDisplayHint" style={{fontSize:'0.95rem'}}>● SCORING — Court {court}</div>
+    <h2>💀 Hangman Squash</h2>
+    <p className="mutedText">Record each rally below. This device is now the scorer for this court.</p>
+    <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
 
@@ -11125,17 +11266,20 @@ function HangmanSquashPlayerDisplay({payload={}}){
   return <div className="hsDisplayPage">
     <HangmanStyles/>
     <div className="hsDisplayShell">
-      <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY</span><h1>💀 Hangman Squash</h1></div>
-      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · Best of ${payload.seriesLength} decides it`:''}</div>}
+      <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY{payload.courtLabel?(' · '+payload.courtLabel):''}</span><h1>💀 Hangman Squash</h1></div>
+      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · window of ${payload.seriesLength} rallies`:''}</div>}
       {winner&&<div className="hsDisplayWinner">🏆 {winner} wins!</div>}
       <div className="hsDisplayGrid">
         {entities.map((e,i)=>{
           const status=hangmanStatusLabel(e);
-          const showSeries=payload.seriesLength>1&&!e.eliminated&&!e.escapePending;
+          const wr=e.windowResults||[];
+          const wins=wr.filter(r=>r==='met'||r==='won').length;
+          const losses=wr.filter(r=>r==='lost').length;
+          const showWindow=payload.seriesLength>1&&!e.eliminated&&!e.escapePending;
           return <div key={i} className={`hsDisplayCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
             <HangmanFigure steps={e.steps} size={110}/>
             <div className="hsDisplayName">{e.name}</div>
-            <div className={`hsDisplayStatus ${status.cls}`}>{status.text}{showSeries?` · ${e.seriesW}–${e.seriesL}`:''}</div>
+            <div className={`hsDisplayStatus ${status.cls}`}>{status.text}{showWindow?` · ${wr.length}/${payload.seriesLength} (${wins}W–${losses}L)`:''}</div>
           </div>;
         })}
       </div>
@@ -18443,6 +18587,11 @@ function normalizeCourtPayload(row){
       target=5;headline=`X: ${claimedA} \u00b7 O: ${claimedB}`;pct=Math.max(claimedA,claimedB)/5;
       if(p.winnerName){pct=1;headline=p.winnerName==='Draw'?'Draw':'Winner: '+p.winnerName;}
     }
+  }else if(t==='hangmansquash'){
+    game='Hangman Squash';players=(p.entities||[]).map(x=>({name:x.name,score:HANGMAN_MAX_STEPS-(x.steps||0)}));
+    const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
+    leaderName=lead?lead.name:'';target=HANGMAN_MAX_STEPS;headline=lead?(lead.score+'/'+HANGMAN_MAX_STEPS+' safe'):'';pct=lead?lead.score/HANGMAN_MAX_STEPS:null;
+    if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
     game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
   }else if(t==='disruption'&&p.battle){
@@ -18499,20 +18648,22 @@ function CourtMonitor({setScreen}){
     let cancelled=false;
     const ludoBase=base+'-ludo';
     const ncBase=base+'-nc';
+    const hsBase=base+'-hangman';
     async function load(){
       const ns=Array.from({length:count},(_,i)=>i+1);
       const out={};
       const outBase={};
       await Promise.all(ns.map(async n=>{
-        const [rowStd,rowLudo,rowNc]=await Promise.all([readLivePlayerRoom(courtRoomId(base,n)),readLivePlayerRoom(courtRoomId(ludoBase,n)),readLivePlayerRoom(courtRoomId(ncBase,n))]);
+        const [rowStd,rowLudo,rowNc,rowHs]=await Promise.all([readLivePlayerRoom(courtRoomId(base,n)),readLivePlayerRoom(courtRoomId(ludoBase,n)),readLivePlayerRoom(courtRoomId(ncBase,n)),readLivePlayerRoom(courtRoomId(hsBase,n))]);
         const normStd=normalizeCourtPayload(rowStd);
         const normLudo=normalizeCourtPayload(rowLudo);
         const normNc=normalizeCourtPayload(rowNc);
-        // Ludo and N&C each have their own namespaced court rooms so they can never
-        // collide with another module's court rooms — check all three and show whichever
+        const normHs=normalizeCourtPayload(rowHs);
+        // Ludo, N&C and Hangman each have their own namespaced court rooms so they can never
+        // collide with another module's court rooms — check all four and show whichever
         // is actually live (freshest non-stale one wins if more than one has data).
         let chosen=normStd,chosenBase=base;
-        [[normLudo,ludoBase],[normNc,ncBase]].forEach(([norm,nsBase])=>{
+        [[normLudo,ludoBase],[normNc,ncBase],[normHs,hsBase]].forEach(([norm,nsBase])=>{
           if(norm&&norm.game&&(!chosen||!chosen.game||(chosen.stale&&!norm.stale))){chosen=norm;chosenBase=nsBase;}
         });
         out[n]=chosen;outBase[n]=chosenBase;
@@ -19834,6 +19985,7 @@ const ludoScoreParam=useMemo(()=>getLudoScoreFromUrl(),[]);
 const ludoRaceParam=useMemo(()=>getLudoRaceFromUrl(),[]);
 const ncScoreParam=useMemo(()=>getNcScoreFromUrl(),[]);
 const ncRaceParam=useMemo(()=>getNcRaceFromUrl(),[]);
+const hsScoreParam=useMemo(()=>getHsScoreFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
 const searchAll=useMemo(()=>buildSearchIndex(),[]);
@@ -19880,6 +20032,7 @@ if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} ho
 if(ludoRaceParam){return <LudoSquashRaceDisplay host={ludoRaceParam.host} courtCount={ludoRaceParam.courtCount}/>;}
 if(ncScoreParam){return <NoughtsCrossesCourtScorer court={ncScoreParam.court} host={ncScoreParam.host}/>;}
 if(ncRaceParam){return <NoughtsCrossesRaceDisplay host={ncRaceParam.host} courtCount={ncRaceParam.courtCount}/>;}
+if(hsScoreParam){return <HangmanSquashCourtScorer court={hsScoreParam.court} host={hsScoreParam.host}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
   try{lastWrite=JSON.parse(localStorage.getItem('checkerboardLiveLastWrite')||'null');}catch{}
