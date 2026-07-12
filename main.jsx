@@ -167,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v346 Noughts & Crosses: added Best of 3 per pairing (Teams and Free-for-all both), the pinned pacing fix - a new toggle alongside Require a challenge. When on, the current on-court pairing plays a mini best-of-3 (first to 2 rally wins) before anything is claimed; nomination locks once the series starts, and only rotation/claim/challenge-confirm happen once it\'s decided. Board takes roughly 3x longer to fill instead of a single rally deciding a square. Stackable with Require a challenge for maximum pacing control. Live series score shown on the coach screen, scorer link and Player Display.';
+const APP_VERSION='v347 New module: Hangman Squash (Games Library, Tin War family variant). Coach sets a squash-representative challenge; meeting it is safe, failing it adds one non-linear step to that player or team hangman, drawn live via SVG figure on the coach screen and Live Player Display. At step 5 a one-time last-chance-escape challenge is offered before elimination. Individual or Teams (shared track) modes. Last player/team standing wins. Live sync via existing liveRoom pattern (room suffix -hangman); Copy Player Link and Add to Session included. No word/letter mechanic - fully redesigned per pinned build discussion into pure escalating-jeopardy engine.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10759,6 +10759,319 @@ function DisruptionPlayerDisplay({payload={}}){
 }
 
 
+// ── HANGMAN™ SQUASH — escalating public jeopardy (Tin War family variant) ──
+function HangmanStyles(){
+  return <style>{`
+.hsWrap{display:flex;flex-direction:column;gap:16px;}
+.hsIntro{background:#0f1822;border:1px solid #223044;border-left:3px solid #c2455a;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
+.hsIntro h2{margin:0;font-size:1.15rem;color:#f2a6b3;}
+.hsIntro p{margin:0;line-height:1.45;color:#cdd9e6;}
+.hsSetup{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+.hsLabel{color:#f0c49c;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
+.hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
+.hsModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
+.hsModeBtn.on{border-color:#c2455a;background:#2a0c14;color:#f5a8b6;}
+.hsPlayerGrid{display:flex;flex-direction:column;gap:6px;}
+.hsPlayerRow{display:flex;align-items:center;gap:8px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
+.hsPlayerRow input[type=text]{flex:1;background:transparent;border:none;color:#eaf4fb;font-size:0.9rem;outline:none;}
+.hsTeamBtn{background:#161b22;border:1px solid #3a4a5e;color:#9fb0c2;border-radius:7px;padding:5px 9px;font-size:0.72rem;font-weight:700;cursor:pointer;}
+.hsTeamBtn.on{border-color:#c2455a;background:#2a0c14;color:#f5a8b6;}
+.hsRemoveBtn{background:transparent;border:none;color:#7c8ea0;font-size:1rem;cursor:pointer;padding:2px 6px;}
+.hsAddPlayerBtn{align-self:flex-start;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:8px 14px;font-size:0.84rem;font-weight:600;cursor:pointer;}
+.hsChallengeBox{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
+.hsChallengeInput{background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;padding:11px 13px;color:#eaf4fb;font-size:0.95rem;width:100%;box-sizing:border-box;}
+.hsChips{display:flex;flex-wrap:wrap;gap:7px;}
+.hsChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:6px 12px;color:#dbe6f2;font-size:0.8rem;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.hsCurrentChallenge{background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 13px;color:#dbeeff;font-size:0.98rem;font-weight:600;}
+.hsTracks{display:flex;flex-direction:column;gap:10px;}
+.hsTrackCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:16px;}
+.hsTrackCard.eliminated{opacity:0.5;border-color:#3a2028;}
+.hsTrackCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 1px #f5c542 inset;}
+.hsFigureBox{flex:none;width:70px;height:80px;}
+.hsTrackInfo{flex:1;display:flex;flex-direction:column;gap:4px;}
+.hsTrackName{font-size:1.05rem;font-weight:800;color:#eaf4fb;}
+.hsTrackStatus{font-size:0.78rem;color:#9fb0c2;}
+.hsTrackStatus.warn{color:#f5c542;font-weight:700;}
+.hsTrackStatus.out{color:#f87171;font-weight:700;}
+.hsTrackBtns{display:flex;gap:8px;flex:none;}
+.hsBtnSafe{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.hsBtnFail{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.hsBtnEscapeGood{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
+.hsBtnEscapeBad{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
+.hsWinBanner{text-align:center;background:#0d2a18;border:1px solid #1d6b3f;border-radius:12px;padding:16px;color:#86efac;font-weight:800;font-size:1.15rem;}
+.hsEliminationLog{background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;display:flex;flex-direction:column;gap:3px;}
+.hsEliminationLog div{font-size:0.82rem;color:#9fb0c2;}
+.hsBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.hsBottomBar .primaryBtn{margin-left:auto;}
+.hsControls{display:flex;gap:8px;flex-wrap:wrap;}
+.hsDisplayHint{font-size:0.82rem;color:#86efac;}
+
+.hsDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#1a0d12 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
+.hsDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:24px;}
+.hsDisplayTop{text-align:center;}
+.hsDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#b0708a;}
+.hsDisplayTop h1{margin:6px 0 4px;font-size:2.8rem;color:#eaf4fb;}
+.hsDisplayChallenge{text-align:center;font-size:1.4rem;font-weight:700;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:16px 20px;}
+.hsDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.hsDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+.hsDisplayCard.eliminated{opacity:0.4;}
+.hsDisplayCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 2px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
+@keyframes hsPulse{0%,100%{box-shadow:0 0 0 2px #f5c542 inset;}50%{box-shadow:0 0 0 5px #f5c542 inset;}}
+.hsDisplayName{font-size:1.3rem;font-weight:800;color:#eaf4fb;}
+.hsDisplayStatus{font-size:0.9rem;color:#9fb0c2;}
+.hsDisplayStatus.warn{color:#f5c542;font-weight:700;}
+.hsDisplayStatus.out{color:#f87171;font-weight:700;}
+.hsDisplayWinner{text-align:center;font-size:2rem;font-weight:800;color:#86efac;background:#0d2a18;border:1px solid #1d6b3f;border-radius:16px;padding:20px;}
+@media (max-width:700px){
+  .hsDisplayTop h1{font-size:2rem;}
+  .hsDisplayGrid{grid-template-columns:repeat(2,1fr);}
+}
+`}</style>;
+}
+
+const HANGMAN_MAX_STEPS=6;
+const HANGMAN_ESCAPE_STEP=5;
+const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner — no let','Front-wall finish only'];
+
+function hangmanFigureParts(steps){
+  // Non-linear staging: 1-3 minor (limbs), 4-5 ominous (body/head/noose), 6 complete.
+  return {
+    post: true,
+    beam: steps>=1,
+    rope: steps>=1,
+    head: steps>=2,
+    body: steps>=3,
+    armL: steps>=4,
+    armR: steps>=4,
+    legL: steps>=5,
+    legR: steps>=6,
+    face: steps>=6
+  };
+}
+function HangmanFigure({steps=0,size=70}){
+  const p=hangmanFigureParts(Math.max(0,Math.min(HANGMAN_MAX_STEPS,steps)));
+  const stroke=steps>=HANGMAN_MAX_STEPS?'#f87171':steps>=HANGMAN_ESCAPE_STEP?'#f5c542':'#8fd0ee';
+  return <svg width={size} height={size*1.1} viewBox="0 0 70 80" fill="none">
+    <line x1="6" y1="76" x2="46" y2="76" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>
+    <line x1="14" y1="76" x2="14" y2="6" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>
+    {p.beam&&<line x1="14" y1="6" x2="46" y2="6" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>}
+    {p.rope&&<line x1="46" y1="6" x2="46" y2="16" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>}
+    {p.head&&<circle cx="46" cy="24" r="8" stroke={stroke} strokeWidth="3"/>}
+    {p.body&&<line x1="46" y1="32" x2="46" y2="52" stroke={stroke} strokeWidth="3" strokeLinecap="round"/>}
+    {p.armL&&<line x1="46" y1="38" x2="36" y2="48" stroke={stroke} strokeWidth="3" strokeLinecap="round"/>}
+    {p.armR&&<line x1="46" y1="38" x2="56" y2="48" stroke={stroke} strokeWidth="3" strokeLinecap="round"/>}
+    {p.legL&&<line x1="46" y1="52" x2="38" y2="64" stroke={stroke} strokeWidth="3" strokeLinecap="round"/>}
+    {p.legR&&<line x1="46" y1="52" x2="54" y2="64" stroke={stroke} strokeWidth="3" strokeLinecap="round"/>}
+    {p.face&&<>
+      <line x1="43" y1="22" x2="45" y2="24" stroke="#f87171" strokeWidth="1.5"/>
+      <line x1="45" y1="22" x2="43" y2="24" stroke="#f87171" strokeWidth="1.5"/>
+      <line x1="47" y1="22" x2="49" y2="24" stroke="#f87171" strokeWidth="1.5"/>
+      <line x1="49" y1="22" x2="47" y2="24" stroke="#f87171" strokeWidth="1.5"/>
+    </>}
+  </svg>;
+}
+function hangmanStatusLabel(entity){
+  if(entity.eliminated)return {text:'OUT',cls:'out'};
+  if(entity.escapePending)return {text:'LAST-CHANCE ESCAPE — succeed or you\u2019re out',cls:'warn'};
+  if(entity.steps>=4)return {text:`${entity.steps}/6 — danger`,cls:'warn'};
+  return {text:`${entity.steps}/6`,cls:''};
+}
+
+function HangmanSquashGame({setSession,setScreen}={}){
+  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const [teamMode,setTeamMode]=useState(false);
+  const [names,setNames]=useState(()=>{
+    const fromAttendance=presentsObj.map(p=>playerDisplayName(p));
+    return fromAttendance.length>=2?fromAttendance.slice(0,6):['Player 1','Player 2'];
+  });
+  const [teamOf,setTeamOf]=useState({}); // name -> 'A' | 'B'
+  const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
+  const [entities,setEntities]=useState(null); // built on Start Game
+  const [eliminationLog,setEliminationLog]=useState([]);
+  const [projecting,setProjecting]=useState(false);
+  const base=useMemo(()=>getPersistentLiveRoomId()+'-hangman',[]);
+
+  function addNamePlayer(){setNames(prev=>prev.length>=8?prev:[...prev,`Player ${prev.length+1}`]);}
+  function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
+  function removePlayer(i){setNames(prev=>prev.filter((_,idx)=>idx!==i));}
+  function setTeam(name,t){setTeamOf(prev=>({...prev,[name]:t}));}
+
+  function buildEntities(){
+    if(!teamMode){
+      return names.filter(n=>n.trim()).map(n=>({id:n,name:n,steps:0,eliminated:false,escapePending:false,escapeUsed:false}));
+    }
+    const teamA=names.filter(n=>n.trim()&&(teamOf[n]||'A')==='A');
+    const teamB=names.filter(n=>n.trim()&&teamOf[n]==='B');
+    const out=[];
+    if(teamA.length)out.push({id:'A',name:'Team A ('+teamA.join(', ')+')',steps:0,eliminated:false,escapePending:false,escapeUsed:false});
+    if(teamB.length)out.push({id:'B',name:'Team B ('+teamB.join(', ')+')',steps:0,eliminated:false,escapePending:false,escapeUsed:false});
+    return out;
+  }
+  function startGame(){setEntities(buildEntities());setEliminationLog([]);}
+  function resetGame(){setEntities(null);setEliminationLog([]);}
+
+  const activeCount=entities?entities.filter(e=>!e.eliminated).length:0;
+  const winner=entities&&activeCount===1?entities.find(e=>!e.eliminated):null;
+
+  function markSafe(id){/* no state change — challenge met, entity stays safe */}
+  function markFailed(id){
+    setEntities(prev=>{
+      if(!prev)return prev;
+      return prev.map(e=>{
+        if(e.id!==id||e.eliminated||e.escapePending)return e;
+        const nextSteps=Math.min(HANGMAN_MAX_STEPS,e.steps+1);
+        if(nextSteps>=HANGMAN_ESCAPE_STEP&&!e.escapeUsed){
+          return {...e,steps:HANGMAN_ESCAPE_STEP,escapePending:true};
+        }
+        if(nextSteps>=HANGMAN_MAX_STEPS){
+          setEliminationLog(log=>[...log,`${e.name} — eliminated`]);
+          return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true};
+        }
+        return {...e,steps:nextSteps};
+      });
+    });
+  }
+  function resolveEscape(id,succeeded){
+    setEntities(prev=>{
+      if(!prev)return prev;
+      return prev.map(e=>{
+        if(e.id!==id)return e;
+        if(succeeded)return {...e,steps:HANGMAN_ESCAPE_STEP-1,escapePending:false,escapeUsed:true};
+        setEliminationLog(log=>[...log,`${e.name} — eliminated (failed last-chance escape)`]);
+        return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,escapePending:false};
+      });
+    });
+  }
+
+  useEffect(()=>{
+    if(!projecting||!entities)return;
+    const payload={type:'hangmansquash',challenge,entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending})),winnerName:winner?winner.name:null,eliminationLog};
+    writeLivePlayerRoom(base,'hangmansquash',payload);
+  },[projecting,entities,challenge,eliminationLog,base,winner]);
+
+  async function copyPlayerLink(){
+    setProjecting(true);
+    const url=buildLivePlayerViewUrl(base);
+    try{await navigator.clipboard.writeText(url);alert('Live player link copied. Open it on the second device/projector — the hangman figures update live as you tap Met/Failed.');}
+    catch{window.prompt('LIVE Hangman Squash player link:',url);}
+  }
+
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Hangman Squash',category:'Hangman Squash',format:'Escalating Jeopardy',duration:10,
+      task:'Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen. At step 5, one last-chance escape challenge is offered before elimination. Last player or team standing wins.',
+      scoring:'Elimination order determines placing. Optional bonus for surviving with zero steps taken.',
+      rationale:'Keeps the challenge itself squash-representative while wrapping it in escalating public jeopardy — same underlying engine as Tin War (execute under rising consequence), different affective payload (a visible figure being drawn rather than a rising number).',
+      coach:'Set a real tactical challenge, not just "win the rally" — a specific shot or zone creates a genuine problem for the opponent. Watch composure at the last-chance-escape moment.',
+      playerFocus:'Meet the challenge, stay off the gallows.',
+      layers:['Escalating Jeopardy','Tin War Family'],rld:4}));
+    alert('Hangman Squash added to your session.');
+  }
+
+  return <div className="hsWrap">
+    <HangmanStyles/>
+    <div className="hsIntro">
+      <h2>💀 Hangman™ Squash</h2>
+      <p>Complete your challenge, avoid a step toward your hangman. Last player or team standing wins. Same escalating-consequence engine as Tin War — different, more visible, more public stake.</p>
+    </div>
+
+    {!entities&&<>
+    <div className="hsSetup">
+      <div className="hsLabel">Mode</div>
+      <div className="hsModeRow">
+        <button type="button" className={teamMode?'hsModeBtn':'hsModeBtn on'} onClick={()=>setTeamMode(false)}>Individual</button>
+        <button type="button" className={teamMode?'hsModeBtn on':'hsModeBtn'} onClick={()=>setTeamMode(true)}>Teams (A/B) — shared track</button>
+      </div>
+      <div className="hsLabel">Players</div>
+      <div className="hsPlayerGrid">
+        {names.map((n,i)=><div key={i} className="hsPlayerRow">
+          <input type="text" value={n} onChange={e=>setName(i,e.target.value)} placeholder={`Player ${i+1}`}/>
+          {teamMode&&<>
+            <button type="button" className={(teamOf[n]||'A')==='A'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(n,'A')}>A</button>
+            <button type="button" className={teamOf[n]==='B'?'hsTeamBtn on':'hsTeamBtn'} onClick={()=>setTeam(n,'B')}>B</button>
+          </>}
+          <button type="button" className="hsRemoveBtn" onClick={()=>removePlayer(i)}>✕</button>
+        </div>)}
+      </div>
+      <button type="button" className="hsAddPlayerBtn" onClick={addNamePlayer}>+ Add player</button>
+    </div>
+    <div className="hsChallengeBox">
+      <div className="hsLabel">Starting challenge</div>
+      <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
+      <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
+    </div>
+    <button type="button" className="primaryBtn" onClick={startGame} disabled={names.filter(n=>n.trim()).length<2}>Start Game</button>
+    </>}
+
+    {entities&&<>
+    <div className="hsChallengeBox">
+      <div className="hsLabel">Current challenge — update any time</div>
+      <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
+      <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
+      <div className="hsCurrentChallenge">🎯 {challenge}</div>
+    </div>
+
+    {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
+
+    <div className="hsTracks">
+      {entities.map(e=>{
+        const status=hangmanStatusLabel(e);
+        return <div key={e.id} className={`hsTrackCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
+          <div className="hsFigureBox"><HangmanFigure steps={e.steps}/></div>
+          <div className="hsTrackInfo">
+            <div className="hsTrackName">{e.name}</div>
+            <div className={`hsTrackStatus ${status.cls}`}>{status.text}</div>
+          </div>
+          {!e.eliminated&&!e.escapePending&&!winner&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnSafe" onClick={()=>markSafe(e.id)}>✓ Met</button>
+            <button type="button" className="hsBtnFail" onClick={()=>markFailed(e.id)}>✗ Failed</button>
+          </div>}
+          {e.escapePending&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnEscapeGood" onClick={()=>resolveEscape(e.id,true)}>Escape succeeded</button>
+            <button type="button" className="hsBtnEscapeBad" onClick={()=>resolveEscape(e.id,false)}>Escape failed</button>
+          </div>}
+        </div>;
+      })}
+    </div>
+
+    {eliminationLog.length>0&&<div className="hsEliminationLog">{eliminationLog.map((l,i)=><div key={i}>{l}</div>)}</div>}
+
+    <div className="hsControls">
+      <button type="button" className="secondaryBtn" onClick={resetGame}>New Game</button>
+    </div>
+
+    <div className="hsBottomBar">
+      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>COPY PLAYER LINK</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
+      {projecting&&<span className="hsDisplayHint">🟢 Live · figures update as you tap Met/Failed</span>}
+    </div>
+    </>}
+  </div>;
+}
+
+function HangmanSquashPlayerDisplay({payload={}}){
+  const entities=payload.entities||[];
+  const winner=payload.winnerName;
+  return <div className="hsDisplayPage">
+    <HangmanStyles/>
+    <div className="hsDisplayShell">
+      <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY</span><h1>💀 Hangman Squash</h1></div>
+      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}</div>}
+      {winner&&<div className="hsDisplayWinner">🏆 {winner} wins!</div>}
+      <div className="hsDisplayGrid">
+        {entities.map((e,i)=>{
+          const status=hangmanStatusLabel(e);
+          return <div key={i} className={`hsDisplayCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
+            <HangmanFigure steps={e.steps} size={110}/>
+            <div className="hsDisplayName">{e.name}</div>
+            <div className={`hsDisplayStatus ${status.cls}`}>{status.text}</div>
+          </div>;
+        })}
+      </div>
+    </div>
+  </div>;
+}
+
 function Games({setSession,setScreen}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
@@ -10806,6 +11119,7 @@ function Games({setSession,setScreen}){
     {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally'},
     {id:'breakout',label:'Breakout Squash',category:'Breakout Squash'},
     {id:'presscall',label:'Press Call',category:'Press Call'},
+    {id:'hangman',label:'Hangman Squash',category:'Hangman Squash'},
     {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -10905,6 +11219,7 @@ function Games({setSession,setScreen}){
     {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
     {activeClassId==='breakout'&&<BreakoutSquash setSession={setSession}/>}
     {activeClassId==='presscall'&&<PressCallModule setSession={setSession}/>}
+    {activeClassId==='hangman'&&<HangmanSquashGame key="hangman-engine" setSession={setSession} setScreen={setScreen}/>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
@@ -19492,6 +19807,7 @@ if(screen==='playerDisplay'&&livePayload?.type==='courtstandings'){return <Court
 if(screen==='playerDisplay'&&livePayload?.type==='matchTrace'){return <MatchTracePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='checkerboard'){return <CheckerboardPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='courtTraceGame'){return <CourtTraceGamePlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='hangmansquash'){return <HangmanSquashPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&liveCompetition){return <CompetitionPlayerDisplayView competition={liveCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={liveGame}/>;}
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
