@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v356 Hangman Squash: pairing now advances winner-stays-on automatically, matching Snakes & Ladders - when a pairing window resolves, the safe player stays on court and the next challenger from the queue is auto-populated as their opponent; the coach no longer needs to tap for the next pairing (a manual Swap pairing button remains for overrides). Works the same in single-rally mode (every rally resolves the pairing) and window mode (resolves when the window completes or, in sudden-death, the instant the challenge is met).';
+const APP_VERSION='v358 Fixed the stale-roster bug across all four roster games (Hangman, Snakes and Ladders, Ludo Squash, Noughts and Crosses), not just Hangman - root cause was the present-players list being read once from storage at first mount and never refreshed, so a screen left open since an earlier session kept showing that earlier attendance instead of current. All four now auto-refresh whenever the tab or app comes back into view, plus a manual Refresh players button and a Showing N present players line so its always clear whats actually loaded. Also: Hangman resolution style is now a genuine three-way choice - Best of N (early stop at majority, default), Play all N rallies (always plays the full window even after a majority is decided), and Sudden death on the named shot - instead of Best of N replacing the play-all-N option.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9445,6 +9445,18 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
 function SnakesLaddersGame({setSession,setScreen}={}){
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function refreshPlayers(){
+    try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
+  }
+  useEffect(()=>{
+    // Guards against a stale roster if this screen was left open (or kept mounted in the
+    // background) since attendance was set earlier — refresh whenever the tab/app comes
+    // back into view, not just on first mount.
+    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
+    document.addEventListener('visibilitychange',onVis);
+    window.addEventListener('focus',refreshPlayers);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
+  },[]);
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -9539,8 +9551,10 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <p className="mutedText">King-of-court board race. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {settings.size} wins.</p>
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
     {showRationale&&<div className="slRationale">
@@ -9687,6 +9701,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 }
 
 function SnakesLaddersPlayerDisplay({payload={}}){
+  useWakeLock();
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
   const size=payload.size||21;
   const cols=size===15?5:size===30?6:size===50?10:7;
@@ -10865,7 +10880,7 @@ function HangmanStyles(){
 const HANGMAN_MAX_STEPS=7;
 const HANGMAN_ESCAPE_STEP=6;
 const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner','Front wall finish'];
-const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Window of 3'},{n:5,label:'Window of 5'}];
+const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Best of 3'},{n:5,label:'Best of 5'}];
 
 function hangmanFigureParts(steps){
   // Non-linear staging, one body part per step: rope/beam(1) head(2) body(3) armL(4) armR(5) legL(6, last-chance) legR+face(7, out).
@@ -10920,7 +10935,7 @@ function hangmanStatusLabel(entity){
 }
 
 // ── Per-court engine — one instance per court, own entities/state ──────────
-function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,endOnMet=false,project=false,courtLabel='',roomId=null,seed=null}){
+function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,resolutionStyle='bestOfN',pairingMode='winnerStays',project=false,courtLabel='',roomId=null,seed=null}){
   function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
   function buildEntities(){
     if(!teamMode){
@@ -10977,24 +10992,38 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     return {...e,steps:nextSteps,windowResults:[],attempted:false};
   }
   // Resolves what happens to an entity after one recorded rally-attempt at the challenge.
-  // Window of 1 (single rally) is strict: only actually MEETING the challenge keeps you
-  // safe — winning the rally some other way still counts as a miss, same as a loss.
-  // Window of 3/5: safe if the challenge was met on any rally in the window, OR they won
-  // more rallies than they lost across the window; fails only if neither is true.
-  // (If requireAttempt is on, the score fallback alone can't save them in window mode —
-  // they must have gone for the challenge at least once, even if they didn't land it.)
+  // Single rally is strict: only actually MEETING the challenge keeps you safe — winning
+  // the rally some other way still counts as a miss, same as a loss.
+  // Best of N (default resolutionStyle): standard best-of-N — ends as soon as either side
+  // reaches the majority of rally wins (2 of 3, or 3 of 5), not always all N rallies.
+  // Play all N rallies (resolutionStyle='fullWindow'): always plays the full N regardless
+  // of when a majority is reached — same safety rule, just evaluated at the end every time.
+  // Either way: safe if the challenge was met on any rally played, OR they reach/finish
+  // ahead on rally wins; fails otherwise. (If requireAttempt is on, the score fallback
+  // alone can't save them — they must have gone for the challenge at least once.)
   function applyWindowOutcome(e,outcome){ // outcome: 'met' | 'won' | 'lost' — returns {entity, resolved, safe}
     const results=[...e.windowResults,outcome];
     const attempted=e.attempted||outcome==='met';
-    if(results.length<seriesLength)return {entity:{...e,windowResults:results,attempted},resolved:false,safe:null};
     if(seriesLength<=1){
       const safe=outcome==='met';
       return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:[],attempted:false}),resolved:true,safe};
     }
-    const met=results.includes('met');
+    if(resolutionStyle==='fullWindow'){
+      if(results.length<seriesLength)return {entity:{...e,windowResults:results,attempted},resolved:false,safe:null};
+      const met=results.includes('met');
+      const wins=results.filter(r=>r==='met'||r==='won').length;
+      const losses=results.filter(r=>r==='lost').length;
+      const safe=met||(wins>losses&&(!requireAttempt||attempted));
+      return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:results,attempted}),resolved:true,safe};
+    }
+    const majority=Math.ceil(seriesLength/2);
     const wins=results.filter(r=>r==='met'||r==='won').length;
     const losses=results.filter(r=>r==='lost').length;
-    const safe=met||(wins>losses&&(!requireAttempt||attempted));
+    if(wins<majority&&losses<majority){
+      return {entity:{...e,windowResults:results,attempted},resolved:false,safe:null};
+    }
+    const met=results.includes('met');
+    const safe=met||(wins>=majority&&(!requireAttempt||attempted));
     return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:results,attempted}),resolved:true,safe};
   }
   // One tap records the whole rally for a pairing at once: the winning side gets
@@ -11013,7 +11042,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     pushUndo();
 
     let updatedWinner,updatedLoser,resolved=false,safeId=null,failId=null;
-    if(seriesLength>1&&endOnMet&&winnerOutcome==='met'){
+    if(seriesLength>1&&resolutionStyle==='suddenDeath'&&winnerOutcome==='met'){
       // Sudden-death mode: meeting the challenge ends the window right there —
       // winner safe outright, opponent takes a step immediately, remaining
       // rallies in the window aren't played out.
@@ -11030,7 +11059,10 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     if(resolved){
       setQueue(prev=>{
         const rest=prev.filter(id=>id!==safeId&&id!==failId);
-        return [safeId,...rest,failId];
+        // Winner stays on: the safe player stays on court, next challenger comes up to face them.
+        // Rotate through: the player who just took a step stays on to face a fresh challenger,
+        // the safe player rotates to the back of the queue (gets a breather).
+        return pairingMode==='rotate' ? [failId,...rest,safeId] : [safeId,...rest,failId];
       });
     }
   }
@@ -11047,18 +11079,18 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
 
   useEffect(()=>{
     if(!project)return;
-    const payload={type:'hangmansquash',challenge,seriesLength,requireAttempt,endOnMet,courtLabel,queue,
+    const payload={type:'hangmansquash',challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,courtLabel,queue,
       entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,windowResults:e.windowResults,attempted:e.attempted})),
       winnerName:winner?winner.name:null,eliminationLog};
     writeLivePlayerRoom(roomId||getHangmanLiveRoomId(),'hangmansquash',payload);
-  },[project,entities,challenge,seriesLength,requireAttempt,endOnMet,eliminationLog,roomId,courtLabel,winner,queue]);
+  },[project,entities,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,eliminationLog,roomId,courtLabel,winner,queue]);
 
   return <div className="hsCourt">
     {courtLabel&&<div className="hsCourtLabel">{courtLabel}</div>}
     {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
 
     {!winner&&activeIds.length>2&&<div className="hsPairBox">
-      <div className="hsLabel">On court now — winner stays on, next challenger auto-populated</div>
+      <div className="hsLabel">On court now — {pairingMode==='rotate'?'players rotate through automatically':'winner stays on, next challenger auto-populated'}</div>
       {pairB&&<p className="mutedText" style={{margin:0}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
       <p className="mutedText" style={{margin:0}}>Waiting: {queue.slice(2).map(id=>entities.find(e=>e.id===id)?.name).filter(Boolean).join(' · ')||'—'}</p>
       <button type="button" className="secondaryBtn" onClick={nextPairing}>🔀 Swap pairing manually</button>
@@ -11070,7 +11102,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
         <span>{pairA.name}</span>
         <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
         <span>{pairB.name}</span>
-        <em>({(pairA.windowResults||[]).length}/{seriesLength} rallies played)</em>
+        <em>(first to {Math.ceil(seriesLength/2)} — Best of {seriesLength})</em>
       </div>}
       <div className="hsPairScoreRow">
         <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairA.id,'met')}>🎯 {pairA.name} met challenge</button>
@@ -11115,6 +11147,18 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
 // ── Coach setup + multi-court orchestrator (up to 6 courts) ────────────────
 function HangmanSquashGame({setSession,setScreen}={}){
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function refreshPlayers(){
+    try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
+  }
+  useEffect(()=>{
+    // Guards against a stale roster if this screen was left open (or kept mounted in the
+    // background) since attendance was set earlier — refresh whenever the tab/app comes
+    // back into view, not just on first mount.
+    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
+    document.addEventListener('visibilitychange',onVis);
+    window.addEventListener('focus',refreshPlayers);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
+  },[]);
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
   const [activeCourt,setActiveCourt]=useState(0);
@@ -11125,7 +11169,8 @@ function HangmanSquashGame({setSession,setScreen}={}){
   const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
   const [seriesLength,setSeriesLength]=useState(1);
   const [requireAttempt,setRequireAttempt]=useState(false);
-  const [endOnMet,setEndOnMet]=useState(false);
+  const [resolutionStyle,setResolutionStyle]=useState('bestOfN'); // 'bestOfN' | 'fullWindow' | 'suddenDeath'
+  const [pairingMode,setPairingMode]=useState('winnerStays'); // 'winnerStays' | 'rotate'
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
@@ -11187,7 +11232,12 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const seriesNote=seriesLength>1?` Each challenge attempt plays out over a window of ${seriesLength} rallies against the same opponent${endOnMet?', but ends immediately the moment the challenge is met — winner safe, opponent takes a step straight away.':'. Meeting the challenge at any point in the window keeps them safe outright; otherwise the player with more rally wins across the window stays safe and the other takes a step.'}${requireAttempt?' A player must attempt the challenge at least once in the window for the rally-count fallback to count — score alone cannot save them if they never went for it.':''}`:'';
+    const styleNote=resolutionStyle==='fullWindow'
+      ? `all ${seriesLength} rallies are always played, even after a majority is reached`
+      : resolutionStyle==='suddenDeath'
+      ? `it ends instantly the moment the challenge is met — winner safe, opponent takes a step straight away`
+      : `it ends as soon as one side reaches the majority of rally wins, not always all ${seriesLength}`;
+    const seriesNote=seriesLength>1?` Each challenge attempt is decided over ${seriesLength} rallies against the same opponent — ${styleNote}. Meeting the challenge on any rally played keeps that player safe outright; otherwise whoever wins more rallies stays safe and the other takes a step.${requireAttempt?' A player must attempt the challenge at least once for the rally-count fallback to count — score alone cannot save them if they never went for it.':''}`:'';
     setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Hangman Squash',category:'Hangman Squash',format:'Escalating Jeopardy',duration:10,
       task:`Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen, one body part at a time.${seriesNote} At the second-to-last step, one last-chance escape challenge is offered before elimination. Last player or team standing wins on each court. Runs on up to 6 courts simultaneously, each reporting to Court Monitor.`,
       scoring:'Elimination order determines placing on each court. Optional bonus for surviving with zero steps taken.',
@@ -11207,8 +11257,10 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <div className="hsSetup">
       <div className="hsLabel">Mode</div>
@@ -11220,17 +11272,31 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <div className="hsModeRow">{HANGMAN_SERIES_OPTIONS.map(o=><button type="button" key={o.n} className={seriesLength===o.n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSeriesLength(o.n)}>{o.label}</button>)}</div>
       {seriesLength>1&&<>
         <div className="hsModeRow">
-          <button type="button" className={endOnMet?'hsModeBtn':'hsModeBtn on'} onClick={()=>setEndOnMet(false)}>Play out the full window (default)</button>
-          <button type="button" className={endOnMet?'hsModeBtn on':'hsModeBtn'} onClick={()=>setEndOnMet(true)}>End the window the moment someone meets the challenge</button>
+          <button type="button" className={resolutionStyle==='bestOfN'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setResolutionStyle('bestOfN')}>Best of {seriesLength} (default)</button>
+          <button type="button" className={resolutionStyle==='fullWindow'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setResolutionStyle('fullWindow')}>Play all {seriesLength} rallies</button>
+          <button type="button" className={resolutionStyle==='suddenDeath'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setResolutionStyle('suddenDeath')}>Sudden death on the named shot</button>
         </div>
-        <p className="mutedText" style={{margin:'2px 0 0'}}>{endOnMet
-          ? 'Sudden death: the instant the challenge is met, that player is safe and their opponent takes a step immediately — no more rallies played in that window.'
-          : 'Each window plays out fully. Meeting the challenge on any rally keeps them safe outright; otherwise whoever won more rallies in the window stays safe — the loser of that rally still has the rest of the window to recover on score.'}</p>
+        <p className="mutedText" style={{margin:'2px 0 0'}}>{
+          resolutionStyle==='fullWindow'
+            ? `Play all ${seriesLength} rallies: unlike Best of ${seriesLength}, it never stops early — all ${seriesLength} rallies happen even after a majority is already decided. Same safety rule, evaluated once all ${seriesLength} are in.`
+            : resolutionStyle==='suddenDeath'
+            ? 'Sudden death: the instant the challenge is met, that player is safe and their opponent takes a step immediately — no more rallies played.'
+            : `Best of ${seriesLength}: ends as soon as one side reaches the majority of rally wins (2-0 or 2-1 for Best of 3), not always all ${seriesLength}. Meeting the challenge on any rally played keeps that player safe outright; otherwise whoever reaches the majority of rally wins stays safe.`
+        }</p>
         <div className="hsModeRow">
           <button type="button" className={requireAttempt?'hsModeBtn':'hsModeBtn on'} onClick={()=>setRequireAttempt(false)}>Score alone can save you (default)</button>
           <button type="button" className={requireAttempt?'hsModeBtn on':'hsModeBtn'} onClick={()=>setRequireAttempt(true)}>Must attempt the challenge to use score fallback</button>
         </div>
       </>}
+
+      <div className="hsLabel">On-court pairing (3+ individual players)</div>
+      <div className="hsModeRow">
+        <button type="button" className={pairingMode==='rotate'?'hsModeBtn':'hsModeBtn on'} onClick={()=>setPairingMode('winnerStays')}>Winner stays on (default)</button>
+        <button type="button" className={pairingMode==='rotate'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setPairingMode('rotate')}>Players rotate through</button>
+      </div>
+      <p className="mutedText" style={{margin:'2px 0 0'}}>{pairingMode==='rotate'
+        ? 'Rotate: whoever just took a step stays on to face the next challenger — the safe player rotates to the back of the queue.'
+        : 'Winner stays on: the safe player stays on court and the next challenger comes up automatically — same as Snakes & Ladders.'}</p>
 
       <div className="hsLabel">Courts</div>
       <div className="hsModeRow">{[1,2,3,4,5,6].map(c=><button type="button" key={c} className={courtCount===c?'hsModeBtn on':'hsModeBtn'} onClick={()=>setCourtCount(c)}>{c}</button>)}</div>
@@ -11281,7 +11347,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <div className="hsLabel">Current challenge — applies to all courts, update any time</div>
       <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
       <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
-      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · window of ${seriesLength} rallies`:''}</div>
+      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · Best of ${seriesLength}`:''}</div>
     </div>
 
     {courts>1&&<div className="hsCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'hsModeBtn on':'hsModeBtn'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
@@ -11290,7 +11356,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {handedOff.has(i+1)
         ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} endOnMet={endOnMet} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
+        : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} resolutionStyle={resolutionStyle} pairingMode={pairingMode} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
     </div>)}
 
     <div className="hsBottomBar">
@@ -11333,7 +11399,7 @@ function HangmanSquashCourtScorer({court,host}){
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
       if(p){
         const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[],queue:p.queue||undefined};
-        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,endOnMet:!!p.endOnMet,courtLabel:p.courtLabel||('Court '+court)});
+        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,resolutionStyle:p.resolutionStyle||'bestOfN',pairingMode:p.pairingMode||'winnerStays',courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court…');
     }
@@ -11352,18 +11418,19 @@ function HangmanSquashCourtScorer({court,host}){
     <div className="hsDisplayHint" style={{fontSize:'0.95rem'}}>● SCORING — Court {court}</div>
     <h2>💀 Hangman Squash</h2>
     <p className="mutedText">Record each rally below. This device is now the scorer for this court.</p>
-    <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} endOnMet={seedData.endOnMet} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+    <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} resolutionStyle={seedData.resolutionStyle} pairingMode={seedData.pairingMode} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
 
 function HangmanSquashPlayerDisplay({payload={}}){
+  useWakeLock();
   const entities=payload.entities||[];
   const winner=payload.winnerName;
   return <div className="hsDisplayPage">
     <HangmanStyles/>
     <div className="hsDisplayShell">
       <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY{payload.courtLabel?(' · '+payload.courtLabel):''}</span><h1>💀 Hangman Squash</h1></div>
-      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · window of ${payload.seriesLength} rallies`:''}</div>}
+      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · Best of ${payload.seriesLength}`:''}</div>}
       {winner&&<div className="hsDisplayWinner">🏆 {winner} wins!</div>}
       <div className="hsDisplayGrid">
         {entities.map((e,i)=>{
@@ -17359,6 +17426,15 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
 // ── Coach setup screen ───────────────────────────────────────────────────
 function LudoSquashGame({setSession,setScreen}={}){
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function refreshPlayers(){
+    try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
+  }
+  useEffect(()=>{
+    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
+    document.addEventListener('visibilitychange',onVis);
+    window.addEventListener('focus',refreshPlayers);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
+  },[]);
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -17450,8 +17526,10 @@ function LudoSquashGame({setSession,setScreen}={}){
     <p className="mutedText">Race game — movement is earned, not automatic. First to get all 4 pieces Home wins.</p>
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <div className="ludoGameInfo">
       <p className="ludoPrinciple">{rules.principle}</p>
@@ -17663,6 +17741,7 @@ function LudoSquashRaceDisplay({host,courtCount}){
 
 // ── Big-screen single-court Player Display (?liveRoom= route) ─────────────
 function LudoSquashPlayerDisplay({payload={}}){
+  useWakeLock();
   const players=payload.players||[];
   const onCourt=payload.onCourt||[];
   const winnerName=payload.winnerName||null;
@@ -18212,6 +18291,15 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 // ── Coach setup screen ───────────────────────────────────────────────────
 function NoughtsCrossesGame({setSession,setScreen}={}){
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function refreshPlayers(){
+    try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
+  }
+  useEffect(()=>{
+    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
+    document.addEventListener('visibilitychange',onVis);
+    window.addEventListener('focus',refreshPlayers);
+    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
+  },[]);
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -18329,8 +18417,10 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     <p className="mutedText">Claim squares by winning rallies and completing challenges. First to three in a row wins the board.</p>
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <div className="ncGameInfo">
       <p className="ncPrinciple">{rules.principle}</p>
@@ -18587,6 +18677,7 @@ function NoughtsCrossesRaceDisplay({host,courtCount}){
 
 // ── Big-screen single-court Player Display ──────────────────────────────
 function NoughtsCrossesPlayerDisplay({payload={}}){
+  useWakeLock();
   const board=payload.board||[];
   const winnerName=payload.winnerName||null;
   const isFfa=payload.format==='ffa';
