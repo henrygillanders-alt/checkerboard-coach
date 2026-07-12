@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v353 Hangman Squash: (1) fixed the Clean winner preset - dropped the stray "— no let" wording so it matches the term used everywhere else in the app. (2) Added a paired scoring panel for window mode (Best of 3/5): auto-pairs the two players/teams on court, and one tap now records the whole rally for both sides at once (winner gets Met/Won, loser automatically gets Lost) instead of two separate taps with no link between them - same idea as Snakes & Ladders scoring. With 3+ individual players a simple "Who\'s on court now?" selector sets the pairing; others shown as waiting. (3) Single-court mode now gets the same Court links (Scoring hand-off + View) as multi-court, not just a plain Player Link - previously only courts>1 could hand scoring to a separate device.';
+const APP_VERSION='v354 Hangman Squash: paired rally scoring now works in Single rally mode too, not just windowed mode - previously the pairing panel only appeared for Best-of-3/5, so single-rally mode still had the old solo Met/Failed buttons with no link between opponents. Now every mode uses the same one-tap paired panel (auto-pairs when exactly two are on court, or pick who\'s on court from 3+). Added a live scoreline in the panel, e.g. "Anna 1 – 0 Gregory (1/3 rallies played)", so the running score is visible as rallies are tapped, not just a fraction in small text. Single-rally mode stays strict: only "met challenge" keeps a player safe, winning the point without the named shot still counts as a miss for that player.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10835,6 +10835,9 @@ function HangmanStyles(){
 .hsPairScorePanel{background:#12203a;border:1px solid #2E6E8E;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .hsPairScoreRow{display:flex;gap:8px;flex-wrap:wrap;}
 .hsPairScoreRow button{flex:1 1 45%;}
+.hsPairScoreline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:1.1rem;color:#eaf4fb;}
+.hsPairScoreline strong{font-size:1.4rem;color:#f0c49c;}
+.hsPairScoreline em{font-style:normal;font-size:0.8rem;color:#9fb0c2;margin-left:auto;}
 
 .hsDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#1a0d12 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
 .hsDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:24px;}
@@ -10958,21 +10961,21 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     }
     return {...e,steps:nextSteps,windowResults:[],attempted:false};
   }
-  // Single-rally mode: one tap decides the challenge outright.
-  function markSafe(id){ if(seriesLength>1) return; }
-  function markFailed(id){
-    if(seriesLength>1) return;
-    setEntities(prev=>prev.map(e=>(e.id!==id||e.eliminated||e.escapePending)?e:applyFailure(e)));
-  }
-  // Windowed-fallback mode: always play out the full window (seriesLength rallies).
-  // At the end: safe if the CHALLENGE was met on any rally in the window, OR they won
-  // more rallies than they lost across the window. Fails only if neither is true.
-  // (If requireAttempt is on, the score fallback alone can't save them — they must
-  // have gone for the challenge at least once, even if they didn't land it.)
+  // Resolves what happens to an entity after one recorded rally-attempt at the challenge.
+  // Window of 1 (single rally) is strict: only actually MEETING the challenge keeps you
+  // safe — winning the rally some other way still counts as a miss, same as a loss.
+  // Window of 3/5: safe if the challenge was met on any rally in the window, OR they won
+  // more rallies than they lost across the window; fails only if neither is true.
+  // (If requireAttempt is on, the score fallback alone can't save them in window mode —
+  // they must have gone for the challenge at least once, even if they didn't land it.)
   function applyWindowOutcome(e,outcome){ // outcome: 'met' | 'won' | 'lost'
     const results=[...e.windowResults,outcome];
     const attempted=e.attempted||outcome==='met';
     if(results.length<seriesLength)return {...e,windowResults:results,attempted};
+    if(seriesLength<=1){
+      if(outcome==='met')return {...e,windowResults:[],attempted:false};
+      return applyFailure({...e,windowResults:[],attempted:false});
+    }
     const met=results.includes('met');
     const wins=results.filter(r=>r==='met'||r==='won').length;
     const losses=results.filter(r=>r==='lost').length;
@@ -10980,15 +10983,12 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     if(safe)return {...e,windowResults:[],attempted:false};
     return applyFailure({...e,windowResults:results,attempted});
   }
-  function recordWindowRally(id,outcome){
-    if(seriesLength<=1)return;
-    setEntities(prev=>prev.map(e=>(e.id!==id||e.eliminated||e.escapePending)?e:applyWindowOutcome(e,outcome)));
-  }
   // One tap records the whole rally for a pairing at once: the winning side gets
   // 'met' or 'won', the losing side automatically gets 'lost' — exactly one rally,
   // one tap, both tracks updated together (same physical rally, same moment).
+  // Works the same way whether it's a single-rally decision or one rally inside a window.
   function recordPairedRally(winnerId,winnerOutcome){
-    if(seriesLength<=1||!pairing||!pairing[1])return;
+    if(!pairing[1])return;
     const loserId=pairing[0]===winnerId?pairing[1]:pairing[0];
     setEntities(prev=>prev.map(e=>{
       if(e.eliminated||e.escapePending)return e;
@@ -11019,22 +11019,29 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     {courtLabel&&<div className="hsCourtLabel">{courtLabel}</div>}
     {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
 
-    {seriesLength>1&&!winner&&activeIds.length>2&&<div className="hsPairBox">
+    {!winner&&activeIds.length>2&&<div className="hsPairBox">
       <div className="hsLabel">Who's on court now?</div>
-      <div className="hsModeRow">{entities.filter(e=>!e.eliminated&&!e.escapePending).map(e=><button type="button" key={e.id} className={pairing&&pairing.includes(e.id)?'hsModeBtn on':'hsModeBtn'} onClick={()=>togglePairPick(e.id)}>{e.name}</button>)}</div>
-      {pairing&&pairing[1]&&<p className="mutedText" style={{margin:'4px 0 0'}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
+      <div className="hsModeRow">{entities.filter(e=>!e.eliminated&&!e.escapePending).map(e=><button type="button" key={e.id} className={pairing.includes(e.id)?'hsModeBtn on':'hsModeBtn'} onClick={()=>togglePairPick(e.id)}>{e.name}</button>)}</div>
+      {pairB&&<p className="mutedText" style={{margin:'4px 0 0'}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
     </div>}
 
-    {seriesLength>1&&!winner&&pairA&&pairB&&<div className="hsPairScorePanel">
+    {!winner&&pairA&&pairB&&<div className="hsPairScorePanel">
       <div className="hsLabel">Record this rally</div>
+      {seriesLength>1&&<div className="hsPairScoreline">
+        <span>{pairA.name}</span>
+        <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
+        <span>{pairB.name}</span>
+        <em>({(pairA.windowResults||[]).length}/{seriesLength} rallies played)</em>
+      </div>}
       <div className="hsPairScoreRow">
         <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairA.id,'met')}>🎯 {pairA.name} met challenge</button>
-        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairA.id,'won')}>{pairA.name} won rally</button>
+        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairA.id,'won')}>{pairA.name} wins rally</button>
       </div>
       <div className="hsPairScoreRow">
-        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairB.id,'won')}>{pairB.name} won rally</button>
+        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairB.id,'won')}>{pairB.name} wins rally</button>
         <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairB.id,'met')}>🎯 {pairB.name} met challenge</button>
       </div>
+      {seriesLength===1&&<p className="mutedText" style={{margin:0}}>Single rally: only "met challenge" keeps a player safe — winning the rally without the named shot still counts as a miss.</p>}
     </div>}
 
     <div className="hsTracks">
@@ -11043,18 +11050,14 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
         const wins=(e.windowResults||[]).filter(r=>r==='met'||r==='won').length;
         const losses=(e.windowResults||[]).filter(r=>r==='lost').length;
         const windowNote=(!e.eliminated&&!e.escapePending&&seriesLength>1)?` · ${e.windowResults.length}/${seriesLength} played (${wins}W–${losses}L)${e.attempted?' · attempted ✓':''}`:'';
-        const inPairing=seriesLength>1&&pairing&&pairing.includes(e.id);
-        const waiting=seriesLength>1&&!e.eliminated&&!e.escapePending&&!inPairing;
+        const inPairing=pairing.includes(e.id);
+        const waiting=!e.eliminated&&!e.escapePending&&!inPairing;
         return <div key={e.id} className={`hsTrackCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
           <div className="hsFigureBox"><HangmanFigure steps={e.steps}/></div>
           <div className="hsTrackInfo">
             <div className="hsTrackName">{e.name}{waiting?' · waiting':''}</div>
             <div className={`hsTrackStatus ${status.cls}`}>{status.text}{windowNote}</div>
           </div>
-          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength===1&&<div className="hsTrackBtns">
-            <button type="button" className="hsBtnSafe" onClick={()=>markSafe(e.id)}>✓ Met</button>
-            <button type="button" className="hsBtnFail" onClick={()=>markFailed(e.id)}>✗ Failed</button>
-          </div>}
           {e.escapePending&&<div className="hsTrackBtns">
             <button type="button" className="hsBtnEscapeGood" onClick={()=>resolveEscape(e.id,true)}>Escape succeeded</button>
             <button type="button" className="hsBtnEscapeBad" onClick={()=>resolveEscape(e.id,false)}>Escape failed</button>
