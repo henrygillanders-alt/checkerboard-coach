@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v355 Hangman Squash: (1) Added Undo (undo last rally), following the app-wide undoStack convention already used in Snakes & Ladders/DB Handicap - reverts the last recorded rally or escape result. (2) On-court pairing for 3+ individual players is now decided automatically by the app via a randomised, rotating queue (like Snakes & Ladders) instead of the coach manually tapping who is on court - a Next pairing button rotates the front two to the back and brings up the next two; new Quick-Added players join the back of the queue. (3) New coach-selectable toggle for window mode: Play out the full window (default - loser of the met rally still has the rest of the window to recover on score) vs End the window the moment someone meets the challenge (sudden death - winner safe outright, opponent takes a step immediately, no more rallies played that window). Both have training rationale so both are available.';
+const APP_VERSION='v356 Hangman Squash: pairing now advances winner-stays-on automatically, matching Snakes & Ladders - when a pairing window resolves, the safe player stays on court and the next challenger from the queue is auto-populated as their opponent; the coach no longer needs to tap for the next pairing (a manual Swap pairing button remains for overrides). Works the same in single-rally mode (every rally resolves the pairing) and window mode (resolves when the window completes or, in sudden-death, the instant the challenge is met).';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10983,47 +10983,56 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   // more rallies than they lost across the window; fails only if neither is true.
   // (If requireAttempt is on, the score fallback alone can't save them in window mode —
   // they must have gone for the challenge at least once, even if they didn't land it.)
-  function applyWindowOutcome(e,outcome){ // outcome: 'met' | 'won' | 'lost'
+  function applyWindowOutcome(e,outcome){ // outcome: 'met' | 'won' | 'lost' — returns {entity, resolved, safe}
     const results=[...e.windowResults,outcome];
     const attempted=e.attempted||outcome==='met';
-    if(results.length<seriesLength)return {...e,windowResults:results,attempted};
+    if(results.length<seriesLength)return {entity:{...e,windowResults:results,attempted},resolved:false,safe:null};
     if(seriesLength<=1){
-      if(outcome==='met')return {...e,windowResults:[],attempted:false};
-      return applyFailure({...e,windowResults:[],attempted:false});
+      const safe=outcome==='met';
+      return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:[],attempted:false}),resolved:true,safe};
     }
     const met=results.includes('met');
     const wins=results.filter(r=>r==='met'||r==='won').length;
     const losses=results.filter(r=>r==='lost').length;
     const safe=met||(wins>losses&&(!requireAttempt||attempted));
-    if(safe)return {...e,windowResults:[],attempted:false};
-    return applyFailure({...e,windowResults:results,attempted});
+    return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:results,attempted}),resolved:true,safe};
   }
   // One tap records the whole rally for a pairing at once: the winning side gets
   // 'met' or 'won', the losing side automatically gets 'lost' — exactly one rally,
   // one tap, both tracks updated together (same physical rally, same moment).
   // Works the same way whether it's a single-rally decision or one rally inside a window.
+  // When the pairing's window RESOLVES (someone ends up safe, someone takes a step),
+  // the queue auto-advances winner-stays-on — same as Snakes & Ladders: the safe player
+  // stays on court, the next challenger comes up automatically, no coach tap needed.
   function recordPairedRally(winnerId,winnerOutcome){
     if(!pairing[1])return;
+    const winnerEntity=entities.find(e=>e.id===winnerId);
+    const loserEntity=entities.find(e=>e.id===(pairing[0]===winnerId?pairing[1]:pairing[0]));
+    if(!winnerEntity||!loserEntity||winnerEntity.eliminated||winnerEntity.escapePending||loserEntity.eliminated||loserEntity.escapePending)return;
+    const loserId=loserEntity.id;
     pushUndo();
-    const loserId=pairing[0]===winnerId?pairing[1]:pairing[0];
+
+    let updatedWinner,updatedLoser,resolved=false,safeId=null,failId=null;
     if(seriesLength>1&&endOnMet&&winnerOutcome==='met'){
       // Sudden-death mode: meeting the challenge ends the window right there —
       // winner safe outright, opponent takes a step immediately, remaining
       // rallies in the window aren't played out.
-      setEntities(prev=>prev.map(e=>{
-        if(e.eliminated||e.escapePending)return e;
-        if(e.id===winnerId)return {...e,windowResults:[],attempted:false};
-        if(e.id===loserId)return applyFailure({...e,windowResults:[],attempted:false});
-        return e;
-      }));
-      return;
+      updatedWinner={...winnerEntity,windowResults:[],attempted:false};
+      updatedLoser=applyFailure({...loserEntity,windowResults:[],attempted:false});
+      resolved=true;safeId=winnerId;failId=loserId;
+    }else{
+      const rW=applyWindowOutcome(winnerEntity,winnerOutcome);
+      const rL=applyWindowOutcome(loserEntity,'lost');
+      updatedWinner=rW.entity;updatedLoser=rL.entity;
+      if(rW.resolved){resolved=true;safeId=rW.safe?winnerId:loserId;failId=rW.safe?loserId:winnerId;}
     }
-    setEntities(prev=>prev.map(e=>{
-      if(e.eliminated||e.escapePending)return e;
-      if(e.id===winnerId)return applyWindowOutcome(e,winnerOutcome);
-      if(e.id===loserId)return applyWindowOutcome(e,'lost');
-      return e;
-    }));
+    setEntities(prev=>prev.map(e=>e.id===winnerId?updatedWinner:e.id===loserId?updatedLoser:e));
+    if(resolved){
+      setQueue(prev=>{
+        const rest=prev.filter(id=>id!==safeId&&id!==failId);
+        return [safeId,...rest,failId];
+      });
+    }
   }
   function resolveEscape(id,succeeded){
     pushUndo();
@@ -11049,10 +11058,10 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
 
     {!winner&&activeIds.length>2&&<div className="hsPairBox">
-      <div className="hsLabel">On court now (assigned by the app)</div>
+      <div className="hsLabel">On court now — winner stays on, next challenger auto-populated</div>
       {pairB&&<p className="mutedText" style={{margin:0}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
       <p className="mutedText" style={{margin:0}}>Waiting: {queue.slice(2).map(id=>entities.find(e=>e.id===id)?.name).filter(Boolean).join(' · ')||'—'}</p>
-      <button type="button" className="secondaryBtn" onClick={nextPairing}>🔀 Next pairing</button>
+      <button type="button" className="secondaryBtn" onClick={nextPairing}>🔀 Swap pairing manually</button>
     </div>}
 
     {!winner&&pairA&&pairB&&<div className="hsPairScorePanel">
