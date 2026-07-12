@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v354 Hangman Squash: paired rally scoring now works in Single rally mode too, not just windowed mode - previously the pairing panel only appeared for Best-of-3/5, so single-rally mode still had the old solo Met/Failed buttons with no link between opponents. Now every mode uses the same one-tap paired panel (auto-pairs when exactly two are on court, or pick who\'s on court from 3+). Added a live scoreline in the panel, e.g. "Anna 1 – 0 Gregory (1/3 rallies played)", so the running score is visible as rallies are tapped, not just a fraction in small text. Single-rally mode stays strict: only "met challenge" keeps a player safe, winning the point without the named shot still counts as a miss for that player.';
+const APP_VERSION='v355 Hangman Squash: (1) Added Undo (undo last rally), following the app-wide undoStack convention already used in Snakes & Ladders/DB Handicap - reverts the last recorded rally or escape result. (2) On-court pairing for 3+ individual players is now decided automatically by the app via a randomised, rotating queue (like Snakes & Ladders) instead of the coach manually tapping who is on court - a Next pairing button rotates the front two to the back and brings up the next two; new Quick-Added players join the back of the queue. (3) New coach-selectable toggle for window mode: Play out the full window (default - loser of the met rally still has the rest of the window to recover on score) vs End the window the moment someone meets the challenge (sudden death - winner safe outright, opponent takes a step immediately, no more rallies played that window). Both have training rationale so both are available.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10904,6 +10904,14 @@ function HangmanFigure({steps=0,size=70}){
     </>}
   </svg>;
 }
+function hangmanShuffle(items){
+  const a=[...items];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
 function hangmanStatusLabel(entity){
   if(entity.eliminated)return {text:'OUT',cls:'out'};
   if(entity.escapePending)return {text:'LAST-CHANCE ESCAPE — succeed or you\u2019re out',cls:'warn'};
@@ -10912,7 +10920,7 @@ function hangmanStatusLabel(entity){
 }
 
 // ── Per-court engine — one instance per court, own entities/state ──────────
-function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,project=false,courtLabel='',roomId=null,seed=null}){
+function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,endOnMet=false,project=false,courtLabel='',roomId=null,seed=null}){
   function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
   function buildEntities(){
     if(!teamMode){
@@ -10927,26 +10935,33 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   }
   const [entities,setEntities]=useState(()=>seed?seed.entities:buildEntities());
   const [eliminationLog,setEliminationLog]=useState(()=>seed?(seed.eliminationLog||[]):[]);
+  const [undoStack,setUndoStack]=useState([]);
+  function pushUndo(){setUndoStack(prev=>[...prev.slice(-29),{entities,eliminationLog}]);}
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setEntities(s.entities);setEliminationLog(s.eliminationLog);return prev.slice(0,-1);});}
   useEffect(()=>{ if(!seed) setEntities(buildEntities()); },[players.join('|'),teamMode,JSON.stringify(teamOf)]);
 
   const activeCount=entities.filter(e=>!e.eliminated).length;
   const winner=entities.length>1&&activeCount===1?entities.find(e=>!e.eliminated):null;
 
-  const [pairing,setPairing]=useState([]); // 0-2 entity ids — who's on court against whom, for window mode
   const activeIds=entities.filter(e=>!e.eliminated).map(e=>e.id);
+  // Queue decides pairing automatically (randomised, not coach-picked) — same idea as
+  // Snakes & Ladders: the two at the front of the queue are on court; "Next pairing"
+  // rotates them to the back and brings up the next two.
+  const [queue,setQueue]=useState(()=>seed?(seed.queue||hangmanShuffle(activeIds)):hangmanShuffle(activeIds));
   useEffect(()=>{
-    // Auto-pair when there are exactly two live entities (the common case: Teams, or a straight 1v1).
-    if(activeIds.length===2){setPairing(activeIds);return;}
-    // Otherwise drop anyone from the pairing who's no longer live (eliminated, roster changed, etc.)
-    setPairing(prev=>prev.filter(id=>activeIds.includes(id)));
-  },[activeIds.join('|')]);
-  function togglePairPick(id){
-    setPairing(prev=>{
-      if(prev.includes(id))return prev.filter(x=>x!==id); // tap again to deselect
-      if(prev.length>=2)return [id]; // starting a fresh pair
-      return [...prev,id];
+    if(seed)return;
+    setQueue(hangmanShuffle(buildEntities().map(e=>e.id)));
+  },[players.join('|'),teamMode,JSON.stringify(teamOf)]);
+  useEffect(()=>{
+    // Drop anyone eliminated from the queue; add anyone new (e.g. Quick Add mid-game) to the back.
+    setQueue(prev=>{
+      const kept=prev.filter(id=>activeIds.includes(id));
+      const missing=activeIds.filter(id=>!kept.includes(id));
+      return [...kept,...hangmanShuffle(missing)];
     });
-  }
+  },[activeIds.join('|')]);
+  const pairing=queue.slice(0,2);
+  function nextPairing(){setQueue(prev=>[...prev.slice(2),...prev.slice(0,2)]);}
   const pairA=pairing[0]?entities.find(e=>e.id===pairing[0]):null;
   const pairB=pairing[1]?entities.find(e=>e.id===pairing[1]):null;
 
@@ -10989,7 +11004,20 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   // Works the same way whether it's a single-rally decision or one rally inside a window.
   function recordPairedRally(winnerId,winnerOutcome){
     if(!pairing[1])return;
+    pushUndo();
     const loserId=pairing[0]===winnerId?pairing[1]:pairing[0];
+    if(seriesLength>1&&endOnMet&&winnerOutcome==='met'){
+      // Sudden-death mode: meeting the challenge ends the window right there —
+      // winner safe outright, opponent takes a step immediately, remaining
+      // rallies in the window aren't played out.
+      setEntities(prev=>prev.map(e=>{
+        if(e.eliminated||e.escapePending)return e;
+        if(e.id===winnerId)return {...e,windowResults:[],attempted:false};
+        if(e.id===loserId)return applyFailure({...e,windowResults:[],attempted:false});
+        return e;
+      }));
+      return;
+    }
     setEntities(prev=>prev.map(e=>{
       if(e.eliminated||e.escapePending)return e;
       if(e.id===winnerId)return applyWindowOutcome(e,winnerOutcome);
@@ -10998,6 +11026,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     }));
   }
   function resolveEscape(id,succeeded){
+    pushUndo();
     setEntities(prev=>prev.map(e=>{
       if(e.id!==id)return e;
       if(succeeded)return {...e,steps:HANGMAN_ESCAPE_STEP-1,escapePending:false,escapeUsed:true};
@@ -11005,24 +11034,25 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
       return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,escapePending:false};
     }));
   }
-  function resetCourt(){setEntities(buildEntities());setEliminationLog([]);}
+  function resetCourt(){setEntities(buildEntities());setEliminationLog([]);setUndoStack([]);}
 
   useEffect(()=>{
     if(!project)return;
-    const payload={type:'hangmansquash',challenge,seriesLength,requireAttempt,courtLabel,
+    const payload={type:'hangmansquash',challenge,seriesLength,requireAttempt,endOnMet,courtLabel,queue,
       entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,windowResults:e.windowResults,attempted:e.attempted})),
       winnerName:winner?winner.name:null,eliminationLog};
     writeLivePlayerRoom(roomId||getHangmanLiveRoomId(),'hangmansquash',payload);
-  },[project,entities,challenge,seriesLength,requireAttempt,eliminationLog,roomId,courtLabel,winner]);
+  },[project,entities,challenge,seriesLength,requireAttempt,endOnMet,eliminationLog,roomId,courtLabel,winner,queue]);
 
   return <div className="hsCourt">
     {courtLabel&&<div className="hsCourtLabel">{courtLabel}</div>}
     {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
 
     {!winner&&activeIds.length>2&&<div className="hsPairBox">
-      <div className="hsLabel">Who's on court now?</div>
-      <div className="hsModeRow">{entities.filter(e=>!e.eliminated&&!e.escapePending).map(e=><button type="button" key={e.id} className={pairing.includes(e.id)?'hsModeBtn on':'hsModeBtn'} onClick={()=>togglePairPick(e.id)}>{e.name}</button>)}</div>
-      {pairB&&<p className="mutedText" style={{margin:'4px 0 0'}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
+      <div className="hsLabel">On court now (assigned by the app)</div>
+      {pairB&&<p className="mutedText" style={{margin:0}}>On court: <strong>{pairA?.name}</strong> vs <strong>{pairB?.name}</strong></p>}
+      <p className="mutedText" style={{margin:0}}>Waiting: {queue.slice(2).map(id=>entities.find(e=>e.id===id)?.name).filter(Boolean).join(' · ')||'—'}</p>
+      <button type="button" className="secondaryBtn" onClick={nextPairing}>🔀 Next pairing</button>
     </div>}
 
     {!winner&&pairA&&pairB&&<div className="hsPairScorePanel">
@@ -11066,7 +11096,10 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
       })}
     </div>
     {eliminationLog.length>0&&<div className="hsEliminationLog">{eliminationLog.map((l,i)=><div key={i}>{l}</div>)}</div>}
-    <div className="hsControls"><button type="button" className="secondaryBtn" onClick={resetCourt}>New Game (this court)</button></div>
+    <div className="hsControls">
+      <button type="button" className="secondaryBtn" onClick={undo} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last rally</button>
+      <button type="button" className="secondaryBtn" onClick={resetCourt}>New Game (this court)</button>
+    </div>
   </div>;
 }
 
@@ -11083,6 +11116,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
   const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
   const [seriesLength,setSeriesLength]=useState(1);
   const [requireAttempt,setRequireAttempt]=useState(false);
+  const [endOnMet,setEndOnMet]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
@@ -11144,7 +11178,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const seriesNote=seriesLength>1?` Each challenge attempt plays out over a window of ${seriesLength} rallies against the same opponent. Meeting the challenge at any point in the window keeps them safe outright; otherwise the player with more rally wins across the window stays safe and the other takes a step.${requireAttempt?' A player must attempt the challenge at least once in the window for the rally-count fallback to count — score alone cannot save them if they never went for it.':''}`:'';
+    const seriesNote=seriesLength>1?` Each challenge attempt plays out over a window of ${seriesLength} rallies against the same opponent${endOnMet?', but ends immediately the moment the challenge is met — winner safe, opponent takes a step straight away.':'. Meeting the challenge at any point in the window keeps them safe outright; otherwise the player with more rally wins across the window stays safe and the other takes a step.'}${requireAttempt?' A player must attempt the challenge at least once in the window for the rally-count fallback to count — score alone cannot save them if they never went for it.':''}`:'';
     setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Hangman Squash',category:'Hangman Squash',format:'Escalating Jeopardy',duration:10,
       task:`Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen, one body part at a time.${seriesNote} At the second-to-last step, one last-chance escape challenge is offered before elimination. Last player or team standing wins on each court. Runs on up to 6 courts simultaneously, each reporting to Court Monitor.`,
       scoring:'Elimination order determines placing on each court. Optional bonus for surviving with zero steps taken.',
@@ -11176,7 +11210,13 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <div className="hsLabel">Rally decision (pacing)</div>
       <div className="hsModeRow">{HANGMAN_SERIES_OPTIONS.map(o=><button type="button" key={o.n} className={seriesLength===o.n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSeriesLength(o.n)}>{o.label}</button>)}</div>
       {seriesLength>1&&<>
-        <p className="mutedText" style={{margin:'2px 0 0'}}>Each window plays out fully. Meeting the challenge on any rally keeps them safe outright; otherwise whoever won more rallies in the window stays safe.</p>
+        <div className="hsModeRow">
+          <button type="button" className={endOnMet?'hsModeBtn':'hsModeBtn on'} onClick={()=>setEndOnMet(false)}>Play out the full window (default)</button>
+          <button type="button" className={endOnMet?'hsModeBtn on':'hsModeBtn'} onClick={()=>setEndOnMet(true)}>End the window the moment someone meets the challenge</button>
+        </div>
+        <p className="mutedText" style={{margin:'2px 0 0'}}>{endOnMet
+          ? 'Sudden death: the instant the challenge is met, that player is safe and their opponent takes a step immediately — no more rallies played in that window.'
+          : 'Each window plays out fully. Meeting the challenge on any rally keeps them safe outright; otherwise whoever won more rallies in the window stays safe — the loser of that rally still has the rest of the window to recover on score.'}</p>
         <div className="hsModeRow">
           <button type="button" className={requireAttempt?'hsModeBtn':'hsModeBtn on'} onClick={()=>setRequireAttempt(false)}>Score alone can save you (default)</button>
           <button type="button" className={requireAttempt?'hsModeBtn on':'hsModeBtn'} onClick={()=>setRequireAttempt(true)}>Must attempt the challenge to use score fallback</button>
@@ -11241,7 +11281,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {handedOff.has(i+1)
         ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
+        : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} endOnMet={endOnMet} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
     </div>)}
 
     <div className="hsBottomBar">
@@ -11283,8 +11323,8 @@ function HangmanSquashCourtScorer({court,host}){
       if(cancelled)return;
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
       if(p){
-        const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[]};
-        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,courtLabel:p.courtLabel||('Court '+court)});
+        const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[],queue:p.queue||undefined};
+        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,endOnMet:!!p.endOnMet,courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court…');
     }
@@ -11303,7 +11343,7 @@ function HangmanSquashCourtScorer({court,host}){
     <div className="hsDisplayHint" style={{fontSize:'0.95rem'}}>● SCORING — Court {court}</div>
     <h2>💀 Hangman Squash</h2>
     <p className="mutedText">Record each rally below. This device is now the scorer for this court.</p>
-    <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+    <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} endOnMet={seedData.endOnMet} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
 
