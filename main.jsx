@@ -167,7 +167,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v347 New module: Hangman Squash (Games Library, Tin War family variant). Coach sets a squash-representative challenge; meeting it is safe, failing it adds one non-linear step to that player or team hangman, drawn live via SVG figure on the coach screen and Live Player Display. At step 5 a one-time last-chance-escape challenge is offered before elimination. Individual or Teams (shared track) modes. Last player/team standing wins. Live sync via existing liveRoom pattern (room suffix -hangman); Copy Player Link and Add to Session included. No word/letter mechanic - fully redesigned per pinned build discussion into pure escalating-jeopardy engine.';
+const APP_VERSION='v349 Quick Add Player rolled out to Snakes & Ladders, Ludo Squash, and Noughts & Crosses (Hangman Squash already had it) - a late arrival can be added without leaving the game screen, writes into shared attendance too. Tin War, Breakout, Press Call and Shot Bonus Rally have no player roster so this does not apply to them. Note: with Auto/ranked-block court allocation and multiple courts, adding a player mid-game re-shuffles all courts and can reset boards already in progress - switch to Manual allocation first if courts are live. A small hint about this now shows next to the button whenever courts>1.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9441,7 +9441,18 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 }
 
 function SnakesLaddersGame({setSession,setScreen}={}){
-  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function quickAddPlayer(){
+    const nm=(window.prompt('New player name:')||'').trim();
+    if(!nm)return;
+    if(presentsObj.some(p=>playerDisplayName(p)===nm)){alert(nm+' is already on the list.');return;}
+    const rec={name:nm,present:true};
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
+      if(!list.some(p=>p&&playerDisplayName(p)===nm)){list.push(rec);localStorage.setItem(PLAYER_KEY,JSON.stringify(list));}
+    }catch{}
+    setPresentsObj(prev=>[...prev,rec]);
+  }
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
   const [activeCourt,setActiveCourt]=useState(0);
@@ -9523,6 +9534,10 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <div className="categoryTag">Snakes &amp; Ladders™</div>
     <h2>Snakes &amp; Ladders</h2>
     <p className="mutedText">King-of-court board race. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {settings.size} wins.</p>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
+    </div>
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
     {showRationale&&<div className="slRationale">
@@ -10829,12 +10844,14 @@ function HangmanStyles(){
 `}</style>;
 }
 
-const HANGMAN_MAX_STEPS=6;
-const HANGMAN_ESCAPE_STEP=5;
+const HANGMAN_MAX_STEPS=7;
+const HANGMAN_ESCAPE_STEP=6;
 const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner — no let','Front-wall finish only'];
+const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Best of 3'},{n:5,label:'Best of 5'}];
+function hangmanSeriesMajority(n){return Math.ceil(n/2);}
 
 function hangmanFigureParts(steps){
-  // Non-linear staging: 1-3 minor (limbs), 4-5 ominous (body/head/noose), 6 complete.
+  // Non-linear staging, one body part per step: rope/beam(1) head(2) body(3) armL(4) armR(5) legL(6, last-chance) legR+face(7, out).
   return {
     post: true,
     beam: steps>=1,
@@ -10842,10 +10859,10 @@ function hangmanFigureParts(steps){
     head: steps>=2,
     body: steps>=3,
     armL: steps>=4,
-    armR: steps>=4,
-    legL: steps>=5,
-    legR: steps>=6,
-    face: steps>=6
+    armR: steps>=5,
+    legL: steps>=6,
+    legR: steps>=7,
+    face: steps>=7
   };
 }
 function HangmanFigure({steps=0,size=70}){
@@ -10873,8 +10890,8 @@ function HangmanFigure({steps=0,size=70}){
 function hangmanStatusLabel(entity){
   if(entity.eliminated)return {text:'OUT',cls:'out'};
   if(entity.escapePending)return {text:'LAST-CHANCE ESCAPE — succeed or you\u2019re out',cls:'warn'};
-  if(entity.steps>=4)return {text:`${entity.steps}/6 — danger`,cls:'warn'};
-  return {text:`${entity.steps}/6`,cls:''};
+  if(entity.steps>=5)return {text:`${entity.steps}/${HANGMAN_MAX_STEPS} — danger`,cls:'warn'};
+  return {text:`${entity.steps}/${HANGMAN_MAX_STEPS}`,cls:''};
 }
 
 function HangmanSquashGame({setSession,setScreen}={}){
@@ -10886,6 +10903,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
   });
   const [teamOf,setTeamOf]=useState({}); // name -> 'A' | 'B'
   const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
+  const [seriesLength,setSeriesLength]=useState(1); // 1 = single rally decides, 3 = best of 3, 5 = best of 5
   const [entities,setEntities]=useState(null); // built on Start Game
   const [eliminationLog,setEliminationLog]=useState([]);
   const [projecting,setProjecting]=useState(false);
@@ -10896,38 +10914,79 @@ function HangmanSquashGame({setSession,setScreen}={}){
   function removePlayer(i){setNames(prev=>prev.filter((_,idx)=>idx!==i));}
   function setTeam(name,t){setTeamOf(prev=>({...prev,[name]:t}));}
 
+  function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,seriesW:0,seriesL:0};}
   function buildEntities(){
     if(!teamMode){
-      return names.filter(n=>n.trim()).map(n=>({id:n,name:n,steps:0,eliminated:false,escapePending:false,escapeUsed:false}));
+      return names.filter(n=>n.trim()).map(n=>newEntity(n,n));
     }
     const teamA=names.filter(n=>n.trim()&&(teamOf[n]||'A')==='A');
     const teamB=names.filter(n=>n.trim()&&teamOf[n]==='B');
     const out=[];
-    if(teamA.length)out.push({id:'A',name:'Team A ('+teamA.join(', ')+')',steps:0,eliminated:false,escapePending:false,escapeUsed:false});
-    if(teamB.length)out.push({id:'B',name:'Team B ('+teamB.join(', ')+')',steps:0,eliminated:false,escapePending:false,escapeUsed:false});
+    if(teamA.length)out.push(newEntity('A','Team A ('+teamA.join(', ')+')'));
+    if(teamB.length)out.push(newEntity('B','Team B ('+teamB.join(', ')+')'));
     return out;
   }
   function startGame(){setEntities(buildEntities());setEliminationLog([]);}
   function resetGame(){setEntities(null);setEliminationLog([]);}
 
-  const activeCount=entities?entities.filter(e=>!e.eliminated).length:0;
-  const winner=entities&&activeCount===1?entities.find(e=>!e.eliminated):null;
+  // Quick add — lets a late-arriving player join without leaving this screen.
+  // Also writes them into the shared attendance list so other screens see them too.
+  function quickAddPlayer(){
+    const nm=(window.prompt('New player name:')||'').trim();
+    if(!nm)return;
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
+      if(!list.some(p=>p&&playerDisplayName(p)===nm)){
+        list.push({name:nm,present:true});
+        localStorage.setItem(PLAYER_KEY,JSON.stringify(list));
+      }
+    }catch{}
+    if(!entities){
+      setNames(prev=>prev.includes(nm)?prev:[...prev,nm]);
+      return;
+    }
+    setEntities(prev=>{
+      if(!prev||prev.some(e=>e.id===nm))return prev;
+      return [...prev,newEntity(nm,nm)];
+    });
+  }
 
-  function markSafe(id){/* no state change — challenge met, entity stays safe */}
+  const activeCount=entities?entities.filter(e=>!e.eliminated).length:0;
+  const winner=entities&&entities.length>1&&activeCount===1?entities.find(e=>!e.eliminated):null;
+
+  function applyFailure(e){
+    const nextSteps=Math.min(HANGMAN_MAX_STEPS,e.steps+1);
+    if(nextSteps>=HANGMAN_ESCAPE_STEP&&!e.escapeUsed){
+      return {...e,steps:HANGMAN_ESCAPE_STEP,escapePending:true,seriesW:0,seriesL:0};
+    }
+    if(nextSteps>=HANGMAN_MAX_STEPS){
+      setEliminationLog(log=>[...log,`${e.name} — eliminated`]);
+      return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true,seriesW:0,seriesL:0};
+    }
+    return {...e,steps:nextSteps,seriesW:0,seriesL:0};
+  }
+  // Single-rally mode: one tap decides the challenge outright.
+  function markSafe(id){ if(seriesLength>1) return; /* single rally, met = no-op, stays safe */ }
   function markFailed(id){
+    if(seriesLength>1) return;
+    setEntities(prev=>{
+      if(!prev)return prev;
+      return prev.map(e=>(e.id!==id||e.eliminated||e.escapePending)?e:applyFailure(e));
+    });
+  }
+  // Best of 3/5 mode: each rally just adds to that entity's mini-series score;
+  // the challenge itself is only resolved (Met or Failed) once one side reaches the majority.
+  function recordRally(id,won){
+    if(seriesLength<=1)return;
+    const majority=hangmanSeriesMajority(seriesLength);
     setEntities(prev=>{
       if(!prev)return prev;
       return prev.map(e=>{
         if(e.id!==id||e.eliminated||e.escapePending)return e;
-        const nextSteps=Math.min(HANGMAN_MAX_STEPS,e.steps+1);
-        if(nextSteps>=HANGMAN_ESCAPE_STEP&&!e.escapeUsed){
-          return {...e,steps:HANGMAN_ESCAPE_STEP,escapePending:true};
-        }
-        if(nextSteps>=HANGMAN_MAX_STEPS){
-          setEliminationLog(log=>[...log,`${e.name} — eliminated`]);
-          return {...e,steps:HANGMAN_MAX_STEPS,eliminated:true};
-        }
-        return {...e,steps:nextSteps};
+        const seriesW=e.seriesW+(won?1:0), seriesL=e.seriesL+(won?0:1);
+        if(seriesW>=majority)return {...e,seriesW:0,seriesL:0}; // series won — challenge Met, stays safe
+        if(seriesL>=majority)return applyFailure({...e,seriesW,seriesL});
+        return {...e,seriesW,seriesL};
       });
     });
   }
@@ -10945,21 +11004,22 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
   useEffect(()=>{
     if(!projecting||!entities)return;
-    const payload={type:'hangmansquash',challenge,entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending})),winnerName:winner?winner.name:null,eliminationLog};
+    const payload={type:'hangmansquash',challenge,seriesLength,entities:entities.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,seriesW:e.seriesW,seriesL:e.seriesL})),winnerName:winner?winner.name:null,eliminationLog};
     writeLivePlayerRoom(base,'hangmansquash',payload);
-  },[projecting,entities,challenge,eliminationLog,base,winner]);
+  },[projecting,entities,challenge,seriesLength,eliminationLog,base,winner]);
 
   async function copyPlayerLink(){
     setProjecting(true);
     const url=buildLivePlayerViewUrl(base);
-    try{await navigator.clipboard.writeText(url);alert('Live player link copied. Open it on the second device/projector — the hangman figures update live as you tap Met/Failed.');}
+    try{await navigator.clipboard.writeText(url);alert('Live player link copied. Open it on the second device/projector — the hangman figures update live as you score.');}
     catch{window.prompt('LIVE Hangman Squash player link:',url);}
   }
 
   function addToSession(){
     if(typeof setSession!=='function')return;
+    const seriesNote=seriesLength>1?` Each challenge attempt is decided by a Best of ${seriesLength} mini-series (first to ${hangmanSeriesMajority(seriesLength)} rally wins) rather than a single rally, so the board lasts longer.`:'';
     setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Hangman Squash',category:'Hangman Squash',format:'Escalating Jeopardy',duration:10,
-      task:'Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen. At step 5, one last-chance escape challenge is offered before elimination. Last player or team standing wins.',
+      task:`Coach sets a squash challenge (a shot, a zone, a tactical pattern). Each player/team plays under that challenge. Meeting it is safe; failing it adds one step toward their hangman, drawn live on screen, one body part at a time.${seriesNote} At the second-to-last step, one last-chance escape challenge is offered before elimination. Last player or team standing wins.`,
       scoring:'Elimination order determines placing. Optional bonus for surviving with zero steps taken.',
       rationale:'Keeps the challenge itself squash-representative while wrapping it in escalating public jeopardy — same underlying engine as Tin War (execute under rising consequence), different affective payload (a visible figure being drawn rather than a rising number).',
       coach:'Set a real tactical challenge, not just "win the rally" — a specific shot or zone creates a genuine problem for the opponent. Watch composure at the last-chance-escape moment.',
@@ -10982,6 +11042,8 @@ function HangmanSquashGame({setSession,setScreen}={}){
         <button type="button" className={teamMode?'hsModeBtn':'hsModeBtn on'} onClick={()=>setTeamMode(false)}>Individual</button>
         <button type="button" className={teamMode?'hsModeBtn on':'hsModeBtn'} onClick={()=>setTeamMode(true)}>Teams (A/B) — shared track</button>
       </div>
+      <div className="hsLabel">Rally decision (pacing)</div>
+      <div className="hsModeRow">{HANGMAN_SERIES_OPTIONS.map(o=><button type="button" key={o.n} className={seriesLength===o.n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSeriesLength(o.n)}>{o.label}</button>)}</div>
       <div className="hsLabel">Players</div>
       <div className="hsPlayerGrid">
         {names.map((n,i)=><div key={i} className="hsPlayerRow">
@@ -10993,7 +11055,10 @@ function HangmanSquashGame({setSession,setScreen}={}){
           <button type="button" className="hsRemoveBtn" onClick={()=>removePlayer(i)}>✕</button>
         </div>)}
       </div>
-      <button type="button" className="hsAddPlayerBtn" onClick={addNamePlayer}>+ Add player</button>
+      <div className="hsModeRow">
+        <button type="button" className="hsAddPlayerBtn" onClick={addNamePlayer}>+ Add player</button>
+        <button type="button" className="hsAddPlayerBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      </div>
     </div>
     <div className="hsChallengeBox">
       <div className="hsLabel">Starting challenge</div>
@@ -11008,7 +11073,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <div className="hsLabel">Current challenge — update any time</div>
       <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
       <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
-      <div className="hsCurrentChallenge">🎯 {challenge}</div>
+      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · Best of ${seriesLength} decides it`:''}</div>
     </div>
 
     {winner&&<div className="hsWinBanner">🏆 {winner.name} is the last one standing — wins!</div>}
@@ -11020,11 +11085,15 @@ function HangmanSquashGame({setSession,setScreen}={}){
           <div className="hsFigureBox"><HangmanFigure steps={e.steps}/></div>
           <div className="hsTrackInfo">
             <div className="hsTrackName">{e.name}</div>
-            <div className={`hsTrackStatus ${status.cls}`}>{status.text}</div>
+            <div className={`hsTrackStatus ${status.cls}`}>{status.text}{(!e.eliminated&&!e.escapePending&&seriesLength>1)?` · series ${e.seriesW}–${e.seriesL}`:''}</div>
           </div>
-          {!e.eliminated&&!e.escapePending&&!winner&&<div className="hsTrackBtns">
+          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength===1&&<div className="hsTrackBtns">
             <button type="button" className="hsBtnSafe" onClick={()=>markSafe(e.id)}>✓ Met</button>
             <button type="button" className="hsBtnFail" onClick={()=>markFailed(e.id)}>✗ Failed</button>
+          </div>}
+          {!e.eliminated&&!e.escapePending&&!winner&&seriesLength>1&&<div className="hsTrackBtns">
+            <button type="button" className="hsBtnSafe" onClick={()=>recordRally(e.id,true)}>✓ Rally won</button>
+            <button type="button" className="hsBtnFail" onClick={()=>recordRally(e.id,false)}>✗ Rally lost</button>
           </div>}
           {e.escapePending&&<div className="hsTrackBtns">
             <button type="button" className="hsBtnEscapeGood" onClick={()=>resolveEscape(e.id,true)}>Escape succeeded</button>
@@ -11037,13 +11106,14 @@ function HangmanSquashGame({setSession,setScreen}={}){
     {eliminationLog.length>0&&<div className="hsEliminationLog">{eliminationLog.map((l,i)=><div key={i}>{l}</div>)}</div>}
 
     <div className="hsControls">
+      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={resetGame}>New Game</button>
     </div>
 
     <div className="hsBottomBar">
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>COPY PLAYER LINK</button>
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
-      {projecting&&<span className="hsDisplayHint">🟢 Live · figures update as you tap Met/Failed</span>}
+      {projecting&&<span className="hsDisplayHint">🟢 Live · figures update as you score</span>}
     </div>
     </>}
   </div>;
@@ -11056,15 +11126,16 @@ function HangmanSquashPlayerDisplay({payload={}}){
     <HangmanStyles/>
     <div className="hsDisplayShell">
       <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY</span><h1>💀 Hangman Squash</h1></div>
-      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}</div>}
+      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · Best of ${payload.seriesLength} decides it`:''}</div>}
       {winner&&<div className="hsDisplayWinner">🏆 {winner} wins!</div>}
       <div className="hsDisplayGrid">
         {entities.map((e,i)=>{
           const status=hangmanStatusLabel(e);
+          const showSeries=payload.seriesLength>1&&!e.eliminated&&!e.escapePending;
           return <div key={i} className={`hsDisplayCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
             <HangmanFigure steps={e.steps} size={110}/>
             <div className="hsDisplayName">{e.name}</div>
-            <div className={`hsDisplayStatus ${status.cls}`}>{status.text}</div>
+            <div className={`hsDisplayStatus ${status.cls}`}>{status.text}{showSeries?` · ${e.seriesW}–${e.seriesL}`:''}</div>
           </div>;
         })}
       </div>
@@ -17047,7 +17118,18 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
 
 // ── Coach setup screen ───────────────────────────────────────────────────
 function LudoSquashGame({setSession,setScreen}={}){
-  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function quickAddPlayer(){
+    const nm=(window.prompt('New player name:')||'').trim();
+    if(!nm)return;
+    if(presentsObj.some(p=>playerDisplayName(p)===nm)){alert(nm+' is already on the list.');return;}
+    const rec={name:nm,present:true};
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
+      if(!list.some(p=>p&&playerDisplayName(p)===nm)){list.push(rec);localStorage.setItem(PLAYER_KEY,JSON.stringify(list));}
+    }catch{}
+    setPresentsObj(prev=>[...prev,rec]);
+  }
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
   const [activeCourt,setActiveCourt]=useState(0);
@@ -17126,6 +17208,10 @@ function LudoSquashGame({setSession,setScreen}={}){
     <div className="categoryTag">Ludo Squash™</div>
     <h2>Ludo Squash</h2>
     <p className="mutedText">Race game — movement is earned, not automatic. First to get all 4 pieces Home wins.</p>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
+    </div>
 
     <div className="ludoGameInfo">
       <p className="ludoPrinciple">{rules.principle}</p>
@@ -17885,7 +17971,18 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 
 // ── Coach setup screen ───────────────────────────────────────────────────
 function NoughtsCrossesGame({setSession,setScreen}={}){
-  const presentsObj=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}},[]);
+  const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
+  function quickAddPlayer(){
+    const nm=(window.prompt('New player name:')||'').trim();
+    if(!nm)return;
+    if(presentsObj.some(p=>playerDisplayName(p)===nm)){alert(nm+' is already on the list.');return;}
+    const rec={name:nm,present:true};
+    try{
+      const list=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];
+      if(!list.some(p=>p&&playerDisplayName(p)===nm)){list.push(rec);localStorage.setItem(PLAYER_KEY,JSON.stringify(list));}
+    }catch{}
+    setPresentsObj(prev=>[...prev,rec]);
+  }
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
   const [activeCourt,setActiveCourt]=useState(0);
@@ -17990,6 +18087,10 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     <div className="categoryTag">Noughts & Crosses Squash™</div>
     <h2>Noughts & Crosses Squash</h2>
     <p className="mutedText">Claim squares by winning rallies and completing challenges. First to three in a row wins the board.</p>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+      <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
+      {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
+    </div>
 
     <div className="ncGameInfo">
       <p className="ncPrinciple">{rules.principle}</p>
