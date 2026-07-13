@@ -34,6 +34,8 @@ function getNcScoreFromUrl(){try{const p=new URLSearchParams(window.location.sea
 function buildNcScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?ncScore=${n}&host=${encodeURIComponent(base)}`;}
 function getNcRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('ncRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildNcRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?ncRace=${encodeURIComponent(base)}&n=${courtCount}`;}
+function getHsRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('hsRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function buildHsRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?hsRace=${encodeURIComponent(base)}&n=${courtCount}`;}
 function getHsScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('hsScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function buildHsScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?hsScore=${n}&host=${encodeURIComponent(base)}`;}
 function getHangmanLiveRoomId(){return getPersistentLiveRoomId()+'-hangman';}
@@ -178,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v364 WHY CLA? module: added Rate Limiters, How Constraints Decay and Emerge (Chow et al. 2005 soccer-kicking study), Evidence From Small-Sided Games (Fenoglio 2003; Impellizzeri et al. 2006), and Task Simplification vs Task Decomposition as new sections in the formal chapter, with matching takeaway bullets. Players now have a dedicated Rate Limiter field (separate from Focus) shown on the player card. OCCLUSION READ™ and Pattern Lab both got a short coach reminder that affordances are transitory — relative to that player\\u2019s current action capabilities, not a fixed standard.';
+const APP_VERSION='v365 Fixes from the live 6-player/2-court Hangman road test: (1) ROOT CAUSE of dropped players and erratic pairing - removed the automatic visibilitychange/focus roster-refresh added in v358 across all four roster games. It was silently re-reading attendance whenever a tab regained focus, which could reshuffle Auto court allocation mid-session and remount a court from scratch, wiping progress, dropping players, and re-pairing at random - especially likely with many tabs open. Refresh is now manual-only (the button already there), never automatic. (2) Fixed Hangman Undo not restoring the on-court pairing/queue, only entities - undo now reverts both together so the pairing matches the reverted scores. (3) Best of N ending at different lengths (sometimes 5 rallies, sometimes stops at 3) is correct best-of-N behaviour (2-0 sweeps end early, 2-1s dont), but this wasnt explained anywhere during live play - added a plain-language note on the live scoring screen for whichever resolution style is active. (4) Built a genuinely new All-Courts Display for Hangman (Copy All-Courts Display link, shown when running 2+ courts) - every courts hangman figures side by side on one screen, matching the combined Race Display pattern already used by Snakes and Ladders/Ludo/Noughts and Crosses, which Hangman was missing entirely.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9614,15 +9616,10 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  useEffect(()=>{
-    // Guards against a stale roster if this screen was left open (or kept mounted in the
-    // background) since attendance was set earlier — refresh whenever the tab/app comes
-    // back into view, not just on first mount.
-    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
-    document.addEventListener('visibilitychange',onVis);
-    window.addEventListener('focus',refreshPlayers);
-    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
-  },[]);
+  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
+  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
+  // Auto court allocation and remount a court, wiping progress and re-pairing players at
+  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -11022,6 +11019,19 @@ function HangmanStyles(){
 .hsDisplayTop h1{margin:6px 0 4px;font-size:2.8rem;color:#eaf4fb;}
 .hsDisplayChallenge{text-align:center;font-size:1.4rem;font-weight:700;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:16px 20px;}
 .hsDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.hsRaceGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;}
+.hsRaceCourt{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:16px;}
+.hsRaceCourt.winner{border-color:#1d6b3f;background:#0d1f16;}
+.hsRaceLabel{font-size:1.1rem;font-weight:800;color:#f0c49c;margin-bottom:8px;}
+.hsRaceChallenge{font-size:0.85rem;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:7px 10px;margin-bottom:10px;}
+.hsRaceEntities{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;}
+.hsRaceEntity{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
+.hsRaceEntity.eliminated{opacity:0.4;}
+.hsRaceEntity.escapePending{outline:2px solid #f5c542;border-radius:10px;}
+.hsRaceEntityName{font-size:0.82rem;font-weight:700;color:#eaf4fb;}
+.hsRaceEntityStatus{font-size:0.68rem;color:#9fb0c2;}
+.hsRaceEntityStatus.warn{color:#f5c542;font-weight:700;}
+.hsRaceEntityStatus.out{color:#f87171;font-weight:700;}
 .hsDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
 .hsDisplayCard.eliminated{opacity:0.4;}
 .hsDisplayCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 2px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
@@ -11112,8 +11122,8 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   const [entities,setEntities]=useState(()=>seed?seed.entities:buildEntities());
   const [eliminationLog,setEliminationLog]=useState(()=>seed?(seed.eliminationLog||[]):[]);
   const [undoStack,setUndoStack]=useState([]);
-  function pushUndo(){setUndoStack(prev=>[...prev.slice(-29),{entities,eliminationLog}]);}
-  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setEntities(s.entities);setEliminationLog(s.eliminationLog);return prev.slice(0,-1);});}
+  function pushUndo(){setUndoStack(prev=>[...prev.slice(-29),{entities,eliminationLog,queue}]);}
+  function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setEntities(s.entities);setEliminationLog(s.eliminationLog);if(s.queue)setQueue(s.queue);return prev.slice(0,-1);});}
   useEffect(()=>{ if(!seed) setEntities(buildEntities()); },[players.join('|'),teamMode,JSON.stringify(teamOf)]);
 
   const activeCount=entities.filter(e=>!e.eliminated).length;
@@ -11311,15 +11321,10 @@ function HangmanSquashGame({setSession,setScreen}={}){
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  useEffect(()=>{
-    // Guards against a stale roster if this screen was left open (or kept mounted in the
-    // background) since attendance was set earlier — refresh whenever the tab/app comes
-    // back into view, not just on first mount.
-    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
-    document.addEventListener('visibilitychange',onVis);
-    window.addEventListener('focus',refreshPlayers);
-    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
-  },[]);
+  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
+  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
+  // Auto court allocation and remount a court, wiping progress and re-pairing players at
+  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(1);
   const [activeCourt,setActiveCourt]=useState(0);
@@ -11335,6 +11340,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
+  const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const [handedOff,setHandedOff]=useState(()=>new Set());
   const [allocMode,setAllocMode]=useState('auto');
   const [manualAssign,setManualAssign]=useState({});
@@ -11390,6 +11396,11 @@ function HangmanSquashGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
   function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
+  async function copyHsRaceLink(){
+    setProjecting(true);
+    const url=buildHsRaceLink(base,courts);
+    try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(null),1500);}catch{window.prompt('All-courts display link:',url);}
+  }
 
   function addToSession(){
     if(typeof setSession!=='function')return;
@@ -11509,6 +11520,13 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
       <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
       <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · Best of ${seriesLength}`:''}</div>
+      {seriesLength>1&&<p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.78rem'}}>
+        {resolutionStyle==='fullWindow'
+          ? `Play all ${seriesLength} rallies mode: every pairing always plays all ${seriesLength} rallies before it's decided.`
+          : resolutionStyle==='suddenDeath'
+          ? 'Sudden death mode: it ends the instant the challenge is met — could be after just 1 rally.'
+          : `Best of ${seriesLength} mode: it's normal for this to end at different lengths — a 2-0 sweep ends in 2 rallies, a 2-1 needs 3 (same logic for Best of 5, majority = ${Math.ceil(seriesLength/2)}). That's not a bug, it's how best-of-N works.`}
+      </p>}
     </div>
 
     {courts>1&&<div className="hsCourtTabs">{allocation.map((g,i)=><button type="button" key={i} className={i===active?'hsModeBtn on':'hsModeBtn'} onClick={()=>setActiveCourt(i)}>Court {i+1} <span>({g.length})</span></button>)}</div>}
@@ -11544,6 +11562,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
         </div>)}
       </div>
       {projecting&&<span className="hsDisplayHint">🟢 Live{courts>1?` on all ${courts} courts`:''} · each figure updates as you score</span>}
+      {courts>1&&<button type="button" className="secondaryBtn" onClick={copyHsRaceLink}>{copiedRaceLink?'Copied ✓':"Copy All-Courts Display link (projector — every court's gallows in one view)"}</button>}
       {courts>1&&typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen — see every court's progress at once)</button>}
     </div>
   </div>;
@@ -11609,6 +11628,57 @@ function HangmanSquashPlayerDisplay({payload={}}){
             <HangmanFigure steps={e.steps} size={110}/>
             <div className="hsDisplayName">{e.name}</div>
             <div className={`hsDisplayStatus ${status.cls}`}>{status.text}{showWindow?` · ${wr.length}/${payload.seriesLength} (${wins}W–${losses}L)`:''}</div>
+          </div>;
+        })}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Combined view — every court's hangman figures on one screen ──────────
+function HangmanSquashRaceDisplay({host,courtCount}){
+  useWakeLock();
+  const [courts,setCourts]=useState([]);
+  useEffect(()=>{
+    let cancelled=false;
+    const hsBase=host+'-hangman';
+    async function load(){
+      const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(hsBase,i+1))));
+      if(cancelled)return;
+      setCourts(rows.map(row=>row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null));
+    }
+    load();
+    const id=setInterval(load,1400);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[host,courtCount]);
+
+  const anyData=courts.some(Boolean);
+  if(!anyData){
+    return <div className="hsDisplayPage"><HangmanStyles/>
+      <div className="hsDisplayTop"><span>● CONNECTING</span><h1>💀 Hangman Squash — All Courts</h1><p style={{color:'#9fb0c2'}}>Waiting for courts to start…</p></div>
+    </div>;
+  }
+  return <div className="hsDisplayPage">
+    <HangmanStyles/>
+    <div className="hsDisplayShell">
+      <div className="hsDisplayTop"><span>LIVE · ALL COURTS</span><h1>💀 Hangman Squash</h1></div>
+      <div className="hsRaceGrid">
+        {courts.map((c,i)=>{
+          if(!c)return <div key={i} className="hsRaceCourt"><div className="hsRaceLabel">Court {i+1}</div><p className="mutedText">Waiting…</p></div>;
+          const entities=c.entities||[];
+          return <div key={i} className={`hsRaceCourt${c.winnerName?' winner':''}`}>
+            <div className="hsRaceLabel">Court {i+1}{c.winnerName?` — 🏆 ${c.winnerName} wins`:''}</div>
+            {c.challenge&&!c.winnerName&&<div className="hsRaceChallenge">🎯 {c.challenge}</div>}
+            <div className="hsRaceEntities">
+              {entities.map((e,ei)=>{
+                const status=hangmanStatusLabel(e);
+                return <div key={ei} className={`hsRaceEntity${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
+                  <HangmanFigure steps={e.steps} size={56}/>
+                  <div className="hsRaceEntityName">{e.name}</div>
+                  <div className={`hsRaceEntityStatus ${status.cls}`}>{status.text}</div>
+                </div>;
+              })}
+            </div>
           </div>;
         })}
       </div>
@@ -17596,12 +17666,10 @@ function LudoSquashGame({setSession,setScreen}={}){
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  useEffect(()=>{
-    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
-    document.addEventListener('visibilitychange',onVis);
-    window.addEventListener('focus',refreshPlayers);
-    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
-  },[]);
+  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
+  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
+  // Auto court allocation and remount a court, wiping progress and re-pairing players at
+  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -18462,12 +18530,10 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  useEffect(()=>{
-    const onVis=()=>{if(document.visibilityState==='visible')refreshPlayers();};
-    document.addEventListener('visibilitychange',onVis);
-    window.addEventListener('focus',refreshPlayers);
-    return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',refreshPlayers);};
-  },[]);
+  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
+  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
+  // Auto court allocation and remount a court, wiping progress and re-pairing players at
+  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -20361,6 +20427,7 @@ const ludoScoreParam=useMemo(()=>getLudoScoreFromUrl(),[]);
 const ludoRaceParam=useMemo(()=>getLudoRaceFromUrl(),[]);
 const ncScoreParam=useMemo(()=>getNcScoreFromUrl(),[]);
 const ncRaceParam=useMemo(()=>getNcRaceFromUrl(),[]);
+const hsRaceParam=useMemo(()=>getHsRaceFromUrl(),[]);
 const hsScoreParam=useMemo(()=>getHsScoreFromUrl(),[]);
 const[searchOpen,setSearchOpen]=useState(false);
 const[searchQ,setSearchQ]=useState('');
@@ -20408,6 +20475,7 @@ if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} ho
 if(ludoRaceParam){return <LudoSquashRaceDisplay host={ludoRaceParam.host} courtCount={ludoRaceParam.courtCount}/>;}
 if(ncScoreParam){return <NoughtsCrossesCourtScorer court={ncScoreParam.court} host={ncScoreParam.host}/>;}
 if(ncRaceParam){return <NoughtsCrossesRaceDisplay host={ncRaceParam.host} courtCount={ncRaceParam.courtCount}/>;}
+if(hsRaceParam){return <HangmanSquashRaceDisplay host={hsRaceParam.host} courtCount={hsRaceParam.courtCount}/>;}
 if(hsScoreParam){return <HangmanSquashCourtScorer court={hsScoreParam.court} host={hsScoreParam.host}/>;}
 if(screen==='playerDisplay'&&liveRoomParam&&!livePayload){
   let lastWrite=null,lastError=null;
