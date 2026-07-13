@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v358 Fixed the stale-roster bug across all four roster games (Hangman, Snakes and Ladders, Ludo Squash, Noughts and Crosses), not just Hangman - root cause was the present-players list being read once from storage at first mount and never refreshed, so a screen left open since an earlier session kept showing that earlier attendance instead of current. All four now auto-refresh whenever the tab or app comes back into view, plus a manual Refresh players button and a Showing N present players line so its always clear whats actually loaded. Also: Hangman resolution style is now a genuine three-way choice - Best of N (early stop at majority, default), Play all N rallies (always plays the full window even after a majority is decided), and Sudden death on the named shot - instead of Best of N replacing the play-all-N option.';
+const APP_VERSION='v359 Fixed Court Monitor showing ghost winners from a previous/earlier session. Root cause: court data only got marked paused after 20 seconds old, with no upper limit - so a finished match from hours or days ago just sat in that courts room forever and kept displaying as a paused card (e.g. Winner: Mark) even though nobody had played there since. Now anything older than 90 minutes is treated as a genuinely empty court (No device connected yet) instead of a stale ghost card. Does not affect the 20-second paused indicator for a court that briefly drops connection mid-session.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -18743,6 +18743,11 @@ function normalizeCourtPayload(row){
   if(!row||!row.payload)return null;
   const p=row.payload,t=p.type;
   const ageMs=row.updated_at?(Date.now()-new Date(row.updated_at).getTime()):(p.updatedAt?Date.now()-p.updatedAt:null);
+  // Anything more than 90 minutes old is treated as a different/earlier session, not a
+  // "paused" court — otherwise a match from hours (or days) ago sits here forever as a
+  // ghost winner card. Genuinely paused mid-session courts (brief disconnect etc.) stay
+  // well under this.
+  if(ageMs!=null&&ageMs>5400000)return null;
   const stale=ageMs!=null&&ageMs>20000;
   let game='Live',headline='',target=null,pct=null,leaderName='',winnerName=p.winnerName||null,players=[];
   if(t==='snakesladders'){
