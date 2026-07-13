@@ -178,7 +178,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v363 Press Call now has configurable bonus points, matching the same pattern as Breakout Squash: a Successful press bonus (pressing player converts within the shot-count) and a Successful defence bonus (opponent survives the count and wins the point themselves), both coach-selectable 0 to 3, default press +1 / defence +0. Rewarding both sides encourages players to explore the pressure situation rather than only the presser having something on the line. Scoring preview text updates to reflect whichever bonuses are active.';
+const APP_VERSION='v364 WHY CLA? module: added Rate Limiters, How Constraints Decay and Emerge (Chow et al. 2005 soccer-kicking study), Evidence From Small-Sided Games (Fenoglio 2003; Impellizzeri et al. 2006), and Task Simplification vs Task Decomposition as new sections in the formal chapter, with matching takeaway bullets. Players now have a dedicated Rate Limiter field (separate from Focus) shown on the player card. OCCLUSION READ™ and Pattern Lab both got a short coach reminder that affordances are transitory — relative to that player\\u2019s current action capabilities, not a fixed standard.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -327,7 +327,7 @@ function PlayerIdTags({player,showTrait=false}){
   </span>;
 }
 
-const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',present:false,animal:'',customAnimal:'',customAnimalTrait:'',roleModel:'',customRoleModel:'',customRoleModelTrait:''};
+const EMPTY_PLAYER={name:'',playerType:'Programme Player',category:'Bronze',level:1,juniorRanking:'',guestEstimate:'',attendance:'0 sessions',focus:'',rateLimiter:'',present:false,animal:'',customAnimal:'',customAnimalTrait:'',roleModel:'',customRoleModel:'',customRoleModelTrait:''};
 
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
 
@@ -3195,6 +3195,22 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'By manipulating constraints, coaches shape behaviour without prescribing movement.'},
       {t:'p',v:'This theoretical foundation was later formalised into a practical coaching framework — the Constraints-Led Approach — by Keith Davids, Chris Button and Simon Bennett (2008).'},
     ]},
+    {id:'d1-ratelimiters',title:'Rate Limiters',blocks:[
+      {t:'p',v:'Not every constraint holds equal power over performance at every moment.'},
+      {t:'p',v:'At any given time, one particular constraint usually has the greatest influence on what a player can currently achieve. This is known as a rate limiter — the single factor most limiting further improvement right now.'},
+      {t:'p',v:'A rate limiter can come from any of Newell\u2019s three categories:'},
+      {t:'ul',v:['Performer — for example, a lack of racket-arm strength or confidence under pressure.','Environmental — for example, an opponent\u2019s pace or a cramped court.','Task — for example, scoring rules that never demand a decision.']},
+      {t:'p',v:'Identifying the current rate limiter is one of the most valuable skills a coach can develop.'},
+      {t:'p',v:'Rather than working on everything at once, effective coaching targets whichever constraint is most limiting a player\u2019s performance today — and leaves the rest alone until it becomes relevant.'},
+      {t:'p',v:'As that constraint is overcome, a different constraint typically becomes the new rate limiter, and the process repeats.'},
+    ]},
+    {id:'d1-decay',title:'How Constraints Decay and Emerge',blocks:[
+      {t:'p',v:'Constraints are not fixed in importance. Their influence over a player\u2019s behaviour shifts as learning progresses.'},
+      {t:'p',v:'Research examining a football kicking task illustrates this clearly (Chow, Davids, Button & Koh, 2005, discussed in Renshaw, Chow, Davids & Hammond, 2010). Novice players were asked to kick a ball over a height barrier and land it accurately on a target.'},
+      {t:'p',v:'Early in practice, players focused almost entirely on clearing the height barrier, with little regard for accuracy. As they became more consistent at clearing the bar, that height constraint decayed in importance — and an accuracy constraint emerged to take its place as the dominant influence on performance.'},
+      {t:'p',v:'This matters because it shows a rate limiter is never permanent. As one constraint is mastered it fades into the background, and a different constraint rises to become the new priority.'},
+      {t:'p',v:'For coaches, the practical implication is to keep reassessing rather than fixing a single priority for a player. A constraint that mattered most last month may no longer be the one holding them back today.'},
+    ]},
     {id:'d1-ecodyn',title:'Ecological Dynamics',blocks:[
       {t:'p',v:'Modern CLA is now commonly described as Ecological Dynamics.'},
       {t:'p',v:'This field combines:'},
@@ -3215,12 +3231,26 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'Importantly, CLA does not reject technical coaching. Instead, technique is viewed as a functional solution that emerges from solving movement problems.'},
       {t:'p',v:'The coach still guides learning — but primarily through designing effective practice environments rather than prescribing every movement.'},
     ]},
+    {id:'d1-smallsided',title:'Evidence From Small-Sided Games',blocks:[
+      {t:'p',v:'Representative practice does not only support decision-making — it also increases the amount of relevant practice happening naturally within a session.'},
+      {t:'p',v:'A study of small-sided football at the Manchester United academy found that reducing an 8 v 8 game down to 4 v 4 dramatically increased meaningful actions: far more passes were completed, considerably more shooting attempts and goals occurred, and 1 v 1 duels and dribbling attempts rose sharply too (Fenoglio, 2003, cited in Renshaw, Chow, Davids & Hammond, 2010).'},
+      {t:'p',v:'Smaller-sided games are not simply easier versions of the full game — they multiply the number of representative learning opportunities available within the same amount of time.'},
+      {t:'p',v:'Small-sided games have also been shown to build physical fitness alongside skill. Impellizzeri et al. (2006) found that junior soccer players training with small-sided games achieved similar aerobic fitness gains to those doing separate interval training — without sacrificing time spent on decision-making and technical skill.'},
+      {t:'p',v:'For squash coaches running multi-court sessions, this supports building smaller-sided, representative court games rather than long isolated drills: conditioning and tactical learning can develop together, not as separate blocks of session time.'},
+    ]},
     {id:'d1-vs',title:'Traditional Coaching vs CLA',blocks:[
       {t:'p',v:'Traditional coaching often asks:'},
       {t:'quote',v:'"How should the player move?"'},
       {t:'p',v:'CLA asks:'},
       {t:'quote',v:'"What practice environment will encourage the player to discover an effective movement solution?"'},
       {t:'p',v:'Instead of building technique first and hoping it transfers to competition, CLA develops technique within representative game situations from the beginning.'},
+    ]},
+    {id:'d1-simplify',title:'Task Simplification vs Task Decomposition',blocks:[
+      {t:'p',v:'When a skill feels too complex for a learner to attempt in full, coaches have traditionally reached for task decomposition — breaking the skill into separate parts and drilling each one in isolation before joining them back together.'},
+      {t:'p',v:'The difficulty with decomposition is that it can decouple perception from action. Practising an isolated part away from the information that normally guides it does not always transfer back into the full skill.'},
+      {t:'p',v:'Task simplification offers a different route to the same goal. Rather than isolating parts, the whole task is scaled down — made easier, slower or smaller — while perception and action stay coupled together throughout.'},
+      {t:'p',v:'A common example from racquet sports: rather than teaching a serve by separating the toss from the swing, task simplification keeps both together from the start, beginning with an easier version of the whole action — such as a low toss, or a bigger and softer ball — and gradually increasing the challenge as the player improves.'},
+      {t:'p',v:'Checkerboard Squash™ activities are built around task simplification rather than decomposition — scaling a challenge up or down through constraints such as court zones, scoring rules or time pressure, while always keeping the player perceiving and deciding within a representative version of the real game.'},
     ]},
     {id:'d1-squash',title:'What This Means for Squash',blocks:[
       {t:'p',v:'Squash is an ideal environment for CLA because every rally presents unique problems.'},
@@ -3239,7 +3269,11 @@ function WhyCLAScreen({setScreen}){
     'Dynamic Systems Theory explains how movement self-organises.',
     'Newell (1986) laid the theoretical foundation showing how performer, environment and task constraints shape behaviour.',
     'Davids, Button & Bennett (2008) formalised this into the Constraints-Led Approach as a coaching framework.',
+    'A rate limiter is the single constraint most limiting a player\u2019s performance right now — coaches should identify and target it first, rather than working on everything at once.',
+    'Constraints decay and emerge over time: mastering one constraint often reveals a different one as the new priority (Chow, Davids, Button & Koh, 2005).',
     'Ecological Dynamics integrates these ideas into a modern theory of skill acquisition.',
+    'Small-sided games multiply meaningful practice repetitions and can build fitness alongside tactical learning (Fenoglio, 2003; Impellizzeri et al., 2006).',
+    'Task simplification scales the whole skill down while keeping perception and action coupled — unlike task decomposition, which isolates parts and risks decoupling them.',
     'CLA uses carefully designed practice environments to develop adaptable, intelligent performers.',
     'Scientific research supports CLA as an effective framework for learning skills that transfer to real competition.',
   ];
@@ -3758,6 +3792,7 @@ function OcclusionReadTool(){
         <div className="ocrLabel">3. Judge the movement response — clean or not clean</div>
         <div className="ocrBox"><strong>Clean</strong><p>Correct direction, committed early, no hesitation or correction step.</p></div>
         <div className="ocrBox"><strong>Not Clean</strong><p>Wrong direction, late, or a visible correction. A right guess with a correction step is not clean.</p></div>
+        <p className="ocrHint">Reminder: "clean" is relative to this player's current action capabilities and situation, not a fixed standard. An earlier cut point that's clean for one player may not be a fair read for another — affordances are transitory, not absolute.</p>
         <div className="ocrTallyRow">
           <div role="button" tabIndex={0} className="ocrTapBtn clean" onClick={()=>bump('clean')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bump('clean');}}>Clean<span className="ocrTapCount">{t.clean}</span></div>
           <div role="button" tabIndex={0} className="ocrTapBtn notclean" onClick={()=>bump('notClean')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bump('notClean');}}>Not Clean<span className="ocrTapCount">{t.notClean}</span></div>
@@ -11822,7 +11857,7 @@ return <div className="page">
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
 <select value={form.category} onChange={e=>updateCategory(e.target.value)}>{LEVELS.map(level=><option key={level.label}>{level.label}</option>)}<option>Guest</option></select>
-{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/>
+{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/><input placeholder="Rate limiter (the one constraint most holding them back right now — CLA)" value={form.rateLimiter||''} onChange={e=>setForm({...form,rateLimiter:e.target.value})}/>
 <div className="playerIdentityFields">
 <label className="playerIdentityLabel">Animal Identity
 <select value={form.animal||''} onChange={e=>setForm({...form,animal:e.target.value})}><option value="">No animal set</option>{PLAYER_ANIMALS.map(a=><option key={a.name} value={a.name}>{a.emoji} {a.name} — {a.trait}</option>)}<option value="__custom__">🐾 Custom animal…</option></select>
@@ -11837,7 +11872,7 @@ return <div className="page">
 <div className="attendanceSummary"><strong>Present for {sessionDate}:</strong> {presentCount}<span>All unmarked players are recorded as absent when attendance is saved.</span></div>
 <div className="quickGuestBox"><strong>Add Guest To Today’s Attendance</strong><div className="quickGuestRow"><input placeholder="Guest name" value={guestName} onChange={e=>setGuestName(e.target.value)}/><select value={guestEstimate} onChange={e=>setGuestEstimate(e.target.value)}><option>Level 1 guest</option><option>Level 2 guest</option><option>Level 3 guest</option><option>Level 4 guest</option><option>Level 5 guest</option><option>Adult challenge player</option><option>Coach playing</option></select><input className="guestRankInput" placeholder="Guest ranking / seed e.g. 7" value={guestRanking} onChange={e=>setGuestRanking(e.target.value)}/><button className="primaryBtn" onClick={addGuest}>Add Present Guest</button></div><p className="smallHelpText">Guest ranking lets temporary players seed correctly in ranked court allocation. Lower number = stronger seed.</p></div>
 {players.length===0&&<div className="placeholder">No players added yet. Add players or guests above.</div>}
-<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><div className="playerCardNameRow"><h3>{player.name}</h3><PlayerIdTags player={player}/></div><div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div><div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div><div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Absent'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div></div>)}</div>
+<div className="playerGrid">{sorted.map(player=><div className="playerCard" key={`${player.name}-${player.originalIndex}`}><div className="playerCardNameRow"><h3>{player.name}</h3><PlayerIdTags player={player}/></div><div className="badgeRow"><span className="badge">{player.playerType}</span><span className="badge">{player.category}</span><span className="badge">Level {player.level}</span><span className="badge">{player.playerType==='Programme Player'?`JPR #${player.juniorRanking||'not set'}`:(player.juniorRanking?`Guest seed #${player.juniorRanking}`:'Guest')}</span></div><div className="infoBox"><strong>Focus</strong><p>{player.focus||'No focus added.'}</p></div>{player.rateLimiter&&<div className="infoBox"><strong>Rate Limiter</strong><p>{player.rateLimiter}</p></div>}<div className="actionRow"><button className={player.present?'activePresent':''} onClick={()=>togglePresent(player.originalIndex)}>{player.present?'Present ✓':'Absent'}</button><button onClick={()=>editPlayer(player,player.originalIndex)}>Edit</button><button onClick={()=>deletePlayer(player.originalIndex)}>Delete</button></div></div>)}</div>
 <div className="gameCard"><h2>Attendance History</h2>{attendanceHistory.length?<div className="attendanceHistoryList">{attendanceHistory.slice(0,8).map(r=><div key={r.id||r.date}><strong>{r.date}</strong><span>{r.players.filter(p=>p.present).length} present · {r.players.filter(p=>!p.present).length} absent</span></div>)}</div>:<p className="mutedText">No saved attendance records yet.</p>}</div>
 </div>;
 }
@@ -16625,6 +16660,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
     <CoachRationale label="Why these games — coach rationale">
       <p>Pattern Lab keeps the practical value of the classic <strong>Patterns of Play</strong> — a large library of recognisable tactical situations — while removing the rigid prescription that turns patterns into rehearsed routines.</p>
       <p>Each card is reframed through Checkerboard zones, flight constraints, disguise and diversity, so the player <strong>recognises the affordance and chooses a functional solution</strong> rather than executing one fixed answer. The constraints keep representativeness high and guard against attractor states — the same pattern hardening into an unthinking habit.</p>
+      <p>Reminder: an affordance is relative to that player's current action capabilities and situation, not a fixed property of the pattern. A gap that's "on" for one player, or on a good day, may not be on for another player, or the same player under fatigue or pressure — judge what's hittable in the moment, not against a fixed template.</p>
     </CoachRationale>
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);setDetailOpen(true);}}>⚡ Random Pattern</button></div>
