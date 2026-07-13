@@ -178,7 +178,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v362 Two related fixes for stale live-court data (different from the v359 90-minute ghost fix - this covers RECENT test data, not old sessions): (1) Court Monitor now has a Clear this court button on every populated card, which wipes that courts data across all namespaced rooms (standard, Ludo, N&C, Hangman) instantly instead of waiting for it to expire. (2) Every hand-off Scoring device (Snakes and Ladders, Ludo, N&C, Hangman) now has a Not the right players? Clear this court button, so whoever is standing at the court can wipe a bad seed themselves rather than needing the coach to fix it from Court Monitor. Also fixed while in there: Ludo rotation mode (Winner stays on / Players rotate through / Fixed rotation) was never actually transmitted through the live payload, so a handed-off Ludo scoring device always silently defaulted to Winner stays on regardless of what was configured - now carried through correctly. Also added missing wake lock to the N&C and Hangman scoring devices (S&L and Ludo already had it).';
+const APP_VERSION='v363 Press Call now has configurable bonus points, matching the same pattern as Breakout Squash: a Successful press bonus (pressing player converts within the shot-count) and a Successful defence bonus (opponent survives the count and wins the point themselves), both coach-selectable 0 to 3, default press +1 / defence +0. Rewarding both sides encourages players to explore the pressure situation rather than only the presser having something on the line. Scoring preview text updates to reflect whichever bonuses are active.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4513,6 +4513,8 @@ const PRESS_CALL_SHOT_LIMITS=['2','3','4','5'];
 function PressCallModule({setSession}){
   const [modeId,setModeId]=useState('self');
   const [shotLimit,setShotLimit]=useState('3');
+  const [pressBonus,setPressBonus]=useState('1');
+  const [defenceBonus,setDefenceBonus]=useState('0');
   const [added,setAdded]=useState('');
   const mode=PRESS_CALL_MODES.find(m=>m.id===modeId);
   function buildTask(){
@@ -4520,7 +4522,11 @@ function PressCallModule({setSession}){
     return `${who} No court zone restriction. The moment "Press" is called, the pressing player must win the point within their own next ${shotLimit} shots (the opponent's shots in between do NOT count against the window) or the point is forfeit automatically — regardless of who is on top in the rally when the count ends. This is an advantage bet, not an escape: the call should only be made when the advantage is real, because the clock starts the instant it's declared.`;
   }
   function buildScoring(){
-    return `Normal rally scoring until a Press is called. From the call: win the point within the pressing player's own next ${shotLimit} shots for the point; pressing player fails to convert within their own ${shotLimit} shots = automatic loss of the point, even if the pressing player is still in control of the rally.`;
+    const bonusNote=[
+      Number(pressBonus)>0?`Successful press (pressing player converts within the count) = +${pressBonus} bonus on top of the rally-win point.`:null,
+      Number(defenceBonus)>0?`Successful defence (opponent survives the count and wins the point themselves) = +${defenceBonus} bonus for the opponent.`:null
+    ].filter(Boolean).join(' ');
+    return `Normal rally scoring until a Press is called. From the call: win the point within the pressing player's own next ${shotLimit} shots for the point; pressing player fails to convert within their own ${shotLimit} shots = automatic loss of the point, even if the pressing player is still in control of the rally.${bonusNote?' '+bonusNote:''}`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
@@ -4543,7 +4549,8 @@ function PressCallModule({setSession}){
 .pcBox strong{display:block;color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .pcBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .pcAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.pcAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}`;
+.pcAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.pcHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
     <div className="libraryStageIntro"><h2>⚡ Press Call</h2><p>Normal open rally play with a self-declared (or coach/opponent-declared) shot-clock. Calling "Press" is a bet that advantage has already been created — get it wrong and the clock costs you the point.</p></div>
@@ -4555,6 +4562,18 @@ function PressCallModule({setSession}){
       <div className="pcSection">
         <div className="pcLabel">2. Shot-count window</div>
         <div className="pcChips">{PRESS_CALL_SHOT_LIMITS.map(n=><div key={n} role="button" tabIndex={0} className={shotLimit===n?'pcChip on':'pcChip'} onClick={()=>setShotLimit(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotLimit(n);}}>{n} shots</div>)}</div>
+      </div>
+      <div className="pcSection">
+        <div className="pcLabel">3. Bonus points (optional)</div>
+        <div style={{marginBottom:10}}>
+          <div className="pcLabel" style={{marginBottom:6,color:'#9fb6cf'}}>Successful press (pressing player converts within the count)</div>
+          <div className="pcChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'pb'+n} role="button" tabIndex={0} className={pressBonus===n?'pcChip on':'pcChip'} onClick={()=>setPressBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setPressBonus(n);}}>+{n}</div>)}</div>
+        </div>
+        <div>
+          <div className="pcLabel" style={{marginBottom:6,color:'#9fb6cf'}}>Successful defence (opponent survives the count and wins the point)</div>
+          <div className="pcChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'db'+n} role="button" tabIndex={0} className={defenceBonus===n?'pcChip on':'pcChip'} onClick={()=>setDefenceBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDefenceBonus(n);}}>+{n}</div>)}</div>
+        </div>
+        <p className="pcHint">Rewarding both the press itself and a successful defence encourages players to explore the pressure situation from both sides, rather than only the pressing player having something on the line.</p>
       </div>
       <div className="pcBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="pcBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
