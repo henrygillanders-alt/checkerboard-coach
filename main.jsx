@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v360 Working through the pinned list: (1) Fixed Snakes and Ladders board size 30 overflowing the Live Player Display - board width is now capped against min(94vw, 70vh-based calc) instead of only handling horizontal overflow, matching the same min(vw,vh) technique already used for Ludo Squash board sizing, so a tall 6-column board can never run off the bottom of the screen. (2) Added the Winner stays on / Players rotate through (loser stays on) pairing toggle to Snakes and Ladders and Ludo Squash, alongside their existing Winner stays on / Fixed rotation (both off) option - Noughts and Crosses does not get this, since neither its Teams format (fixed A vs B, no queue) nor its FFA format (any player can claim any square, no queue) has an on-court pairing concept to rotate. Pattern Lab Drive/Drive tab label fix not found on inspection - flagging rather than guessing at the wrong element.';
+const APP_VERSION='v361 Bundled batch: (1) WHY CLA - added the pinned perception-action coupling explanation under both Gibson sections, preserving all existing verbatim content, only appended. (2) Snakes and Ladders - built the pinned editable-challenge-on-trigger-squares feature: coach can attach a squash challenge to any ladder-bottom square on the current board (blank = unchanged behaviour); when a player is about to complete that climb, the coach confirms whether the challenge was demonstrated before the climb applies, otherwise the ladder is forfeited despite winning the rally. Shown on the coach screen, leaderboard and Live Player Display, carried through hand-off scoring devices too. (3) Shot Bonus Rally - rep and finish bonus points are now configurable PER SHOT (not one global value), and Live Tally has per-shot Rep/Finish tap buttons with a running points total per player, matching the pinned spec. (4) Added the DB Handicap and Tin Height leveller panels to Hangman Squash, Shot Bonus Rally, Breakout Squash and Press Call, matching the existing convention on Snakes and Ladders/Ludo/Noughts and Crosses/Tin War. (5) Discovered Breakout Squash (including configurable breakout/defence bonus points) was already fully built and wired into the Games Library in an earlier session - the pinned future-build note for it was stale and has been cleared.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3052,6 +3052,11 @@ function WhyCLAScreen({setScreen}){
       {t:'ul',v:['An opponent stranded in the back court.','A loose ball inviting a volley.','Space in the front corner for a drop shot.','An opening for a crosscourt attack.']},
       {t:'p',v:'Expert players are not simply faster movers.'},
       {t:'p',v:'They are better at recognising these opportunities.'},
+      {t:'p',v:'A central idea within Gibson\u2019s ecological psychology is perception\u2013action coupling.'},
+      {t:'p',v:'This describes how movement skill is learned through a tight, continuous link between perceiving information in the environment and acting on it \u2014 not perceive, then decide, then act as three separate stages.'},
+      {t:'p',v:'Perceiving and acting happen together, in a constant loop: information picked up during movement immediately shapes the next action, and that action changes what information becomes available next.'},
+      {t:'p',v:'In squash this loop never stops. A player reading an opponent\u2019s racquet face is already adjusting their own movement before any conscious decision is made, and that movement changes what they can perceive next.'},
+      {t:'p',v:'This is why CLA training uses representative, live-ball practice rather than shadow drills or isolated technique work performed without an opponent \u2014 breaking the coupling between perceiving and acting removes exactly the thing that is being trained.'},
     ]},
     {id:'d2-dst',title:'Dynamic Systems Theory',blocks:[
       {t:'p',v:'Scientists studying physics, biology and mathematics discovered that many complex systems organise themselves without central control.'},
@@ -3150,6 +3155,11 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'Examples in squash include:'},
       {t:'ul',v:['An opponent standing deep creates an opportunity for a drop shot.','A loose ball affords an attack.','A poor return affords a volley.','An open back corner affords length.']},
       {t:'p',v:'Expert players become better because they detect these affordances earlier and more consistently.'},
+      {t:'p',v:'A central idea within Gibson\u2019s ecological psychology is perception\u2013action coupling.'},
+      {t:'p',v:'This describes how movement skill is learned through a tight, continuous link between perceiving information in the environment and acting on it \u2014 not perceive, then decide, then act as three separate stages.'},
+      {t:'p',v:'Perceiving and acting happen together, in a constant loop: information picked up during movement immediately shapes the next action, and that action changes what information becomes available next.'},
+      {t:'p',v:'In squash this loop never stops. A player reading an opponent\u2019s racquet face is already adjusting their own movement before any conscious decision is made, and that movement changes what they can perceive next.'},
+      {t:'p',v:'This is why CLA training uses representative, live-ball practice rather than shadow drills or isolated technique work performed without an opponent \u2014 breaking the coupling between perceiving and acting removes exactly the thing that is being trained.'},
     ]},
     {id:'d1-dst',title:'Dynamic Systems Theory',blocks:[
       {t:'p',v:'During the 1970s and 1980s researchers studying physics, biology and mathematics discovered that complex systems often organise themselves without a central controller.'},
@@ -4164,17 +4174,38 @@ function ShotBonusRally({setSession}){
   const [tags,setTags]=useState([]);
   const [customTag,setCustomTag]=useState('');
   const [zoneRestrict,setZoneRestrict]=useState([...SHOT_BONUS_ZONES]);
-  const [repPoints,setRepPoints]=useState('+1');
-  const [finishBonus,setFinishBonus]=useState('+1');
+  // Per-shot point values — each selected shot carries its own independent rep/finish
+  // value (e.g. Nick worth more than a straight drop) rather than one global setting.
+  const [shotPoints,setShotPoints]=useState({'straight-drop':{rep:1,finish:1}});
   const [added,setAdded]=useState('');
   const [liveMode,setLiveMode]=useState(false);
-  const [tally,setTally]=useState({});
+  const [tally,setTally]=useState({}); // {name:{win:0, byShot:{shotId:{rep:0,finish:0}}}}
   const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
   useBackIntercept(liveMode,()=>{setLiveMode(false);return true;});
-  function toggleShot(id){setSelectedShots(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
+  function toggleShot(id){
+    setSelectedShots(prev=>{
+      const has=prev.includes(id);
+      const next=has?prev.filter(x=>x!==id):[...prev,id];
+      if(!has)setShotPoints(sp=>sp[id]?sp:{...sp,[id]:{rep:1,finish:1}});
+      return next;
+    });
+  }
+  function setShotPoint(id,kind,val){setShotPoints(prev=>({...prev,[id]:{...(prev[id]||{rep:1,finish:1}),[kind]:val}}));}
   function toggleTag(tag){setTags(prev=>prev.includes(tag)?prev.filter(x=>x!==tag):[...prev,tag]);}
   function toggleZone(z){setZoneRestrict(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
-  function bumpTally(name,kind){setTally(prev=>({...prev,[name]:{rep:(prev[name]?.rep||0),finish:(prev[name]?.finish||0),win:(prev[name]?.win||0),[kind]:(prev[name]?.[kind]||0)+1}}));}
+  function bumpTally(name,kind){setTally(prev=>({...prev,[name]:{...(prev[name]||{win:0,byShot:{}}),win:(prev[name]?.win||0)+(kind==='win'?1:0)}}));}
+  function bumpShotTally(name,shotId,kind){
+    setTally(prev=>{
+      const cur=prev[name]||{win:0,byShot:{}};
+      const curShot=cur.byShot[shotId]||{rep:0,finish:0};
+      return {...prev,[name]:{...cur,byShot:{...cur.byShot,[shotId]:{...curShot,[kind]:curShot[kind]+1}}}};
+    });
+  }
+  function shotTallyPoints(name,shotId){
+    const s=(tally[name]?.byShot||{})[shotId]||{rep:0,finish:0};
+    const pts=shotPoints[shotId]||{rep:1,finish:1};
+    return s.rep*pts.rep+s.finish*pts.finish;
+  }
   function resetTally(){setTally({});}
   const restricted=zoneRestrict.length>0&&zoneRestrict.length<SHOT_BONUS_ZONES.length;
   const chosen=SHOT_BONUS_REGISTRY.filter(s=>selectedShots.includes(s.id));
@@ -4187,7 +4218,8 @@ function ShotBonusRally({setSession}){
     return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}`;
   }
   function buildScoring(){
-    return `Win the rally = 1 point. Rep tap: ${repPoints} every successful completion of the target shot, rally continues. Finish bonus: additional ${finishBonus} on top of the rep point if that same shot also ends the rally as the winner (stacks, not either/or, and stacks on top of the rally-win point). Tallied by an off-court waiting player, attributed to the current striker.`;
+    const perShot=chosen.map(s=>{const p=shotPoints[s.id]||{rep:1,finish:1};return `${s.label}: rep +${p.rep}, finish bonus +${p.finish}`;}).join(' · ');
+    return `Win the rally = 1 point. Per-shot values — ${perShot||'set rep/finish points per shot above'}. Rep tap: awarded every successful completion of that shot, rally continues. Finish bonus: additional points on top of the rep tap if that same shot also ends the rally as the winner (stacks, not either/or, and stacks on top of the rally-win point). Each selected shot is tallied and tapped separately. Tallied by an off-court waiting player, attributed to the current striker.`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
@@ -4226,23 +4258,36 @@ function ShotBonusRally({setSession}){
 .sbrTapBtn.finish{background:#2a1a3a;border-color:#a06bd6;color:#dcc4f0;}
 .sbrTapBtn.win{background:#1a2a3a;border-color:#4a90d6;color:#bcd6f5;}
 .sbrTapCount{min-width:26px;text-align:center;color:#eaf4fb;font-weight:800;}
-.sbrBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}`;
+.sbrBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
+.sbrShotPointRow{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.sbrShotPointName{display:block;color:#eaf4fb;font-weight:800;font-size:0.88rem;margin-bottom:6px;}
+.sbrTallyTotal{float:right;color:#7fc8a0;font-weight:800;font-size:0.85rem;}
+.sbrShotTallyBlock{border-top:1px solid #1e2a3a;margin-top:8px;padding-top:8px;}
+.sbrShotTallyLabel{color:#9cc4ec;font-size:0.76rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;}`;
   if(liveMode){
     return <div>
       <style>{STYLE}</style>
       <div className="sbrBack" role="button" tabIndex={0} onClick={()=>setLiveMode(false)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setLiveMode(false);}}>← Back to setup</div>
       <div className="sbrWrap">
         <h2 style={{margin:'0 0 4px',color:'#fff'}}>Live Tally</h2>
-        <p className="sbrHint">Rally Win taps score every rally winner, 1 point, regardless of shot. Rep tap every time the target shot is completed in the rally. Finish tap only if that shot also won the rally — it stacks on top of both the rep tap and the rally-win point.</p>
+        <p className="sbrHint">Rally Win taps score every rally winner, 1 point, regardless of shot. Each selected shot has its own Rep/Finish taps below, scored at the points set in setup — different shots can be worth different amounts in the same session.</p>
         {present.length===0&&<div className="placeholder">No present players found. Mark attendance to tally by name.</div>}
         <div className="sbrTallyGrid">
           {present.map(name=>{
-            const t=tally[name]||{rep:0,finish:0,win:0};
+            const t=tally[name]||{win:0,byShot:{}};
+            const shotTotal=chosen.reduce((sum,s)=>sum+shotTallyPoints(name,s.id),0);
             return <div className="sbrTallyCard" key={name}>
-              <div className="sbrTallyName">{name}</div>
+              <div className="sbrTallyName">{name} <span className="sbrTallyTotal">{t.win+shotTotal} pts</span></div>
               <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn win" onClick={()=>bumpTally(name,'win')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'win');}}>Rally Win +1</div><span className="sbrTapCount">{t.win}</span></div>
-              <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn" onClick={()=>bumpTally(name,'rep')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'rep');}}>Rep +1</div><span className="sbrTapCount">{t.rep}</span></div>
-              <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn finish" onClick={()=>bumpTally(name,'finish')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpTally(name,'finish');}}>Finish +1</div><span className="sbrTapCount">{t.finish}</span></div>
+              {chosen.map(s=>{
+                const st=(t.byShot||{})[s.id]||{rep:0,finish:0};
+                const pts=shotPoints[s.id]||{rep:1,finish:1};
+                return <div key={s.id} className="sbrShotTallyBlock">
+                  <div className="sbrShotTallyLabel">{s.label}</div>
+                  <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn" onClick={()=>bumpShotTally(name,s.id,'rep')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpShotTally(name,s.id,'rep');}}>Rep +{pts.rep}</div><span className="sbrTapCount">{st.rep}</span></div>
+                  <div className="sbrTallyRow"><div role="button" tabIndex={0} className="sbrTapBtn finish" onClick={()=>bumpShotTally(name,s.id,'finish')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')bumpShotTally(name,s.id,'finish');}}>Finish +{pts.finish}</div><span className="sbrTapCount">{st.finish}</span></div>
+                </div>;
+              })}
             </div>;
           })}
         </div>
@@ -4277,12 +4322,21 @@ function ShotBonusRally({setSession}){
         <p className="sbrHint">{restricted?`Ball must land in zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside is out and doesn't count. Rule-based, no court markings needed.`:'All zones active — no space restriction. Deselect zones to manipulate how often the shot\u2019s affordance appears.'}</p>
       </div>
       <div className="sbrSection">
-        <div className="sbrLabel">4. Points</div>
-        <div className="sbrChips">{SHOT_BONUS_POINT_CHOICES.map(p=><div key={'rep'+p} role="button" tabIndex={0} className={repPoints===p?'sbrChip on':'sbrChip'} onClick={()=>setRepPoints(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setRepPoints(p);}}>Rep {p}</div>)}</div>
-        <div className="sbrChips" style={{marginTop:8}}>{SHOT_BONUS_POINT_CHOICES.map(p=><div key={'fin'+p} role="button" tabIndex={0} className={finishBonus===p?'sbrChip on':'sbrChip'} onClick={()=>setFinishBonus(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setFinishBonus(p);}}>Finish bonus {p}</div>)}</div>
+        <div className="sbrLabel">4. Points — per shot</div>
+        {chosen.length===0&&<p className="sbrHint">Select a shot above to set its points.</p>}
+        {chosen.map(s=>{const p=shotPoints[s.id]||{rep:1,finish:1};return <div key={s.id} className="sbrShotPointRow">
+          <span className="sbrShotPointName">{s.label}</span>
+          <div className="sbrChips">{[1,2,3].map(n=><div key={'rep'+n} role="button" tabIndex={0} className={p.rep===n?'sbrChip on':'sbrChip'} onClick={()=>setShotPoint(s.id,'rep',n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotPoint(s.id,'rep',n);}}>Rep +{n}</div>)}</div>
+          <div className="sbrChips">{[1,2,3].map(n=><div key={'fin'+n} role="button" tabIndex={0} className={p.finish===n?'sbrChip on':'sbrChip'} onClick={()=>setShotPoint(s.id,'finish',n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotPoint(s.id,'finish',n);}}>Finish +{n}</div>)}</div>
+        </div>;})}
+        <p className="sbrHint">Harder shots (Nick, Aussie/Reverse Boast, Corkscrew Boast) can be set worth more than a straight drop — each selected shot keeps its own independent value.</p>
       </div>
       <div className="sbrBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="sbrBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
+      <UniversalTinHeightPanel/>
+
       <div className="sbrAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={selectedShots.length===0}>Add To Session</button>
         <button className="sbrLiveBtn" role="button" tabIndex={0} onClick={()=>setLiveMode(true)}>Start Live Tally</button>
@@ -4422,6 +4476,10 @@ function BreakoutSquash({setSession}){
       </div>
       <div className="brkBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="brkBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
+      <UniversalTinHeightPanel/>
+
       <div className="brkAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={restrictedZones.length===0||breakoutZones.length===0}>Add To Session</button>
         {added&&<span className="brkAdded">Added: {added}</span>}
@@ -4492,6 +4550,10 @@ function PressCallModule({setSession}){
       </div>
       <div className="pcBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="pcBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
+      <UniversalTinHeightPanel/>
+
       <div className="pcAddRow">
         <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
         {added&&<span className="pcAdded">Added: {added}</span>}
@@ -9303,16 +9365,23 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [streak,setStreak]=useState(()=>seed?seed.streak:{holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
   const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {rosterIdx: ladderTargetSquare} — landed on a ladder, awaiting their own next result
+  // Optional coach-attached challenge text per ladder-bottom square (this board only —
+  // square numbers only mean something in the context of THIS randomly generated board).
+  // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
+  const [challengeSquares,setChallengeSquares]=useState(()=>seed?(seed.challengeSquares||{}):{});
+  const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
+  const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
+  const [showChallengeEditor,setShowChallengeEditor]=useState(false);
   const [undoStack,setUndoStack]=useState([]);
 
-  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending}};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});return prev.slice(0,-1);});}
+  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
+  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
   function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
-  function playRally(slot){
+  function playRally(slot,{forfeitPending=false}={}){
     if(winner!=null||queue.length<2)return;
     setUndoStack(prev=>[...prev.slice(-29),slSnapshot()]);
     const A=queue[0],B=queue[1];
@@ -9321,27 +9390,35 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const W=next[wIdx],L=next[lIdx];
     const ev=[],reveal=new Set(revealed);
     const nextPending={...pending};
+    const nextPendingChallenge={...pendingChallenge};
 
     if(nextPending[wIdx]!=null){
       const top=nextPending[wIdx],fromSquare=W.pos;
-      ev.push(`${W.name} wins the climb · ${fromSquare}→${top}`);
-      reveal.add(fromSquare);
-      W.pos=top;
-      delete nextPending[wIdx];
-      if(board.ladders[top]){
-        const nextTop=board.ladders[top];
-        ev.push(`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next, forfeits it if they lose next`);
-        reveal.add(top);
-        nextPending[wIdx]=nextTop;
+      if(forfeitPending){
+        ev.push(`${W.name} won the rally but the challenge wasn't confirmed — ladder forfeited, stays on ${fromSquare}`);
+        delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
+      }else{
+        ev.push(`${W.name} wins the climb · ${fromSquare}→${top}`);
+        reveal.add(fromSquare);
+        W.pos=top;
+        delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
+        if(board.ladders[top]){
+          const nextTop=board.ladders[top],chText=challengeSquares[top];
+          ev.push(`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
+          reveal.add(top);
+          nextPending[wIdx]=nextTop;
+          if(chText)nextPendingChallenge[wIdx]=chText;
+        }
       }
     }else{
       const moved=applyMove(W.pos+1);
       if(board.ladders[moved]){
-        const top=board.ladders[moved];
-        ev.push(`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next, forfeits it if they lose next`);
+        const top=board.ladders[moved],chText=challengeSquares[moved];
+        ev.push(`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
         reveal.add(moved);
         W.pos=moved;
         nextPending[wIdx]=top;
+        if(chText)nextPendingChallenge[wIdx]=chText;
       }else{
         W.pos=moved;
       }
@@ -9350,10 +9427,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(extra>0){
       W.pos=applyMove(W.pos+extra);
       if(board.ladders[W.pos]&&nextPending[wIdx]==null){
-        const top=board.ladders[W.pos];
+        const top=board.ladders[W.pos],chText=challengeSquares[W.pos];
         ev.push(`${W.name} bonus +${extra} → lands on a ladder at ${W.pos}, pending`);
         reveal.add(W.pos);
         nextPending[wIdx]=top;
+        if(chText)nextPendingChallenge[wIdx]=chText;
       }else{
         ev.push(`${W.name} bonus +${extra} square${extra===1?'':'s'}`);
       }
@@ -9361,10 +9439,10 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(activeBonuses.size>0)setActiveBonuses(new Set());
     if(nextPending[lIdx]!=null){
       ev.push(`${L.name} loses while pending — their ladder is forfeited`);
-      delete nextPending[lIdx];
+      delete nextPending[lIdx];delete nextPendingChallenge[lIdx];
     }
     if(board.snakes[L.pos]){const tail=board.snakes[L.pos];ev.push(`${L.name} hit a snake · ${L.pos}→${tail}`);reveal.add(L.pos);L.pos=tail;}
-    setRoster(next);setRevealed(reveal);setPending(nextPending);
+    setRoster(next);setRevealed(reveal);setPending(nextPending);setPendingChallenge(nextPendingChallenge);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
     if(W.pos>=size){setWinner(wIdx);return;}
     let newStreak={holder:wIdx,n:streak.holder===wIdx?streak.n+1:1};
@@ -9384,15 +9462,17 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(!project)return;
     const pendingByName={};
     Object.keys(pending).forEach(idx=>{ if(roster[idx])pendingByName[roster[idx].name]=pending[idx]; });
+    const pendingChallengeByName={};
+    Object.keys(pendingChallenge).forEach(idx=>{ if(roster[idx])pendingChallengeByName[roster[idx].name]=pendingChallenge[idx]; });
     const payload={type:'snakesladders',size,board,visible:settings.visible,revealed:[...revealed],
       players:roster.map(p=>({name:p.name,pos:p.pos})),
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
-      settings,streak,pending:pendingByName,
+      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,challengeSquares,
       courtLabel};
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending]);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,challengeSquares]);
 
   return <div className="slCourt">
     <style>{`
@@ -9405,20 +9485,43 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 .slBoard .slMark{font-size:1.55rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.1 !important;}
 .slDisplayBoard .slMark{font-size:2.1rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.1rem !important;}
+.slChallengeConfirm{background:#1a1408;border:1px solid #f5c542;border-radius:12px;padding:12px 14px;margin:10px 0;}
+.slChallengeConfirm p{margin:0 0 10px;color:#ffe9a8;font-weight:600;}
+.slChallengeConfirmBtns{display:flex;gap:8px;flex-wrap:wrap;}
+.slChallengeEditor{margin:10px 0;}
+.slChallengeEditorPanel{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 13px;margin-top:8px;display:flex;flex-direction:column;gap:8px;}
+.slChallengeEditorRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.slChallengeEditorRow span{font-size:0.82rem;color:#9fb0c2;min-width:120px;}
+.slChallengeEditorRow input{flex:1;min-width:180px;background:#141c26;border:1px solid #2c3c4e;border-radius:7px;padding:7px 10px;color:#eaf4fb;font-size:0.85rem;}
 `}</style>
     {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
-    {winner==null&&queue.length>=2&&<div className="slOnCourt">
+    {awaitingConfirm&&<div className="slChallengeConfirm">
+      <p>Did <strong>{roster[awaitingConfirm.idx].name}</strong> demonstrate the attached challenge: <em>"{awaitingConfirm.text}"</em>?</p>
+      <div className="slChallengeConfirmBtns">
+        <button type="button" className="primaryBtn" onClick={()=>{playRally(awaitingConfirm.slot);setAwaitingConfirm(null);}}>✓ Yes — complete the climb</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,{forfeitPending:true});setAwaitingConfirm(null);}}>✗ No — forfeit the ladder</button>
+      </div>
+    </div>}
+    {winner==null&&queue.length>=2&&!awaitingConfirm&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
-      <button type="button" className="primaryBtn" onClick={()=>playRally(0)}>{roster[onA].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>pendingChallenge[onA]?setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]}):playRally(0)}>{roster[onA].name} won</button>
       <span className="slVs">vs</span>
-      <button type="button" className="primaryBtn" onClick={()=>playRally(1)}>{roster[onB].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>pendingChallenge[onB]?setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]}):playRally(1)}>{roster[onB].name} won</button>
     </div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
     {queue.length<2&&<div className="slQueue">Needs at least 2 players on this court.</div>}
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#f5c542',fontWeight:700}}> ⏳ climbs to {pending[i]} if they win next</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    {Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
+      <button type="button" className="secondaryBtn" onClick={()=>setShowChallengeEditor(s=>!s)}>{showChallengeEditor?'− Hide':'⚡'} Challenge squares (optional — attach a squash challenge to a ladder)</button>
+      {showChallengeEditor&&<div className="slChallengeEditorPanel">
+        <p className="mutedText" style={{margin:'0 0 8px'}}>Leave blank for no challenge — the climb then resolves purely on winning the next rally, same as before. Set text and landing that ladder requires demonstrating it too, confirmed by you when they win their next rally.</p>
+        {Object.keys(board.ladders).sort((a,b)=>Number(a)-Number(b)).map(sq=><div key={sq} className="slChallengeEditorRow"><span>Square {sq} → {board.ladders[sq]}</span><input type="text" value={challengeSquares[sq]||''} onChange={e=>setChallengeSquares(prev=>({...prev,[sq]:e.target.value}))} placeholder="e.g. Win via a straight drive"/></div>)}
+      </div>}
+    </div>}
+
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#f5c542',fontWeight:700}}> ⏳ climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -9728,7 +9831,7 @@ function SnakesLaddersPlayerDisplay({payload={}}){
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
       :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
-    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);const chText=(payload.pendingChallenge||{})[p.name];return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{chText?<span style={{color:'#ffe9a8',fontWeight:700}}> ⏳ "{chText}"</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
     <div className="slDisplayBoardWrap">
       <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
         {grid.flat().map((n,idx)=>{
@@ -11354,6 +11457,9 @@ function HangmanSquashGame({setSession,setScreen}={}){
         ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
         : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} resolutionStyle={resolutionStyle} pairingMode={pairingMode} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
     </div>)}
+
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
 
     <div className="hsBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
@@ -19017,6 +19123,8 @@ function SnakesLaddersCourtScorer({court,host}){
         const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
         const pendingByIdx={};
         Object.keys(p.pending||{}).forEach(nm=>{ const i=idxOf(nm); if(i>=0)pendingByIdx[i]=p.pending[nm]; });
+        const pendingChallengeByIdx={};
+        Object.keys(p.pendingChallenge||{}).forEach(nm=>{ const i=idxOf(nm); if(i>=0)pendingChallengeByIdx[i]=p.pendingChallenge[nm]; });
         const seed={
           board:p.board||{snakes:{},ladders:{}},
           roster,
@@ -19024,7 +19132,9 @@ function SnakesLaddersCourtScorer({court,host}){
           winner:winnerIdx>=0?winnerIdx:null,
           revealed:p.revealed||[],
           streak:p.streak||{holder:null,n:0},
-          pending:pendingByIdx
+          pending:pendingByIdx,
+          pendingChallenge:pendingChallengeByIdx,
+          challengeSquares:p.challengeSquares||{}
         };
         setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
