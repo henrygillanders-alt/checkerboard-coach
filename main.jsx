@@ -137,6 +137,14 @@ async function writeLivePlayerRoom(roomId,mode,payload){
     return false;
   }
 }
+async function deleteLivePlayerRoom(roomId){
+  if(!roomId||!liveSyncReady())return false;
+  const key=String(SUPABASE_ANON_KEY||'').trim();
+  const endpoint=`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&apikey=${encodeURIComponent(key)}`;
+  const headers={apikey:key,Authorization:`Bearer ${key}`};
+  try{const res=await fetch(endpoint,{method:'DELETE',headers});return res.ok;}
+  catch(err){console.warn('Live sync delete failed',err);return false;}
+}
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
   try{
@@ -170,7 +178,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v361 Bundled batch: (1) WHY CLA - added the pinned perception-action coupling explanation under both Gibson sections, preserving all existing verbatim content, only appended. (2) Snakes and Ladders - built the pinned editable-challenge-on-trigger-squares feature: coach can attach a squash challenge to any ladder-bottom square on the current board (blank = unchanged behaviour); when a player is about to complete that climb, the coach confirms whether the challenge was demonstrated before the climb applies, otherwise the ladder is forfeited despite winning the rally. Shown on the coach screen, leaderboard and Live Player Display, carried through hand-off scoring devices too. (3) Shot Bonus Rally - rep and finish bonus points are now configurable PER SHOT (not one global value), and Live Tally has per-shot Rep/Finish tap buttons with a running points total per player, matching the pinned spec. (4) Added the DB Handicap and Tin Height leveller panels to Hangman Squash, Shot Bonus Rally, Breakout Squash and Press Call, matching the existing convention on Snakes and Ladders/Ludo/Noughts and Crosses/Tin War. (5) Discovered Breakout Squash (including configurable breakout/defence bonus points) was already fully built and wired into the Games Library in an earlier session - the pinned future-build note for it was stale and has been cleared.';
+const APP_VERSION='v362 Two related fixes for stale live-court data (different from the v359 90-minute ghost fix - this covers RECENT test data, not old sessions): (1) Court Monitor now has a Clear this court button on every populated card, which wipes that courts data across all namespaced rooms (standard, Ludo, N&C, Hangman) instantly instead of waiting for it to expire. (2) Every hand-off Scoring device (Snakes and Ladders, Ludo, N&C, Hangman) now has a Not the right players? Clear this court button, so whoever is standing at the court can wipe a bad seed themselves rather than needing the coach to fix it from Court Monitor. Also fixed while in there: Ludo rotation mode (Winner stays on / Players rotate through / Fixed rotation) was never actually transmitted through the live payload, so a handed-off Ludo scoring device always silently defaulted to Winner stays on regardless of what was configured - now carried through correctly. Also added missing wake lock to the N&C and Hangman scoring devices (S&L and Ludo already had it).';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -11489,6 +11497,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
 // ── Per-court scoring device (hand-off) ─────────────────────────────────
 function HangmanSquashCourtScorer({court,host}){
+  useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
   const [status,setStatus]=useState('Connecting…');
@@ -11520,6 +11529,7 @@ function HangmanSquashCourtScorer({court,host}){
     <div className="hsDisplayHint" style={{fontSize:'0.95rem'}}>● SCORING — Court {court}</div>
     <h2>💀 Hangman Squash</h2>
     <p className="mutedText">Record each rally below. This device is now the scorer for this court.</p>
+    <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
     <HangmanSquashCourt players={seedData.players} teamMode={false} teamOf={{}} challenge={seedData.challenge} seriesLength={seedData.seriesLength} requireAttempt={seedData.requireAttempt} resolutionStyle={seedData.resolutionStyle} pairingMode={seedData.pairingMode} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
@@ -17462,7 +17472,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       pendingByName[roster[idx].name]=(pending[idx]||[]).map(t=>({targetName:roster[t.targetIdx].name,atSquare:t.atSquare}));
     });
     const payload={type:'ludosquash',
-      objective:settings.objective,objectiveGroup:settings.objectiveGroup,difficulty:settings.difficulty,captureOn:settings.captureOn,
+      objective:settings.objective,objectiveGroup:settings.objectiveGroup,difficulty:settings.difficulty,captureOn:settings.captureOn,mode:settings.mode,
       players:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>pc.d)})),
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
@@ -17772,7 +17782,7 @@ function LudoSquashCourtScorer({court,host}){
           if(list.length)pendingByIdx[i]=list;
         });
         const seed={roster,queue:[...onCourtIdx,...queueIdx],winner:winnerIdx>=0?winnerIdx:null,pending:pendingByIdx};
-        setSeedData({seed,names,settings:{objective:p.objective,objectiveGroup:p.objectiveGroup,difficulty:p.difficulty,captureOn:p.captureOn,mode:'winner'},courtLabel:p.courtLabel||('Court '+court)});
+        setSeedData({seed,names,settings:{objective:p.objective,objectiveGroup:p.objectiveGroup,difficulty:p.difficulty,captureOn:p.captureOn,mode:p.mode||'winner'},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court…');
     }
@@ -17790,6 +17800,7 @@ function LudoSquashCourtScorer({court,host}){
     <LudoStyles/>
     <div className="ludoDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ludoDisplayLive">● SCORING — Court {court}</span><h1>Ludo Squash</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court.</p>
+    <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
     <LudoSquashCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
@@ -18686,6 +18697,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
 // ── Per-court scoring device ────────────────────────────────────────────
 function NoughtsCrossesCourtScorer({court,host}){
+  useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
   const [status,setStatus]=useState('Connecting\u2026');
@@ -18723,6 +18735,7 @@ function NoughtsCrossesCourtScorer({court,host}){
     <NcStyles/>
     <div className="ncDisplayHead" style={{marginBottom:'6px',textAlign:'left'}}><span className="ncDisplayLive">● SCORING — Court {court}</span><h1>Noughts & Crosses Squash</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court.</p>
+    <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
     {seedData.ffa
       ? <NoughtsCrossesCourtFFA players={seedData.players} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} bestOf3={seedData.bestOf3} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
       : <NoughtsCrossesCourt teamA={seedData.teamA} teamB={seedData.teamB} mode={seedData.mode} requireChallenge={seedData.requireChallenge} scoringMode={seedData.scoringMode} bestOf3={seedData.bestOf3} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>}
@@ -18936,7 +18949,15 @@ function CourtMonitor({setScreen}){
   const [showLinks,setShowLinks]=useState(true);
   const [pushDisplay,setPushDisplay]=useState(false);
   const [copiedDisplay,setCopiedDisplay]=useState(false);
+  const [clearing,setClearing]=useState(null);
   useEffect(()=>{try{localStorage.setItem('cbCourtCount',String(count));}catch{}},[count]);
+  async function clearCourt(n){
+    setClearing(n);
+    const ludoBase=base+'-ludo',ncBase=base+'-nc',hsBase=base+'-hangman';
+    await Promise.all([courtRoomId(base,n),courtRoomId(ludoBase,n),courtRoomId(ncBase,n),courtRoomId(hsBase,n)].map(deleteLivePlayerRoom));
+    setRooms(prev=>{const c={...prev};delete c[n];return c;});
+    setTimeout(()=>setClearing(null),600);
+  }
 
   useEffect(()=>{
     let cancelled=false;
@@ -19031,6 +19052,7 @@ function CourtMonitor({setScreen}){
               <div className="head">{d.headline||'—'}</div>
               {d.leaderName&&<div className="who">{d.leaderName}</div>}
               {d.pct!=null&&<div className="cmBar"><i style={{width:Math.round(d.pct*100)+'%'}}/></div>}
+              <button type="button" className="cmLinkBtn" style={{marginTop:'8px',fontSize:'0.76rem'}} onClick={()=>clearCourt(n)}>{clearing===n?'Cleared ✓':'Clear this court'}</button>
             </>:<div className="cmWait">No device connected yet</div>}
           </div>;
         })}
@@ -19153,6 +19175,7 @@ function SnakesLaddersCourtScorer({court,host}){
   return <div className="gameCard slGame">
     <div className="slDisplayHead" style={{marginBottom:'6px'}}><span className="slDisplayLive">● SCORING — Court {court}</span><h1>Snakes &amp; Ladders</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court — the board updates live for anyone watching this court's Player Display.</p>
+    <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
     <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
