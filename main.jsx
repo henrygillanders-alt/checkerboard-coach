@@ -170,7 +170,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v359 Fixed Court Monitor showing ghost winners from a previous/earlier session. Root cause: court data only got marked paused after 20 seconds old, with no upper limit - so a finished match from hours or days ago just sat in that courts room forever and kept displaying as a paused card (e.g. Winner: Mark) even though nobody had played there since. Now anything older than 90 minutes is treated as a genuinely empty court (No device connected yet) instead of a stale ghost card. Does not affect the 20-second paused indicator for a court that briefly drops connection mid-session.';
+const APP_VERSION='v360 Working through the pinned list: (1) Fixed Snakes and Ladders board size 30 overflowing the Live Player Display - board width is now capped against min(94vw, 70vh-based calc) instead of only handling horizontal overflow, matching the same min(vw,vh) technique already used for Ludo Squash board sizing, so a tall 6-column board can never run off the bottom of the screen. (2) Added the Winner stays on / Players rotate through (loser stays on) pairing toggle to Snakes and Ladders and Ludo Squash, alongside their existing Winner stays on / Fixed rotation (both off) option - Noughts and Crosses does not get this, since neither its Teams format (fixed A vs B, no queue) nor its FFA format (any player can claim any square, no queue) has an on-court pairing concept to rotate. Pattern Lab Drive/Drive tab label fix not found on inspection - flagging rather than guessing at the wrong element.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9372,6 +9372,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const capHit=settings.mode==='winner'&&settings.streakCap>0&&newStreak.n>=settings.streakCap;
     let nq;
     if(settings.mode==='rotation'||capHit){nq=[...rest,A,B];if(capHit)newStreak={holder:null,n:0};}
+    else if(settings.mode==='loserstays'){nq=[lIdx,...rest,wIdx];}
     else{nq=[wIdx,...rest,lIdx];}
     setQueue(nq);setStreak(newStreak);
   }
@@ -9584,7 +9585,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
     {showSettings&&<div className="slSettings">
-      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
+      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="loserstays">Players rotate through (loser stays on)</option><option value="rotation">Fixed rotation (both off, even rallies)</option></select></label>
       {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,streakCap:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,streakCap:0}));}}/></label>}
       <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
       <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,snakeCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,snakeCount:0}));}}/></label>
@@ -9705,6 +9706,7 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
   const size=payload.size||21;
   const cols=size===15?5:size===30?6:size===50?10:7;
+  const rows=Math.ceil(size/cols);
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
   const board=payload.board||{snakes:{},ladders:{}};
   const players=payload.players||[];
@@ -9716,18 +9718,12 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
   return <div className="playerDisplayPage slDisplayPage">
     <style>{`
-.slDisplayBoardWrap{width:100%;max-width:100vw;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:2px;}
-.slDisplayBoard{display:grid !important;gap:6px !important;width:100%;min-width:${cols*46}px;box-sizing:border-box;}
+.slDisplayBoardWrap{width:100%;display:flex;justify-content:center;box-sizing:border-box;padding:2px;}
+.slDisplayBoard{display:grid !important;gap:6px !important;box-sizing:border-box;width:min(94vw,calc(70vh * ${cols} / ${rows}),1000px) !important;}
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
-.slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
-.slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
-.slDisplayBoard .slTok{font-size:1.5rem !important;min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
-@media (max-width:640px){
-  .slDisplayBoard{min-width:${cols*40}px;gap:4px !important;}
-  .slDisplayBoard .slMark{font-size:1.15rem !important;}
-  .slDisplayBoard .slNum{font-size:1.15rem !important;}
-  .slDisplayBoard .slTok{font-size:0.85rem !important;min-width:1.5rem !important;height:1.5rem !important;line-height:1.5rem !important;}
-}
+.slDisplayBoard .slMark{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slDisplayBoard .slNum{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#f2f7ff !important;}
+.slDisplayBoard .slTok{font-size:clamp(0.6rem,1.6vw,1.5rem) !important;min-width:clamp(1.1rem,2.6vw,2.4rem) !important;height:clamp(1.1rem,2.6vw,2.4rem) !important;line-height:clamp(1.1rem,2.6vw,2.4rem) !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
 `}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
@@ -17347,7 +17343,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
     if(newWinner!=null){setWinner(newWinner);return;}
 
     const rest=queue.slice(2);
-    const nq=settings.mode==='rotation'?[...rest,wIdx,lIdx]:[wIdx,...rest,lIdx];
+    const nq=settings.mode==='rotation'?[...rest,wIdx,lIdx]:settings.mode==='loserstays'?[lIdx,...rest,wIdx]:[wIdx,...rest,lIdx];
     setQueue(nq);
   }
 
@@ -17565,7 +17561,7 @@ function LudoSquashGame({setSession,setScreen}={}){
       <label>Objective group<select value={objectiveGroup} onChange={e=>{const g=e.target.value;setObjectiveGroup(g);setObjective(LUDO_OBJECTIVES[g][0]);}}>{Object.keys(LUDO_OBJECTIVES).map(g=><option key={g} value={g}>{g}</option>)}</select></label>
       <label>Objective<select value={objective} onChange={e=>setObjective(e.target.value)}>{LUDO_OBJECTIVES[objectiveGroup].map(o=><option key={o} value={o}>{o}</option>)}</select></label>
       <label>Difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="beginner">Beginner — move after every rally win</option><option value="intermediate">Intermediate — move only when objective achieved</option></select></label>
-      <label>Rotation<select value={mode} onChange={e=>setMode(e.target.value)}><option value="winner">Winner stays on</option><option value="rotation">Fixed rotation (even rallies)</option></select></label>
+      <label>Rotation<select value={mode} onChange={e=>setMode(e.target.value)}><option value="winner">Winner stays on</option><option value="loserstays">Players rotate through (loser stays on)</option><option value="rotation">Fixed rotation (both off, even rallies)</option></select></label>
       <label className="ludoCheck"><input type="checkbox" checked={captureOn} onChange={e=>setCaptureOn(e.target.checked)}/> Capturing on (landing on an opponent's piece threatens it)</label>
       <p className="mutedText" style={{flexBasis:'100%'}}>Advanced difficulty (Bonus Challenge for 2-square moves) is a future build — not in this version.</p>
     </div>}
