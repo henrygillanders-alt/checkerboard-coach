@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v371 Design-system consistency pass on court/player-count selectors: Snakes and Ladders, Ludo Squash, and Noughts and Crosses were using native browser select dropdowns (rendering with a white background on iOS, breaking the dark theme), and the KOC/Blind Race court-count buttons were using a generic green-highlighted style unrelated to the rest of the app. All four now use the exact same dark button-chip pattern as Hangman Squash (blue accent when selected, equal width within each row) by reusing the same CSS classes rather than redefining them per module, so any future style change to one applies to all of them automatically. Matchplay showing courts:1 with no selector was investigated but not changed - flagged as a question rather than assumed, see chat.';
+const APP_VERSION='v372 Found the real cause of the white/native-look buttons: none of the custom button classes set appearance:none, so iOS Safari can render its own native chrome regardless of the dark background-color specified in CSS. Added a global button,select{appearance:none} reset (low specificity, does not override any existing colours) plus explicit dark CSS for two classes that had no definition in main.jsx at all and were relying entirely on the external stylesheet (slAllocRow/slAllocRowOn). Also fixed the still-red hsAllocRow.on and slAllocRowOn active-court highlight to the same blue used everywhere else. Standardized court-count defaults to 1 everywhere - Checkerboard and Disruption Rotations were defaulting to 2 and 3 respectively while every other game defaults to 1.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5332,8 +5332,8 @@ function CheckerboardSetup({setScreen}){
   const [scope,setScope]=useState('player');
   const [alloc,setAlloc]=useState(()=>{try{return JSON.parse(localStorage.getItem(CB_ALLOC_KEY))||{};}catch{return {};}});
   const [group,setGroup]=useState(cbBlankAlloc);
-  const [courtCount,setCourtCount]=useState(2);
-  const [courtChallenges,setCourtChallenges]=useState(()=>[cbBlankAlloc(),cbBlankAlloc()]);
+  const [courtCount,setCourtCount]=useState(1);
+  const [courtChallenges,setCourtChallenges]=useState(()=>[cbBlankAlloc()]);
   const [courtOf,setCourtOf]=useState({});
   const [history,setHistory]=useState([]);
   const [modifier,setModifier]=useState(()=>emptyModifierConfig());
@@ -5366,7 +5366,7 @@ function CheckerboardSetup({setScreen}){
   function undo(){
     setHistory(h=>{
       if(!h.length){setStatus('Nothing to undo.');return h;}
-      try{const s=JSON.parse(h[h.length-1]);setAlloc(s.alloc||{});setGroup(s.group||cbBlankAlloc());setCourtChallenges(s.courtChallenges||[cbBlankAlloc()]);setCourtOf(s.courtOf||{});setCourtCount(s.courtCount||2);setStatus('Undid last change.');}catch{}
+      try{const s=JSON.parse(h[h.length-1]);setAlloc(s.alloc||{});setGroup(s.group||cbBlankAlloc());setCourtChallenges(s.courtChallenges||[cbBlankAlloc()]);setCourtOf(s.courtOf||{});setCourtCount(s.courtCount||1);setStatus('Undid last change.');}catch{}
       return h.slice(0,-1);
     });
   }
@@ -9766,6 +9766,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 .slModeStrip{display:flex;gap:8px;flex-wrap:wrap;}
 .slModeBtn{flex:1;min-width:180px;background:#0b1118;border:1px solid #2c3c4e;color:#cdd9e6;border-radius:9px;padding:11px 14px;font-size:0.9rem;font-weight:600;cursor:pointer;text-align:center;}
 .slModeBtnOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
+.slAllocRow{display:flex;align-items:center;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:9px;padding:8px 12px;font-size:0.85rem;color:#9fb0c2;}
+.slAllocRow strong{color:#f0c49c;}
+.slAllocRowOn{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
 `}</style>
       <div>
         <strong>How should these {courts} courts relate to each other?</strong>
@@ -10710,7 +10713,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
   const [undoStack,setUndoStack]=useState([]);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [battle,setBattle]=useState(false);
-  const [courtCount,setCourtCount]=useState(3);
+  const [courtCount,setCourtCount]=useState(1);
   const [battleTarget,setBattleTarget]=useState(10);
   const [streaks,setStreaks]=useState([]);
 
@@ -10960,7 +10963,7 @@ function HangmanStyles(){
 .hsSetup{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
 .hsLabel{color:#f0c49c;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
 .hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
-.hsModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
+.hsModeBtn{appearance:none;-webkit-appearance:none;background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
 .hsModeBtn.on{border-color:#2E6E8E;background:#12203a;color:#9cc4ec;}
 .hsPlayerGrid{display:flex;flex-direction:column;gap:6px;}
 .hsPlayerRow{display:flex;align-items:center;gap:8px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
@@ -11002,7 +11005,7 @@ function HangmanStyles(){
 .hsCourtTabs{display:flex;gap:8px;flex-wrap:wrap;}
 .hsAllocation{display:flex;flex-direction:column;gap:6px;}
 .hsAllocRow{display:flex;align-items:center;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:9px;padding:8px 12px;font-size:0.85rem;color:#9fb0c2;}
-.hsAllocRow.on{border-color:#c2455a;background:#1a0c10;color:#eaf4fb;}
+.hsAllocRow.on{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
 .hsAllocRow strong{color:#f0c49c;}
 .hsPairBox{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .hsPairScorePanel{background:#12203a;border:1px solid #2E6E8E;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
@@ -20563,6 +20566,14 @@ if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={sessio
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
+<style>{`
+/* Global reset: buttons/selects can render with native iOS system chrome (light
+   background) even when a class sets a dark background-color, unless appearance
+   is explicitly reset. Low specificity (element selector) so any class-based
+   color/background rule elsewhere in the app still wins — this only fixes the
+   underlying chrome, never overrides an existing look. */
+button,select{-webkit-appearance:none;appearance:none;}
+`}</style>
 <div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
   <div onClick={e=>e.stopPropagation()} style={{maxWidth:'620px',margin:'60px auto 0',width:'92%',background:'#0d1722',border:'1px solid #243140',borderRadius:'16px',padding:'14px',boxShadow:'0 20px 60px rgba(0,0,0,0.6)',maxHeight:'82vh',display:'flex',flexDirection:'column'}}>
