@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v373 Court selectors still showing white in v372 despite the appearance:none fix - hardened hsModeBtn/hsModeBtn.on with !important on background, border, color and appearance, since something with higher priority (almost certainly the external stylesheet) was still winning. Also converted the last remaining native select dropdowns (Invasion Game Courts and Starting Lives) to the same button-chip pattern as everything else. Note: Monrad and Round Robin show a plain COURTS stat, not a selector - that number is computed automatically from player count for those formats (enough courts to run every pairing at once), so its correctly read-only, not a missed/broken selector.';
+const APP_VERSION='v375 Live pairing scoreline now shows on both Hangman Squash player-view screens (single-court Player Display and the combined All-Courts Display) - e.g. Anna 1 to 0 Gregory, updating as rallies are recorded, plus the two players currently on court are visually highlighted among the other waiting figures. Previously the running score was only visible on the coaches own scoring screen; other players had nothing to follow live.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -11030,6 +11030,8 @@ function HangmanStyles(){
 .hsRaceCourt.winner{border-color:#1d6b3f;background:#0d1f16;}
 .hsRaceLabel{font-size:1.1rem;font-weight:800;color:#f0c49c;margin-bottom:8px;}
 .hsRaceChallenge{font-size:0.85rem;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:7px 10px;margin-bottom:10px;}
+.hsRacePairScore{display:flex;align-items:baseline;justify-content:center;gap:10px;font-size:0.95rem;color:#eaf4fb;background:#0b1420;border:1px solid #2E6E8E;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-weight:700;}
+.hsRacePairScore strong{font-size:1.3rem;color:#f0c49c;}
 .hsRaceEntities{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;}
 .hsRaceEntity{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
 .hsRaceEntity.eliminated{opacity:0.4;}
@@ -11039,6 +11041,10 @@ function HangmanStyles(){
 .hsRaceEntityStatus.warn{color:#f5c542;font-weight:700;}
 .hsRaceEntityStatus.out{color:#f87171;font-weight:700;}
 .hsDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
+.hsDisplayCard.onCourt{border-color:#2E6E8E;box-shadow:0 0 0 2px #2E6E8E inset;}
+.hsDisplayPairScore{display:flex;align-items:baseline;justify-content:center;gap:16px;font-size:1.6rem;color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:14px 20px;}
+.hsDisplayPairScore strong{font-size:2.2rem;color:#f0c49c;}
+.hsDisplayPairName{font-weight:700;}
 .hsDisplayCard.eliminated{opacity:0.4;}
 .hsDisplayCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 2px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
 @keyframes hsPulse{0%,100%{box-shadow:0 0 0 2px #f5c542 inset;}50%{box-shadow:0 0 0 5px #f5c542 inset;}}
@@ -11228,18 +11234,42 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
       resolved=true;safeId=winnerId;failId=loserId;
     }else{
       const rW=applyWindowOutcome(winnerEntity,winnerOutcome);
-      const rL=applyWindowOutcome(loserEntity,'lost');
-      updatedWinner=rW.entity;updatedLoser=rL.entity;
-      if(rW.resolved){resolved=true;safeId=rW.safe?winnerId:loserId;failId=rW.safe?loserId:winnerId;}
+      updatedWinner=rW.entity;
+      if(!rW.resolved){
+        // Window still open — just record this rally on the loser's running tally too
+        // (for the scoreline), nobody's fate is decided yet.
+        updatedLoser={...loserEntity,windowResults:[...loserEntity.windowResults,'lost']};
+      }else{
+        resolved=true;
+        // The loser's fate is FORCED by the winner's own resolution, never computed
+        // independently from the loser's own tally. Previously each side's safety was
+        // evaluated separately, so a loser who'd once tagged a 'met' rally earlier in a
+        // losing window could still come out "safe" too — nobody took a step and the
+        // board stalled. Now exactly one consequence always happens per resolved pairing.
+        if(rW.safe){
+          updatedLoser=applyFailure({...loserEntity,windowResults:[...loserEntity.windowResults,'lost']});
+          safeId=winnerId;failId=loserId;
+        }else{
+          // Winner reached the decision point but didn't qualify (requireAttempt gate,
+          // majority reached without ever attempting the challenge) — nobody earned
+          // safety this pairing, so both take a step rather than a stalemate.
+          updatedWinner=applyFailure({...winnerEntity,windowResults:[],attempted:false});
+          updatedLoser=applyFailure({...loserEntity,windowResults:[...loserEntity.windowResults,'lost']});
+        }
+      }
     }
     setEntities(prev=>prev.map(e=>e.id===winnerId?updatedWinner:e.id===loserId?updatedLoser:e));
     if(resolved){
       setQueue(prev=>{
-        const rest=prev.filter(id=>id!==safeId&&id!==failId);
-        // Winner stays on: the safe player stays on court, next challenger comes up to face them.
-        // Rotate through: the player who just took a step stays on to face a fresh challenger,
-        // the safe player rotates to the back of the queue (gets a breather).
-        return pairingMode==='rotate' ? [failId,...rest,safeId] : [safeId,...rest,failId];
+        const rest=prev.filter(id=>id!==winnerId&&id!==loserId);
+        if(safeId&&failId){
+          // Winner stays on: the safe player stays on court, next challenger comes up to face them.
+          // Rotate through: the player who just took a step stays on to face a fresh challenger,
+          // the safe player rotates to the back of the queue (gets a breather).
+          return pairingMode==='rotate' ? [failId,...rest,safeId] : [safeId,...rest,failId];
+        }
+        // Rare edge case (both took a step, nobody earned safety) — just send both to the back.
+        return [...rest,winnerId,loserId];
       });
     }
   }
@@ -11654,11 +11684,22 @@ function HangmanSquashPlayerDisplay({payload={}}){
   useWakeLock();
   const entities=payload.entities||[];
   const winner=payload.winnerName;
+  const queue=payload.queue||[];
+  const byId=Object.fromEntries(entities.map(e=>[e.name,e])); // individual mode: id===name
+  const [pairA,pairB]=entities.length===2
+    ? [entities[0],entities[1]] // Teams mode (queue stores A/B, not names) or a straight 2-player duel
+    : [queue[0]?byId[queue[0]]:null,queue[1]?byId[queue[1]]:null]; // 3+ individual players, queue holds names
+  const onCourtNames=new Set([pairA?.name,pairB?.name].filter(Boolean));
   return <div className="hsDisplayPage">
     <HangmanStyles/>
     <div className="hsDisplayShell">
       <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY{payload.courtLabel?(' · '+payload.courtLabel):''}</span><h1>💀 Hangman Squash</h1></div>
       {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · Best of ${payload.seriesLength}`:''}</div>}
+      {!winner&&payload.seriesLength>1&&pairA&&pairB&&<div className="hsDisplayPairScore">
+        <span className="hsDisplayPairName">{pairA.name}</span>
+        <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
+        <span className="hsDisplayPairName">{pairB.name}</span>
+      </div>}
       {winner&&<div className="hsDisplayWinner">🏆 {winner} wins!</div>}
       <div className="hsDisplayGrid">
         {entities.map((e,i)=>{
@@ -11667,7 +11708,8 @@ function HangmanSquashPlayerDisplay({payload={}}){
           const wins=wr.filter(r=>r==='met'||r==='won').length;
           const losses=wr.filter(r=>r==='lost').length;
           const showWindow=payload.seriesLength>1&&!e.eliminated&&!e.escapePending;
-          return <div key={i} className={`hsDisplayCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
+          const onCourt=!winner&&onCourtNames.has(e.name);
+          return <div key={i} className={`hsDisplayCard${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}${onCourt?' onCourt':''}`}>
             <HangmanFigure steps={e.steps} size={110}/>
             <div className="hsDisplayName">{e.name}</div>
             <div className={`hsDisplayStatus ${status.cls}`}>{status.text}{showWindow?` · ${wr.length}/${payload.seriesLength} (${wins}W–${losses}L)`:''}</div>
@@ -11713,9 +11755,17 @@ function HangmanSquashRaceDisplay({host,courtCount}){
         {courts.map((c,i)=>{
           if(!c)return <div key={i} className="hsRaceCourt"><div className="hsRaceLabel">Court {i+1}</div><p className="mutedText">Waiting…</p></div>;
           const entities=c.entities||[];
+          const byId=Object.fromEntries(entities.map(e=>[e.name,e]));
+          const q=c.queue||[];
+          const [pairA,pairB]=entities.length===2?[entities[0],entities[1]]:[q[0]?byId[q[0]]:null,q[1]?byId[q[1]]:null];
           return <div key={i} className={`hsRaceCourt${c.winnerName?' winner':''}`}>
             <div className="hsRaceLabel">Court {i+1}{c.winnerName?` — 🏆 ${c.winnerName} wins`:''}</div>
             {c.challenge&&!c.winnerName&&<div className="hsRaceChallenge">🎯 {c.challenge}</div>}
+            {!c.winnerName&&c.seriesLength>1&&pairA&&pairB&&<div className="hsRacePairScore">
+              <span>{pairA.name}</span>
+              <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
+              <span>{pairB.name}</span>
+            </div>}
             <div className="hsRaceEntities">
               {entities.map((e,ei)=>{
                 const status=hangmanStatusLabel(e);
