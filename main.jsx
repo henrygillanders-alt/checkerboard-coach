@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v365 Fixes from the live 6-player/2-court Hangman road test: (1) ROOT CAUSE of dropped players and erratic pairing - removed the automatic visibilitychange/focus roster-refresh added in v358 across all four roster games. It was silently re-reading attendance whenever a tab regained focus, which could reshuffle Auto court allocation mid-session and remount a court from scratch, wiping progress, dropping players, and re-pairing at random - especially likely with many tabs open. Refresh is now manual-only (the button already there), never automatic. (2) Fixed Hangman Undo not restoring the on-court pairing/queue, only entities - undo now reverts both together so the pairing matches the reverted scores. (3) Best of N ending at different lengths (sometimes 5 rallies, sometimes stops at 3) is correct best-of-N behaviour (2-0 sweeps end early, 2-1s dont), but this wasnt explained anywhere during live play - added a plain-language note on the live scoring screen for whichever resolution style is active. (4) Built a genuinely new All-Courts Display for Hangman (Copy All-Courts Display link, shown when running 2+ courts) - every courts hangman figures side by side on one screen, matching the combined Race Display pattern already used by Snakes and Ladders/Ludo/Noughts and Crosses, which Hangman was missing entirely.';
+const APP_VERSION='v368 Fixed the All-Courts Display for Hangman Squash being stuck on Waiting for courts to start forever. Root cause: a room-id construction bug - the link already carries the fully-qualified Hangman room base (which includes -hangman), but the All-Courts screen was appending -hangman a second time, so it was polling rooms that could never exist. It now polls the correct rooms and shows every courts figures as expected.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -11317,6 +11317,11 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
 
 // ── Coach setup + multi-court orchestrator (up to 6 courts) ────────────────
 function HangmanSquashGame({setSession,setScreen}={}){
+  // Setup persists across navigation — leaving this screen (e.g. to Court Monitor and
+  // back) used to silently reset everything to Single rally / 1 court. Saved/restored as
+  // one JSON blob; only the coach's configuration choices, not live game/player state.
+  const HS_SETUP_KEY='cbHangmanSetupV1';
+  const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(HS_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
@@ -11326,25 +11331,29 @@ function HangmanSquashGame({setSession,setScreen}={}){
   // Auto court allocation and remount a court, wiping progress and re-pairing players at
   // random. Refresh is manual-only (button below) so it only happens when the coach means it.
   const usingAttendance=presentsObj.length>=2;
-  const [courtCount,setCourtCount]=useState(1);
+  const [courtCount,setCourtCount]=useState(()=>savedSetup.courtCount||1);
   const [activeCourt,setActiveCourt]=useState(0);
-  const [manualCount,setManualCount]=useState(2);
-  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2']);
-  const [teamMode,setTeamMode]=useState(false);
-  const [teamOf,setTeamOf]=useState({}); // name -> 'A' | 'B'
-  const [challenge,setChallenge]=useState(HANGMAN_CHALLENGE_PRESETS[0]);
-  const [seriesLength,setSeriesLength]=useState(1);
-  const [requireAttempt,setRequireAttempt]=useState(false);
-  const [resolutionStyle,setResolutionStyle]=useState('bestOfN'); // 'bestOfN' | 'fullWindow' | 'suddenDeath'
-  const [pairingMode,setPairingMode]=useState('winnerStays'); // 'winnerStays' | 'rotate'
+  const [manualCount,setManualCount]=useState(()=>savedSetup.manualCount||2);
+  const [manualNames,setManualNames]=useState(()=>savedSetup.manualNames||['Player 1','Player 2']);
+  const [teamMode,setTeamMode]=useState(()=>savedSetup.teamMode||false);
+  const [teamOf,setTeamOf]=useState(()=>savedSetup.teamOf||{}); // name -> 'A' | 'B'
+  const [challenge,setChallenge]=useState(()=>savedSetup.challenge||HANGMAN_CHALLENGE_PRESETS[0]);
+  const [seriesLength,setSeriesLength]=useState(()=>savedSetup.seriesLength||1);
+  const [requireAttempt,setRequireAttempt]=useState(()=>savedSetup.requireAttempt||false);
+  const [resolutionStyle,setResolutionStyle]=useState(()=>savedSetup.resolutionStyle||'bestOfN'); // 'bestOfN' | 'fullWindow' | 'suddenDeath'
+  const [pairingMode,setPairingMode]=useState(()=>savedSetup.pairingMode||'winnerStays'); // 'winnerStays' | 'rotate'
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const [handedOff,setHandedOff]=useState(()=>new Set());
-  const [allocMode,setAllocMode]=useState('auto');
-  const [manualAssign,setManualAssign]=useState({});
+  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto');
+  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{});
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getHangmanLiveRoomId();},[]);
+
+  useEffect(()=>{
+    try{localStorage.setItem(HS_SETUP_KEY,JSON.stringify({courtCount,manualCount,manualNames,teamMode,teamOf,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,allocMode,manualAssign}));}catch{}
+  },[courtCount,manualCount,manualNames,teamMode,teamOf,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,allocMode,manualAssign]);
 
   function setTeam(name,t){setTeamOf(prev=>({...prev,[name]:t}));}
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
@@ -11430,9 +11439,10 @@ function HangmanSquashGame({setSession,setScreen}={}){
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.removeItem(HS_SETUP_KEY);}catch{}window.location.reload();}}>↺ Reset setup to defaults</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
-    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Setup is remembered across visits (courts, mode, challenge, pacing) — showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If either looks out of date, tap Refresh players or Reset setup.</p>
 
     <div className="hsSetup">
       <div className="hsLabel">Mode</div>
@@ -11573,25 +11583,48 @@ function HangmanSquashCourtScorer({court,host}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
+  const [pendingResume,setPendingResume]=useState(null); // raw payload p, awaiting Resume/Start fresh choice
   const [status,setStatus]=useState('Connecting…');
+  function buildSeed(p){
+    const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[],queue:p.queue||undefined};
+    setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,resolutionStyle:p.resolutionStyle||'bestOfN',pairingMode:p.pairingMode||'winnerStays',courtLabel:p.courtLabel||('Court '+court)});
+    setStatus('Live');
+  }
   useEffect(()=>{
-    if(seedData)return;
+    if(seedData||pendingResume)return;
     let cancelled=false;
     async function load(){
       const row=await readLivePlayerRoom(roomId);
       if(cancelled)return;
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
       if(p){
-        const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[],queue:p.queue||undefined};
-        setSeedData({seed,players:(p.entities||[]).map(e=>e.name),challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,resolutionStyle:p.resolutionStyle||'bestOfN',pairingMode:p.pairingMode||'winnerStays',courtLabel:p.courtLabel||('Court '+court)});
-        setStatus('Live');
+        // If this court already has real progress (steps taken, a rally recorded, someone
+        // out), ask rather than silently resuming — that's exactly what caused a court to
+        // look like it had a phantom score before a ball was even hit in live testing.
+        const hasProgress=(p.entities||[]).some(e=>e.steps>0||(e.windowResults||[]).length>0||e.eliminated)||(p.eliminationLog||[]).length>0;
+        if(hasProgress){setPendingResume(p);setStatus('Live');}
+        else buildSeed(p);
       }else setStatus('Waiting for coach device to set up this court…');
     }
     load();
     const id=setInterval(load,1500);
     return ()=>{cancelled=true;clearInterval(id);};
-  },[roomId,seedData]);
+  },[roomId,seedData,pendingResume]);
 
+  if(pendingResume){
+    const p=pendingResume;
+    return <div className="hsDisplayPage"><HangmanStyles/>
+      <div className="hsDisplayTop"><span>● FOUND EXISTING GAME</span><h1>💀 Hangman Squash — Court {court}</h1></div>
+      <div className="hsChallengeBox" style={{maxWidth:'480px',margin:'0 auto'}}>
+        <p style={{margin:'0 0 10px'}}>This court already has a game in progress:</p>
+        <ul style={{margin:'0 0 12px',paddingLeft:'20px',color:'#dbeeff'}}>{(p.entities||[]).map((e,i)=><li key={i}>{e.name} — {e.eliminated?'OUT':`${e.steps}/7`}</li>)}</ul>
+        <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+          <button type="button" className="primaryBtn" onClick={()=>{buildSeed(p);setPendingResume(null);}}>Resume this game</button>
+          <button type="button" className="secondaryBtn" onClick={async()=>{await deleteLivePlayerRoom(roomId);setPendingResume(null);setStatus('Waiting for coach device to set up this court…');}}>Start fresh (clear it)</button>
+        </div>
+      </div>
+    </div>;
+  }
   if(!seedData){
     return <div className="hsDisplayPage"><HangmanStyles/>
       <div className="hsDisplayTop"><span>● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>💀 Hangman Squash — Court {court}</h1><p style={{color:'#9fb0c2'}}>{status}</p></div>
@@ -11641,7 +11674,11 @@ function HangmanSquashRaceDisplay({host,courtCount}){
   const [courts,setCourts]=useState([]);
   useEffect(()=>{
     let cancelled=false;
-    const hsBase=host+'-hangman';
+    // host is already the fully-qualified Hangman base (includes -hangman) — it's built
+    // via buildHsRaceLink(base,...) where base = getHangmanLiveRoomId(), which already
+    // has the suffix. Appending it again here was the bug: it polled a room that could
+    // never exist, so this screen was stuck on "Waiting for courts to start" forever.
+    const hsBase=host;
     async function load(){
       const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(hsBase,i+1))));
       if(cancelled)return;
