@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v370 Cleared the three pinned UI items: (1) The combined multi-court Player Display title now shows the actual game name (e.g. Hangman Squash) instead of the generic King of Courts label whenever every live court is running the same game - King of Courts is kept only as the fallback for a genuinely mixed multi-game session. (2) Hangman setup buttons no longer use red for the selected state (was reading as an error/warning) - switched to the same blue accent used elsewhere in the app, and buttons within each row now size equally to each other instead of the previous mismatched widths. (3) BIG navigation change, Games Library: selecting a game now hides the 24-tile grid entirely and opens that games own dedicated screen with a Back to Games Library button, instead of expanding inline below the still-visible full grid requiring a scroll past everything else. Applies to every game routed through the shared Games component. Also fixed the rally-button layout reported separately - Leo and Izzy each now have their own column of buttons instead of being mixed across rows.';
+const APP_VERSION='v371 Design-system consistency pass on court/player-count selectors: Snakes and Ladders, Ludo Squash, and Noughts and Crosses were using native browser select dropdowns (rendering with a white background on iOS, breaking the dark theme), and the KOC/Blind Race court-count buttons were using a generic green-highlighted style unrelated to the rest of the app. All four now use the exact same dark button-chip pattern as Hangman Squash (blue accent when selected, equal width within each row) by reusing the same CSS classes rather than redefining them per module, so any future style change to one applies to all of them automatically. Matchplay showing courts:1 with no selector was investigated but not changed - flagged as a question rather than assumed, see chat.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9733,11 +9733,11 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <p className="mutedText">Randomising the board each game keeps the consequence-landscape fresh, preventing pattern learning and forcing genuine re-perception every session.</p>
     </div>}
 
-    <div className="slSessionBar">
+    <div className="slSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
       <div className="slSessionInfo">{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
       {usingAttendance
-        ? <label className="slInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-        : <label className="slInlineField">Players<select value={manualCount} onChange={e=>setManualCount(Number(e.target.value))}>{[2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+        ? <div><div className="hsLabel">Courts</div><div className="hsModeRow">{[1,2,3,4,5,6].map(v=><button type="button" key={v} className={courtCount===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>{setCourtCount(v);setActiveCourt(0);}}>{v}</button>)}</div></div>
+        : <div><div className="hsLabel">Players</div><div className="hsModeRow">{[2,3,4,5,6].map(v=><button type="button" key={v} className={manualCount===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setManualCount(v)}>{v}</button>)}</div></div>}
     </div>
 
     {!usingAttendance&&<div className="slManualNames">
@@ -16433,7 +16433,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
     <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
     <p>{game.blurb}</p>
     <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
-    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance. Allocation is ranked blocks, not snake seeding.</p><div className="buttonRow">{[2,3,4,5,6].map(n=><button key={n} className={courtCount===n?'activeLayer':''} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{rankedAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present attendance players found. Use generic player labels.</p><div className="buttonRow">{[3,4,5].map(n=><button key={n} className={playerCount===n?'activeLayer':''} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
+    {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance. Allocation is ranked blocks, not snake seeding.</p><div className="hsModeRow">{[2,3,4,5,6].map(n=><button type="button" key={n} className={courtCount===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{rankedAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present attendance players found. Use generic player labels.</p><div className="hsModeRow">{[3,4,5].map(n=><button type="button" key={n} className={playerCount===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
     {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={`${p.court}-${p.label}`} label={`${p.court?`${p.court} · `:''}${p.label}`} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are {mult>1?('card × '+mult):'card-value'} targets tied to named Attendance players for this rotation. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="P1" value={deal.a} suit={deal.suit}/><BTSRevealCard label="P2" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
     {open&&<div className="btsMoreInfo">
       <div className="infoBox"><strong>Setup</strong><p>{game.setup}</p></div>
@@ -17833,11 +17833,11 @@ function LudoSquashGame({setSession,setScreen}={}){
       </div>
     </div>
 
-    <div className="ludoSessionBar">
+    <div className="ludoSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
       <div>{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
       {usingAttendance
-        ? <label className="ludoInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
-        : <label className="ludoInlineField">Players<select value={manualCount} onChange={e=>setManualCount(Number(e.target.value))}>{[2,3,4].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+        ? <div><div className="hsLabel">Courts</div><div className="hsModeRow">{[1,2,3,4,5,6].map(v=><button type="button" key={v} className={courtCount===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>{setCourtCount(v);setActiveCourt(0);}}>{v}</button>)}</div></div>
+        : <div><div className="hsLabel">Players</div><div className="hsModeRow">{[2,3,4].map(v=><button type="button" key={v} className={manualCount===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setManualCount(v)}>{v}</button>)}</div></div>}
     </div>
 
     {!usingAttendance&&<div className="ludoManualNames">
@@ -18723,9 +18723,9 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       </div>
     </div>
 
-    <div className="ncSessionBar">
+    <div className="ncSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
       <div>{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
-      {usingAttendance&&<label className="ncInlineField">Courts<select value={courtCount} onChange={e=>{setCourtCount(Number(e.target.value));setActiveCourt(0);}}>{[1,2,3,4,5,6].map(v=><option key={v} value={v}>{v}</option>)}</select></label>}
+      {usingAttendance&&<div><div className="hsLabel">Courts</div><div className="hsModeRow">{[1,2,3,4,5,6].map(v=><button type="button" key={v} className={courtCount===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>{setCourtCount(v);setActiveCourt(0);}}>{v}</button>)}</div></div>}
     </div>
 
     <div className="ncSettings" style={{marginTop:'0'}}>
