@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v368 Fixed the All-Courts Display for Hangman Squash being stuck on Waiting for courts to start forever. Root cause: a room-id construction bug - the link already carries the fully-qualified Hangman room base (which includes -hangman), but the All-Courts screen was appending -hangman a second time, so it was polling rooms that could never exist. It now polls the correct rooms and shows every courts figures as expected.';
+const APP_VERSION='v370 Cleared the three pinned UI items: (1) The combined multi-court Player Display title now shows the actual game name (e.g. Hangman Squash) instead of the generic King of Courts label whenever every live court is running the same game - King of Courts is kept only as the fallback for a genuinely mixed multi-game session. (2) Hangman setup buttons no longer use red for the selected state (was reading as an error/warning) - switched to the same blue accent used elsewhere in the app, and buttons within each row now size equally to each other instead of the previous mismatched widths. (3) BIG navigation change, Games Library: selecting a game now hides the 24-tile grid entirely and opens that games own dedicated screen with a Back to Games Library button, instead of expanding inline below the still-visible full grid requiring a scroll past everything else. Applies to every game routed through the shared Games component. Also fixed the rally-button layout reported separately - Leo and Izzy each now have their own column of buttons instead of being mixed across rows.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10960,13 +10960,13 @@ function HangmanStyles(){
 .hsSetup{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
 .hsLabel{color:#f0c49c;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
 .hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
-.hsModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
-.hsModeBtn.on{border-color:#c2455a;background:#2a0c14;color:#f5a8b6;}
+.hsModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
+.hsModeBtn.on{border-color:#2E6E8E;background:#12203a;color:#9cc4ec;}
 .hsPlayerGrid{display:flex;flex-direction:column;gap:6px;}
 .hsPlayerRow{display:flex;align-items:center;gap:8px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
 .hsPlayerRow input[type=text]{flex:1;background:transparent;border:none;color:#eaf4fb;font-size:0.9rem;outline:none;}
 .hsTeamBtn{background:#161b22;border:1px solid #3a4a5e;color:#9fb0c2;border-radius:7px;padding:5px 9px;font-size:0.72rem;font-weight:700;cursor:pointer;}
-.hsTeamBtn.on{border-color:#c2455a;background:#2a0c14;color:#f5a8b6;}
+.hsTeamBtn.on{border-color:#2E6E8E;background:#12203a;color:#9cc4ec;}
 .hsRemoveBtn{background:transparent;border:none;color:#7c8ea0;font-size:1rem;cursor:pointer;padding:2px 6px;}
 .hsAddPlayerBtn{align-self:flex-start;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:8px 14px;font-size:0.84rem;font-weight:600;cursor:pointer;}
 .hsChallengeBox{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;}
@@ -11008,6 +11008,9 @@ function HangmanStyles(){
 .hsPairScorePanel{background:#12203a;border:1px solid #2E6E8E;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .hsPairScoreRow{display:flex;gap:8px;flex-wrap:wrap;}
 .hsPairScoreRow button{flex:1 1 45%;}
+.hsPairScoreCols{display:flex;gap:12px;}
+.hsPairScoreCol{flex:1;display:flex;flex-direction:column;gap:8px;background:#0b1420;border:1px solid #1e3350;border-radius:10px;padding:10px;}
+.hsPairScoreColName{font-weight:800;color:#eaf4fb;font-size:0.9rem;text-align:center;margin-bottom:2px;}
 .hsPairScoreline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:1.1rem;color:#eaf4fb;}
 .hsPairScoreline strong{font-size:1.4rem;color:#f0c49c;}
 .hsPairScoreline em{font-style:normal;font-size:0.8rem;color:#9fb0c2;margin-left:auto;}
@@ -11275,13 +11278,17 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
         <span>{pairB.name}</span>
         <em>(first to {Math.ceil(seriesLength/2)} — Best of {seriesLength})</em>
       </div>}
-      <div className="hsPairScoreRow">
-        <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairA.id,'met')}>🎯 {pairA.name} met challenge</button>
-        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairA.id,'won')}>{pairA.name} wins rally</button>
-      </div>
-      <div className="hsPairScoreRow">
-        <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairB.id,'won')}>{pairB.name} wins rally</button>
-        <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairB.id,'met')}>🎯 {pairB.name} met challenge</button>
+      <div className="hsPairScoreCols">
+        <div className="hsPairScoreCol">
+          <div className="hsPairScoreColName">{pairA.name}</div>
+          <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairA.id,'met')}>🎯 Met challenge</button>
+          <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairA.id,'won')}>Wins rally</button>
+        </div>
+        <div className="hsPairScoreCol">
+          <div className="hsPairScoreColName">{pairB.name}</div>
+          <button type="button" className="hsBtnSafe" onClick={()=>recordPairedRally(pairB.id,'met')}>🎯 Met challenge</button>
+          <button type="button" className="hsBtnNeutral" onClick={()=>recordPairedRally(pairB.id,'won')}>Wins rally</button>
+        </div>
       </div>
       {seriesLength===1&&<p className="mutedText" style={{margin:0}}>Single rally: only "met challenge" keeps a player safe — winning the rally without the named shot still counts as a miss.</p>}
     </div>}
@@ -11833,18 +11840,24 @@ function Games({setSession,setScreen}){
   }
 
   return <div className="page">
-    <div className="pageTop">
-      <h1>Games Library</h1>
-    </div>
-    <div className="gameClassGrid">
-      {gameClasses.map(gameClass=>
-        <button type="button" key={gameClass.id} className={activeClassId===gameClass.id?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):gameClass.id==='serveReturn'?setScreen('serveReturn'):selectClass(gameClass.id)}>
-          {gameClass.label}
-        </button>
-      )}
-    </div>
+    {!activeClassId&&<>
+      <div className="pageTop">
+        <h1>Games Library</h1>
+      </div>
+      <div className="gameClassGrid">
+        {gameClasses.map(gameClass=>
+          <button type="button" key={gameClass.id} className="gameClassBtn" onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):gameClass.id==='serveReturn'?setScreen('serveReturn'):selectClass(gameClass.id)}>
+            {gameClass.label}
+          </button>
+        )}
+      </div>
+      <div className="placeholder">Tap a game class above.</div>
+    </>}
 
-    {!activeClassId&&<div className="placeholder">Tap a game class above.</div>}
+    {activeClassId&&<div className="pageTop">
+      <button type="button" className="secondaryBtn" onClick={()=>selectClass(null)}>← Back to Games Library</button>
+      <h1>{activeClass?.label}</h1>
+    </div>}
 
     {logicCard&&!['checkerboard','atl','atb','powerplay','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
 
@@ -19243,6 +19256,8 @@ function CourtStandingsPlayerDisplay({payload={}}){
     return bp-ap;
   });
   const leader=ranked.find(c=>c.game&&c.pct!=null);
+  const liveGames=[...new Set(courts.filter(c=>c.game).map(c=>c.game))];
+  const displayTitle=liveGames.length===1?liveGames[0]:'King of Courts';
   return <div className="playerDisplayPage csPdPage">
     <style>{`
 .csPdPage{padding:18px;max-width:1100px;margin:0 auto;}
@@ -19265,7 +19280,7 @@ function CourtStandingsPlayerDisplay({payload={}}){
 .csPdBar{height:12px;border-radius:7px;background:#1a2740;overflow:hidden;margin-top:12px;}
 .csPdBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#34e07a);}
 `}</style>
-    <div className="csPdHead"><span className="csPdLive">● LIVE</span><h1>King of Courts</h1><p>{(payload.liveCount!=null?payload.liveCount:ranked.filter(c=>c.game&&!c.stale).length)} of {payload.count||courts.length} courts live</p></div>
+    <div className="csPdHead"><span className="csPdLive">● LIVE</span><h1>{displayTitle}</h1><p>{(payload.liveCount!=null?payload.liveCount:ranked.filter(c=>c.game&&!c.stale).length)} of {payload.count||courts.length} courts live</p></div>
     {leader?<div className="csPdLeader">👑 Court {leader.court} leading — {leader.headline||'—'}{leader.leaderName?` (${leader.leaderName})`:''}</div>:<div className="csPdWait">Waiting for courts to report…</div>}
     <div className="csPdGrid">{ranked.map((c,i)=>{
       const isLead=c.game&&c.pct!=null&&i===0;
