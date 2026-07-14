@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v372 Found the real cause of the white/native-look buttons: none of the custom button classes set appearance:none, so iOS Safari can render its own native chrome regardless of the dark background-color specified in CSS. Added a global button,select{appearance:none} reset (low specificity, does not override any existing colours) plus explicit dark CSS for two classes that had no definition in main.jsx at all and were relying entirely on the external stylesheet (slAllocRow/slAllocRowOn). Also fixed the still-red hsAllocRow.on and slAllocRowOn active-court highlight to the same blue used everywhere else. Standardized court-count defaults to 1 everywhere - Checkerboard and Disruption Rotations were defaulting to 2 and 3 respectively while every other game defaults to 1.';
+const APP_VERSION='v373 Court selectors still showing white in v372 despite the appearance:none fix - hardened hsModeBtn/hsModeBtn.on with !important on background, border, color and appearance, since something with higher priority (almost certainly the external stylesheet) was still winning. Also converted the last remaining native select dropdowns (Invasion Game Courts and Starting Lives) to the same button-chip pattern as everything else. Note: Monrad and Round Robin show a plain COURTS stat, not a selector - that number is computed automatically from player count for those formats (enough courts to run every pairing at once), so its correctly read-only, not a missed/broken selector.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -10963,8 +10963,8 @@ function HangmanStyles(){
 .hsSetup{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
 .hsLabel{color:#f0c49c;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
 .hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
-.hsModeBtn{appearance:none;-webkit-appearance:none;background:#0d1722;border:1px solid #2a3a4f;border-radius:9px;padding:9px 13px;color:#dbe6f2;font-weight:700;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
-.hsModeBtn.on{border-color:#2E6E8E;background:#12203a;color:#9cc4ec;}
+.hsModeBtn{appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;padding:9px 13px!important;color:#dbe6f2!important;font-weight:700!important;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
+.hsModeBtn.on{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;}
 .hsPlayerGrid{display:flex;flex-direction:column;gap:6px;}
 .hsPlayerRow{display:flex;align-items:center;gap:8px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
 .hsPlayerRow input[type=text]{flex:1;background:transparent;border:none;color:#eaf4fb;font-size:0.9rem;outline:none;}
@@ -13795,28 +13795,16 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 :'Best when you want attacking initiative, pressure creation and defender consequence.'}</p>
             </div>
 
-            <div className="invasionConfigGrid">
-              <label>Courts
-                <select value={invasionCourts} onChange={e=>setInvasionCourts(Number(e.target.value))}>
-                  <option value={1}>1 court</option>
-                  <option value={2}>2 courts</option>
-                  <option value={3}>3 courts</option>
-                  <option value={4}>4 courts</option>
-                  <option value={5}>5 courts</option>
-                  <option value={6}>6 courts</option>
-                </select>
-              </label>
+            <div className="invasionConfigGrid" style={{flexDirection:'column',alignItems:'stretch',gap:'10px'}}>
+              <div>
+                <div className="hsLabel">Courts</div>
+                <div className="hsModeRow">{[1,2,3,4,5,6].map(n=><button type="button" key={n} className={invasionCourts===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setInvasionCourts(n)}>{n}</button>)}</div>
+              </div>
 
-              {invasionFormat==='lives'&&<label>Starting Lives
-                <select value={invasionStartingLives} onChange={e=>setInvasionStartingLives(Number(e.target.value))}>
-                  <option value={3}>3 lives</option>
-                  <option value={4}>4 lives</option>
-                  <option value={5}>5 lives</option>
-                  <option value={6}>6 lives</option>
-                  <option value={8}>8 lives</option>
-                  <option value={10}>10 lives</option>
-                </select>
-              </label>}
+              {invasionFormat==='lives'&&<div>
+                <div className="hsLabel">Starting Lives</div>
+                <div className="hsModeRow">{[3,4,5,6,8,10].map(n=><button type="button" key={n} className={invasionStartingLives===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setInvasionStartingLives(n)}>{n}</button>)}</div>
+              </div>}
             </div>
 
             <label className="invasionTextLabel">Rotation / Organisation Notes
