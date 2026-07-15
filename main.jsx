@@ -181,7 +181,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v377 Player Plans™ V0: new brand-tier Home tile. Coach-only annual plan / mesocycle / microcycle builder per player, stored under checkerboard_player_plans_v1 keyed by player name (extends existing player roster, not a parallel database). Annual plan has title/dates/objectives/competitions; mesocycles have name/dates/purpose/up to 3 priorities/notes and can be expanded to add weekly microcycles (week label/date/objective/notes). No CLA test, no Fitness link, no player-facing view yet - those are Phase 2-4.';
+const APP_VERSION='v378 Merged two divergent v377 builds (Player Plans V0 work done in a separate session, plus the Hangman scoring device confirmation fix, ATL/BTL All BTL shots option, and ATL/BTL custom checkerboard code fix done in this session) into one file, re-numbered to avoid the version collision. All prior v377 fixes from both branches are present: Player Plans V0 annual/mesocycle/microcycle builder, Hangman scoring device always confirming before use, ATL/BTL All BTL shots with correct count-parsing, and the ATL/BTL custom checkerboard zone toggle/input actually working.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -268,7 +268,7 @@ const CB_CODES=[
 ];
 
 const ATL_LISTS={
-btlCount:['0 BTL shots','1 BTL shot','2 BTL shots','3 BTL shots'],
+btlCount:['All BTL shots','0 BTL shots','1 BTL shot','2 BTL shots','3 BTL shots'],
 atlCount:['All shots','3 ATL shots','2 ATL shots','1 ATL shot','0 ATL shots'],
 side:['Both sides','Right side only','Left side only'],
 consecutive:['No','Yes'],
@@ -412,15 +412,19 @@ function rankedBlockCourtAllocation(players,courtCount){
 
 
 function buildAtl(options){
-const count=options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
+const isAllBtl=options.btlCount==='All BTL shots';
+const count=isAllBtl?1:options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
 const shots=[options.shot1,options.shot2,options.shot3].slice(0,count);
 const methods=[options.method1,options.method2,options.method3].slice(0,count);
-const shotText=count===0?'No compulsory BTL shot; use ATL / BTL as a tempo, balance and vision cue.':shots.map((shot,index)=>{
+const method1Text=options.method1==='Players choice'?'player’s choice volley/non-volley':options.method1.toLowerCase();
+const shotText=isAllBtl
+  ? `Every BTL shot must be: ${options.shot1.toLowerCase()} (${method1Text}).`
+  : count===0?'No compulsory BTL shot; use ATL / BTL as a tempo, balance and vision cue.':shots.map((shot,index)=>{
 const method=methods[index]==='Players choice'?'player’s choice volley/non-volley':methods[index].toLowerCase();
 return `BTL shot ${index+1}: ${shot.toLowerCase()} (${method})`;
 }).join('; ');
 const sideText=options.side==='Both sides'?'Applies on both sides.':`Applies on ${options.side.replace(' only','').toLowerCase()}.`;
-const consecutiveText=count<=1?'':options.consecutive==='Yes'?'BTL shots must be consecutive.':'BTL shots do not need to be consecutive.';
+const consecutiveText=isAllBtl||count<=1?'':options.consecutive==='Yes'?'BTL shots must be consecutive.':'BTL shots do not need to be consecutive.';
 const cbText=options.cbRef==='None'?'':` Checkerboard reference: ${options.cbRef}.`;
 const atlCountRaw=options.atlCount||'All shots';
 const atlNum=atlCountRaw==='All shots'?null:(atlCountRaw.startsWith('0')?0:atlCountRaw.startsWith('1')?1:atlCountRaw.startsWith('2')?2:3);
@@ -430,11 +434,12 @@ const atlText=atlNum===null
     ? 'No shots are required above the line this session — play low drives freely instead of defaulting to a lob.'
     : `Only ${atlNum} shot${atlNum===1?'':'s'} must clear the ATL line; the rest are free, so bring in low drives rather than defaulting to a lob.`;
 const rationale=['slows the rally problem down enough for players to attend to balance, vision and better information pick-up'];
-if(count===0)rationale.push('uses the cue without forcing a low shot');
-if(count===1)rationale.push('adds one simple low-trajectory decision inside live play');
-if(count===2)rationale.push('requires repeated low-trajectory decisions under pressure');
-if(count===3)rationale.push('creates a complex sequence while preserving tactical awareness');
-if(options.consecutive==='Yes'&&count>1)rationale.push('tests whether players can sustain the constraint across linked shots');
+if(isAllBtl)rationale.push('requires every shot below the line to satisfy the constraint, removing any escape into a free/neutral shot');
+else if(count===0)rationale.push('uses the cue without forcing a low shot');
+else if(count===1)rationale.push('adds one simple low-trajectory decision inside live play');
+else if(count===2)rationale.push('requires repeated low-trajectory decisions under pressure');
+else if(count===3)rationale.push('creates a complex sequence while preserving tactical awareness');
+if(options.consecutive==='Yes'&&count>1&&!isAllBtl)rationale.push('tests whether players can sustain the constraint across linked shots');
 if(methods.includes('Must be volley'))rationale.push('links the selected shot outcome with early interception');
 if(methods.includes('No volley'))rationale.push('encourages creation after the bounce');
 if(shots.includes('Boast'))rationale.push('links BTL control to angle creation and front-court disruption');
@@ -445,7 +450,7 @@ if(atlNum!==null)rationale.push(atlNum===0?'removes the compulsory high-line req
 const autoLayers=[];
 if(methods.includes('Must be volley'))autoLayers.push('Volley Finish');
 if(shots.includes('Boast')||shots.includes('Crosscourt drop'))autoLayers.push('Blind Finish');
-if(count>=2)autoLayers.push('Opponent Off T');
+if(isAllBtl||count>=2)autoLayers.push('Opponent Off T');
 if(options.cbRef!=='None')autoLayers.push('CB Code');
 autoLayers.push('Clean Winner');
 return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:`${options.btlCount}: ${shotText}. ${atlText} ${consecutiveText} ${sideText}${cbText}`,rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
@@ -5691,7 +5696,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     return '[6-3] + [6-2]';
   }
   const autoCbZone=sideToCbZone(side);
-  const composedAtl=useMemo(()=>{const layers=[...new Set([...manualLayers])];return {...builtAtl,side,cbCode:'None',task:`${builtAtl.task} Side: ${side}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side]);
+  const composedAtl=useMemo(()=>{const layers=[...new Set([...manualLayers])];const cbCode=useCustomCb&&customCbZone.trim()?customCbZone.trim():autoCbZone;return {...builtAtl,side,cbCode,task:`${builtAtl.task} Side: ${side}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side,useCustomCb,customCbZone,autoCbZone]);
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers,modifierScores:builderModifierScores}));
   },[atl,side,useCustomCb,customCbZone,manualLayers,builderModifierScores]);
@@ -5752,6 +5757,8 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
         <label>ATL Count<select value={atl.atlCount} onChange={e=>setAtlOption('atlCount',e.target.value)}>{ATL_LISTS.atlCount.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>Side<select value={side} onChange={e=>setSide(e.target.value)}><option>Right side</option><option>Left side</option><option>Both sides</option><option>Player choice</option></select></label>
+        <label>Checkerboard Zone<select value={useCustomCb?'Custom':'Auto'} onChange={e=>setUseCustomCb(e.target.value==='Custom')}><option value="Auto">Auto (from side): {autoCbZone}</option><option value="Custom">Custom</option></select></label>
+        {useCustomCb&&<label>Custom Zone / Code<input type="text" value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="e.g. [6-3] + [7-2]"/></label>}
         {atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
         {atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
         {(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
@@ -11654,12 +11661,12 @@ function HangmanSquashCourtScorer({court,host}){
       if(cancelled)return;
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
       if(p){
-        // If this court already has real progress (steps taken, a rally recorded, someone
-        // out), ask rather than silently resuming — that's exactly what caused a court to
-        // look like it had a phantom score before a ball was even hit in live testing.
-        const hasProgress=(p.entities||[]).some(e=>e.steps>0||(e.windowResults||[]).length>0||e.eliminated)||(p.eliminationLog||[]).length>0;
-        if(hasProgress){setPendingResume(p);setStatus('Live');}
-        else buildSeed(p);
+        // Always confirm before using whatever's sitting in this room — a court with the
+        // wrong players and stale settings (challenge, rally decision) but zero steps
+        // taken used to sail straight through silently, since only real step progress
+        // triggered a check. That's exactly what let a stale "Single rally" setting
+        // silently override a freshly-set "Best of 5" and cost a live session.
+        setPendingResume(p);setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court…');
     }
     load();
@@ -11669,13 +11676,15 @@ function HangmanSquashCourtScorer({court,host}){
 
   if(pendingResume){
     const p=pendingResume;
+    const hasProgress=(p.entities||[]).some(e=>e.steps>0||(e.windowResults||[]).length>0||e.eliminated)||(p.eliminationLog||[]).length>0;
     return <div className="hsDisplayPage"><HangmanStyles/>
-      <div className="hsDisplayTop"><span>● FOUND EXISTING GAME</span><h1>💀 Hangman Squash — Court {court}</h1></div>
-      <div className="hsChallengeBox" style={{maxWidth:'480px',margin:'0 auto'}}>
-        <p style={{margin:'0 0 10px'}}>This court already has a game in progress:</p>
+      <div className="hsDisplayTop"><span>● FOUND DATA FOR THIS COURT</span><h1>💀 Hangman Squash — Court {court}</h1></div>
+      <div className="hsChallengeBox" style={{maxWidth:'520px',margin:'0 auto'}}>
+        <p style={{margin:'0 0 10px'}}>{hasProgress?'This court already has a game in progress:':'This court has a saved setup, but no rallies played yet — check it\u2019s the right one:'}</p>
         <ul style={{margin:'0 0 12px',paddingLeft:'20px',color:'#dbeeff'}}>{(p.entities||[]).map((e,i)=><li key={i}>{e.name} — {e.eliminated?'OUT':`${e.steps}/7`}</li>)}</ul>
+        <p style={{margin:'0 0 12px',fontSize:'0.85rem',color:'#9fb0c2'}}>Challenge: {p.challenge||'—'} · {p.seriesLength>1?`Best of ${p.seriesLength}`:'Single rally'}</p>
         <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
-          <button type="button" className="primaryBtn" onClick={()=>{buildSeed(p);setPendingResume(null);}}>Resume this game</button>
+          <button type="button" className="primaryBtn" onClick={()=>{buildSeed(p);setPendingResume(null);}}>{hasProgress?'Resume this game':'Yes, use this'}</button>
           <button type="button" className="secondaryBtn" onClick={async()=>{await deleteLivePlayerRoom(roomId);setPendingResume(null);setStatus('Waiting for coach device to set up this court…');}}>Start fresh (clear it)</button>
         </div>
       </div>
