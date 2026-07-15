@@ -180,7 +180,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v375 Live pairing scoreline now shows on both Hangman Squash player-view screens (single-court Player Display and the combined All-Courts Display) - e.g. Anna 1 to 0 Gregory, updating as rallies are recorded, plus the two players currently on court are visually highlighted among the other waiting figures. Previously the running score was only visible on the coaches own scoring screen; other players had nothing to follow live.';
+const APP_VERSION='v376 Public motivator flashes: (1) Hangman Squash - a player with one limb left (escape-pending, the step before elimination) now flashes on ALL three views (coach screen, single Player Display, and the combined All-Courts Display) - previously only the single Player Display had the pulse. (2) Snakes and Ladders Player Display - a ladder square now flashes while a player is actively standing on it awaiting their next result (a live stake), and sits still/inactive when nobody is currently on it - makes the high-stakes moment visible to everyone watching, not just the coach. (3) All-Courts Display layout reworked - courts now stack one above another (full width each) instead of a side-by-side grid, hangman figures nearly doubled in size, and the page now uses more of the available width - addresses the small figures/empty black space on wide screens.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9881,6 +9881,11 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const onCourt=payload.onCourt||[];
   const winnerName=payload.winnerName||null;
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
+  const pendingByName=payload.pending||{};
+  // A ladder is "active" (pending) when a player is currently standing on that exact
+  // square awaiting their next result — flash it so everyone can see the live stake,
+  // vs. an "inactive" ladder marker that's just sitting there on the board unclaimed.
+  const activeLadderSquares=new Set(players.filter(p=>pendingByName[p.name]!=null).map(p=>p.pos));
   return <div className="playerDisplayPage slDisplayPage">
     <style>{`
 .slDisplayBoardWrap{width:100%;display:flex;justify-content:center;box-sizing:border-box;padding:2px;}
@@ -9889,6 +9894,8 @@ function SnakesLaddersPlayerDisplay({payload={}}){
 .slDisplayBoard .slMark{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#f2f7ff !important;}
 .slDisplayBoard .slTok{font-size:clamp(0.6rem,1.6vw,1.5rem) !important;min-width:clamp(1.1rem,2.6vw,2.4rem) !important;height:clamp(1.1rem,2.6vw,2.4rem) !important;line-height:clamp(1.1rem,2.6vw,2.4rem) !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slDisplayBoard .slActiveLadder{animation:slLadderPulse 1.1s ease-in-out infinite;}
+@keyframes slLadderPulse{0%,100%{box-shadow:0 0 0 2px #f5c542 inset;}50%{box-shadow:0 0 0 6px #f5c542 inset;}}
 `}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
@@ -9900,7 +9907,8 @@ function SnakesLaddersPlayerDisplay({payload={}}){
           if(n==null)return <div key={idx} className="slCell slCellEmpty"/>;
           const ci=cellInfo(n);
           const here=players.map(p=>p.pos===n?p.name:null).filter(Boolean);
-          return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}`}>
+          const active=activeLadderSquares.has(n);
+          return <div key={idx} className={`slCell${ci.show&&ci.isL?' slLadder':''}${ci.show&&ci.isS?' slSnake':''}${n===size?' slFinish':''}${active?' slActiveLadder':''}`}>
             <span className="slNum">{n}</span>
             {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
             {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
@@ -10980,7 +10988,7 @@ function HangmanStyles(){
 .hsTracks{display:flex;flex-direction:column;gap:10px;}
 .hsTrackCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:16px;}
 .hsTrackCard.eliminated{opacity:0.5;border-color:#3a2028;}
-.hsTrackCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 1px #f5c542 inset;}
+.hsTrackCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 1px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
 .hsFigureBox{flex:none;width:70px;height:80px;}
 .hsTrackInfo{flex:1;display:flex;flex-direction:column;gap:4px;}
 .hsTrackName{font-size:1.05rem;font-weight:800;color:#eaf4fb;}
@@ -11019,25 +11027,25 @@ function HangmanStyles(){
 .hsPairScoreline em{font-style:normal;font-size:0.8rem;color:#9fb0c2;margin-left:auto;}
 
 .hsDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#1a0d12 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
-.hsDisplayShell{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:24px;}
+.hsDisplayShell{width:100%;max-width:1600px;display:flex;flex-direction:column;gap:24px;}
 .hsDisplayTop{text-align:center;}
 .hsDisplayTop span{font-size:0.9rem;letter-spacing:0.3em;color:#b0708a;}
 .hsDisplayTop h1{margin:6px 0 4px;font-size:2.8rem;color:#eaf4fb;}
 .hsDisplayChallenge{text-align:center;font-size:1.4rem;font-weight:700;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:16px 20px;}
 .hsDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
-.hsRaceGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;}
-.hsRaceCourt{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:16px;}
+.hsRaceGrid{display:flex;flex-direction:column;gap:24px;width:100%;}
+.hsRaceCourt{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:24px;}
 .hsRaceCourt.winner{border-color:#1d6b3f;background:#0d1f16;}
-.hsRaceLabel{font-size:1.1rem;font-weight:800;color:#f0c49c;margin-bottom:8px;}
+.hsRaceLabel{font-size:1.5rem;font-weight:800;color:#f0c49c;margin-bottom:12px;}
 .hsRaceChallenge{font-size:0.85rem;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:7px 10px;margin-bottom:10px;}
 .hsRacePairScore{display:flex;align-items:baseline;justify-content:center;gap:10px;font-size:0.95rem;color:#eaf4fb;background:#0b1420;border:1px solid #2E6E8E;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-weight:700;}
 .hsRacePairScore strong{font-size:1.3rem;color:#f0c49c;}
-.hsRaceEntities{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;}
-.hsRaceEntity{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;}
+.hsRaceEntities{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;}
+.hsRaceEntity{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
 .hsRaceEntity.eliminated{opacity:0.4;}
-.hsRaceEntity.escapePending{outline:2px solid #f5c542;border-radius:10px;}
-.hsRaceEntityName{font-size:0.82rem;font-weight:700;color:#eaf4fb;}
-.hsRaceEntityStatus{font-size:0.68rem;color:#9fb0c2;}
+.hsRaceEntity.escapePending{outline:2px solid #f5c542;border-radius:10px;animation:hsPulse 1.1s ease-in-out infinite;}
+.hsRaceEntityName{font-size:1.15rem;font-weight:700;color:#eaf4fb;}
+.hsRaceEntityStatus{font-size:0.9rem;color:#9fb0c2;}
 .hsRaceEntityStatus.warn{color:#f5c542;font-weight:700;}
 .hsRaceEntityStatus.out{color:#f87171;font-weight:700;}
 .hsDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
@@ -11770,7 +11778,7 @@ function HangmanSquashRaceDisplay({host,courtCount}){
               {entities.map((e,ei)=>{
                 const status=hangmanStatusLabel(e);
                 return <div key={ei} className={`hsRaceEntity${e.eliminated?' eliminated':''}${e.escapePending?' escapePending':''}`}>
-                  <HangmanFigure steps={e.steps} size={56}/>
+                  <HangmanFigure steps={e.steps} size={100}/>
                   <div className="hsRaceEntityName">{e.name}</div>
                   <div className={`hsRaceEntityStatus ${status.cls}`}>{status.text}</div>
                 </div>;
