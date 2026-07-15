@@ -12,6 +12,7 @@ const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
 function liveSyncReady(){return !!(SUPABASE_URL&&SUPABASE_ANON_KEY&&SUPABASE_URL.includes('supabase.co'));}
 function makeLiveRoomId(){return `cb-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;}
+function makeLocalId(){return `${Date.now().toString(36)}${Math.random().toString(36).slice(2,6)}`;}
 function getCourtModeFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('court');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function courtRoomId(base,n){return `${base}__court${n}`;}
 function courtStandingsRoomId(base){return `${base}__standings`;}
@@ -180,7 +181,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v376 Public motivator flashes: (1) Hangman Squash - a player with one limb left (escape-pending, the step before elimination) now flashes on ALL three views (coach screen, single Player Display, and the combined All-Courts Display) - previously only the single Player Display had the pulse. (2) Snakes and Ladders Player Display - a ladder square now flashes while a player is actively standing on it awaiting their next result (a live stake), and sits still/inactive when nobody is currently on it - makes the high-stakes moment visible to everyone watching, not just the coach. (3) All-Courts Display layout reworked - courts now stack one above another (full width each) instead of a side-by-side grid, hangman figures nearly doubled in size, and the page now uses more of the available width - addresses the small figures/empty black space on wide screens.';
+const APP_VERSION='v377 Player Plans™ V0: new brand-tier Home tile. Coach-only annual plan / mesocycle / microcycle builder per player, stored under checkerboard_player_plans_v1 keyed by player name (extends existing player roster, not a parallel database). Annual plan has title/dates/objectives/competitions; mesocycles have name/dates/purpose/up to 3 priorities/notes and can be expanded to add weekly microcycles (week label/date/objective/notes). No CLA test, no Fitness link, no player-facing view yet - those are Phase 2-4.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -225,6 +226,7 @@ const INVASION_UI_STATE_KEY='checkerboardInvasionUiState';
 const COMPETITION_STATE_KEY='checkerboardCompetitionStateV100h43';
 
 const PLAYER_KEY='checkerboard_master_v54_players';
+const PLAYER_PLANS_KEY='checkerboard_player_plans_v1';
 const ATTENDANCE_HISTORY_KEY='checkerboard_attendance_history_v100h70';
 const ATTENDANCE_DATE_KEY='checkerboard_attendance_current_date_v100h70';
 const SESSION_KEY='checkerboard_master_v54_session';
@@ -4111,6 +4113,12 @@ return <div className="homeGrid homeGridV99h52">
         <div className="homeRLDDots">
           {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
         </div>
+      </button>
+
+      <style>{`.playerPlansBrandTile{color:#eaf4fb!important;background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #4fb477!important}.playerPlansBrandTile strong{color:#eaf4fb!important;font-size:2rem!important;line-height:1.1!important;display:block!important}.playerPlansBrandTile p{color:#9fb3c4!important;margin:6px 0 0 0!important;font-size:0.95rem!important}`}</style>
+      <button className="playerPlansBrandTile homeBrandCard" onClick={()=>setScreen('playerPlans')}>
+        <strong>Player Plans™</strong>
+        <p>Annual plan · mesocycles · microcycles for selected players (V0)</p>
       </button>
 
       <style>{`
@@ -15673,6 +15681,120 @@ function JuniorLadder({players=[],setPlayers=()=>{}}){
   return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Drag the ⠿ handle to reorder; ladder allocation uses ranked blocks.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{visible.length?visible.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} ref={el=>{if(el)rowRefs.current[p.name]=el;}} className={dragName===p.name?'juniorLadderRow ladderRowDragging':'juniorLadderRow'}><button type="button" className="ladderDragHandle" style={{touchAction:'none'}} onPointerDown={e=>startDrag(e,p.name)} onPointerMove={onDragMove} onPointerUp={endDrag} onPointerCancel={endDrag} aria-label="Drag to reorder">⠿</button><div className="ladderRankBadge">{dragName?`#${idx+1}`:`#${rawRank===''?'—':rawRank}`}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
 }
 
+function emptyAnnualPlan(playerName){
+  const year=new Date().getFullYear();
+  return {id:makeLocalId(),playerName,title:`${playerName}'s Annual Plan`,startDate:`${year}-01-01`,endDate:`${year}-12-31`,mainObjectives:'',competitions:'',status:'Active',mesocycles:[]};
+}
+function emptyMesocycle(){return {id:makeLocalId(),name:'',startDate:'',endDate:'',purpose:'',priority1:'',priority2:'',priority3:'',notes:'',microcycles:[]};}
+function emptyMicrocycle(){return {id:makeLocalId(),weekLabel:'',startDate:'',objective:'',notes:''};}
+function loadAllPlayerPlans(){try{const p=JSON.parse(localStorage.getItem(PLAYER_PLANS_KEY));return p&&typeof p==='object'?p:{};}catch{return {};}}
+
+function PlayerPlans({players}){
+  const[plansByPlayer,setPlansByPlayer]=useState(()=>loadAllPlayerPlans());
+  useEffect(()=>{try{localStorage.setItem(PLAYER_PLANS_KEY,JSON.stringify(plansByPlayer));}catch{}},[plansByPlayer]);
+  const[selected,setSelected]=useState('');
+  const[openMeso,setOpenMeso]=useState({});
+  const rosterNames=useMemo(()=>[...new Set((players||[]).map(p=>p&&p.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b)),[players]);
+  const plan=selected?plansByPlayer[selected]:null;
+
+  function createPlan(name){setPlansByPlayer(prev=>({...prev,[name]:emptyAnnualPlan(name)}));}
+  function updatePlanField(field,value){setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],[field]:value}}));}
+  function archivePlan(){if(!plan)return;if(!window.confirm(`Archive the annual plan for ${selected}? It will be hidden from the active list but not deleted.`))return;updatePlanField('status',plan.status==='Archived'?'Active':'Archived');}
+  function deletePlan(){if(!plan)return;if(!window.confirm(`Delete the annual plan for ${selected}? This cannot be undone.`))return;setPlansByPlayer(prev=>{const next={...prev};delete next[selected];return next;});}
+
+  function addMesocycle(){if(!plan)return;const meso=emptyMesocycle();setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:[...prev[selected].mesocycles,meso]}}));setOpenMeso(prev=>({...prev,[meso.id]:true}));}
+  function updateMesocycle(mesoId,field,value){setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:prev[selected].mesocycles.map(m=>m.id===mesoId?{...m,[field]:value}:m)}}));}
+  function deleteMesocycle(mesoId){if(!window.confirm('Delete this mesocycle and all its microcycles?'))return;setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:prev[selected].mesocycles.filter(m=>m.id!==mesoId)}}));}
+  function toggleMeso(mesoId){setOpenMeso(prev=>({...prev,[mesoId]:!prev[mesoId]}));}
+
+  function addMicrocycle(mesoId){const micro=emptyMicrocycle();setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:prev[selected].mesocycles.map(m=>m.id===mesoId?{...m,microcycles:[...m.microcycles,micro]}:m)}}));}
+  function updateMicrocycle(mesoId,microId,field,value){setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:prev[selected].mesocycles.map(m=>m.id===mesoId?{...m,microcycles:m.microcycles.map(w=>w.id===microId?{...w,[field]:value}:w)}:m)}}));}
+  function deleteMicrocycle(mesoId,microId){setPlansByPlayer(prev=>({...prev,[selected]:{...prev[selected],mesocycles:prev[selected].mesocycles.map(m=>m.id===mesoId?{...m,microcycles:m.microcycles.filter(w=>w.id!==microId)}:m)}}));}
+
+  const activeCount=Object.values(plansByPlayer).filter(p=>p&&p.status!=='Archived').length;
+
+  return <div className="page playerPlansPage">
+    <style>{`
+.playerPlansLayout{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.playerPlansRoster{min-width:220px;max-width:280px;flex:0 0 auto;background:#0e141b;border:1px solid #2E6E8E;border-radius:12px;padding:10px;max-height:70vh;overflow:auto}
+.playerPlansRoster button{display:block;width:100%;text-align:left;background:transparent;border:none;color:#e2f1fc;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:0.95rem}
+.playerPlansRoster button.activePP{background:#2E6E8E;color:#fff;font-weight:700}
+.playerPlansRoster button.hasPlanPP{border-left:3px solid #4fb477}
+.playerPlansMain{flex:1 1 420px;min-width:300px}
+.ppMesoCard{background:#131b24;border:1px solid #2E6E8E55;border-radius:12px;padding:12px;margin-bottom:12px}
+.ppMesoHead{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+.ppMicroRow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0;padding:6px;background:#0e141b;border-radius:8px}
+.ppMicroRow input{flex:1 1 120px}
+.ppPriorityRow{display:flex;gap:6px;flex-wrap:wrap}
+.ppPriorityRow input{flex:1 1 150px}
+.ppStatusBadge{font-size:0.75rem;padding:2px 8px;border-radius:20px;background:#4fb47733;color:#7fe0a0;border:1px solid #4fb477}
+.ppStatusBadge.archivedPP{background:#8884;color:#bbb;border-color:#888}
+`}</style>
+    <div className="pageTop"><h1>Player Plans™</h1><p className="mutedText">Annual plan · mesocycles · microcycles — coach view (V0). {activeCount} active plan{activeCount===1?'':'s'}.</p></div>
+    <div className="playerPlansLayout">
+      <div className="playerPlansRoster">
+        <strong style={{display:'block',marginBottom:6}}>Players</strong>
+        {rosterNames.length===0&&<p className="mutedText">No players in the roster yet. Add players via Players → Attendance.</p>}
+        {rosterNames.map(name=><button key={name} className={(selected===name?'activePP ':'')+(plansByPlayer[name]?'hasPlanPP':'')} onClick={()=>setSelected(name)}>{name}{plansByPlayer[name]&&plansByPlayer[name].status==='Archived'?' (archived)':''}</button>)}
+      </div>
+      <div className="playerPlansMain">
+        {!selected&&<div className="placeholder">Select a player to view or create their annual plan.</div>}
+        {selected&&!plan&&<div className="formCard"><h3>No annual plan yet for {selected}</h3><button className="primaryBtn" onClick={()=>createPlan(selected)}>+ Create Annual Plan</button></div>}
+        {selected&&plan&&<>
+          <div className="formCard">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+              <h3>Annual Plan <span className={'ppStatusBadge'+(plan.status==='Archived'?' archivedPP':'')}>{plan.status||'Active'}</span></h3>
+              <div className="buttonRow">
+                <button className="secondaryBtn" onClick={archivePlan}>{plan.status==='Archived'?'Reactivate':'Archive'}</button>
+                <button className="secondaryBtn dangerBtn" onClick={deletePlan}>Delete Plan</button>
+              </div>
+            </div>
+            <input placeholder="Plan title" value={plan.title} onChange={e=>updatePlanField('title',e.target.value)}/>
+            <div className="buttonRow"><label>Start<input type="date" value={plan.startDate} onChange={e=>updatePlanField('startDate',e.target.value)}/></label><label>End<input type="date" value={plan.endDate} onChange={e=>updatePlanField('endDate',e.target.value)}/></label></div>
+            <textarea placeholder="Main annual objectives" value={plan.mainObjectives} onChange={e=>updatePlanField('mainObjectives',e.target.value)}/>
+            <textarea placeholder="Main competitions / peak events" value={plan.competitions} onChange={e=>updatePlanField('competitions',e.target.value)}/>
+          </div>
+
+          <div className="gameCard">
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2>Mesocycles</h2><button className="primaryBtn" onClick={addMesocycle}>+ Add Mesocycle</button></div>
+            {plan.mesocycles.length===0&&<p className="mutedText">No mesocycles yet. A mesocycle is normally a 3–8 week block with its own purpose and up to three priorities.</p>}
+            {plan.mesocycles.map(meso=><div className="ppMesoCard" key={meso.id}>
+              <div className="ppMesoHead" onClick={()=>toggleMeso(meso.id)}>
+                <strong>{meso.name||'Untitled mesocycle'}{meso.startDate?` · ${meso.startDate}`:''}{meso.endDate?` → ${meso.endDate}`:''}</strong>
+                <span>{openMeso[meso.id]?'▲':'▼'}</span>
+              </div>
+              {openMeso[meso.id]&&<div onClick={e=>e.stopPropagation()}>
+                <input placeholder="Mesocycle name (e.g. Pre-Competition)" value={meso.name} onChange={e=>updateMesocycle(meso.id,'name',e.target.value)}/>
+                <div className="buttonRow"><label>Start<input type="date" value={meso.startDate} onChange={e=>updateMesocycle(meso.id,'startDate',e.target.value)}/></label><label>End<input type="date" value={meso.endDate} onChange={e=>updateMesocycle(meso.id,'endDate',e.target.value)}/></label></div>
+                <textarea placeholder="Main purpose of this block" value={meso.purpose} onChange={e=>updateMesocycle(meso.id,'purpose',e.target.value)}/>
+                <div className="ppPriorityRow">
+                  <input placeholder="Priority 1" value={meso.priority1} onChange={e=>updateMesocycle(meso.id,'priority1',e.target.value)}/>
+                  <input placeholder="Priority 2 (optional)" value={meso.priority2} onChange={e=>updateMesocycle(meso.id,'priority2',e.target.value)}/>
+                  <input placeholder="Priority 3 (optional)" value={meso.priority3} onChange={e=>updateMesocycle(meso.id,'priority3',e.target.value)}/>
+                </div>
+                <textarea placeholder="Coach notes" value={meso.notes} onChange={e=>updateMesocycle(meso.id,'notes',e.target.value)}/>
+
+                <div style={{marginTop:8}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><strong>Microcycles (weekly)</strong><button className="secondaryBtn" onClick={()=>addMicrocycle(meso.id)}>+ Add Week</button></div>
+                  {meso.microcycles.length===0&&<p className="mutedText">No weeks added yet.</p>}
+                  {meso.microcycles.map(micro=><div className="ppMicroRow" key={micro.id}>
+                    <input placeholder="Week (e.g. Wk 1)" style={{flex:'0 0 90px'}} value={micro.weekLabel} onChange={e=>updateMicrocycle(meso.id,micro.id,'weekLabel',e.target.value)}/>
+                    <input type="date" value={micro.startDate} onChange={e=>updateMicrocycle(meso.id,micro.id,'startDate',e.target.value)}/>
+                    <input placeholder="Weekly objective" value={micro.objective} onChange={e=>updateMicrocycle(meso.id,micro.id,'objective',e.target.value)}/>
+                    <input placeholder="Notes" value={micro.notes} onChange={e=>updateMicrocycle(meso.id,micro.id,'notes',e.target.value)}/>
+                    <button className="secondaryBtn dangerBtn" onClick={()=>deleteMicrocycle(meso.id,micro.id)}>✕</button>
+                  </div>)}
+                </div>
+                <div className="buttonRow" style={{marginTop:8}}><button className="secondaryBtn dangerBtn" onClick={()=>deleteMesocycle(meso.id)}>Delete Mesocycle</button></div>
+              </div>}
+            </div>)}
+          </div>
+        </>}
+      </div>
+    </div>
+  </div>;
+}
+
 function PlayerHub({players,setPlayers,session,setSession}){
   const [tab,setTab]=useState('attendance');
   return <div className="page playerHubPage">
@@ -20682,7 +20804,7 @@ button,select{-webkit-appearance:none;appearance:none;}
       {screen==='serveReturn'&&<ServeReturnModule setScreen={go} setSession={setSession}/>}
       {screen==='bucketLob'&&<LobModule setScreen={go} setSession={setSession}/>}
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
-{screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
+{screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 
