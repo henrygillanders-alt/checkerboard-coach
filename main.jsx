@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v380 Built the four outstanding pinned tasks. (1) MATCHPLAY MULTI-COURT: Matchplay now runs up to 6 simultaneous pairings. Per-court player selection, independent per-court scoring, its own -matchplay live room namespace and full Court Monitor integration (poll plus Clear this court). Court 1 keeps the matchplay-main score id, so the Competition Player Display, projection and status panel are unchanged. Court layout persists with the rest of the competition state. (2) SETUP PERSISTENCE for Snakes and Ladders, Ludo and Noughts and Crosses (cbSnakesLaddersSetupV1, cbLudoSetupV1, cbNoughtsCrossesSetupV1), matching the Hangman pattern - coach configuration only, live boards and hand-offs are never restored. Each has a Reset to defaults button that clears state in place rather than reloading, since reload kicks back to Home. (3) HANGMAN RULES PANEL: one Rules and rationale coach reference covering the track, escape, pairing modes and resolution styles, replacing rules scattered across inline setup hints. (4) GAMES LIBRARY NAV: the page header, family tabs and stage intro now collapse while a game class is open inside the Stabilise and Compete tabs, so the embedded route matches the already-fixed direct route. Also replaced the three native select dropdowns in the Matchplay panel (P1, P2, Scoring format) with the shared hsModeBtn chip pattern, since native selects render white iOS chrome.';
+const APP_VERSION='v385 Fixed the Hangman player view showing the wrong setup. The setup was always being sent - resolutionStyle has been in the court payload all along and the player device reads it - but every screen that named the resolution style ignored it and hardcoded Best of N. Set Play all 3 rallies or Sudden death and the player view still said Best of 3, which looks exactly like the link failing to transmit. It survived this long because the coach device mislabelled it identically, so both screens agreed with each other and both were wrong. All four sites now read from one shared hangmanResolutionLabel helper: the coach current-challenge line, the in-court scoreline (which renders on the coach device and the scoring device), the scoring-device confirmation panel, and the player display. The in-court scoreline also no longer claims first to N for styles that do not end early - Play all N now reads all N rallies no early finish, and Sudden death reads ends on the first met challenge.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -219,6 +219,17 @@ function RLDBadge({level,size='sm'}){
   return <span className="rldBadgeSm" style={{background:r.bg,borderColor:r.color,color:r.textColor}}>
     <span className="rldDotSm" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>
     {r.short}
+  </span>;
+}
+function RLDSpanBadge({items,size='sm'}){
+  // For a container of activities. Reports the range of representativeness its contents
+  // actually cover rather than claiming a single level for the wrapper.
+  const levels=(items||[]).map(x=>x&&x.rld).filter(v=>v!==undefined&&v!==null);
+  if(!levels.length)return null;
+  const lo=Math.min(...levels),hi=Math.max(...levels);
+  if(lo===hi)return <RLDBadge level={lo} size={size}/>;
+  return <span style={{display:'inline-flex',alignItems:'center',gap:'5px',flexWrap:'wrap'}}>
+    <RLDBadge level={lo} size={size}/><span style={{opacity:0.7}}>—</span><RLDBadge level={hi} size={size}/>
   </span>;
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4124,18 +4135,14 @@ return <div className="homeGrid homeGridV99h52">
         </div>
       </button>
 
-      <style>{`.playerPlansBrandTile{color:#eaf4fb!important;background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #4fb477!important}.playerPlansBrandTile strong{color:#eaf4fb!important;font-size:2rem!important;line-height:1.1!important;display:block!important}.playerPlansBrandTile p{color:#9fb3c4!important;margin:6px 0 0 0!important;font-size:0.95rem!important}`}</style>
-      <button className="playerPlansBrandTile homeBrandCard" onClick={()=>setScreen('playerPlans')}>
-        <strong>Player Plans™</strong>
-        <p>Annual plan · mesocycles · microcycles for selected players (V0)</p>
-      </button>
-
       <style>{`
 .checkerboardHomeCard{background-color:#0e141b !important;background-image:linear-gradient(135deg, rgba(12,18,26,.72), rgba(28,79,102,.74)), repeating-conic-gradient(#eef2f6 0% 25%, #11161c 0% 50%) !important;background-size:auto, 22px 22px !important;border:2px solid #2E6E8E !important;box-shadow:0 4px 16px rgba(0,0,0,.42) !important;}
 .checkerboardHomeCard h2{color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,.7) !important;}
 .checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
 `}</style>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
+      <style>{`.playerPlansHomeCard{border:1px solid #4fb477 !important;}`}</style>
+      <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2></button>
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
@@ -7115,18 +7122,18 @@ function TacticalPressureModule({onAddToSession}){
 const PRESSURE_FORMAT_FILTERS=['ALL','1-2-1','1-2-2','1-2-3','P1 & P2','P1, P2, P3','P1, P2, P3, P4'];
 
 const COACH_PRESSURE_EXERCISES=[
-  {title:'Exercise 1 — Tempo Drives',setup:'Coach on service box feeds straight drops. 2 players rotating.',task:'P1 drives straight and recovers through T. P2 rotates. Continuous.',focus:['Return to T','Racquet head above wrist','Head stable at contact','Quiet Eye']},
-  {title:'Exercise 2 — Drive and Counter Drop',setup:'Coach on service box feeds straight drops. 2 players rotating.',task:'P1 drives straight and recovers through T; P2 rotates. P1 may choose a straight drive or a counter drop. Continuous.',focus:['Same preparation for drive and drop','Show drop then drive','Show drive then drop','Keep ball tight to side wall']},
-  {title:'Exercise 3 — Front and Back Drive with Counter Drop',setup:'Coach feeds volley drop (front) or volley drive (back).',task:'Front player drives or counter drops. Back player drives straight. Rotate.',focus:['Counter drop the short ball','Front-back transition','Recovery discipline']},
-  {title:'Exercise 4 — Front and Back Drive with Crosscourt Recognition',setup:'Coach feeds straight drop, straight drive, or occasional crosscourt drive. Progression: start with drop only.',task:'Front player drives straight or counter drops. Back player drives straight. A crosscourt feed must be boasted.',focus:['Counter drop the short ball','Crosscourt must be boasted','Reading ball shape','Decision making under pressure']},
-  {title:'Exercise 5 — Counter Drop with Drive',setup:'Coach at back boasts or drops.',task:'P1 drops. P2 counter drops. P1 drives. Continuous.',focus:['Quality of drive','Counter-drop recovery','Recover with intent']},
-  {title:'Exercise 6 — Counter Drop with Drive and Volley Drive',setup:'Coach at back boasts or drops.',task:'P1 drops. P2 counter drops. P1 drives. P2 volleys deep. Continuous.',focus:['Counter-drop recovery','Volley interception','Physical pressure with control']},
-  {title:'Exercise 7 — Volley Intercept (Straight)',setup:'Coach at back boasts or drops.',task:'P1 drives straight. P2 volleys straight — the volley must be taken before the service box. P1 tries to pass P2’s volley attempt. Continuous.',focus:['Volley before service box','Take time away','Early recognition','Return to T']},
-  {title:'Exercise 8 — Volley Intercept (Straight/Crosscourt)',setup:'Coach at back boasts or drops.',task:'P1 drives straight or crosscourt. P2 volleys straight, before the service box. Continuous.',focus:['Volley before service box','Reading ball shape','Early recognition','Commitment to first movement']},
-  {title:'Exercise 9 — Double Volley',setup:'Coach at back feeds a straight drive.',task:'P1 intercepts with a straight drop. P2 drives straight or crosscourt. P1 volleys deep. Continuous.',focus:['Volley interception','Front-back transition','Take time away','Recover with intent']},
-  {title:'Exercise 10 — Double Volley with Boast Option',setup:'Coach at back feeds a straight drive.',task:'P1 intercepts with a straight volley drop or a volley 2-wall boast. P2 drives straight or crosscourt. P1 volleys deep. Continuous.',focus:['Disguise first volley','Decision making under pressure','Volley interception','Return to T']},
-  {title:'Exercise 11 — Back Drop to Volley Intercept',setup:'Coach at mid court drives deep.',task:'P1 moves back and straight drops. P2 drives straight or crosscourt. P1 recovers and volleys. Continuous.',focus:['Reset from the back','Recover with intent','Volley interception','Early recognition']},
-  {title:'Exercise 12 — Back Drop / Boast to Volley Intercept',setup:'Coach at mid court drives deep.',task:'P1 moves back and plays a straight drop or 2-wall boast. P2 drives straight or crosscourt. P1 recovers and volleys. Continuous.',focus:['Disguise back-court shot','Decision making under pressure','Volley interception','Return to T']},
+  {title:'Exercise 1 — Tempo Drives',setup:'Coach on service box feeds straight drops. 2 players rotating.',task:'P1 drives straight and recovers through T. P2 rotates. Continuous.',focus:['Return to T','Racquet head above wrist','Head stable at contact','Quiet Eye'],rld:1},
+  {title:'Exercise 2 — Drive and Counter Drop',setup:'Coach on service box feeds straight drops. 2 players rotating.',task:'P1 drives straight and recovers through T; P2 rotates. P1 may choose a straight drive or a counter drop. Continuous.',focus:['Same preparation for drive and drop','Show drop then drive','Show drive then drop','Keep ball tight to side wall'],rld:2},
+  {title:'Exercise 3 — Front and Back Drive with Counter Drop',setup:'Coach feeds volley drop (front) or volley drive (back).',task:'Front player drives or counter drops. Back player drives straight. Rotate.',focus:['Counter drop the short ball','Front-back transition','Recovery discipline'],rld:2},
+  {title:'Exercise 4 — Front and Back Drive with Crosscourt Recognition',setup:'Coach feeds straight drop, straight drive, or occasional crosscourt drive. Progression: start with drop only.',task:'Front player drives straight or counter drops. Back player drives straight. A crosscourt feed must be boasted.',focus:['Counter drop the short ball','Crosscourt must be boasted','Reading ball shape','Decision making under pressure'],rld:2},
+  {title:'Exercise 5 — Counter Drop with Drive',setup:'Coach at back boasts or drops.',task:'P1 drops. P2 counter drops. P1 drives. Continuous.',focus:['Quality of drive','Counter-drop recovery','Recover with intent'],rld:1},
+  {title:'Exercise 6 — Counter Drop with Drive and Volley Drive',setup:'Coach at back boasts or drops.',task:'P1 drops. P2 counter drops. P1 drives. P2 volleys deep. Continuous.',focus:['Counter-drop recovery','Volley interception','Physical pressure with control'],rld:1},
+  {title:'Exercise 7 — Volley Intercept (Straight)',setup:'Coach at back boasts or drops.',task:'P1 drives straight. P2 volleys straight — the volley must be taken before the service box. P1 tries to pass P2’s volley attempt. Continuous.',focus:['Volley before service box','Take time away','Early recognition','Return to T'],rld:3},
+  {title:'Exercise 8 — Volley Intercept (Straight/Crosscourt)',setup:'Coach at back boasts or drops.',task:'P1 drives straight or crosscourt. P2 volleys straight, before the service box. Continuous.',focus:['Volley before service box','Reading ball shape','Early recognition','Commitment to first movement'],rld:3},
+  {title:'Exercise 9 — Double Volley',setup:'Coach at back feeds a straight drive.',task:'P1 intercepts with a straight drop. P2 drives straight or crosscourt. P1 volleys deep. Continuous.',focus:['Volley interception','Front-back transition','Take time away','Recover with intent'],rld:3},
+  {title:'Exercise 10 — Double Volley with Boast Option',setup:'Coach at back feeds a straight drive.',task:'P1 intercepts with a straight volley drop or a volley 2-wall boast. P2 drives straight or crosscourt. P1 volleys deep. Continuous.',focus:['Disguise first volley','Decision making under pressure','Volley interception','Return to T'],rld:3},
+  {title:'Exercise 11 — Back Drop to Volley Intercept',setup:'Coach at mid court drives deep.',task:'P1 moves back and straight drops. P2 drives straight or crosscourt. P1 recovers and volleys. Continuous.',focus:['Reset from the back','Recover with intent','Volley interception','Early recognition'],rld:3},
+  {title:'Exercise 12 — Back Drop / Boast to Volley Intercept',setup:'Coach at mid court drives deep.',task:'P1 moves back and plays a straight drop or 2-wall boast. P2 drives straight or crosscourt. P1 recovers and volleys. Continuous.',focus:['Disguise back-court shot','Decision making under pressure','Volley interception','Return to T'],rld:3},
 ];
 
 const UNIVERSAL_PRESSURE_COACHING_NOTES=['Return to T','Racquet head above wrist between shots','Stable head on contact','Stay in shot until follow-through complete','Quiet Eye','Recover before next movement'];
@@ -7163,7 +7170,7 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:[{title:'Single Point',detail:'One point at a time. Immediate restart.'},{title:'Must Win Two',detail:'Player must win two pressure points in a row.'},{title:'Forfeit Mode',detail:'Player forfeit after losing each pressure point.'}]
   },
   {
-    id:'pp4-live-call',code:'PP4',title:'Live Call Pressure',format:'1-2-1',theme:'Pressure → Opportunity → Competition',duration:'8–10 min',rld:5,
+    id:'pp4-live-call',code:'PP4',title:'Live Call Pressure',format:'1-2-1',theme:'Pressure → Opportunity → Competition',duration:'8–10 min',rld:4,
     summary:'Coach remains central. Player returns controlled balls to the coach corridor. Coach randomly calls LIVE and the current rally becomes competitive.',
     setup:'Coach stands in/near the T corridor with multiple balls. Player starts on T. Player sends controlled shots back into the coach corridor so the coach can reapply pressure without running.',
     task:'During pressure phase, player survives, recovers and maintains control. When coach calls LIVE, the rally becomes fully competitive and the player plays to win.',
@@ -7184,7 +7191,7 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:[{title:'Stage 1 — Controlled Build',detail:'No open rally.'},{title:'Stage 2 — Build + Attack',detail:'Three build shots. Fourth shot attack.'},{title:'Stage 3 — Build + Attack + Open Rally',detail:'Fourth shot becomes attacking opportunity. Player does not need to win with fourth shot. Open rally continues until rally conclusion.'}]
   },
   {
-    id:'pp6-tempo-pressure',code:'PP6',title:'Tempo Pressure',format:'1-2-1',theme:'Maintaining quality at speed',duration:'6–10 min',rld:4,
+    id:'pp6-tempo-pressure',code:'PP6',title:'Tempo Pressure',format:'1-2-1',theme:'Maintaining quality at speed',duration:'6–10 min',rld:1,
     summary:'Coach increases tempo while player must maintain shot quality, recovery quality and decision quality.',
     setup:'Coach central with multiple balls. Player starts on T. Coach controls feed tempo and spacing.',
     task:'Maintain controlled shot quality under faster feed frequency. Player must not solve pressure by hitting harder or rushing.',
@@ -7194,7 +7201,7 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:[{title:'Stable Tempo',detail:'Coach keeps a steady rhythm.'},{title:'Tempo Spike',detail:'Coach increases speed for 10–15 seconds.'},{title:'Random Tempo',detail:'Coach changes tempo unpredictably.'}]
   },
   {
-    id:'pp7-121-pressure',code:'PP7',title:'1-2-1 Pressure',format:'1-2-1',theme:'Coach-player pressure exercises',duration:'8–12 min',rld:4,
+    id:'pp7-121-pressure',code:'PP7',title:'1-2-1 Pressure',format:'1-2-1',theme:'Coach-player pressure exercises',duration:'8–12 min',rld:1,
     summary:'Coach-player pressure exercises where the player carries physical pressure while maintaining shot quality.',
     setup:'Coach works centrally with a single player. Use feeds, short live phases and controlled reset points.',
     task:'Maintain technical and tactical quality under repeated coach pressure. Recover before each next movement.',
@@ -7204,7 +7211,7 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:[{title:'Predictable',detail:'Coach feeds a known pattern until quality is stable.'},{title:'Variable',detail:'Coach varies depth, height and tempo.'},{title:'Live Finish',detail:'Coach calls LIVE after a pressure sequence.'}]
   },
   {
-    id:'pp8-coach-pressure-progressions',code:'PP8',title:'Coach Pressure Progressions',format:'1-2-2',theme:'Twelve coach-fed pressure exercises',duration:'12–18 min',rld:4,
+    id:'pp8-coach-pressure-progressions',code:'PP8',title:'Coach Pressure Progressions',format:'1-2-2',theme:'Twelve coach-fed pressure exercises',duration:'12–18 min',
     summary:'Twelve 1-2-2 coach pressure exercises. Two players rotate while the coach builds physical stress and demands shot quality.',
     setup:'Coach on or near service box depending on exercise. Two players rotate after each feed or short sequence.',
     task:'Work through the twelve exercises or select the exercise that matches the player problem.',
@@ -7216,7 +7223,7 @@ const PHYSICAL_PRESSURE_GAMES=[
     progressions:COACH_PRESSURE_EXERCISES.map((ex,i)=>({title:ex.title.replace(/^Exercise \d+ — /,''),detail:ex.task}))
   },
   {
-    id:'pp9-six-progression-series',code:'PP9',title:'Twelve Progression Pressure Series',format:'1-2-2',theme:'All twelve progressions on one page',duration:'12–18 min',rld:4,
+    id:'pp9-six-progression-series',code:'PP9',title:'Twelve Progression Pressure Series',format:'1-2-2',theme:'All twelve progressions on one page',duration:'12–18 min',
     summary:'A single expandable page for the full twelve-progression pressure series. Use it as a complete session ladder or select one progression as the day’s pressure focus.',
     setup:'Coach controls the series. Two players rotate. Start at the simplest exercise that preserves quality.',
     task:'Progress only when the player can maintain control, recovery discipline and quiet eye under the previous pressure level.',
@@ -7247,7 +7254,7 @@ function PhysicalPressureGameDetail({game,onBack}){
       <div className="pressureExerciseHeaderText">
         <h2>{game.title}</h2>
         <p className="pressureExerciseSub">{game.theme}</p>
-        <RLDBadge level={game.rld} size="lg"/>
+        {game.rld!==undefined?<RLDBadge level={game.rld} size="lg"/>:<RLDSpanBadge items={game.exercises} size="lg"/>}
       </div>
     </div>
     <div className="pressureDuration pressureFormatLine"><strong>Format</strong><span>{game.format}</span></div>
@@ -7264,7 +7271,7 @@ function PhysicalPressureGameDetail({game,onBack}){
       <strong>Exercises</strong>
       <div className="pressureSequenceSteps">
         {game.exercises.map((ex,i)=><div key={i} className="pressureExerciseDetailCard">
-          <div className="pressureExerciseDetailTop"><span className="pressureSeqLabel">{i+1}</span><strong>{ex.title}</strong></div>
+          <div className="pressureExerciseDetailTop"><span className="pressureSeqLabel">{i+1}</span><strong>{ex.title}</strong>{ex.rld!==undefined&&<RLDBadge level={ex.rld}/>}</div>
           <p><strong>Setup:</strong> {ex.setup}</p>
           <p><strong>Task:</strong> {ex.task}</p>
           <div className="pressureMiniChips">{ex.focus.map((item,j)=><span key={j}>{item}</span>)}</div>
@@ -7352,7 +7359,7 @@ function PressureModule({setScreen}){
             onKeyDown={e=>e.key==='Enter'&&setActiveExercise(ex.id)}>
             <div className="pressureExerciseTileTop">
               <span className="pressureExerciseCode">{ex.code}</span>
-              <RLDBadge level={ex.rld}/>
+              {ex.rld!==undefined?<RLDBadge level={ex.rld}/>:<RLDSpanBadge items={ex.exercises}/>}
             </div>
             <strong>{ex.title}</strong>
             <span className="pressureFormatTag">Format: {ex.format}</span>
@@ -11110,6 +11117,16 @@ const HANGMAN_MAX_STEPS=7;
 const HANGMAN_ESCAPE_STEP=6;
 const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner','Front wall finish'];
 const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Best of 3'},{n:5,label:'Best of 5'}];
+// The resolution style decides what a rally window actually means. Every screen that
+// names it — coach setup, in-court scoreline, scoring device, player display — reads it
+// from here, so they cannot drift apart and quietly disagree with the coach's setting.
+function hangmanResolutionLabel(seriesLength,resolutionStyle){
+  const n=Number(seriesLength)||1;
+  if(n<=1)return 'Single rally';
+  if(resolutionStyle==='fullWindow')return `Play all ${n} rallies`;
+  if(resolutionStyle==='suddenDeath')return 'Sudden death';
+  return `Best of ${n}`;
+}
 
 function hangmanFigureParts(steps){
   // Non-linear staging, one body part per step: rope/beam(1) head(2) body(3) armL(4) armR(5) legL(6, last-chance) legR+face(7, out).
@@ -11355,7 +11372,11 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
         <span>{pairA.name}</span>
         <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
         <span>{pairB.name}</span>
-        <em>(first to {Math.ceil(seriesLength/2)} — Best of {seriesLength})</em>
+        <em>({resolutionStyle==='fullWindow'
+          ? `all ${seriesLength} rallies — no early finish`
+          : resolutionStyle==='suddenDeath'
+            ? 'sudden death — ends on the first met challenge'
+            : `first to ${Math.ceil(seriesLength/2)} — Best of ${seriesLength}`})</em>
       </div>}
       <div className="hsPairScoreCols">
         <div className="hsPairScoreCol">
@@ -11642,7 +11663,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <div className="hsLabel">Current challenge — applies to all courts, update any time</div>
       <input type="text" className="hsChallengeInput" value={challenge} onChange={e=>setChallenge(e.target.value)} placeholder="e.g. Win the rally via a boast"/>
       <div className="hsChips">{HANGMAN_CHALLENGE_PRESETS.map(c=><button type="button" key={c} className="hsChip" onClick={()=>setChallenge(c)}>{c}</button>)}</div>
-      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · Best of ${seriesLength}`:''}</div>
+      <div className="hsCurrentChallenge">🎯 {challenge}{seriesLength>1?` · ${hangmanResolutionLabel(seriesLength,resolutionStyle)}`:''}</div>
       {seriesLength>1&&<p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.78rem'}}>
         {resolutionStyle==='fullWindow'
           ? `Play all ${seriesLength} rallies mode: every pairing always plays all ${seriesLength} rallies before it's decided.`
@@ -11732,7 +11753,7 @@ function HangmanSquashCourtScorer({court,host}){
       <div className="hsChallengeBox" style={{maxWidth:'520px',margin:'0 auto'}}>
         <p style={{margin:'0 0 10px'}}>{hasProgress?'This court already has a game in progress:':'This court has a saved setup, but no rallies played yet — check it\u2019s the right one:'}</p>
         <ul style={{margin:'0 0 12px',paddingLeft:'20px',color:'#dbeeff'}}>{(p.entities||[]).map((e,i)=><li key={i}>{e.name} — {e.eliminated?'OUT':`${e.steps}/7`}</li>)}</ul>
-        <p style={{margin:'0 0 12px',fontSize:'0.85rem',color:'#9fb0c2'}}>Challenge: {p.challenge||'—'} · {p.seriesLength>1?`Best of ${p.seriesLength}`:'Single rally'}</p>
+        <p style={{margin:'0 0 12px',fontSize:'0.85rem',color:'#9fb0c2'}}>Challenge: {p.challenge||'—'} · {hangmanResolutionLabel(p.seriesLength,p.resolutionStyle)}</p>
         <div style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
           <button type="button" className="primaryBtn" onClick={()=>{buildSeed(p);setPendingResume(null);}}>{hasProgress?'Resume this game':'Yes, use this'}</button>
           <button type="button" className="secondaryBtn" onClick={async()=>{await deleteLivePlayerRoom(roomId);setPendingResume(null);setStatus('Waiting for coach device to set up this court…');}}>Start fresh (clear it)</button>
@@ -11769,7 +11790,7 @@ function HangmanSquashPlayerDisplay({payload={}}){
     <HangmanStyles/>
     <div className="hsDisplayShell">
       <div className="hsDisplayTop"><span>LIVE · ESCALATING JEOPARDY{payload.courtLabel?(' · '+payload.courtLabel):''}</span><h1>💀 Hangman Squash</h1></div>
-      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · Best of ${payload.seriesLength}`:''}</div>}
+      {!winner&&payload.challenge&&<div className="hsDisplayChallenge">🎯 {payload.challenge}{payload.seriesLength>1?` · ${hangmanResolutionLabel(payload.seriesLength,payload.resolutionStyle)}`:''}</div>}
       {!winner&&payload.seriesLength>1&&pairA&&pairB&&<div className="hsDisplayPairScore">
         <span className="hsDisplayPairName">{pairA.name}</span>
         <strong>{(pairA.windowResults||[]).filter(r=>r==='met'||r==='won').length} – {(pairB.windowResults||[]).filter(r=>r==='met'||r==='won').length}</strong>
