@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v393 Ludo all-courts display and an honest master-screen button. (1) Open Court Monitor (master screen) was literally setScreen(courtMonitor) - the app-wide King of Courts, not a Ludo screen. It shows whatever any module last left in the court rooms, which is why opening it from Ludo showed an old Snakes and Ladders setup under a King of Courts title. The button is shared by four modules and is now labelled Open Court Monitor (all games, all courts) so it says what it is instead of implying it belongs to the module you launched it from. (2) Ludo could not show all courts unless you were in Race mode. It could not simply be ungated: the display declares one overall winner and states that the first player on any court to get all 4 pieces Home wins - untrue in Separate games per court, where each court is its own game. The payload had no way to tell the two apart either, since its mode field is the rotation setting, not race-vs-separate. The Ludo court payload now carries competitionMode, the display branches on it (race keeps the combined leaderboard; separate shows each court as its own game with its own leader and winner, and makes no cross-court claim), and the link is offered whenever courts>1 - matching Hangman, which was the only module already doing this. Label follows the mode. The race path itself is unchanged. Noughts and Crosses still gates its display to race mode and has the same limitation.';
+const APP_VERSION='v394 Fixes the blank Ludo screen introduced in v393. Adding competitionMode to the Ludo settings memo put it seven lines above the useState that declares it, so the component read a const still in its temporal dead zone and threw ReferenceError on first render, unmounting the tree. competitionMode is now declared before the memo that reads it. Nothing else from v393 changes: the all-courts display still branches on race vs separate, the link still appears whenever courts>1, and the Court Monitor buttons keep their honest label. Note for future work: esbuild compiles a TDZ error perfectly happily because it is valid syntax and only fails at runtime, so the mandatory compile check cannot catch this class of bug on its own - declaration order has to be verified separately whenever a hook initialiser gains a new dependency.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -18202,6 +18202,7 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [difficulty,setDifficulty]=useState(()=>savedSetup.difficulty||'intermediate');
   const [captureOn,setCaptureOn]=useState(()=>savedSetup.captureOn!==undefined?savedSetup.captureOn:true);
   const [mode,setMode]=useState(()=>savedSetup.mode||'winner');
+  const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
   // competitionMode rides along so each court's room records whether it is part of a
   // race or its own separate game. The all-courts display cannot infer it otherwise —
   // `mode` here is the rotation setting, not race-vs-separate.
@@ -18212,7 +18213,6 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
-  const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto');
   const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{});
