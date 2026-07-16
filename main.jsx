@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v388 Fixed challenge and pacing changes silently failing to reach a court whose scoring has been handed off. The v386 push fired once, only when a value changed. But the scoring device owns that room and rewrites the whole payload - its own copy of the config included - on every rally tap, so a rally landing in the roughly 3 second gap before the scorers next poll overwrote the new challenge with the scorers stale one. The scorer then read back its own stale value and kept it, and the coach device never retried, so the change was lost for good - silently, while the coach screen still showed it applied. Intermittent by nature: it only bit when a rally landed inside that window, which is exactly when it would happen live. The coach device now re-asserts config to handed-off courts every 2.5s, so any clobber self-heals on the next tick. It only writes when the room actually disagrees, so an in-sync court costs one read per tick rather than a constant stream of writes. Found while reading the v386 hand-off work, not reported from a session.';
+const APP_VERSION='v392 Universal selector look across Ludo and Noughts and Crosses. All nine remaining native select dropdowns in those two modules are now hsModeBtn chip rows, so the same choice no longer looks like a dark chip in Hangman, S and L and Competition but an iOS dropdown here. Ludo: objective group, objective, difficulty, rotation. N and C: player count for team A, team B and FFA, mode, scoring. Two shared additions to HangmanStyles keep this one design system rather than per-module variants: hsChipBlock (the label plus chip row plus hint stack, which also replaces the local slChipBlock added in v389 - one class now, not two) and hsModeRowAuto (chips sized to content rather than stretched to equal widths, needed because hsModeBtn is flex:1 1 0, which is right for a few short options but wrong for Ludos objective list of up to 18 long titles). Long option labels are shortened onto the chip with the detail moved to a hint line under the row, matching how Hangman already handles its resolution styles. Ludo and N and C also get the module-wide dark input rule from v390, covering 8 untyped text inputs between them (team names, player rosters) that were white. All four game modules are now free of native selects; app-wide count is down 99 to 90. The 6 left in Competition are per-player dropdowns in a repeated row and are a different layout problem.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9753,7 +9753,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
   function setManualName(i,v){setManualNames(prev=>{const c=[...prev];c[i]=v;return c;});}
 
-  return <div className="gameCard slGame">
+  return <div className="gameCard slGame"><HangmanStyles/>
+    <style>{`
+.slGame input[type=number],.slGame input[type=text],.slGame input:not([type]){appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;color:#dbe6f2!important;font-weight:700!important;font-size:0.86rem!important;padding:8px 10px!important;}
+.slGame input[type=number]{min-width:74px!important;text-align:center!important;}
+.slGame input[type=number]:focus,.slGame input[type=text]:focus,.slGame input:not([type]):focus{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;outline:none!important;}
+.slGame input::placeholder{color:#7c8ea0!important;opacity:1!important;}
+`}</style>
     <div className="categoryTag">Snakes &amp; Ladders™</div>
     <h2>Snakes &amp; Ladders</h2>
     <p className="mutedText">King-of-court board race. Win a rally to climb a ladder (or move up one); lose while on a snake and you slide. First token to {settings.size} wins.</p>
@@ -9793,9 +9799,25 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
     {showSettings&&<div className="slSettings">
-      <label>Rotation<select value={settings.mode} onChange={e=>setSettings(s=>({...s,mode:e.target.value}))}><option value="winner">Winner stays on</option><option value="loserstays">Players rotate through (loser stays on)</option><option value="rotation">Fixed rotation (both off, even rallies)</option></select></label>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Rotation</div>
+        <div className="hsModeRow">
+          {[{v:'winner',label:'Winner stays on'},{v:'loserstays',label:'Players rotate through'},{v:'rotation',label:'Fixed rotation'}].map(o=>
+            <button type="button" key={o.v} className={settings.mode===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,mode:o.v}))}>{o.label}</button>)}
+        </div>
+        <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>{settings.mode==='winner'
+          ?'Winner stays on court, next challenger comes up.'
+          :settings.mode==='loserstays'
+            ?'The loser stays on to face a fresh challenger — the winner rotates off.'
+            :'Both players rotate off after each rally, giving even rally counts.'}</p>
+      </div>
       {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,streakCap:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,streakCap:0}));}}/></label>}
-      <label>Board size<select value={settings.size} onChange={e=>setSettings(s=>({...s,size:Number(e.target.value)}))}>{[15,21,30,50].map(v=><option key={v} value={v}>1–{v}</option>)}</select></label>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Board size</div>
+        <div className="hsModeRow">
+          {[15,21,30,50].map(v=><button type="button" key={v} className={settings.size===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,size:v}))}>1–{v}</button>)}
+        </div>
+      </div>
       <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,snakeCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,snakeCount:0}));}}/></label>
       <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,ladderCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,ladderCount:0}));}}/></label>
       <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,min:1}}));}}/></label>
@@ -11019,6 +11041,8 @@ function HangmanStyles(){
 .hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
 .hsModeBtn{appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;padding:9px 13px!important;color:#dbe6f2!important;font-weight:700!important;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
 .hsModeBtn.on{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;}
+.hsModeRow.hsModeRowAuto .hsModeBtn{flex:0 1 auto!important;}
+.hsChipBlock{display:flex;flex-direction:column;gap:6px;width:100%;}
 .hsPlayerGrid{display:flex;flex-direction:column;gap:6px;}
 .hsPlayerRow{display:flex;align-items:center;gap:8px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
 .hsPlayerRow input[type=text]{flex:1;background:transparent;border:none;color:#eaf4fb;font-size:0.9rem;outline:none;}
@@ -11182,19 +11206,24 @@ function hangmanStatusLabel(entity){
 }
 
 // ── Per-court engine — one instance per court, own entities/state ──────────
-function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,resolutionStyle='bestOfN',pairingMode='winnerStays',project=false,courtLabel='',roomId=null,seed=null}){
-  function newEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
-  function buildEntities(){
-    if(!teamMode){
-      return players.filter(n=>n&&n.trim()).map(n=>newEntity(n,n));
-    }
-    const teamA=players.filter(n=>n&&n.trim()&&(teamOf[n]||'A')==='A');
-    const teamB=players.filter(n=>n&&n.trim()&&teamOf[n]==='B');
-    const out=[];
-    if(teamA.length)out.push(newEntity('A','Team A ('+teamA.join(', ')+')'));
-    if(teamB.length)out.push(newEntity('B','Team B ('+teamB.join(', ')+')'));
-    return out;
+function hangmanNewEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
+// Shared so the coach screen can seed a court's room with the exact entities that court
+// would have built for itself — needed when handing off scoring before the court has ever
+// been mounted to write them.
+function hangmanBuildEntities(players,teamMode,teamOf){
+  if(!teamMode){
+    return (players||[]).filter(n=>n&&n.trim()).map(n=>hangmanNewEntity(n,n));
   }
+  const teamA=(players||[]).filter(n=>n&&n.trim()&&((teamOf||{})[n]||'A')==='A');
+  const teamB=(players||[]).filter(n=>n&&n.trim()&&(teamOf||{})[n]==='B');
+  const out=[];
+  if(teamA.length)out.push(hangmanNewEntity('A','Team A ('+teamA.join(', ')+')'));
+  if(teamB.length)out.push(hangmanNewEntity('B','Team B ('+teamB.join(', ')+')'));
+  return out;
+}
+function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',seriesLength=1,requireAttempt=false,resolutionStyle='bestOfN',pairingMode='winnerStays',project=false,courtLabel='',roomId=null,seed=null}){
+  const newEntity=hangmanNewEntity;
+  function buildEntities(){return hangmanBuildEntities(players,teamMode,teamOf);}
   const [entities,setEntities]=useState(()=>seed?seed.entities:buildEntities());
   const [eliminationLog,setEliminationLog]=useState(()=>seed?(seed.eliminationLog||[]):[]);
   const [undoStack,setUndoStack]=useState([]);
@@ -11509,6 +11538,29 @@ function HangmanSquashGame({setSession,setScreen}={}){
   async function copyHsScoreLink(n){
     setProjecting(true);
     const url=buildHsScoreLink(n,base);
+    // Seed the room with the CURRENT setup before handing off. Marking the court handed
+    // off unmounts its HangmanSquashCourt in the same render, so if we do not write here
+    // nothing ever writes, and the scoring device opens onto whatever payload was last
+    // left in this room — a previous pairing, previous session, wrong names.
+    const roomId=courtRoomId(base,n);
+    const wanted=hangmanBuildEntities(allocation[n-1]||[],teamMode,teamOf);
+    const label=courts>1?`Court ${n}`:'';
+    try{
+      const row=await readLivePlayerRoom(roomId);
+      const existing=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
+      const samePairing=!!existing&&(existing.entities||[]).length===wanted.length
+        &&(existing.entities||[]).every((e,i)=>e.name===wanted[i].name);
+      if(samePairing){
+        // This court is already live with these players — the coach may have scored a few
+        // rallies here before handing off, so keep that progress and only refresh config.
+        await writeLivePlayerRoom(roomId,'hangmansquash',{...existing,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,courtLabel:label});
+      }else{
+        await writeLivePlayerRoom(roomId,'hangmansquash',{type:'hangmansquash',challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,
+          courtLabel:label,queue:undefined,
+          entities:wanted.map(e=>({name:e.name,steps:e.steps,eliminated:e.eliminated,escapePending:e.escapePending,windowResults:e.windowResults,attempted:e.attempted})),
+          winnerName:null,eliminationLog:[]});
+      }
+    }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
@@ -11767,12 +11819,19 @@ function HangmanSquashCourtScorer({court,host}){
     setStatus('Live');
   }
   useEffect(()=>{
-    if(seedData||pendingResume)return;
+    if(seedData)return;
     let cancelled=false;
     async function load(){
       const row=await readLivePlayerRoom(roomId);
       if(cancelled)return;
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
+      // Keep polling even while the confirmation is on screen. It used to stop the moment
+      // it found anything, so if the room was corrected underneath it — coach re-seating
+      // players, re-sending the link — this screen sat frozen on the old names with no way
+      // to refresh but a reload.
+      if(p&&pendingResume&&JSON.stringify(p)===JSON.stringify(pendingResume))return;
+      if(p&&pendingResume){setPendingResume(p);return;}
+      if(!p&&pendingResume){setPendingResume(null);setStatus('Waiting for coach device to set up this court…');return;}
       if(p){
         // Always confirm before using whatever's sitting in this room — a court with the
         // wrong players and stale settings (challenge, rally decision) but zero steps
@@ -16819,7 +16878,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
     if(mirrorBlock){let guard=0;while(b===a&&guard++<20)b=btsPick(deck);}
     setDeal({a,b,suit:BTS_SUITS[game.suit]});
   }
-  return <div className={'btsGameCard '+(game.flagship?'btsFlagship':'')}>
+  return <div className={'btsGameCard '+(game.flagship?'btsFlagship':'')}><HangmanStyles/>
     {game.flagship&&<span className="btsFlag">★ FLAGSHIP</span>}
     <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
     <p>{game.blurb}</p>
@@ -18215,7 +18274,13 @@ function LudoSquashGame({setSession,setScreen}={}){
 
   function setManualName(i,v){setManualNames(prev=>{const c=[...prev];c[i]=v;return c;});}
 
-  return <div className="gameCard ludoGame">
+  return <div className="gameCard ludoGame"><HangmanStyles/>
+    <style>{`
+.ludoGame input[type=number],.ludoGame input[type=text],.ludoGame input:not([type]){appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;color:#dbe6f2!important;font-weight:700!important;font-size:0.86rem!important;padding:8px 10px!important;}
+.ludoGame input[type=number]{min-width:74px!important;text-align:center!important;}
+.ludoGame input[type=number]:focus,.ludoGame input[type=text]:focus,.ludoGame input:not([type]):focus{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;outline:none!important;}
+.ludoGame input::placeholder{color:#7c8ea0!important;opacity:1!important;}
+`}</style>
     <LudoStyles/>
     <div className="categoryTag">Ludo Squash™</div>
     <h2>Ludo Squash</h2>
@@ -18259,10 +18324,40 @@ function LudoSquashGame({setSession,setScreen}={}){
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide game settings':'⚙ Objective & difficulty settings'}</button>
     {showSettings&&<div className="ludoSettings">
-      <label>Objective group<select value={objectiveGroup} onChange={e=>{const g=e.target.value;setObjectiveGroup(g);setObjective(LUDO_OBJECTIVES[g][0]);}}>{Object.keys(LUDO_OBJECTIVES).map(g=><option key={g} value={g}>{g}</option>)}</select></label>
-      <label>Objective<select value={objective} onChange={e=>setObjective(e.target.value)}>{LUDO_OBJECTIVES[objectiveGroup].map(o=><option key={o} value={o}>{o}</option>)}</select></label>
-      <label>Difficulty<select value={difficulty} onChange={e=>setDifficulty(e.target.value)}><option value="beginner">Beginner — move after every rally win</option><option value="intermediate">Intermediate — move only when objective achieved</option></select></label>
-      <label>Rotation<select value={mode} onChange={e=>setMode(e.target.value)}><option value="winner">Winner stays on</option><option value="loserstays">Players rotate through (loser stays on)</option><option value="rotation">Fixed rotation (both off, even rallies)</option></select></label>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Objective group</div>
+        <div className="hsModeRow">
+          {Object.keys(LUDO_OBJECTIVES).map(g=><button type="button" key={g} className={objectiveGroup===g?'hsModeBtn on':'hsModeBtn'} onClick={()=>{setObjectiveGroup(g);setObjective(LUDO_OBJECTIVES[g][0]);}}>{g}</button>)}
+        </div>
+      </div>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Objective</div>
+        <div className="hsModeRow hsModeRowAuto">
+          {LUDO_OBJECTIVES[objectiveGroup].map(o=><button type="button" key={o} className={objective===o?'hsModeBtn on':'hsModeBtn'} onClick={()=>setObjective(o)}>{o}</button>)}
+        </div>
+      </div>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Difficulty</div>
+        <div className="hsModeRow">
+          {[{v:'beginner',label:'Beginner'},{v:'intermediate',label:'Intermediate'}].map(o=>
+            <button type="button" key={o.v} className={difficulty===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setDifficulty(o.v)}>{o.label}</button>)}
+        </div>
+        <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>{difficulty==='beginner'
+          ?'Move after every rally win.'
+          :'Move only when the objective is achieved.'}</p>
+      </div>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Rotation</div>
+        <div className="hsModeRow">
+          {[{v:'winner',label:'Winner stays on'},{v:'loserstays',label:'Players rotate through'},{v:'rotation',label:'Fixed rotation'}].map(o=>
+            <button type="button" key={o.v} className={mode===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setMode(o.v)}>{o.label}</button>)}
+        </div>
+        <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>{mode==='winner'
+          ?'Winner stays on court, next challenger comes up.'
+          :mode==='loserstays'
+            ?'The loser stays on to face a fresh challenger — the winner rotates off.'
+            :'Both players rotate off after each rally, giving even rally counts.'}</p>
+      </div>
       <label className="ludoCheck"><input type="checkbox" checked={captureOn} onChange={e=>setCaptureOn(e.target.checked)}/> Capturing on (landing on an opponent's piece threatens it)</label>
       <p className="mutedText" style={{flexBasis:'100%'}}>Advanced difficulty (Bonus Challenge for 2-square moves) is a future build — not in this version.</p>
     </div>}
@@ -19123,7 +19218,13 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   }
   function setManualRosterFfaName(i,v){setManualRosterFfa(prev=>{const c=[...prev];c[i]=v;return c;});}
 
-  return <div className="gameCard ncGame">
+  return <div className="gameCard ncGame"><HangmanStyles/>
+    <style>{`
+.ncGame input[type=number],.ncGame input[type=text],.ncGame input:not([type]){appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;color:#dbe6f2!important;font-weight:700!important;font-size:0.86rem!important;padding:8px 10px!important;}
+.ncGame input[type=number]{min-width:74px!important;text-align:center!important;}
+.ncGame input[type=number]:focus,.ncGame input[type=text]:focus,.ncGame input:not([type]):focus{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;outline:none!important;}
+.ncGame input::placeholder{color:#7c8ea0!important;opacity:1!important;}
+`}</style>
     <NcStyles/>
     <div className="categoryTag">Noughts & Crosses Squash™</div>
     <h2>Noughts & Crosses Squash</h2>
@@ -19172,18 +19273,33 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     {!usingAttendance&&format==='teams'&&<div className="ncTeamGrid">
       <div className="ncTeamBox a">
         <input value={teamAName} onChange={e=>setTeamAName(e.target.value)} placeholder="Team A name"/>
-        <label className="ncInlineField">Players<select value={manualCountA} onChange={e=>setManualCountA(Number(e.target.value))}>{[1,2,3].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        <div className="hsChipBlock">
+          <div className="hsLabel">Players</div>
+          <div className="hsModeRow">
+            {[1,2,3].map(v=><button type="button" key={v} className={manualCountA===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setManualCountA(v)}>{v}</button>)}
+          </div>
+        </div>
         {Array.from({length:manualCountA}).map((_,i)=><input key={i} value={manualRosterA[i]||''} onChange={e=>setManualRosterName('A',i,e.target.value)} placeholder={`Player ${i+1}`}/>)}
       </div>
       <div className="ncTeamBox b">
         <input value={teamBName} onChange={e=>setTeamBName(e.target.value)} placeholder="Team B name"/>
-        <label className="ncInlineField">Players<select value={manualCountB} onChange={e=>setManualCountB(Number(e.target.value))}>{[1,2,3].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+        <div className="hsChipBlock">
+          <div className="hsLabel">Players</div>
+          <div className="hsModeRow">
+            {[1,2,3].map(v=><button type="button" key={v} className={manualCountB===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setManualCountB(v)}>{v}</button>)}
+          </div>
+        </div>
         {Array.from({length:manualCountB}).map((_,i)=><input key={i} value={manualRosterB[i]||''} onChange={e=>setManualRosterName('B',i,e.target.value)} placeholder={`Player ${i+1}`}/>)}
       </div>
     </div>}
 
     {!usingAttendance&&format==='ffa'&&<div className="ncManualNames" style={{margin:'10px 0'}}>
-      <label className="ncInlineField">Players<select value={manualCountFfa} onChange={e=>setManualCountFfa(Number(e.target.value))}>{[2,3,4].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+      <div className="hsChipBlock">
+        <div className="hsLabel">Players</div>
+        <div className="hsModeRow">
+          {[2,3,4].map(v=><button type="button" key={v} className={manualCountFfa===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setManualCountFfa(v)}>{v}</button>)}
+        </div>
+      </div>
       <div className="ncTeamGrid" style={{marginTop:'8px'}}>{Array.from({length:manualCountFfa}).map((_,i)=><input key={i} value={manualRosterFfa[i]||''} onChange={e=>setManualRosterFfaName(i,e.target.value)} placeholder={`Player ${i+1}`} style={{background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 10px',color:'#eaf4fb'}}/>)}</div>
     </div>}
 
@@ -19192,8 +19308,19 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     {showSettings&&<div className="ncSettings">
       <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require a challenge to claim (default off — classic noughts & crosses: nominate a square, win the rally, claim it)</label>
       <label className="ncCheck"><input type="checkbox" checked={bestOf3} onChange={e=>setBestOf3(e.target.checked)}/> Best of 3 per pairing (default off — a single rally decides a claim; switch on to make each on-court pairing play a mini best-of-3 series first, so a board takes longer to fill)</label>
-      {requireChallenge&&<label>Mode<select value={mode} onChange={e=>setMode(e.target.value)}>{NC_MODES.map(m=><option key={m} value={m}>{m}</option>)}</select></label>}
-      <label>Scoring<select value={scoringMode} onChange={e=>setScoringMode(e.target.value)}><option value="boardWin">Board Win only</option><option value="rallyBoard">Rally + Board points</option><option value="pressure">Pressure Mode</option></select></label>
+      {requireChallenge&&<div className="hsChipBlock">
+        <div className="hsLabel">Mode</div>
+        <div className="hsModeRow hsModeRowAuto">
+          {NC_MODES.map(m=><button type="button" key={m} className={mode===m?'hsModeBtn on':'hsModeBtn'} onClick={()=>setMode(m)}>{m}</button>)}
+        </div>
+      </div>}
+      <div className="hsChipBlock">
+        <div className="hsLabel">Scoring</div>
+        <div className="hsModeRow">
+          {[{v:'boardWin',label:'Board win only'},{v:'rallyBoard',label:'Rally + board'},{v:'pressure',label:'Pressure'}].map(o=>
+            <button type="button" key={o.v} className={scoringMode===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setScoringMode(o.v)}>{o.label}</button>)}
+        </div>
+      </div>
       {requireChallenge&&<p className="mutedText" style={{flexBasis:'100%'}}>Tap any unclaimed square on the board to swap in a different challenge from the pool, or type a custom one.</p>}
     </div>}
 
