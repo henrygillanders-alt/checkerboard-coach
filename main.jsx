@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v392 Universal selector look across Ludo and Noughts and Crosses. All nine remaining native select dropdowns in those two modules are now hsModeBtn chip rows, so the same choice no longer looks like a dark chip in Hangman, S and L and Competition but an iOS dropdown here. Ludo: objective group, objective, difficulty, rotation. N and C: player count for team A, team B and FFA, mode, scoring. Two shared additions to HangmanStyles keep this one design system rather than per-module variants: hsChipBlock (the label plus chip row plus hint stack, which also replaces the local slChipBlock added in v389 - one class now, not two) and hsModeRowAuto (chips sized to content rather than stretched to equal widths, needed because hsModeBtn is flex:1 1 0, which is right for a few short options but wrong for Ludos objective list of up to 18 long titles). Long option labels are shortened onto the chip with the detail moved to a hint line under the row, matching how Hangman already handles its resolution styles. Ludo and N and C also get the module-wide dark input rule from v390, covering 8 untyped text inputs between them (team names, player rosters) that were white. All four game modules are now free of native selects; app-wide count is down 99 to 90. The 6 left in Competition are per-player dropdowns in a repeated row and are a different layout problem.';
+const APP_VERSION='v393 Ludo all-courts display and an honest master-screen button. (1) Open Court Monitor (master screen) was literally setScreen(courtMonitor) - the app-wide King of Courts, not a Ludo screen. It shows whatever any module last left in the court rooms, which is why opening it from Ludo showed an old Snakes and Ladders setup under a King of Courts title. The button is shared by four modules and is now labelled Open Court Monitor (all games, all courts) so it says what it is instead of implying it belongs to the module you launched it from. (2) Ludo could not show all courts unless you were in Race mode. It could not simply be ungated: the display declares one overall winner and states that the first player on any court to get all 4 pieces Home wins - untrue in Separate games per court, where each court is its own game. The payload had no way to tell the two apart either, since its mode field is the rotation setting, not race-vs-separate. The Ludo court payload now carries competitionMode, the display branches on it (race keeps the combined leaderboard; separate shows each court as its own game with its own leader and winner, and makes no cross-court claim), and the link is offered whenever courts>1 - matching Hangman, which was the only module already doing this. Label follows the mode. The race path itself is unchanged. Noughts and Crosses still gates its display to race mode and has the same limitation.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9929,7 +9929,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         </div>)}
       </div>
       {projecting&&<span className="slDisplayHint">🟢 Live on all {courts} courts · each board updates independently as you tap winners on that court's tab</span>}
-      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (all games · all courts)</button>}
     </div>}
   </div>;
 }
@@ -10578,7 +10578,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
             <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {n}</span>
             <button type="button" className="twActionBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copyCourtLink(n)}>{copiedCourt===n?'Copied ✓':'Copy link'}</button>
           </div>)}
-          {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" style={{marginTop:'4px'}} onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+          {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" style={{marginTop:'4px'}} onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (all games · all courts)</button>}
         </div>}
       </div>
     </div>
@@ -11801,7 +11801,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       </div>
       {projecting&&<span className="hsDisplayHint">🟢 Live{courts>1?` on all ${courts} courts`:''} · each figure updates as you score</span>}
       {courts>1&&<button type="button" className="secondaryBtn" onClick={copyHsRaceLink}>{copiedRaceLink?'Copied ✓':"Copy All-Courts Display link (projector — every court's gallows in one view)"}</button>}
-      {courts>1&&typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen — see every court's progress at once)</button>}
+      {courts>1&&typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (all games · all courts)</button>}
     </div>
   </div>;
 }
@@ -18097,7 +18097,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       pendingByName[roster[idx].name]=(pending[idx]||[]).map(t=>({targetName:roster[t.targetIdx].name,atSquare:t.atSquare}));
     });
     const payload={type:'ludosquash',
-      objective:settings.objective,objectiveGroup:settings.objectiveGroup,difficulty:settings.difficulty,captureOn:settings.captureOn,mode:settings.mode,
+      objective:settings.objective,objectiveGroup:settings.objectiveGroup,difficulty:settings.difficulty,captureOn:settings.captureOn,mode:settings.mode,competitionMode:settings.competitionMode||'separate',
       players:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>pc.d)})),
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
@@ -18202,7 +18202,10 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [difficulty,setDifficulty]=useState(()=>savedSetup.difficulty||'intermediate');
   const [captureOn,setCaptureOn]=useState(()=>savedSetup.captureOn!==undefined?savedSetup.captureOn:true);
   const [mode,setMode]=useState(()=>savedSetup.mode||'winner');
-  const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode}),[objectiveGroup,objective,difficulty,captureOn,mode]);
+  // competitionMode rides along so each court's room records whether it is part of a
+  // race or its own separate game. The all-courts display cannot infer it otherwise —
+  // `mode` here is the rotation setting, not race-vs-separate.
+  const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode,competitionMode}),[objectiveGroup,objective,difficulty,captureOn,mode,competitionMode]);
   const rules=useMemo(()=>ludoRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
@@ -18421,9 +18424,9 @@ function LudoSquashGame({setSession,setScreen}={}){
           </div>
         </div>)}
       </div>
-      {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyLudoRaceLink}>{copiedRaceLink?'Copied ✓':'Copy Race Display link (projector — combined view, all courts)'}</button>}
+      {courts>1&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyLudoRaceLink}>{copiedRaceLink?'Copied ✓':competitionMode==='race'?'Copy Race Display link (projector — every court, one overall winner)':'Copy All-Courts Display link (projector — every court in one view)'}</button>}
       {projecting&&<span className="ludoDisplayHint">🟢 Live on all {courts} courts · each board updates independently as you tap winners on that court's tab</span>}
-      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (all games · all courts)</button>}
     </div>}
   </div>;
 }
@@ -18503,8 +18506,38 @@ function LudoSquashRaceDisplay({host,courtCount}){
 
   const anyData=courts.some(Boolean);
   if(!anyData){
-    return <div className="ludoDisplayPage"><LudoStyles/><div className="ludoDisplayHead"><span className="ludoDisplayLive">● CONNECTING</span><h1>Ludo Squash — Race</h1><p>Waiting for courts to start…</p></div></div>;
+    return <div className="ludoDisplayPage"><LudoStyles/><div className="ludoDisplayHead"><span className="ludoDisplayLive">● CONNECTING</span><h1>Ludo Squash — All Courts</h1><p>Waiting for courts to start…</p></div></div>;
   }
+  const homeOf=p=>(p.pieces||[]).filter(d=>d>=LUDO_FINISH).length;
+  const progressOf=p=>(p.pieces||[]).reduce((s,d)=>s+Math.max(0,d)+1,0);
+  // Only a race has a single winner across courts. In separate-games mode each court is
+  // its own game, so ranking every player into one table would state something untrue.
+  const isRace=(courts.find(Boolean)||{}).competitionMode==='race';
+
+  if(!isRace){
+    return <div className="ludoDisplayPage">
+      <LudoStyles/>
+      <div className="ludoDisplayHead"><span className="ludoDisplayLive">● LIVE — ALL COURTS</span><h1>Ludo Squash — All Courts</h1>
+        <p>Each court is playing its own game.</p>
+      </div>
+      <div className="ludoRaceGrid">
+        {courts.map((c,ci)=>{
+          if(!c)return <div key={ci} className="ludoRaceRow" style={{opacity:0.55}}>
+            <span className="ludoRaceName">Court {ci+1}</span><span className="ludoRaceHome">not live</span>
+          </div>;
+          const rows=[...(c.players||[])].map(p=>({name:p.name,homeCount:homeOf(p),progress:progressOf(p)})).sort((a,b)=>b.progress-a.progress);
+          return <div key={ci} style={{border:'1px solid #223044',borderRadius:'12px',padding:'10px 12px',marginBottom:'10px'}}>
+            <div className="hsLabel" style={{marginBottom:'6px'}}>Court {ci+1}{c.winnerName?` — 🏆 ${c.winnerName} wins`:''}</div>
+            {rows.map((p,i)=><div key={p.name} className={`ludoRaceRow${i===0&&!c.winnerName?' lead':''}`}>
+              <span className="ludoRaceName">{i===0&&!c.winnerName?'👑 ':''}{p.name}</span>
+              <span className="ludoRaceHome">{p.homeCount}/4 Home</span>
+            </div>)}
+          </div>;
+        })}
+      </div>
+    </div>;
+  }
+
   const combined=[];
   courts.forEach((c,ci)=>{
     if(!c)return;
@@ -19418,7 +19451,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       </div>
       {competitionMode==='race'&&<button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={copyNcRaceLink}>{copiedRaceLink?'Copied \u2713':'Copy Race Display link (projector \u2014 all courts)'}</button>}
       {projecting&&<span className="ncDisplayHint">🟢 Live on all {courts} courts</span>}
-      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (master screen)</button>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('courtMonitor')}>Open Court Monitor (all games · all courts)</button>}
     </div>}
   </div>;
 }
