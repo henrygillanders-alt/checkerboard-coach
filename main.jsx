@@ -142,11 +142,14 @@ async function writeLivePlayerRoom(roomId,mode,payload){
 }
 async function deleteLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady())return false;
-  const key=String(SUPABASE_ANON_KEY||'').trim();
-  const endpoint=`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&apikey=${encodeURIComponent(key)}`;
-  const headers={apikey:key,Authorization:`Bearer ${key}`};
-  try{const res=await fetch(endpoint,{method:'DELETE',headers});return res.ok;}
-  catch(err){console.warn('Live sync delete failed',err);return false;}
+  // Uses the same proven write path as writeLivePlayerRoom (POST + upsert) rather than
+  // an actual DELETE request. A DELETE can silently do nothing if the database's
+  // row-level security policy only permits insert/update/select for the anon key —
+  // which is exactly what "Start fresh (clear it) has no effect" looks like from the
+  // outside (the call succeeds or fails silently, but the row is untouched either way).
+  // Overwriting with a neutral payload achieves the same "this court is now empty"
+  // result through a path that's already confirmed to work.
+  return writeLivePlayerRoom(roomId,'cleared',{type:'cleared'});
 }
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
@@ -181,7 +184,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v378 Merged two divergent v377 builds (Player Plans V0 work done in a separate session, plus the Hangman scoring device confirmation fix, ATL/BTL All BTL shots option, and ATL/BTL custom checkerboard code fix done in this session) into one file, re-numbered to avoid the version collision. All prior v377 fixes from both branches are present: Player Plans V0 annual/mesocycle/microcycle builder, Hangman scoring device always confirming before use, ATL/BTL All BTL shots with correct count-parsing, and the ATL/BTL custom checkerboard zone toggle/input actually working.';
+const APP_VERSION='v379 Fixed two real bugs: (1) Start fresh / Clear this court had no effect - it was using an actual DELETE request against the database, which can silently do nothing if the row-level security policy only permits insert/update/select for the anon key (a very common Supabase setup). Rewired it to overwrite the room with a neutral cleared payload instead, using the same write path thats already proven to work for scoring - Court Monitor, and every game scoring device now correctly treats a cleared room as genuinely empty. (2) Reset setup to defaults in Hangman was calling a full page reload, which kicked the coach out to the Home screen instead of just resetting the settings - now resets all the setup state in place and keeps the coach on the Hangman setup screen.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -11502,7 +11505,13 @@ function HangmanSquashGame({setSession,setScreen}={}){
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
-      <button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.removeItem(HS_SETUP_KEY);}catch{}window.location.reload();}}>↺ Reset setup to defaults</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{
+        try{localStorage.removeItem(HS_SETUP_KEY);}catch{}
+        setCourtCount(1);setManualCount(2);setManualNames(['Player 1','Player 2']);
+        setTeamMode(false);setTeamOf({});setChallenge(HANGMAN_CHALLENGE_PRESETS[0]);
+        setSeriesLength(1);setRequireAttempt(false);setResolutionStyle('bestOfN');
+        setPairingMode('winnerStays');setAllocMode('auto');setManualAssign({});
+      }}>↺ Reset setup to defaults</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
     <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Setup is remembered across visits (courts, mode, challenge, pacing) — showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If either looks out of date, tap Refresh players or Reset setup.</p>
@@ -19214,6 +19223,7 @@ function normalizeCourtPayload(row){
   // ghost winner card. Genuinely paused mid-session courts (brief disconnect etc.) stay
   // well under this.
   if(ageMs!=null&&ageMs>5400000)return null;
+  if(t==='cleared')return null;
   const stale=ageMs!=null&&ageMs>20000;
   let game='Live',headline='',target=null,pct=null,leaderName='',winnerName=p.winnerName||null,players=[];
   if(t==='snakesladders'){
