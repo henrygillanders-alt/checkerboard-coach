@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v385 Fixed the Hangman player view showing the wrong setup. The setup was always being sent - resolutionStyle has been in the court payload all along and the player device reads it - but every screen that named the resolution style ignored it and hardcoded Best of N. Set Play all 3 rallies or Sudden death and the player view still said Best of 3, which looks exactly like the link failing to transmit. It survived this long because the coach device mislabelled it identically, so both screens agreed with each other and both were wrong. All four sites now read from one shared hangmanResolutionLabel helper: the coach current-challenge line, the in-court scoreline (which renders on the coach device and the scoring device), the scoring-device confirmation panel, and the player display. The in-court scoreline also no longer claims first to N for styles that do not end early - Play all N now reads all N rallies no early finish, and Sudden death reads ends on the first met challenge.';
+const APP_VERSION='v387 Fixed the Player Plans home tile being white-on-white. It only overrode the border colour, relying on the base homeCard/homeTitleOnly classes (which live in the external stylesheet Claude cannot see) for background and text colour - something there was producing white text on a white background. Explicitly set a dark background and light text colour on the tile itself so it does not depend on that external stylesheet at all, matching the same defensive-!important approach used for the earlier button-colour bugs.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4141,7 +4141,8 @@ return <div className="homeGrid homeGridV99h52">
 .checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
 `}</style>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
-      <style>{`.playerPlansHomeCard{border:1px solid #4fb477 !important;}`}</style>
+      <style>{`.playerPlansHomeCard{border:1px solid #4fb477 !important;background:#0d1722 !important;}
+.playerPlansHomeCard h2{color:#eaf4fb !important;}`}</style>
       <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2></button>
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -11518,6 +11519,23 @@ function HangmanSquashGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(null),1500);}catch{window.prompt('All-courts display link:',url);}
   }
 
+  // Once a court's scoring is handed off, this device stops rendering that court's
+  // HangmanSquashCourt entirely — which used to mean setup changes (challenge, pacing
+  // settings) made afterward had NO path to reach that room at all, so display screens
+  // kept showing stale setup. This reads the current room, merges in just the config
+  // fields (never touching entities/queue/eliminationLog, which the scoring device owns),
+  // and writes it back — so config changes now reach an already-handed-off court too.
+  useEffect(()=>{
+    if(!projecting)return;
+    handedOff.forEach(async n=>{
+      const roomId=courtRoomId(base,n);
+      const row=await readLivePlayerRoom(roomId);
+      const existing=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
+      if(!existing)return;
+      writeLivePlayerRoom(roomId,'hangmansquash',{...existing,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode});
+    });
+  },[challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,handedOff,projecting,base]);
+
   function addToSession(){
     if(typeof setSession!=='function')return;
     const styleNote=resolutionStyle==='fullWindow'
@@ -11678,7 +11696,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {handedOff.has(i+1)
-        ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
+        ? <div className="hsAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>Rallies are scored on that device now, but challenge/pacing changes you make here still reach it.</span></div>
         : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} resolutionStyle={resolutionStyle} pairingMode={pairingMode} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
     </div>)}
 
@@ -11744,6 +11762,23 @@ function HangmanSquashCourtScorer({court,host}){
     const id=setInterval(load,1500);
     return ()=>{cancelled=true;clearInterval(id);};
   },[roomId,seedData,pendingResume]);
+
+  // Once seeded, this device owns entities/queue/eliminationLog and writes them itself —
+  // but it still needs to pick up config changes (challenge, pacing settings) made on the
+  // coach's device afterward. Poll for just those fields, never touching the live game
+  // state this device itself is scoring.
+  useEffect(()=>{
+    if(!seedData)return;
+    let cancelled=false;
+    async function poll(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled||!row||!row.payload||row.payload.type!=='hangmansquash')return;
+      const p=row.payload;
+      setSeedData(prev=>prev?{...prev,challenge:p.challenge||'',seriesLength:p.seriesLength||1,requireAttempt:!!p.requireAttempt,resolutionStyle:p.resolutionStyle||'bestOfN',pairingMode:p.pairingMode||'winnerStays'}:prev);
+    }
+    const id=setInterval(poll,3000);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[seedData!=null,roomId]);
 
   if(pendingResume){
     const p=pendingResume;
