@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v387 Fixed the Player Plans home tile being white-on-white. It only overrode the border colour, relying on the base homeCard/homeTitleOnly classes (which live in the external stylesheet Claude cannot see) for background and text colour - something there was producing white text on a white background. Explicitly set a dark background and light text colour on the tile itself so it does not depend on that external stylesheet at all, matching the same defensive-!important approach used for the earlier button-colour bugs.';
+const APP_VERSION='v388 Fixed challenge and pacing changes silently failing to reach a court whose scoring has been handed off. The v386 push fired once, only when a value changed. But the scoring device owns that room and rewrites the whole payload - its own copy of the config included - on every rally tap, so a rally landing in the roughly 3 second gap before the scorers next poll overwrote the new challenge with the scorers stale one. The scorer then read back its own stale value and kept it, and the coach device never retried, so the change was lost for good - silently, while the coach screen still showed it applied. Intermittent by nature: it only bit when a rally landed inside that window, which is exactly when it would happen live. The coach device now re-asserts config to handed-off courts every 2.5s, so any clobber self-heals on the next tick. It only writes when the room actually disagrees, so an in-sync court costs one read per tick rather than a constant stream of writes. Found while reading the v386 hand-off work, not reported from a session.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -11525,15 +11525,39 @@ function HangmanSquashGame({setSession,setScreen}={}){
   // kept showing stale setup. This reads the current room, merges in just the config
   // fields (never touching entities/queue/eliminationLog, which the scoring device owns),
   // and writes it back — so config changes now reach an already-handed-off court too.
+  //
+  // This RE-ASSERTS on an interval rather than pushing once when a value changes. The
+  // scoring device owns the room and rewrites the whole payload — its own copy of the
+  // config included — on every rally tap. A rally landing between the coach's push and
+  // the scorer's next poll would overwrite the new challenge with the scorer's stale one;
+  // the scorer would then read back its own stale value and keep it, and a push that only
+  // fired on change never retried. The change was lost silently, while this device still
+  // showed it applied. Re-asserting means any such clobber self-heals on the next tick.
   useEffect(()=>{
-    if(!projecting)return;
-    handedOff.forEach(async n=>{
-      const roomId=courtRoomId(base,n);
-      const row=await readLivePlayerRoom(roomId);
-      const existing=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
-      if(!existing)return;
-      writeLivePlayerRoom(roomId,'hangmansquash',{...existing,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode});
-    });
+    if(!projecting||!handedOff.size)return;
+    let cancelled=false;
+    async function pushConfig(){
+      for(const n of handedOff){
+        if(cancelled)return;
+        const roomId=courtRoomId(base,n);
+        const row=await readLivePlayerRoom(roomId);
+        if(cancelled)return;
+        const existing=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
+        if(!existing)continue;
+        // Only write when the room actually disagrees, so an untouched court costs one
+        // read per tick rather than a constant stream of writes.
+        const inSync=existing.challenge===challenge
+          &&Number(existing.seriesLength||1)===Number(seriesLength||1)
+          &&!!existing.requireAttempt===!!requireAttempt
+          &&(existing.resolutionStyle||'bestOfN')===resolutionStyle
+          &&(existing.pairingMode||'winnerStays')===pairingMode;
+        if(inSync)continue;
+        writeLivePlayerRoom(roomId,'hangmansquash',{...existing,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode});
+      }
+    }
+    pushConfig();
+    const id=setInterval(pushConfig,2500);
+    return ()=>{cancelled=true;clearInterval(id);};
   },[challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,handedOff,projecting,base]);
 
   function addToSession(){
