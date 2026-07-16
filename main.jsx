@@ -40,6 +40,7 @@ function buildHsRaceLink(base,courtCount){const b=window.location.origin+window.
 function getHsScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('hsScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function buildHsScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?hsScore=${n}&host=${encodeURIComponent(base)}`;}
 function getHangmanLiveRoomId(){return getPersistentLiveRoomId()+'-hangman';}
+function getMatchplayLiveRoomId(){return getPersistentLiveRoomId()+'-matchplay';}
 function useWakeLock(){
   useEffect(()=>{
     if(!(typeof navigator!=='undefined'&&navigator.wakeLock))return;
@@ -184,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v379 Fixed two real bugs: (1) Start fresh / Clear this court had no effect - it was using an actual DELETE request against the database, which can silently do nothing if the row-level security policy only permits insert/update/select for the anon key (a very common Supabase setup). Rewired it to overwrite the room with a neutral cleared payload instead, using the same write path thats already proven to work for scoring - Court Monitor, and every game scoring device now correctly treats a cleared room as genuinely empty. (2) Reset setup to defaults in Hangman was calling a full page reload, which kicked the coach out to the Home screen instead of just resetting the settings - now resets all the setup state in place and keeps the coach on the Hangman setup screen.';
+const APP_VERSION='v380 Built the four outstanding pinned tasks. (1) MATCHPLAY MULTI-COURT: Matchplay now runs up to 6 simultaneous pairings. Per-court player selection, independent per-court scoring, its own -matchplay live room namespace and full Court Monitor integration (poll plus Clear this court). Court 1 keeps the matchplay-main score id, so the Competition Player Display, projection and status panel are unchanged. Court layout persists with the rest of the competition state. (2) SETUP PERSISTENCE for Snakes and Ladders, Ludo and Noughts and Crosses (cbSnakesLaddersSetupV1, cbLudoSetupV1, cbNoughtsCrossesSetupV1), matching the Hangman pattern - coach configuration only, live boards and hand-offs are never restored. Each has a Reset to defaults button that clears state in place rather than reloading, since reload kicks back to Home. (3) HANGMAN RULES PANEL: one Rules and rationale coach reference covering the track, escape, pairing modes and resolution styles, replacing rules scattered across inline setup hints. (4) GAMES LIBRARY NAV: the page header, family tabs and stage intro now collapse while a game class is open inside the Stabilise and Compete tabs, so the embedded route matches the already-fixed direct route. Also replaced the three native select dropdowns in the Matchplay panel (P1, P2, Scoring format) with the shared hsModeBtn chip pattern, since native selects render white iOS chrome.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4167,13 +4168,18 @@ return <div className="homeGrid homeGridV99h52">
 
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('stabilise');
+  // Which game class the embedded <Games/> currently has open (null = showing its tile
+  // grid). While a class is open, this page's own header/tabs/stage intro would just be
+  // stale chrome sitting above a dedicated game screen, so they collapse.
+  const [openClass,setOpenClass]=useState(null);
+  const inGameClass=!!openClass;
   return <div className="page gamesLibraryPage">
-    <div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
-    <div className="universalFamilyTabs gamesLibraryTabs">
+    {!inGameClass&&<div className="pageTop"><div><h1>Games Library</h1><p className="mutedText">Explore · Stabilise · Compete</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>}
+    {!inGameClass&&<div className="universalFamilyTabs gamesLibraryTabs">
       <button className={tab==='explore'?'activeFamilyTab':''} onClick={()=>setTab('explore')}>🔍 Explore</button>
       <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
       <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
-    </div>
+    </div>}
     {tab==='explore'&&<div>
       <div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks. The entry point for beginner coaching.</p></div>
       <div className="exploreEntryCard" onClick={()=>setScreen('level0')}>
@@ -4191,8 +4197,8 @@ function GamesLibrary({setScreen,setSession}){
         <div className="exploreEntryArrow">→</div>
       </div>
     </div>}
-    {tab==='stabilise'&&<div><div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div><Games setSession={setSession} setScreen={setScreen}/></div>}
-    {tab==='compete'&&<div><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div><Games setSession={setSession} setScreen={setScreen}/></div>}
+    {tab==='stabilise'&&<div>{!inGameClass&&<div className="libraryStageIntro"><h2>🎯 Stabilise</h2><p>Levels 1–3: recognition, adaptation, tactical understanding and functional solution building.</p></div>}<Games setSession={setSession} setScreen={setScreen} onClassChange={setOpenClass}/></div>}
+    {tab==='compete'&&<div>{!inGameClass&&<><div className="libraryStageIntro"><h2>🏆 Compete</h2><p>Levels 4–5: pressure, performance, matchplay themes and competition application.</p><div className="stageHintGrid"><div><strong>Use with</strong><span>Pressure games · Invasion · Matchplay</span></div><div><strong>Overlay focus</strong><span>Tactical · Technical · Mental Performance</span></div><div><strong>Coach aim</strong><span>Decision quality under consequence</span></div></div></div><div className="exploreEntryCard peakWeekEntryCard" onClick={()=>setScreen('peakWeek')}><div className="exploreEntryLeft"><span className="categoryTag" style={{background:'#f59e0b',color:'#111827',marginBottom:'10px',display:'inline-block'}}>⚡ PEAK WEEK™</span><h2>Pre-Competition Taper Module</h2><p className="exploreEntrySubtitle">Neural priming · pressure prep · decision sharpening</p><p>Planner · Neural Tabata · 5 session templates · Optional activation · Coach rules</p></div><div className="exploreEntryArrow">→</div></div></>}<Games setSession={setSession} setScreen={setScreen} onClassChange={setOpenClass}/></div>}
   </div>;
 }
 
@@ -9630,6 +9636,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 }
 
 function SnakesLaddersGame({setSession,setScreen}={}){
+  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
+  // only — the live board, court hand-offs and active court are never restored.
+  const SL_SETUP_KEY='cbSnakesLaddersSetupV1';
+  const SL_DEFAULT_SETTINGS={size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]};
+  const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(SL_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
@@ -9650,11 +9661,11 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     setPresentsObj(prev=>[...prev,rec]);
   }
   const usingAttendance=presentsObj.length>=2;
-  const [courtCount,setCourtCount]=useState(1);
+  const [courtCount,setCourtCount]=useState(()=>savedSetup.courtCount||1);
   const [activeCourt,setActiveCourt]=useState(0);
-  const [manualCount,setManualCount]=useState(4);
-  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2','Player 3','Player 4']);
-  const [settings,setSettings]=useState({size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]});
+  const [manualCount,setManualCount]=useState(()=>savedSetup.manualCount||4);
+  const [manualNames,setManualNames]=useState(()=>savedSetup.manualNames||['Player 1','Player 2','Player 3','Player 4']);
+  const [settings,setSettings]=useState(()=>({...SL_DEFAULT_SETTINGS,...(savedSetup.settings||{})}));
   const [showBonuses,setShowBonuses]=useState(false);
   const [bonusLabel,setBonusLabel]=useState('');
   const [bonusSq,setBonusSq]=useState(2);
@@ -9667,13 +9678,21 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
-  const [competitionMode,setCompetitionMode]=useState('separate');
-  const [allocMode,setAllocMode]=useState('auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
-  const [manualAssign,setManualAssign]=useState({}); // playerName -> courtIndex (0-based)
+  const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
+  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
+  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{}); // playerName -> courtIndex (0-based)
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const [raceBoard,setRaceBoard]=useState(null);
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
+  useEffect(()=>{
+    try{localStorage.setItem(SL_SETUP_KEY,JSON.stringify({courtCount,manualCount,manualNames,settings,competitionMode,allocMode,manualAssign}));}catch{}
+  },[courtCount,manualCount,manualNames,settings,competitionMode,allocMode,manualAssign]);
+  function resetSlSetup(){
+    try{localStorage.removeItem(SL_SETUP_KEY);}catch{}
+    setCourtCount(1);setManualCount(4);setManualNames(['Player 1','Player 2','Player 3','Player 4']);
+    setSettings({...SL_DEFAULT_SETTINGS,bonuses:[]});setCompetitionMode('separate');setAllocMode('auto');setManualAssign({});
+  }
   function startRace(){setRaceBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));}
   function resetRace(){setRaceBoard(null);setHandedOff(new Set());}
   async function copyRaceLink(){
@@ -9733,9 +9752,10 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
+      <button type="button" className="secondaryBtn" onClick={resetSlSetup}>↺ Reset setup to defaults</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
-    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Setup is remembered across visits (courts, players, board settings, allocation) — showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why this game — coach rationale'}</button>
     {showRationale&&<div className="slRationale">
@@ -11502,6 +11522,27 @@ function HangmanSquashGame({setSession,setScreen}={}){
       <p>Complete your challenge, avoid a step toward your hangman. Last player or team standing wins. Runs on up to 6 courts simultaneously — same escalating-consequence engine as Tin War, different, more visible, more public stake.</p>
     </div>
 
+    <CoachRationale label="Rules & rationale — coach reference">
+      <p><strong>Core loop.</strong> Every player (or team) has a hangman track of 7 steps. Meet the coach-set challenge in your rally and you stay safe; fail it and you take one step. Reach the last step and you are eliminated. Last player or team standing wins.</p>
+      <p><strong>The track (non-linear reveal).</strong> Rope/beam → head → body → arm → arm → leg → leg + face. The early steps cost little and the late steps cost everything, so the same failure carries more consequence the deeper a player gets. The second-to-last step triggers the last-chance escape.</p>
+      <p><strong>Last-chance escape.</strong> At the second-to-last step a player gets one bonus attempt, once only. Succeed and they drop back a step; fail and they are eliminated immediately. This is the mechanical wrinkle that separates Hangman from a straight reskin of the escalating-consequence engine.</p>
+      <p><strong>Pairing.</strong> 2 players or Teams A/B pair automatically. 3+ individuals go into an app-randomised rotating queue with the front two shown as on court.</p>
+      <ul>
+        <li><strong>Winner stays on</strong> — the safe player stays, the next challenger comes up. Matches Snakes & Ladders.</li>
+        <li><strong>Players rotate through</strong> — the player who took a step stays on to face a fresh challenger; the safe player rotates off. Structurally closes the tanking exploit, because being safe already sends you away from a tough opponent.</li>
+      </ul>
+      <p><strong>Resolution styles.</strong> Single rally is strict: only meeting the challenge is safe. Best of N is majority-based and ends early once decided (the default). Play all N always completes the full set. Sudden death ends the instant the challenge is met.</p>
+      <p><strong>Recording.</strong> One tap records the whole rally for both players at once — the winner's outcome forces the loser's fate. The loser is never resolved independently, so a pairing can never stall with both players safe. Undo restores the scores and the queue together.</p>
+      <p><strong>Why this game — coach rationale.</strong> Consequence is visible, live and resolved by a specific upcoming rally: it is never automatic and never bankable indefinitely. Opponents hold a stake in each other's fate, which is what keeps attention on the opponent rather than on the player's own technique.</p>
+      <ul>
+        <li><strong>Escalating consequence</strong> — the same task constraint tightens as the track fills, so a player's decision-making has to reorganise under rising stakes rather than repeat a stable solution.</li>
+        <li><strong>Representative pressure</strong> — the cost of an error grows late in the game, mirroring the score-state pressure of matchplay far better than flat incremental scoring.</li>
+        <li><strong>Search under threat</strong> — the escape step forces a genuine risk decision at the worst possible moment, which is where an attractor state is most likely to destabilise and a new solution to emerge.</li>
+        <li><strong>Public stake</strong> — the one-limb-left flash marks the high-stakes moment on the player display, not just the coach's screen, so the pressure is shared and real.</li>
+      </ul>
+      <p className="mutedText">The skin is for the player, the engine is for the coach: Hangman and Tin War share an escalating-consequence engine deliberately. Novelty of presentation keeps engagement fresh while the learning objective repeats.</p>
+    </CoachRationale>
+
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
@@ -11817,7 +11858,7 @@ function HangmanSquashRaceDisplay({host,courtCount}){
   </div>;
 }
 
-function Games({setSession,setScreen}){
+function Games({setSession,setScreen,onClassChange}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [message,setMessage]=useState('');
   const [savedCards,setSavedCards]=useState(()=>{
@@ -11836,6 +11877,9 @@ function Games({setSession,setScreen}){
     if(activeClassId)localStorage.setItem(GAME_LIBRARY_CLASS_KEY,activeClassId);
     else localStorage.removeItem(GAME_LIBRARY_CLASS_KEY);
   },[activeClassId]);
+  useEffect(()=>{
+    if(typeof onClassChange==='function')onClassChange(activeClassId);
+  },[activeClassId,onClassChange]);
   useEffect(()=>{
     if(logicCard)localStorage.setItem(GAME_LIBRARY_DRAFT_KEY,JSON.stringify(logicCard));
     else localStorage.removeItem(GAME_LIBRARY_DRAFT_KEY);
@@ -12213,7 +12257,42 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [matchplayMatchFormat,setMatchplayMatchFormat]=useState(()=>getSavedCompetitionState().matchplayMatchFormat||'Best of 1');
   const [scoringMode,setScoringMode]=useState(()=>getSavedCompetitionState().scoringMode||'normal');
   const [competitionMatchScores,setCompetitionMatchScores]=useState(()=>getSavedCompetitionState().competitionMatchScores||{});
-  const [matchPlayers,setMatchPlayers]=useState(()=>getSavedCompetitionState().matchPlayers||{a:'P1',b:'P2'});
+  // Matchplay across up to 6 simultaneous courts. matchplayCourts holds every court's
+  // pairing; court 1 is still exposed as `matchPlayers` (and keeps the 'matchplay-main'
+  // score id) so the projection, status panel, snapshot and Player Display are unchanged.
+  const [matchplayCourtCount,setMatchplayCourtCount]=useState(()=>getSavedCompetitionState().matchplayCourtCount||1);
+  const [matchplayCourts,setMatchplayCourts]=useState(()=>{
+    const saved=getSavedCompetitionState();
+    if(Array.isArray(saved.matchplayCourts)&&saved.matchplayCourts.length)return saved.matchplayCourts;
+    return [saved.matchPlayers||{a:'P1',b:'P2'}];
+  });
+  const matchPlayers=useMemo(()=>matchplayCourts[0]||{a:'',b:''},[matchplayCourts]);
+  function setMatchPlayers(update){
+    setMatchplayCourts(prev=>{
+      const next=prev.length?[...prev]:[{a:'',b:''}];
+      next[0]=typeof update==='function'?update(next[0]||{a:'',b:''}):update;
+      return next;
+    });
+  }
+  function setCourtPlayers(ci,update){
+    setMatchplayCourts(prev=>{
+      const next=[...prev];
+      while(next.length<=ci)next.push({a:'',b:''});
+      next[ci]=typeof update==='function'?update(next[ci]||{a:'',b:''}):update;
+      return next;
+    });
+  }
+  function matchplayScoreId(ci){return ci===0?'matchplay-main':`matchplay-court${ci+1}`;}
+  // Grow the array to match the court count, but never truncate it: dropping to 2 courts
+  // and back to 4 restores the pairings that were already set rather than blanking them.
+  useEffect(()=>{
+    setMatchplayCourts(prev=>{
+      if(prev.length>=matchplayCourtCount)return prev;
+      const next=[...prev];
+      while(next.length<matchplayCourtCount)next.push({a:'',b:''});
+      return next;
+    });
+  },[matchplayCourtCount]);
   const [matchScoring,setMatchScoring]=useState(()=>getSavedCompetitionState().matchScoring||'PAR 11');
   const [rrFixtures,setRrFixtures]=useState(()=>getSavedCompetitionState().rrFixtures||[]);
   const [rrResults,setRrResults]=useState(()=>getSavedCompetitionState().rrResults||{});
@@ -12356,6 +12435,34 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     setMatchScore({a:0,b:0});
   }
 
+  // Live court sync for Matchplay. One room per court under the '-matchplay' namespace so
+  // Court Monitor can show every simultaneous pairing without colliding with any other
+  // module's court rooms. Courts with no pairing set are cleared via the overwrite path
+  // (never a DELETE — RLS on live_sessions makes that silently do nothing).
+  const mpBase=useMemo(()=>getMatchplayLiveRoomId(),[]);
+  useEffect(()=>{
+    if(mode!=='matchplay')return;
+    const n=Math.max(1,Number(matchplayCourtCount)||1);
+    for(let i=0;i<n;i++){
+      const pair=matchplayCourts[i]||{a:'',b:''};
+      const roomId=courtRoomId(mpBase,i+1);
+      if(!pair.a||!pair.b){deleteLivePlayerRoom(roomId);continue;}
+      const res=competitionMatchScores[matchplayScoreId(i)]||null;
+      writeLivePlayerRoom(roomId,'matchplay',{
+        type:'matchplay',
+        courtLabel:`Court ${i+1}`,
+        a:pair.a,b:pair.b,
+        winsA:Number(res&&res.winsA||0),
+        winsB:Number(res&&res.winsB||0),
+        games:((res&&res.games)||[]).filter(g=>g&&g.a!==''&&g.b!==''),
+        matchFormat:matchplayMatchFormat,
+        scoring:matchScoring,
+        winnerName:(res&&res.winner)||null,
+        updatedAt:Date.now()
+      });
+    }
+  },[mode,matchplayCourtCount,matchplayCourts,competitionMatchScores,matchplayMatchFormat,matchScoring,mpBase]);
+
   function resetCurrentMode(){
     const labels={invasion:'Invasion game',matchplay:'Matchplay',roundRobin:'Round Robin',nsl:'NSSL',monrad:'Monrad'};
     if(!window.confirm(`Reset ${labels[mode]||'this competition'}? This clears its draw, teams, scores and results. Other modes, players and DB handicaps are kept.`)) return;
@@ -12365,7 +12472,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       setInvasionGameStarted(false);setInvasionRotationStep(0);setInvasionEliminated('');setInvasionCourtAssignments([]);setInvasionInvaderOverrides({});
       try{const s=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');['invasionTeams','invasionTeamPoints','invasionPlayerPoints','invasionTeamLives','invasionCarryLives','invasionFinishLives','invasionPlayerRound','invasionCourtRound','invasionGameStarted','invasionRotationStep','invasionEliminated','invasionCourtAssignments','invasionInvaderOverrides'].forEach(k=>delete s[k]);localStorage.setItem('checkerboardCompetitionProjection',JSON.stringify(s));}catch{}
     }else if(mode==='matchplay'){
-      setMatchScore({a:0,b:0});setMatchPlayers({a:'P1',b:'P2'});
+      setMatchScore({a:0,b:0});setMatchplayCourts([{a:'P1',b:'P2'}]);setMatchplayCourtCount(1);
       setCompetitionMatchScores(prev=>{const n={...prev};Object.keys(n).forEach(k=>{if(k.startsWith('matchplay'))delete n[k];});return n;});
     }else if(mode==='roundRobin'){
       setRrFixtures([]);setRrResults({});setRrBoxes([]);setRrBoxFixtures([]);setRrBoxResults({});setRrFinalBoxes([]);setRrFinalFixtures([]);setRrFinalResults({});
@@ -13613,14 +13720,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(!competitionRestoredRef.current) return;
     try{
       localStorage.setItem(COMPETITION_STATE_KEY,JSON.stringify({
-        mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,
+        mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchplayCourts,matchplayCourtCount,matchScoring,competitionMatchScores,
         rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
         monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,
         nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,
         updatedAt:new Date().toISOString()
       }));
     }catch{}
-  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,nslMinPlayerMins]);
+  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchplayCourts,matchplayCourtCount,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,nslMinPlayerMins]);
 
   useEffect(()=>{
     try{
@@ -14186,43 +14293,58 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
         {mode==='matchplay'&&(
           <div className="matchplayPanel">
+            <HangmanStyles/>
+            <div className="hsLabel">Courts</div>
+            <div className="hsModeRow">
+              {[1,2,3,4,5,6].map(n=><button type="button" key={n} className={matchplayCourtCount===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setMatchplayCourtCount(n)}>{n}</button>)}
+            </div>
+            <p className="mutedText" style={{margin:'2px 0 0',fontSize:'0.78rem'}}>{matchplayCourtCount===1
+              ?'One court. Court 1 also drives the Competition Player Display.'
+              :`${matchplayCourtCount} simultaneous pairings — each court scores independently and appears separately on Court Monitor. The Competition Player Display follows Court 1.`}</p>
+
             <div className="monradMatchFormatRow">
               <strong>Match Format</strong>
               <div className="monradFormatBtns">
                 {['Best of 1','Best of 3','Best of 5'].map(fmt=><button type="button" key={fmt} className={matchplayMatchFormat===fmt?'activeMonradFormat':'secondaryBtn'} onClick={()=>setMatchplayMatchFormat(fmt)}>{fmt}</button>)}
               </div>
             </div>
-            <div className="atlOptionsGrid">
-              <label>P1
-                <select value={matchPlayers.a} onChange={e=>setMatchPlayers(prev=>({...prev,a:e.target.value}))}>
-                  <option value="">Select from attendance</option>
-                  {playerNames.map(name=><option key={name} value={name}>{name}</option>)}
-                  {matchPlayers.a&&!playerNames.includes(matchPlayers.a)&&<option value={matchPlayers.a}>{matchPlayers.a}</option>}
-                </select>
-              </label>
-              <label>P2
-                <select value={matchPlayers.b} onChange={e=>setMatchPlayers(prev=>({...prev,b:e.target.value}))}>
-                  <option value="">Select from attendance</option>
-                  {playerNames.map(name=><option key={name} value={name}>{name}</option>)}
-                  {matchPlayers.b&&!playerNames.includes(matchPlayers.b)&&<option value={matchPlayers.b}>{matchPlayers.b}</option>}
-                </select>
-              </label>
-              <label>Scoring Format
-                <select value={matchScoring} onChange={e=>setMatchScoring(e.target.value)}>
-                  <option>PAR 11</option>
-                  <option>PAR 15</option>
-                  <option>Conditioned Match</option>
-                  <option>Timed Match</option>
-                </select>
-              </label>
+
+            <div className="hsLabel">Scoring format</div>
+            <div className="hsModeRow">
+              {['PAR 11','PAR 15','Conditioned Match','Timed Match'].map(s=><button type="button" key={s} className={matchScoring===s?'hsModeBtn on':'hsModeBtn'} onClick={()=>setMatchScoring(s)}>{s}</button>)}
             </div>
-            {matchPlayers.a&&matchPlayers.b&&<ScoreEntry
-              scoreId="matchplay-main"
-              match={{a:matchPlayers.a,b:matchPlayers.b}}
-              matchFormat={matchplayMatchFormat}
-              onWinner={winner=>{}}
-            />}
-            {(!matchPlayers.a||!matchPlayers.b)&&<div className="placeholder">Select both players above to enter scores.</div>}
+            <p className="mutedText" style={{margin:'2px 0 0',fontSize:'0.78rem'}}>Match format and scoring format apply to every court.</p>
+
+            {Array.from({length:matchplayCourtCount},(_,ci)=>{
+              const pair=matchplayCourts[ci]||{a:'',b:''};
+              // A player already on another court is offered but marked, rather than hidden —
+              // the coach may legitimately want the same name twice (e.g. a coach playing in).
+              const usedElsewhere=name=>matchplayCourts.some((p,j)=>j!==ci&&j<matchplayCourtCount&&p&&(p.a===name||p.b===name));
+              return <div key={ci} className="hsSetup" style={{marginTop:'12px'}}>
+                <div className="hsLabel">Court {ci+1}{ci===0?' — drives the Player Display':''}</div>
+                {!playerNames.length&&<p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>No players in attendance yet — add players to the session to pair them here.</p>}
+                {['a','b'].map(side=><div key={side}>
+                  <div className="hsLabel" style={{marginTop:'6px'}}>{side==='a'?'Player 1':'Player 2'}</div>
+                  <div className="hsModeRow">
+                    {playerNames.map(name=><button type="button" key={name}
+                      className={pair[side]===name?'hsModeBtn on':'hsModeBtn'}
+                      onClick={()=>setCourtPlayers(ci,prev=>({...prev,[side]:prev[side]===name?'':name}))}>
+                      {name}{usedElsewhere(name)&&pair[side]!==name?' ·':''}
+                    </button>)}
+                    {pair[side]&&!playerNames.includes(pair[side])&&<button type="button" className="hsModeBtn on" onClick={()=>setCourtPlayers(ci,prev=>({...prev,[side]:''}))}>{pair[side]}</button>}
+                  </div>
+                </div>)}
+                {pair.a&&pair.b&&pair.a===pair.b&&<p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.78rem',color:'#f0a5a5'}}>Both sides are the same player — pick a different opponent.</p>}
+                {pair.a&&pair.b&&pair.a!==pair.b&&<ScoreEntry
+                  scoreId={matchplayScoreId(ci)}
+                  match={{a:pair.a,b:pair.b}}
+                  matchFormat={matchplayMatchFormat}
+                  onWinner={winner=>{}}
+                />}
+                {(!pair.a||!pair.b)&&<div className="placeholder">Select both players for Court {ci+1} to enter scores.</div>}
+              </div>;
+            })}
+
             <button className="secondaryBtn" style={{marginTop:'10px'}} onClick={resetMatch}>Reset Match Score</button>
           </div>
         )}
@@ -17901,6 +18023,10 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
 
 // ── Coach setup screen ───────────────────────────────────────────────────
 function LudoSquashGame({setSession,setScreen}={}){
+  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
+  // only — live piece positions and court hand-offs are never restored.
+  const LUDO_SETUP_KEY='cbLudoSetupV1';
+  const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(LUDO_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
@@ -17921,15 +18047,22 @@ function LudoSquashGame({setSession,setScreen}={}){
     setPresentsObj(prev=>[...prev,rec]);
   }
   const usingAttendance=presentsObj.length>=2;
-  const [courtCount,setCourtCount]=useState(1);
+  const [courtCount,setCourtCount]=useState(()=>savedSetup.courtCount||1);
   const [activeCourt,setActiveCourt]=useState(0);
-  const [manualCount,setManualCount]=useState(4);
-  const [manualNames,setManualNames]=useState(()=>['Player 1','Player 2','Player 3','Player 4']);
-  const [objectiveGroup,setObjectiveGroup]=useState('Tactical');
-  const [objective,setObjective]=useState(LUDO_OBJECTIVES.Tactical[0]);
-  const [difficulty,setDifficulty]=useState('intermediate');
-  const [captureOn,setCaptureOn]=useState(true);
-  const [mode,setMode]=useState('winner');
+  const [manualCount,setManualCount]=useState(()=>savedSetup.manualCount||4);
+  const [manualNames,setManualNames]=useState(()=>savedSetup.manualNames||['Player 1','Player 2','Player 3','Player 4']);
+  const [objectiveGroup,setObjectiveGroup]=useState(()=>savedSetup.objectiveGroup||'Tactical');
+  // Guard the restored objective against a renamed/removed preset: if the saved string
+  // is no longer in its group's list, fall back to that group's first objective rather
+  // than restoring an objective that no longer exists.
+  const [objective,setObjective]=useState(()=>{
+    const grp=savedSetup.objectiveGroup||'Tactical';
+    const pool=LUDO_OBJECTIVES[grp]||LUDO_OBJECTIVES.Tactical;
+    return (savedSetup.objective&&pool.includes(savedSetup.objective))?savedSetup.objective:pool[0];
+  });
+  const [difficulty,setDifficulty]=useState(()=>savedSetup.difficulty||'intermediate');
+  const [captureOn,setCaptureOn]=useState(()=>savedSetup.captureOn!==undefined?savedSetup.captureOn:true);
+  const [mode,setMode]=useState(()=>savedSetup.mode||'winner');
   const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode}),[objectiveGroup,objective,difficulty,captureOn,mode]);
   const rules=useMemo(()=>ludoRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
@@ -17937,12 +18070,21 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
-  const [competitionMode,setCompetitionMode]=useState('separate');
+  const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
-  const [allocMode,setAllocMode]=useState('auto');
-  const [manualAssign,setManualAssign]=useState({});
+  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto');
+  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{});
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getLudoLiveRoomId();},[]);
+  useEffect(()=>{
+    try{localStorage.setItem(LUDO_SETUP_KEY,JSON.stringify({courtCount,manualCount,manualNames,objectiveGroup,objective,difficulty,captureOn,mode,competitionMode,allocMode,manualAssign}));}catch{}
+  },[courtCount,manualCount,manualNames,objectiveGroup,objective,difficulty,captureOn,mode,competitionMode,allocMode,manualAssign]);
+  function resetLudoSetup(){
+    try{localStorage.removeItem(LUDO_SETUP_KEY);}catch{}
+    setCourtCount(1);setManualCount(4);setManualNames(['Player 1','Player 2','Player 3','Player 4']);
+    setObjectiveGroup('Tactical');setObjective(LUDO_OBJECTIVES.Tactical[0]);setDifficulty('intermediate');
+    setCaptureOn(true);setMode('winner');setCompetitionMode('separate');setAllocMode('auto');setManualAssign({});
+  }
 
   async function copyLudoPlayerLink(){
     setProjecting(true);
@@ -18001,9 +18143,10 @@ function LudoSquashGame({setSession,setScreen}={}){
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
+      <button type="button" className="secondaryBtn" onClick={resetLudoSetup}>↺ Reset setup to defaults</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
-    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Setup is remembered across visits (courts, players, objective, difficulty, rotation) — showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <div className="ludoGameInfo">
       <p className="ludoPrinciple">{rules.principle}</p>
@@ -18765,6 +18908,12 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
 
 // ── Coach setup screen ───────────────────────────────────────────────────
 function NoughtsCrossesGame({setSession,setScreen}={}){
+  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
+  // only — the live board, claimed squares and court hand-offs are never restored.
+  // fixedChallenges is deliberately excluded: it is regenerated from mode +
+  // requireChallenge by the effect below, so persisting it would just fight that.
+  const NC_SETUP_KEY='cbNoughtsCrossesSetupV1';
+  const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(NC_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
@@ -18785,21 +18934,21 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     setPresentsObj(prev=>[...prev,rec]);
   }
   const usingAttendance=presentsObj.length>=2;
-  const [courtCount,setCourtCount]=useState(1);
+  const [courtCount,setCourtCount]=useState(()=>savedSetup.courtCount||1);
   const [activeCourt,setActiveCourt]=useState(0);
-  const [format,setFormat]=useState('teams');
-  const [manualCountFfa,setManualCountFfa]=useState(2);
-  const [manualRosterFfa,setManualRosterFfa]=useState(['Player 1','Player 2']);
-  const [teamAName,setTeamAName]=useState('Team A');
-  const [teamBName,setTeamBName]=useState('Team B');
-  const [manualCountA,setManualCountA]=useState(1);
-  const [manualCountB,setManualCountB]=useState(1);
-  const [manualRosterA,setManualRosterA]=useState(['Player 1']);
-  const [manualRosterB,setManualRosterB]=useState(['Player 2']);
-  const [mode,setMode]=useState('Technical');
-  const [requireChallenge,setRequireChallenge]=useState(false);
-  const [bestOf3,setBestOf3]=useState(false);
-  const [scoringMode,setScoringMode]=useState('boardWin');
+  const [format,setFormat]=useState(()=>savedSetup.format||'teams');
+  const [manualCountFfa,setManualCountFfa]=useState(()=>savedSetup.manualCountFfa||2);
+  const [manualRosterFfa,setManualRosterFfa]=useState(()=>savedSetup.manualRosterFfa||['Player 1','Player 2']);
+  const [teamAName,setTeamAName]=useState(()=>savedSetup.teamAName||'Team A');
+  const [teamBName,setTeamBName]=useState(()=>savedSetup.teamBName||'Team B');
+  const [manualCountA,setManualCountA]=useState(()=>savedSetup.manualCountA||1);
+  const [manualCountB,setManualCountB]=useState(()=>savedSetup.manualCountB||1);
+  const [manualRosterA,setManualRosterA]=useState(()=>savedSetup.manualRosterA||['Player 1']);
+  const [manualRosterB,setManualRosterB]=useState(()=>savedSetup.manualRosterB||['Player 2']);
+  const [mode,setMode]=useState(()=>savedSetup.mode||'Technical');
+  const [requireChallenge,setRequireChallenge]=useState(()=>savedSetup.requireChallenge||false);
+  const [bestOf3,setBestOf3]=useState(()=>savedSetup.bestOf3||false);
+  const [scoringMode,setScoringMode]=useState(()=>savedSetup.scoringMode||'boardWin');
   const settings=useMemo(()=>({requireChallenge,scoringMode,format,bestOf3}),[requireChallenge,scoringMode,format,bestOf3]);
   const rules=useMemo(()=>ncRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
@@ -18807,16 +18956,27 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
-  const [competitionMode,setCompetitionMode]=useState('separate');
+  const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
-  const [allocMode,setAllocMode]=useState('auto');
-  const [manualAssign,setManualAssign]=useState({});
-  const [teamAssignOverrides,setTeamAssignOverrides]=useState({});
+  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto');
+  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{});
+  const [teamAssignOverrides,setTeamAssignOverrides]=useState(()=>savedSetup.teamAssignOverrides||{});
   const [fixedChallenges,setFixedChallenges]=useState(()=>ncBoardPicks('Technical',false));
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getNcLiveRoomId();},[]);
 
   useEffect(()=>{setFixedChallenges(ncBoardPicks(mode,requireChallenge));},[mode,requireChallenge]);
+  useEffect(()=>{
+    try{localStorage.setItem(NC_SETUP_KEY,JSON.stringify({courtCount,format,manualCountFfa,manualRosterFfa,teamAName,teamBName,manualCountA,manualCountB,manualRosterA,manualRosterB,mode,requireChallenge,bestOf3,scoringMode,competitionMode,allocMode,manualAssign,teamAssignOverrides}));}catch{}
+  },[courtCount,format,manualCountFfa,manualRosterFfa,teamAName,teamBName,manualCountA,manualCountB,manualRosterA,manualRosterB,mode,requireChallenge,bestOf3,scoringMode,competitionMode,allocMode,manualAssign,teamAssignOverrides]);
+  function resetNcSetup(){
+    try{localStorage.removeItem(NC_SETUP_KEY);}catch{}
+    setCourtCount(1);setFormat('teams');setManualCountFfa(2);setManualRosterFfa(['Player 1','Player 2']);
+    setTeamAName('Team A');setTeamBName('Team B');setManualCountA(1);setManualCountB(1);
+    setManualRosterA(['Player 1']);setManualRosterB(['Player 2']);setMode('Technical');
+    setRequireChallenge(false);setBestOf3(false);setScoringMode('boardWin');setCompetitionMode('separate');
+    setAllocMode('auto');setManualAssign({});setTeamAssignOverrides({});
+  }
   function randomiseSharedBoard(){if(!requireChallenge)return;const pool=NC_FAMILIES[mode]||[];const picks=ncShuffle(pool).slice(0,9);while(picks.length<9)picks.push('Coach choice');setFixedChallenges(picks);}
 
   async function copyNcPlayerLink(){
@@ -18891,9 +19051,10 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
       <button type="button" className="secondaryBtn" onClick={quickAddPlayer}>⚡ Quick Add Player</button>
       <button type="button" className="secondaryBtn" onClick={refreshPlayers}>🔄 Refresh players</button>
+      <button type="button" className="secondaryBtn" onClick={resetNcSetup}>↺ Reset setup to defaults</button>
       {courts>1&&<span className="mutedText" style={{fontSize:'0.78rem'}}>Auto allocation re-shuffles all courts on add — switch to Manual allocation first if courts are already mid-game.</span>}
     </div>
-    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
+    <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>Setup is remembered across visits (courts, format, teams, mode, scoring) — showing {presentsObj.length} present player{presentsObj.length===1?'':'s'} from attendance. If this looks out of date (e.g. from an earlier session today), tap Refresh players.</p>
 
     <div className="ncGameInfo">
       <p className="ncPrinciple">{rules.principle}</p>
@@ -19260,6 +19421,18 @@ function normalizeCourtPayload(row){
     const lead=players.reduce((a,b)=>(!a||b.score>a.score)?b:a,null);
     leaderName=lead?lead.name:'';target=HANGMAN_MAX_STEPS;headline=lead?(lead.score+'/'+HANGMAN_MAX_STEPS+' safe'):'';pct=lead?lead.score/HANGMAN_MAX_STEPS:null;
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
+  }else if(t==='matchplay'){
+    game='Matchplay';
+    const winsA=Number(p.winsA||0),winsB=Number(p.winsB||0);
+    players=[{name:p.a||'P1',score:winsA},{name:p.b||'P2',score:winsB}];
+    // 'Best of 5' -> 3 games needed. Progress is measured against that, not the raw
+    // format number, so a 2-0 lead in a Best of 3 reads as complete rather than 66%.
+    const bestOf=Number(String(p.matchFormat||'Best of 1').replace(/[^0-9]/g,''))||1;
+    target=Math.max(1,Math.ceil(bestOf/2));
+    leaderName=winsA===winsB?'':(winsA>winsB?(p.a||'P1'):(p.b||'P2'));
+    headline=`${p.a||'P1'} ${winsA} - ${winsB} ${p.b||'P2'}`;
+    pct=Math.min(1,Math.max(winsA,winsB)/target);
+    if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
     game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
   }else if(t==='disruption'&&p.battle){
@@ -19314,8 +19487,8 @@ function CourtMonitor({setScreen}){
   useEffect(()=>{try{localStorage.setItem('cbCourtCount',String(count));}catch{}},[count]);
   async function clearCourt(n){
     setClearing(n);
-    const ludoBase=base+'-ludo',ncBase=base+'-nc',hsBase=base+'-hangman';
-    await Promise.all([courtRoomId(base,n),courtRoomId(ludoBase,n),courtRoomId(ncBase,n),courtRoomId(hsBase,n)].map(deleteLivePlayerRoom));
+    const ludoBase=base+'-ludo',ncBase=base+'-nc',hsBase=base+'-hangman',mpBase=base+'-matchplay';
+    await Promise.all([courtRoomId(base,n),courtRoomId(ludoBase,n),courtRoomId(ncBase,n),courtRoomId(hsBase,n),courtRoomId(mpBase,n)].map(deleteLivePlayerRoom));
     setRooms(prev=>{const c={...prev};delete c[n];return c;});
     setTimeout(()=>setClearing(null),600);
   }
@@ -19325,21 +19498,24 @@ function CourtMonitor({setScreen}){
     const ludoBase=base+'-ludo';
     const ncBase=base+'-nc';
     const hsBase=base+'-hangman';
+    const mpBase=base+'-matchplay';
     async function load(){
       const ns=Array.from({length:count},(_,i)=>i+1);
       const out={};
       const outBase={};
       await Promise.all(ns.map(async n=>{
-        const [rowStd,rowLudo,rowNc,rowHs]=await Promise.all([readLivePlayerRoom(courtRoomId(base,n)),readLivePlayerRoom(courtRoomId(ludoBase,n)),readLivePlayerRoom(courtRoomId(ncBase,n)),readLivePlayerRoom(courtRoomId(hsBase,n))]);
+        const [rowStd,rowLudo,rowNc,rowHs,rowMp]=await Promise.all([readLivePlayerRoom(courtRoomId(base,n)),readLivePlayerRoom(courtRoomId(ludoBase,n)),readLivePlayerRoom(courtRoomId(ncBase,n)),readLivePlayerRoom(courtRoomId(hsBase,n)),readLivePlayerRoom(courtRoomId(mpBase,n))]);
         const normStd=normalizeCourtPayload(rowStd);
         const normLudo=normalizeCourtPayload(rowLudo);
         const normNc=normalizeCourtPayload(rowNc);
         const normHs=normalizeCourtPayload(rowHs);
-        // Ludo, N&C and Hangman each have their own namespaced court rooms so they can never
-        // collide with another module's court rooms — check all four and show whichever
-        // is actually live (freshest non-stale one wins if more than one has data).
+        const normMp=normalizeCourtPayload(rowMp);
+        // Ludo, N&C, Hangman and Matchplay each have their own namespaced court rooms so
+        // they can never collide with another module's court rooms — check all five and
+        // show whichever is actually live (freshest non-stale one wins if more than one
+        // has data).
         let chosen=normStd,chosenBase=base;
-        [[normLudo,ludoBase],[normNc,ncBase],[normHs,hsBase]].forEach(([norm,nsBase])=>{
+        [[normLudo,ludoBase],[normNc,ncBase],[normHs,hsBase],[normMp,mpBase]].forEach(([norm,nsBase])=>{
           if(norm&&norm.game&&(!chosen||!chosen.game||(chosen.stale&&!norm.stale))){chosen=norm;chosenBase=nsBase;}
         });
         out[n]=chosen;outBase[n]=chosenBase;
