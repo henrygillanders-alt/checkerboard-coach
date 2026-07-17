@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v397 Seam Allowance was on but never wrote SA to any code. When the hardcoded SA strings were stripped out of the Pattern Lab card data in v396, the strip ran across the whole file and also removed the literal from inside cbWithSeam - the very function that appends it. The rule still evaluated correctly and then appended nothing, so every eligible code rendered bare: [5-4] + [7-2] showed no allowance, and the toggle looked broken. Pattern Lab was unaffected because its helper block was rewritten fresh after the strip and kept its literal, which is why only Checkerboard showed the fault. Restored, and the pair bank now renders SA on the six eligible combinations: [6-4] + [8-1], [5-3] + [7-2], [8-1] + [7-2], [5-4] + [7-2], [6-3] + [8-1] and [7-2] + [8-1]. Note that [5-4] + [6-3] correctly shows nothing - neither code is seam-eligible, only [7-2] and [8-1] are.';
+const APP_VERSION='v398 Player display rebuilt for courtside reading, plus a v396 regression fix. (1) Seam Allowance was on but never wrote SA to any code. Stripping the hardcoded SA strings out of the Pattern Lab data in v396 ran across the whole file and also removed the literal from inside cbWithSeam, the function that appends it - the rule evaluated correctly and then appended nothing. Pattern Lab was unaffected because its helper block was rewritten fresh afterwards and kept its literal, which is why only Checkerboard showed the fault. Restored; the pair bank now marks the six eligible combinations, and [5-4] + [6-3] correctly shows none since neither code is seam-eligible. (2) The player display printed the shot sequence and the scoring as single run-on strings in one paragraph each, at display size, and the grid clipped whatever overflowed - a half-read scoring rule is worse than none. Both fields already arrive delimited, by plus for shots and by middot for scoring, so they are now split into numbered bullets: one idea per line. Overflow, max-height and line-clamp are overridden so nothing can be cut off again. (3) The ACTIVE CONSTRAINTS strip at the foot is gone. Constraints were previously in two mutually exclusive places, a grid section only when no layers existed and a bottom strip only when they did; they are now one grid section, always shown when there are any, so nothing is lost and the layout is flat. (4) The CLA Rationale box is gone from the player display. It restated the sequence in coach prose - Serve, then rotating lobs, the player chooses height and length - which is theory for the coach, not an instruction for someone holding a racquet. It remains on the coach-facing card. (5) Sessions freeze card text at add-time, so any session built before v396 still carried [7/8L-2] and [LBL-8/7L-2] and would have shown them forever. Legacy codes are now rewritten on read at normaliseGameCard, the one point every card passes through, so saved sessions correct themselves without being rebuilt.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -584,7 +584,7 @@ function scoringLogicForLayers(layers=[],modifierScores={}){
 function getPlayerDisplayFields(game){
   const item=normaliseGameCard(game||{});
   const title=item.title||'Player Display';
-  const what=item.task||item.description||'Play the selected game.';
+  const what=moderniseCodes(item.task||item.description||'Play the selected game.');
   const scoringLogic=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
   const focus=item.playerFocus||item.coach||'Solve the game problem.';
   const layers=safeLayersForSession(item);
@@ -673,15 +673,42 @@ function buildPlayerCompetitionUrl(state){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerCompetition=${encoded}`;
 }
+// The player display is read courtside, at a glance, by someone holding a
+// racquet. Sequences and scoring arrive already delimited (" + " for shots,
+// " · " for scoring rules), so split them into bullets rather than printing the
+// raw run-on string. One idea per line, no prose walls, nothing clipped.
+function pdBullets(text,sep){
+  const parts=String(text||'').split(sep).map(s=>s.trim()).filter(Boolean);
+  return parts.length>1?parts:null;
+}
+function PdField({label,text,sep,className=''}){
+  const bullets=sep?pdBullets(text,sep):null;
+  return <section className={className}>
+    <h2>{label}</h2>
+    {bullets
+      ? <ol className="pdcList">{bullets.map((b,i)=><li key={i}><span className="pdcNum">{i+1}</span><span>{b}</span></li>)}</ol>
+      : <p>{text}</p>}
+  </section>;
+}
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
-  const {title,what,score,focus,layers,dbText,constraintText,rationale,rldLevel}=getPlayerDisplayFields(chosen);
+  const {title,what,score,focus,layers,dbText,constraintText,rldLevel}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
+  const constraints=layers.length?layers:((constraintText&&constraintText!=='No extra constraints selected.')?[constraintText]:[]);
   const CLA_BOX_STYLE=`
 .claRationaleBox{background:#0c1f1a!important;border:1px solid #1d4a38!important;border-left:4px solid #34e0a0!important;border-radius:12px!important;padding:14px 16px!important;margin:10px 0!important;}
 .claRationaleBox h2{color:#7fe8bf!important;font-size:0.78rem!important;text-transform:uppercase!important;letter-spacing:0.05em!important;font-weight:800!important;margin:0 0 6px!important;}
-.claRationaleBox p{color:#dbf2e8!important;line-height:1.5!important;margin:0!important;}`;
-  return <div className="playerDisplayShell">
+.claRationaleBox p{color:#dbf2e8!important;line-height:1.5!important;margin:0!important;}
+/* Nothing on a player display may be clipped: a half-read rule is worse than none. */
+.pdCard .playerDisplayGrid{align-items:start!important;}
+.pdCard .playerDisplayGrid section{overflow:visible!important;max-height:none!important;height:auto!important;}
+.pdCard .playerDisplayGrid p,.pdCard .playerDisplayGrid li{overflow:visible!important;max-height:none!important;display:flex!important;-webkit-line-clamp:unset!important;}
+.pdCard .playerDisplayGrid p{display:block!important;font-size:1.35rem!important;line-height:1.45!important;}
+.pdCard .pdcList{list-style:none!important;margin:0!important;padding:0!important;}
+.pdCard .pdcList li{align-items:baseline!important;gap:10px!important;padding:7px 0!important;border-top:1px solid rgba(255,255,255,0.08)!important;font-size:1.35rem!important;line-height:1.4!important;font-weight:700!important;}
+.pdCard .pdcList li:first-child{border-top:none!important;}
+.pdCard .pdcNum{flex:0 0 auto!important;min-width:1.4em!important;color:#7fa9c9!important;font-size:0.8em!important;font-weight:800!important;}`;
+  return <div className="playerDisplayShell pdCard">
     <style>{CLA_BOX_STYLE}</style>
     <div className="playerDisplayTop">
       <span>PLAYER DISPLAY</span>
@@ -692,19 +719,18 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       </select>}
     </div>
     <div className="playerDisplayGrid">
-      <section><h2>WHAT TO DO</h2><p>{what}</p></section>
-      <section><h2>HOW TO SCORE</h2><p>{score}</p></section>
-      <section className="playerDisplayFocus"><h2>KEY FOCUS</h2><p>{focus}</p></section>
-      {layers.length===0&&constraintText&&constraintText!=='No extra constraints selected.'&&<section><h2>CONSTRAINTS</h2><p>{constraintText}</p></section>}
-      {dbText&&<section><h2>DB ALLOCATIONS</h2><p>{dbText}</p></section>}
+      <PdField label="WHAT TO DO" text={what} sep=" + "/>
+      <PdField label="HOW TO SCORE" text={score} sep=" · "/>
+      <PdField label="KEY FOCUS" text={focus} className="playerDisplayFocus"/>
+      {constraints.length>0&&<section><h2>CONSTRAINTS</h2>
+        <ol className="pdcList">{constraints.map((c,i)=><li key={i}><span className="pdcNum">{i+1}</span><span>{c}</span></li>)}</ol></section>}
+      {dbText&&<PdField label="DB ALLOCATIONS" text={dbText} sep=" · "/>}
     </div>
-    <div className="claRationaleBox"><h2>CLA Rationale</h2><p>{rationale}</p></div>
     {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
       <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
         <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
         <CheckerboardCourtMap compact/>
       </div>}
-    {layers.length>0&&<div className="playerDisplayRules"><h2>ACTIVE CONSTRAINTS</h2><div>{layers.map(layer=><span key={layer}>{layer}</span>)}</div></div>}
   </div>;
 }
 function PlayerDisplayView({session,setScreen,sharedGame=null}){
@@ -9358,6 +9384,16 @@ function CheckerboardCourtMap({width='100%',compact=false}){
   return <img src={CHECKERBOARD_COURT_MAP_DATA_URL} alt="Checkerboard Court Map — floor 1-4, front wall 5-8, side walls A-C Hi/Lo, back wall BL/BR" style={{width,maxWidth:compact?360:520,display:'block',margin:'0 auto'}}/>;
 }
 
+// Sessions freeze a card's text at add-time, so anything saved before the seam
+// notation changed still carries the old codes and would show them forever.
+// Rewrite the legacy forms on read: [7/8L-2] named the seam as the target, which
+// it never was, and the boast's path marker is S not L. Applied at the one point
+// every card passes through, so saved sessions correct themselves.
+const LEGACY_CODE_FIXES=[['[LBL-8/7L-2]','[LBL-8/7S-2]'],['[7/8L-2]','[7L-2] (SA)']];
+function moderniseCodes(text){
+  if(typeof text!=='string'||!text)return text;
+  return LEGACY_CODE_FIXES.reduce((s,[from,to])=>s.split(from).join(to),text);
+}
 function normaliseGameCard(card={}){
   const now=Date.now()+Math.random();
   const layers=Array.isArray(card.layers)?card.layers:(card.layers?[card.layers]:[]);
