@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v406 Intention, constraint, illustration - in that order, and no longer confused with each other. A code constrains: the ball must travel that path, which narrows the space without naming a solution. A shot name prescribes: it hands the player the answer. v405 had these the wrong way round, leading with the shot name and muting the code - promoting the prescription and demoting the constraint. Now the code carries the step and the shot name is demoted to an illustration: usually a cross drop, rather than play a cross drop. Same words, different voice. The player still gets told what the shot normally is, so nothing is lost from comprehension, but if they find another shot that meets the code and moves the opponent, it counts - which is what the affordance line has always asked for. How much freedom a code leaves is readable from the code itself, so this needs no judgement call. A side-wall code entails the shot: nothing but a boast goes side wall then front wall, so it reads that path is a boast, no other shot makes it. A front-wall code names only a path, so a drop, a kill or anything else that reaches it satisfies the constraint, and it reads usually. The intention field was dead. Every card has carried one - Counter Attack Recognition, Deception and Affordance Recognition, Pressure Before Attack - and it was rendered nowhere, while the shot label wore the crown. It now leads every card, because by the standing principle it is the rule and everything under it is only narrowing.';
+const APP_VERSION='v408 Patterns are based on triggers, and the app defaulted to not having one. The Attack Trigger panel offered No trigger and that was the default, so every card opened fresh ran with the attack unconditional - a recital, which is the one thing the coach cue on every card exists to prevent. Rotating drives are only broken by a trigger: opponent off the T, player in front, or both. No trigger was never a valid state and is removed. The default is now opponent off the T. The step text also asserted a trigger it never received. patternLogicSteps took only the game, so it printed Once the trigger is on regardless of what was set, or whether anything was set at all. It now takes the live trigger and names it: once the opponent is off the T, attack into 7L-2. A player reads the condition instead of being pointed at a panel. The session card carries the trigger it was added with, so the wording travels with it. Also fixed while checking this: the direction run-rule still said functional cross, must land 3 or 4 - the zone test replaced everywhere else in v400 - so the live display showed the old rule in the run-rules and the new one on the card key at the same time. No instance of the 3/4 test remains.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -17329,7 +17329,10 @@ function patternSeamKey(game){
   if(gameHasKill(game))parts.push(KILL_VS_DROP_RULE);
   return parts.join('  ·  ');
 }
-function patternLogicSteps(game){
+// Rotating drives are only broken by a trigger, so the step names the live one
+// rather than pointing at a panel. There is no untriggered state.
+const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
+function patternLogicSteps(game,trigger='offT'){
   const w=plWalk(game);
   if(!w.length)return [];
   const build=w[0];
@@ -17340,7 +17343,7 @@ function patternLogicSteps(game){
   if(game.intention)steps.push({k:'Intention',v:`${game.intention}. That is what this card trains - the shots below narrow the space, they are not the answer.`});
   steps.push({k:'Serve',v:'The panel sets your side and direction.'});
   steps.push({k:'Build',...line('Rally into',build.parts)});
-  if(attack)steps.push({k:'Attack',...line('Once the trigger is on, attack into',attack.parts)});
+  if(attack)steps.push({k:'Attack',...line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts)});
   counters.forEach(c=>steps.push({k:'Counter',...line('Answer into',c.parts)}));
   if(w.length>2)steps.push({k:'Recover',v:`They are in the front now. Answer with ${RECOVERY_FAMILIES} - whichever their position leaves on.`});
   steps.push({k:'Repeat',v:'Run the cycle again - see the Cycle panel for how it ends.'});
@@ -17358,7 +17361,7 @@ function patternCrossRule(game){
 }
 // Plain-text versions for session cards, search results and the live display,
 // which take a string rather than a node.
-function patternLogicText(game){return patternLogicSteps(game).map(s=>`${s.k}: ${s.v}`).join(' ');}
+function patternLogicText(game,trigger){return patternLogicSteps(game,trigger).map(s=>`${s.k}: ${s.v}`).join(' ');}
 function patternScoreText(){return PATTERN_SCORE_RULES.map(r=>`${r.k} = ${r.v}`).join(' · ');}
 
 function PatternLabPlayerDisplay({payload={}}){
@@ -17380,7 +17383,7 @@ function PdChip({on,onClick,children}){
   return <div role="button" tabIndex={0} className={on?'pdChip on':'pdChip'} onClick={onClick}>{children}</div>;
 }
 function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
-  const [trigger,setTrigger]=useState('off');
+  const [trigger,setTrigger]=useState('offT');
   const [direction,setDirection]=useState('rightStraight');
   const [crossCap,setCrossCap]=useState(0);
   const crossableShots=(game.shots||[]).map((s,i)=>({...s,i})).filter(s=>s.crossable);
@@ -17397,14 +17400,14 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [cycleMode,setCycleMode]=useState('breakdown');
   const [openAfter,setOpenAfter]=useState(2);
   const [tramline,setTramline]=useState(false);
-  const triggerLabel={off:'No trigger (free)',offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
+  const triggerLabel={offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
   const serveSide=direction==='rightStraight'?'Serve from the left box (opposite the rotating side)':direction==='leftStraight'?'Serve from the right box (opposite the rotating side)':'Serve alternates sides';
   const runRules=[
     serveSide,
     'Attack trigger: '+triggerLabel,
-    'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must land 3/4'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
+    'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must move them more than one step'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
     'Double Bounce: all '+(dbAll===0?'0':dbAll+' DB')+(dbOverrides.length?(' · '+dbOverrides.join(', ')):''),
     'Height: '+(heightAll?'on':'off')+' for all'+(heightOverrides.length?(' · '+heightOverrides.join(', ')):''),
     cycleLabel,
@@ -17452,7 +17455,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{game.quick}</p>{patternSeamKey(game)&&<small className="pdSeamKey">{patternSeamKey(game)}</small>}<small>{meta.note}</small></div>
     </div>
 
@@ -17460,7 +17463,6 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <p className="pdSectionSub">Overlay how this pattern is run. The pattern stays the same; these set the conditions, levellers and end-rule.</p>
     <div className="pdPanelGrid">
       <PatternRunPanel title="Attack Trigger" note="The condition that releases the attack shot. Until it is true, the player keeps building.">
-        <PdChip on={trigger==='off'} onClick={()=>setTrigger('off')}>No trigger</PdChip>
         <PdChip on={trigger==='offT'} onClick={()=>setTrigger('offT')}>Opponent off T</PdChip>
         <PdChip on={trigger==='inFront'} onClick={()=>setTrigger('inFront')}>Player in front</PdChip>
         <PdChip on={trigger==='both'} onClick={()=>setTrigger('both')}>Both</PdChip>
@@ -17515,7 +17517,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
   function addGame(game,view=false,runRules=null){
-    const desc=patternLogicText(game)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
+    const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const layers=runRules&&runRules.length?[...(game.flags||[]),...runRules]:game.flags;
     const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:desc,rationale:game.logic,scoring:patternScoreText(),layers:layers,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
