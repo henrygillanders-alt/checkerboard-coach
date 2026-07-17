@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v394 Fixes the blank Ludo screen introduced in v393. Adding competitionMode to the Ludo settings memo put it seven lines above the useState that declares it, so the component read a const still in its temporal dead zone and threw ReferenceError on first render, unmounting the tree. competitionMode is now declared before the memo that reads it. Nothing else from v393 changes: the all-courts display still branches on race vs separate, the link still appears whenever courts>1, and the Court Monitor buttons keep their honest label. Note for future work: esbuild compiles a TDZ error perfectly happily because it is valid syntax and only fails at runtime, so the mandatory compile check cannot catch this class of bug on its own - declaration order has to be verified separately whenever a hook initialiser gains a new dependency.';
+const APP_VERSION='v395 Ludo was never writing to its court rooms. One cause behind three symptoms - the scoring link, the all-courts display and Court Monitor showing Snakes and Ladders. (1) copyLudoRaceLink never called setProjecting(true). Every court gates its writes on project={courts>1?projecting:...}, so copying the all-courts link started nothing and the display sat on Waiting for courts to start forever. v393 made that button reachable in separate mode without noticing it had never started projection in any mode. Same omission found and fixed in the S and L and N and C race-link copiers; Hangman was the only one that ever called it, which is why Hangman worked and looked like the reference. (2) copyLudoScoreLink had the identical bug fixed for Hangman in v391 and never ported: setProjecting and setHandedOff land in the same render, so the court flips to its handed-off placeholder before it ever mounts and nothing writes the current players. It now seeds the room before handing off, preserving piece positions if the same pairing is already live. (3) Court Monitor showing Snakes and Ladders was a consequence, not a bug. It shows the freshest payload per court across namespaces; with the Ludo rooms empty the stale S and L data in the base room was the only thing there, so it won. Clearing those courts or letting Ludo write now resolves it.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -9704,6 +9704,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   function startRace(){setRaceBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));}
   function resetRace(){setRaceBoard(null);setHandedOff(new Set());}
   async function copyRaceLink(){
+    // Without this the courts never write and the display waits forever — every court
+    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+    setProjecting(true);
     const url=buildSlRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
   }
@@ -18244,10 +18247,36 @@ function LudoSquashGame({setSession,setScreen}={}){
   async function copyLudoScoreLink(n){
     setProjecting(true);
     const url=buildLudoScoreLink(n,base);
+    // Seed the room with the CURRENT setup before handing off. Marking the court handed
+    // off unmounts its LudoSquashCourt in the same render, so without this nothing ever
+    // writes and the scoring device opens onto an empty room, or onto a previous pairing.
+    // Same fix as Hangman v391.
+    const roomId=courtRoomId(base,n);
+    const g=allocation[n-1]||[];
+    try{
+      const row=await readLivePlayerRoom(roomId);
+      const existing=row&&row.payload&&row.payload.type==='ludosquash'?row.payload:null;
+      const samePairing=!!existing&&(existing.players||[]).length===g.length
+        &&(existing.players||[]).every((p,i)=>p.name===g[i]);
+      if(samePairing){
+        // Already live with these players — the coach may have played a few rallies here
+        // before handing off, so keep the pieces where they are and refresh config only.
+        await writeLivePlayerRoom(roomId,'ludosquash',{...existing,objective,objectiveGroup,difficulty,captureOn,mode,competitionMode});
+      }else{
+        await writeLivePlayerRoom(roomId,'ludosquash',{type:'ludosquash',
+          objective,objectiveGroup,difficulty,captureOn,mode,competitionMode,
+          players:ludoDefaultRoster(g).map(p=>({name:p.name,pieces:p.pieces.map(pc=>pc.d)})),
+          onCourt:g.slice(0,2),queueNames:g.slice(2),
+          winnerName:null,pending:{},courtLabel:courts>1?`Court ${n}`:''});
+      }
+    }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
   async function copyLudoRaceLink(){
+    // Without this the courts never write and the display waits forever — every court
+    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+    setProjecting(true);
     const url=buildLudoRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
   }
@@ -19207,6 +19236,9 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link \u2014 open on the device standing at that court:',url);}
   }
   async function copyNcRaceLink(){
+    // Without this the courts never write and the display waits forever — every court
+    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+    setProjecting(true);
     const url=buildNcRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
   }
