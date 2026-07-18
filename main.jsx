@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v411 Pattern Lab codes now mirror when Direction is set to the right, and the coral logo is embedded. (1) The Direction panel had Right straight only, Left straight only and Both, but the codes never responded - the card was authored on the left and printed 5H-4 whatever the panel said. Set to Right, the whole card now mirrors across the centre line: front wall 5 and 6 swap, 7 and 8 swap; floor 1 and 2 swap, 3 and 4 swap; the side-wall prefix L and R swap; height H and L are unchanged. So 5H-4 becomes 6H-3, exactly. It is all-or-nothing by necessity - a left-side build cannot feed a right-side attack - so every code in the card mirrors together, applied once before the derivation so the steps, the seam glosses and the boast naming all follow. Left and Both keep the authored left side. The mirror is its own inverse. The library grid and session cards keep the authored notation, since those are browsing views, not the live panel. (2) The Checkerboard title-tile logo is the uploaded coral court-shape mark, embedded as a base64 data-URI - the pattern the app already uses for images, so there is no external file to host and updating it means regenerating one line. Downscaled from 281KB to about 8KB at the display size.';
+const APP_VERSION='v413 The recovery resolves back into the rotating lengths, so it can only be a length shot. The previous recovery phrase offered counter drop, kill, lob, drive straight or cross, or boast. That is wrong for these patterns: the recovery restarts the length rally the pattern loops on, so a drop, a kill or a boast cannot be it - none of them re-establish length. The recovery is now stated as a straight or crosscourt lob or drive, the four shots that reset the rotation. Cards whose recovery label is short drop or long drive/lob (14 of the 38) additionally allow a short option off the same ball; those read straight or crosscourt lob or drive, or hold it short with a drop. The remaining 24 recover with the four length shots only. The step wording was corrected too: it previously said they are in the front now, which was carried over from the drop-recovery framing and is not true of a length recovery. It now reads resolve back into the rotating lengths. Recovery is still shown as an intention, not a code, and is derived from shots along with the rest of the notation.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4916,7 +4916,7 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
         category:'Tactical Intentions',
         format:'Pattern Lab',
         duration:8,
-        task:g.quick,
+        task:deriveQuick(g,'left'),
         description:patternLogicText(g),
         rationale:g.logic,
         scoring:g.score,
@@ -17291,7 +17291,19 @@ function shotText(s,prevSide,prevFloor){
 // Every card sends the opponent to the front: the shot before the recovery always
 // lands in floor 1 or 2. From there the answer is not one shot but a set, and which
 // one is on depends on where the opponent is - so this step carries no code at all.
-const RECOVERY_FAMILIES='counter drop, kill, lob, drive straight or cross, or boast';
+// The recovery resolves the rally back into the rotating-lengths pattern, so it can
+// only be a length shot: a straight or crosscourt lob or drive. Not a drop, kill or
+// boast - those do not restart the length rotation the pattern loops on.
+const RECOVERY_FAMILIES='straight or crosscourt lob or drive';
+// Some cards additionally allow a short option off the same ball (the "short drop or
+// long drive/lob" cards). Those add "or a short drop" but the length recovery is the
+// same four shots.
+function recoveryPhrase(game){
+  const shots=Array.isArray(game.shots)?game.shots:[];
+  const last=shots[shots.length-1]||{};
+  const short=/short/i.test(last.label||'');
+  return RECOVERY_FAMILIES+(short?', or hold it short with a drop':'');
+}
 // Walk the shots once, carrying the side and the origin forward, so every gloss
 // is judged against the shot that actually precedes it.
 // When Direction is set to the right side, the whole card mirrors across the
@@ -17314,10 +17326,18 @@ function mirrorGame(game,side){
   if(side!=='right'||!game||!Array.isArray(game.shots))return game;
   return {...game,shots:game.shots.map(s=>({...s,code:mirrorCode(s.code)}))};
 }
-// The compact-notation string carries codes inside prose. Mirror only the bracketed
-// parts, leaving the shot words untouched.
-function mirrorQuick(quick){
-  return String(quick||'').replace(/\[[^\]]*\]/g,mirrorCode);
+// Derive the compact notation from shots, so it can never drift from the pattern the
+// way the hand-written `quick` field did. The last shot is the recovery: by the
+// recovery rule it is a choice of families, not a fixed code, so it is rendered as
+// that phrase rather than its stored code (which was where the impossible mirrored
+// drive came from). Everything before it shows label + code, mirrored if on the right.
+function deriveQuick(game,side){
+  const g=mirrorGame(game,side);
+  const shots=Array.isArray(g.shots)?g.shots:[];
+  if(!shots.length)return '';
+  const lead=shots.slice(0,-1).map(s=>`${s.label} ${s.code}`);
+  const recovery=shots.length>2?'recover: '+recoveryPhrase(g):`${shots[shots.length-1].label} ${shots[shots.length-1].code}`;
+  return lead.concat(recovery).join(' + ');
 }
 function plWalk(game,side){
   const g=mirrorGame(game,side);
@@ -17375,7 +17395,7 @@ function patternLogicSteps(game,trigger='offT',side){
   steps.push({k:'Build',...line('Rally into',build.parts)});
   if(attack)steps.push({k:'Attack',...line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts)});
   counters.forEach(c=>steps.push({k:'Counter',...line('Answer into',c.parts)}));
-  if(w.length>2)steps.push({k:'Recover',v:`They are in the front now. Answer with ${RECOVERY_FAMILIES} - whichever their position leaves on.`});
+  if(w.length>2)steps.push({k:'Recover',v:`Resolve back into the rotating lengths: ${recoveryPhrase(game)} - whichever their position leaves on.`});
   steps.push({k:'Repeat',v:'Run the cycle again - see the Cycle panel for how it ends.'});
   return steps;
 }
@@ -17451,7 +17471,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){onAdd(game,view,runRules);}
   const [pushed,setPushed]=useState(false);
-  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:patternSide==='right'?mirrorQuick(game.quick):game.quick,seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
@@ -17492,7 +17512,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
       <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
-      <div className="patternSequence"><strong>Compact notation</strong><p>{patternSide==='right'?mirrorQuick(game.quick):game.quick}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide)}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
     <h2 className="pdSectionTitle">Run-rule panels</h2>
@@ -17576,9 +17596,9 @@ function TacticalIntentionsModule({setScreen,setSession}){
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);setDetailOpen(true);}}>⚡ Random Pattern</button></div>
 
-    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);setDetailOpen(true);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{game.quick}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
+    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);setDetailOpen(true);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{deriveQuick(game,'left')}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
 
-    {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');setDetailOpen(true);}}><strong>{game.title}</strong><span>{game.quick}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
+    {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');setDetailOpen(true);}}><strong>{game.title}</strong><span>{deriveQuick(game,'left')}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
 
     {mode!=='framework'&&<p className="pdSectionSub">Tap any pattern above to open its detail page and run-rule panels.</p>}
 
