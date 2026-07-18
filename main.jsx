@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v408 Patterns are based on triggers, and the app defaulted to not having one. The Attack Trigger panel offered No trigger and that was the default, so every card opened fresh ran with the attack unconditional - a recital, which is the one thing the coach cue on every card exists to prevent. Rotating drives are only broken by a trigger: opponent off the T, player in front, or both. No trigger was never a valid state and is removed. The default is now opponent off the T. The step text also asserted a trigger it never received. patternLogicSteps took only the game, so it printed Once the trigger is on regardless of what was set, or whether anything was set at all. It now takes the live trigger and names it: once the opponent is off the T, attack into 7L-2. A player reads the condition instead of being pointed at a panel. The session card carries the trigger it was added with, so the wording travels with it. Also fixed while checking this: the direction run-rule still said functional cross, must land 3 or 4 - the zone test replaced everywhere else in v400 - so the live display showed the old rule in the run-rules and the new one on the card key at the same time. No instance of the 3/4 test remains.';
+const APP_VERSION='v409 Restored the CLA Rationale box per Henry (removed unasked in v398). Two places, both scoped to what was actually confirmed - not the wider 11-module rollout, which stays an open question (see handover doc SS0.3): (1) The generic player display (PlayerDisplayCard/PlayerDisplayView, used for shared/session player links across any game type) now renders getPlayerDisplayFields rationale, which was already being computed but silently dropped at the destructure - the CLA box CSS already existed but was only ever wired to a Checkerboard-specific court map, never to rationale text. Both boxes now render together for Checkerboard sessions; other games just get the rationale box. (2) The live Pattern Lab display never had one at all - added, sourced from the pattern card logic field (per the handover docs own answer), which is now included in the live payload alongside notation/coach/runRules. Not touched: Snakes and Ladders, Ludo, Noughts and Crosses, Tin War, Disruption, Hangman, Serve/Return, Lob, Double Bounce, Court Standings, Checkerboards own live display - each of these still has no rationale source identified and none should be guessed at.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -699,7 +699,7 @@ function PdField({label,text,sep,className=''}){
 }
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
-  const {title,what,score,focus,layers,dbText,constraintText,rldLevel}=getPlayerDisplayFields(chosen);
+  const {title,what,score,focus,layers,dbText,constraintText,rldLevel,rationale}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
   const constraints=layers.length?layers:((constraintText&&constraintText!=='No extra constraints selected.')?[constraintText]:[]);
   const CLA_BOX_STYLE=`
@@ -734,6 +734,10 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
         <ol className="pdcList">{constraints.map((c,i)=><li key={i}><span className="pdcNum">{i+1}</span><span>{c}</span></li>)}</ol></section>}
       {dbText&&<PdField label="DB ALLOCATIONS" text={dbText} sep=" · "/>}
     </div>
+    {rationale&&<div className="claRationaleBox">
+      <h2>CLA Rationale</h2>
+      <p>{rationale}</p>
+    </div>}
     {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
       <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
         <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
@@ -17369,11 +17373,15 @@ function PatternLabPlayerDisplay({payload={}}){
   return <div className="playerDisplayPage"><div className="playerDisplayShell">
     <style>{`.plPatNote{font-family:'Consolas',monospace;font-size:1.5rem;line-height:1.7;color:#eaf4fb;font-weight:700;}
     .plSeamKey{color:#9fb3c4;font-size:1rem;line-height:1.5;margin:10px 0 0;}
-    .plRunGrid{display:flex;flex-wrap:wrap;gap:10px;}.plRunGrid span{background:#13314a;border:1px solid #2E6E8E;color:#cfe6f5;border-radius:10px;padding:8px 14px;font-size:1.05rem;}`}</style>
+    .plRunGrid{display:flex;flex-wrap:wrap;gap:10px;}.plRunGrid span{background:#13314a;border:1px solid #2E6E8E;color:#cfe6f5;border-radius:10px;padding:8px 14px;font-size:1.05rem;}
+    .claRationaleBox{background:#0c1f1a;border:1px solid #1d4a38;border-left:4px solid #34e0a0;border-radius:12px;padding:14px 16px;margin:12px 0 0;}
+    .claRationaleBox h2{color:#7fe8bf;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin:0 0 6px;}
+    .claRationaleBox p{color:#dbf2e8;line-height:1.5;margin:0;}`}</style>
     <div className="playerDisplayTop"><span>PATTERN LAB · LIVE</span><h1>{p.title||'Pattern'}</h1>{(p.rld||p.level)&&<p>{p.level?('Level '+p.level):''}{p.level&&p.rld?' · ':''}{p.rld?('RLD '+p.rld):''}</p>}</div>
     <div className="playerDisplayGrid"><section className="playerDisplayFocus"><h2>PATTERN</h2><p className="plPatNote">{p.notation}</p>{p.seamKey&&<p className="plSeamKey">{p.seamKey}</p>}</section></div>
     {p.coach&&<section className="playerDisplayFocus" style={{marginTop:'12px'}}><h2>FOCUS</h2><p>{p.coach}</p></section>}
     {rr.length>0&&<div className="playerDisplayRules" style={{marginTop:'12px'}}><h2>RUN-RULES</h2><div className="plRunGrid">{rr.map((r,i)=><span key={i}>{r}</span>)}</div></div>}
+    {p.logic&&<div className="claRationaleBox"><h2>CLA Rationale</h2><p>{p.logic}</p></div>}
   </div></div>;
 }
 function PatternRunPanel({title,note,children}){
@@ -17415,7 +17423,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){onAdd(game,view,runRules);}
   const [pushed,setPushed]=useState(false);
-  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:game.quick,seamKey:patternSeamKey(game),level:game.level,rld:game.rld,coach:game.coach,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:game.quick,seamKey:patternSeamKey(game),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
