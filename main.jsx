@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v413 The recovery resolves back into the rotating lengths, so it can only be a length shot. The previous recovery phrase offered counter drop, kill, lob, drive straight or cross, or boast. That is wrong for these patterns: the recovery restarts the length rally the pattern loops on, so a drop, a kill or a boast cannot be it - none of them re-establish length. The recovery is now stated as a straight or crosscourt lob or drive, the four shots that reset the rotation. Cards whose recovery label is short drop or long drive/lob (14 of the 38) additionally allow a short option off the same ball; those read straight or crosscourt lob or drive, or hold it short with a drop. The remaining 24 recover with the four length shots only. The step wording was corrected too: it previously said they are in the front now, which was carried over from the drop-recovery framing and is not true of a length recovery. It now reads resolve back into the rotating lengths. Recovery is still shown as an intention, not a code, and is derived from shots along with the rest of the notation.';
+const APP_VERSION='v414 A Length run-rule panel, beside Direction: Any / Lob / Working drive / Penetrating drive. There are three types of length and it is often useful to train each on its own. They are different codes, not one code relabelled - down each side into the same back floor zone the ladder is: lob on the top zone high, working drive on the side vertical seam, penetrating drive on the bottom zone low. Left into floor 4: lob 5H-4, working 5/8S-4, penetrating 8-4. Right into floor 3: lob 6H-3, working 6/7S-3, penetrating 7-3, the proper mirror. Forcing a type rewrites every length code onto its ladder rung, keeping the floor zone, and narrows the recovery to match so a drive drill cannot be lobbed out of. Non-length shots - the drops, counters, boasts - are untouched, since only back-corner drive and lob codes are lengths. Any leaves the card as authored; working drive is the most common game length. The forcing is mirror-aware and flows through the derived notation, the steps and the live display, all from shots, so nothing drifts.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -17291,18 +17291,53 @@ function shotText(s,prevSide,prevFloor){
 // Every card sends the opponent to the front: the shot before the recovery always
 // lands in floor 1 or 2. From there the answer is not one shot but a set, and which
 // one is on depends on where the opponent is - so this step carries no code at all.
+// The three length types are DIFFERENT CODES, not one code relabelled. Down each
+// side, into the same floor zone, the ladder is:
+//   lob         top zone, high        5H (left)   6H (right)
+//   working     side vertical seam    5/8S (left) 6/7S (right)
+//   penetrating bottom zone, low      8  (left)   7  (right)
+// So forcing a type rewrites a length code onto its ladder rung, keeping the floor
+// zone. A length is any drive/lob code landing floor 3 or 4 (the back corners).
+const LENGTH_LADDER={
+  // side -> type -> [frontwall, heightMarker]  (heightMarker: 'H' | 'S' | '' )
+  left:  {lob:['5','H'], working:['5/8','S'], penetrating:['8','']},
+  right: {lob:['6','H'], working:['6/7','S'], penetrating:['7','']}
+};
+// Which side a length code sits on, from its floor zone: left = 1/4, right = 2/3.
+function lengthSideFromFloor(floor){return (floor==='1'||floor==='4')?'left':(floor==='2'||floor==='3')?'right':'';}
+// Rewrite a single back-corner length code to the forced type. Non-length codes,
+// and codes that are not a back-corner length, are returned unchanged.
+function forceLengthCode(code,lengthType){
+  if(!lengthType||lengthType==='any'||!code)return code;
+  const m=/^\[(\d)[HL]?-([34])\]$/.exec(code.trim());
+  if(!m)return code;                       // not a plain back-corner length
+  const floor=m[2];
+  const side=lengthSideFromFloor(floor);
+  const rung=LENGTH_LADDER[side]&&LENGTH_LADDER[side][lengthType];
+  if(!rung)return code;
+  const [fw,mark]=rung;
+  return mark==='S'?`[${fw}S-${floor}]`:`[${fw}${mark}-${floor}]`;
+}
+// Apply to a whole code cell, which may be a choice ("[6L-3] / [7L-3]").
+function forceLength(codeCell,lengthType){
+  if(!lengthType||lengthType==='any')return codeCell;
+  return String(codeCell||'').split(' / ').map(c=>forceLengthCode(c,lengthType)).join(' / ');
+}
 // The recovery resolves the rally back into the rotating-lengths pattern, so it can
 // only be a length shot: a straight or crosscourt lob or drive. Not a drop, kill or
 // boast - those do not restart the length rotation the pattern loops on.
 const RECOVERY_FAMILIES='straight or crosscourt lob or drive';
-// Some cards additionally allow a short option off the same ball (the "short drop or
-// long drive/lob" cards). Those add "or a short drop" but the length recovery is the
-// same four shots.
-function recoveryPhrase(game){
+function isLengthLabel(label){return /\b(drive|lob)\b/i.test(label||'');}
+function forcedLengthWord(lengthType){
+  return {lob:'lob',working:'working drive',penetrating:'penetrating drive'}[lengthType]||'';
+}
+function recoveryPhrase(game,lengthType){
   const shots=Array.isArray(game.shots)?game.shots:[];
   const last=shots[shots.length-1]||{};
   const short=/short/i.test(last.label||'');
-  return RECOVERY_FAMILIES+(short?', or hold it short with a drop':'');
+  const forced=forcedLengthWord(lengthType);
+  const base=forced?('straight or crosscourt '+forced):RECOVERY_FAMILIES;
+  return base+(short?', or hold it short with a drop':'');
 }
 // Walk the shots once, carrying the side and the origin forward, so every gloss
 // is judged against the shot that actually precedes it.
@@ -17331,12 +17366,18 @@ function mirrorGame(game,side){
 // recovery rule it is a choice of families, not a fixed code, so it is rendered as
 // that phrase rather than its stored code (which was where the impossible mirrored
 // drive came from). Everything before it shows label + code, mirrored if on the right.
-function deriveQuick(game,side){
+function deriveQuick(game,side,lengthType){
   const g=mirrorGame(game,side);
   const shots=Array.isArray(g.shots)?g.shots:[];
   if(!shots.length)return '';
-  const lead=shots.slice(0,-1).map(s=>`${s.label} ${s.code}`);
-  const recovery=shots.length>2?'recover: '+recoveryPhrase(g):`${shots[shots.length-1].label} ${shots[shots.length-1].code}`;
+  const forced=forcedLengthWord(lengthType);
+  const cell=s=>{
+    const label=(forced&&isLengthLabel(s.label))?forced:s.label;
+    const code=isLengthLabel(s.label)?forceLength(s.code,lengthType):s.code;
+    return `${label} ${code}`;
+  };
+  const lead=shots.slice(0,-1).map(cell);
+  const recovery=shots.length>2?'recover: '+recoveryPhrase(g,lengthType):cell(shots[shots.length-1]);
   return lead.concat(recovery).join(' + ');
 }
 function plWalk(game,side){
@@ -17382,20 +17423,27 @@ function patternSeamKey(game,side){
 // Rotating drives are only broken by a trigger, so the step names the live one
 // rather than pointing at a panel. There is no untriggered state.
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
-function patternLogicSteps(game,trigger='offT',side){
+function patternLogicSteps(game,trigger='offT',side,lengthType){
   const w=plWalk(game,side);
   if(!w.length)return [];
   const build=w[0];
   const attack=w.length>1?w[1]:null;
   const counters=w.length>3?w.slice(2,w.length-1):[];
   const steps=[];
-  const line=(lead,p)=>({v:`${lead} ${p.code}${p.note?' - '+p.note:''}.`,hint:shotHint(p)});
+  const forced=forcedLengthWord(lengthType);
+  const applyLen=(p,label)=>{
+    if(!isLengthLabel(label))return p;
+    const code=forceLength(p.code,lengthType);
+    return {...p,code,name:forced||p.name};
+  };
+  const line=(lead,p,label)=>{const q=applyLen(p,label);return {v:`${lead} ${q.code}${q.note?' - '+q.note:''}.`,hint:shotHint(q)};};
   if(game.intention)steps.push({k:'Intention',v:`${game.intention}. That is what this card trains - the shots below narrow the space, they are not the answer.`});
   steps.push({k:'Serve',v:'The panel sets your side and direction.'});
-  steps.push({k:'Build',...line('Rally into',build.parts)});
-  if(attack)steps.push({k:'Attack',...line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts)});
-  counters.forEach(c=>steps.push({k:'Counter',...line('Answer into',c.parts)}));
-  if(w.length>2)steps.push({k:'Recover',v:`Resolve back into the rotating lengths: ${recoveryPhrase(game)} - whichever their position leaves on.`});
+  if(forced)steps.push({k:'Length',v:`Every length is a ${forced} - ${LENGTH_NOTE[lengthType].replace(/^Lengths must be [^:]*:\s*/,'')}`});
+  steps.push({k:'Build',...line('Rally into',build.parts,build.shot.label)});
+  if(attack)steps.push({k:'Attack',...line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts,attack.shot.label)});
+  counters.forEach(c=>steps.push({k:'Counter',...line('Answer into',c.parts,c.shot.label)}));
+  if(w.length>2)steps.push({k:'Recover',v:`Resolve back into the rotating lengths: ${recoveryPhrase(game,lengthType)} - whichever their position leaves on.`});
   steps.push({k:'Repeat',v:'Run the cycle again - see the Cycle panel for how it ends.'});
   return steps;
 }
@@ -17430,6 +17478,18 @@ function PatternLabPlayerDisplay({payload={}}){
     {p.logic&&<div className="claRationaleBox"><h2>CLA Rationale</h2><p>{p.logic}</p></div>}
   </div></div>;
 }
+// Three types of length, trained separately. Same code either way - a lob and a
+// drive down the same wall share the zone; the difference is height and pace, not
+// target. So forcing a type relabels the length shots and narrows the recovery to
+// match; it never changes the code. Working drive is the default game shot.
+const LENGTH_NOTE={
+  any:'Lengths as the card sets them - lob or drive, the player chooses. Force a single type to train it on its own.',
+  lob:'Lengths must be lobs: high, into the back, resetting the rally and buying time to the T.',
+  working:'Lengths must be working drives: a controlled length to the back that resets and lets you recover to the T. The most common length.',
+  penetrating:'Lengths must be penetrating drives: harder and flatter, taking time from the opponent and pinning them back for a weak return.'
+};
+function RunRulePanel_lengthLabel(t){return {any:'',lob:'lob',working:'working drive',penetrating:'penetrating drive'}[t]||'';}
+
 function PatternRunPanel({title,note,children}){
   return <div className="pdPanel"><h4>{title}</h4><div className="pdChips">{children}</div>{note&&<p className="pdNote">{note}</p>}</div>;
 }
@@ -17439,6 +17499,7 @@ function PdChip({on,onClick,children}){
 function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [trigger,setTrigger]=useState('offT');
   const [direction,setDirection]=useState('rightStraight');
+  const [lengthType,setLengthType]=useState('any');
   const [crossCap,setCrossCap]=useState(0);
   const crossableShots=(game.shots||[]).map((s,i)=>({...s,i})).filter(s=>s.crossable);
   const [crossPer,setCrossPer]=useState(()=>{const o={};crossableShots.forEach(s=>{o[s.i]=true;});return o;});
@@ -17463,6 +17524,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const runRules=[
     serveSide,
     'Attack trigger: '+triggerLabel,
+    lengthType!=='any'?('Length: every length is a '+forcedLengthWord(lengthType)):'Length: lob or drive, player chooses',
     'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must move them more than one step'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
     'Double Bounce: all '+(dbAll===0?'0':dbAll+' DB')+(dbOverrides.length?(' · '+dbOverrides.join(', ')):''),
     'Height: '+(heightAll?'on':'off')+' for all'+(heightOverrides.length?(' · '+heightOverrides.join(', ')):''),
@@ -17471,7 +17533,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){onAdd(game,view,runRules);}
   const [pushed,setPushed]=useState(false);
-  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide,lengthType),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
@@ -17511,8 +17573,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
-      <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide)}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType)}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
     <h2 className="pdSectionTitle">Run-rule panels</h2>
@@ -17531,6 +17593,13 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={direction==='cross'} onClick={()=>setDirection('cross')}>Cross allowed</PdChip>
         {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap/cycle</PdChip></>}
         {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{s.label}</PdChip>)}</div></div>}
+      </PatternRunPanel>
+
+      <PatternRunPanel title="Length" note={LENGTH_NOTE[lengthType]}>
+        <PdChip on={lengthType==='any'} onClick={()=>setLengthType('any')}>Any</PdChip>
+        <PdChip on={lengthType==='lob'} onClick={()=>setLengthType('lob')}>Lob</PdChip>
+        <PdChip on={lengthType==='working'} onClick={()=>setLengthType('working')}>Working drive</PdChip>
+        <PdChip on={lengthType==='penetrating'} onClick={()=>setLengthType('penetrating')}>Penetrating drive</PdChip>
       </PatternRunPanel>
 
       <div className="pdPanel pdLevPanel"><h4>Double Bounce (leveller)</h4>
