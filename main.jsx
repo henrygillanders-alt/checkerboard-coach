@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v420 Fixes the blank page. The Length panel added in v414 defined its LENGTH_NOTE text as a const placed AFTER the function that uses it. A const does not hoist - until execution reaches its line it sits in the temporal dead zone - so when the app rendered a pattern it hit LENGTH_NOTE before the definition and threw a ReferenceError, which stops React mounting and leaves a white screen. This was latent from v414 and only surfaced on this deploy. LENGTH_NOTE is moved up beside LENGTH_LADDER, before any use, and an unused helper left over from the same edit is removed. Every other constant added this session was checked and is defined before first use. No behaviour changes from v419 - same recovery-to-lengths, Length panel, rotation reordering, add-to-session feedback, Checkerboard add button and read-only card, Group default and empty-state message. This is the load-crash fix only.';
+const APP_VERSION='v422 Checkerboard allocation now has the Level 1-5 metric, alongside the challenge-type buttons. Checkerboard was always a Level 1-5 system, and the levels can be matched to challenge types; both now exist together. Each target - player, group or court - gets a Level 1 to 5 selector above Challenge Type. Level is the primary control: choosing it sets the default challenge type and conversion window and drives the scoring, while the type buttons remain so codes can be hand-tuned to the level. The mapping matches the module: L1 single, L2 pair, L3 triple, L4 triple with a 4-shot window, L5 triple with a 2-shot window. Each row shows its own scoring live - for example Level 4 reads complete +3, banks only if you finish within 4 shots of completing. Per-player allocations added to a session now carry each level in the task (Aurora L2, Daniel L4), and the card keeps the full scoring system stated so every level rule is visible. All new constants are defined before use and the level tx sets both the level and its default type; the type selector still overrides afterwards. This builds on v421, which restored the full Checkerboard scoring the v417 card had dropped.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5266,6 +5266,13 @@ const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
 const CB_SEAM_KEY='checkerboard_seam_allowance_v1';
 const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court','Per-Court']];
+// The complete Checkerboard scoring system, stated in full on any session card so a
+// coach reads the whole rule set and applies the line that fits each player. Numbers
+// match buildCheckerboardGame exactly - this is the flagship scoring and must never
+// be reduced to a one-liner. Defined here at top level, before CheckerboardSetup and
+// its addToSession use it - a const does not hoist, and out-of-order placement is what
+// white-screened v414-v419.
+const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +3  ·  Challenge finish = +2  ·  Clean winner = +2 and sits on top of all scoring.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
 
 function cbIsOptional(type){return type==='Optional Single'||type==='Optional Pair'||type==='Optional Triple';}
 function cbBaseKind(type){
@@ -5313,7 +5320,23 @@ function cbNormalizeCode(code){
   while((m=re.exec(code||'')))out.push(`[${m[1]}-${m[2]}]`);
   return out.length?out.join(' + '):(code||'').trim();
 }
-function cbBlankAlloc(){return {type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
+// Checkerboard is a Level 1-5 metric first; the challenge type can then be tuned to
+// match. Level is the primary control and sets the default type and conversion
+// window; the type buttons remain so codes can be hand-matched to the level.
+const CB_LEVEL_DEFAULTS={
+  1:{type:'Single',  window:'No window',    bonus:1},
+  2:{type:'Pair',    window:'No window',    bonus:2},
+  3:{type:'Triple',  window:'No window',    bonus:3},
+  4:{type:'Triple',  window:'4-shot window',bonus:3},
+  5:{type:'Triple',  window:'2-shot window',bonus:3}
+};
+function cbLevelScoring(level){
+  const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
+  const complete=`complete = +${d.bonus}`;
+  const win=d.window==='No window'?'banks once completed':`banks only if you finish within ${d.window.replace('-shot window',' shots')} of completing`;
+  return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · win after +3 · finish +2 · ${win}`;
+}
+function cbBlankAlloc(){return {level:1,type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
 function cbReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function cbRollFor(type){
   const pool=cbPoolFor(type);
@@ -5323,6 +5346,13 @@ function cbRollFor(type){
 // Pure row transformers (reused by player / group / court targets)
 function cbTxSetType(row,type){const r={...row,type,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};if(cbIsOptional(type)&&r.mode==='Manual')r.mode='Optional A/B';if(!cbIsOptional(type)&&r.mode==='Optional A/B')r.mode='Manual';return r;}
 function cbTxSetMode(row,mode){return {...row,mode};}
+// Setting a level sets the level (for scoring) and applies its default challenge
+// type, clearing codes so the coach re-taps to match. The type buttons still work
+// afterwards to hand-tune. CB_LEVEL_DEFAULTS maps 1-5 -> {type, window, bonus}.
+function cbTxSetLevel(row,level){
+  const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
+  return cbTxSetType({...row,level},d.type);
+}
 function cbTxTap(row,code){const r={...row};if(cbIsOptional(r.type)){if(r.optNext==='A'){r.optionA=code;r.optNext='B';}else{r.optionB=code;r.optNext='A';}}else{r.assigned=code;}r.hidden=false;r.revealed=true;return r;}
 function cbTxMirror(row){const r={...row};if(cbIsOptional(r.type)){const a=r.optionA||cbRandomFrom(cbPoolFor(r.type));r.optionA=a;r.optionB=cbMirrorCode(a);r.optNext='A';}else{const a=r.assigned||cbRandomFrom(cbPoolFor(r.type));r.assigned=a;r.optionA=a;r.optionB=cbMirrorCode(a);}r.hidden=false;r.revealed=true;r.mode='Mirror';return r;}
 function cbTxUseMirror(row){const r={...row};if(r.optionB){const keep=r.optionA;r.assigned=r.optionB;r.optionA=r.optionB;r.optionB=keep;}return r;}
@@ -5457,7 +5487,7 @@ function CheckerboardSetup({setScreen,setSession}){
   function playerApi(name){
     const apply=tx=>{snapshot();setAlloc(prev=>({...prev,[name]:tx(prev[name]||cbBlankAlloc())}));};
     return {
-      setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),
+      setType:t=>apply(r=>cbTxSetType(r,t)),setLevel:l=>apply(r=>cbTxSetLevel(r,l)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),
       mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),
       reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide),
       copyLink:()=>copyLink(name)
@@ -5465,11 +5495,11 @@ function CheckerboardSetup({setScreen,setSession}){
   }
   function groupApi(){
     const apply=tx=>{snapshot();setGroup(prev=>tx(prev||cbBlankAlloc()));};
-    return {setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
+    return {setType:t=>apply(r=>cbTxSetType(r,t)),setLevel:l=>apply(r=>cbTxSetLevel(r,l)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
   }
   function courtApi(i){
     const apply=tx=>{snapshot();setCourtChallenges(prev=>prev.map((c,idx)=>idx===i?tx(c||cbBlankAlloc()):c));};
-    return {setType:t=>apply(r=>cbTxSetType(r,t)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
+    return {setType:t=>apply(r=>cbTxSetType(r,t)),setLevel:l=>apply(r=>cbTxSetLevel(r,l)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
   }
 
   // Scope-aware bulk blind tools
@@ -5503,11 +5533,11 @@ function CheckerboardSetup({setScreen,setSession}){
     if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
     let taskLines=[];
     if(scope==='group'){
-      taskLines.push('Everyone — '+cbCodeText(group,seamAllowance));
+      taskLines.push('Everyone — '+cbCodeText(group,seamAllowance)+(group.level?` (L${group.level})`:''));
     }else if(scope==='court'){
-      courtChallenges.forEach((c,i)=>taskLines.push(`Court ${i+1} — ${cbCodeText(c,seamAllowance)}`));
+      courtChallenges.forEach((c,i)=>taskLines.push(`Court ${i+1} — ${cbCodeText(c,seamAllowance)}${c.level?` (L${c.level})`:''}`));
     }else{
-      presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n} — ${cbCodeText(r,seamAllowance)}`);});
+      presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n} — L${r.level||1}: ${cbCodeText(r,seamAllowance)}`);});
     }
     // Join scope-lines with a separator that is NOT " + ", because a Checkerboard
     // code contains " + " internally ([5-4] + [7-2]) and the player display splits
@@ -5522,7 +5552,7 @@ function CheckerboardSetup({setScreen,setSession}){
       duration:8,
       task,
       description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
-      scoring:'Score the challenge as set: zone occupancy only, trajectory free unless a constraint says otherwise.',
+      scoring:CB_FULL_SCORING,
       coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'.',
       playerFocus:'Find the solution to the code within the live rally.'
     });
@@ -5544,6 +5574,9 @@ function CheckerboardSetup({setScreen,setSession}){
     const optional=cbIsOptional(row.type);
     const showHidden=row.hidden&&!row.revealed;
     return <>
+      <div className="cbsetField"><label>Level <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· sets the challenge and scoring</span></label>
+        <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className={(row.level||1)===l?'cbsetChip on':'cbsetChip'} onClick={()=>api.setLevel(l)}>L{l}</button>)}</div>
+        <p className="cbsetScopeNote">{cbLevelScoring(row.level||1)}</p></div>
       <div className="cbsetField"><label>Challenge Type</label>
         <div className="cbsetChips">{CB_CHALLENGE_TYPES.map(t=><button type="button" key={t} className={row.type===t?'cbsetChip on':'cbsetChip'} onClick={()=>api.setType(t)}>{t}</button>)}</div></div>
       <div className="cbsetField"><label>Allocation Mode</label>
