@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v414 A Length run-rule panel, beside Direction: Any / Lob / Working drive / Penetrating drive. There are three types of length and it is often useful to train each on its own. They are different codes, not one code relabelled - down each side into the same back floor zone the ladder is: lob on the top zone high, working drive on the side vertical seam, penetrating drive on the bottom zone low. Left into floor 4: lob 5H-4, working 5/8S-4, penetrating 8-4. Right into floor 3: lob 6H-3, working 6/7S-3, penetrating 7-3, the proper mirror. Forcing a type rewrites every length code onto its ladder rung, keeping the floor zone, and narrows the recovery to match so a drive drill cannot be lobbed out of. Non-length shots - the drops, counters, boasts - are untouched, since only back-corner drive and lob codes are lengths. Any leaves the card as authored; working drive is the most common game length. The forcing is mirror-aware and flows through the derived notation, the steps and the live display, all from shots, so nothing drifts.';
+const APP_VERSION='v417 Checkerboard can now add its challenge to the Session Builder. The button was missing entirely - CheckerboardSetup was never given setSession, so there was no path to add, which is why it looked gone. Confirmed absent in the v409 base too, so this is a genuine gap rather than a regression from recent work. Add To Session now sits beside Send To Player View in the Player View section. It builds a rotation card the same way the other modules do: it reads the current scope (per-player, group or per-court) and the allocated codes, seam-aware, into a readable task, and appends it through the shared appendToSessionState with a confirmation message. Per-player lists each present player and their code; group shows the one shared challenge; per-court lists each court. Scoring on the card states the Checkerboard principle - zone occupancy only, trajectory free unless a constraint says otherwise - and the player focus is find the solution to the code within the live rally, matching what Checkerboard is for. Also stacked and awaiting deploy: v416 Add-to-session confirmation on Pattern Lab, v415 rotation reordering, v414 Length panel, v413 recovery to rotating lengths.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4968,6 +4968,16 @@ function Sessions({session,setSession,setScreen}){session=Array.isArray(session)
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
+// Reorder a rotation. dir = -1 up, +1 down. Clamped at the ends, and snapshotted
+// so the existing undo covers it like remove and duplicate.
+function move(index,dir){
+  const to=index+dir;
+  if(to<0||to>=session.length)return;
+  saveSessionSnapshot();
+  const next=session.slice();
+  [next[index],next[to]]=[next[to],next[index]];
+  setSession(next);
+}
 function duplicate(index){saveSessionSnapshot();const copy=clone(session[index]);copy.id=Date.now()+Math.random();copy.title=copy.title+' + progression';setSession([...session.slice(0,index+1),copy,...session.slice(index+1)]);}
 function startRotationProjection(index){
   startCoachProjectionSession(session,index);
@@ -4997,7 +5007,7 @@ return <div className="page sessionBuilderPage">
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index}>
-<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
+<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
 <div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
 <div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
@@ -5396,7 +5406,7 @@ function CbCustomInput({optional,next,onAdd}){
   </div>;
 }
 
-function CheckerboardSetup({setScreen}){
+function CheckerboardSetup({setScreen,setSession}){
   const [presents,setPresents]=useState(cbReadPresents);
   const [scope,setScope]=useState('player');
   const [alloc,setAlloc]=useState(()=>{try{return JSON.parse(localStorage.getItem(CB_ALLOC_KEY))||{};}catch{return {};}});
@@ -5485,6 +5495,35 @@ function CheckerboardSetup({setScreen}){
     const url=buildLivePlayerViewUrl(room);
     setLiveUrl(url);
     setStatus(ok?'Sent to Player View. Per-player links are ready below.':'Saved. Live sync not confirmed — links below still work once the coach device is connected.');
+  }
+  // Build a session rotation from the current challenge - the same kind of card the
+  // other modules add. Captures scope and the codes (seam-aware), so it reads in the
+  // Session Builder and the player view like any other rotation.
+  function addToSession(){
+    if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
+    let taskLines=[];
+    if(scope==='group'){
+      taskLines.push('Everyone: '+cbCodeText(group,seamAllowance));
+    }else if(scope==='court'){
+      courtChallenges.forEach((c,i)=>taskLines.push(`Court ${i+1}: ${cbCodeText(c,seamAllowance)}`));
+    }else{
+      presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n}: ${cbCodeText(r,seamAllowance)}`);});
+    }
+    const task=taskLines.length?taskLines.join('  ·  '):'No challenge allocated yet.';
+    const scopeLabel={player:'Per-player',group:'Group (all players)',court:'Per-court'}[scope]||scope;
+    const card=normaliseGameCard({
+      title:'Checkerboard — '+scopeLabel,
+      category:'Checkerboard',
+      format:'Checkerboard',
+      duration:8,
+      task,
+      description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
+      scoring:'Score the challenge as set: zone occupancy only, trajectory free unless a constraint says otherwise.',
+      coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'.',
+      playerFocus:'Find the solution to the code within the live rally.'
+    });
+    setSession(prev=>appendToSessionState(prev,card));
+    setStatus(card.title+' added to Session Builder.');
   }
   function playerLink(name){return liveUrl?`${liveUrl}&player=${encodeURIComponent(name)}`:'';}
   function copyLink(name){const u=playerLink(name);if(u&&navigator.clipboard){navigator.clipboard.writeText(u);setStatus(`Copied ${name}'s player link.`);}}
@@ -5624,7 +5663,7 @@ function CheckerboardSetup({setScreen}){
     <div className="cbsetSection">
       <h2>Player View</h2>
       <p className="cbsetSub">Send the current allocation to the player display. Each player opens their own link and sees only their own challenge ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
-      <div className="cbsetTools"><button type="button" className="cbsetToolBtn good" onClick={publishLive}>📡 Send To Player View</button></div>
+      <div className="cbsetTools"><button type="button" className="cbsetToolBtn good" onClick={publishLive}>📡 Send To Player View</button><button type="button" className="cbsetToolBtn" onClick={addToSession}>➕ Add To Session</button></div>
       {liveUrl&&<>
         <div className="cbsetLinkBox"><span>Coach view (all)</span><span className="u">{liveUrl}</span><button type="button" className="cbsetMiniBtn" onClick={()=>{if(navigator.clipboard){navigator.clipboard.writeText(liveUrl);setStatus('Copied coach view link.');}}}>Copy</button></div>
         {presents.map(n=><div className="cbsetLinkBox" key={n}><span>{n}</span><span className="u">{playerLink(n)}</span><button type="button" className="cbsetMiniBtn" onClick={()=>copyLink(n)}>Copy</button></div>)}
@@ -17531,8 +17570,18 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     cycleLabel,
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
-  function add(view){onAdd(game,view,runRules);}
+  function add(view){
+    try{
+      onAdd(game,view,runRules);
+      setAdded(true);
+      setTimeout(()=>setAdded(false),2200);
+    }catch(err){
+      setAdded('error');
+      setTimeout(()=>setAdded(false),3000);
+    }
+  }
   const [pushed,setPushed]=useState(false);
+  const [added,setAdded]=useState(false);
   function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide,lengthType),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
@@ -17556,6 +17605,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     .pdPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px;border-top:1px solid #1b2733;cursor:pointer;}
     .pdPlayerRow .nm{color:#cde0ee;font-size:0.85rem;}
     .pdSeamKey{display:block;color:#bff0d0;font-size:0.8rem;line-height:1.5;margin:8px 0 2px;}
+    .pdAddOk{background:#1f8e4f!important;border-color:#34e0a0!important;box-shadow:0 0 0 3px rgba(52,224,160,.55),0 0 18px rgba(52,224,160,.4)!important;transition:box-shadow .15s;}
+    .pdAddErr{background:#8e2f2f!important;border-color:#e06b52!important;box-shadow:0 0 0 3px rgba(224,107,82,.55)!important;}
     .pdStepCode{display:block;color:#6b8299;font-family:'Consolas',monospace;font-size:0.78rem;font-style:normal;margin-top:3px;}
     .pdSteps{list-style:none;margin:0;padding:0;counter-reset:pdStep;}
     .pdSteps li{counter-increment:pdStep;display:grid;grid-template-columns:22px 74px 1fr;align-items:baseline;gap:8px;padding:7px 0;border-top:1px solid #1b2733;}
@@ -17627,7 +17678,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
-    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={()=>add(false)}>Add To Session</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={pushDisplay}>{pushed?'✓ Sent to Player Display':'Push to Player Display'}</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
+    <div className="buttonRow"><button type="button" className={added===true?'primaryBtn pdAddOk':added==='error'?'primaryBtn pdAddErr':'primaryBtn'} onClick={()=>add(false)}>{added===true?'✓ Added to Session':added==='error'?'✕ Not added — tap again':'Add To Session'}</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={pushDisplay}>{pushed?'✓ Sent to Player Display':'Push to Player Display'}</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
   </div>;
 }
 function TacticalIntentionsModule({setScreen,setSession}){
@@ -21679,7 +21730,7 @@ button,select{-webkit-appearance:none;appearance:none;}
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
-      {screen==='checkerboard'&&<CheckerboardSetup setScreen={go}/>}
+      {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
       {screen==='visionPerception'&&<VisionPerceptionModule setScreen={go}/>}
