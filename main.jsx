@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v409 Restored the CLA Rationale box per Henry (removed unasked in v398). Two places, both scoped to what was actually confirmed - not the wider 11-module rollout, which stays an open question (see handover doc SS0.3): (1) The generic player display (PlayerDisplayCard/PlayerDisplayView, used for shared/session player links across any game type) now renders getPlayerDisplayFields rationale, which was already being computed but silently dropped at the destructure - the CLA box CSS already existed but was only ever wired to a Checkerboard-specific court map, never to rationale text. Both boxes now render together for Checkerboard sessions; other games just get the rationale box. (2) The live Pattern Lab display never had one at all - added, sourced from the pattern card logic field (per the handover docs own answer), which is now included in the live payload alongside notation/coach/runRules. Not touched: Snakes and Ladders, Ludo, Noughts and Crosses, Tin War, Disruption, Hangman, Serve/Return, Lob, Double Bounce, Court Standings, Checkerboards own live display - each of these still has no rationale source identified and none should be guessed at.';
+const APP_VERSION='v411 Pattern Lab codes now mirror when Direction is set to the right, and the coral logo is embedded. (1) The Direction panel had Right straight only, Left straight only and Both, but the codes never responded - the card was authored on the left and printed 5H-4 whatever the panel said. Set to Right, the whole card now mirrors across the centre line: front wall 5 and 6 swap, 7 and 8 swap; floor 1 and 2 swap, 3 and 4 swap; the side-wall prefix L and R swap; height H and L are unchanged. So 5H-4 becomes 6H-3, exactly. It is all-or-nothing by necessity - a left-side build cannot feed a right-side attack - so every code in the card mirrors together, applied once before the derivation so the steps, the seam glosses and the boast naming all follow. Left and Both keep the authored left side. The mirror is its own inverse. The library grid and session cards keep the authored notation, since those are browsing views, not the live panel. (2) The Checkerboard title-tile logo is the uploaded coral court-shape mark, embedded as a base64 data-URI - the pattern the app already uses for images, so there is no external file to host and updating it means regenerating one line. Downscaled from 281KB to about 8KB at the display size.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -17294,14 +17294,40 @@ function shotText(s,prevSide,prevFloor){
 const RECOVERY_FAMILIES='counter drop, kill, lob, drive straight or cross, or boast';
 // Walk the shots once, carrying the side and the origin forward, so every gloss
 // is judged against the shot that actually precedes it.
-function plWalk(game){
-  const shots=Array.isArray(game.shots)?game.shots:[];
+// When Direction is set to the right side, the whole card mirrors across the
+// centre line - a left-side build cannot feed a right-side attack, so it is all
+// or nothing. Left and right zones swap; height and the front/back axis do not.
+//   front wall  5<->6, 8<->7        floor  1<->2, 4<->3
+//   side wall prefix L<->R          H / L unchanged
+const MIRROR_FW={'5':'6','6':'5','7':'8','8':'7'};
+const MIRROR_FLOOR={'1':'2','2':'1','3':'4','4':'3'};
+function mirrorCode(code){
+  if(!code)return code;
+  // side-wall prefix: [LBL-...] / [RAL-...]
+  let out=code.replace(/^\[([LR])([ABC])/,(m,lr,seg)=>`[${lr==='L'?'R':'L'}${seg}`);
+  // front-wall digits and floor digits. A code is [ (prefix-) FW (H|L) - FLOOR ].
+  // Swap every front-wall zone (5-8) and every floor zone (1-4), leaving H/L alone.
+  out=out.replace(/\d/g,d=>MIRROR_FW[d]||MIRROR_FLOOR[d]||d);
+  return out;
+}
+function mirrorGame(game,side){
+  if(side!=='right'||!game||!Array.isArray(game.shots))return game;
+  return {...game,shots:game.shots.map(s=>({...s,code:mirrorCode(s.code)}))};
+}
+// The compact-notation string carries codes inside prose. Mirror only the bracketed
+// parts, leaving the shot words untouched.
+function mirrorQuick(quick){
+  return String(quick||'').replace(/\[[^\]]*\]/g,mirrorCode);
+}
+function plWalk(game,side){
+  const g=mirrorGame(game,side);
+  const shots=Array.isArray(g.shots)?g.shots:[];
   let prevSide='',prevFloor='';
   return shots.map(s=>{
     const parts=shotParts(s,prevSide,prevFloor);
     const text=shotText(s,prevSide,prevFloor);
-    const side=plSideOf(s.code);
-    if(side)prevSide=side;
+    const sd=plSideOf(s.code);
+    if(sd)prevSide=sd;
     prevFloor=plFloorOf(s.code);
     return {shot:s,parts,text,sa:/\(SA\)/.test(parts.code)};
   });
@@ -17324,8 +17350,8 @@ function gameHasCross(game){
 }
 // One-line key for the compact notation and the live display, so a player never
 // has to decode S or (SA), or wonder when a cross is on.
-function patternSeamKey(game){
-  const walked=plWalk(game);
+function patternSeamKey(game,side){
+  const walked=plWalk(game,side);
   const parts=[];
   if(walked.some(w=>isSeamPath(w.shot.code)))parts.push('S = through the seam, the centre of the front wall');
   if(walked.some(w=>w.sa))parts.push("(SA) = seam allowed - take it only if it is on");
@@ -17336,8 +17362,8 @@ function patternSeamKey(game){
 // Rotating drives are only broken by a trigger, so the step names the live one
 // rather than pointing at a panel. There is no untriggered state.
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
-function patternLogicSteps(game,trigger='offT'){
-  const w=plWalk(game);
+function patternLogicSteps(game,trigger='offT',side){
+  const w=plWalk(game,side);
   if(!w.length)return [];
   const build=w[0];
   const attack=w.length>1?w[1]:null;
@@ -17412,6 +17438,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
   const serveSide=direction==='rightStraight'?'Serve from the left box (opposite the rotating side)':direction==='leftStraight'?'Serve from the right box (opposite the rotating side)':'Serve alternates sides';
+  // Right straight only mirrors the whole card to the right; left and both keep the authored (left) side.
+  const patternSide=direction==='rightStraight'?'right':'left';
   const runRules=[
     serveSide,
     'Attack trigger: '+triggerLabel,
@@ -17423,7 +17451,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){onAdd(game,view,runRules);}
   const [pushed,setPushed]=useState(false);
-  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:game.quick,seamKey:patternSeamKey(game),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:patternSide==='right'?mirrorQuick(game.quick):game.quick,seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
@@ -17463,8 +17491,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
-      <div className="patternSequence"><strong>Compact notation</strong><p>{game.quick}</p>{patternSeamKey(game)&&<small className="pdSeamKey">{patternSeamKey(game)}</small>}<small>{meta.note}</small></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{patternSide==='right'?mirrorQuick(game.quick):game.quick}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
     <h2 className="pdSectionTitle">Run-rule panels</h2>
@@ -21549,7 +21577,7 @@ button,select{-webkit-appearance:none;appearance:none;}
   <button onClick={()=>go('playerDisplay')} title="Player Display" style={{background:'#1f6b3f',border:'1px solid #2e9e5f',color:'#eaf4fb',fontSize:'1.05rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>▣</button>
 </div>}
   <header className="hero" style={{position:'relative'}}>
-  <div aria-hidden="true" title="Checkerboard" style={{position:'absolute',top:'50%',right:'28px',transform:'translateY(-50%)',width:'56px',height:'74px',background:'linear-gradient(155deg,#ff9482 0%,#ff6b52 55%,#c73f27 100%)',clipPath:'polygon(25.1% 1.1%,73.3% 1.1%,73.3% 36.4%,94% 36.4%,73.3% 90%,73.3% 98.6%,25.1% 98.6%,25.1% 90%,4.8% 36.4%,25.1% 36.4%)',filter:'drop-shadow(0 8px 14px rgba(0,0,0,.45))',pointerEvents:'none'}}></div>
+  <img alt="Checkerboard" src="data:image/png;base64,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" style={{position:'absolute',top:'50%',right:'28px',transform:'translateY(-50%)',height:'74px',width:'auto',filter:'drop-shadow(0 6px 12px rgba(0,0,0,.4))',pointerEvents:'none'}}/>
   {courtMode&&<CourtStandingBanner host={courtMode.host} court={courtMode.court}/>}
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
