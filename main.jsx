@@ -21548,7 +21548,8 @@ button,select{-webkit-appearance:none;appearance:none;}
   <button onClick={()=>go('home')} title="Home" style={{background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'1.1rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>⌂</button>
   <button onClick={()=>go('playerDisplay')} title="Player Display" style={{background:'#1f6b3f',border:'1px solid #2e9e5f',color:'#eaf4fb',fontSize:'1.05rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>▣</button>
 </div>}
-  <header className="hero">
+  <header className="hero" style={{position:'relative'}}>
+  <div aria-hidden="true" title="Checkerboard" style={{position:'absolute',top:'50%',right:'28px',transform:'translateY(-50%)',width:'56px',height:'74px',background:'linear-gradient(155deg,#ff9482 0%,#ff6b52 55%,#c73f27 100%)',clipPath:'polygon(25.1% 1.1%,73.3% 1.1%,73.3% 36.4%,94% 36.4%,73.3% 90%,73.3% 98.6%,25.1% 98.6%,25.1% 90%,4.8% 36.4%,25.1% 36.4%)',filter:'drop-shadow(0 8px 14px rgba(0,0,0,.45))',pointerEvents:'none'}}></div>
   {courtMode&&<CourtStandingBanner host={courtMode.host} court={courtMode.court}/>}
   <div className="heroNav">
     <button className="homeBtn navBackBtn" onClick={goBack}>BACK</button>
