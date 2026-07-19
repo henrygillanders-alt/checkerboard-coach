@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v422 Checkerboard allocation now has the Level 1-5 metric, alongside the challenge-type buttons. Checkerboard was always a Level 1-5 system, and the levels can be matched to challenge types; both now exist together. Each target - player, group or court - gets a Level 1 to 5 selector above Challenge Type. Level is the primary control: choosing it sets the default challenge type and conversion window and drives the scoring, while the type buttons remain so codes can be hand-tuned to the level. The mapping matches the module: L1 single, L2 pair, L3 triple, L4 triple with a 4-shot window, L5 triple with a 2-shot window. Each row shows its own scoring live - for example Level 4 reads complete +3, banks only if you finish within 4 shots of completing. Per-player allocations added to a session now carry each level in the task (Aurora L2, Daniel L4), and the card keeps the full scoring system stated so every level rule is visible. All new constants are defined before use and the level tx sets both the level and its default type; the type selector still overrides afterwards. This builds on v421, which restored the full Checkerboard scoring the v417 card had dropped.';
+const APP_VERSION='v424 Level can now be set for all players at once, as well as per player. Level was per-player only - each set individually. A Set Level for all row now sits under Challenge Scope: one tap puts every present player (or every court, or the group) on the same level, and each player card below still has its own level selector to override afterwards. On per-player scope it covers every present player, seeding a blank allocation for anyone not yet allocated so no one is skipped. So the flow is: set everyone to a level in one tap, fine-tune individuals if needed, allocate blind, then open the card screen and pass the iPad round. Built on the same cbTxSetLevel transaction as the per-player selector, so level and its default challenge type stay in step. This builds on v423 card screen and v422 per-player levels.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5438,6 +5438,12 @@ function CbCustomInput({optional,next,onAdd}){
 
 function CheckerboardSetup({setScreen,setSession}){
   const [presents,setPresents]=useState(cbReadPresents);
+  // Pass-around card screen: a dedicated full-screen deck of every present player's
+  // card, face-down, for a shared iPad. A player taps their card open, taps it
+  // closed, and hands the device on - so players without their own device still get
+  // their blind challenge privately. Which cards are currently open is tracked here.
+  const [cardScreen,setCardScreen]=useState(false);
+  const [openCards,setOpenCards]=useState({});
   const [scope,setScope]=useState('group');
   const [alloc,setAlloc]=useState(()=>{try{return JSON.parse(localStorage.getItem(CB_ALLOC_KEY))||{};}catch{return {};}});
   const [group,setGroup]=useState(cbBlankAlloc);
@@ -5512,6 +5518,16 @@ function CheckerboardSetup({setScreen,setSession}){
   function allocBlindAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Blind challenges allocated to Random Blind targets.');}
   function rerollAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Re-rolled all blind targets.');}
   function revealAll(){eachTarget(cbTxReveal);setStatus('All challenges revealed (coach view).');}
+  // Set one level across every target at once. On per-player scope this covers every
+  // present player, seeding a blank allocation for anyone not yet in alloc, so no one
+  // is skipped. Individual level selectors still override afterwards.
+  function setLevelAll(l){
+    snapshot();
+    if(scope==='group'){setGroup(prev=>cbTxSetLevel(prev,l));}
+    else if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>cbTxSetLevel(c,l)));}
+    else{setAlloc(prev=>{const next={};presents.forEach(n=>{next[n]=cbTxSetLevel(prev[n]||cbBlankAlloc(),l);});return next;});}
+    setStatus(`All set to Level ${l}.`);
+  }
 
   function reloadPresents(){const p=cbReadPresents();setPresents(p);setStatus(p.length?`Reloaded ${p.length} present player${p.length===1?'':'s'}.`:'No players marked present yet.');}
   function setPlayerCourt(name,i){snapshot();setCourtOf(prev=>({...prev,[name]:i}));}
@@ -5605,6 +5621,32 @@ function CheckerboardSetup({setScreen,setSession}){
     </>;
   }
 
+  // The pass-around deck. Each card shows a name face-down; tap toggles the code
+  // open or closed. Per-player scope only, since it reveals each player's own blind
+  // code. Rendered full-screen, above everything, with its own exit.
+  if(cardScreen){
+    return <div className="page cbCardScreen"><style>{CB_SET_CSS}</style>
+      <div className="cbCardScreenTop">
+        <h1>Tap your card</h1>
+        <p>Each player taps their own card to see their challenge, then taps it closed and passes the iPad on.</p>
+        <button type="button" className="cbsetToolBtn" onClick={()=>{setOpenCards({});setCardScreen(false);}}>✕ Close card screen</button>
+      </div>
+      <div className="cbCardDeck">
+        {presents.length===0?<p className="cbPdEmpty">No present players. Mark players present first.</p>:
+          presents.map(name=>{
+            const r=alloc[name]||cbBlankAlloc();
+            const open=!!openCards[name];
+            const code=cbCodeText(r,seamAllowance);
+            const hasCode=code&&code!=='—';
+            return <button type="button" key={name} className={open?'cbDeckCard open':'cbDeckCard'} onClick={()=>setOpenCards(o=>({...o,[name]:!o[name]}))}>
+              <span className="cbDeckName">{name}</span>
+              {open?<span className="cbDeckCode">{hasCode?code:'No challenge set'}</span>
+                   :<span className="cbDeckBack">Tap to reveal<br/><small>L{r.level||1}</small></span>}
+            </button>;
+          })}
+      </div>
+    </div>;
+  }
   return <div className="page cbsetPage">
     <style>{CB_SET_CSS}</style>
     <div className="pageTop"><div><h1>Checkerboard</h1><p className="cbsetIntro">Flagship challenge protocol — allocate singles, pairs, triples, blind and optional challenges per player, per group or per court.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
@@ -5630,6 +5672,9 @@ function CheckerboardSetup({setScreen,setSession}){
       <h2>2 · Checkerboard Challenge Allocation</h2>
       <div className="cbsetField"><label>Challenge Scope</label>
         <div className="cbsetChips">{CB_SCOPES.map(([v,l])=><button type="button" key={v} className={scope===v?'cbsetChip on':'cbsetChip'} onClick={()=>setScope(v)}>{l}</button>)}</div></div>
+      <div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override individuals below</span></label>
+        <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className="cbsetChip" onClick={()=>setLevelAll(l)}>L{l}</button>)}</div>
+        <p className="cbsetScopeNote">Sets every {scope==='player'?'present player':scope==='court'?'court':'target'} to the same level in one tap. Each player card below still has its own level selector to fine-tune.</p></div>
       <div className="cbsetField"><label>Seam Allowance</label>
         <div className="cbsetChips">
           <button type="button" className={!seamAllowance?'cbsetChip on':'cbsetChip'} onClick={()=>setSeamAllowance(false)}>Off</button>
@@ -5682,6 +5727,7 @@ function CheckerboardSetup({setScreen,setSession}){
       <p className="cbsetSub">Set targets to Random Blind above, then allocate. Acts on the active scope ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
       <div className="cbsetTools">
         <button type="button" className="cbsetToolBtn good" onClick={allocBlindAll}>Allocate Blind (All)</button>
+        <button type="button" className="cbsetToolBtn" onClick={()=>{setOpenCards({});setCardScreen(true);}}>🃏 Open Card Screen (pass around)</button>
         <button type="button" className="cbsetToolBtn" onClick={rerollAll}>🎲 Re-roll All</button>
         <button type="button" className="cbsetToolBtn" onClick={revealAll}>👁 Reveal All</button>
         <button type="button" className="cbsetToolBtn warn" onClick={undo}>↶ Undo</button>
@@ -5732,6 +5778,18 @@ const CB_PD_CSS=`
 .cbPdAllCard .t{color:#7fb6d6;font-size:.78rem;margin:3px 0 6px;}
 .cbPdAllCard .c{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
 .cbPdAllCard .c.h{color:#f0d79a;}
+.cbCardScreen{min-height:100vh;background:#0a1722;padding:24px;}
+.cbCardScreenTop{text-align:center;max-width:640px;margin:0 auto 24px;}
+.cbCardScreenTop h1{color:#eaf4fb;font-size:2rem;margin:0 0 8px;}
+.cbCardScreenTop p{color:#9fb3c4;line-height:1.5;margin:0 0 16px;}
+.cbCardDeck{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:1100px;margin:0 auto;}
+.cbDeckCard{min-height:150px;border-radius:16px;border:2px solid #2E6E8E;background:linear-gradient(160deg,#123049,#0d2236);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;padding:18px;transition:transform .08s,box-shadow .15s;}
+.cbDeckCard:active{transform:scale(0.98);}
+.cbDeckCard.open{background:linear-gradient(160deg,#0c2a1f,#0f3a2a);border-color:#34e0a0;box-shadow:0 0 0 3px rgba(52,224,160,.4);}
+.cbDeckName{color:#eaf4fb;font-size:1.35rem;font-weight:800;}
+.cbDeckBack{color:#7fa9c9;font-size:0.95rem;text-align:center;line-height:1.6;}
+.cbDeckBack small{color:#5f7f99;font-size:0.8rem;}
+.cbDeckCode{color:#7fe8bf;font-family:'Consolas',monospace;font-size:1.5rem;font-weight:800;text-align:center;}
 `;
 
 function cbPlayerFromUrl(){try{return new URLSearchParams(window.location.search||'').get('player')||'';}catch{return '';}}
