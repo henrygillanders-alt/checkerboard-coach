@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v427 Fixes the card-screen layout, which never took because it was rendering the wrong stylesheet. The playing-card CSS from v425 was appended to CB_PD_CSS, the player-display stylesheet, but the card screen renders CB_SET_CSS, the setup stylesheet - so the styles never loaded and the cards collapsed to plain text: initials doubling as AAAurora, names running into Tap to reveal, everything on one line. The card screen now includes CB_PD_CSS in its style block, so the proper card styling applies: full-screen light playing cards, name centred, corner initials, level along the bottom, filling the width and height. CB_PD_CSS was defined after CheckerboardSetup, so using it there would have been an out-of-order const reference - the same class of error that white-screened v419 - so the whole CB_PD_CSS block was moved above CheckerboardSetup, before any use, with its four existing player-display uses still after it. The v426 level fix is confirmed working in this same screenshot - Aurora and Daniel on Level 4, the rest on Level 3 - so per-player override now carries correctly. Builds on v426.';
+const APP_VERSION='v428 Blind allocation now reaches every player, and the cards are true playing-card shape. (1) Allocate Blind (All) only rolled targets already in Random Blind mode, so any player left on Manual - like Mark and Anna 1 - got skipped and showed No challenge set on the card screen. It now forces every target to Random Blind and rolls it, so All means all: no one is skipped whatever mode they were in. The blind roll already preserves each player level, so levels and blind codes now coexist. (2) The cards were stretching full-height because the grid forced equal tall rows. They are now true playing-card proportions - a 5:7 aspect ratio - laid out centred and wrapping like cards dealt on a table, and their width scales with the screen between a sensible minimum and maximum rather than being fixed. (3) On levels not holding: the set-all-across-scopes fix from v426 is in place and the blind roll preserves level, so a fresh allocation after this deploys should be consistent; the mixed levels in the last screenshot were from allocations made before those fixes were live. Builds on v427.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5466,8 +5466,8 @@ const CB_PD_CSS=`
 .cbCardScreenTop h1{color:#eaf4fb;font-size:1.7rem;margin:0 0 4px;}
 .cbCardScreenTop p{color:#9fb3c4;line-height:1.4;margin:0;max-width:600px;font-size:0.95rem;}
 .cbCardExit{flex:0 0 auto;background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;font-weight:700;font-size:1rem;padding:12px 20px;border-radius:999px;cursor:pointer;}
-.cbCardDeck{flex:1 1 auto;display:grid;gap:18px;grid-auto-rows:1fr;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-content:stretch;min-height:0;}
-.cbPlayCard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
+.cbCardDeck{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:18px;align-content:center;justify-content:center;align-items:center;min-height:0;overflow:auto;padding:8px;}
+.cbPlayCard{position:relative;flex:0 0 auto;width:clamp(140px,18vw,240px);aspect-ratio:5/7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
 .cbPlayCard:active{transform:scale(0.97);}
 .cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #34e0a0;}
 .cbPlayCorner{position:absolute;font-weight:800;font-size:1.1rem;color:#c0324a;}
@@ -5559,7 +5559,7 @@ function CheckerboardSetup({setScreen,setSession}){
     if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>tx(c)));return;}
     setAlloc(prev=>{const next={};Object.keys(prev).forEach(n=>next[n]=tx(prev[n]));return next;});
   }
-  function allocBlindAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Blind challenges allocated to Random Blind targets.');}
+  function allocBlindAll(){eachTarget(r=>cbTxRoll({...r,mode:'Random Blind'}));setStatus('Blind challenges allocated to every player.');}
   function rerollAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Re-rolled all blind targets.');}
   function revealAll(){eachTarget(cbTxReveal);setStatus('All challenges revealed (coach view).');}
   // Set one level across every target at once. On per-player scope this covers every
