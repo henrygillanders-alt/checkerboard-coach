@@ -247,6 +247,7 @@ const ATTENDANCE_DATE_KEY='checkerboard_attendance_current_date_v100h70';
 const SESSION_KEY='checkerboard_master_v54_session';
 const GAME_LIBRARY_KEY='checkerboard_master_v60_games';
 const DB_HANDICAP_KEY='checkerboard_universal_db_handicap_v97';
+const PENALTY_KEY='checkerboard_universal_penalty_v1';
 const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
@@ -1684,6 +1685,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
 
     {!hideTinHeight&&<MEPanel title="5. Tin Height" subtitle="Per-player tin — a leveller between standards" open={open==='tin'} onToggle={()=>toggle('tin')}>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
     </MEPanel>}
   </div>;
 }
@@ -4058,6 +4060,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
 
         <UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>
         <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -4449,6 +4452,7 @@ function ShotBonusRally({setSession}){
 
       <UniversalDBHandicapPanel onAddToSession={addToSession}/>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
       <div className="sbrAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={selectedShots.length===0}>Add To Session</button>
@@ -4592,6 +4596,7 @@ function BreakoutSquash({setSession}){
 
       <UniversalDBHandicapPanel onAddToSession={addToSession}/>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
       <div className="brkAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={restrictedZones.length===0||breakoutZones.length===0}>Add To Session</button>
@@ -4685,6 +4690,7 @@ function PressCallModule({setSession}){
 
       <UniversalDBHandicapPanel onAddToSession={addToSession}/>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
       <div className="pcAddRow">
         <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
@@ -4864,6 +4870,7 @@ return <div>
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
 {category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
 <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -5250,6 +5257,7 @@ return <div className="checkerboardEngine">
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -6047,6 +6055,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
 
     <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -6159,6 +6168,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       </CollapsibleLayer>
       <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -6408,6 +6418,7 @@ function TechnicalFocusBuilder({onAddToSession}){
 
       <UniversalDBHandicapPanel onAddToSession={addAndGo}/>
       <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -8131,6 +8142,7 @@ function CustomGameBuilder({onAddToSession}){
 
     <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -8529,6 +8541,55 @@ function UniversalTinHeightPanel({setScreen}){
       </div>
       <div className="dbSummaryBox"><strong>Active Tin Rules</strong><p>{activeSummary()}</p></div>
       <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();saveTin();}} disabled={!presentPlayers.length}>Save Tin Height</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearTin();}}>Clear Tin Height</button></div>
+    </>}
+  </CollapsibleLayer>;
+}
+
+const PENALTY_PRESETS=[
+  {id:'crossNonFunctional',label:'Non-functional cross-court (does not send them 3/4)'},
+  {id:'looseStraight',label:'Loose straight (sits up or short)'},
+  {id:'ballDiesMiddle',label:'Ball dies in the middle'},
+  {id:'noLengthPressure',label:'No length under pressure'},
+  {id:'wrongShot',label:'Wrong shot from the wrong position'}
+];
+const PENALTY_POINT_OPTIONS=[0,1,2,3,4,5];
+function penaltyPointLabel(p){return p>0?('-'+p):'Off';}
+function UniversalPenaltyPanel({onAddToSession,setScreen}){
+  const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').enabled||false;}catch{return false;}});
+  const [presetPoints,setPresetPoints]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').presetPoints||{};}catch{return {};}});
+  const [customList,setCustomList]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').customList||[];}catch{return [];}});
+  const [customLabel,setCustomLabel]=useState('');
+  const [customPoints,setCustomPoints]=useState(1);
+  useEffect(()=>{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled,presetPoints,customList}));},[enabled,presetPoints,customList]);
+  function setPreset(id,pts){setPresetPoints(prev=>({...prev,[id]:pts}));}
+  function addCustom(){const l=customLabel.trim();if(!l)return;setCustomList(prev=>[...prev,{label:l,points:customPoints}]);setCustomLabel('');setCustomPoints(1);}
+  function removeCustom(i){setCustomList(prev=>prev.filter((_,idx)=>idx!==i));}
+  function activeRules(){
+    const fromPresets=PENALTY_PRESETS.filter(p=>presetPoints[p.id]>0).map(p=>`${p.label}: -${presetPoints[p.id]}`);
+    const fromCustom=customList.filter(c=>c.points>0).map(c=>`${c.label}: -${c.points}`);
+    return [...fromPresets,...fromCustom];
+  }
+  function clearAll(){setEnabled(false);setPresetPoints({});setCustomList([]);}
+  function savePenalties(){
+    localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:true,presetPoints,customList}));
+    alert('Negative scoring saved as a modifier. It attaches to the selected game/rotation alongside DB handicap and tin height.');
+  }
+  const rules=activeRules();
+  return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="All Games — deduct points for named faults" color="red" defaultOpen={false}>
+    <div className="universalDbHeader">
+      <div><p>Punish specific faults by taking points off. Switch on the faults you want to penalise, set how many points come off, and add your own.</p></div>
+      <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Negative Scoring On':'Enable Negative Scoring'}</button>
+    </div>
+    {enabled&&<>
+      <div className="statusBox"><strong>Preset faults</strong><p>Set a deduction to switch a fault on. Leave it on Off to ignore it.</p></div>
+      <div className="dbAllocationGrid">
+        {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}</span><select value={presetPoints[p.id]||0} onChange={e=>setPreset(p.id,Number(e.target.value))}>{PENALTY_POINT_OPTIONS.map(pt=><option key={pt} value={pt}>{penaltyPointLabel(pt)}</option>)}</select></div>)}
+      </div>
+      <div className="statusBox"><strong>Add your own fault</strong></div>
+      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. served short"/><select value={customPoints} onChange={e=>setCustomPoints(Number(e.target.value))}>{PENALTY_POINT_OPTIONS.filter(pt=>pt>0).map(pt=><option key={pt} value={pt}>{penaltyPointLabel(pt)}</option>)}</select><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{c.label}: -{c.points}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
+      <div className="dbSummaryBox"><strong>Active penalties</strong><p>{rules.length?rules.join(' · '):'No penalties set yet.'}</p></div>
+      <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();savePenalties();}} disabled={!rules.length}>Save Negative Scoring</button>{onAddToSession&&<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();savePenalties(); if(setScreen)setScreen('sessions');}} disabled={!rules.length}>Save + View Session</button>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearAll();}}>Clear</button></div>
     </>}
   </CollapsibleLayer>;
 }
@@ -9434,6 +9495,7 @@ function AroundTheBoardBuilder({onAddToSession}){
 
           <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
           <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
@@ -10169,6 +10231,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="slDisplayBar">
       {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}
@@ -12040,6 +12103,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="hsBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
@@ -17650,6 +17714,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [direction,setDirection]=useState('rightStraight');
   const [lengthType,setLengthType]=useState('any');
   const [crossCap,setCrossCap]=useState(0);
+  const [firstShotVolley,setFirstShotVolley]=useState('choice');
+  const [firstShotType,setFirstShotType]=useState('choice');
   const crossableShots=(game.shots||[]).map((s,i)=>({...s,i})).filter(s=>s.crossable);
   const [crossPer,setCrossPer]=useState(()=>{const o={};crossableShots.forEach(s=>{o[s.i]=true;});return o;});
   const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
@@ -17670,9 +17736,12 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const serveSide=direction==='rightStraight'?'Serve from the left box (opposite the rotating side)':direction==='leftStraight'?'Serve from the right box (opposite the rotating side)':'Serve alternates sides';
   // Right straight only mirrors the whole card to the right; left and both keep the authored (left) side.
   const patternSide=direction==='rightStraight'?'right':'left';
+  const firstShotVolleyLabel={volley:'volley only',novolley:'no volley (let it bounce)',choice:'player\'s choice'}[firstShotVolley];
+  const firstShotTypeLabel={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast',choice:'player\'s choice'}[firstShotType];
   const runRules=[
     serveSide,
     'Attack trigger: '+triggerLabel,
+    'First attacking shot: '+firstShotVolleyLabel+' · '+firstShotTypeLabel,
     lengthType!=='any'?('Length: every length is a '+forcedLengthWord(lengthType)):'Length: lob or drive, player chooses',
     'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must move them more than one step'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
     'Double Bounce: all '+(dbAll===0?'0':dbAll+' DB')+(dbOverrides.length?(' · '+dbOverrides.join(', ')):''),
@@ -17682,7 +17751,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){
     try{
-      onAdd(game,view,runRules);
+      onAdd(game,view,runRules,trigger);
       setAdded(true);
       setTimeout(()=>setAdded(false),2200);
     }catch(err){
@@ -17763,6 +17832,18 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={lengthType==='penetrating'} onClick={()=>setLengthType('penetrating')}>Penetrating drive</PdChip>
       </PatternRunPanel>
 
+      <PatternRunPanel title="First Attacking Shot" note="Constrain the first attacking shot — whether it must be taken early as a volley, and which shot is played.">
+        <span className="lab" style={{flexBasis:'100%',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:'2px'}}>Take-on</span>
+        <PdChip on={firstShotVolley==='volley'} onClick={()=>setFirstShotVolley('volley')}>Volley</PdChip>
+        <PdChip on={firstShotVolley==='novolley'} onClick={()=>setFirstShotVolley('novolley')}>No volley</PdChip>
+        <PdChip on={firstShotVolley==='choice'} onClick={()=>setFirstShotVolley('choice')}>Player's choice</PdChip>
+        <span className="lab" style={{flexBasis:'100%',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em',margin:'8px 0 2px'}}>Shot</span>
+        <PdChip on={firstShotType==='crossDrop'} onClick={()=>setFirstShotType('crossDrop')}>Cross-court drop</PdChip>
+        <PdChip on={firstShotType==='straightDrop'} onClick={()=>setFirstShotType('straightDrop')}>Straight drop</PdChip>
+        <PdChip on={firstShotType==='boast'} onClick={()=>setFirstShotType('boast')}>2-wall boast</PdChip>
+        <PdChip on={firstShotType==='choice'} onClick={()=>setFirstShotType('choice')}>Player's choice</PdChip>
+      </PatternRunPanel>
+
       <div className="pdPanel pdLevPanel"><h4>Double Bounce (leveller)</h4>
         <div className="pdEveryone"><span className="lab">Everyone</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.max(0,v-1))}>−</PdChip><span className="pdStepNum">{dbAll===0?'0':dbAll+' DB'}</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.min(3,v+1))}>+</PdChip>{Object.keys(dbBy).length>0&&<PdChip on={false} onClick={()=>setDbBy({})}>clear overrides</PdChip>}</div>
         {present.length>0?<div className="pdLevGrid">{present.map(n=><div role="button" tabIndex={0} key={n} className="pdPlayerRow" onClick={()=>setDbBy(o=>{const cur=o[n]!==undefined?o[n]:dbAll;return {...o,[n]:cur+1>3?0:cur+1};})}><span className="nm">{n}</span><span className="pdStepNum">{dbEff(n)}</span></div>)}</div>:<p className="pdNote">Mark attendance to set DB per player. The Everyone control applies to all.</p>}
@@ -17802,7 +17883,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
-  function addGame(game,view=false,runRules=null){
+  function addGame(game,view=false,runRules=null,trigger='offT'){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const layers=runRules&&runRules.length?[...(game.flags||[]),...runRules]:game.flags;
     const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:desc,rationale:game.logic,scoring:patternScoreText(),layers:layers,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
@@ -17832,7 +17913,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
 
     {mode!=='framework'&&<p className="pdSectionSub">Tap any pattern above to open its detail page and run-rule panels.</p>}
 
-    {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Advanced Configuration</div><h2>Build Your Own Pattern Lab Game</h2><p>Start with any plug-and-play card, then modify with the existing Game Logic, Scoring Logic, Constraints and DB panels. Diversity Constraints are overlays, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
+    {mode==='advanced'&&<div className="gameCard"><div className="categoryTag">Build your own</div><h2>Build Your Own Pattern Lab Game</h2><p>Every plug-and-play card is fully editable — the card itself is the builder. Open any card in the Plug & Play Library and adjust it with its run-rule panels: Attack Trigger, Direction, Length, First Attacking Shot, Double Bounce, Height, Cycle / Open Play and Tramline. Then tap Add To Session — that configured version is what gets saved.</p><button type="button" className="primaryBtn" onClick={()=>setMode('ready')}>Open the Plug & Play Library →</button><p className="pdSectionSub" style={{marginTop:'18px',marginBottom:'8px'}}>Diversity Constraints — overlays you can layer on any card. They are constraints, not a separate game engine.</p><div className="tiOverlayGrid">{DIVERSITY_OVERLAYS.map(o=><div key={o.title} className="tiOverlayCard"><strong>{o.title}</strong><p>{o.rule}</p></div>)}</div></div>}
     <div className="gameCard"><h2>Reading the notation</h2>
       <p className="mutedText">Codes are [front wall zone + height − floor zone]. Front wall 5–8 runs clockwise from top left; floor is 1–4. Height is <strong>H</strong> or <strong>L</strong> — same zones, different shot: [5L-4] is a drive, [5H-4] is a lob.</p>
       <p className="mutedText"><strong>S</strong> = the seam, the line where two zones meet. The pair of numbers fixes the height, so seam codes never take H/L. Only the two-wall boast carries it — [LBL-8/7S-2] travels through the centre of the front wall into floor 2. It is the one shot where the seam is genuinely the path.</p>
@@ -19028,6 +19109,7 @@ function LudoSquashGame({setSession,setScreen}={}){
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="ludoDisplayBar">
       {courts===1&&<button type="button" className="primaryBtn" onClick={copyLudoPlayerLink}>COPY PLAYER LINK</button>}
@@ -20057,6 +20139,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
 
     <div className="ncDisplayBar">
       {courts<=1&&<button type="button" className="primaryBtn" onClick={copyNcPlayerLink}>COPY PLAYER LINK</button>}
