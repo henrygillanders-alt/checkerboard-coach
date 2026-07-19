@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v424 Level can now be set for all players at once, as well as per player. Level was per-player only - each set individually. A Set Level for all row now sits under Challenge Scope: one tap puts every present player (or every court, or the group) on the same level, and each player card below still has its own level selector to override afterwards. On per-player scope it covers every present player, seeding a blank allocation for anyone not yet allocated so no one is skipped. So the flow is: set everyone to a level in one tap, fine-tune individuals if needed, allocate blind, then open the card screen and pass the iPad round. Built on the same cbTxSetLevel transaction as the per-player selector, so level and its default challenge type stay in step. This builds on v423 card screen and v422 per-player levels.';
+const APP_VERSION='v426 The Set Level for all row now only shows where overriding makes sense, and highlights the level it applied. The confusion was scope. In Group (all players) there is a single shared challenge, so there are no individual players to override - the one Group card level is the setting. The top Set Level for all row was showing there anyway, doing nothing useful and looking inactive. It is now hidden in Group scope and appears only in Per-Player and Per-Court, where overriding individuals is the whole point. The buttons also had no selected state, so they read as disabled; the last level applied to all now stays highlighted. So to give players different difficulties: choose Per-Player scope, tap Set Level for all to put everyone on a base level, then tap any single player card level selector to change just that player. Group scope is for one shared challenge. Builds on v425.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5444,6 +5444,7 @@ function CheckerboardSetup({setScreen,setSession}){
   // their blind challenge privately. Which cards are currently open is tracked here.
   const [cardScreen,setCardScreen]=useState(false);
   const [openCards,setOpenCards]=useState({});
+  const [bulkLevel,setBulkLevel]=useState(null);
   const [scope,setScope]=useState('group');
   const [alloc,setAlloc]=useState(()=>{try{return JSON.parse(localStorage.getItem(CB_ALLOC_KEY))||{};}catch{return {};}});
   const [group,setGroup]=useState(cbBlankAlloc);
@@ -5526,6 +5527,7 @@ function CheckerboardSetup({setScreen,setSession}){
     if(scope==='group'){setGroup(prev=>cbTxSetLevel(prev,l));}
     else if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>cbTxSetLevel(c,l)));}
     else{setAlloc(prev=>{const next={};presents.forEach(n=>{next[n]=cbTxSetLevel(prev[n]||cbBlankAlloc(),l);});return next;});}
+    setBulkLevel(l);
     setStatus(`All set to Level ${l}.`);
   }
 
@@ -5625,11 +5627,10 @@ function CheckerboardSetup({setScreen,setSession}){
   // open or closed. Per-player scope only, since it reveals each player's own blind
   // code. Rendered full-screen, above everything, with its own exit.
   if(cardScreen){
-    return <div className="page cbCardScreen"><style>{CB_SET_CSS}</style>
+    return <div className="cbCardScreen"><style>{CB_SET_CSS}</style>
       <div className="cbCardScreenTop">
-        <h1>Tap your card</h1>
-        <p>Each player taps their own card to see their challenge, then taps it closed and passes the iPad on.</p>
-        <button type="button" className="cbsetToolBtn" onClick={()=>{setOpenCards({});setCardScreen(false);}}>✕ Close card screen</button>
+        <div><h1>Tap your card</h1><p>Each player taps their own card to reveal their challenge, taps it closed, and passes the iPad on.</p></div>
+        <button type="button" className="cbCardExit" onClick={()=>{setOpenCards({});setCardScreen(false);}}>✕ Close</button>
       </div>
       <div className="cbCardDeck">
         {presents.length===0?<p className="cbPdEmpty">No present players. Mark players present first.</p>:
@@ -5638,10 +5639,14 @@ function CheckerboardSetup({setScreen,setSession}){
             const open=!!openCards[name];
             const code=cbCodeText(r,seamAllowance);
             const hasCode=code&&code!=='—';
-            return <button type="button" key={name} className={open?'cbDeckCard open':'cbDeckCard'} onClick={()=>setOpenCards(o=>({...o,[name]:!o[name]}))}>
-              <span className="cbDeckName">{name}</span>
-              {open?<span className="cbDeckCode">{hasCode?code:'No challenge set'}</span>
-                   :<span className="cbDeckBack">Tap to reveal<br/><small>L{r.level||1}</small></span>}
+            return <button type="button" key={name} className={open?'cbPlayCard open':'cbPlayCard'} onClick={()=>setOpenCards(o=>({...o,[name]:!o[name]}))}>
+              <span className="cbPlayCorner tl">{name.charAt(0)}</span>
+              <span className="cbPlayCorner br">{name.charAt(0)}</span>
+              <span className="cbPlayName">{name}</span>
+              {open
+                ? <span className="cbPlayCode">{hasCode?code:'No challenge set'}</span>
+                : <span className="cbPlayTap">Tap to reveal</span>}
+              <span className="cbPlayLevel">Level {r.level||1}</span>
             </button>;
           })}
       </div>
@@ -5672,9 +5677,9 @@ function CheckerboardSetup({setScreen,setSession}){
       <h2>2 · Checkerboard Challenge Allocation</h2>
       <div className="cbsetField"><label>Challenge Scope</label>
         <div className="cbsetChips">{CB_SCOPES.map(([v,l])=><button type="button" key={v} className={scope===v?'cbsetChip on':'cbsetChip'} onClick={()=>setScope(v)}>{l}</button>)}</div></div>
-      <div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override individuals below</span></label>
-        <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className="cbsetChip" onClick={()=>setLevelAll(l)}>L{l}</button>)}</div>
-        <p className="cbsetScopeNote">Sets every {scope==='player'?'present player':scope==='court'?'court':'target'} to the same level in one tap. Each player card below still has its own level selector to fine-tune.</p></div>
+      {scope!=='group'&&<div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override any player below</span></label>
+        <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className={bulkLevel===l?'cbsetChip on':'cbsetChip'} onClick={()=>setLevelAll(l)}>L{l}</button>)}</div>
+        <p className="cbsetScopeNote">Sets every {scope==='court'?'court':'present player'} to the same level in one tap. Each {scope==='court'?'court':'player'} card below still has its own level selector to override.</p></div>}
       <div className="cbsetField"><label>Seam Allowance</label>
         <div className="cbsetChips">
           <button type="button" className={!seamAllowance?'cbsetChip on':'cbsetChip'} onClick={()=>setSeamAllowance(false)}>Off</button>
@@ -5778,18 +5783,22 @@ const CB_PD_CSS=`
 .cbPdAllCard .t{color:#7fb6d6;font-size:.78rem;margin:3px 0 6px;}
 .cbPdAllCard .c{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
 .cbPdAllCard .c.h{color:#f0d79a;}
-.cbCardScreen{min-height:100vh;background:#0a1722;padding:24px;}
-.cbCardScreenTop{text-align:center;max-width:640px;margin:0 auto 24px;}
-.cbCardScreenTop h1{color:#eaf4fb;font-size:2rem;margin:0 0 8px;}
-.cbCardScreenTop p{color:#9fb3c4;line-height:1.5;margin:0 0 16px;}
-.cbCardDeck{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:1100px;margin:0 auto;}
-.cbDeckCard{min-height:150px;border-radius:16px;border:2px solid #2E6E8E;background:linear-gradient(160deg,#123049,#0d2236);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;padding:18px;transition:transform .08s,box-shadow .15s;}
-.cbDeckCard:active{transform:scale(0.98);}
-.cbDeckCard.open{background:linear-gradient(160deg,#0c2a1f,#0f3a2a);border-color:#34e0a0;box-shadow:0 0 0 3px rgba(52,224,160,.4);}
-.cbDeckName{color:#eaf4fb;font-size:1.35rem;font-weight:800;}
-.cbDeckBack{color:#7fa9c9;font-size:0.95rem;text-align:center;line-height:1.6;}
-.cbDeckBack small{color:#5f7f99;font-size:0.8rem;}
-.cbDeckCode{color:#7fe8bf;font-family:'Consolas',monospace;font-size:1.5rem;font-weight:800;text-align:center;}
+.cbCardScreen{position:fixed;inset:0;z-index:9999;background:#0a1722;display:flex;flex-direction:column;padding:20px 24px 24px;box-sizing:border-box;overflow:hidden;}
+.cbCardScreenTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:0 0 auto;margin-bottom:16px;}
+.cbCardScreenTop h1{color:#eaf4fb;font-size:1.7rem;margin:0 0 4px;}
+.cbCardScreenTop p{color:#9fb3c4;line-height:1.4;margin:0;max-width:600px;font-size:0.95rem;}
+.cbCardExit{flex:0 0 auto;background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;font-weight:700;font-size:1rem;padding:12px 20px;border-radius:999px;cursor:pointer;}
+.cbCardDeck{flex:1 1 auto;display:grid;gap:18px;grid-auto-rows:1fr;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-content:stretch;min-height:0;}
+.cbPlayCard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
+.cbPlayCard:active{transform:scale(0.97);}
+.cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #34e0a0;}
+.cbPlayCorner{position:absolute;font-weight:800;font-size:1.1rem;color:#c0324a;}
+.cbPlayCorner.tl{top:10px;left:12px;}
+.cbPlayCorner.br{bottom:10px;right:12px;transform:rotate(180deg);}
+.cbPlayName{color:#0d2236;font-size:1.55rem;font-weight:800;text-align:center;line-height:1.1;}
+.cbPlayTap{color:#5f7f99;font-size:1rem;font-weight:600;}
+.cbPlayCode{color:#0a7a4f;font-family:'Consolas','Menlo',monospace;font-size:1.4rem;font-weight:800;text-align:center;line-height:1.3;padding:0 6px;word-break:break-word;}
+.cbPlayLevel{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#8199ac;font-size:0.8rem;font-weight:700;letter-spacing:.04em;}
 `;
 
 function cbPlayerFromUrl(){try{return new URLSearchParams(window.location.search||'').get('player')||'';}catch{return '';}}
