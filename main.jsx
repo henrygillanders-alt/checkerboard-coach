@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v426 The Set Level for all row now only shows where overriding makes sense, and highlights the level it applied. The confusion was scope. In Group (all players) there is a single shared challenge, so there are no individual players to override - the one Group card level is the setting. The top Set Level for all row was showing there anyway, doing nothing useful and looking inactive. It is now hidden in Group scope and appears only in Per-Player and Per-Court, where overriding individuals is the whole point. The buttons also had no selected state, so they read as disabled; the last level applied to all now stays highlighted. So to give players different difficulties: choose Per-Player scope, tap Set Level for all to put everyone on a base level, then tap any single player card level selector to change just that player. Group scope is for one shared challenge. Builds on v425.';
+const APP_VERSION='v426 Set Level for all now actually reaches every player, across scopes. The bug: setting the level for all only wrote the rows of the scope you were in. Setting L3 while on Group scope set only the group object, so switching to Per-Player showed players still on their old level - some on L1 - which is what the screenshot showed, Daniel on L3 but Anna 1 on L1. Set Level for all now applies to the group, every court, and every present player row in one action, so the level is consistent no matter which scope you switch to afterwards. Any player who was not yet allocated gets a blank row seeded first, so no one is skipped. The Set Level for all row is also no longer hidden on Group scope - since it now sets all scopes at once, it belongs everywhere - and the active level highlights. The intended flow works: set everyone to a level in one tap, switch to Per-Player, override the few who differ, then allocate blind and open the card screen. Builds on v425.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5522,13 +5522,17 @@ function CheckerboardSetup({setScreen,setSession}){
   // Set one level across every target at once. On per-player scope this covers every
   // present player, seeding a blank allocation for anyone not yet in alloc, so no one
   // is skipped. Individual level selectors still override afterwards.
+  // Set one level everywhere at once. Applies to the group object, every court, AND
+  // every present player's row - not just the active scope - so setting "all to L3"
+  // in one scope carries over when you switch to another (the bug where you set the
+  // level in Group, switched to Per-Player, and found players still on L1).
   function setLevelAll(l){
     snapshot();
-    if(scope==='group'){setGroup(prev=>cbTxSetLevel(prev,l));}
-    else if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>cbTxSetLevel(c,l)));}
-    else{setAlloc(prev=>{const next={};presents.forEach(n=>{next[n]=cbTxSetLevel(prev[n]||cbBlankAlloc(),l);});return next;});}
+    setGroup(prev=>cbTxSetLevel(prev,l));
+    setCourtChallenges(prev=>prev.map(c=>cbTxSetLevel(c,l)));
+    setAlloc(prev=>{const next={};presents.forEach(n=>{next[n]=cbTxSetLevel(prev[n]||cbBlankAlloc(),l);});return next;});
     setBulkLevel(l);
-    setStatus(`All set to Level ${l}.`);
+    setStatus(`Every player set to Level ${l}. Override individuals below.`);
   }
 
   function reloadPresents(){const p=cbReadPresents();setPresents(p);setStatus(p.length?`Reloaded ${p.length} present player${p.length===1?'':'s'}.`:'No players marked present yet.');}
@@ -5677,9 +5681,9 @@ function CheckerboardSetup({setScreen,setSession}){
       <h2>2 · Checkerboard Challenge Allocation</h2>
       <div className="cbsetField"><label>Challenge Scope</label>
         <div className="cbsetChips">{CB_SCOPES.map(([v,l])=><button type="button" key={v} className={scope===v?'cbsetChip on':'cbsetChip'} onClick={()=>setScope(v)}>{l}</button>)}</div></div>
-      {scope!=='group'&&<div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override any player below</span></label>
+      <div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override any player below</span></label>
         <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className={bulkLevel===l?'cbsetChip on':'cbsetChip'} onClick={()=>setLevelAll(l)}>L{l}</button>)}</div>
-        <p className="cbsetScopeNote">Sets every {scope==='court'?'court':'present player'} to the same level in one tap. Each {scope==='court'?'court':'player'} card below still has its own level selector to override.</p></div>}
+        <p className="cbsetScopeNote">Sets every player, court and the group to the same level in one tap — the level carries across scopes. Switch to Per-Player and each player card still has its own level selector to override.</p></div>
       <div className="cbsetField"><label>Seam Allowance</label>
         <div className="cbsetChips">
           <button type="button" className={!seamAllowance?'cbsetChip on':'cbsetChip'} onClick={()=>setSeamAllowance(false)}>Off</button>
