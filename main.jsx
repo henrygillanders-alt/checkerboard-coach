@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v429 Pattern Lab Add works again, plus universal negative scoring. (1) Fixed the Pattern Lab "Not added - tap again" crash: Add threw a ReferenceError because the selected attack trigger was never passed into the card builder. The trigger is now passed through (with a safe default), so Add saves on every card, first tap included. (2) Added a First Attacking Shot selector beside Length in Pattern Lab - Take-on: volley / no volley / player choice, and Shot: cross-court drop / straight drop / 2-wall boast / player choice - flowing into the run-rules, the session card and the player display. (3) The Configure tab no longer promises an editor it does not have: it now explains that each plug-and-play card is itself the builder and gives a button to open the Plug and Play Library. (4) Added a universal Negative Scoring panel (preset faults plus custom, -1 to -5) alongside DB Handicap and Tin Height in every module, and removed the interim Pattern-Lab-only cross penalty so penalties have a single home. Builds on v428.';
+const APP_VERSION='v431 Pattern Lab Add fix, negative scoring that displays, universal modifiers in Pattern Lab, and First Attacking Shot drives the step text. (1) Fixed the Pattern Lab "Not added - tap again" crash: Add threw a ReferenceError because the selected attack trigger was never passed into the card builder. The trigger is now passed through (with a safe default), so Add saves on every card, first tap included. (2) Added a First Attacking Shot selector beside Length in Pattern Lab - Take-on: volley / no volley / player choice, and Shot: cross-court drop / straight drop / 2-wall boast / player choice - flowing into the run-rules, the session card and the player display. (3) The Configure tab no longer promises an editor it does not have: it now explains that each plug-and-play card is itself the builder and gives a button to open the Plug and Play Library. (4) Added a universal Negative Scoring panel (preset faults plus custom, -1 to -5) alongside DB Handicap and Tin Height in every module, and removed the interim Pattern-Lab-only cross penalty so penalties have a single home. (5) Negative scoring now displays: the player display and session scoring read the saved penalties and append them to HOW TO SCORE (e.g. Penalties: non-functional cross-court = -2). (6) The universal modifier panels (DB Handicap, Tin Height, Negative Scoring) are now available inside Pattern Lab too, so every game class has them, and active penalties preview in the Pattern Lab Scoring section. (7) The First Attacking Shot selection (take-on and shot) now drives the Attack step description in How it runs, instead of always showing the pattern default hint. Builds on v430.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -583,6 +583,17 @@ function activeDbSummaryFromStorage(){
     return entries.map(([name,value])=>`${name}: ${value}`).join(' · ');
   }catch{return '';}
 }
+function activePenaltyEntriesFromStorage(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}');
+    if(!saved||!saved.enabled)return [];
+    const pts=saved.presetPoints||{};
+    const fromPresets=(typeof PENALTY_PRESETS!=='undefined'?PENALTY_PRESETS:[]).filter(p=>pts[p.id]>0).map(p=>({label:p.label,points:pts[p.id]}));
+    const fromCustom=(saved.customList||[]).filter(c=>c&&c.points>0).map(c=>({label:c.label,points:c.points}));
+    return [...fromPresets,...fromCustom];
+  }catch{return [];}
+}
+function activePenaltySummaryFromStorage(){return activePenaltyEntriesFromStorage().map(e=>`${e.label} = -${e.points}`).join(' · ');}
 function scoringLogicForLayers(layers=[],modifierScores={}){
   const active=editableModifierLayers(layers);
   const parts=active.map(layer=>modifierScoreLabel(layer,modifierScores?.[layer])).filter(Boolean);
@@ -601,7 +612,9 @@ function getPlayerDisplayFields(game){
   const dbText=dbActive ? (item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb) : '';
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
   const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
-  const score=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
+  const baseScore=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
+  const penaltySummary=activePenaltySummaryFromStorage();
+  const score=penaltySummary ? `${baseScore} · Penalties: ${penaltySummary}` : baseScore;
   const rationale=item.rationale||'Use the task constraints to shape player behaviour.';
   const rldLevelRaw=Number(item.rld);
   const rldLevel=Number.isFinite(rldLevelRaw)?Math.max(0,Math.min(6,Math.round(rldLevelRaw))):3;
@@ -17647,7 +17660,21 @@ function patternSeamKey(game,side){
 // Rotating drives are only broken by a trigger, so the step names the live one
 // rather than pointing at a panel. There is no untriggered state.
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
-function patternLogicSteps(game,trigger='offT',side,lengthType){
+function firstShotPhrase(firstShot){
+  if(!firstShot)return '';
+  const shot={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast'}[firstShot.type]||'';
+  const v=firstShot.volley;
+  if(shot){
+    const Cap=shot.charAt(0).toUpperCase()+shot.slice(1);
+    if(v==='volley')return 'Volley '+shot;
+    if(v==='novolley')return Cap+', no volley (let it bounce)';
+    return Cap;
+  }
+  if(v==='volley')return 'Take it as a volley';
+  if(v==='novolley')return 'No volley - let it bounce';
+  return '';
+}
+function patternLogicSteps(game,trigger='offT',side,lengthType,firstShot){
   const w=plWalk(game,side);
   if(!w.length)return [];
   const build=w[0];
@@ -17665,7 +17692,12 @@ function patternLogicSteps(game,trigger='offT',side,lengthType){
   steps.push({k:'Serve',v:'The panel sets your side and direction.'});
   if(forced)steps.push({k:'Length',v:`Every length is a ${forced} - ${LENGTH_NOTE[lengthType].replace(/^Lengths must be [^:]*:\s*/,'')}`});
   steps.push({k:'Build',...line('Rally into',build.parts,build.shot.label)});
-  if(attack)steps.push({k:'Attack',...line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts,attack.shot.label)});
+  if(attack){
+    const atk=line((TRIGGER_PHRASE[trigger]||TRIGGER_PHRASE.offT)+', attack into',attack.parts,attack.shot.label);
+    const fp=firstShotPhrase(firstShot);
+    if(fp)atk.hint=fp;
+    steps.push({k:'Attack',...atk});
+  }
   counters.forEach(c=>steps.push({k:'Counter',...line('Answer into',c.parts,c.shot.label)}));
   if(w.length>2)steps.push({k:'Recover',v:`Resolve back into the rotating lengths: ${recoveryPhrase(game,lengthType)} - whichever their position leaves on.`});
   steps.push({k:'Repeat',v:'Run the cycle again - see the Cycle panel for how it ends.'});
@@ -17803,7 +17835,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}{activePenaltyEntriesFromStorage().map((e,i)=><li key={'pen'+i}><span>{e.label}</span><b>-{e.points}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType)}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
@@ -17866,6 +17898,12 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={tramline} onClick={()=>setTramline(true)}>On</PdChip>
       </PatternRunPanel>
     </div>
+
+    <h2 className="pdSectionTitle">Universal modifiers</h2>
+    <p className="pdSectionSub">Session-wide levellers and scoring available in every game class — DB Handicap, Tin Height and Negative Scoring. These apply on top of the pattern above.</p>
+    <UniversalDBHandicapPanel setScreen={setScreen}/>
+    <UniversalTinHeightPanel setScreen={setScreen}/>
+    <UniversalPenaltyPanel setScreen={setScreen}/>
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
