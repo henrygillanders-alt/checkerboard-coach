@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v426 Set Level for all now actually reaches every player, across scopes. The bug: setting the level for all only wrote the rows of the scope you were in. Setting L3 while on Group scope set only the group object, so switching to Per-Player showed players still on their old level - some on L1 - which is what the screenshot showed, Daniel on L3 but Anna 1 on L1. Set Level for all now applies to the group, every court, and every present player row in one action, so the level is consistent no matter which scope you switch to afterwards. Any player who was not yet allocated gets a blank row seeded first, so no one is skipped. The Set Level for all row is also no longer hidden on Group scope - since it now sets all scopes at once, it belongs everywhere - and the active level highlights. The intended flow works: set everyone to a level in one tap, switch to Per-Player, override the few who differ, then allocate blind and open the card screen. Builds on v425.';
+const APP_VERSION='v427 Fixes the card-screen layout, which never took because it was rendering the wrong stylesheet. The playing-card CSS from v425 was appended to CB_PD_CSS, the player-display stylesheet, but the card screen renders CB_SET_CSS, the setup stylesheet - so the styles never loaded and the cards collapsed to plain text: initials doubling as AAAurora, names running into Tap to reveal, everything on one line. The card screen now includes CB_PD_CSS in its style block, so the proper card styling applies: full-screen light playing cards, name centred, corner initials, level along the bottom, filling the width and height. CB_PD_CSS was defined after CheckerboardSetup, so using it there would have been an out-of-order const reference - the same class of error that white-screened v419 - so the whole CB_PD_CSS block was moved above CheckerboardSetup, before any use, with its four existing player-display uses still after it. The v426 level fix is confirmed working in this same screenshot - Aurora and Daniel on Level 4, the rest on Level 3 - so per-player override now carries correctly. Builds on v426.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5436,6 +5436,49 @@ function CbCustomInput({optional,next,onAdd}){
   </div>;
 }
 
+// CB_PD_CSS moved here so CheckerboardSetup card screen can use it before the
+// player-display components below - a const does not hoist.
+const CB_PD_CSS=`
+.cbPdPage{min-height:100vh;background:#0a1019;color:#eaf4fb;padding:24px 18px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;}
+.cbPdHead{text-align:center;margin-bottom:18px;}
+.cbPdHead span{display:block;color:#5f86a6;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;}
+.cbPdHead h1{margin:6px 0 0;font-size:1.8rem;color:#eaf4fb;}
+.cbPdHead .ty{color:#7fb6d6;font-weight:700;font-size:1rem;margin-top:4px;}
+.cbPdCard{width:100%;max-width:520px;background:#0f1c28;border:1px solid #243a4e;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
+.cbPdCode{font-size:2.6rem;font-weight:800;letter-spacing:.04em;color:#eaf4fb;margin:8px 0;}
+.cbPdLabel{color:#7c92a6;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;}
+.cbPdOpt{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
+.cbPdOptBox{flex:1;min-width:140px;background:#0a141d;border:1px solid #243a4e;border-radius:12px;padding:14px;}
+.cbPdOptBox small{display:block;color:#7c92a6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;}
+.cbPdOptBox strong{display:block;font-size:1.5rem;color:#eaf4fb;margin-top:4px;}
+.cbPdReveal{margin-top:16px;background:#2E6E8E;border:1px solid #48a0c4;color:#fff;border-radius:12px;padding:16px 22px;font-size:1.05rem;font-weight:800;cursor:pointer;width:100%;max-width:520px;}
+.cbPdHint{color:#f0d79a;font-size:1.1rem;font-weight:700;margin:10px 0;}
+.cbPdSeam{color:#9fb3c4;font-size:.9rem;line-height:1.5;margin:14px 0 0;}
+.cbPdEmpty{color:#8aa0b4;text-align:center;font-size:1rem;}
+.cbPdAllGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%;max-width:760px;}
+.cbPdAllCard{background:#0f1c28;border:1px solid #243a4e;border-radius:12px;padding:14px;text-align:center;}
+.cbPdAllCard strong{display:block;color:#eaf4fb;font-size:1rem;}
+.cbPdAllCard .t{color:#7fb6d6;font-size:.78rem;margin:3px 0 6px;}
+.cbPdAllCard .c{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
+.cbPdAllCard .c.h{color:#f0d79a;}
+.cbCardScreen{position:fixed;inset:0;z-index:9999;background:#0a1722;display:flex;flex-direction:column;padding:20px 24px 24px;box-sizing:border-box;overflow:hidden;}
+.cbCardScreenTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:0 0 auto;margin-bottom:16px;}
+.cbCardScreenTop h1{color:#eaf4fb;font-size:1.7rem;margin:0 0 4px;}
+.cbCardScreenTop p{color:#9fb3c4;line-height:1.4;margin:0;max-width:600px;font-size:0.95rem;}
+.cbCardExit{flex:0 0 auto;background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;font-weight:700;font-size:1rem;padding:12px 20px;border-radius:999px;cursor:pointer;}
+.cbCardDeck{flex:1 1 auto;display:grid;gap:18px;grid-auto-rows:1fr;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-content:stretch;min-height:0;}
+.cbPlayCard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
+.cbPlayCard:active{transform:scale(0.97);}
+.cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #34e0a0;}
+.cbPlayCorner{position:absolute;font-weight:800;font-size:1.1rem;color:#c0324a;}
+.cbPlayCorner.tl{top:10px;left:12px;}
+.cbPlayCorner.br{bottom:10px;right:12px;transform:rotate(180deg);}
+.cbPlayName{color:#0d2236;font-size:1.55rem;font-weight:800;text-align:center;line-height:1.1;}
+.cbPlayTap{color:#5f7f99;font-size:1rem;font-weight:600;}
+.cbPlayCode{color:#0a7a4f;font-family:'Consolas','Menlo',monospace;font-size:1.4rem;font-weight:800;text-align:center;line-height:1.3;padding:0 6px;word-break:break-word;}
+.cbPlayLevel{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#8199ac;font-size:0.8rem;font-weight:700;letter-spacing:.04em;}
+`;
+
 function CheckerboardSetup({setScreen,setSession}){
   const [presents,setPresents]=useState(cbReadPresents);
   // Pass-around card screen: a dedicated full-screen deck of every present player's
@@ -5631,7 +5674,7 @@ function CheckerboardSetup({setScreen,setSession}){
   // open or closed. Per-player scope only, since it reveals each player's own blind
   // code. Rendered full-screen, above everything, with its own exit.
   if(cardScreen){
-    return <div className="cbCardScreen"><style>{CB_SET_CSS}</style>
+    return <div className="cbCardScreen"><style>{CB_SET_CSS}{CB_PD_CSS}</style>
       <div className="cbCardScreenTop">
         <div><h1>Tap your card</h1><p>Each player taps their own card to reveal their challenge, taps it closed, and passes the iPad on.</p></div>
         <button type="button" className="cbCardExit" onClick={()=>{setOpenCards({});setCardScreen(false);}}>✕ Close</button>
@@ -5764,46 +5807,6 @@ function CheckerboardSetup({setScreen,setSession}){
   </div>;
 }
 
-const CB_PD_CSS=`
-.cbPdPage{min-height:100vh;background:#0a1019;color:#eaf4fb;padding:24px 18px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;}
-.cbPdHead{text-align:center;margin-bottom:18px;}
-.cbPdHead span{display:block;color:#5f86a6;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;}
-.cbPdHead h1{margin:6px 0 0;font-size:1.8rem;color:#eaf4fb;}
-.cbPdHead .ty{color:#7fb6d6;font-weight:700;font-size:1rem;margin-top:4px;}
-.cbPdCard{width:100%;max-width:520px;background:#0f1c28;border:1px solid #243a4e;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45);}
-.cbPdCode{font-size:2.6rem;font-weight:800;letter-spacing:.04em;color:#eaf4fb;margin:8px 0;}
-.cbPdLabel{color:#7c92a6;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;}
-.cbPdOpt{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
-.cbPdOptBox{flex:1;min-width:140px;background:#0a141d;border:1px solid #243a4e;border-radius:12px;padding:14px;}
-.cbPdOptBox small{display:block;color:#7c92a6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;}
-.cbPdOptBox strong{display:block;font-size:1.5rem;color:#eaf4fb;margin-top:4px;}
-.cbPdReveal{margin-top:16px;background:#2E6E8E;border:1px solid #48a0c4;color:#fff;border-radius:12px;padding:16px 22px;font-size:1.05rem;font-weight:800;cursor:pointer;width:100%;max-width:520px;}
-.cbPdHint{color:#f0d79a;font-size:1.1rem;font-weight:700;margin:10px 0;}
-.cbPdSeam{color:#9fb3c4;font-size:.9rem;line-height:1.5;margin:14px 0 0;}
-.cbPdEmpty{color:#8aa0b4;text-align:center;font-size:1rem;}
-.cbPdAllGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%;max-width:760px;}
-.cbPdAllCard{background:#0f1c28;border:1px solid #243a4e;border-radius:12px;padding:14px;text-align:center;}
-.cbPdAllCard strong{display:block;color:#eaf4fb;font-size:1rem;}
-.cbPdAllCard .t{color:#7fb6d6;font-size:.78rem;margin:3px 0 6px;}
-.cbPdAllCard .c{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
-.cbPdAllCard .c.h{color:#f0d79a;}
-.cbCardScreen{position:fixed;inset:0;z-index:9999;background:#0a1722;display:flex;flex-direction:column;padding:20px 24px 24px;box-sizing:border-box;overflow:hidden;}
-.cbCardScreenTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:0 0 auto;margin-bottom:16px;}
-.cbCardScreenTop h1{color:#eaf4fb;font-size:1.7rem;margin:0 0 4px;}
-.cbCardScreenTop p{color:#9fb3c4;line-height:1.4;margin:0;max-width:600px;font-size:0.95rem;}
-.cbCardExit{flex:0 0 auto;background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;font-weight:700;font-size:1rem;padding:12px 20px;border-radius:999px;cursor:pointer;}
-.cbCardDeck{flex:1 1 auto;display:grid;gap:18px;grid-auto-rows:1fr;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-content:stretch;min-height:0;}
-.cbPlayCard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
-.cbPlayCard:active{transform:scale(0.97);}
-.cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #34e0a0;}
-.cbPlayCorner{position:absolute;font-weight:800;font-size:1.1rem;color:#c0324a;}
-.cbPlayCorner.tl{top:10px;left:12px;}
-.cbPlayCorner.br{bottom:10px;right:12px;transform:rotate(180deg);}
-.cbPlayName{color:#0d2236;font-size:1.55rem;font-weight:800;text-align:center;line-height:1.1;}
-.cbPlayTap{color:#5f7f99;font-size:1rem;font-weight:600;}
-.cbPlayCode{color:#0a7a4f;font-family:'Consolas','Menlo',monospace;font-size:1.4rem;font-weight:800;text-align:center;line-height:1.3;padding:0 6px;word-break:break-word;}
-.cbPlayLevel{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#8199ac;font-size:0.8rem;font-weight:700;letter-spacing:.04em;}
-`;
 
 function cbPlayerFromUrl(){try{return new URLSearchParams(window.location.search||'').get('player')||'';}catch{return '';}}
 // Seam allowance — Checkerboard. The seam's width is never stored: the coach
