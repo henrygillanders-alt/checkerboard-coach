@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v431 Pattern Lab Add fix, negative scoring that displays, universal modifiers in Pattern Lab, and First Attacking Shot drives the step text. (1) Fixed the Pattern Lab "Not added - tap again" crash: Add threw a ReferenceError because the selected attack trigger was never passed into the card builder. The trigger is now passed through (with a safe default), so Add saves on every card, first tap included. (2) Added a First Attacking Shot selector beside Length in Pattern Lab - Take-on: volley / no volley / player choice, and Shot: cross-court drop / straight drop / 2-wall boast / player choice - flowing into the run-rules, the session card and the player display. (3) The Configure tab no longer promises an editor it does not have: it now explains that each plug-and-play card is itself the builder and gives a button to open the Plug and Play Library. (4) Added a universal Negative Scoring panel (preset faults plus custom, -1 to -5) alongside DB Handicap and Tin Height in every module, and removed the interim Pattern-Lab-only cross penalty so penalties have a single home. (5) Negative scoring now displays: the player display and session scoring read the saved penalties and append them to HOW TO SCORE (e.g. Penalties: non-functional cross-court = -2). (6) The universal modifier panels (DB Handicap, Tin Height, Negative Scoring) are now available inside Pattern Lab too, so every game class has them, and active penalties preview in the Pattern Lab Scoring section. (7) The First Attacking Shot selection (take-on and shot) now drives the Attack step description in How it runs, instead of always showing the pattern default hint. Builds on v430.';
+const APP_VERSION='v435 Pattern Lab modifier engine is now live — Game Logic, Scoring Logic and Constraints apply to the card like every other game. (1) Fixed the Pattern Lab "Not added - tap again" crash: Add threw a ReferenceError because the selected attack trigger was never passed into the card builder. The trigger is now passed through (with a safe default), so Add saves on every card, first tap included. (2) Added a First Attacking Shot selector beside Length in Pattern Lab - Take-on: volley / no volley / player choice, and Shot: cross-court drop / straight drop / 2-wall boast / player choice - flowing into the run-rules, the session card and the player display. (3) The Configure tab no longer promises an editor it does not have: it now explains that each plug-and-play card is itself the builder and gives a button to open the Plug and Play Library. (4) Added a universal Negative Scoring panel (preset faults plus custom, -1 to -5) alongside DB Handicap and Tin Height in every module, and removed the interim Pattern-Lab-only cross penalty so penalties have a single home. (5) Negative scoring now displays: the player display and session scoring read the saved penalties and append them to HOW TO SCORE (e.g. Penalties: non-functional cross-court = -2). (6) The universal modifier panels (DB Handicap, Tin Height, Negative Scoring) are now available inside Pattern Lab too, so every game class has them, and active penalties preview in the Pattern Lab Scoring section. (7) The First Attacking Shot selection (take-on and shot) now drives the Attack step description in How it runs, instead of always showing the pattern default hint. (8) Pattern Lab now shows the full Universal Modifier Engine (Game Logic, Constraints, Scoring Logic, DB Handicap, Tin Height, Negative Scoring) rather than only the standalone leveller panels. (9) The Length panel Any is now labelled Player choice, and the Shots-allowed-to-go-cross chips now read the length family (working drive / penetrating drive / lob / player choice) with their zone code so the two are distinguishable. (10) The First Attacking Shot selection (volley / no volley and the chosen shot) now flows into the compact notation and the live Player Display, so a shot set as a volley reads as volley on the player display instead of only in the run-rules chips. (11) When you Add a Pattern Lab card to the session, the saved card notation now uses the same first-shot-aware notation as the live Player Display, so the session card and the player display stay consistent. (12) The Pattern Lab Universal Modifier Engine is now controlled and applied like in the Checkerboard module: the Game Logic and Constraints you select are merged into the card layers and the Scoring Logic points into the card modifier scores, so they show in the card and player-display scoring like every other game. Builds on v434.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -17603,18 +17603,24 @@ function mirrorGame(game,side){
 // recovery rule it is a choice of families, not a fixed code, so it is rendered as
 // that phrase rather than its stored code (which was where the impossible mirrored
 // drive came from). Everything before it shows label + code, mirrored if on the right.
-function deriveQuick(game,side,lengthType){
+function deriveQuick(game,side,lengthType,firstShot){
   const g=mirrorGame(game,side);
   const shots=Array.isArray(g.shots)?g.shots:[];
   if(!shots.length)return '';
   const forced=forcedLengthWord(lengthType);
-  const cell=s=>{
-    const label=(forced&&isLengthLabel(s.label))?forced:s.label;
+  const shotMap={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast'};
+  const cell=(s,idx)=>{
+    let label=(forced&&isLengthLabel(s.label))?forced:s.label;
     const code=isLengthLabel(s.label)?forceLength(s.code,lengthType):s.code;
+    if(idx===1&&firstShot){
+      if(firstShot.type&&shotMap[firstShot.type])label=shotMap[firstShot.type];
+      if(firstShot.volley==='volley')label='volley '+label;
+      else if(firstShot.volley==='novolley')label=label+' (no volley)';
+    }
     return `${label} ${code}`;
   };
-  const lead=shots.slice(0,-1).map(cell);
-  const recovery=shots.length>2?'recover: '+recoveryPhrase(g,lengthType):cell(shots[shots.length-1]);
+  const lead=shots.slice(0,-1).map((s,idx)=>cell(s,idx));
+  const recovery=shots.length>2?'recover: '+recoveryPhrase(g,lengthType):cell(shots[shots.length-1],shots.length-1);
   return lead.concat(recovery).join(' + ');
 }
 function plWalk(game,side){
@@ -17762,6 +17768,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [cycleMode,setCycleMode]=useState('breakdown');
   const [openAfter,setOpenAfter]=useState(2);
   const [tramline,setTramline]=useState(false);
+  const [modifier,setModifier]=useState(()=>emptyModifierConfig());
   const triggerLabel={offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
@@ -17783,7 +17790,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){
     try{
-      onAdd(game,view,runRules,trigger);
+      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier);
       setAdded(true);
       setTimeout(()=>setAdded(false),2200);
     }catch(err){
@@ -17793,7 +17800,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   }
   const [pushed,setPushed]=useState(false);
   const [added,setAdded]=useState(false);
-  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide,lengthType),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
+  function pushDisplay(){try{writeLivePlayerRoom(getPersistentLiveRoomId(),'pattern',{type:'pattern',title:game.title,notation:deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),seamKey:patternSeamKey(game,patternSide),level:game.level,rld:game.rld,coach:game.coach,logic:game.logic,runRules});setPushed(true);setTimeout(()=>setPushed(false),2500);}catch{}}
   return <div className="page patternDetailPage">
     <style>{`
     .pdPanelGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:10px 0 4px;}
@@ -17836,7 +17843,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
       <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}{activePenaltyEntriesFromStorage().map((e,i)=><li key={'pen'+i}><span>{e.label}</span><b>-{e.points}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
-      <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType)}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
+      <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType})}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
     <h2 className="pdSectionTitle">Run-rule panels</h2>
@@ -17854,11 +17861,11 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={direction==='both'} onClick={()=>setDirection('both')}>Both sides</PdChip>
         <PdChip on={direction==='cross'} onClick={()=>setDirection('cross')}>Cross allowed</PdChip>
         {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap/cycle</PdChip></>}
-        {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{s.label}</PdChip>)}</div></div>}
+        {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{(isLengthLabel(s.label)?(forcedLengthWord(lengthType)||(s.label+' — player\'s choice')):s.label)+' '+s.code}</PdChip>)}</div></div>}
       </PatternRunPanel>
 
       <PatternRunPanel title="Length" note={LENGTH_NOTE[lengthType]}>
-        <PdChip on={lengthType==='any'} onClick={()=>setLengthType('any')}>Any</PdChip>
+        <PdChip on={lengthType==='any'} onClick={()=>setLengthType('any')}>Player's choice</PdChip>
         <PdChip on={lengthType==='lob'} onClick={()=>setLengthType('lob')}>Lob</PdChip>
         <PdChip on={lengthType==='working'} onClick={()=>setLengthType('working')}>Working drive</PdChip>
         <PdChip on={lengthType==='penetrating'} onClick={()=>setLengthType('penetrating')}>Penetrating drive</PdChip>
@@ -17900,10 +17907,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     </div>
 
     <h2 className="pdSectionTitle">Universal modifiers</h2>
-    <p className="pdSectionSub">Session-wide levellers and scoring available in every game class — DB Handicap, Tin Height and Negative Scoring. These apply on top of the pattern above.</p>
-    <UniversalDBHandicapPanel setScreen={setScreen}/>
-    <UniversalTinHeightPanel setScreen={setScreen}/>
-    <UniversalPenaltyPanel setScreen={setScreen}/>
+    <p className="pdSectionSub">The full modifier engine, available in every game class — Game Logic, Constraints and Scoring Logic, plus the DB Handicap, Tin Height and Negative Scoring levellers. These apply on top of the pattern above.</p>
+    <UniversalModifierEngine title="Universal Modifiers" context="Pattern Lab" value={modifier} onChange={setModifier} presentPlayers={present}/>
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
@@ -17921,10 +17926,11 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
-  function addGame(game,view=false,runRules=null,trigger='offT'){
+  function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
-    const layers=runRules&&runRules.length?[...(game.flags||[]),...runRules]:game.flags;
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:game.quick,description:desc,rationale:game.logic,scoring:patternScoreText(),layers:layers,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
+    const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:game.logic,scoring:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
