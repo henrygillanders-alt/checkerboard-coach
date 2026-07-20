@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v445 The Checkerboard Completion options (Single / Pair / Triple / Sequence) in the Game Logic modifier now only appear in the Checkerboard module (context Checkerboard); they are hidden in Pattern Lab and every other non-Checkerboard game, since they are Checkerboard-specific codes. Builds on v444.';
+const APP_VERSION='v446 Edit Pattern Lab cards in place - what the coach configures is bible. Each Pattern Lab card now stores its full configuration (trigger, first shot, length, direction, cycle, tramline, scoring and modifiers). An Edit button on the card in the Session Builder reopens it in Pattern Lab with every setting restored; changing anything and tapping Save Changes updates that same card - no delete-and-re-add. Builds on v445.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5038,6 +5038,7 @@ return <div className="page sessionBuilderPage">
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="gameActionBar"><strong>Game Actions</strong><div>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
+{game.format==='Pattern Lab'&&<button onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit</button>}
 <button className="primaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>PUSH PLAYER DISPLAY</button>
 <button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Persistent Player Display link copied. This same link updates when you push any game/session/competition.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
 </div></div>
@@ -17743,13 +17744,13 @@ function PatternRunPanel({title,note,children}){
 function PdChip({on,onClick,children}){
   return <div role="button" tabIndex={0} className={on?'pdChip on':'pdChip'} onClick={onClick}>{children}</div>;
 }
-function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
-  const [trigger,setTrigger]=useState('offT');
-  const [direction,setDirection]=useState('rightStraight');
-  const [lengthType,setLengthType]=useState('any');
-  const [crossCap,setCrossCap]=useState(0);
-  const [firstShotVolley,setFirstShotVolley]=useState('choice');
-  const [firstShotType,setFirstShotType]=useState('choice');
+function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initialConfig,editingCardId}){
+  const [trigger,setTrigger]=useState(()=>initialConfig?initialConfig.trigger:'offT');
+  const [direction,setDirection]=useState(()=>initialConfig?initialConfig.direction:'rightStraight');
+  const [lengthType,setLengthType]=useState(()=>initialConfig?initialConfig.lengthType:'any');
+  const [crossCap,setCrossCap]=useState(()=>initialConfig?initialConfig.crossCap:0);
+  const [firstShotVolley,setFirstShotVolley]=useState(()=>initialConfig?initialConfig.firstShotVolley:'choice');
+  const [firstShotType,setFirstShotType]=useState(()=>initialConfig?initialConfig.firstShotType:'choice');
   const crossableShots=(game.shots||[]).map((s,i)=>({...s,i})).filter(s=>s.crossable);
   const [crossPer,setCrossPer]=useState(()=>{const o={};crossableShots.forEach(s=>{o[s.i]=true;});return o;});
   const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
@@ -17761,11 +17762,11 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const heightEff=n=>heightBy[n]!==undefined?heightBy[n]:heightAll;
   const dbOverrides=present.filter(n=>dbBy[n]!==undefined&&dbBy[n]!==dbAll).map(n=>n+' '+dbBy[n]);
   const heightOverrides=present.filter(n=>heightBy[n]!==undefined&&heightBy[n]!==heightAll).map(n=>n+' '+(heightBy[n]?'on':'off'));
-  const [cycleMode,setCycleMode]=useState('breakdown');
-  const [openAfter,setOpenAfter]=useState(2);
-  const [tramline,setTramline]=useState(false);
-  const [modifier,setModifier]=useState(()=>emptyModifierConfig());
-  const [scoreRules,setScoreRules]=useState(()=>[]);
+  const [cycleMode,setCycleMode]=useState(()=>initialConfig?initialConfig.cycleMode:'breakdown');
+  const [openAfter,setOpenAfter]=useState(()=>initialConfig?initialConfig.openAfter:2);
+  const [tramline,setTramline]=useState(()=>initialConfig?initialConfig.tramline:false);
+  const [modifier,setModifier]=useState(()=>initialConfig&&initialConfig.modifier?initialConfig.modifier:emptyModifierConfig());
+  const [scoreRules,setScoreRules]=useState(()=>initialConfig&&initialConfig.scoreRules?initialConfig.scoreRules:[]);
   const triggerLabel={offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
@@ -17785,7 +17786,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){
     try{
-      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier,scoreRules.filter(r=>r.k&&r.k.trim()).map(r=>`${r.k} = ${r.v}`).join(' · '));
+      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier,scoreRules.filter(r=>r.k&&r.k.trim()).map(r=>`${r.k} = ${r.v}`).join(' · '),{patternId:game.id,trigger,direction,lengthType,crossCap,firstShotVolley,firstShotType,cycleMode,openAfter,tramline,scoreRules,modifier});
       setAdded(true);
       setTimeout(()=>setAdded(false),2200);
     }catch(err){
@@ -17905,13 +17906,14 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
-    <div className="buttonRow"><button type="button" className={added===true?'primaryBtn pdAddOk':added==='error'?'primaryBtn pdAddErr':'primaryBtn'} onClick={()=>add(false)}>{added===true?'✓ Added to Session':added==='error'?'✕ Not added — tap again':'Add To Session'}</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={pushDisplay}>{pushed?'✓ Sent to Player Display':'Push to Player Display'}</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
+    <div className="buttonRow"><button type="button" className={added===true?'primaryBtn pdAddOk':added==='error'?'primaryBtn pdAddErr':'primaryBtn'} onClick={()=>add(false)}>{added===true?(editingCardId?'✓ Saved':'✓ Added to Session'):added==='error'?'✕ Not added — tap again':(editingCardId?'Save Changes':'Add To Session')}</button><button type="button" className="primaryBtn" onClick={()=>add(true)}>Add + View Session</button><button type="button" className="secondaryBtn" onClick={pushDisplay}>{pushed?'✓ Sent to Player Display':'Push to Player Display'}</button><button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
   </div>;
 }
 function TacticalIntentionsModule({setScreen,setSession}){
-  const [selected,setSelected]=useState(PATTERN_LAB_READY_GAMES[0]);
+  const [editing,setEditing]=useState(()=>{try{const raw=localStorage.getItem('PL_EDIT');if(raw){localStorage.removeItem('PL_EDIT');return JSON.parse(raw);}}catch{}return null;});
+  const [selected,setSelected]=useState(()=>editing?(PATTERN_LAB_READY_GAMES.find(g=>g.id===editing.patternId)||PATTERN_LAB_READY_GAMES[0]):PATTERN_LAB_READY_GAMES[0]);
   const [mode,setMode]=useState('ready');
-  const [detailOpen,setDetailOpen]=useState(false);
+  const [detailOpen,setDetailOpen]=useState(()=>!!editing);
   useBackIntercept(detailOpen,()=>{setDetailOpen(false);return true;});
   const [levelFilter,setLevelFilter]=useState('All');
   const [attackFilter,setAttackFilter]=useState('All');
@@ -17919,11 +17921,19 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
-  function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null,scoreOverride=null){
+  function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null,scoreOverride=null,plConfig=null){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
     const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:(game.logic||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases'),scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    card.plConfig=plConfig;
+    if(editing&&editing.cardId){
+      card.id=editing.cardId;
+      if(setSession)setSession(prev=>(prev||[]).map(c=>c.id===editing.cardId?card:c));
+      setEditing(null);setDetailOpen(false);
+      if(setScreen)setTimeout(()=>setScreen('sessions'),0);
+      return;
+    }
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
@@ -17932,7 +17942,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const sessionCount=(()=>{try{const saved=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]');return Array.isArray(saved)?saved.length:(Array.isArray(saved.rotations)?saved.rotations.length:0);}catch{return 0;}})();
   const active=random||selected;
   const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
-  if(detailOpen)return <PatternDetailPage game={active} meta={meta} onBack={()=>setDetailOpen(false)} onAdd={addGame} viewSession={viewSession} setScreen={setScreen}/>;
+  if(detailOpen)return <PatternDetailPage game={active} meta={meta} onBack={()=>{setDetailOpen(false);setEditing(null);}} onAdd={addGame} viewSession={viewSession} setScreen={setScreen} initialConfig={editing?editing.config:null} editingCardId={editing?editing.cardId:null}/>;
   return <div className="page tacticalIntentionsPage">
     <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
