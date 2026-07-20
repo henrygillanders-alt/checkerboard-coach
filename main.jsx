@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v435 Pattern Lab modifier engine is now live — Game Logic, Scoring Logic and Constraints apply to the card like every other game. (1) Fixed the Pattern Lab "Not added - tap again" crash: Add threw a ReferenceError because the selected attack trigger was never passed into the card builder. The trigger is now passed through (with a safe default), so Add saves on every card, first tap included. (2) Added a First Attacking Shot selector beside Length in Pattern Lab - Take-on: volley / no volley / player choice, and Shot: cross-court drop / straight drop / 2-wall boast / player choice - flowing into the run-rules, the session card and the player display. (3) The Configure tab no longer promises an editor it does not have: it now explains that each plug-and-play card is itself the builder and gives a button to open the Plug and Play Library. (4) Added a universal Negative Scoring panel (preset faults plus custom, -1 to -5) alongside DB Handicap and Tin Height in every module, and removed the interim Pattern-Lab-only cross penalty so penalties have a single home. (5) Negative scoring now displays: the player display and session scoring read the saved penalties and append them to HOW TO SCORE (e.g. Penalties: non-functional cross-court = -2). (6) The universal modifier panels (DB Handicap, Tin Height, Negative Scoring) are now available inside Pattern Lab too, so every game class has them, and active penalties preview in the Pattern Lab Scoring section. (7) The First Attacking Shot selection (take-on and shot) now drives the Attack step description in How it runs, instead of always showing the pattern default hint. (8) Pattern Lab now shows the full Universal Modifier Engine (Game Logic, Constraints, Scoring Logic, DB Handicap, Tin Height, Negative Scoring) rather than only the standalone leveller panels. (9) The Length panel Any is now labelled Player choice, and the Shots-allowed-to-go-cross chips now read the length family (working drive / penetrating drive / lob / player choice) with their zone code so the two are distinguishable. (10) The First Attacking Shot selection (volley / no volley and the chosen shot) now flows into the compact notation and the live Player Display, so a shot set as a volley reads as volley on the player display instead of only in the run-rules chips. (11) When you Add a Pattern Lab card to the session, the saved card notation now uses the same first-shot-aware notation as the live Player Display, so the session card and the player display stay consistent. (12) The Pattern Lab Universal Modifier Engine is now controlled and applied like in the Checkerboard module: the Game Logic and Constraints you select are merged into the card layers and the Scoring Logic points into the card modifier scores, so they show in the card and player-display scoring like every other game. Builds on v434.';
+const APP_VERSION='v437 Pattern Lab card tidy-up. (1) Removed the inline Double Bounce and Height leveller panels from Pattern Lab - DB and Tin now live only in the universal modifiers below, so there is no duplication. (2) In the Session Builder, Pattern Lab cards no longer show the Checkerboard Code selector (the pattern code is already established) or the Modifier Scoring grid (modifiers are chosen at game set-up). Builds on v436.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -478,8 +478,6 @@ return[
 {id:'length-before-attack',title:'Length Before Attack',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Player must create length pressure before attacking short.',rationale:'Encourages patient pressure construction rather than rushed attacks.',coach:'Watch whether players attack only after the opponent is displaced, late or off balance.',layers:['Quality Length Before Attack'],cbCode:'None'},
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 {id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
-{id:'cb-pair',title:'Checkerboard Pair Challenge',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected checkerboard pair before bonus scoring opens.',rationale:'Builds tactical linking and opponent displacement awareness.',coach:'Use the code as tactical intention, not a hoop to jump through.',layers:[],cbCode:'[6-4] + [8-1]'},
-{id:'cb-clean-finish',title:'Checkerboard Clean Finish',category:'Checkerboard',duration:8,format:'King of Court',task:'Complete a selected CB code and win with a clean finish bonus.',rationale:'Connects tactical construction with high-quality conversion.',coach:'The clean winner sits on top of all scoring, but only after the challenge is met.',layers:['CB Code','Clean Winner','4-Shot Window'],cbCode:'[6-3]'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
 {id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Weak Side','Clean Winner'],cbCode:'None'}
 ];
@@ -1690,6 +1688,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
           <span className="meScoreLabel">{name}</span>
           <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[name]??parseBonusValue(name)} onChange={e=>setScore(name,e.target.value)} placeholder="constraint only"/></div>
         </div>)}</div>}
+      <UniversalPenaltyPanel/>
     </MEPanel>
 
     {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
@@ -1698,7 +1697,6 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
 
     {!hideTinHeight&&<MEPanel title="5. Tin Height" subtitle="Per-player tin — a leveller between standards" open={open==='tin'} onToggle={()=>toggle('tin')}>
       <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
     </MEPanel>}
   </div>;
 }
@@ -4071,9 +4069,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
           <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
         </CollapsibleLayer>
 
-        <UniversalDBHandicapPanel onAddToSession={onAddToSession} setScreen={setScreen}/>
-        <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+        <UniversalModifierEngine title="Universal Modifiers"/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -4463,9 +4459,7 @@ function ShotBonusRally({setSession}){
       <div className="sbrBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="sbrBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
 
-      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
-      <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      <UniversalModifierEngine title="Universal Modifiers"/>
 
       <div className="sbrAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={selectedShots.length===0}>Add To Session</button>
@@ -4607,9 +4601,7 @@ function BreakoutSquash({setSession}){
       <div className="brkBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="brkBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
 
-      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
-      <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      <UniversalModifierEngine title="Universal Modifiers"/>
 
       <div className="brkAddRow">
         <button className="primaryBtn" onClick={addToSession} disabled={restrictedZones.length===0||breakoutZones.length===0}>Add To Session</button>
@@ -4701,9 +4693,7 @@ function PressCallModule({setSession}){
       <div className="pcBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="pcBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
 
-      <UniversalDBHandicapPanel onAddToSession={addToSession}/>
-      <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      <UniversalModifierEngine title="Universal Modifiers"/>
 
       <div className="pcAddRow">
         <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
@@ -4881,9 +4871,7 @@ return <div>
 {category==='Perception'&&<PerceptionModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
 {category==='Peak Week'&&<PeakWeekModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
 {category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
-{category&&category!=='Saved Cards'&&<UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>}  
-<UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+{category&&category!=='Saved Cards'&&<UniversalModifierEngine title="Universal Modifiers"/>}
 {category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
 {category==='ATL / BTL'&&<div className="gameCard">
 <div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
@@ -5033,9 +5021,9 @@ return <div className="page sessionBuilderPage">
 <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<>
 <div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>
-<div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
+{game.format!=='Pattern Lab'&&<div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>}
 <div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-{editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
+{game.format!=='Pattern Lab'&&editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
 <div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>
 <div className="gameActionBar"><strong>Game Actions</strong><div>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
@@ -5268,9 +5256,7 @@ return <div className="checkerboardEngine">
     </CollapsibleLayer>
 
     {/* DB HANDICAP */}
-    <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -6066,9 +6052,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
-    <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -6179,9 +6163,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
-      <UniversalDBHandicapPanel onAddToSession={addGame} setScreen={setScreen}/>
-      <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      <UniversalModifierEngine title="Universal Modifiers"/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -6429,9 +6411,7 @@ function TechnicalFocusBuilder({onAddToSession}){
         <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
       </CollapsibleLayer>
 
-      <UniversalDBHandicapPanel onAddToSession={addAndGo}/>
-      <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      <UniversalModifierEngine title="Universal Modifiers"/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -8153,9 +8133,7 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </CollapsibleLayer>
 
-    <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -9506,9 +9484,7 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </CollapsibleLayer>
 
-          <UniversalDBHandicapPanel onAddToSession={onAddToSession}/>
-          <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+          <UniversalModifierEngine title="Universal Modifiers"/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
@@ -10242,9 +10218,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <div className="overlayCustomAdd"><input value={bonusLabel} onChange={e=>setBonusLabel(e.target.value)} placeholder="Custom constraint" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addBonus(bonusLabel,bonusSq);}}}/><input type="number" min="0" max="9" value={bonusSq} onChange={e=>{const v=e.target.value;setBonusSq(v===''?'':Number(v));}} onBlur={e=>{if(e.target.value==='')setBonusSq(0);}} style={{maxWidth:'70px'}}/><button type="button" className="meChip meChipOn" onClick={()=>addBonus(bonusLabel,bonusSq)}>+ Add</button></div>
     </div>}
 
-    <UniversalDBHandicapPanel/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="slDisplayBar">
       {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}
@@ -10920,7 +10894,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
         </div>}
       </div>
     </div>
-    <UniversalDBHandicapPanel setScreen={setScreen}/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
     <div className="twBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Tin War — '+resolvedGame.title,category:'Tin War',format:'Constraint game',duration:10,task:resolvedGame.player,scoring:resolvedGame.scoring,rationale:resolvedGame.logic,coach:resolvedGame.note,playerFocus:resolvedGame.player,layers:['Tin War'],rld:4}));alert(resolvedGame.title+' added to session.');}}>Add to Session</button>}
       {stationCourts.length===0&&<button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>}
@@ -12114,9 +12088,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
         : <HangmanSquashCourt key={`c-${i}-${g.join('|')}-${teamMode}`} players={g} teamMode={teamMode} teamOf={teamOf} challenge={challenge} seriesLength={seriesLength} requireAttempt={requireAttempt} resolutionStyle={resolutionStyle} pairingMode={pairingMode} project={projecting} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courtRoomId(base,i+1)}/>}
     </div>)}
 
-    <UniversalDBHandicapPanel/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="hsBottomBar">
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addToSession}>Add to Session</button>}
@@ -17783,8 +17755,6 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     'First attacking shot: '+firstShotVolleyLabel+' · '+firstShotTypeLabel,
     lengthType!=='any'?('Length: every length is a '+forcedLengthWord(lengthType)):'Length: lob or drive, player chooses',
     'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must move them more than one step'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
-    'Double Bounce: all '+(dbAll===0?'0':dbAll+' DB')+(dbOverrides.length?(' · '+dbOverrides.join(', ')):''),
-    'Height: '+(heightAll?'on':'off')+' for all'+(heightOverrides.length?(' · '+heightOverrides.join(', ')):''),
     cycleLabel,
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
@@ -17882,17 +17852,6 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={firstShotType==='boast'} onClick={()=>setFirstShotType('boast')}>2-wall boast</PdChip>
         <PdChip on={firstShotType==='choice'} onClick={()=>setFirstShotType('choice')}>Player's choice</PdChip>
       </PatternRunPanel>
-
-      <div className="pdPanel pdLevPanel"><h4>Double Bounce (leveller)</h4>
-        <div className="pdEveryone"><span className="lab">Everyone</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.max(0,v-1))}>−</PdChip><span className="pdStepNum">{dbAll===0?'0':dbAll+' DB'}</span><PdChip on={false} onClick={()=>setDbAll(v=>Math.min(3,v+1))}>+</PdChip>{Object.keys(dbBy).length>0&&<PdChip on={false} onClick={()=>setDbBy({})}>clear overrides</PdChip>}</div>
-        {present.length>0?<div className="pdLevGrid">{present.map(n=><div role="button" tabIndex={0} key={n} className="pdPlayerRow" onClick={()=>setDbBy(o=>{const cur=o[n]!==undefined?o[n]:dbAll;return {...o,[n]:cur+1>3?0:cur+1};})}><span className="nm">{n}</span><span className="pdStepNum">{dbEff(n)}</span></div>)}</div>:<p className="pdNote">Mark attendance to set DB per player. The Everyone control applies to all.</p>}
-        <p className="pdNote">Tap a player to cycle their DB 0–3. Per-player overrides the group default.</p>
-      </div>
-
-      <div className="pdPanel pdLevPanel"><h4>Height (leveller)</h4>
-        <div className="pdEveryone"><span className="lab">Everyone</span><PdChip on={!heightAll} onClick={()=>setHeightAll(false)}>Off</PdChip><PdChip on={heightAll} onClick={()=>setHeightAll(true)}>On</PdChip>{Object.keys(heightBy).length>0&&<PdChip on={false} onClick={()=>setHeightBy({})}>clear overrides</PdChip>}</div>
-        {present.length>0?<div className="pdLevGrid">{present.map(n=>{const e=heightEff(n);return <div role="button" tabIndex={0} key={n} className="pdPlayerRow" onClick={()=>setHeightBy(o=>{const cur=o[n]!==undefined?o[n]:heightAll;return {...o,[n]:!cur};})}><span className="nm">{n}</span><span className="pdStepNum" style={e?undefined:{color:'#6b8299'}}>{e?'On':'Off'}</span></div>;})}</div>:<p className="pdNote">Mark attendance to set height per player. The Everyone control applies to all.</p>}
-      </div>
 
       <PatternRunPanel title="Cycle / Open Play" note="How the pattern resolves. Open play is fully open — loose balls are punished naturally.">
         <PdChip on={cycleMode==='breakdown'} onClick={()=>setCycleMode('breakdown')}>Until breakdown</PdChip>
@@ -19151,9 +19110,7 @@ function LudoSquashGame({setSession,setScreen}={}){
 
     {competitionMode==='race'&&courts>1&&<LudoSquashRaceDisplay host={base} courtCount={courtCount}/>}
 
-    <UniversalDBHandicapPanel/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="ludoDisplayBar">
       {courts===1&&<button type="button" className="primaryBtn" onClick={copyLudoPlayerLink}>COPY PLAYER LINK</button>}
@@ -20181,9 +20138,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
         : <NoughtsCrossesCourt teamA={{name:teamAName,roster:manualRosterA.slice(0,manualCountA)}} teamB={{name:teamBName,roster:manualRosterB.slice(0,manualCountB)}} mode={mode} requireChallenge={requireChallenge} scoringMode={scoringMode} bestOf3={bestOf3} project={projecting}/>
     }
 
-    <UniversalDBHandicapPanel/>
-    <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+    <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="ncDisplayBar">
       {courts<=1&&<button type="button" className="primaryBtn" onClick={copyNcPlayerLink}>COPY PLAYER LINK</button>}
