@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v442 Pattern Lab now has one scoring surface. The clean Scoring - this game editor is the single place to set positive scoring; the modifier engine 3. Scoring accordion is hidden in Pattern Lab (a new hideScoring flag), and Negative Scoring is shown as its own panel next to the scoring editor so penalties are still configurable. Builds on v441.';
+const APP_VERSION='v443 Cleaned up the Pattern Lab modifier area. (1) Restored the modifier engine to the full standard order - 1. Game Logic, 2. Constraints, 3. Scoring Logic, 4. Double Bounce, 5. Tin Height - no missing number. (2) Removed the duplicate Universal Modifiers heading (the engine draws its own). (3) Renamed 3. Scoring to 3. Scoring Logic. (4) Removed the Negative Scoring penalty from the design-screen Scoring preview so it no longer lingers there when Negative Scoring is off; penalties still show correctly on the player card. Builds on v442.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1594,7 +1594,7 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false,hideScoring=false,appliesTo,onAppliesToChange,namedPlayer='',onNamedPlayerChange,presentPlayers=[]}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false,appliesTo,onAppliesToChange,namedPlayer='',onNamedPlayerChange,presentPlayers=[]}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
@@ -1691,14 +1691,14 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
     </MEPanel>
 
-    {!hideScoring&&<MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
+    <MEPanel title="3. Scoring Logic" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
       {scored.length===0?<p className="mutedText">Select game-logic modifiers or constraints above to assign scoring values.</p>:
         <div className="meScoreList">{scored.map(name=><div className="meScoreRow" key={name}>
           <span className="meScoreLabel">{name}</span>
           <PointStepper value={Number(config.scoring[name]??parseBonusValue(name))||0} onChange={v=>setScore(name,v===0?'':String(v))} zeroLabel="constraint only" sign="+"/>
         </div>)}</div>}
       <UniversalPenaltyPanel/>
-    </MEPanel>}
+    </MEPanel>
 
     {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
       <UniversalDBHandicapPanel/>
@@ -17837,7 +17837,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{scoreRules.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}{activePenaltyEntriesFromStorage().map((e,i)=><li key={'pen'+i}><span>{e.label}</span><b>-{e.points}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{scoreRules.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType})}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
@@ -17901,13 +17901,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
       </div>
     </div>
 
-    <h2 className="pdSectionTitle">Scoring penalties</h2>
-    <p className="pdSectionSub">Negative Scoring — deduct points for named faults. These are added automatically to this game's HOW TO SCORE.</p>
-    <UniversalPenaltyPanel/>
-
-    <h2 className="pdSectionTitle">Universal modifiers</h2>
-    <p className="pdSectionSub">The full modifier engine, available in every game class — Game Logic, Constraints and Scoring Logic, plus the DB Handicap, Tin Height and Negative Scoring levellers. These apply on top of the pattern above.</p>
-    <UniversalModifierEngine title="Universal Modifiers" context="Pattern Lab" value={modifier} onChange={setModifier} presentPlayers={present} hideScoring/>
+    <UniversalModifierEngine title="Universal Modifiers" context="Pattern Lab" value={modifier} onChange={setModifier} presentPlayers={present}/>
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
