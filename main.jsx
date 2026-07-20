@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v443 Cleaned up the Pattern Lab modifier area. (1) Restored the modifier engine to the full standard order - 1. Game Logic, 2. Constraints, 3. Scoring Logic, 4. Double Bounce, 5. Tin Height - no missing number. (2) Removed the duplicate Universal Modifiers heading (the engine draws its own). (3) Renamed 3. Scoring to 3. Scoring Logic. (4) Removed the Negative Scoring penalty from the design-screen Scoring preview so it no longer lingers there when Negative Scoring is off; penalties still show correctly on the player card. Builds on v442.';
+const APP_VERSION='v445 The Checkerboard Completion options (Single / Pair / Triple / Sequence) in the Game Logic modifier now only appear in the Checkerboard module (context Checkerboard); they are hidden in Pattern Lab and every other non-Checkerboard game, since they are Checkerboard-specific codes. Builds on v444.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1640,13 +1640,13 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
     {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
 
     <MEPanel title="1. Game Logic" subtitle="What counts — eligibility and validity" open={open==='logic'} onToggle={()=>toggle('logic')}>
-      <div className="meLogicGroup">
+      {context==='Checkerboard'&&<div className="meLogicGroup">
         <h4>Completion</h4>
         <div className="meChipRow">{GAME_LOGIC_COMPLETION.map(opt=>{
           const on=config.completion===opt;
           return <button type="button" key={opt} className={on?'meChip meChipOn':'meChip'} onClick={()=>commit({...config,completion:on?'':opt})}>{opt}</button>;
         })}</div>
-      </div>
+      </div>}
       <div className="meLogicGroup">
         <h4>Finish rules</h4>
         <div className="meChipRow">{COMPLETION_CONSTRAINTS.map(name=>{
@@ -17856,7 +17856,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={direction==='both'} onClick={()=>setDirection('both')}>Both sides</PdChip>
         <PdChip on={direction==='cross'} onClick={()=>setDirection('cross')}>Cross allowed</PdChip>
         {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap/cycle</PdChip></>}
-        {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{(isLengthLabel(s.label)?(forcedLengthWord(lengthType)||(s.label+' — player\'s choice')):s.label)+' '+s.code}</PdChip>)}</div></div>}
+        {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{(isLengthLabel(s.label)?(forcedLengthWord(lengthType)||'lob / working drive / penetrating drive'):s.label)+' '+s.code}</PdChip>)}</div></div>}
       </PatternRunPanel>
 
       <PatternRunPanel title="Length" note={LENGTH_NOTE[lengthType]}>
