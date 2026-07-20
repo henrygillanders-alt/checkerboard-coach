@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v439 Duplication fix, live trigger in rationale, and tap +/- steppers for scoring. (1) Removed the duplicate Universal Modifier Engine from the seven builders that already had their own Game Logic / Scoring Logic / Constraints panels - their DB, Tin and Negative Scoring panels are restored, so no layers are lost and there is no more double-up. (2) The player-display CLA Rationale now names the actual selected attack trigger (e.g. when the opponent is off the T) instead of the generic attack trigger phrase. (3) Score allocation now uses tap +/- steppers instead of type-a-number boxes on the Scoring Logic value and the Negative Scoring inputs, matching the clean panel style. Builds on v438.';
+const APP_VERSION='v442 Pattern Lab now has one scoring surface. The clean Scoring - this game editor is the single place to set positive scoring; the modifier engine 3. Scoring accordion is hidden in Pattern Lab (a new hideScoring flag), and Negative Scoring is shown as its own panel next to the scoring editor so penalties are still configurable. Builds on v441.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1594,7 +1594,7 @@ function MEPanel({title,subtitle,open,onToggle,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false,appliesTo,onAppliesToChange,namedPlayer='',onNamedPlayerChange,presentPlayers=[]}){
+function UniversalModifierEngine({value,onChange,title='Universal Modifier Engine',context='Game',hideDoubleBounce=false,hideTinHeight=false,hideScoring=false,appliesTo,onAppliesToChange,namedPlayer='',onNamedPlayerChange,presentPlayers=[]}){
   const isControlled=!!value&&typeof onChange==='function';
   const [internal,setInternal]=useState(()=>value||emptyModifierConfig());
   const config=isControlled?value:internal;
@@ -1691,14 +1691,14 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <OverlayFamilyTabs selectedOverlays={constraints} onToggle={toggleConstraint} context={context}/>
     </MEPanel>
 
-    <MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
+    {!hideScoring&&<MEPanel title="3. Scoring" subtitle="Editable value for each active modifier (blank = constraint only)" open={open==='scoring'} onToggle={()=>toggle('scoring')}>
       {scored.length===0?<p className="mutedText">Select game-logic modifiers or constraints above to assign scoring values.</p>:
         <div className="meScoreList">{scored.map(name=><div className="meScoreRow" key={name}>
           <span className="meScoreLabel">{name}</span>
           <PointStepper value={Number(config.scoring[name]??parseBonusValue(name))||0} onChange={v=>setScore(name,v===0?'':String(v))} zeroLabel="constraint only" sign="+"/>
         </div>)}</div>}
       <UniversalPenaltyPanel/>
-    </MEPanel>
+    </MEPanel>}
 
     {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
       <UniversalDBHandicapPanel/>
@@ -17710,7 +17710,7 @@ const PATTERN_SCORE_RULES=[
   {k:'Win the rally',v:'1 point'},
   {k:'Complete the pattern under the run-rules',v:'+1'},
   {k:'Win the rally after the cycle finishes',v:'+2'},
-  {k:'Hit a clean winner',v:'you may sit on top'}
+  {k:'Hit a clean winner',v:'+2'}
 ];
 function patternCrossRule(game){
   return (game.shots||[]).some(s=>s.crossable)?'A cross only counts if it lands 3/4 — it has to send the opponent back.':'';
@@ -17765,7 +17765,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [openAfter,setOpenAfter]=useState(2);
   const [tramline,setTramline]=useState(false);
   const [modifier,setModifier]=useState(()=>emptyModifierConfig());
-  const [scoreRules,setScoreRules]=useState(()=>PATTERN_SCORE_RULES.map(r=>({k:r.k,v:r.v})));
+  const [scoreRules,setScoreRules]=useState(()=>[]);
   const triggerLabel={offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
@@ -17901,9 +17901,13 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
       </div>
     </div>
 
+    <h2 className="pdSectionTitle">Scoring penalties</h2>
+    <p className="pdSectionSub">Negative Scoring — deduct points for named faults. These are added automatically to this game's HOW TO SCORE.</p>
+    <UniversalPenaltyPanel/>
+
     <h2 className="pdSectionTitle">Universal modifiers</h2>
     <p className="pdSectionSub">The full modifier engine, available in every game class — Game Logic, Constraints and Scoring Logic, plus the DB Handicap, Tin Height and Negative Scoring levellers. These apply on top of the pattern above.</p>
-    <UniversalModifierEngine title="Universal Modifiers" context="Pattern Lab" value={modifier} onChange={setModifier} presentPlayers={present}/>
+    <UniversalModifierEngine title="Universal Modifiers" context="Pattern Lab" value={modifier} onChange={setModifier} presentPlayers={present} hideScoring/>
 
     <div className="pdSummary"><strong>Active run-rules</strong>{runRules.map((r,i)=><span key={i}>{r}</span>)}</div>
 
@@ -17925,7 +17929,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:(game.logic||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases'),scoring:scoreOverride||patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:(game.logic||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases'),scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
