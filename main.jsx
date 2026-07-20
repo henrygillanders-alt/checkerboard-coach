@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v437 Pattern Lab card tidy-up. (1) Removed the inline Double Bounce and Height leveller panels from Pattern Lab - DB and Tin now live only in the universal modifiers below, so there is no duplication. (2) In the Session Builder, Pattern Lab cards no longer show the Checkerboard Code selector (the pattern code is already established) or the Modifier Scoring grid (modifiers are chosen at game set-up). Builds on v436.';
+const APP_VERSION='v438 Pattern Lab scoring is now game-specific, not a fixed template. A Scoring - this game editor on the pattern design screen lets the coach edit, add or remove the scoring rules for that specific game; those rules are saved on the session card and shown on the player card HOW TO SCORE, with Negative Scoring penalties still added automatically. Builds on v437.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -17741,6 +17741,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   const [openAfter,setOpenAfter]=useState(2);
   const [tramline,setTramline]=useState(false);
   const [modifier,setModifier]=useState(()=>emptyModifierConfig());
+  const [scoreRules,setScoreRules]=useState(()=>PATTERN_SCORE_RULES.map(r=>({k:r.k,v:r.v})));
   const triggerLabel={offT:'Opponent off the T-zone',inFront:'Player in front',both:'Both'}[trigger];
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
@@ -17760,7 +17761,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
   ];
   function add(view){
     try{
-      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier);
+      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier,scoreRules.filter(r=>r.k&&r.k.trim()).map(r=>`${r.k} = ${r.v}`).join(' · '));
       setAdded(true);
       setTimeout(()=>setAdded(false),2200);
     }catch(err){
@@ -17812,7 +17813,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiDetail gameCard"><div className="categoryTag">Pattern</div><h2>{game.title}</h2><RLDBadge level={Number(game.rld)} size="lg"/>
       <div className="patternMetaRow"><span>{meta.label}</span><span>{meta.subtitle}</span><span>{game.docRef}</span></div>
-      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{PATTERN_SCORE_RULES.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}{activePenaltyEntriesFromStorage().map((e,i)=><li key={'pen'+i}><span>{e.label}</span><b>-{e.points}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
+      <div className="tiLogicGrid"><section><h3>How it runs</h3><ol className="pdSteps">{patternLogicSteps(game,trigger,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}).map((s,i)=><li key={i}><b>{s.k}</b><span>{s.v}{s.hint?<em className="pdStepCode">{s.hint}</em>:null}</span></li>)}</ol></section><section><h3>Scoring</h3><ul className="pdScoreList">{scoreRules.map((r,i)=><li key={i}><span>{r.k}</span><b>{r.v}</b></li>)}{activePenaltyEntriesFromStorage().map((e,i)=><li key={'pen'+i}><span>{e.label}</span><b>-{e.points}</b></li>)}</ul></section><section><h3>Coach Cue</h3><p>{game.coach}</p></section><section><h3>Constraints</h3><div className="chipRow">{game.flags.map(c=><span key={c}>{c}</span>)}</div>{patternCrossRule(game)&&<p className="pdNote">{patternCrossRule(game)}</p>}</section></div>
       <div className="patternSequence"><strong>Compact notation</strong><p>{deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType})}</p>{patternSeamKey(game,patternSide)&&<small className="pdSeamKey">{patternSeamKey(game,patternSide)}</small>}<small>{meta.note}</small></div>
     </div>
 
@@ -17863,6 +17864,17 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen}){
         <PdChip on={!tramline} onClick={()=>setTramline(false)}>Off</PdChip>
         <PdChip on={tramline} onClick={()=>setTramline(true)}>On</PdChip>
       </PatternRunPanel>
+
+      <div className="pdPanel" style={{gridColumn:'1/-1'}}>
+        <h4>Scoring — this game</h4>
+        <p className="pdNote">Set the scoring for this specific game. These rules appear on the player card's HOW TO SCORE. Penalties from Negative Scoring are added automatically.</p>
+        {scoreRules.map((r,i)=><div key={i} className="pdEveryone" style={{gap:'8px',alignItems:'center'}}>
+          <input value={r.k} onChange={e=>setScoreRules(rs=>rs.map((x,j)=>j===i?{...x,k:e.target.value}:x))} placeholder="Scoring rule" style={{flex:'1 1 120px',background:'#0d1620',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#cde0ee',padding:'8px 10px'}}/>
+          <input value={r.v} onChange={e=>setScoreRules(rs=>rs.map((x,j)=>j===i?{...x,v:e.target.value}:x))} placeholder="Points" style={{width:'120px',background:'#0d1620',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#cde0ee',padding:'8px 10px'}}/>
+          <PdChip on={false} onClick={()=>setScoreRules(rs=>rs.filter((_,j)=>j!==i))}>✕</PdChip>
+        </div>)}
+        <div style={{marginTop:'8px'}}><PdChip on={false} onClick={()=>setScoreRules(rs=>[...rs,{k:'',v:''}])}>+ Add scoring rule</PdChip></div>
+      </div>
     </div>
 
     <h2 className="pdSectionTitle">Universal modifiers</h2>
@@ -17885,11 +17897,11 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
-  function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null){
+  function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null,scoreOverride=null){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:game.logic,scoring:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:game.logic,scoring:scoreOverride||patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
