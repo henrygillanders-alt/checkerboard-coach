@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v438 Pattern Lab scoring is now game-specific, not a fixed template. A Scoring - this game editor on the pattern design screen lets the coach edit, add or remove the scoring rules for that specific game; those rules are saved on the session card and shown on the player card HOW TO SCORE, with Negative Scoring penalties still added automatically. Builds on v437.';
+const APP_VERSION='v439 Duplication fix, live trigger in rationale, and tap +/- steppers for scoring. (1) Removed the duplicate Universal Modifier Engine from the seven builders that already had their own Game Logic / Scoring Logic / Constraints panels - their DB, Tin and Negative Scoring panels are restored, so no layers are lost and there is no more double-up. (2) The player-display CLA Rationale now names the actual selected attack trigger (e.g. when the opponent is off the T) instead of the generic attack trigger phrase. (3) Score allocation now uses tap +/- steppers instead of type-a-number boxes on the Scoring Logic value and the Negative Scoring inputs, matching the clean panel style. Builds on v438.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1563,6 +1563,15 @@ function parseBonusValue(name){
   const m=String(raw).match(/-?\d+/);
   return m?Number(m[0]):'';
 }
+function PointStepper({value=0,onChange,min=0,max=9,zeroLabel='-',sign='+'}){
+  const v=Number(value)||0;
+  const bs={cursor:'pointer',background:'#0d1620',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#cde0ee',width:'38px',height:'38px',fontSize:'1.3rem',fontWeight:800,lineHeight:1,padding:0};
+  return <div style={{display:'inline-flex',alignItems:'center',gap:'10px'}}>
+    <button type="button" style={bs} onClick={(e)=>{e.preventDefault();onChange(Math.max(min,v-1));}}>-</button>
+    <span style={{minWidth:'96px',textAlign:'center',fontWeight:800,color:'#eaf4fb',fontSize:'1.05rem'}}>{v===0?zeroLabel:sign+v}</span>
+    <button type="button" style={bs} onClick={(e)=>{e.preventDefault();onChange(Math.min(max,v+1));}}>+</button>
+  </div>;
+}
 function emptyModifierConfig(){
   return {
     completion:'',
@@ -1686,7 +1695,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       {scored.length===0?<p className="mutedText">Select game-logic modifiers or constraints above to assign scoring values.</p>:
         <div className="meScoreList">{scored.map(name=><div className="meScoreRow" key={name}>
           <span className="meScoreLabel">{name}</span>
-          <div className="meScoreInput"><span>+</span><input type="number" value={config.scoring[name]??parseBonusValue(name)} onChange={e=>setScore(name,e.target.value)} placeholder="constraint only"/></div>
+          <PointStepper value={Number(config.scoring[name]??parseBonusValue(name))||0} onChange={v=>setScore(name,v===0?'':String(v))} zeroLabel="constraint only" sign="+"/>
         </div>)}</div>}
       <UniversalPenaltyPanel/>
     </MEPanel>
@@ -4069,7 +4078,9 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
           <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
         </CollapsibleLayer>
 
-        <UniversalModifierEngine title="Universal Modifiers"/>
+        <UniversalDBHandicapPanel/>
+        <UniversalTinHeightPanel/>
+        <UniversalPenaltyPanel/>
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -5256,7 +5267,9 @@ return <div className="checkerboardEngine">
     </CollapsibleLayer>
 
     {/* DB HANDICAP */}
-    <UniversalModifierEngine title="Universal Modifiers"/>
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+    <UniversalPenaltyPanel/>
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -6052,7 +6065,9 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
 
-    <UniversalModifierEngine title="Universal Modifiers"/>
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+    <UniversalPenaltyPanel/>
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -6163,7 +6178,9 @@ function ClassicConditionedBuilder({onAddToSession}){
       <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
-      <UniversalModifierEngine title="Universal Modifiers"/>
+      <UniversalDBHandicapPanel/>
+      <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -6411,7 +6428,9 @@ function TechnicalFocusBuilder({onAddToSession}){
         <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
       </CollapsibleLayer>
 
-      <UniversalModifierEngine title="Universal Modifiers"/>
+      <UniversalDBHandicapPanel/>
+      <UniversalTinHeightPanel/>
+      <UniversalPenaltyPanel/>
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -8133,7 +8152,9 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </CollapsibleLayer>
 
-    <UniversalModifierEngine title="Universal Modifiers"/>
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+    <UniversalPenaltyPanel/>
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -8574,10 +8595,10 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
     {enabled&&<>
       <div className="statusBox"><strong>Preset faults</strong><p>Set a deduction to switch a fault on. Leave it on Off to ignore it.</p></div>
       <div className="dbAllocationGrid">
-        {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}</span><select value={presetPoints[p.id]||0} onChange={e=>setPreset(p.id,Number(e.target.value))}>{PENALTY_POINT_OPTIONS.map(pt=><option key={pt} value={pt}>{penaltyPointLabel(pt)}</option>)}</select></div>)}
+        {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={5} zeroLabel="Off" sign="-"/></div>)}
       </div>
       <div className="statusBox"><strong>Add your own fault</strong></div>
-      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. served short"/><select value={customPoints} onChange={e=>setCustomPoints(Number(e.target.value))}>{PENALTY_POINT_OPTIONS.filter(pt=>pt>0).map(pt=><option key={pt} value={pt}>{penaltyPointLabel(pt)}</option>)}</select><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. served short"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={5} sign="-"/><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
       {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{c.label}: -{c.points}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
       <div className="dbSummaryBox"><strong>Active penalties</strong><p>{rules.length?rules.join(' · '):'No penalties set yet.'}</p></div>
       <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();savePenalties();}} disabled={!rules.length}>Save Negative Scoring</button>{onAddToSession&&<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();savePenalties(); if(setScreen)setScreen('sessions');}} disabled={!rules.length}>Save + View Session</button>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearAll();}}>Clear</button></div>
@@ -9484,7 +9505,9 @@ function AroundTheBoardBuilder({onAddToSession}){
             </div>
           </CollapsibleLayer>
 
-          <UniversalModifierEngine title="Universal Modifiers"/>
+          <UniversalDBHandicapPanel/>
+          <UniversalTinHeightPanel/>
+          <UniversalPenaltyPanel/>
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
@@ -17638,6 +17661,7 @@ function patternSeamKey(game,side){
 // Rotating drives are only broken by a trigger, so the step names the live one
 // rather than pointing at a panel. There is no untriggered state.
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
+const TRIGGER_RELEASE={offT:'the opponent is off the T',inFront:'the player is in front',both:'the opponent is off the T or the player is in front'};
 function firstShotPhrase(firstShot){
   if(!firstShot)return '';
   const shot={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast'}[firstShot.type]||'';
@@ -17901,7 +17925,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:game.logic,scoring:scoreOverride||patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:(game.logic||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases'),scoring:scoreOverride||patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
     if(setSession)setSession(prev=>appendToSessionState(prev,card));
     setLastAdded(card.title);
     if(view&&setScreen)setTimeout(()=>setScreen('sessions'),0);
