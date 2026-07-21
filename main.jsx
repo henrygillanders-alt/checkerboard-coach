@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v457 Shots module look softened to the design principles: the gold Time Givers vs Time Takers panel, the red Time Givers and green Time Takers boxes, the coach-question and callout boxes, the coloured detail cards (danger/checkerboard/traditional/example/observation), shot heroes, principle and takeaway boxes are now the clean dark panel look with subtle grey/red/green/blue left-accents and muted time badges — no more loud fills or gold borders. (This complements the v455 Why-It-Works softening.) Builds on v456.';
+const APP_VERSION='v459 Breakout Squash now has two surfaces: Floor breakout (floor zones 1-4, as before) and Wall breakout (Checkerboard front-wall zones 5-8: 5 top-left, 6 top-right, 7 bottom-right, 8 bottom-left). A surface toggle sets whether the restricted zone and breakout target are floor or front-wall zones (e.g. play into wall zone 6, break out into wall zone 8, finish within N shots). Tiers, shot-count window, convert bonus and defence bonus are shared across both. Builds on v458.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2323,6 +2323,7 @@ function ShotsModule({setScreen}){
     {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Self-discovery'},
     {id:'pressure',title:'Build Pressure',tag:'Working Length'},
     {id:'increase',title:'Increase Pressure',tag:'Penetrating Drive · Time Taker'},
+    {id:'volley',title:'Volley',tag:'Take time away · Early intercept · Volley return'},
     {id:'crosscourts',title:'Functional Crosscourts',tag:'Solve problem · avoid time donation'},
     {id:'movement',title:'Force Movement',tag:'Drop · Soft Dying Shot · Trickle Boast'},
     {id:'time',title:'Gain Time',tag:'Lob · High Defensive Crosscourt'},
@@ -2557,7 +2558,7 @@ function ShotsModule({setScreen}){
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
     </div>}
 
-    {section==='increase'&&<div className="shotDetailPanel"><section className="shotPageBlock volleyPage"><div className="shotHero"><span className="timeBadge take">🟢 STRONG TIME TAKER</span><h2>Volley — Take Time Away</h2><p>The most direct way to take time away: meet the ball early, before it travels to the back.</p></div><div className="shotGridTwo"><div className="shotInfoCard"><h3>What is the Volley?</h3><p>Taking the ball out of the air, before it bounces, to deny the opponent recovery time. It is defined by its function — cutting time — not by a fixed technique.</p><p>An early intercept on the T, a volley return of serve, or a volley drive all shorten the time the opponent has to recover.</p></div><div className="shotInfoCard"><h3>Why it matters</h3><ul><li>Denies recovery and preparation time</li><li>Keeps you on the T and the opponent behind you</li><li>Turns a neutral rally into pressure</li><li>Punishes any loose or floated ball</li></ul></div></div><div className="shotGridTwo"><div className="shotInfoCard traditionalCard"><h3>Traditional View</h3><ul><li>Racket up</li><li>Get sideways</li><li>Punch through the ball</li></ul></div><div className="shotInfoCard checkerboardCard"><h3>Checkerboard View</h3><p>The volley is on when the information says so — a ball you can reach in front, above the cut line, or drifting off the side wall. Judge it by the time it takes away from the opponent, not by how it looked.</p></div></div><div className="shotInfoCard coachObservationCard"><h3>Coach Observation Questions</h3><ol><li>Was the ball takeable in front?</li><li>Did the player intercept, or let it run to the back?</li><li>Did the volley take time away from the opponent?</li></ol></div><div className="shotTakeaway"><p><strong>Volley asks:</strong> Can I take this early and cut the opponent’s time?</p></div></section>
+    {section==='increase'&&<div className="shotDetailPanel">
       <section className="shotPageBlock penetratingDrivePage">
         <div className="shotHero">
           <span className="timeBadge take">🟢 STRONG TIME TAKER</span>
@@ -2581,6 +2582,8 @@ function ShotsModule({setScreen}){
         <div className="shotTakeaway"><p><strong>Working Length asks:</strong> How many options does the opponent have?</p><p><strong>Penetrating Drive asks:</strong> How much time does the opponent have?</p></div>
       </section>
     </div>}
+
+    {section==='volley'&&<div className="shotDetailPanel"><div className="shotDetailHeader"><div><div className="categoryTag">Increase Pressure · Time Taker</div><h2>Volley</h2><p className="mutedText">Take the ball early and cut the opponent’s time.</p></div></div><section className="shotPageBlock volleyPage"><div className="shotHero"><span className="timeBadge take">🟢 STRONG TIME TAKER</span><h2>Volley — Take Time Away</h2><p>The most direct way to take time away: meet the ball early, before it travels to the back.</p></div><div className="shotGridTwo"><div className="shotInfoCard"><h3>What is the Volley?</h3><p>Taking the ball out of the air, before it bounces, to deny the opponent recovery time. It is defined by its function — cutting time — not by a fixed technique.</p><p>An early intercept on the T, a volley return of serve, or a volley drive all shorten the time the opponent has to recover.</p></div><div className="shotInfoCard"><h3>Why it matters</h3><ul><li>Denies recovery and preparation time</li><li>Keeps you on the T and the opponent behind you</li><li>Turns a neutral rally into pressure</li><li>Punishes any loose or floated ball</li></ul></div></div><div className="shotGridTwo"><div className="shotInfoCard traditionalCard"><h3>Traditional View</h3><ul><li>Racket up</li><li>Get sideways</li><li>Punch through the ball</li></ul></div><div className="shotInfoCard checkerboardCard"><h3>Checkerboard View</h3><p>The volley is on when the information says so — a ball you can reach in front, above the cut line, or drifting off the side wall. Judge it by the time it takes away from the opponent, not by how it looked.</p></div></div><div className="shotInfoCard coachObservationCard"><h3>Coach Observation Questions</h3><ol><li>Was the ball takeable in front?</li><li>Did the player intercept, or let it run to the back?</li><li>Did the volley take time away from the opponent?</li></ol></div><div className="shotTakeaway"><p><strong>Volley asks:</strong> Can I take this early and cut the opponent’s time?</p></div></section><div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Hunt the ball in front — intercept and volley to take time away.</p><p><strong>KEY FOCUS</strong><br/>See the takeable ball; take it early.</p></div></div>}
 
     {section==='crosscourts'&&<div className="shotDetailPanel">
       <section className="shotPageBlock functionalCrosscourtPage">
@@ -4599,6 +4602,8 @@ const BREAKOUT_ZONE_PRESETS=[
 ];
 const BREAKOUT_ZONES=['1','2','3','4'];
 const BREAKOUT_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
+const BREAKOUT_WALL_ZONES=['5','6','7','8'];
+const BREAKOUT_WALL_DESC={5:'Front wall top left',6:'Front wall top right',7:'Front wall bottom right',8:'Front wall bottom left'};
 const BREAKOUT_SHOT_LIMITS=['2','3','4','5'];
 const BREAKOUT_BONUS_POINTS=['0','1','2','3'];
 function BreakoutSquash({setSession}){
@@ -4610,6 +4615,10 @@ function BreakoutSquash({setSession}){
   const [shotLimit,setShotLimit]=useState('3');
   const [breakoutBonus,setBreakoutBonus]=useState('2');
   const [defenceBonus,setDefenceBonus]=useState('2');
+  const [surface,setSurface]=useState('floor');
+  const ZONES=surface==='wall'?BREAKOUT_WALL_ZONES:BREAKOUT_ZONES;
+  const ZDESC=surface==='wall'?BREAKOUT_WALL_DESC:BREAKOUT_ZONE_DESC;
+  function switchSurface(s){setSurface(s);setPresetId('custom');setPartialDepth(false);if(s==='wall'){setRestrictedZones(['6']);setBreakoutZones(['8']);}else{setRestrictedZones(['2']);setBreakoutZones(['1']);}}
   const [added,setAdded]=useState('');
   function choosePreset(p){
     setPresetId(p.id);
@@ -4619,12 +4628,12 @@ function BreakoutSquash({setSession}){
   function toggleRestricted(z){setPresetId('custom');setRestrictedZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
   function toggleBreakout(z){setPresetId('custom');setBreakoutZones(prev=>prev.includes(z)?prev.filter(x=>x!==z):[...prev,z]);}
   const backZonesInPlay=[...restrictedZones,...breakoutZones].some(z=>z==='3'||z==='4');
-  function zoneDesc(z){return (partialDepth&&(z==='3'||z==='4'))?`${BREAKOUT_ZONE_DESC[z]} — 3/4 depth only (short line to back of service box, not full zone to back wall)`:BREAKOUT_ZONE_DESC[z];}
+  function zoneDesc(z){return (surface==='floor'&&partialDepth&&(z==='3'||z==='4'))?`${ZDESC[z]} — 3/4 depth only (short line to back of service box, not full zone to back wall)`:ZDESC[z];}
   const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   function buildTask(){
     const presetLabel=presetId==='egyptian'?'Egyptian 3/4 Court — ':'';
-    const base=`${presetLabel}Both players restricted to Checkerboard floor zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
+    const base=`${presetLabel}Both players restricted to ${surface==='wall'?'front wall':'Checkerboard floor'} zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
     if(tier==='1'){
       return `${base} If the opponent retrieves that ball AND returns it back into the restricted zone, the breakout player is now under pressure: they must win the point with their very next shot or lose the point. If the opponent fails to retrieve it, or retrieves it but cannot return it into the restricted zone, normal play continues with no shot restriction.`;
     }
@@ -4640,7 +4649,7 @@ function BreakoutSquash({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const presetTitleTag=presetId==='egyptian'?' (Egyptian 3/4 Court)':'';
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${surface==='wall'?'Wall':'Floor'} — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -4672,16 +4681,21 @@ function BreakoutSquash({setSession}){
     <div className="libraryStageIntro"><h2>🚪 Breakout Squash</h2><p>Restricted-zone rally with a configurable breakout mechanic. Either player may escape the restricted zone with one shot — but escaping brings pressure with it.</p></div>
     <div className="brkWrap">
       <div className="brkSection">
+        <div className="brkLabel">Breakout surface</div>
+        <div className="brkChips"><div role="button" tabIndex={0} className={surface==='floor'?'brkChip on':'brkChip'} onClick={()=>switchSurface('floor')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('floor');}}>Floor breakout (zones 1–4)</div><div role="button" tabIndex={0} className={surface==='wall'?'brkChip on':'brkChip'} onClick={()=>switchSurface('wall')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('wall');}}>Wall breakout (front wall 5–8)</div></div>
+        <p className="brkHint">{surface==='wall'?'Both players must hit a front-wall zone; break out by hitting a different front-wall zone (e.g. play into 6, break out into 8), then finish within your shot count.':'Both players are restricted to a floor zone; break out into a different floor zone, then finish under pressure.'}</p>
+      </div>
+      <div className="brkSection">
         <div className="brkLabel">1. Zone pairing</div>
-        <div className="brkChips">{BREAKOUT_ZONE_PRESETS.map(p=><div key={p.id} role="button" tabIndex={0} className={presetId===p.id?'brkChip on':'brkChip'} onClick={()=>choosePreset(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePreset(p);}}>{p.label}</div>)}</div>
-        <p className="brkHint">{BREAKOUT_ZONE_PRESETS.find(p=>p.id===presetId)?.note||''}</p>
+        {surface==='floor'&&<><div className="brkChips">{BREAKOUT_ZONE_PRESETS.map(p=><div key={p.id} role="button" tabIndex={0} className={presetId===p.id?'brkChip on':'brkChip'} onClick={()=>choosePreset(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePreset(p);}}>{p.label}</div>)}</div>
+        <p className="brkHint">{BREAKOUT_ZONE_PRESETS.find(p=>p.id===presetId)?.note||''}</p></>}
         <div style={{marginTop:12}}>
           <div className="brkLabel">Restricted zone(s)</div>
-          <div className="brkZoneGrid">{BREAKOUT_ZONES.map(z=><div key={'r'+z} role="button" tabIndex={0} className={restrictedZones.includes(z)?'brkZoneBtn restrictedOn':'brkZoneBtn'} onClick={()=>toggleRestricted(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleRestricted(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
+          <div className="brkZoneGrid">{ZONES.map(z=><div key={'r'+z} role="button" tabIndex={0} className={restrictedZones.includes(z)?'brkZoneBtn restrictedOn':'brkZoneBtn'} onClick={()=>toggleRestricted(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleRestricted(z);}}>{z}<br/>{ZDESC[z]}</div>)}</div>
         </div>
         <div style={{marginTop:12}}>
           <div className="brkLabel">Breakout target zone(s)</div>
-          <div className="brkZoneGrid">{BREAKOUT_ZONES.map(z=><div key={'b'+z} role="button" tabIndex={0} className={breakoutZones.includes(z)?'brkZoneBtn on':'brkZoneBtn'} onClick={()=>toggleBreakout(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleBreakout(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
+          <div className="brkZoneGrid">{ZONES.map(z=><div key={'b'+z} role="button" tabIndex={0} className={breakoutZones.includes(z)?'brkZoneBtn on':'brkZoneBtn'} onClick={()=>toggleBreakout(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleBreakout(z);}}>{z}<br/>{ZDESC[z]}</div>)}</div>
         </div>
         {backZonesInPlay&&<div style={{marginTop:12}}>
           <div className="brkLabel">3/4 court depth (applies to zone 3 / zone 4 only)</div>
