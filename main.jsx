@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v456 Reinstated the Snakes & Ladders Scoring link for single-court play: the S&L display bar now offers Copy Scoring link (hand scoring for the court to another device) alongside Copy Player Link, matching the multi-court behaviour. Builds on v455.';
+const APP_VERSION='v457 Shots module look softened to the design principles: the gold Time Givers vs Time Takers panel, the red Time Givers and green Time Takers boxes, the coach-question and callout boxes, the coloured detail cards (danger/checkerboard/traditional/example/observation), shot heroes, principle and takeaway boxes are now the clean dark panel look with subtle grey/red/green/blue left-accents and muted time badges — no more loud fills or gold borders. (This complements the v455 Why-It-Works softening.) Builds on v456.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2429,6 +2429,34 @@ function ShotsModule({setScreen}){
 .whyBox strong{color:#eaf4fb !important;}
 .whyBox.traditionalBox{border-left:3px solid #6b7280 !important;}
 .whyBox.checkerboardBox{border-left:3px solid #34e07a !important;}
+/* v457: soften garish Time Givers/Takers panel + coloured detail cards (scoped to .shotsPage) */
+.shotsPage .shotsTimePanel,.shotsPage .shotsTimePanelReadable{background:#0f1822 !important;border:1px solid #223044 !important;box-shadow:none !important;border-radius:16px !important;}
+.shotsPage .shotsTimePanel h2,.shotsPage .shotsTimePanel h3{color:#eaf4fb !important;}
+.shotsPage .shotsTimePanel .timeLead{color:#c7d4e2 !important;}
+.shotsPage .timeListBox{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;box-shadow:none !important;}
+.shotsPage .timeListBox.giveBox{border-left:3px solid #a15b57 !important;}
+.shotsPage .timeListBox.takeBox{border-left:3px solid #34e07a !important;}
+.shotsPage .timeListBox h4{font-weight:800 !important;}
+.shotsPage .timeListBox.giveBox h4{color:#d98a86 !important;}
+.shotsPage .timeListBox.takeBox h4{color:#7fe0a6 !important;}
+.shotsPage .timeListBox li,.shotsPage .timeListBox p{color:#c7d4e2 !important;}
+.shotsPage .timeCoachQuestion,.shotsPage .shotsCallout{background:#0c1a2e !important;border:1px solid #25405f !important;color:#dbe6f2 !important;border-radius:12px !important;}
+.shotsPage .timeBadge{border-radius:999px !important;font-weight:800 !important;box-shadow:none !important;}
+.shotsPage .timeBadge.take{background:rgba(52,224,122,0.14) !important;color:#7fe0a6 !important;border:1px solid rgba(52,224,122,0.40) !important;}
+.shotsPage .timeBadge.give{background:rgba(180,83,79,0.14) !important;color:#d98a86 !important;border:1px solid rgba(180,83,79,0.40) !important;}
+.shotsPage .shotsTimeMini{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;box-shadow:none !important;}
+.shotsPage .shotInfoCard{background:#0b1320 !important;border:1px solid #223044 !important;box-shadow:none !important;}
+.shotsPage .shotInfoCard h3{color:#9cc4ec !important;}
+.shotsPage .shotInfoCard p,.shotsPage .shotInfoCard li{color:#c7d4e2 !important;}
+.shotsPage .shotInfoCard.dangerCard{border-left:3px solid #a15b57 !important;}
+.shotsPage .shotInfoCard.checkerboardCard{border-left:3px solid #34e07a !important;}
+.shotsPage .shotInfoCard.traditionalCard{border-left:3px solid #6b7280 !important;}
+.shotsPage .shotInfoCard.exampleCard{border-left:3px solid #3f6ea3 !important;}
+.shotsPage .shotInfoCard.coachObservationCard{border-left:3px solid #c9a24a !important;}
+.shotsPage .shotHero{background:#0f1822 !important;border:1px solid #223044 !important;box-shadow:none !important;}
+.shotsPage .shotHero h2{color:#ffffff !important;}
+.shotsPage .shotPrincipleBox,.shotsPage .shotTakeaway{background:#0c1a2e !important;border:1px solid #25405f !important;color:#dbe6f2 !important;border-radius:12px !important;}
+.shotsPage .shotPrincipleBox h3,.shotsPage .shotTakeaway h3{color:#9cc4ec !important;}
 
 `}</style>
       {shotSections.map(s=><div key={s.id} role="button" tabIndex={0} className={'shotFnCard'+(section===s.id?' shotFnActive':'')} onClick={()=>setSection(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSection(s.id);}}}><span className="shotFnTitle">{s.title}</span><span className="shotFnTag">{s.tag}</span></div>)}
