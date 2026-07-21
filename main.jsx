@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v453 Classic Constraint games added. The 53 classic conditioned games (Constraints-Led rebuild, six-dimension RLD rubric, source Off The Wall Squash CIC 2018) now appear in the Plug & Play module under a new Classic Constraint outcome tab (shown first, selected by default), and in a new Games library tab Classic Constraint Games where each game is opened with the shared Universal Modifier engine (Game Logic, Constraints, Scoring, DB Handicap, Tin Height) so constraints and scoring are layered the same way as every other game class. No Checkerboard codes on these cards; scoring is left to the coach. Reverts the interim v452 standardGames insertion. Builds on v451/v452.';
+const APP_VERSION='v454 Classic Constraint Games now opens each selected game as its own detail page — game description, task, CLA rationale, coach and player focus, with the Universal Modifier engine directly beneath and Add To Session — with a Back to games control (hardware back also returns to the list). Previously the detail and modifiers rendered at the foot of the whole game list. Builds on v453.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -6256,29 +6256,45 @@ function ClassicConstraintBuilder({onAddToSession}){
   const [selected,setSelected]=useState(null);
   const [modifier,setModifier]=useState(emptyModifierConfig());
   const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  useBackIntercept(!!selected,()=>{setSelected(null);return true;});
   const games=CLASSIC_CONSTRAINT_GAMES;
   function pick(g){setSelected(g);setModifier(emptyModifierConfig());}
   function add(g){onAddToSession(normaliseGameCard({...g,category:'Classic Constraint',modifier,layers:modifier.constraints||[],cbCode:'None'}));}
+
+  if(selected){
+    const g=selected;
+    return <div className="gameCard classicConstraintDetail">
+      <div className="pageTop">
+        <div><div className="categoryTag">{g.theme}</div><h2>{g.title}</h2></div>
+        <button className="secondaryBtn" onClick={()=>setSelected(null)}>← Back to games</button>
+      </div>
+      <div className="chips">
+        <span className="levelPill">{g.level}</span>
+        <span className="levelPill" style={{marginLeft:'6px'}}>RLD {g.rld}</span>
+        <span className="levelPill" style={{marginLeft:'6px'}}>{g.type}</span>
+      </div>
+      <div className="infoBox"><strong>Task / Rules</strong><p>{g.task}</p></div>
+      <div className="infoBox"><strong>CLA Rationale</strong><p>{g.rationale}</p></div>
+      <div className="infoBox"><strong>Coach Focus</strong><p>{g.coach}</p></div>
+      <div className="infoBox"><strong>Player Focus</strong><p>{g.playerFocus}</p></div>
+      <UniversalModifierEngine title="Universal Modifiers" context={g.title} value={modifier} onChange={setModifier} presentPlayers={present}/>
+      <div className="buttonRow sessionActionButtons">
+        <button type="button" className="primaryBtn" onClick={()=>add(g)}>Add To Session</button>
+        <button type="button" className="secondaryBtn" onClick={()=>setSelected(null)}>Back To Games</button>
+      </div>
+    </div>;
+  }
+
   return <div className="gameCard">
     <div className="categoryTag">Classic Constraint Games</div>
     <h2>Classic Constraint Games</h2>
-    <p className="engineIntro">Off The Wall Squash CIC (2018) · Constraints-Led rebuild · RLD-rated. Pick a game, layer the universal modifiers, then add it to the session.</p>
+    <p className="engineIntro">Off The Wall Squash CIC (2018) · Constraints-Led rebuild · RLD-rated. Tap a game to open it, layer the universal modifiers, then add it to the session.</p>
     {THEMES.map(theme=>{const list=games.filter(g=>g.theme===theme);if(!list.length)return null;return <div key={theme} className="gameOptionList">
       <h3>{theme}</h3>
-      {list.map(g=><button key={g.id} className={selected&&selected.id===g.id?'gameOption activeGameOption':'gameOption'} onClick={()=>pick(selected&&selected.id===g.id?null:g)}>
+      {list.map(g=><button key={g.id} className="gameOption" onClick={()=>pick(g)}>
         <span>{g.title}</span><small>RLD {g.rld} · {g.level} · {g.shortRationale}</small>
       </button>)}
     </div>;})}
-    {selected&&<div className="expandedGame selectedExpandedGame">
-      <span className="categoryTag">{selected.theme}</span><h3>{selected.title}</h3>
-      <span className="levelPill">{selected.level}</span><span className="levelPill" style={{marginLeft:'6px'}}>RLD {selected.rld}</span>
-      <div className="infoBox"><strong>Task / Rules</strong><p>{selected.task}</p></div>
-      <div className="infoBox"><strong>CLA Rationale</strong><p>{selected.rationale}</p></div>
-      <div className="infoBox"><strong>Coach Focus</strong><p>{selected.coach}</p></div>
-      <div className="infoBox"><strong>Player Focus</strong><p>{selected.playerFocus}</p></div>
-      <UniversalModifierEngine title="Universal Modifiers" context={selected.title} value={modifier} onChange={setModifier} presentPlayers={present}/>
-      <button className="primaryBtn" onClick={()=>add(selected)}>Add To Session</button>
-    </div>}
   </div>;
 }
 
