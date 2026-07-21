@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v450 Compact rotation cards + clean box layout. (1) Removed the redundant "Shots allowed to go cross" chips from the Pattern Lab Direction panel — the Cross-court length selector now covers this. (2) Task / Rationale / Coach Focus / Player Focus now sit in a row of boxes across the top of each rotation instead of stacking. (3) The Player View Preview is boxed to the left with the Game Actions stacked to its right, compressing the card. Builds on v449.';
+const APP_VERSION='v451 Pattern Lab rationale reworked. (1) The per-card "Rationale" is now correctly labelled "Description" — it always held the run description, not a rationale. (2) The coaching focus line ("a functional crosscourt moves the opponent more than one step…") now moves into Player Focus where it belongs. (3) The full CLA rationale is added as a coach introduction under the rationale box in the Pattern Lab module. (4) The short player-facing summary now shows under the rationale box on the Pattern Lab player display. Builds on v450.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -746,10 +746,16 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
         <ol className="pdcList">{constraints.map((c,i)=><li key={i}><span className="pdcNum">{i+1}</span><span>{c}</span></li>)}</ol></section>}
       {dbText&&<PdField label="DB ALLOCATIONS" text={dbText} sep=" · "/>}
     </div>
-    {rationale&&<div className="claRationaleBox">
-      <h2>CLA Rationale</h2>
-      <p>{rationale}</p>
-    </div>}
+    {(() => {const isPL=String(chosen&&chosen.format||'')==='Pattern Lab';return <>
+      {rationale&&<div className="claRationaleBox">
+        <h2>{isPL?'Description':'CLA Rationale'}</h2>
+        <p>{rationale}</p>
+      </div>}
+      {isPL&&<div className="claRationaleBox">
+        <h2>About Pattern Lab</h2>
+        <p>{PATTERN_LAB_PLAYER_SUMMARY}</p>
+      </div>}
+    </>;})()}
     {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
       <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
         <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
@@ -4937,12 +4943,12 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
         duration:8,
         task:deriveQuick(g,'left'),
         description:patternLogicText(g),
-        rationale:g.logic,
+        rationale:splitPatternLogic(g.logic,'offT').description,
         scoring:g.score,
         layers:g.flags||[],
         rld:g.rld,
         coach:g.coach,
-        playerFocus:'Recognise the affordance and choose a functional solution.'
+        playerFocus:'Recognise the affordance and choose a functional solution.'+(splitPatternLogic(g.logic,'offT').focus?(' '+splitPatternLogic(g.logic,'offT').focus):'')
       }));
     }catch{return [];}
   },[]);
@@ -5027,7 +5033,7 @@ return <div className="page sessionBuilderPage">
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
-<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>Rationale</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<>
 <div style={{display:'flex',gap:'16px',flexWrap:'wrap',alignItems:'flex-start'}}><div style={{flex:'1 1 320px',minWidth:0,display:'flex',flexDirection:'column',gap:'12px'}}><div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>
 {game.format!=='Pattern Lab'&&<div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>}
@@ -17661,6 +17667,21 @@ function patternSeamKey(game,side){
 // rather than pointing at a panel. There is no untriggered state.
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
 const TRIGGER_RELEASE={offT:'the opponent is off the T',inFront:'the player is in front',both:'the opponent is off the T or the player is in front'};
+const PATTERN_LAB_PLAYER_SUMMARY="Pattern Lab helps you discover effective ways to build rallies by exploring different options, recognising opportunities and adapting to your opponent. Rather than memorising set patterns, you'll learn to make better decisions as the rally changes, allowing successful patterns to emerge naturally from the situation.";
+// The card "rationale" text is really a run DESCRIPTION with a coaching focus line
+// tacked on the end ("...a functional crosscourt moves the opponent more than one
+// step..."). Split it: the description stays on the card as Description; the focus
+// sentence moves into Player Focus.
+function splitPatternLogic(logicText,trigger){
+  const raw=(logicText||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases');
+  const marker='; a functional crosscourt';
+  const i=raw.indexOf(marker);
+  if(i<0)return{description:raw,focus:''};
+  let description=raw.slice(0,i).trim();
+  if(description&&!/[.!?]$/.test(description))description+='.';
+  let focus=('A functional crosscourt'+raw.slice(i+marker.length)).replace(' - ',' — ').trim();
+  return{description,focus};
+}
 function firstShotPhrase(firstShot){
   if(!firstShot)return '';
   const shot={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast'}[firstShot.type]||'';
@@ -17929,7 +17950,8 @@ function TacticalIntentionsModule({setScreen,setSession}){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:(game.logic||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases'),scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'});
+    const split=splitPatternLogic(game.logic,trigger);
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:split.description,scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'+(split.focus?(' '+split.focus):'')});
     card.plConfig=plConfig;
     if(editing&&editing.cardId){
       card.id=editing.cardId;
@@ -17954,6 +17976,16 @@ function TacticalIntentionsModule({setScreen,setSession}){
       <p>Pattern Lab keeps the practical value of the classic <strong>Patterns of Play</strong> — a large library of recognisable tactical situations — while removing the rigid prescription that turns patterns into rehearsed routines.</p>
       <p>Each card is reframed through Checkerboard zones, flight constraints, disguise and diversity, so the player <strong>recognises the affordance and chooses a functional solution</strong> rather than executing one fixed answer. The constraints keep representativeness high and guard against attractor states — the same pattern hardening into an unthinking habit.</p>
       <p>Reminder: an affordance is relative to that player's current action capabilities and situation, not a fixed property of the pattern. A gap that's "on" for one player, or on a good day, may not be on for another player, or the same player under fatigue or pressure — judge what's hittable in the moment, not against a fixed template.</p>
+    </CoachRationale>
+    <CoachRationale label="The CLA rationale behind Pattern Lab — coach introduction">
+      <p><strong>Overview.</strong> Pattern Lab™ is designed to develop players' ability to recognise, explore and adapt effective playing patterns rather than memorise predetermined routines. From a Constraints-Led Approach (CLA) perspective, skilled performers do not rely on fixed patterns. Instead, they continuously perceive opportunities (affordances) created by the changing relationship between themselves, their opponent and the environment. Every rally presents new possibilities. Pattern Lab exposes players to these possibilities through representative game situations that encourage experimentation. Players test tactical ideas, observe opponents' responses and discover which solutions consistently create advantage.</p>
+      <p><strong>Level 1 — Exploration.</strong> Players experiment freely with different sequences. The objective is not to execute the 'correct' pattern but to discover what opportunities appear, which patterns create pressure, which fail and how the opponent reacts. The emphasis is on curiosity rather than correctness.</p>
+      <p><strong>Level 2 — Affordance Exposure.</strong> Through carefully designed constraints, players learn to recognise recurring opportunities such as an opponent recovering slowly, an open front court, a weak return or early cues from racquet preparation. The coach shapes what players notice rather than telling them what to do.</p>
+      <p><strong>Level 3 — Adaptive Pattern Formation.</strong> Players begin linking shots together because the situation invites them. Patterns emerge from the opponent's behaviour rather than being imposed beforehand.</p>
+      <p><strong>Level 4 — Decision Making Under Pressure.</strong> Every shot becomes a decision. Players continually evaluate whether an opportunity has appeared, is disappearing or whether the opponent has adapted, adjusting their choices accordingly.</p>
+      <p><strong>Level 5 — Tactical Adaptability.</strong> Expert performers possess many potential patterns rather than one preferred pattern. They develop tactical flexibility, perceptual attunement, adaptive decision making, creative problem solving and the ability to manipulate opponents.</p>
+      <p><strong>Why Pattern Lab works.</strong> It develops three interconnected ecological processes: affordance perception — recognising opportunities as they emerge; exploration — searching for multiple successful solutions rather than reproducing one ideal pattern; and adaptation — changing decisions as the opponent and rally evolve.</p>
+      <p><strong>Key principle.</strong> Patterns should never control the player. The evolving rally should control the pattern. The aim is not to teach patterns, but to help players understand how successful patterns emerge from the interaction between player, opponent and environment.</p>
     </CoachRationale>
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);setDetailOpen(true);}}>⚡ Random Pattern</button></div>
