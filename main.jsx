@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v449 Session Builder brevity + clear game separation. (1) Pattern Lab cards no longer show the blue constraint pills or the + add layer grid, since every game is edited on its setup page via Edit. (2) Each rotation now has a thick border, rounded corners, a subtly alternating background and spacing, so it is obvious where one game ends and the next begins. Builds on v448.';
+const APP_VERSION='v450 Compact rotation cards + clean box layout. (1) Removed the redundant "Shots allowed to go cross" chips from the Pattern Lab Direction panel — the Cross-court length selector now covers this. (2) Task / Rationale / Coach Focus / Player Focus now sit in a row of boxes across the top of each rotation instead of stacking. (3) The Player View Preview is boxed to the left with the Game Actions stacked to its right, compressing the card. Builds on v449.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5027,21 +5027,19 @@ return <div className="page sessionBuilderPage">
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
-<div className="infoBox"><strong>Task</strong><p>{game.task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{game.rationale}</p></div>
-<div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div>
+<div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>Rationale</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<>
-<div className="playerViewMini playerViewSessionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>
+<div style={{display:'flex',gap:'16px',flexWrap:'wrap',alignItems:'flex-start'}}><div style={{flex:'1 1 320px',minWidth:0,display:'flex',flexDirection:'column',gap:'12px'}}><div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>
 {game.format!=='Pattern Lab'&&<div className="cbBox"><strong>Checkerboard Code</strong><select value={game.cbCode||'None'} onChange={e=>updateCb(index,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>}
 {game.format!=='Pattern Lab'&&<div className="chips">{safeLayersForSession(game).map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>}
 {game.format!=='Pattern Lab'&&editableModifierLayers(safeLayersForSession(game)).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(safeLayersForSession(game)).map(layer=><label key={layer}><span>{layer}</span><select value={(game.modifierScores&&game.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateModifierScore(index,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
 {game.format!=='Pattern Lab'&&<div className="quickLayers">{ALL_LAYERS.filter(layer=>!safeLayersForSession(game).includes(layer)).map(layer=><button key={layer} onClick={()=>addLayer(index,layer)}>+ {layer}</button>)}</div>}
-<div className="gameActionBar"><strong>Game Actions</strong><div>
+</div><div className="gameActionBar" style={{flex:'0 0 210px',margin:0}}><strong>Game Actions</strong><div style={{display:'flex',flexDirection:'column',gap:'8px',alignItems:'stretch'}}>
 <button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 {game.format==='Pattern Lab'&&<button onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit</button>}
 <button className="primaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>PUSH PLAYER DISPLAY</button>
 <button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Persistent Player Display link copied. This same link updates when you push any game/session/competition.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
-</div></div>
+</div></div></div>
 </>}
 </div>)}
 </div>;
@@ -17781,7 +17779,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
     'Attack trigger: '+triggerLabel,
     'First attacking shot: '+firstShotVolleyLabel+' · '+firstShotTypeLabel,
     (lengthType!=='any'?('Straight length: every length is a '+forcedLengthWord(lengthType)):'Straight length: lob or drive, player chooses')+(crossLengthType!=='any'?(' · Cross-court length: '+forcedLengthWord(crossLengthType)):''),
-    'Direction: '+dirLabel+(direction==='cross'?(' (functional cross — must move them more than one step'+(crossableShots.length?('; cross shots: '+(crossableShots.filter(s=>crossPer[s.i]).map(s=>s.label).join(', ')||'none')):'')+')'):''),
+    'Direction: '+dirLabel+(direction==='cross'?' (functional cross — must move them more than one step)':''),
     cycleLabel,
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
@@ -17858,7 +17856,6 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
         <PdChip on={direction==='both'} onClick={()=>setDirection('both')}>Both sides</PdChip>
         <PdChip on={direction==='cross'} onClick={()=>setDirection('cross')}>Cross allowed</PdChip>
         {direction==='cross'&&<><span className="pdStepNum">{crossCap===0?'∞':crossCap}</span><PdChip on={false} onClick={()=>setCrossCap(c=>Math.max(0,c-1))}>−</PdChip><PdChip on={false} onClick={()=>setCrossCap(c=>c+1)}>+ cap/cycle</PdChip></>}
-        {direction==='cross'&&crossableShots.length>0&&<div style={{flexBasis:'100%',marginTop:'6px'}}><span className="lab" style={{display:'block',marginBottom:'6px',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em'}}>Shots allowed to go cross</span><div className="pdChips">{crossableShots.map(s=><PdChip key={s.i} on={!!crossPer[s.i]} onClick={()=>setCrossPer(o=>({...o,[s.i]:!o[s.i]}))}>{(isLengthLabel(s.label)?(forcedLengthWord(lengthType)||'lob / working drive / penetrating drive'):s.label)+' '+s.code}</PdChip>)}</div></div>}
       </PatternRunPanel>
 
       <PatternRunPanel title="Length Type" note={LENGTH_NOTE[lengthType]}>
