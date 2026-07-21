@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v454 Classic Constraint Games now opens each selected game as its own detail page — game description, task, CLA rationale, coach and player focus, with the Universal Modifier engine directly beneath and Add To Session — with a Back to games control (hardware back also returns to the list). Previously the detail and modifiers rendered at the foot of the whole game list. Builds on v453.';
+const APP_VERSION='v456 Reinstated the Snakes & Ladders Scoring link for single-court play: the S&L display bar now offers Copy Scoring link (hand scoring for the court to another device) alongside Copy Player Link, matching the multi-court behaviour. Builds on v455.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2314,9 +2314,10 @@ function MentalSkillsPlaceholder({setScreen}){
 
 
 function ShotsModule({setScreen}){
-  const [section,setSection]=useState('learn');
+  const [section,setSection]=useState(null);
   const [learnTab,setLearnTab]=useState('quick');
   const [wristTab,setWristTab]=useState('coach');
+  useBackIntercept(!!section,()=>{setSection(null);return true;});
 
   const shotSections=[
     {id:'learn',title:'How Shots Are Learned',tag:'Function first · Perception-action · Self-discovery'},
@@ -2382,12 +2383,12 @@ function ShotsModule({setScreen}){
       <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button><button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Games Library</button></div>
     </div>
 
-    <div className="libraryStageIntro shotsIntro">
+    <div className="libraryStageIntro shotsIntro" style={{display:section?'none':undefined}}>
       <h2>Shots are defined by their function, not their form</h2>
       <p>Checkerboard coaches shots by the problem they solve, the opportunity they exploit and the effect they have on the opponent.</p>
     </div>
 
-    <div className="shotFnGrid">
+    <div className="shotFnGrid" style={{display:section?'none':undefined}}>
       <style>{`
 .shotFnGrid{display:flex;flex-direction:column;gap:10px;margin:16px 0;}
 .shotFnCard{display:block;width:100%;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:14px;padding:15px 18px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s ease,background .15s ease,transform .05s ease;}
@@ -2421,9 +2422,19 @@ function ShotsModule({setScreen}){
 .shotDetailPanel .playerViewCard.shotPlayerView{background:linear-gradient(135deg,#0d2a2a,#0b1726) !important;border:1px solid #1d5b6b !important;border-radius:12px !important;color:#dbe6f2 !important;margin-top:14px !important;}
 .shotDetailPanel .playerViewCard.shotPlayerView h3{color:#ffd479 !important;}
 .shotDetailPanel .playerViewCard.shotPlayerView p,.shotDetailPanel .playerViewCard.shotPlayerView strong{color:#dbe6f2 !important;}
+.whyCompareGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:8px 0 16px;}
+.whyBox{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;padding:14px 16px !important;color:#c7d4e2 !important;box-shadow:none !important;}
+.whyBox h3{color:#9cc4ec !important;margin:0 0 8px !important;font-size:1.05rem !important;font-weight:800 !important;}
+.whyBox p{color:#c7d4e2 !important;margin:0 0 8px !important;line-height:1.45 !important;}
+.whyBox strong{color:#eaf4fb !important;}
+.whyBox.traditionalBox{border-left:3px solid #6b7280 !important;}
+.whyBox.checkerboardBox{border-left:3px solid #34e07a !important;}
+
 `}</style>
       {shotSections.map(s=><div key={s.id} role="button" tabIndex={0} className={'shotFnCard'+(section===s.id?' shotFnActive':'')} onClick={()=>setSection(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSection(s.id);}}}><span className="shotFnTitle">{s.title}</span><span className="shotFnTag">{s.tag}</span></div>)}
     </div>
+
+    {section&&<div className="buttonRow" style={{margin:'14px 0'}}><button className="secondaryBtn" onClick={()=>setSection(null)}>← Back to shots</button></div>}
 
     {section==='learn'&&<div className="shotDetailPanel shotsLearnPanel">
       <div className="shotDetailHeader">
@@ -2518,7 +2529,7 @@ function ShotsModule({setScreen}){
       <div className="playerViewCard shotPlayerView"><h3>Player View</h3><p><strong>WHAT TO DO</strong><br/>Use Working Length to make your opponent’s next shot more difficult.</p><p><strong>HOW TO SCORE</strong><br/>Success if the opponent arrives late, cannot volley, cannot attack, loses T position or gives a weak return.</p><p><strong>KEY FOCUS</strong><br/>Watch the opponent, not just the ball.</p></div>
     </div>}
 
-    {section==='increase'&&<div className="shotDetailPanel">
+    {section==='increase'&&<div className="shotDetailPanel"><section className="shotPageBlock volleyPage"><div className="shotHero"><span className="timeBadge take">🟢 STRONG TIME TAKER</span><h2>Volley — Take Time Away</h2><p>The most direct way to take time away: meet the ball early, before it travels to the back.</p></div><div className="shotGridTwo"><div className="shotInfoCard"><h3>What is the Volley?</h3><p>Taking the ball out of the air, before it bounces, to deny the opponent recovery time. It is defined by its function — cutting time — not by a fixed technique.</p><p>An early intercept on the T, a volley return of serve, or a volley drive all shorten the time the opponent has to recover.</p></div><div className="shotInfoCard"><h3>Why it matters</h3><ul><li>Denies recovery and preparation time</li><li>Keeps you on the T and the opponent behind you</li><li>Turns a neutral rally into pressure</li><li>Punishes any loose or floated ball</li></ul></div></div><div className="shotGridTwo"><div className="shotInfoCard traditionalCard"><h3>Traditional View</h3><ul><li>Racket up</li><li>Get sideways</li><li>Punch through the ball</li></ul></div><div className="shotInfoCard checkerboardCard"><h3>Checkerboard View</h3><p>The volley is on when the information says so — a ball you can reach in front, above the cut line, or drifting off the side wall. Judge it by the time it takes away from the opponent, not by how it looked.</p></div></div><div className="shotInfoCard coachObservationCard"><h3>Coach Observation Questions</h3><ol><li>Was the ball takeable in front?</li><li>Did the player intercept, or let it run to the back?</li><li>Did the volley take time away from the opponent?</li></ol></div><div className="shotTakeaway"><p><strong>Volley asks:</strong> Can I take this early and cut the opponent’s time?</p></div></section>
       <section className="shotPageBlock penetratingDrivePage">
         <div className="shotHero">
           <span className="timeBadge take">🟢 STRONG TIME TAKER</span>
@@ -10354,7 +10365,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="slDisplayBar">
-      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'Copy Scoring link'}</button>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));alert('Snakes & Ladders added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
