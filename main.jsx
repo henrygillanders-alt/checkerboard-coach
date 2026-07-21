@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v459 Breakout Squash now has two surfaces: Floor breakout (floor zones 1-4, as before) and Wall breakout (Checkerboard front-wall zones 5-8: 5 top-left, 6 top-right, 7 bottom-right, 8 bottom-left). A surface toggle sets whether the restricted zone and breakout target are floor or front-wall zones (e.g. play into wall zone 6, break out into wall zone 8, finish within N shots). Tiers, shot-count window, convert bonus and defence bonus are shared across both. Builds on v458.';
+const APP_VERSION='v460 Recoloured Breakout Squash from its brown/orange theme to the app palette: teal module accent, soft-blue labels, and a clearer semantic split on the zone selectors — restricted zones blue, breakout target and other selected chips/tiers green. Functionality unchanged. Builds on v459.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4654,25 +4654,25 @@ function BreakoutSquash({setSession}){
     setAdded(card.title);
   }
   const STYLE=`
-.brkWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #e08a34;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.brkWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E8B9E;border-radius:14px;padding:16px 18px;margin-top:14px;}
 .brkSection{margin:14px 0;}
-.brkLabel{color:#f0c49c;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.brkLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .brkChips{display:flex;flex-wrap:wrap;gap:8px;}
 .brkChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.brkChip.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
+.brkChip.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
 .brkTierRow{display:flex;gap:8px;}
 .brkTierBtn{flex:1;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .brkTierBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
-.brkTierBtn.on{border-color:#e08a34;background:#2a1c0c;}
+.brkTierBtn.on{border-color:#34e07a;background:#0d2a1c;}
 .brkZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:320px;}
 .brkZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 4px;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;font-size:0.78rem;}
-.brkZoneBtn.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
+.brkZoneBtn.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
 .brkZoneBtn.restrictedOn{border-color:#4a90d6;background:#0c1e2e;color:#bcd6f5;}
 .brkHint{color:#9fb6cf;font-size:0.82rem;margin:6px 0 0;line-height:1.4;}
 .brkDepthBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 14px;color:#dbe6f2;font-weight:700;font-size:0.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;display:inline-block;}
-.brkDepthBtn.on{border-color:#e08a34;background:#2a1c0c;color:#f5d3a8;}
+.brkDepthBtn.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
 .brkBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
-.brkBox strong{display:block;color:#f0c49c;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.brkBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .brkBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .brkAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
 .brkAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}`;
