@@ -188,7 +188,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v474 NSSL playoff decider added. When a court is drawn you can run a tie-break on the organiser score tab: it pairs players by seed (No.1 v No.1, No.2 v No.2, looping), you tap the rally winner, and the first team to the target (default 3, adjustable) wins. The winner is shown on the master display and the deciding match point(s) — a configurable number, default 1 — are added to that team in the live league table automatically. Playoff state syncs to the master via the shared clock. Builds on v473.';
+const APP_VERSION='v475 NSSL master display now fills the screen. The court scoreboards were squeezed to the left because the grid reserved an empty extra column; it now stretches the live court cards to fill the full width, the page is wider, and the score numbers, team names and league table are considerably larger so the scoreboard reads from across the room. Builds on v474.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -21250,7 +21250,7 @@ function NsslMasterDisplay({host}){
 
   return <div className="playerDisplayPage nsslMaPage">
     <style>{`
-.nsslMaPage{padding:16px;max-width:1150px;margin:0 auto;}
+.nsslMaPage{padding:16px;max-width:1600px;margin:0 auto;}
 .nsslMaHead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
 .nsslMaTitle h1{margin:0;color:#eaf4fb;font-size:2rem;}
 .nsslMaTitle span{color:#34e07a;font-weight:800;letter-spacing:0.12em;font-size:0.85rem;}
@@ -21258,20 +21258,20 @@ function NsslMasterDisplay({host}){
 .nsslMaClock .p{color:#7fc8a0;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
 .nsslMaClock .t{color:#ffd479;font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
 .nsslMaClock .s{color:#9fb0c2;font-size:0.78rem;}
-.nsslMaGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:18px;}
-.nsslMaCourt{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;}
+.nsslMaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-bottom:22px;}
+.nsslMaCourt{background:#0f1822;border:1px solid #223044;border-radius:16px;padding:22px 24px;}
 .nsslMaCourt.pp{border-color:#ffd400;}
 .nsslMaCourt.off{opacity:0.5;}
 .nsslMaCourtTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.nsslMaCourtTop b{color:#9cc4ec;font-size:1.05rem;}
+.nsslMaCourtTop b{color:#9cc4ec;font-size:1.4rem;}
 .nsslMaCourtTop em{font-size:0.75rem;font-style:normal;color:#6b8299;}
 .nsslMaScoreRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
 .nsslMaSide{text-align:center;}
-.nsslMaSide .nm{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
-.nsslMaSide .cap{color:#ffd479;font-size:0.72rem;font-weight:700;}
-.nsslMaSide .sc{color:#ffffff;font-size:2.6rem;font-weight:800;line-height:1;}
+.nsslMaSide .nm{color:#eaf4fb;font-weight:800;font-size:clamp(1.15rem,2.2vw,1.8rem);}
+.nsslMaSide .cap{color:#ffd479;font-size:0.9rem;font-weight:700;}
+.nsslMaSide .sc{color:#ffffff;font-size:clamp(3rem,7vw,5.5rem);font-weight:800;line-height:1;}
 .nsslMaSide.lead .sc{color:#86efac;}
-.nsslMaSide .oc{color:#7fc8a0;font-size:0.8rem;font-weight:700;margin-top:2px;}
+.nsslMaSide .oc{color:#7fc8a0;font-size:1rem;font-weight:700;margin-top:4px;}
 .nsslMaSide .sb{color:#9fb0c2;font-size:0.72rem;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
 .nsslMaSide .sb.hit{color:#ffb84d;}
 .nsslMaUnder{margin-top:8px;text-align:center;background:#3a2c0a;border:1px solid #8a6d18;color:#ffe9a8;border-radius:8px;padding:5px 8px;font-size:0.78rem;font-weight:700;}
@@ -21279,7 +21279,7 @@ function NsslMasterDisplay({host}){
 .nsslMaPlayers{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:center;margin-top:4px;font-size:0.72rem;color:#7e91a6;}
 .nsslMaPPbadge{margin-top:8px;text-align:center;color:#ffe9a8;font-weight:700;font-size:0.82rem;}
 .nsslMaTblWrap h2{color:#9cc4ec;font-size:1.1rem;margin:0 0 6px;}
-.nsslMaTbl{width:100%;border-collapse:collapse;font-size:1.05rem;}
+.nsslMaTbl{width:100%;border-collapse:collapse;font-size:1.25rem;}
 .nsslMaTbl th{text-align:left;color:#7fb0e0;font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid #25405f;}
 .nsslMaTbl td{padding:7px 10px;border-bottom:1px solid #1a2c43;color:#eaf4fb;}
 .nsslMaTbl td.nm{font-weight:700;}
