@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v467 Players module: you can now edit a guest player\'s ranking / seed. The Edit Player form now shows a "Guest ranking / seed" number field for guest (and coach) players alongside the guest estimate, so a guest added on the fly can have their seed corrected later — it feeds ranked court allocation the same way (lower number = stronger). Previously only the quick Add-Guest box could set a seed and there was no way to change it afterwards. Builds on v466.';
+const APP_VERSION='v468 NSSL team generation is now properly snake-seeded. Players are first sorted by seed / ranking (strongest to weakest — using junior ranking or guest seed, then level), then distributed across teams in a serpentine 1-2-3-3-2-1 pattern so every team gets a balanced spread of strengths. Previously the serpentine walk ran over players in raw attendance order, so teams were not balanced by ability. Builds on v467.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -14058,7 +14058,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function getNslGeneratedTeams(){
-    const names=[...playerNames];
+    // Snake seed: sort by seed/rank first (strongest -> weakest), then serpentine-distribute so teams are balanced by strength.
+    const names=[...playerNames].sort((a,b)=>rankForTeamName(a)-rankForTeamName(b)||String(a).localeCompare(String(b)));
     const count=Math.max(2,Number(nslTeams)||2);
     const teams=Array.from({length:count},(_,idx)=>({name:`Team ${idx+1}`,players:[]}));
     names.forEach((name,idx)=>{
