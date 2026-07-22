@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v463 NSSL fix: the competition COPY PLAYER LINK now gives the live NSSL Master Display link when in NSSL mode (reads the shared league clock and live court scores), instead of the generic competition projection that showed static rules/format and a different clock. Player display now relates to the live game with the matching time. Builds on v462.';
+const APP_VERSION='v465 NSSL fix: the competition Player Display Rules box was hard-coded to Invasion rules regardless of mode, so the NSSL display showed a mix of NSSL header/focus and Invasion rules. It now renders the current mode\'s own rules (current.rules) — NSSL shows NSSL rules, Invasion shows Invasion, etc. Builds on v464.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -14355,7 +14355,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       return {type:'Invasion',round:`Rotation ${invasionRotationStep||1}`,players:totalPlayers,courts:Number(invasionCourts||invasionTeams.length||0),complete:invasionTeams.length,total:Number(invasionCourts||invasionTeams.length||0),extra:invasionFormat==='lives'?'Lives format':'Points format'};
     }
     if(mode==='nsl'){
-      return {type:'NSSL',round:`Period ${nslActivePeriod}`,players:totalPlayers,courts:Number(nslTeams||0),complete:0,total:Number(nslTeams||0),extra:`${nslFormatTime(nslRoundSeconds)} remaining`};
+      return {type:'NSSL',round:`Period ${nslActivePeriod}`,players:totalPlayers,courts:Math.max(1,Math.ceil(Number(nslTeams||0)/2)),complete:0,total:Math.max(1,Math.ceil(Number(nslTeams||0)/2)),extra:`${nslFormatTime(nslRoundSeconds)} remaining`};
     }
     return {type:'Competition',round:'Setup',players:totalPlayers,courts:courtCount,complete:0,total:0,extra:'Ready'};
   }
@@ -14451,17 +14451,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             </div>
             <div className="projectionInfoCard">
               <strong>Rules</strong>
-              {invasionFormat==='lives'?<>
-                <p>Defenders always serve</p>
-                <p>Invader puts ball out = -1 life</p>
-                <p>Invader hits into balcony = -3 lives</p>
-                <p>Stop when one invader loses all lives</p>
-              </>:<>
-                <p>Invader serves</p>
-                <p>Defender error = +1 to invader</p>
-                <p>Defender into balcony = +3 to invader</p>
-                <p>Invader out / into balcony = no score</p>
-              </>}
+              {(current.rules&&current.rules.length?current.rules:['—']).map((r,ri)=><p key={ri}>{r}</p>)}
             </div>
             <div className="projectionInfoCard">
               <strong>Checkerboard</strong>
@@ -15408,11 +15398,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           <strong>Universal Modifiers</strong>
           <UniversalModifierEngine title="" context="Competition" hideDoubleBounce value={competitionModifier} onChange={next=>{setCompetitionModifier(next);setCompetitionLayers(next.constraints||[]);}}/>
 
-          <label>Checkerboard Code / Sequence
+          {mode!=='nsl'&&<label>Checkerboard Code / Sequence
             <select value={competitionCbCode} onChange={e=>setCompetitionCbCode(e.target.value)}>
               {cbOptions.map(option=><option key={option}>{option}</option>)}
             </select>
-          </label>
+          </label>}
         </div>
 
         <div className="technicalScoringBox">
