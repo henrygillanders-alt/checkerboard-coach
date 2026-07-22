@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v468 NSSL team generation is now properly snake-seeded. Players are first sorted by seed / ranking (strongest to weakest — using junior ranking or guest seed, then level), then distributed across teams in a serpentine 1-2-3-3-2-1 pattern so every team gets a balanced spread of strengths. Previously the serpentine walk ran over players in raw attendance order, so teams were not balanced by ability. Builds on v467.';
+const APP_VERSION='v470 NSSL fix for scores jumping back to an older value. Each court score lives in one shared record, so if the same court was open on two tabs/devices the stale one kept overwriting the live score every few seconds (e.g. 10-14 dropping back to 5-4). Each court device now stamps every scoring action with a rising version number and, before each sync, checks whether another device is further ahead on that court — if so it adopts that score instead of overwriting it, so duplicate tabs converge on the real score instead of fighting. Still best to score each court on one device. Builds on v469.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -14114,7 +14114,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
   function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(NSSL_PP_SECONDS);setNslPowerPlayActive(true);}
   function stopNslPowerPlay(){setNslPowerPlayActive(false);}
-  function resetNslScores(){setNslScores({});}
+  function resetNslScores(){if(typeof window!=='undefined'&&!window.confirm('Reset ALL NSSL scores? This cannot be undone.'))return;setNslScores({});}
 
 
   useEffect(()=>{
@@ -20991,20 +20991,30 @@ function SnakesLaddersRaceDisplay({host,courtCount}){
   </div>;
 }
 
+const NSSL_CT_KEY='nsslCourtState:';
+function loadNsslCourtSaved(roomId){try{const raw=localStorage.getItem(NSSL_CT_KEY+roomId);if(!raw)return null;const o=JSON.parse(raw);if(!o||!o.updatedAt)return null;if(Date.now()-o.updatedAt>12*3600*1000)return null;return o;}catch{return null;}}
 function NsslCourtScorer({court,host}){
   useWakeLock();
   const roomId=nsslCourtRoomId(host,court);
+  const nsslSaved=useMemo(()=>loadNsslCourtSaved(roomId),[roomId]);
   const [clock,setClock]=useState(null);
-  const [periods,setPeriods]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
+  const [periods,setPeriods]=useState(()=>nsslSaved?.periods||{p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
   const [pp,setPp]=useState({side:null,active:false,seconds:NSSL_PP_SECONDS});
-  const [ppUsed,setPpUsed]=useState({p1:0,p2:0,p3:0,ot:0});
+  const [ppUsed,setPpUsed]=useState(()=>nsslSaved?.ppUsed||{p1:0,p2:0,p3:0,ot:0});
   const [undoStack,setUndoStack]=useState([]);
   const [status,setStatus]=useState('Connecting…');
-  const [onCourtIdx,setOnCourtIdx]=useState({a:0,b:0});
-  const [playerTime,setPlayerTime]=useState({a:{},b:{}});
+  const [onCourtIdx,setOnCourtIdx]=useState(()=>nsslSaved?.onCourtIdx||{a:0,b:0});
+  const [playerTime,setPlayerTime]=useState(()=>nsslSaved?.playerTime||{a:{},b:{}});
   const ptRef=useRef({a:{},b:{}});
   useEffect(()=>{ptRef.current=playerTime;},[playerTime]);
-  const [subsUsed,setSubsUsed]=useState({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
+  const [subsUsed,setSubsUsed]=useState(()=>nsslSaved?.subsUsed||{p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
+  const [resetArmed,setResetArmed]=useState(false);
+  const resetTimerRef=useRef(null);
+  const [rev,setRev]=useState(()=>Number(nsslSaved?.rev)||0);
+  const revRef=useRef(rev);
+  useEffect(()=>{revRef.current=rev;},[rev]);
+  const instanceIdRef=useRef('');
+  if(!instanceIdRef.current){instanceIdRef.current=String(Date.now())+'-'+Math.random().toString(36).slice(2,8);}
 
   useEffect(()=>{
     let cancelled=false;
@@ -21035,22 +21045,43 @@ function NsslCourtScorer({court,host}){
   useEffect(()=>{
     const aOn=(teamA.players||[])[onCourtIdx.a]||null;
     const bOn=(teamB.players||[])[onCourtIdx.b]||null;
-    const mk=()=>({type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,onCourtA:aOn,onCourtB:bOn,subsUsed,subLimits,playerTime:ptRef.current,minSec,ppUsed,ppAllow:NSSL_PP_ALLOW,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,updatedAt:Date.now()});
+    const mk=()=>({type:'nssl',court:Number(court),teamA:{name:teamA.name,captain:teamA.captain,players:teamA.players||[]},teamB:{name:teamB.name,captain:teamB.captain,players:teamB.players||[]},periods,totals,onCourtA:aOn,onCourtB:bOn,subsUsed,subLimits,playerTime:ptRef.current,minSec,ppUsed,ppAllow:NSSL_PP_ALLOW,period:clock?.activePeriod||1,powerPlay:pp.active?{side:pp.side,seconds:pp.seconds}:null,rev:revRef.current,instanceId:instanceIdRef.current,updatedAt:Date.now()});
+    let cancelled=false;
+    async function guardedPush(){
+      const payload=mk();
+      try{
+        const row=await readLivePlayerRoom(roomId);
+        const rem=row&&row.payload;
+        // If another device/tab holds a further-along score for THIS court (higher rev), adopt it instead of overwriting with our older score. Stops two tabs ping-ponging the score.
+        if(!cancelled&&rem&&rem.type==='nssl'&&rem.instanceId&&rem.instanceId!==instanceIdRef.current&&Number(rem.rev||0)>revRef.current){
+          if(rem.periods)setPeriods(rem.periods);
+          if(rem.subsUsed)setSubsUsed(rem.subsUsed);
+          if(rem.ppUsed)setPpUsed(rem.ppUsed);
+          if(rem.playerTime)setPlayerTime(rem.playerTime);
+          setRev(Number(rem.rev)||0);
+          return;
+        }
+      }catch{}
+      if(!cancelled)writeLivePlayerRoom(roomId,'nssl',payload);
+    }
     writeLivePlayerRoom(roomId,'nssl',mk());
-    const id=setInterval(()=>writeLivePlayerRoom(roomId,'nssl',mk()),3000);
-    return ()=>clearInterval(id);
-  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,onCourtIdx.a,onCourtIdx.b,subsUsed,ppUsed,minSec,roomId]);
+    const id=setInterval(guardedPush,3000);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[periods,pp.active,pp.side,pp.seconds,clock?.activePeriod,teamA.name,teamB.name,onCourtIdx.a,onCourtIdx.b,subsUsed,ppUsed,minSec,roomId,rev]);
 
+  useEffect(()=>{try{localStorage.setItem(NSSL_CT_KEY+roomId,JSON.stringify({periods,subsUsed,ppUsed,onCourtIdx,playerTime,rev,updatedAt:Date.now()}));}catch{}},[periods,subsUsed,ppUsed,onCourtIdx,playerTime,rev,roomId]);
   function score(side,delta){
     if(delta>0&&pp.active&&pp.side&&pp.side!==side)return;
     setUndoStack(s=>[...s,JSON.parse(JSON.stringify(periods))].slice(-50));
     setPeriods(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:Math.max(0,(prev[activeKey]?.[side]||0)+delta)}}));
+    setRev(r=>r+1);
   }
-  function undo(){setUndoStack(s=>{if(!s.length)return s;setPeriods(s[s.length-1]);return s.slice(0,-1);});}
+  function undo(){setUndoStack(s=>{if(!s.length)return s;setPeriods(s[s.length-1]);setRev(r=>r+1);return s.slice(0,-1);});}
   function subOn(side,idx){
     if(onCourtIdx[side]===idx)return;
     setSubsUsed(prev=>({...prev,[activeKey]:{...prev[activeKey],[side]:(prev[activeKey]?.[side]||0)+1}}));
     setOnCourtIdx(prev=>({...prev,[side]:idx}));
+    setRev(r=>r+1);
   }
   function powerPlay(side){
     const used=ppUsed[activeKey]||0;
@@ -21058,9 +21089,11 @@ function NsslCourtScorer({court,host}){
     if(used>=allow)return;
     setPpUsed(prev=>({...prev,[activeKey]:(prev[activeKey]||0)+1}));
     setPp({side,active:true,seconds:NSSL_PP_SECONDS});
+    setRev(r=>r+1);
   }
   function endPP(){setPp({side:null,active:false,seconds:NSSL_PP_SECONDS});}
-  function resetCourt(){if(window.confirm('Reset this court score?')){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);setPlayerTime({a:{},b:{}});setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setPpUsed({p1:0,p2:0,p3:0,ot:0});setOnCourtIdx({a:0,b:0});endPP();}}
+  function doResetCourt(){setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setUndoStack([]);setPlayerTime({a:{},b:{}});setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});setPpUsed({p1:0,p2:0,p3:0,ot:0});setOnCourtIdx({a:0,b:0});endPP();setRev(r=>r+1);try{localStorage.removeItem(NSSL_CT_KEY+roomId);}catch{}setResetArmed(false);}
+  function armReset(){if(resetArmed){if(resetTimerRef.current)clearTimeout(resetTimerRef.current);doResetCourt();}else{setResetArmed(true);if(resetTimerRef.current)clearTimeout(resetTimerRef.current);resetTimerRef.current=setTimeout(()=>setResetArmed(false),4000);}}
 
   const periodLabel=nsslPeriodLabel(activeKey);
   function TeamPanel({side,team}){
@@ -21159,7 +21192,7 @@ function NsslCourtScorer({court,host}){
     {subAtLimit&&<div className="nsslScBanner subs">⚠ Substitution limit reached this period ({nsslPeriodLabel(activeKey)}: {subLimits[activeKey]} subs)</div>}
     {minSec>0&&underList.length>0&&<div className="nsslScBanner time">⏱ Still needs court time: {underList.map(u=>`${u.name} ${nsslFmtTime(u.t)}/${nsslFmtTime(minSec)}`).join(' · ')}</div>}
     {fixture?<><div className="nsslScGrid"><TeamPanel side="a" team={teamA}/><TeamPanel side="b" team={teamB}/></div>
-      <div className="nsslScControls"><div role="button" tabIndex={0} className="nsslScCtl" onClick={undo}>↶ Undo</div><div role="button" tabIndex={0} className="nsslScCtl danger" onClick={resetCourt}>Reset court</div></div>
+      <div className="nsslScControls"><div role="button" tabIndex={0} className="nsslScCtl" onClick={undo}>↶ Undo</div><div role="button" tabIndex={0} className={'nsslScCtl danger'+(resetArmed?' armed':'')} style={resetArmed?{background:'#5b1620',color:'#ffd0d0',borderColor:'#a3333f'}:undefined} onClick={armReset}>{resetArmed?'⚠ Tap again to reset':'Reset court'}</div></div>
     </>:<p className="nsslScWait">Waiting for the organiser to generate fixtures for this court…</p>}
   </div>;
 }
