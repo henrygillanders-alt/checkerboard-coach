@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v462 Session Builder is now a clean read-only summary of each rotation: removed the Checkerboard Code selector, the duplicate constraint pills and the Modifier Scoring editor from the rotation card. All configuration happens on the game set-up page — every card has an Edit button (Pattern Lab edits in place; other classes jump to their set-up builder via Edit in set-up). Card now shows only Task, Description, Coach/Player focus, the player-view preview and Game Actions (Design Principle 0b). Builds on v461.';
+const APP_VERSION='v463 NSSL fix: the competition COPY PLAYER LINK now gives the live NSSL Master Display link when in NSSL mode (reads the shared league clock and live court scores), instead of the generic competition projection that showed static rules/format and a different clock. Player display now relates to the live game with the matching time. Builds on v462.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -14299,6 +14299,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return {room,state,ok};
   }
   async function copyCompetitionPlayerLink(){
+    if(mode==='nsl'){
+      const nurl=buildNsslMasterLink(nsslHostBase);
+      try{if(navigator.clipboard){await navigator.clipboard.writeText(nurl);alert('Live NSSL player display link copied (Master Display). Open it on the second device — it shows the live league scores and the shared clock.');return;}}catch{}
+      window.prompt('LIVE NSSL player display link — open on the second device:', nurl);
+      return;
+    }
     const {room,ok}=await publishCompetitionLiveState();
     const url=buildLivePlayerViewUrl(room);
     let copied=false;
