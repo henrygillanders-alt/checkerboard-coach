@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v470 NSSL fix for scores jumping back to an older value. Each court score lives in one shared record, so if the same court was open on two tabs/devices the stale one kept overwriting the live score every few seconds (e.g. 10-14 dropping back to 5-4). Each court device now stamps every scoring action with a rising version number and, before each sync, checks whether another device is further ahead on that court — if so it adopts that score instead of overwriting it, so duplicate tabs converge on the real score instead of fighting. Still best to score each court on one device. Builds on v469.';
+const APP_VERSION='v472 NSSL scoring buttons brought onto the app style. The score -1 buttons were showing as plain white (no style) and the active period tab (P1/P2/P3/OT) was rendering white — both now use the standard blue: the -1 buttons are the dark-blue secondary style and the selected period is solid blue like the Start button, per the consistency principle. Builds on v471.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -15268,8 +15268,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     {nsslDetailedFixtures().map((fx,idx)=><div key={idx} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
                       <span style={{fontWeight:800,color:'#9cc4ec'}}>Court {idx+1} — {fx.a.name} v {fx.b.name}</span>
                       <span style={{display:'flex',gap:'6px'}}>
-                        <button type="button" className="secondaryBtn" onClick={()=>{try{navigator.clipboard.writeText(buildNsslCourtLink(idx+1,nsslHostBase));setNsslCopied('c'+idx);setTimeout(()=>setNsslCopied(''),1500);}catch{}}}>{nsslCopied==='c'+idx?'Copied ✓':'Copy'}</button>
-                        <button type="button" className="secondaryBtn" onClick={()=>{try{window.open(buildNsslCourtLink(idx+1,nsslHostBase),'_blank');}catch{}}}>Open</button>
+                        <button type="button" className="secondaryBtn" onClick={()=>{try{navigator.clipboard.writeText(buildNsslCourtLink(idx+1,nsslHostBase));setNsslCopied('c'+idx);setTimeout(()=>setNsslCopied(''),1500);}catch{}}}>{nsslCopied==='c'+idx?'Copied ✓':'Copy scoring link'}</button>
+                        <button type="button" className="secondaryBtn" onClick={()=>{try{window.open(buildNsslCourtLink(idx+1,nsslHostBase),'_blank');}catch{}}}>Open scoring link</button>
                       </span>
                     </div>)}
                   </div>
@@ -15282,7 +15282,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>
 
                 <div className="nslPeriodRow">
-                  {[1,2,3,4].map(period=><button type="button" key={period} className={nslActivePeriod===period?'activeNslPeriodBtn':'secondaryBtn'} onClick={()=>setNslPeriod(period)}>{period===4?'OT':`P${period}`}</button>)}
+                  {[1,2,3,4].map(period=><button type="button" key={period} className={nslActivePeriod===period?'primaryBtn':'secondaryBtn'} onClick={()=>setNslPeriod(period)}>{period===4?'OT':`P${period}`}</button>)}
                   <button type="button" className="primaryBtn" onClick={()=>setNslTimerRunning(!nslTimerRunning)}>{nslTimerRunning?'Pause':'Start'}</button>
                   <button type="button" className="secondaryBtn" onClick={()=>setNslPeriod(nslActivePeriod)}>Reset Period</button>
                 </div>
@@ -15303,7 +15303,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                       </div>
                       {team.players&&team.players.length>0&&<div style={{fontSize:'0.78rem',color:'#9fb0c2',margin:'2px 0 6px',gridColumn:'1 / -1'}}>{team.players.map(p=>p===team.captain?`${p} (C)`:p).join(' · ')}</div>}
                       <div className="nslScoreControls">
-                        <button type="button" onClick={()=>adjustNslScore(team.name,-1,idx)}>-1</button>
+                        <button type="button" className="secondaryBtn" onClick={()=>adjustNslScore(team.name,-1,idx)}>-1</button>
                         <button type="button" className="primaryBtn" onClick={()=>adjustNslScore(team.name,1,idx)}>+1</button>
                         <button type="button" className={nslPowerPlayActive&&nslPowerPlayTeam===team.name?'activePowerPlayBtn':'secondaryBtn'} onClick={()=>startNslPowerPlay(team.name)}>⚡ Power Play</button>
                       </div>
@@ -21138,7 +21138,8 @@ function NsslCourtScorer({court,host}){
 
   return <div className="playerDisplayPage nsslScPage">
     <style>{`
-.nsslScPage{padding:14px;max-width:760px;margin:0 auto;}
+.playerDisplayPage.nsslScPage{overflow-y:auto !important;-webkit-overflow-scrolling:touch;height:auto;min-height:100vh;min-height:100dvh;max-height:none !important;}
+.nsslScPage{padding:14px 14px calc(120px + env(safe-area-inset-bottom)) 14px;max-width:760px;margin:0 auto;box-sizing:border-box;}
 .nsslScTop{text-align:center;margin-bottom:10px;}
 .nsslScTop h1{margin:2px 0;color:#eaf4fb;font-size:1.7rem;}
 .nsslScTop p{color:#7fc8a0;margin:0;}
