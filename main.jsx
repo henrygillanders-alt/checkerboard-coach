@@ -78,7 +78,9 @@ function nsslCourtTotals(courtPayload){
   if(courtPayload&&courtPayload.totals){a=Number(courtPayload.totals.a||a);b=Number(courtPayload.totals.b||b);}
   return {a,b};
 }
-function nsslBuildLeague(courtPayloads){
+function nsslTeamIsGeneric(t){const n=t&&t.name?String(t.name):'';return !n||n==='Team A'||n==='Team B'||n==='BYE';}
+function nsslPreferRealTeam(cpTeam,fxTeam,def){if(!nsslTeamIsGeneric(cpTeam))return cpTeam;if(!nsslTeamIsGeneric(fxTeam))return fxTeam;return cpTeam||fxTeam||def;}
+function nsslBuildLeague(courtPayloads,playoffBonuses){
   const table={};
   function ensure(name){if(!table[name])table[name]={name,played:0,mp:0,pf:0,pa:0};return table[name];}
   (courtPayloads||[]).forEach(c=>{
@@ -96,6 +98,7 @@ function nsslBuildLeague(courtPayloads){
       if(pa>pb)A.mp+=w; else if(pb>pa)B.mp+=w;
     });
   });
+  if(playoffBonuses){Object.keys(playoffBonuses).forEach(name=>{if(!name)return;ensure(name).mp+=Number(playoffBonuses[name])||0;});}
   return Object.values(table).sort((x,y)=>y.mp-x.mp||(y.pf-y.pa)-(x.pf-x.pa)||y.pf-x.pf||String(x.name).localeCompare(String(y.name)));
 }
 function supabaseRestHeaders(extra={}){
@@ -185,7 +188,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v472 NSSL scoring buttons brought onto the app style. The score -1 buttons were showing as plain white (no style) and the active period tab (P1/P2/P3/OT) was rendering white — both now use the standard blue: the -1 buttons are the dark-blue secondary style and the selected period is solid blue like the Start button, per the consistency principle. Builds on v471.';
+const APP_VERSION='v474 NSSL playoff decider added. When a court is drawn you can run a tie-break on the organiser score tab: it pairs players by seed (No.1 v No.1, No.2 v No.2, looping), you tap the rally winner, and the first team to the target (default 3, adjustable) wins. The winner is shown on the master display and the deciding match point(s) — a configurable number, default 1 — are added to that team in the live league table automatically. Playoff state syncs to the master via the shared clock. Builds on v473.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -12967,6 +12970,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslMinPlayerMins,setNslMinPlayerMins]=useState(()=>Number(getSavedCompetitionState().nslMinPlayerMins)||0);
   const [nslUnlimitedSubs,setNslUnlimitedSubs]=useState(()=>!!getSavedCompetitionState().nslUnlimitedSubs);
   const [nslSubLimits,setNslSubLimits]=useState(()=>getSavedCompetitionState().nslSubLimits||{p1:2,p2:2,p3:4,ot:4});
+  const [nslPlayoffs,setNslPlayoffs]=useState(()=>getSavedCompetitionState().nslPlayoffs||{});
+  const [nslPlayoffTarget,setNslPlayoffTarget]=useState(()=>Number(getSavedCompetitionState().nslPlayoffTarget)||3);
+  const [nslPlayoffAwardMp,setNslPlayoffAwardMp]=useState(()=>{const v=getSavedCompetitionState().nslPlayoffAwardMp;return v==null?1:Number(v);});
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
@@ -14115,6 +14121,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(NSSL_PP_SECONDS);setNslPowerPlayActive(true);}
   function stopNslPowerPlay(){setNslPowerPlayActive(false);}
   function resetNslScores(){if(typeof window!=='undefined'&&!window.confirm('Reset ALL NSSL scores? This cannot be undone.'))return;setNslScores({});}
+  function nsslPlayoffPairs(court){const fx=nsslDetailedFixtures().find(f=>Number(f.court)===Number(court));if(!fx)return [];const A=(fx.a&&fx.a.players)||[],B=(fx.b&&fx.b.players)||[];const n=Math.max(A.length,B.length,1);const pairs=[];for(let i=0;i<n;i++){pairs.push({a:A.length?A[i%A.length]:null,b:B.length?B[i%B.length]:null});}return pairs;}
+  function nslPlayoffFrom(p,hist){const target=Math.max(1,Number(p.target)||3);let a=0,b=0,winner=null;for(const s of hist){if(winner)break;if(s==='a')a++;else if(s==='b')b++;if(a>=target)winner='a';else if(b>=target)winner='b';}return {aPts:a,bPts:b,winner};}
+  function startNslPlayoff(court){const fx=nsslDetailedFixtures().find(f=>Number(f.court)===Number(court));if(!fx)return;setNslPlayoffs(prev=>({...prev,[court]:{court:Number(court),aName:fx.a.name,bName:fx.b.name,target:Math.max(1,Number(nslPlayoffTarget)||3),awardMp:Math.max(0,Number(nslPlayoffAwardMp)||0),aPts:0,bPts:0,rally:0,hist:[],winner:null,active:true}}));}
+  function nslPlayoffPoint(court,side){setNslPlayoffs(prev=>{const p=prev[court];if(!p||p.winner)return prev;const hist=[...(p.hist||[]),side];const r=nslPlayoffFrom(p,hist);return {...prev,[court]:{...p,hist,aPts:r.aPts,bPts:r.bPts,rally:hist.length,winner:r.winner}};});}
+  function undoNslPlayoffPoint(court){setNslPlayoffs(prev=>{const p=prev[court];if(!p||!(p.hist&&p.hist.length))return prev;const hist=p.hist.slice(0,-1);const r=nslPlayoffFrom(p,hist);return {...prev,[court]:{...p,hist,aPts:r.aPts,bPts:r.bPts,rally:hist.length,winner:r.winner}};});}
+  function clearNslPlayoff(court){setNslPlayoffs(prev=>{const n={...prev};delete n[Number(court)];delete n[court];return n;});}
 
 
   useEffect(()=>{
@@ -14133,7 +14145,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(mode!=='nsl')return;
     const handle=setTimeout(()=>{
       try{
-        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:nslUnlimitedSubs?{p1:9999,p2:9999,p3:9999,ot:9999}:{p1:Number(nslSubLimits.p1)||0,p2:Number(nslSubLimits.p2)||0,p3:Number(nslSubLimits.p3)||0,ot:Number(nslSubLimits.ot)||0},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
+        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:nslUnlimitedSubs?{p1:9999,p2:9999,p3:9999,ot:9999}:{p1:Number(nslSubLimits.p1)||0,p2:Number(nslSubLimits.p2)||0,p3:Number(nslSubLimits.p3)||0,ot:Number(nslSubLimits.ot)||0},fixtures:nsslDetailedFixtures(),playoffs:nslPlayoffs,updatedAt:Date.now()};
         writeLivePlayerRoom(nsslClockRoomId(nsslHostBase),'nsslclock',payload);
       }catch{}
     },300);
@@ -14287,6 +14299,9 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       nslMinPlayerMins,
       nslUnlimitedSubs,
       nslSubLimits,
+      nslPlayoffs,
+      nslPlayoffTarget,
+      nslPlayoffAwardMp,
       updatedAt:new Date().toISOString()
     };
   }
@@ -14373,11 +14388,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchplayCourts,matchplayCourtCount,matchScoring,competitionMatchScores,
         rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,
         monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,
-        nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,
+        nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPlayoffs,nslPlayoffTarget,nslPlayoffAwardMp,
         updatedAt:new Date().toISOString()
       }));
     }catch{}
-  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchplayCourts,matchplayCourtCount,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,nslMinPlayerMins]);
+  },[mode,scoringMode,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchplayMatchFormat,matchPlayers,matchplayCourts,matchplayCourtCount,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrMatchFormat,rrBoxCount,rrBoxes,rrBoxFixtures,rrBoxResults,rrFinalBoxes,rrFinalFixtures,rrFinalResults,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,monradMatchFormat,nslOrgTab,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,nslMinPlayerMins,nslPlayoffs,nslPlayoffTarget,nslPlayoffAwardMp]);
 
   useEffect(()=>{
     try{
@@ -15293,6 +15308,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                   <button type="button" className="secondaryBtn dangerBtn" onClick={stopNslPowerPlay}>End Power Play</button>
                 </div>}
 
+                <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:'12px',margin:'8px 0',padding:'10px 12px',background:'#0f1822',border:'1px solid #223044',borderRadius:'10px'}}><span style={{fontWeight:800,color:'#9cc4ec'}}>Playoff decider</span><span style={{display:'flex',alignItems:'center',gap:'6px',color:'#c7d4e2'}}>First to<button type="button" className="secondaryBtn" style={{padding:'2px 10px'}} onClick={()=>setNslPlayoffTarget(t=>Math.max(1,(Number(t)||3)-1))}>−</button><strong style={{minWidth:'18px',textAlign:'center'}}>{nslPlayoffTarget}</strong><button type="button" className="secondaryBtn" style={{padding:'2px 10px'}} onClick={()=>setNslPlayoffTarget(t=>Math.min(11,(Number(t)||3)+1))}>+</button></span><span style={{display:'flex',alignItems:'center',gap:'6px',color:'#c7d4e2'}}>Winner +<button type="button" className="secondaryBtn" style={{padding:'2px 10px'}} onClick={()=>setNslPlayoffAwardMp(m=>Math.max(0,(Number(m)||0)-1))}>−</button><strong style={{minWidth:'18px',textAlign:'center'}}>{nslPlayoffAwardMp}</strong><button type="button" className="secondaryBtn" style={{padding:'2px 10px'}} onClick={()=>setNslPlayoffAwardMp(m=>Math.min(5,(Number(m)||0)+1))}>+</button> MP</span><span style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Use on a drawn court · winner gets the match point(s)</span></div>
                 <div className="nslScoreCourtGrid">
                   {nsslDetailedFixtures().map((fixture,idx)=><div className="nslCourtScoreCard" key={idx}>
                     <h4>Court {idx+1}</h4>
@@ -15308,6 +15324,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                         <button type="button" className={nslPowerPlayActive&&nslPowerPlayTeam===team.name?'activePowerPlayBtn':'secondaryBtn'} onClick={()=>startNslPowerPlay(team.name)}>⚡ Power Play</button>
                       </div>
                     </div>)}
+                    {(()=>{const court=idx+1;const po=nslPlayoffs[court];const pairs=po&&!po.winner?nsslPlayoffPairs(court):[];const pr=pairs.length?pairs[(po.rally||0)%pairs.length]:null;return <div style={{marginTop:'8px',padding:'8px 10px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'10px'}}>{!po&&<button type="button" className="secondaryBtn" style={{width:'100%'}} onClick={()=>startNslPlayoff(court)}>▶ Playoff decider (first to {nslPlayoffTarget})</button>}{po&&<div><div style={{color:'#bcd6f5',fontWeight:700,marginBottom:'4px'}}>Playoff · first to {po.target}: {po.aName} <strong style={{color:'#86efac'}}>{po.aPts}</strong> — <strong style={{color:'#86efac'}}>{po.bPts}</strong> {po.bName}</div>{!po.winner&&<div>{pr&&<div style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'2px 0 6px'}}>Rally {(po.rally||0)+1}: <strong>{pr.a||'—'}</strong> v <strong>{pr.b||'—'}</strong></div>}<div className="buttonRow" style={{flexWrap:'wrap',gap:'6px'}}><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'a')}>{po.aName} won</button><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'b')}>{po.bName} won</button><button type="button" className="secondaryBtn" onClick={()=>undoNslPlayoffPoint(court)}>Undo</button><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear</button></div></div>}{po.winner&&<div><div style={{color:'#86efac',fontWeight:800,margin:'4px 0'}}>🏆 {po.winner==='a'?po.aName:po.bName} win the playoff {po.aPts}–{po.bPts}{po.awardMp>0?` · +${po.awardMp} MP`:''}</div><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear playoff</button></div>}</div>}</div>;})()}
                   </div>)}
                 </div>
                 <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={resetNslScores}>Reset NSSL Scores</button></div>
@@ -21224,9 +21241,12 @@ function NsslMasterDisplay({host}){
   const periodLabel=nsslPeriodLabel(activeKey);
   const courtData=fixtures.map(f=>{
     const cp=courts[f.court];
-    return {court:f.court,teamA:cp?.teamA||f.a||{name:'Team A',players:[]},teamB:cp?.teamB||f.b||{name:'Team B',players:[]},periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,onCourtA:cp?.onCourtA||null,onCourtB:cp?.onCourtB||null,subsUsed:cp?.subsUsed||{},playerTime:cp?.playerTime||{a:{},b:{}},connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
+    return {court:f.court,teamA:nsslPreferRealTeam(cp?.teamA,f.a,{name:'Team A',players:[]}),teamB:nsslPreferRealTeam(cp?.teamB,f.b,{name:'Team B',players:[]}),periods:cp?.periods||{},totals:cp?nsslCourtTotals(cp):{a:0,b:0},powerPlay:cp?.powerPlay||null,onCourtA:cp?.onCourtA||null,onCourtB:cp?.onCourtB||null,subsUsed:cp?.subsUsed||{},playerTime:cp?.playerTime||{a:{},b:{}},connected:!!cp,stale:cp&&cp.updatedAt?(Date.now()-cp.updatedAt>15000):false};
   });
-  const league=nsslBuildLeague(courtData);
+  const playoffs=(clock&&clock.playoffs)||{};
+  const playoffBonuses={};
+  Object.values(playoffs).forEach(p=>{if(p&&p.winner){const nm=p.winner==='a'?p.aName:p.bName;if(nm)playoffBonuses[nm]=(playoffBonuses[nm]||0)+(Number(p.awardMp)||0);}});
+  const league=nsslBuildLeague(courtData,playoffBonuses);
 
   return <div className="playerDisplayPage nsslMaPage">
     <style>{`
@@ -21267,6 +21287,7 @@ function NsslMasterDisplay({host}){
 .nsslMaTbl tr.lead td{background:#0d2417;color:#bff0d0;}
 .nsslMaTbl tr.lead td.nm::before{content:'👑 ';}
 .nsslMaWait{text-align:center;color:#6b8299;font-style:italic;padding:8px;}
+.nsslMaPlayoff{margin-top:8px;text-align:center;background:#0c1a2e;border:1px solid #25405f;color:#bcd6f5;border-radius:8px;padding:5px 8px;font-size:0.82rem;font-weight:700;}
 `}</style>
     <div className="nsslMaHead">
       <div className="nsslMaTitle"><span>● LIVE</span><h1>NSSL · Live League</h1></div>
@@ -21289,6 +21310,7 @@ function NsslMasterDisplay({host}){
         </div>
         {(c.teamA.players?.length||c.teamB.players?.length)?<div className="nsslMaPlayers">{[...(c.teamA.players||[]),'·',...(c.teamB.players||[])].map((p,i)=><span key={i}>{p}</span>)}</div>:null}
         {ppName&&<div className="nsslMaPPbadge">⚡ Power Play: {ppName}{c.powerPlay.seconds!=null?` · ${nsslFmtTime(c.powerPlay.seconds)}`:''}</div>}
+        {playoffs[c.court]&&<div className="nsslMaPlayoff">{playoffs[c.court].winner?`🏆 Playoff: ${playoffs[c.court].winner==='a'?playoffs[c.court].aName:playoffs[c.court].bName} win ${playoffs[c.court].aPts}–${playoffs[c.court].bPts}${playoffs[c.court].awardMp>0?` · +${playoffs[c.court].awardMp} MP`:''}`:`⚔ Playoff: ${playoffs[c.court].aName} ${playoffs[c.court].aPts}–${playoffs[c.court].bPts} ${playoffs[c.court].bName} (first to ${playoffs[c.court].target})`}</div>}
         {minSec>0&&under.length>0&&<div className="nsslMaUnder">⏱ Needs court time ({periodLabel}): {under.join(', ')}</div>}
       </div>;
     })}</div>:<p className="nsslMaWait">Waiting for the organiser to generate fixtures…</p>}
