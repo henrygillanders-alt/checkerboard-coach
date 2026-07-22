@@ -185,7 +185,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v465 NSSL fix: the competition Player Display Rules box was hard-coded to Invasion rules regardless of mode, so the NSSL display showed a mix of NSSL header/focus and Invasion rules. It now renders the current mode\'s own rules (current.rules) — NSSL shows NSSL rules, Invasion shows Invasion, etc. Builds on v464.';
+const APP_VERSION='v467 Players module: you can now edit a guest player\'s ranking / seed. The Edit Player form now shows a "Guest ranking / seed" number field for guest (and coach) players alongside the guest estimate, so a guest added on the fly can have their seed corrected later — it feeds ranked court allocation the same way (lower number = stronger). Previously only the quick Add-Guest box could set a seed and there was no way to change it afterwards. Builds on v466.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -12700,7 +12700,7 @@ useEffect(()=>{try{localStorage.setItem(ATTENDANCE_DATE_KEY,sessionDate);}catch{
 function saveSnapshot(){setHistory([...history,players]);}
 function undo(){if(history.length===0)return;setPlayers(history[history.length-1]);setHistory(history.slice(0,-1));}
 function updateCategory(category){const found=LEVELS.find(level=>level.label===category);setForm({...form,category,level:found?found.level:1});}
-function savePlayer(){if(!form.name.trim())return;saveSnapshot();const clean={...form,name:form.name.trim(),present:!!form.present};if(editing!==null){const updated=[...players];updated[editing]=clean;setPlayers(updated);}else setPlayers([...players,{...clean,present:false}]);setForm(EMPTY_PLAYER);setEditing(null);setShowForm(false);}
+function savePlayer(){if(!form.name.trim())return;saveSnapshot();const clean={...form,name:form.name.trim(),present:!!form.present,ranking:(form.juniorRanking||'').toString().trim()};if(editing!==null){const updated=[...players];updated[editing]=clean;setPlayers(updated);}else setPlayers([...players,{...clean,present:false}]);setForm(EMPTY_PLAYER);setEditing(null);setShowForm(false);}
 function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({...EMPTY_PLAYER,...clean});setEditing(index);setShowForm(true);window.scrollTo(0,0);}
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
@@ -12747,7 +12747,7 @@ return <div className="page">
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
 <select value={form.category} onChange={e=>updateCategory(e.target.value)}>{LEVELS.map(level=><option key={level.label}>{level.label}</option>)}<option>Guest</option></select>
-{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<input placeholder="Guest estimate" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/><input placeholder="Rate limiter (the one constraint most holding them back right now — CLA)" value={form.rateLimiter||''} onChange={e=>setForm({...form,rateLimiter:e.target.value})}/>
+{form.playerType==='Programme Player'?<input type="number" placeholder="Junior Programme Ranking" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/>:<><input placeholder="Guest estimate (e.g. Level 3 guest)" value={form.guestEstimate||''} onChange={e=>setForm({...form,guestEstimate:e.target.value})}/><input type="number" inputMode="numeric" placeholder="Guest ranking / seed e.g. 7 (lower = stronger)" value={form.juniorRanking||''} onChange={e=>setForm({...form,juniorRanking:e.target.value})}/></>}<textarea placeholder="Current coaching focus" value={form.focus||''} onChange={e=>setForm({...form,focus:e.target.value})}/><input placeholder="Rate limiter (the one constraint most holding them back right now — CLA)" value={form.rateLimiter||''} onChange={e=>setForm({...form,rateLimiter:e.target.value})}/>
 <div className="playerIdentityFields">
 <label className="playerIdentityLabel">Animal Identity
 <select value={form.animal||''} onChange={e=>setForm({...form,animal:e.target.value})}><option value="">No animal set</option>{PLAYER_ANIMALS.map(a=><option key={a.name} value={a.name}>{a.emoji} {a.name} — {a.trait}</option>)}<option value="__custom__">🐾 Custom animal…</option></select>
@@ -12965,6 +12965,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslPowerPlayActive,setNslPowerPlayActive]=useState(()=>getSavedCompetitionState().nslPowerPlayActive||false);
   const [nsslCopied,setNsslCopied]=useState('');
   const [nslMinPlayerMins,setNslMinPlayerMins]=useState(()=>Number(getSavedCompetitionState().nslMinPlayerMins)||0);
+  const [nslUnlimitedSubs,setNslUnlimitedSubs]=useState(()=>!!getSavedCompetitionState().nslUnlimitedSubs);
+  const [nslSubLimits,setNslSubLimits]=useState(()=>getSavedCompetitionState().nslSubLimits||{p1:2,p2:2,p3:4,ot:4});
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
@@ -14130,7 +14132,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(mode!=='nsl')return;
     const handle=setTimeout(()=>{
       try{
-        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:{p1:2,p2:2,p3:4,ot:4},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
+        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:nslUnlimitedSubs?{p1:9999,p2:9999,p3:9999,ot:9999}:{p1:Number(nslSubLimits.p1)||0,p2:Number(nslSubLimits.p2)||0,p3:Number(nslSubLimits.p3)||0,ot:Number(nslSubLimits.ot)||0},fixtures:nsslDetailedFixtures(),updatedAt:Date.now()};
         writeLivePlayerRoom(nsslClockRoomId(nsslHostBase),'nsslclock',payload);
       }catch{}
     },300);
@@ -14282,6 +14284,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       nslPowerPlaySeconds,
       nslPowerPlayActive,
       nslMinPlayerMins,
+      nslUnlimitedSubs,
+      nslSubLimits,
       updatedAt:new Date().toISOString()
     };
   }
@@ -15258,7 +15262,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     <input type="number" min="0" step="0.5" value={nslMinPlayerMins} onChange={e=>{const v=e.target.value;setNslMinPlayerMins(v===''?'':Number(v));}} onBlur={e=>{if(e.target.value==='')setNslMinPlayerMins(0);}} style={{width:'80px',padding:'8px',borderRadius:'8px',border:'1px solid #2c3c4e',background:'#0f1822',color:'#eaf4fb',fontWeight:700}}/>
                     <span style={{color:'#8aa0b6'}}>min {Number(nslMinPlayerMins)>0?'· court devices warn captains when a player is under':'· 0 = off'}</span>
                   </div>
-                  <p className="overlayExplain" style={{marginTop:'6px'}}>Court devices also count substitutions per period (2 · 2 · 4) and warn captains at the limit.</p>
+                  <div style={{marginTop:'10px'}}><label style={{display:'flex',alignItems:'center',gap:'8px',cursor:'pointer'}}><input type="checkbox" checked={nslUnlimitedSubs} onChange={e=>setNslUnlimitedSubs(e.target.checked)}/><span style={{fontWeight:700,color:'#bcd6f5'}}>Unlimited substitutions</span></label>{!nslUnlimitedSubs&&<div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'8px'}}>{[['p1','P1'],['p2','P2'],['p3','P3'],['ot','OT']].map(([k,lab])=><label key={k} style={{display:'flex',flexDirection:'column',gap:'3px',fontSize:'0.78rem',color:'#8aa0b6',fontWeight:700}}>Subs {lab}<input type="number" min="0" value={nslSubLimits[k]} onChange={e=>{const v=e.target.value;setNslSubLimits(s=>({...s,[k]:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setNslSubLimits(s=>({...s,[k]:0}));}} style={{width:'62px',padding:'6px',borderRadius:'8px',border:'1px solid #2c3c4e',background:'#0f1822',color:'#eaf4fb',fontWeight:700}}/></label>)}</div>}<p className="overlayExplain" style={{marginTop:'6px'}}>{nslUnlimitedSubs?'Unlimited subs — court devices will not warn on substitutions. Use Min court time / player above to make sure everyone gets on.':'Court devices warn captains when a team reaches its per-period substitution limit.'}</p></div>
                   <div style={{display:'grid',gap:'8px',marginTop:'10px'}}>
                     {nsslDetailedFixtures().map((fx,idx)=><div key={idx} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
                       <span style={{fontWeight:800,color:'#9cc4ec'}}>Court {idx+1} — {fx.a.name} v {fx.b.name}</span>
