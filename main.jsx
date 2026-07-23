@@ -103,6 +103,7 @@ function nsslPeriodKeyFor(activePeriod){return NSSL_PERIOD_KEYS[(Number(activePe
 function nsslPeriodLabel(key){return ({p1:'P1',p2:'P2',p3:'P3',ot:'OT'})[key]||String(key||'').toUpperCase();}
 function nsslPeriodWeight(key){return key==='p3'?2:1;}
 function nsslFmtTime(seconds){const s=Math.max(0,Math.floor(Number(seconds)||0));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+function nsslLiveRemaining(clock){if(!clock)return 0;if(clock.running&&clock.endsAt){return Math.max(0,Math.round((clock.endsAt-Date.now())/1000));}return Math.max(0,Number(clock.secondsRemaining)||0);}
 function nsslCourtTotals(courtPayload){
   const per=courtPayload&&courtPayload.periods||{};
   let a=0,b=0; NSSL_PERIOD_KEYS.forEach(k=>{a+=Number(per[k]?.a||0);b+=Number(per[k]?.b||0);});
@@ -219,7 +220,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v480 NSSL clock fix — changing a period length now updates the live clock. Previously editing e.g. Period 1 from 15 to 5 min in set-up did not change the running clock value, so the court and master scoring screens kept showing the old time until you tapped Reset Period. Now, if you change the length of the period that is currently active and the timer is not running, the clock (and the scoring screens) update to the new time immediately. Builds on v479.';
+const APP_VERSION='v481 NSSL timing rebuilt on real wall-clock. The match clock and the player on-court timers previously counted one second per timer tick, which drifts when the browser throttles timers (backgrounded organiser tab, iOS power-saving) — causing the slow clock and inflated player times you saw. The clock now works from an absolute end-timestamp broadcast to every screen, so each device computes the true remaining time locally and stays correct even if the organiser tab is asleep; player time now accumulates by real elapsed seconds (capped per tick so a long background gap can't over-count one player). Clock and player times stay in sync with real time. Builds on v480.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -13001,6 +13002,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslActivePeriod,setNslActivePeriod]=useState(()=>getSavedCompetitionState().nslActivePeriod||1);
   const [nslRoundSeconds,setNslRoundSeconds]=useState(()=>getSavedCompetitionState().nslRoundSeconds ?? 20*60);
   const [nslTimerRunning,setNslTimerRunning]=useState(false);
+  const clockEndRef=useRef(null);
   const [nslPowerPlayTeam,setNslPowerPlayTeam]=useState(()=>getSavedCompetitionState().nslPowerPlayTeam||'');
   const [nslPowerPlaySeconds,setNslPowerPlaySeconds]=useState(()=>getSavedCompetitionState().nslPowerPlaySeconds||60);
   const [nslPowerPlayActive,setNslPowerPlayActive]=useState(()=>getSavedCompetitionState().nslPowerPlayActive||false);
@@ -14177,8 +14179,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
 
   useEffect(()=>{
-    if(!nslTimerRunning) return;
-    const id=setInterval(()=>setNslRoundSeconds(prev=>Math.max(0,Number(prev)-1)),1000);
+    if(!nslTimerRunning){clockEndRef.current=null;return;}
+    const endAt=Date.now()+Math.max(0,Number(nslRoundSeconds)||0)*1000;
+    clockEndRef.current=endAt;
+    const id=setInterval(()=>{
+      const rem=Math.max(0,Math.round((endAt-Date.now())/1000));
+      setNslRoundSeconds(rem);
+      if(rem<=0)setNslTimerRunning(false);
+    },250);
     return ()=>clearInterval(id);
   },[nslTimerRunning]);
   useEffect(()=>{
@@ -14192,7 +14200,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(mode!=='nsl')return;
     const handle=setTimeout(()=>{
       try{
-        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:nslUnlimitedSubs?{p1:9999,p2:9999,p3:9999,ot:9999}:{p1:Number(nslSubLimits.p1)||0,p2:Number(nslSubLimits.p2)||0,p3:Number(nslSubLimits.p3)||0,ot:Number(nslSubLimits.ot)||0},fixtures:nslActiveFixtures(),playoffs:nslPlayoffs,ppSeconds:Math.max(5,Number(nslPpSeconds)||NSSL_PP_SECONDS),matchEpoch:nslMatchEpoch,updatedAt:Date.now()};
+        const payload={type:'nsslclock',activePeriod:nslActivePeriod,secondsRemaining:nslRoundSeconds,running:nslTimerRunning,periods:{p1:nslPeriod1,p2:nslPeriod2,p3:nslPeriod3,ot:nslOvertime},minPlayerSeconds:Math.max(0,Math.round((Number(nslMinPlayerMins)||0)*60)),subLimits:nslUnlimitedSubs?{p1:9999,p2:9999,p3:9999,ot:9999}:{p1:Number(nslSubLimits.p1)||0,p2:Number(nslSubLimits.p2)||0,p3:Number(nslSubLimits.p3)||0,ot:Number(nslSubLimits.ot)||0},fixtures:nslActiveFixtures(),playoffs:nslPlayoffs,ppSeconds:Math.max(5,Number(nslPpSeconds)||NSSL_PP_SECONDS),matchEpoch:nslMatchEpoch,endsAt:nslTimerRunning?(clockEndRef.current||(Date.now()+Math.max(0,Number(nslRoundSeconds)||0)*1000)):null,updatedAt:Date.now()};
         writeLivePlayerRoom(nsslClockRoomId(nsslHostBase),'nsslclock',payload);
       }catch{}
     },300);
@@ -21077,6 +21085,7 @@ function NsslCourtScorer({court,host}){
   const [onCourtIdx,setOnCourtIdx]=useState(()=>nsslSaved?.onCourtIdx||{a:0,b:0});
   const [playerTime,setPlayerTime]=useState(()=>nsslSaved?.playerTime||{a:{},b:{}});
   const ptRef=useRef({a:{},b:{}});
+  const ptLastRef=useRef(0);
   useEffect(()=>{ptRef.current=playerTime;},[playerTime]);
   const [subsUsed,setSubsUsed]=useState(()=>nsslSaved?.subsUsed||{p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
   const [resetArmed,setResetArmed]=useState(false);
@@ -21109,9 +21118,15 @@ function NsslCourtScorer({court,host}){
   useEffect(()=>{if(!pp.active)return;const id=setInterval(()=>setPp(p=>{const s=p.seconds-1;if(s<=0)return {side:null,active:false,seconds:NSSL_PP_SECONDS};return {...p,seconds:s};}),1000);return ()=>clearInterval(id);},[pp.active]);
 
   useEffect(()=>{
+    ptLastRef.current=Date.now();
     const id=setInterval(()=>{
-      const t=tickRef.current; if(!t.running)return;
-      setPlayerTime(pt=>{const next={a:{...pt.a},b:{...pt.b}}; if(t.aName)next.a[t.aName]=(next.a[t.aName]||0)+1; if(t.bName)next.b[t.bName]=(next.b[t.bName]||0)+1; return next;});
+      const now=Date.now();
+      const dt=(now-ptLastRef.current)/1000;
+      ptLastRef.current=now;
+      const t=tickRef.current;
+      if(!t.running||dt<=0)return;
+      const add=Math.min(dt,3); // wall-clock delta; cap guards against a long background gap over-counting one player
+      setPlayerTime(pt=>{const next={a:{...pt.a},b:{...pt.b}}; if(t.aName)next.a[t.aName]=(next.a[t.aName]||0)+add; if(t.bName)next.b[t.bName]=(next.b[t.bName]||0)+add; return next;});
     },1000);
     return ()=>clearInterval(id);
   },[]);
@@ -21261,7 +21276,7 @@ function NsslCourtScorer({court,host}){
     <div className="nsslScTop"><span className="nsslScLive">● COURT {court}</span><h1>NSSL Court {court}</h1><p>{status}</p></div>
     <div className="nsslScClock">
       <div className="nsslScClockPeriod">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):'—'}</div>
-      <div className="nsslScClockTime">{clock?nsslFmtTime(clock.secondsRemaining):'--:--'}</div>
+      <div className="nsslScClockTime">{clock?nsslFmtTime(nsslLiveRemaining(clock)):'--:--'}</div>
       <div className="nsslScClockState">{clock?(clock.running?'running':'paused'):'waiting for organiser'} · shared league clock</div>
     </div>
     {subAtLimit&&<div className="nsslScBanner subs">⚠ Substitution limit reached this period ({nsslPeriodLabel(activeKey)}: {subLimits[activeKey]} subs)</div>}
@@ -21274,6 +21289,8 @@ function NsslCourtScorer({court,host}){
 
 function NsslMasterDisplay({host}){
   useWakeLock();
+  const [,setMaNow]=useState(0);
+  useEffect(()=>{const id=setInterval(()=>setMaNow(x=>(x+1)%1000000),1000);return ()=>clearInterval(id);},[]);
   const [clock,setClock]=useState(null);
   const [courts,setCourts]=useState({});
   const [status,setStatus]=useState('Connecting…');
@@ -21348,7 +21365,7 @@ function NsslMasterDisplay({host}){
 `}</style>
     <div className="nsslMaHead">
       <div className="nsslMaTitle"><span>● LIVE</span><h1>NSSL · Live League</h1></div>
-      <div className="nsslMaClock"><div className="p">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):status}</div><div className="t">{clock?nsslFmtTime(clock.secondsRemaining):'--:--'}</div><div className="s">{clock?(clock.running?'running':'paused'):'shared league clock'}</div></div>
+      <div className="nsslMaClock"><div className="p">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):status}</div><div className="t">{clock?nsslFmtTime(nsslLiveRemaining(clock)):'--:--'}</div><div className="s">{clock?(clock.running?'running':'paused'):'shared league clock'}</div></div>
     </div>
     {courtData.length>0?<div className="nsslMaGrid">{courtData.map(c=>{
       const aLead=c.totals.a>c.totals.b,bLead=c.totals.b>c.totals.a;
