@@ -102,6 +102,7 @@ const NSSL_PP_SECONDS=120;
 function nsslPeriodKeyFor(activePeriod){return NSSL_PERIOD_KEYS[(Number(activePeriod)||1)-1]||'p1';}
 function nsslPeriodLabel(key){return ({p1:'P1',p2:'P2',p3:'P3',ot:'OT'})[key]||String(key||'').toUpperCase();}
 function nsslPeriodWeight(key){return key==='p3'?2:1;}
+function nsslMatchPointsFromPeriods(periods){let a=0,b=0;NSSL_PERIOD_KEYS.forEach(k=>{const pa=Number((periods&&periods[k]&&periods[k].a)||0),pb=Number((periods&&periods[k]&&periods[k].b)||0);if(pa===0&&pb===0)return;const w=nsslPeriodWeight(k);if(pa>pb)a+=w;else if(pb>pa)b+=w;});return {a,b};}
 function nsslFmtTime(seconds){const s=Math.max(0,Math.floor(Number(seconds)||0));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
 function nsslLiveRemaining(clock){if(!clock)return 0;if(clock.running&&clock.endsAt){return Math.max(0,Math.round((clock.endsAt-Date.now())/1000));}return Math.max(0,Number(clock.secondsRemaining)||0);}
 function nsslCourtTotals(courtPayload){
@@ -220,7 +221,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v483 Deploy fix. The v481 version text contained an apostrophe inside a single-quoted string, which ended the string early and broke the build parser (esbuild and Rolldown both rejected it). This build is the same code as v482 with that version text corrected, so it compiles cleanly. No functional change from v482. Builds on v482.';
+const APP_VERSION='v485 NSSL knockout now works out each semi-final winner automatically from the live court score (or the drawn-court Playoff decider result) and highlights it in green in the Knockout panel, so you normally just tap Generate Final. You can still tap a team to override. Clearer prompt added. Includes all of v484 (per-round scoring display, organiser cards mirror live court scores, Power Play defaults to 1 min). Builds on v484.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -12991,7 +12992,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslPeriod2,setNslPeriod2]=useState(()=>getSavedCompetitionState().nslPeriod2||20);
   const [nslPeriod3,setNslPeriod3]=useState(()=>getSavedCompetitionState().nslPeriod3||30);
   const [nslOvertime,setNslOvertime]=useState(()=>{const v=getSavedCompetitionState().nslOvertime;return v==null?0:Number(v);});
-  const [nslPpSeconds,setNslPpSeconds]=useState(()=>Number(getSavedCompetitionState().nslPpSeconds)||NSSL_PP_SECONDS);
+  const [nslPpSeconds,setNslPpSeconds]=useState(()=>Number(getSavedCompetitionState().nslPpSeconds)||60);
+  const [nslCourtLive,setNslCourtLive]=useState({});
   const [nslMatchEpoch,setNslMatchEpoch]=useState(()=>Number(getSavedCompetitionState().nslMatchEpoch)||0);
   const [nslEndMatchArmed,setNslEndMatchArmed]=useState(false);
   const nslEndMatchTimerRef=useRef(null);
@@ -14169,7 +14171,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function doEndMatch(){setNslScores({});setNslPlayoffs({});setNslMatchEpoch(e=>(Number(e)||0)+1);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();setNslEndMatchArmed(false);}
   function armEndMatch(){if(nslEndMatchArmed){if(nslEndMatchTimerRef.current)clearTimeout(nslEndMatchTimerRef.current);doEndMatch();}else{setNslEndMatchArmed(true);if(nslEndMatchTimerRef.current)clearTimeout(nslEndMatchTimerRef.current);nslEndMatchTimerRef.current=setTimeout(()=>setNslEndMatchArmed(false),4000);}}
   function resetNslKnockoutScores(){setNslScores({});setNslPlayoffs({});setNslMatchEpoch(e=>(Number(e)||0)+1);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();}
-  function generateNslFinals(){const semis=nsslDetailedFixtures();const c1=semis.find(f=>Number(f.court)===1),c2=semis.find(f=>Number(f.court)===2);if(!c1||!c2){alert('Need two semi-final courts (4 teams) to generate the final and 3rd/4th play-off.');return;}const s1=nslSemiWinners[1],s2=nslSemiWinners[2];if(s1!=='a'&&s1!=='b'){alert('Pick the Court 1 semi-final winner first.');return;}if(s2!=='a'&&s2!=='b'){alert('Pick the Court 2 semi-final winner first.');return;}const w1=s1==='a'?c1.a:c1.b,l1=s1==='a'?c1.b:c1.a;const w2=s2==='a'?c2.a:c2.b,l2=s2==='a'?c2.b:c2.a;setNslFinalsFixtures([{court:1,label:'FINAL',a:w1,b:w2},{court:2,label:'3rd / 4th Play-off',a:l1,b:l2}]);setNslStage('finals');resetNslKnockoutScores();}
+  function nslCourtWinnerSide(court){const po=nslPlayoffs[court];if(po&&po.winner)return po.winner;const live=nslCourtLive[court];if(live&&live.periods){const mp=nsslMatchPointsFromPeriods(live.periods);if(mp.a>mp.b)return 'a';if(mp.b>mp.a)return 'b';const t=live.totals||{};if(Number(t.a||0)>Number(t.b||0))return 'a';if(Number(t.b||0)>Number(t.a||0))return 'b';}return null;}
+  function generateNslFinals(){const semis=nsslDetailedFixtures();const c1=semis.find(f=>Number(f.court)===1),c2=semis.find(f=>Number(f.court)===2);if(!c1||!c2){alert('Need two semi-final courts (4 teams) to generate the final and 3rd/4th play-off.');return;}const s1=nslSemiWinners[1]||nslCourtWinnerSide(1),s2=nslSemiWinners[2]||nslCourtWinnerSide(2);if(s1!=='a'&&s1!=='b'){alert('Court 1 is level on the score — tap the Court 1 winner, or settle it with the Playoff decider first.');return;}if(s2!=='a'&&s2!=='b'){alert('Court 2 is level on the score — tap the Court 2 winner, or settle it with the Playoff decider first.');return;}const w1=s1==='a'?c1.a:c1.b,l1=s1==='a'?c1.b:c1.a;const w2=s2==='a'?c2.a:c2.b,l2=s2==='a'?c2.b:c2.a;setNslFinalsFixtures([{court:1,label:'FINAL',a:w1,b:w2},{court:2,label:'3rd / 4th Play-off',a:l1,b:l2}]);setNslStage('finals');resetNslKnockoutScores();}
   function backToNslSemis(){setNslStage('semis');setNslFinalsFixtures([]);setNslSemiWinners({});resetNslKnockoutScores();}
   function nsslPlayoffPairs(court){const fx=nslActiveFixtures().find(f=>Number(f.court)===Number(court));if(!fx)return [];const A=(fx.a&&fx.a.players)||[],B=(fx.b&&fx.b.players)||[];const n=Math.max(A.length,B.length,1);const pairs=[];for(let i=0;i<n;i++){pairs.push({a:A.length?A[i%A.length]:null,b:B.length?B[i%B.length]:null});}return pairs;}
   function nslPlayoffFrom(p,hist){const target=Math.max(1,Number(p.target)||3);let a=0,b=0,winner=null;for(const s of hist){if(winner)break;if(s==='a')a++;else if(s==='b')b++;if(a>=target)winner='a';else if(b>=target)winner='b';}return {aPts:a,bPts:b,winner};}
@@ -14203,6 +14206,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   },[nslPowerPlayActive]);
   useEffect(()=>{if(nslPowerPlayActive&&nslPowerPlaySeconds<=0)setNslPowerPlayActive(false);},[nslPowerPlayActive,nslPowerPlaySeconds]);
   const nsslHostBase=useMemo(()=>{try{return getPersistentLiveRoomId();}catch{return 'cb-checkerboard-live';}},[]);
+  const nslCourtCount=mode==='nsl'?nslActiveFixtures().length:0;
+  useEffect(()=>{
+    if(mode!=='nsl'||nslCourtCount<1)return;
+    let cancelled=false;
+    async function loadCourts(){const out={};await Promise.all(Array.from({length:nslCourtCount},(_,i)=>i+1).map(async court=>{try{const row=await readLivePlayerRoom(nsslCourtRoomId(nsslHostBase,court));if(row&&row.payload)out[court]=row.payload;}catch{}}));if(!cancelled)setNslCourtLive(out);}
+    loadCourts();const id=setInterval(loadCourts,2500);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[mode,nsslHostBase,nslCourtCount]);
   useEffect(()=>{
     if(mode!=='nsl')return;
     const handle=setTimeout(()=>{
@@ -15380,22 +15391,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 <div className="nslScoreCourtGrid">
                   {nslActiveFixtures().map((fixture,idx)=><div className="nslCourtScoreCard" key={idx}>
                     <h4>Court {idx+1}{fixture.label?` · ${fixture.label}`:''}</h4>
-                    {[fixture.a,fixture.b].filter(t=>t&&t.name&&t.name!=='BYE').map(team=><div className={nslPowerPlayActive&&nslPowerPlayTeam===team.name?'nslTeamScoreBox activePowerTeam':'nslTeamScoreBox'} key={team.name}>
+                    {(()=>{const live=nslCourtLive[idx+1];const ak=nsslPeriodKeyFor(nslActivePeriod);const mp=nsslMatchPointsFromPeriods(live&&live.periods);return [['a',fixture.a],['b',fixture.b]].filter(([s,t])=>t&&t.name&&t.name!=='BYE').map(([side,team])=>{const roundScore=live&&live.periods&&live.periods[ak]?Number(live.periods[ak][side]||0):0;const total=live&&live.totals?Number(live.totals[side]||0):0;return <div className="nslTeamScoreBox" key={team.name}>
                       <div>
                         <span>{team.name}{team.captain?<small style={{display:'block',color:'#ffd479',fontWeight:700}}>© {team.captain}</small>:null}</span>
-                        <strong>{getNslScore(team.name,idx)}</strong>
+                        <strong>{roundScore}</strong>
                       </div>
                       {team.players&&team.players.length>0&&<div style={{fontSize:'0.78rem',color:'#9fb0c2',margin:'2px 0 6px',gridColumn:'1 / -1'}}>{team.players.map(p=>p===team.captain?`${p} (C)`:p).join(' · ')}</div>}
-                      <div className="nslScoreControls">
-                        <button type="button" className="secondaryBtn" onClick={()=>adjustNslScore(team.name,-1,idx)}>-1</button>
-                        <button type="button" className="primaryBtn" onClick={()=>adjustNslScore(team.name,1,idx)}>+1</button>
-                        <button type="button" className="secondaryBtn" style={nslPowerPlayActive&&nslPowerPlayTeam===team.name?{background:'#2a2410',borderColor:'#c9a24a',color:'#ffd479',fontWeight:800}:undefined} onClick={()=>startNslPowerPlay(team.name)}>⚡ Power Play</button>
-                      </div>
-                    </div>)}
+                      <div style={{fontSize:'0.8rem',color:'#8aa0b6',gridColumn:'1 / -1'}}>{live?`This round · match pts ${side==='a'?mp.a:mp.b} · total ${total}`:'Waiting for court device…'}</div>
+                    </div>;});})()}
                     {(()=>{const court=idx+1;const po=nslPlayoffs[court];const pairs=po&&!po.winner?nsslPlayoffPairs(court):[];const pr=pairs.length?pairs[(po.rally||0)%pairs.length]:null;return <div style={{marginTop:'8px',padding:'8px 10px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'10px'}}>{!po&&<button type="button" className="secondaryBtn" style={{width:'100%'}} onClick={()=>startNslPlayoff(court)}>▶ Playoff decider (first to {nslPlayoffTarget})</button>}{po&&<div><div style={{color:'#bcd6f5',fontWeight:700,marginBottom:'4px'}}>Playoff · first to {po.target}: {po.aName} <strong style={{color:'#86efac'}}>{po.aPts}</strong> — <strong style={{color:'#86efac'}}>{po.bPts}</strong> {po.bName}</div>{!po.winner&&<div>{pr&&<div style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'2px 0 6px'}}>Rally {(po.rally||0)+1}: <strong>{pr.a||'—'}</strong> v <strong>{pr.b||'—'}</strong></div>}<div className="buttonRow" style={{flexWrap:'wrap',gap:'6px'}}><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'a')}>{po.aName} won</button><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'b')}>{po.bName} won</button><button type="button" className="secondaryBtn" onClick={()=>undoNslPlayoffPoint(court)}>Undo</button><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear</button></div></div>}{po.winner&&<div><div style={{color:'#86efac',fontWeight:800,margin:'4px 0'}}>🏆 {po.winner==='a'?po.aName:po.bName} win the playoff {po.aPts}–{po.bPts}{po.awardMp>0?` · +${po.awardMp} MP`:''}</div><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear playoff</button></div>}</div>}</div>;})()}
                   </div>)}
                 </div>
-                {(()=>{const semis=nsslDetailedFixtures();const two=semis.length===2&&semis.every(f=>f.a&&f.b&&f.a.name!=='BYE'&&f.b.name!=='BYE');return <div style={{marginTop:'14px',padding:'12px 14px',background:'#0f1822',border:'1px solid #223044',borderRadius:'12px'}}><div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'8px'}}><span style={{fontWeight:800,color:'#9cc4ec',fontSize:'1.05rem'}}>Knockout</span><span style={{color:'#8aa0b6',fontSize:'0.82rem'}}>Stage: {nslStage==='finals'?'Final & 3rd/4th play-off':'Semi-finals'}</span></div>{nslStage!=='finals'&&(two?<div><p style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'0 0 8px'}}>When both semi-finals are decided, tap each winner then generate the final and 3rd/4th play-off.</p>{semis.map((f,ix)=>{const court=ix+1;const pick=nslSemiWinners[court];return <div key={court} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'4px 0'}}><span style={{color:'#9fb0c2',fontSize:'0.85rem',minWidth:'110px'}}>Court {court} semi</span><button type="button" className="secondaryBtn" style={pick==='a'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'a'}))}>{f.a.name}</button><span style={{color:'#6b8299'}}>v</span><button type="button" className="secondaryBtn" style={pick==='b'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'b'}))}>{f.b.name}</button></div>;})}<button type="button" className="primaryBtn" style={{marginTop:'8px'}} onClick={generateNslFinals}>Generate Final & 3rd/4th Play-off</button></div>:<p style={{color:'#8aa0b6',fontSize:'0.85rem',margin:0}}>Finals need exactly two semi-final courts (4 teams). You currently have {semis.length} court{semis.length===1?'':'s'}.</p>)}{nslStage==='finals'&&<div>{(nslFinalsFixtures||[]).map((f,ix)=><div key={ix} style={{color:'#eaf4fb',fontSize:'0.9rem',margin:'2px 0'}}><strong style={{color:'#ffd479'}}>{f.label}</strong> · Court {f.court}: {f.a.name} v {f.b.name}</div>)}<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={backToNslSemis}>← Back to semi-finals</button></div>}</div>;})()}
+                {(()=>{const semis=nsslDetailedFixtures();const two=semis.length===2&&semis.every(f=>f.a&&f.b&&f.a.name!=='BYE'&&f.b.name!=='BYE');return <div style={{marginTop:'14px',padding:'12px 14px',background:'#0f1822',border:'1px solid #223044',borderRadius:'12px'}}><div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'8px'}}><span style={{fontWeight:800,color:'#9cc4ec',fontSize:'1.05rem'}}>Knockout</span><span style={{color:'#8aa0b6',fontSize:'0.82rem'}}>Stage: {nslStage==='finals'?'Final & 3rd/4th play-off':'Semi-finals'}</span></div>{nslStage!=='finals'&&(two?<div><p style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'0 0 8px'}}>The winner of each semi is filled in automatically from the score (highlighted green). Tap a team only to override, then Generate.</p>{semis.map((f,ix)=>{const court=ix+1;const auto=nslCourtWinnerSide(court);const pick=nslSemiWinners[court]||auto;return <div key={court} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'4px 0'}}><span style={{color:'#9fb0c2',fontSize:'0.85rem',minWidth:'110px'}}>Court {court} semi</span><button type="button" className="secondaryBtn" style={pick==='a'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'a'}))}>{f.a.name}</button><span style={{color:'#6b8299'}}>v</span><button type="button" className="secondaryBtn" style={pick==='b'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'b'}))}>{f.b.name}</button></div>;})}<button type="button" className="primaryBtn" style={{marginTop:'8px'}} onClick={generateNslFinals}>Generate Final & 3rd/4th Play-off</button></div>:<p style={{color:'#8aa0b6',fontSize:'0.85rem',margin:0}}>Finals need exactly two semi-final courts (4 teams). You currently have {semis.length} court{semis.length===1?'':'s'}.</p>)}{nslStage==='finals'&&<div>{(nslFinalsFixtures||[]).map((f,ix)=><div key={ix} style={{color:'#eaf4fb',fontSize:'0.9rem',margin:'2px 0'}}><strong style={{color:'#ffd479'}}>{f.label}</strong> · Court {f.court}: {f.a.name} v {f.b.name}</div>)}<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={backToNslSemis}>← Back to semi-finals</button></div>}</div>;})()}
                 <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={resetNslScores}>Reset NSSL Scores</button><button type="button" className="secondaryBtn dangerBtn" style={nslEndMatchArmed?{background:'#5b1620',borderColor:'#a3333f',color:'#ffd0d0',fontWeight:800}:undefined} onClick={armEndMatch}>{nslEndMatchArmed?'⚠ Tap again to END MATCH':'End Match'}</button></div><p className="overlayExplain" style={{marginTop:'6px'}}>End Match double-taps to clear every court score, the playoff and the master display, and resets the clock to Period 1.</p>
               </div>
             )}
@@ -21118,6 +21125,7 @@ function NsslCourtScorer({court,host}){
   const teamB=fixture?.b||{name:'Team B',players:[],captain:null};
   const activeKey=nsslPeriodKeyFor(clock?.activePeriod);
   const totals=useMemo(()=>{let a=0,b=0;NSSL_PERIOD_KEYS.forEach(k=>{a+=periods[k]?.a||0;b+=periods[k]?.b||0;});return {a,b};},[periods]);
+  const matchPts=useMemo(()=>nsslMatchPointsFromPeriods(periods),[periods]);
   const minSec=Number(clock?.minPlayerSeconds||0);
   const subLimits=clock?.subLimits||{p1:2,p2:2,p3:4,ot:4};
   const tickRef=useRef({running:false,aName:null,bName:null});
@@ -21215,8 +21223,8 @@ function NsslCourtScorer({court,host}){
     const ppExhausted=!onPP&&ppLeft<=0;
     return <div className={'nsslScTeam'+(onPP?' nsslScPP':'')+(locked?' nsslScLocked':'')}>
       <div className="nsslScTeamHead"><strong>{team.name}</strong>{team.captain&&<span className="nsslScCapt">©&nbsp;{team.captain}</span>}</div>
-      <div className="nsslScScore">{totals[side]}</div>
-      <div className="nsslScThisPeriod">{periodLabel} this period: {periods[activeKey]?.[side]||0}</div>
+      <div className="nsslScScore">{periods[activeKey]?.[side]||0}</div>
+      <div className="nsslScThisPeriod">Match pts {side==='a'?matchPts.a:matchPts.b} · total {totals[side]}</div>
       <div className="nsslScBtns">
         <div role="button" tabIndex={0} className="nsslScMinus" onClick={()=>score(side,-1)}>−1</div>
         <div role="button" tabIndex={0} className="nsslScPlus" onClick={()=>score(side,1)}>+1</div>
@@ -21380,13 +21388,16 @@ function NsslMasterDisplay({host}){
 .nsslMaTbl tr.lead td.nm::before{content:'👑 ';}
 .nsslMaWait{text-align:center;color:#6b8299;font-style:italic;padding:8px;}
 .nsslMaPlayoff{margin-top:8px;text-align:center;background:#0c1a2e;border:1px solid #25405f;color:#bcd6f5;border-radius:8px;padding:5px 8px;font-size:0.82rem;font-weight:700;}
+.nsslMaMp{text-align:center;color:#9cc4ec;font-weight:800;font-size:0.9rem;margin-top:2px;letter-spacing:0.02em;}
 `}</style>
     <div className="nsslMaHead">
       <div className="nsslMaTitle"><span>● LIVE</span><h1>NSSL · Live League</h1></div>
       <div className="nsslMaClock"><div className="p">{clock?(Number(clock.activePeriod)===4?'OVERTIME':`PERIOD ${clock.activePeriod}`):status}</div><div className="t">{clock?nsslFmtTime(nsslLiveRemaining(clock)):'--:--'}</div><div className="s">{clock?(clock.running?'running':'paused'):'shared league clock'}</div></div>
     </div>
     {courtData.length>0?<div className="nsslMaGrid">{courtData.map(c=>{
-      const aLead=c.totals.a>c.totals.b,bLead=c.totals.b>c.totals.a;
+      const aRound=Number((c.periods&&c.periods[activeKey]&&c.periods[activeKey].a)||0),bRound=Number((c.periods&&c.periods[activeKey]&&c.periods[activeKey].b)||0);
+      const aLead=aRound>bRound,bLead=bRound>aRound;
+      const mmp=nsslMatchPointsFromPeriods(c.periods);
       const ppName=c.powerPlay?(c.powerPlay.side==='a'?c.teamA.name:c.teamB.name):null;
       const limThis=subLimits[activeKey]||0;
       const subA=c.subsUsed?.[activeKey]?.a??0;
@@ -21396,10 +21407,11 @@ function NsslMasterDisplay({host}){
       return <div key={c.court} className={'nsslMaCourt'+(c.powerPlay?' pp':'')+(!c.connected||c.stale?' off':'')}>
         <div className="nsslMaCourtTop"><b>Court {c.court}{c.label?` · ${c.label}`:''}</b><em>{!c.connected?'no device':c.stale?'paused':'live'}</em></div>
         <div className="nsslMaScoreRow">
-          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{c.totals.a}</div>{c.onCourtA&&<div className="oc">▶ {c.onCourtA}</div>}{limThis>0&&<div className={'sb'+(subA>=limThis?' hit':'')}>subs {subA}/{limThis}</div>}</div>
+          <div className={'nsslMaSide'+(aLead?' lead':'')}><div className="nm">{c.teamA.name}</div>{c.teamA.captain&&<div className="cap">© {c.teamA.captain}</div>}<div className="sc">{aRound}</div>{c.onCourtA&&<div className="oc">▶ {c.onCourtA}</div>}{limThis>0&&<div className={'sb'+(subA>=limThis?' hit':'')}>subs {subA}/{limThis}</div>}</div>
           <div className="nsslMaVs">v</div>
-          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{c.totals.b}</div>{c.onCourtB&&<div className="oc">▶ {c.onCourtB}</div>}{limThis>0&&<div className={'sb'+(subB>=limThis?' hit':'')}>subs {subB}/{limThis}</div>}</div>
+          <div className={'nsslMaSide'+(bLead?' lead':'')}><div className="nm">{c.teamB.name}</div>{c.teamB.captain&&<div className="cap">© {c.teamB.captain}</div>}<div className="sc">{bRound}</div>{c.onCourtB&&<div className="oc">▶ {c.onCourtB}</div>}{limThis>0&&<div className={'sb'+(subB>=limThis?' hit':'')}>subs {subB}/{limThis}</div>}</div>
         </div>
+        <div className="nsslMaMp">Match points {mmp.a} – {mmp.b}</div>
         {(c.teamA.players?.length||c.teamB.players?.length)?<div className="nsslMaPlayers">{[...(c.teamA.players||[]),'·',...(c.teamB.players||[])].map((p,i)=><span key={i}>{p}</span>)}</div>:null}
         {ppName&&<div className="nsslMaPPbadge">⚡ Power Play: {ppName}{c.powerPlay.seconds!=null?` · ${nsslFmtTime(c.powerPlay.seconds)}`:''}</div>}
         {playoffs[c.court]&&<div className="nsslMaPlayoff">{playoffs[c.court].winner?`🏆 Playoff: ${playoffs[c.court].winner==='a'?playoffs[c.court].aName:playoffs[c.court].bName} win ${playoffs[c.court].aPts}–${playoffs[c.court].bPts}${playoffs[c.court].awardMp>0?` · +${playoffs[c.court].awardMp} MP`:''}`:`⚔ Playoff: ${playoffs[c.court].aName} ${playoffs[c.court].aPts}–${playoffs[c.court].bPts} ${playoffs[c.court].bName} (first to ${playoffs[c.court].target})`}</div>}
