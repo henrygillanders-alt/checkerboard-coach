@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v494 Length terminology fix. Corrected the length target from service line to short line throughout: the service line is on the front wall (the ATL/BTL height gate), the short line is on the floor (the length target). Fixed the Length Games builder depth option/text and the four v492 length cards. Front-wall service-line references left intact. Builds on v493.';
+const APP_VERSION='v498 Coach Suggestions live. Connected the delivery endpoint to the head coach Formspree form, so every suggestion (idea, CLA rationale, RLD rating, coach name) is emailed on submit as well as saved on the device. Builds on v497.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -341,11 +341,12 @@ const LENGTH_LISTS={
  height:['Full front wall','Above the line (ATL)','Below the line (BTL)'],
  depth:['Behind the short line','Open (free rally)'],
  side:['Both sides','Right side only','Left side only','Player choice'],
- shorts:['No short balls','1 short ball per rally','2 short balls per rally','2 consecutive short balls per rally','3 short balls per rally'],
+ shorts:['No short balls','1 short ball per rally','2 short balls per rally','3 short balls per rally'],
+ consecutive:['No','Yes'],
  shortShot:['Any short shot','Straight drop','Crosscourt drop','Boast','Kill','Trickle boast'],
  crosscourts:['Cross-court allowed','Straight only (no cross-court)','1 cross-court per rally','2 cross-courts per rally']
 };
-const DEFAULT_LENGTH={preset:'Full front wall — behind the short line',height:'Full front wall',depth:'Behind the short line',side:'Both sides',shorts:'No short balls',shortShot:'Any short shot',crosscourts:'Cross-court allowed'};
+const DEFAULT_LENGTH={preset:'Full front wall — behind the short line',height:'Full front wall',depth:'Behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',crosscourts:'Cross-court allowed'};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -484,7 +485,7 @@ const heightText=o.height==='Above the line (ATL)'?'Every shot must strike the f
 const depthText=o.depth==='Behind the short line'?'The second bounce must land behind the short line.':'Free rally — length is rewarded but there is no fixed target line.';
 const sideText=o.side==='Both sides'?'Both sides in play.':o.side==='Player choice'?'Player chooses the side.':(o.side.replace(' only','')+' only.');
 const shortsNum=o.shorts.indexOf('No')===0?0:o.shorts.indexOf('1')===0?1:o.shorts.indexOf('3')===0?3:2;
-const shortsConsec=o.shorts.indexOf('consecutive')>=0;
+const shortsConsec=o.consecutive==='Yes'&&shortsNum>1;
 const shortShotText=(shortsNum>0&&o.shortShot!=='Any short shot')?(' Each short ball must be a '+o.shortShot.toLowerCase()+'.'):'';
 const shortsText=shortsNum===0?'No short balls — length only; going short concedes the rally.':('Up to '+shortsNum+(shortsConsec?' consecutive':'')+' short ball'+((shortsNum===1&&!shortsConsec)?'':'s')+' per rally allowed; the next short ball concedes.'+shortShotText);
 const ccText=o.crosscourts==='Cross-court allowed'?'':o.crosscourts.indexOf('Straight')===0?' Straight only — no cross-court.':(' Up to '+(o.crosscourts.indexOf('1')===0?'1 cross-court':'2 cross-courts')+' per rally.');
@@ -4360,6 +4361,78 @@ function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
   </div>;
 }
 
+const COACH_SUGGESTIONS_KEY='checkerboard_master_coach_suggestions_v1';
+// Paste the head coach's Formspree endpoint between the quotes to email every suggestion, e.g. 'https://formspree.io/f/abcdwxyz'
+const SUGGESTION_ENDPOINT='https://formspree.io/f/xykrbbav';
+function CoachSuggestionsModule(){
+  const empty={type:'Game',title:'',description:'',cla:'',rld:4,by:''};
+  const [items,setItems]=useState(()=>{try{const s=localStorage.getItem(COACH_SUGGESTIONS_KEY);return s?JSON.parse(s):[];}catch{return[];}});
+  const [form,setForm]=useState(empty);
+  const [editId,setEditId]=useState(null);
+  const [message,setMessage]=useState('');
+  useEffect(()=>{try{localStorage.setItem(COACH_SUGGESTIONS_KEY,JSON.stringify(items));}catch{}},[items]);
+  function setField(k,v){setForm(prev=>({...prev,[k]:v}));}
+  function resetForm(){setForm(empty);setEditId(null);}
+  function sendToCoach(entry){
+    if(!SUGGESTION_ENDPOINT){setMessage('Suggestion saved on this device. Thank you.');return;}
+    const meta=rldMeta(entry.rld);
+    const payload={type:entry.type,name:entry.title,description:entry.description,claRationale:entry.cla,rld:meta.short+' — '+meta.label,suggestedBy:entry.by,date:entry.date};
+    setMessage('Suggestion saved. Sending to the head coach…');
+    try{
+      fetch(SUGGESTION_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)})
+        .then(r=>setMessage(r.ok?'Suggestion saved and sent to the head coach. Thank you.':'Saved on this device — could not send just now, it will stay saved here.'))
+        .catch(()=>setMessage('Saved on this device — could not send just now, it will stay saved here.'));
+    }catch{setMessage('Saved on this device — could not send just now, it will stay saved here.');}
+  }
+  function save(){
+    if(!form.title.trim()){setMessage('Please add a name for the suggestion.');return;}
+    if(!form.by.trim()){setMessage('Please add your name in Suggested by.');return;}
+    if(editId){
+      setItems(prev=>prev.map(it=>it.id===editId?{...it,...form,rld:Number(form.rld)}:it));
+      setMessage('Suggestion updated.');
+    }else{
+      const entry={...form,rld:Number(form.rld),id:Date.now()+Math.random(),date:new Date().toLocaleDateString()};
+      setItems(prev=>[entry,...prev]);
+      sendToCoach(entry);
+    }
+    resetForm();
+  }
+  function editItem(it){setForm({type:it.type,title:it.title,description:it.description,cla:it.cla,rld:it.rld,by:it.by});setEditId(it.id);setMessage('Editing suggestion — make your changes and Save.');}
+  function deleteItem(id){setItems(prev=>prev.filter(it=>it.id!==id));if(editId===id)resetForm();setMessage('Suggestion deleted.');}
+  function rldMeta(level){return RLD_LEVELS.find(x=>x.level===Number(level))||RLD_LEVELS[0];}
+  return <div className="gameCard coachSuggest">
+    <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;vertical-align:middle}`}</style>
+    <div className="categoryTag">Coach Suggestions</div>
+    <h2>{editId?'Edit Suggestion':'Suggest an Exercise, Activity or Game'}</h2>
+    <p className="mutedText">Share an idea for the squad. Add the CLA rationale behind it, rate where it sits on the RLD scale, and sign it with your name.</p>
+    {message&&<div className="statusBox">{message}</div>}
+    <div className="atlOptionsGrid">
+      <label>Type<select value={form.type} onChange={e=>setField('type',e.target.value)}><option>Exercise</option><option>Activity</option><option>Game</option></select></label>
+      <label>RLD level<select value={form.rld} onChange={e=>setField('rld',e.target.value)}>{RLD_LEVELS.map(r=><option key={r.level} value={r.level}>{r.short} — {r.label}</option>)}</select></label>
+      <label>Suggested by<input type="text" value={form.by} onChange={e=>setField('by',e.target.value)} placeholder="Your name"/></label>
+    </div>
+    <label className="fw">Name of the exercise / activity / game<input type="text" value={form.title} onChange={e=>setField('title',e.target.value)} placeholder="e.g. Straight-drive length ladder"/></label>
+    <label className="fw">What it is / how it works<textarea rows="3" value={form.description} onChange={e=>setField('description',e.target.value)} placeholder="Describe the setup, rules and scoring"/></label>
+    <label className="fw">CLA rationale<textarea rows="3" value={form.cla} onChange={e=>setField('cla',e.target.value)} placeholder="What is the constraint shaping? Why does it represent the game? What affordance or information does it invite?"/></label>
+    <div className="buttonRow sessionActionButtons">
+      <button type="button" className="primaryBtn" onClick={save}>{editId?'Save Changes':'Add Suggestion'}</button>
+      {editId&&<button type="button" className="secondaryBtn" onClick={resetForm}>Cancel Edit</button>}
+    </div>
+    <h3 style={{marginTop:'18px'}}>Suggestions ({items.length})</h3>
+    {items.length===0?<div className="placeholder">No suggestions yet. Be the first to add one above.</div>:
+      <div className="suggestionList">{items.map(it=>{const r=rldMeta(it.rld);return <div key={it.id} className="infoBox" style={{marginBottom:'10px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'6px'}}>
+          <strong>{it.title}</strong>
+          <span style={{display:'inline-block',padding:'2px 10px',borderRadius:'12px',fontSize:'12px',fontWeight:700,background:r.bg,color:r.textColor,border:'1px solid '+r.color}}>{r.short} · {r.label}</span>
+        </div>
+        <p style={{margin:'6px 0'}}><span className="suggestionType">{it.type}</span>{it.description}</p>
+        {it.cla&&<p style={{margin:'6px 0'}}><strong>CLA rationale:</strong> {it.cla}</p>}
+        <p className="mutedText" style={{margin:'6px 0'}}>Suggested by {it.by}{it.date?' · '+it.date:''}</p>
+        <div className="buttonRow"><button className="secondaryBtn" onClick={()=>editItem(it)}>Edit</button><button className="secondaryBtn" onClick={()=>deleteItem(it.id)}>Delete</button></div>
+      </div>;})}</div>}
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
@@ -4417,6 +4490,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
 
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('coachSuggestions')}><h2>Coach Suggestions</h2><span className="homeTileSubtitle">Ideas · CLA rationale · RLD rating</span></button>
     </div>;
 }
 
@@ -6187,6 +6261,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
         <label>Length target (2nd bounce)<select value={cfg.depth} onChange={e=>setOpt('depth',e.target.value)}>{LENGTH_LISTS.depth.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Side<select value={cfg.side} onChange={e=>setOpt('side',e.target.value)}>{LENGTH_LISTS.side.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Short balls allowed<select value={cfg.shorts} onChange={e=>setOpt('shorts',e.target.value)}>{LENGTH_LISTS.shorts.map(o=><option key={o}>{o}</option>)}</select></label>
+        {(cfg.shorts==='2 short balls per rally'||cfg.shorts==='3 short balls per rally')&&<label>Consecutive shorts<select value={cfg.consecutive} onChange={e=>setOpt('consecutive',e.target.value)}>{LENGTH_LISTS.consecutive.map(o=><option key={o}>{o}</option>)}</select></label>}
         {cfg.shorts!=='No short balls'&&<label>Short shot type<select value={cfg.shortShot} onChange={e=>setOpt('shortShot',e.target.value)}>{LENGTH_LISTS.shortShot.map(o=><option key={o}>{o}</option>)}</select></label>}
         <label>Cross-courts<select value={cfg.crosscourts} onChange={e=>setOpt('crosscourts',e.target.value)}>{LENGTH_LISTS.crosscourts.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Checkerboard Zone<select value={useCustomCb?'Custom':'Auto'} onChange={e=>setUseCustomCb(e.target.value==='Custom')}><option value="Auto">Auto (from side): {autoCbZone}</option><option value="Custom">Custom</option></select></label>
@@ -22526,6 +22601,7 @@ button,select{-webkit-appearance:none;appearance:none;}
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
+{screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
