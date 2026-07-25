@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v490 Universal Modifier engine restyle. The shared modifier engine (Game Logic, Constraints, Scoring, DB Handicap, Tin Height) now uses one clean panel look across every builder — soft dark cards, rounded tap chips that turn soft green when on, and tidy scoring rows — matching the NSSL scoring palette. Same layers, same order everywhere. Builds on v489.';
+const APP_VERSION='v491 NSSL reset fix. End Match and Reset NSSL Scores now actively clear every court room (not just open court tabs), so the master display and organiser cards drop to 0-0 even when a court scoring tab is closed. Reset Scores also clears the playoffs and resets any open court devices via the match epoch. Builds on v490.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -14164,10 +14164,20 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
   function startNslPowerPlay(teamName){setNslPowerPlayTeam(teamName);setNslPowerPlaySeconds(Math.max(5,Number(nslPpSeconds)||NSSL_PP_SECONDS));setNslPowerPlayActive(true);}
   function stopNslPowerPlay(){setNslPowerPlayActive(false);}
-  function resetNslScores(){if(typeof window!=='undefined'&&!window.confirm('Reset ALL NSSL scores? This cannot be undone.'))return;setNslScores({});}
-  function doEndMatch(){setNslScores({});setNslPlayoffs({});setNslMatchEpoch(e=>(Number(e)||0)+1);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();setNslEndMatchArmed(false);}
+  function clearAllNsslCourtRooms(newEpoch){
+    try{
+      nslActiveFixtures().forEach((fx,idx)=>{
+        const court=idx+1;const a=(fx&&fx.a)||{},b=(fx&&fx.b)||{};
+        const zero={type:'nssl',court,teamA:{name:a.name,captain:a.captain,players:a.players||[]},teamB:{name:b.name,captain:b.captain,players:b.players||[]},periods:{p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}},totals:{a:0,b:0},onCourtA:(a.players||[])[0]||null,onCourtB:(b.players||[])[0]||null,subsUsed:{p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}},subLimits:{},playerTime:{a:{},b:{}},minSec:0,ppUsed:{p1:0,p2:0,p3:0,ot:0},ppAllow:NSSL_PP_ALLOW,period:1,powerPlay:null,rev:0,instanceId:'organiser-reset-'+newEpoch,epoch:newEpoch,updatedAt:Date.now()};
+        writeLivePlayerRoom(nsslCourtRoomId(nsslHostBase,court),'nssl',zero);
+      });
+    }catch{}
+    setNslCourtLive({});
+  }
+  function resetNslScores(){if(typeof window!=='undefined'&&!window.confirm('Reset ALL NSSL scores? This clears every court screen and the master display. This cannot be undone.'))return;const ne=(Number(nslMatchEpoch)||0)+1;setNslScores({});setNslPlayoffs({});clearAllNsslCourtRooms(ne);setNslMatchEpoch(ne);}
+  function doEndMatch(){const ne=(Number(nslMatchEpoch)||0)+1;setNslScores({});setNslPlayoffs({});clearAllNsslCourtRooms(ne);setNslMatchEpoch(ne);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();setNslEndMatchArmed(false);}
   function armEndMatch(){if(nslEndMatchArmed){if(nslEndMatchTimerRef.current)clearTimeout(nslEndMatchTimerRef.current);doEndMatch();}else{setNslEndMatchArmed(true);if(nslEndMatchTimerRef.current)clearTimeout(nslEndMatchTimerRef.current);nslEndMatchTimerRef.current=setTimeout(()=>setNslEndMatchArmed(false),4000);}}
-  function resetNslKnockoutScores(){setNslScores({});setNslPlayoffs({});setNslMatchEpoch(e=>(Number(e)||0)+1);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();}
+  function resetNslKnockoutScores(){const ne=(Number(nslMatchEpoch)||0)+1;setNslScores({});setNslPlayoffs({});clearAllNsslCourtRooms(ne);setNslMatchEpoch(ne);setNslActivePeriod(1);setNslRoundSeconds(Math.max(0,Number(nslPeriod1)||0)*60);setNslTimerRunning(false);stopNslPowerPlay();}
   function nslCourtWinnerSide(court){const live=nslCourtLive[court];const mp=nsslMatchPointsWithPlayoffs((live&&live.periods)||{},nsslCourtPlayoffMap(nslPlayoffs,court));if(mp.a>mp.b)return 'a';if(mp.b>mp.a)return 'b';const t=(live&&live.totals)||{};if(Number(t.a||0)>Number(t.b||0))return 'a';if(Number(t.b||0)>Number(t.a||0))return 'b';return null;}
   function generateNslFinals(){const semis=nsslDetailedFixtures();const c1=semis.find(f=>Number(f.court)===1),c2=semis.find(f=>Number(f.court)===2);if(!c1||!c2){alert('Need two semi-final courts (4 teams) to generate the final and 3rd/4th play-off.');return;}const s1=nslSemiWinners[1]||nslCourtWinnerSide(1),s2=nslSemiWinners[2]||nslCourtWinnerSide(2);if(s1!=='a'&&s1!=='b'){alert('Court 1 is level on the score — tap the Court 1 winner, or settle it with the Playoff decider first.');return;}if(s2!=='a'&&s2!=='b'){alert('Court 2 is level on the score — tap the Court 2 winner, or settle it with the Playoff decider first.');return;}const w1=s1==='a'?c1.a:c1.b,l1=s1==='a'?c1.b:c1.a;const w2=s2==='a'?c2.a:c2.b,l2=s2==='a'?c2.b:c2.a;setNslFinalsFixtures([{court:1,label:'FINAL',a:w1,b:w2},{court:2,label:'3rd / 4th Play-off',a:l1,b:l2}]);setNslStage('finals');resetNslKnockoutScores();}
   function backToNslSemis(){setNslStage('semis');setNslFinalsFixtures([]);setNslSemiWinners({});resetNslKnockoutScores();}
