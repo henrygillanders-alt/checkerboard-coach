@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v489 NSSL per-round playoff decider. Each court now has a mini playoff for the current round (period): run it on a drawn round and the winner takes that round match point (Period 3 counts double). The result feeds the match points everywhere — court screen, master display, league table and organiser — and each court shows which rounds were decided by playoff. The knockout winner is worked out from these round results too. Includes v487/v488. Builds on v488.';
+const APP_VERSION='v490 Universal Modifier engine restyle. The shared modifier engine (Game Logic, Constraints, Scoring, DB Handicap, Tin Height) now uses one clean panel look across every builder — soft dark cards, rounded tap chips that turn soft green when on, and tidy scoring rows — matching the NSSL scoring palette. Same layers, same order everywhere. Builds on v489.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1734,7 +1734,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
   }
   const customConstraints=constraints.filter(c=>!standardConstraintNames.has(c));
   return <div className="modifierEngine">
-    {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · Double Bounce — same order on every game.</p></div>}
+    {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · DB Handicap · Tin Height — same order on every game.</p></div>}
 
     <MEPanel title="1. Game Logic" subtitle="What counts — eligibility and validity" open={open==='logic'} onToggle={()=>toggle('logic')}>
       {context==='Checkerboard'&&<div className="meLogicGroup">
@@ -1797,7 +1797,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <UniversalPenaltyPanel/>
     </MEPanel>
 
-    {!hideDoubleBounce&&<MEPanel title="4. Double Bounce" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
+    {!hideDoubleBounce&&<MEPanel title="4. DB Handicap" subtitle="Per-player allowance — a leveller between standards" open={open==='db'} onToggle={()=>toggle('db')}>
       <UniversalDBHandicapPanel/>
     </MEPanel>}
 
@@ -22307,6 +22307,64 @@ return <div>
    color/background rule elsewhere in the app still wins — this only fixes the
    underlying chrome, never overrides an existing look. */
 button,select{-webkit-appearance:none;appearance:none;}
+
+/* ── Universal Modifier Engine — one clean panel look everywhere (Design Principles 1, 2, 2a).
+   These classes are unique to the shared engine (UniversalModifierEngine + CollapsibleLayer +
+   its OverlayFamilyTabs), so styling them here brings every builder onto the same soft palette. */
+.modifierEngine{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
+.modifierEngineHead{margin-bottom:2px;}
+.modifierEngineHead h2{color:#eaf4fb;margin:0 0 3px;font-size:1.15rem;}
+.modifierEngineHead p{color:#8aa0b6;font-size:.84rem;margin:0;}
+.mePanel{background:#0b1320;border:1px solid #223044;border-radius:14px;overflow:hidden;transition:border-color .15s;}
+.mePanel.meOpen{border-color:#2a3d54;}
+.mePanelHead{display:flex;align-items:center;flex-wrap:wrap;gap:3px 12px;width:100%;text-align:left;background:transparent;border:none;border-left:3px solid transparent;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.mePanel.meOpen .mePanelHead{border-left-color:#1d6b3f;}
+.mePanelTitle{color:#eaf4fb;font-weight:800;font-size:1rem;flex:0 0 auto;}
+.mePanelSub{color:#8aa0b6;font-size:.79rem;font-weight:500;flex:1 1 100%;order:3;}
+.mePanelChevron{color:#7fc8a0;font-size:.85rem;margin-left:auto;flex:0 0 auto;}
+.mePanelBody{padding:2px 16px 18px;display:flex;flex-direction:column;gap:16px;border-top:1px solid #16273a;}
+.meLogicGroup h4{color:#9cc4ec;font-size:.8rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;margin:0 0 8px;}
+.meChipRow{display:flex;flex-wrap:wrap;gap:8px;}
+.meChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:9px 15px;font-weight:700;font-size:.87rem;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,border-color .12s,color .12s;}
+.meChip:hover{border-color:#34506e;}
+.meChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.meAddOwnBtn{align-self:flex-start;background:transparent;border:1px dashed #2c3c4e;color:#9cc4ec;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.meAddOwnBtn:hover{border-color:#34506e;color:#bcd6f0;}
+.meLogicEdit{display:flex;flex-direction:column;gap:10px;background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:14px;}
+.meField{display:flex;flex-direction:column;gap:5px;color:#9fb3c4;font-size:.81rem;font-weight:700;}
+.meField input{background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:.95rem;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none;}
+.meField input:focus{border-color:#2E6E8E;}
+.meFieldInline{flex:1 1 120px;}
+.meInvasionBlock{display:flex;flex-direction:column;gap:8px;}
+.meInvasionRows{display:flex;flex-wrap:wrap;gap:10px;}
+.meCheck{display:flex;align-items:center;gap:8px;color:#c7d4e2;font-size:.9rem;font-weight:700;cursor:pointer;}
+.meAppliesTo{display:flex;flex-direction:column;gap:8px;}
+.meAppliesTo strong{color:#9cc4ec;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;}
+.meNamedPlayer{background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;padding:9px 12px;font-size:.9rem;-webkit-appearance:none;appearance:none;}
+.meScoreList{display:flex;flex-direction:column;gap:8px;}
+.meScoreRow{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0c1626;border:1px solid #1e2c3c;border-radius:11px;padding:10px 14px;}
+.meScoreLabel{color:#dbe6f2;font-weight:700;font-size:.9rem;}
+/* Constraints overlay library — scoped to the engine so standalone overlay screens are untouched */
+.modifierEngine .overlayFamilyEngine{display:flex;flex-direction:column;gap:12px;}
+.modifierEngine .overlayFamilyTabs{display:flex;flex-wrap:wrap;gap:8px;}
+.modifierEngine .overlayFamilyTabs button{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:9px 15px;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.modifierEngine .overlayFamilyTabs .activeFamilyTab{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.modifierEngine .overlayExplain{color:#8aa0b6;font-size:.81rem;margin:0;}
+.modifierEngine .mentalOverlayChips,.modifierEngine .overlayFamilyChips{display:flex;flex-wrap:wrap;gap:8px;}
+.modifierEngine .mentalOverlayChips button,.modifierEngine .overlayFamilyChips button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:11px;padding:9px 13px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
+.modifierEngine .mentalOverlayChips button strong,.modifierEngine .overlayFamilyChips button strong{font-size:.87rem;font-weight:700;color:#eaf4fb;}
+.modifierEngine .mentalOverlayChips button span,.modifierEngine .overlayFamilyChips button span{font-size:.71rem;color:#8aa0b6;}
+.modifierEngine .mentalOverlayChips .selectedOverlay,.modifierEngine .overlayFamilyChips .selectedOverlay{background:#114d2c;border-color:#1d6b3f;}
+.modifierEngine .mentalOverlayChips .selectedOverlay strong,.modifierEngine .overlayFamilyChips .selectedOverlay strong{color:#bff0d0;}
+.modifierEngine .mentalOverlayChips .selectedOverlay span,.modifierEngine .overlayFamilyChips .selectedOverlay span{color:#7fc8a0;}
+.modifierEngine .overlayCustomAdd{display:flex;gap:8px;flex-wrap:wrap;}
+.modifierEngine .overlayCustomAdd input{flex:1 1 180px;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:.9rem;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none;}
+.modifierEngine .activeOverlayPanel{background:#0c1a2e;border:1px solid #25405f;border-radius:12px;padding:14px;}
+.modifierEngine .activeOverlayPanel h3{color:#9cc4ec;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;margin:0 0 10px;}
+.modifierEngine .activeOverlayRule{border-left:2px solid #1d6b3f;padding:2px 0 2px 12px;margin-bottom:10px;}
+.modifierEngine .activeOverlayRule strong{color:#eaf4fb;font-size:.9rem;display:block;}
+.modifierEngine .activeOverlayRule p{color:#c7d4e2;font-size:.83rem;margin:3px 0 0;}
+.modifierEngine .meAppliesTo .meChipRow{margin-top:2px;}
 `}</style>
 <div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
