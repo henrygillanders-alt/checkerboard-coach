@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v506 Checkerboard random vs blind allocation. Added an Allocate Random (Shown) button that rolls random codes and reveals them on the player display, alongside Allocate Blind (Hidden) which rolls but keeps codes hidden. Re-roll now covers both random modes, and the player display shows or hides codes accordingly. Builds on v505.';
+const APP_VERSION='v507 Checkerboard blind codes masked in session card. The Add To Session card and its Challenge line now hide the code for any blind (hidden) allocation, showing hidden (revealed on court) instead of the code, so blind challenges no longer leak codes into the Session Builder or the projected player display. Shown/revealed challenges still display the code. Builds on v506.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5958,11 +5958,11 @@ function CheckerboardSetup({setScreen,setSession}){
     if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
     let taskLines=[];
     if(scope==='group'){
-      taskLines.push('Everyone — '+cbCodeText(group,seamAllowance)+(group.level?` (L${group.level})`:''));
+      taskLines.push('Everyone — '+cbCardCode(group,seamAllowance)+(group.level?` (L${group.level})`:''));
     }else if(scope==='court'){
-      courtChallenges.forEach((c,i)=>taskLines.push(`Court ${i+1} — ${cbCodeText(c,seamAllowance)}${c.level?` (L${c.level})`:''}`));
+      courtChallenges.forEach((c,i)=>taskLines.push(`Court ${i+1} — ${cbCardCode(c,seamAllowance)}${c.level?` (L${c.level})`:''}`));
     }else{
-      presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n} — L${r.level||1}: ${cbCodeText(r,seamAllowance)}`);});
+      presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n} — L${r.level||1}: ${cbCardCode(r,seamAllowance)}`);});
     }
     // Join scope-lines with a separator that is NOT " + ", because a Checkerboard
     // code contains " + " internally ([5-4] + [7-2]) and the player display splits
@@ -6212,6 +6212,12 @@ function cbCodeText(r,seam){
   if(!r)return '—';
   if(cbIsOptional(r.type))return (cbWithSeam(r.optionA,seam)||'—')+(r.optionB?' / '+cbWithSeam(r.optionB,seam):'');
   return cbWithSeam(r.assigned,seam)||'—';
+}
+// Card/player-facing code: masks the code when the challenge is blind (hidden and not revealed),
+// so blind allocations do not leak their codes into the Session Builder card or the player display.
+function cbCardCode(r,seam){
+  if(r&&r.hidden&&!r.revealed)return '🙈 hidden (revealed on court)';
+  return cbCodeText(r,seam);
 }
 
 function CheckerboardPlayerDisplay({payload}){
