@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v501 Coach chat live. Connected the Coach Suggestions module to the Coach Collaborations Firebase project, so suggestions and reply threads now sync live across every coach device via Firestore, with email pings as backup. Builds on v500.';
+const APP_VERSION='v504 Cross-courts chip stepper. Replaced the Length builder Cross-courts dropdown with the Pattern Lab chip style: Straight only / Cross allowed toggle plus a cap stepper (infinity by default, plus to cap the number of cross-courts per rally). Builds on v503.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -330,23 +330,16 @@ cbRef:CB_CODES
 
 const DEFAULT_ATL={btlCount:'0 BTL shots',atlCount:'All shots',side:'Both sides',consecutive:'No',shot1:'Any shot',shot2:'Any shot',shot3:'Any shot',method1:'Players choice',method2:'Players choice',method3:'Players choice',cbRef:'None'};
 
-const LENGTH_PRESET_MAP={
- 'ATL — behind the short line':{height:'Above the line (ATL)',depth:'Behind the short line'},
- 'BTL — behind the short line':{height:'Below the line (BTL)',depth:'Behind the short line'},
- 'Full front wall — behind the short line':{height:'Full front wall',depth:'Behind the short line'},
- 'Open length — free rally':{height:'Full front wall',depth:'Open (free rally)'}
-};
 const LENGTH_LISTS={
- preset:['Custom','ATL — behind the short line','BTL — behind the short line','Full front wall — behind the short line','Open length — free rally'],
- height:['Full front wall','Above the line (ATL)','Below the line (BTL)'],
- depth:['Behind the short line','Open (free rally)'],
+ height:['Full wall','Above the line (ATL)','Below the line (BTL)'],
+ depth:['Full floor','Behind the short line','Second bounce behind the short line'],
  side:['Both sides','Right side only','Left side only','Player choice'],
  shorts:['No short balls','1 short ball per rally','2 short balls per rally','3 short balls per rally'],
  consecutive:['No','Yes'],
  shortShot:['Any short shot','Straight drop','Crosscourt drop','Boast','Kill','Trickle boast'],
  crosscourts:['Cross-court allowed','Straight only (no cross-court)','1 cross-court per rally','2 cross-courts per rally']
 };
-const DEFAULT_LENGTH={preset:'Full front wall — behind the short line',height:'Full front wall',depth:'Behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',crosscourts:'Cross-court allowed'};
+const DEFAULT_LENGTH={height:'Full wall',depth:'Second bounce behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',crossMode:'allowed',crossCap:0};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -481,21 +474,21 @@ function rankedBlockCourtAllocation(players,courtCount){
 
 
 function buildLength(o){
-const heightText=o.height==='Above the line (ATL)'?'Every shot must strike the front wall ABOVE the service line (ATL).':o.height==='Below the line (BTL)'?'Every shot must strike the front wall BELOW the service line (BTL).':'Full front wall — any height on the front wall is allowed.';
-const depthText=o.depth==='Behind the short line'?'The second bounce must land behind the short line.':'Free rally — length is rewarded but there is no fixed target line.';
+const heightText=o.height==='Above the line (ATL)'?'Every shot must strike the front wall ABOVE the service line (ATL).':o.height==='Below the line (BTL)'?'Every shot must strike the front wall BELOW the service line (BTL).':'Full wall — any height on the front wall is allowed.';
+const depthText=o.depth==='Behind the short line'?'The first bounce must land behind the short line.':o.depth==='Second bounce behind the short line'?'The second bounce must land behind the short line.':'Full floor — length is rewarded but the whole floor is in play.';
 const sideText=o.side==='Both sides'?'Both sides in play.':o.side==='Player choice'?'Player chooses the side.':(o.side.replace(' only','')+' only.');
 const shortsNum=o.shorts.indexOf('No')===0?0:o.shorts.indexOf('1')===0?1:o.shorts.indexOf('3')===0?3:2;
 const shortsConsec=o.consecutive==='Yes'&&shortsNum>1;
 const shortShotText=(shortsNum>0&&o.shortShot!=='Any short shot')?(' Each short ball must be a '+o.shortShot.toLowerCase()+'.'):'';
 const shortsText=shortsNum===0?'No short balls — length only; going short concedes the rally.':('Up to '+shortsNum+(shortsConsec?' consecutive':'')+' short ball'+((shortsNum===1&&!shortsConsec)?'':'s')+' per rally allowed; the next short ball concedes.'+shortShotText);
-const ccText=o.crosscourts==='Cross-court allowed'?'':o.crosscourts.indexOf('Straight')===0?' Straight only — no cross-court.':(' Up to '+(o.crosscourts.indexOf('1')===0?'1 cross-court':'2 cross-courts')+' per rally.');
+const ccText=o.crossMode==='straight'?' Straight only — no cross-court.':((o.crossCap||0)>0?(' Up to '+o.crossCap+' cross-court'+(o.crossCap===1?'':'s')+' per rally.'):'');
 const cbText=(o.cbRef&&o.cbRef!=='None')?(' Checkerboard reference: '+o.cbRef+'.'):'';
-const title=(o.preset&&o.preset!=='Custom')?('Length — '+o.preset):('Length — '+o.height+', '+o.depth);
+const title='Length — '+o.height+', '+o.depth;
 const rBits=['rewards only genuine length so players contest the back corners and hold the T'];
 if(o.height==='Above the line (ATL)')rBits.push('the high front-wall gate invites a controlled lob-drive that dies deep rather than a flat blast');
 if(o.height==='Below the line (BTL)')rBits.push('removing the float forces committed pace so the ball still carries to the back');
 if(shortsNum>0)rBits.push('allowing '+shortsNum+' short ball'+(shortsNum===1?'':'s')+' opens a controlled attack while keeping length the base');
-if(o.crosscourts.indexOf('Straight')===0)rBits.push('the straight-only condition tightens the side-wall length problem');
+if(o.crossMode==='straight')rBits.push('the straight-only condition tightens the side-wall length problem');
 const coach='Reshape the constraint rather than prescribe the swing. A ball short of the target concedes, so dying it deep becomes the only way to score. Progress: one side first then both, and tighten the shorts allowed from more to none. Scale the depth from behind the short line to deep in the back quarter as the rally holds.';
 const player=o.height==='Below the line (BTL)'?'Drive it low and commit to the pace — reach the back, do not guide it.':o.height==='Above the line (ATL)'?'Lift it high enough to reach the back, soft enough to die before the back wall.':'Any height — just make sure it dies deep, past the target line.';
 const autoLayers=['Quality Length Before Attack','Clean Winner'];
@@ -4242,8 +4235,13 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
             </div>
           </details>
         </CollapsibleLayer>
-
-        <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={true}>
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={true}>
+          <div className="constraintPanelHeader"><strong>Active Modifying Constraints</strong><span>Tap to switch on/off. Constraints shown here are the only constraints sent to Player View.</span></div>
+          <div className="atbOverlayChips perceptionConstraintButtons">{PERCEPTION_LAYERS.filter(layer=>!['DB Handicap'].includes(layer)).map(layer=><button key={layer} type="button" className={activeLayers.includes(layer)?'atbOverlayActive':'atbOverlayChip'} onClick={()=>togglePerceptionLayer(active,layer)}>{activeLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
+          <div className="buttonRow perceptionConstraintActions"><button type="button" className="secondaryBtn" onClick={()=>clearPerceptionLayers(active)}>Clear Constraints</button></div>
+          <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
+        </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold" defaultOpen={true}>
           <div className="infoBox"><strong>Default Scoring</strong><p>{activeCustom.scoring||active.scoring||'Base rally scoring applies. Selected modifying constraints may add bonus points or act as constraint-only rules.'}</p></div>
           <div className="atbOverlayChips perceptionLogicChips">
             {['Clean Sync +1','Early Read +1','Early Take +1','High Contact +1','Volley +1','Wrong-Foot -1','No-Commit 0','Constraint Only'].map(layer=><button key={layer} type="button" className={activeLayers.includes(layer)?'atbOverlayActive':'atbOverlayChip'} onClick={()=>togglePerceptionLayer(active,layer)}>{activeLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}
@@ -4255,18 +4253,11 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
           </details>
           {editableModifierLayers(activeLayers).length>0&&<div className="modifierScoringPanel"><h3>Modifier Scoring</h3><p>Assign bonus points for active modifying constraints. Use “constraint only” when the rule shapes behaviour but does not add points.</p><div className="modifierScoreGrid">{editableModifierLayers(activeLayers).map(layer=><label key={layer}><span>{layer}</span><select value={activeModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updatePerceptionModifierScore(active,layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div></div>}
           {editableModifierLayers(activeLayers).length===0&&<div className="modifierScoreEmpty">No scoring modifiers selected. Add scoring modifiers or constraints above.</div>}
-        </CollapsibleLayer>
-
-        <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue" defaultOpen={true}>
-          <div className="constraintPanelHeader"><strong>Active Modifying Constraints</strong><span>Tap to switch on/off. Constraints shown here are the only constraints sent to Player View.</span></div>
-          <div className="atbOverlayChips perceptionConstraintButtons">{PERCEPTION_LAYERS.filter(layer=>!['DB Handicap'].includes(layer)).map(layer=><button key={layer} type="button" className={activeLayers.includes(layer)?'atbOverlayActive':'atbOverlayChip'} onClick={()=>togglePerceptionLayer(active,layer)}>{activeLayers.includes(layer)?'✓ ':'+ '}{layer}</button>)}</div>
-          <div className="buttonRow perceptionConstraintActions"><button type="button" className="secondaryBtn" onClick={()=>clearPerceptionLayers(active)}>Clear Constraints</button></div>
-          <div className="infoBox"><strong>Selected</strong><p>{activeLayers.length?activeLayers.join(' · '):'No active constraints selected.'}</p></div>
-        </CollapsibleLayer>
+        <UniversalPenaltyPanel/></CollapsibleLayer>
 
         <UniversalDBHandicapPanel/>
         <UniversalTinHeightPanel/>
-        <UniversalPenaltyPanel/>
+        
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -4377,6 +4368,25 @@ function ensureFirestore(){
     .catch(e=>{_fbDbPromise=null;throw e;});
   return _fbDbPromise;
 }
+const COACH_SUGGEST_SEEN_KEY='checkerboard_master_suggest_seen_v1';
+function loadSuggestSeen(){try{return JSON.parse(localStorage.getItem(COACH_SUGGEST_SEEN_KEY))||{};}catch{return{};}}
+function saveSuggestSeen(map){try{localStorage.setItem(COACH_SUGGEST_SEEN_KEY,JSON.stringify(map));}catch{}}
+function suggestionIsUnread(it,seen,me){const s=(seen&&seen[it.id])||0;return (it.messages||[]).some(m=>(m.at||0)>s&&m.author!==me);}
+function suggestUnreadCount(items,seen,me){return (items||[]).filter(it=>suggestionIsUnread(it,seen,me)).length;}
+function CoachSuggestUnreadBadge(){
+  const [count,setCount]=useState(0);
+  useEffect(()=>{
+    let unsub=null,active=true;
+    const me=(()=>{try{return localStorage.getItem(SUGGEST_IDENTITY_KEY)||'';}catch{return'';}})();
+    const seen=loadSuggestSeen();
+    if(FIREBASE_CONFIG){
+      ensureFirestore().then(db=>{if(!active)return;unsub=db.collection('coachSuggestions').onSnapshot(snap=>{const items=snap.docs.map(d=>({id:d.id,...d.data()}));setCount(suggestUnreadCount(items,seen,me));});}).catch(()=>{});
+    }else{try{setCount(suggestUnreadCount(JSON.parse(localStorage.getItem(COACH_SUGGESTIONS_KEY))||[],seen,me));}catch{}}
+    return ()=>{active=false;if(unsub)unsub();};
+  },[]);
+  if(!count)return null;
+  return <span style={{position:'absolute',top:'8px',right:'10px',minWidth:'22px',height:'22px',padding:'0 6px',borderRadius:'11px',background:'#e5484d',color:'#fff',fontSize:'12px',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,.4)'}}>{count}</span>;
+}
 function CoachSuggestionsModule(){
   const online=!!FIREBASE_CONFIG;
   const empty={type:'Game',title:'',description:'',cla:'',rld:4,by:''};
@@ -4386,7 +4396,10 @@ function CoachSuggestionsModule(){
   const [message,setMessage]=useState('');
   const [me,setMe]=useState(()=>{try{return localStorage.getItem(SUGGEST_IDENTITY_KEY)||'';}catch{return'';}});
   const [replyText,setReplyText]=useState({});
+  const [seen,setSeen]=useState(loadSuggestSeen);
   function rldMeta(level){return RLD_LEVELS.find(x=>x.level===Number(level))||RLD_LEVELS[0];}
+  function markRead(id){const t=Date.now();setSeen(prev=>({...prev,[id]:t}));const p=loadSuggestSeen();p[id]=t;saveSuggestSeen(p);}
+  function markAllRead(){const t=Date.now();const next={};items.forEach(it=>{next[it.id]=t;});setSeen(prev=>({...prev,...next}));saveSuggestSeen({...loadSuggestSeen(),...next});}
   useEffect(()=>{try{localStorage.setItem(SUGGEST_IDENTITY_KEY,me);}catch{}},[me]);
   useEffect(()=>{if(online)return;try{localStorage.setItem(COACH_SUGGESTIONS_KEY,JSON.stringify(items));}catch{}},[items,online]);
   useEffect(()=>{
@@ -4395,6 +4408,12 @@ function CoachSuggestionsModule(){
     ensureFirestore().then(db=>{unsub=db.collection('coachSuggestions').orderBy('createdAt','desc').onSnapshot(snap=>setItems(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>setMessage('Shared list error: '+err.message));}).catch(e=>setMessage('Could not connect to the shared list: '+(e&&e.message||'error')));
     return ()=>{if(unsub)unsub();};
   },[online]);
+  useEffect(()=>{
+    if(!items.length)return;
+    const next={...loadSuggestSeen()};
+    items.forEach(it=>{const mx=(it.messages||[]).reduce((a,m)=>Math.max(a,m.at||0),0);next[it.id]=Math.max(next[it.id]||0,mx);});
+    saveSuggestSeen(next);
+  },[items]);
   function setField(k,v){setForm(prev=>({...prev,[k]:v}));}
   function resetForm(){setForm(empty);setEditId(null);}
   function sendEmail(entry,kind,extraText){
@@ -4439,6 +4458,7 @@ function CoachSuggestionsModule(){
       sendEmail(it,'New reply on',text);
     }
     setReplyText(prev=>({...prev,[it.id]:''}));
+    markRead(it.id);
   }
   return <div className="gameCard coachSuggest">
     <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea}.coachSuggest .thread{margin:8px 0;padding:8px 10px;background:#0b1a2a;border-radius:8px;border:1px solid #1d3547}.coachSuggest .msg{padding:5px 0;font-size:14px;color:#dce9f4;border-bottom:1px solid #16283a}.coachSuggest .msg:last-child{border-bottom:none}.coachSuggest .replyRow{display:flex;gap:8px;margin:8px 0}.coachSuggest .replyRow input{flex:1;padding:9px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:14px;box-sizing:border-box}`}</style>
@@ -4460,11 +4480,14 @@ function CoachSuggestionsModule(){
       <button type="button" className="primaryBtn" onClick={save}>{editId?'Save Changes':'Add Suggestion'}</button>
       {editId&&<button type="button" className="secondaryBtn" onClick={resetForm}>Cancel Edit</button>}
     </div>
-    <h3 style={{marginTop:'18px'}}>Suggestions ({items.length})</h3>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginTop:'18px'}}>
+      <h3 style={{margin:0}}>Suggestions ({items.length}){suggestUnreadCount(items,seen,me)>0&&<span style={{marginLeft:'8px',padding:'2px 10px',borderRadius:'11px',background:'#e5484d',color:'#fff',fontSize:'12px',fontWeight:700}}>{suggestUnreadCount(items,seen,me)} new</span>}</h3>
+      {suggestUnreadCount(items,seen,me)>0&&<button type="button" className="secondaryBtn" onClick={markAllRead}>Mark all read</button>}
+    </div>
     {items.length===0?<div className="placeholder">No suggestions yet. Be the first to add one above.</div>:
-      <div className="suggestionList">{items.map(it=>{const r=rldMeta(it.rld);const msgs=(it.messages||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));return <div key={it.id} className="infoBox" style={{marginBottom:'12px'}}>
+      <div className="suggestionList">{items.map(it=>{const r=rldMeta(it.rld);const msgs=(it.messages||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));const unread=suggestionIsUnread(it,seen,me);return <div key={it.id} className="infoBox" style={{marginBottom:'12px',borderColor:unread?'#e5484d':undefined}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'6px'}}>
-          <strong>{it.title}</strong>
+          <strong>{it.title}{unread&&<span style={{marginLeft:'8px',padding:'1px 8px',borderRadius:'10px',background:'#e5484d',color:'#fff',fontSize:'11px',fontWeight:700,verticalAlign:'middle'}}>new</span>}</strong>
           <span style={{display:'inline-block',padding:'2px 10px',borderRadius:'12px',fontSize:'12px',fontWeight:700,background:r.bg,color:r.textColor,border:'1px solid '+r.color}}>{r.short} · {r.label}</span>
         </div>
         <p style={{margin:'6px 0'}}><span className="suggestionType">{it.type}</span>{it.description}</p>
@@ -4534,7 +4557,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
 
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('coachSuggestions')}><h2>Coach Suggestions</h2><span className="homeTileSubtitle">Ideas · CLA rationale · RLD rating</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachSuggestions')}><CoachSuggestUnreadBadge/><h2>Coach Suggestions</h2><span className="homeTileSubtitle">Ideas · CLA rationale · RLD rating</span></button>
     </div>;
 }
 
@@ -5566,23 +5589,19 @@ return <div className="checkerboardEngine">
       <button type="button" className="meAddOwnBtn" onClick={()=>setShowCustomLogic(!showCustomLogic)}>{showCustomLogic?'− Hide custom game logic':'+ Add your own game logic'}</button>
       {showCustomLogic&&<div className="overlayCustomAdd"><input value={customLogicText} onChange={e=>setCustomLogicText(e.target.value)} placeholder="New game-logic rule (e.g. Must finish straight)" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustomLogic();}}}/><button type="button" className="meChip meChipOn" onClick={addCustomLogic}>+ Add</button></div>}
     </CollapsibleLayer>
-
-    {/* SCORING LOGIC */}
-    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="infoBox"><strong>Default Scoring</strong><p>{built.scoring}</p></div>
-      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Set bonus values for active checkerboard modifying constraints. Use “constraint only” when the rule shapes behaviour but should not add points.</p>{checkerboardScoringLayers.length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add Game Logic or Constraints, then set points here.</div>:<div className="modifierScoreGrid">{checkerboardScoringLayers.map(layer=><label key={layer}><span>{layer}</span><select value={checkerboardModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updateCheckerboardModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
-    </CollapsibleLayer>
-
-    {/* CONSTRAINTS */}
-    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
       <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
       <p className="mutedText" style={{marginTop:'10px',fontSize:'.82rem'}}>Blind &amp; per-player challenge allocation has moved to the dedicated <strong>Checkerboard</strong> page (Home screen).</p>
     </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="infoBox"><strong>Default Scoring</strong><p>{built.scoring}</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Set bonus values for active checkerboard modifying constraints. Use “constraint only” when the rule shapes behaviour but should not add points.</p>{checkerboardScoringLayers.length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add Game Logic or Constraints, then set points here.</div>:<div className="modifierScoreGrid">{checkerboardScoringLayers.map(layer=><label key={layer}><span>{layer}</span><select value={checkerboardModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updateCheckerboardModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
 
     {/* DB HANDICAP */}
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
-    <UniversalPenaltyPanel/>
+    
 
     <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
@@ -6286,7 +6305,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
   const composedLength=useMemo(()=>{const layers=[...new Set([...(builtLength.layers||[]),...manualLayers])];return {...builtLength,side:cfg.side,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...builderModifierScores}};},[builtLength,manualLayers,builderModifierScores,cfg.side]);
   useEffect(()=>{localStorage.setItem(GAME_LIBRARY_LENGTH_DRAFT_KEY,JSON.stringify({cfg,useCustomCb,customCbZone,manualLayers,modifierScores:builderModifierScores}));},[cfg,useCustomCb,customCbZone,manualLayers,builderModifierScores]);
   function snapshot(){setHistory(prev=>[...prev,{cfg:clone(cfg),manualLayers:clone(manualLayers),modifierScores:clone(builderModifierScores)}]);}
-  function setOpt(key,value){snapshot();setCfg(prev=>{const next={...prev,[key]:value};if(key==='preset'&&value!=='Custom'){const p=LENGTH_PRESET_MAP[value];if(p){next.height=p.height;next.depth=p.depth;}}if(key==='height'||key==='depth')next.preset='Custom';return next;});}
+  function setOpt(key,value){snapshot();setCfg(prev=>({...prev,[key]:value}));}
   function toggleManualLayer(l){snapshot();setManualLayers(prev=>prev.includes(l)?prev.filter(x=>x!==l):[...prev,l]);}
   function clearOverlays(){snapshot();setManualLayers([]);}
   function resetBuilder(){snapshot();setCfg(DEFAULT_LENGTH);setManualLayers([]);}
@@ -6300,16 +6319,24 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">Length structure</span></div>
       <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
       <div className="atlOptionsGrid">
-        <label>Preset<select value={cfg.preset} onChange={e=>setOpt('preset',e.target.value)}>{LENGTH_LISTS.preset.map(o=><option key={o}>{o}</option>)}</select></label>
-        <label>Front wall height<select value={cfg.height} onChange={e=>setOpt('height',e.target.value)}>{LENGTH_LISTS.height.map(o=><option key={o}>{o}</option>)}</select></label>
-        <label>Length target (2nd bounce)<select value={cfg.depth} onChange={e=>setOpt('depth',e.target.value)}>{LENGTH_LISTS.depth.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Front Wall<select value={cfg.height} onChange={e=>setOpt('height',e.target.value)}>{LENGTH_LISTS.height.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Floor<select value={cfg.depth} onChange={e=>setOpt('depth',e.target.value)}>{LENGTH_LISTS.depth.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Side<select value={cfg.side} onChange={e=>setOpt('side',e.target.value)}>{LENGTH_LISTS.side.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Short balls allowed<select value={cfg.shorts} onChange={e=>setOpt('shorts',e.target.value)}>{LENGTH_LISTS.shorts.map(o=><option key={o}>{o}</option>)}</select></label>
         {(cfg.shorts==='2 short balls per rally'||cfg.shorts==='3 short balls per rally')&&<label>Consecutive shorts<select value={cfg.consecutive} onChange={e=>setOpt('consecutive',e.target.value)}>{LENGTH_LISTS.consecutive.map(o=><option key={o}>{o}</option>)}</select></label>}
         {cfg.shorts!=='No short balls'&&<label>Short shot type<select value={cfg.shortShot} onChange={e=>setOpt('shortShot',e.target.value)}>{LENGTH_LISTS.shortShot.map(o=><option key={o}>{o}</option>)}</select></label>}
-        <label>Cross-courts<select value={cfg.crosscourts} onChange={e=>setOpt('crosscourts',e.target.value)}>{LENGTH_LISTS.crosscourts.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Checkerboard Zone<select value={useCustomCb?'Custom':'Auto'} onChange={e=>setUseCustomCb(e.target.value==='Custom')}><option value="Auto">Auto (from side): {autoCbZone}</option><option value="Custom">Custom</option></select></label>
         {useCustomCb&&<label>Custom Zone / Code<input type="text" value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="e.g. [7-2] + [8-1] or 5/6/3/4"/></label>}
+      </div>
+      <style>{`.lenCrossField{margin:4px 0 2px}.lenCrossField .lenFieldLabel{display:block;font-weight:600;color:#8fb2cf;font-size:13px;margin-bottom:6px}.lenCrossField .pdChips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.lenCrossField .pdChip{padding:8px 12px;border-radius:9px;border:1px solid #2c3c4e;background:#0d1620;color:#cde0ee;cursor:pointer;font-size:.85rem}.lenCrossField .pdChip.on{background:#1f6b8e;border-color:#2E6E8E;color:#fff;font-weight:700}.lenCrossField .pdStepNum{min-width:34px;text-align:center;font-weight:800;color:#eaf4fb;font-size:1.1rem}.lenCrossField .lenChipNote{color:#7f9bb0;font-size:.78rem;margin:6px 0 0}`}</style>
+      <div className="lenCrossField">
+        <span className="lenFieldLabel">Cross-courts</span>
+        <div className="pdChips">
+          <PdChip on={cfg.crossMode==='straight'} onClick={()=>setOpt('crossMode','straight')}>Straight only</PdChip>
+          <PdChip on={cfg.crossMode==='allowed'} onClick={()=>setOpt('crossMode','allowed')}>Cross allowed</PdChip>
+          {cfg.crossMode==='allowed'&&<><span className="pdStepNum">{(cfg.crossCap||0)===0?'∞':cfg.crossCap}</span><PdChip on={false} onClick={()=>setCfg(prev=>({...prev,crossCap:Math.max(0,(prev.crossCap||0)-1)}))}>−</PdChip><PdChip on={false} onClick={()=>setCfg(prev=>({...prev,crossCap:(prev.crossCap||0)+1}))}>+ cap/rally</PdChip></>}
+        </div>
+        <p className="lenChipNote">{cfg.crossMode==='straight'?'Straight only — no cross-court allowed.':(cfg.crossCap||0)===0?'Cross-court allowed, no cap.':('Up to '+cfg.crossCap+' cross-court'+(cfg.crossCap===1?'':'s')+' per rally.')}</p>
       </div>
       <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composedLength.task}</p></div>
     </div>
@@ -6317,16 +6344,16 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
       <CustomGameLogicAdder selected={manualLayers} onToggle={toggleManualLayer}/>
     </CollapsibleLayer>
-    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="infoBox"><strong>Default Scoring</strong><p>{composedLength.scoring}</p></div>
-      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3>{editableModifierLayers(composedLength.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composedLength.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composedLength.modifierScores&&composedLength.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
-    </CollapsibleLayer>
-    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Length Games"/>
     </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="infoBox"><strong>Default Scoring</strong><p>{composedLength.scoring}</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3>{editableModifierLayers(composedLength.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composedLength.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composedLength.modifierScores&&composedLength.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
-    <UniversalPenaltyPanel/>
+    
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
@@ -6436,19 +6463,17 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
       <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
       <CustomGameLogicAdder selected={manualLayers} onToggle={toggleManualLayer}/>
     </CollapsibleLayer>
-
-    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Overlays add bonus points.</p></div>
-      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Select the points value for every active modifying constraint. Choose “constraint only” when the rule changes behaviour but should not add points.</p>{editableModifierLayers(composedAtl.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composedAtl.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composedAtl.modifierScores&&composedAtl.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
-    </CollapsibleLayer>
-
-    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
       <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="ATL / BTL"/>
     </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. ATL/BTL completion = +1. Overlays add bonus points.</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Select the points value for every active modifying constraint. Choose “constraint only” when the rule changes behaviour but should not add points.</p>{editableModifierLayers(composedAtl.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composedAtl.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composedAtl.modifierScores&&composedAtl.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
-    <UniversalPenaltyPanel/>
+    
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -6553,15 +6578,15 @@ function ClassicConditionedBuilder({onAddToSession}){
         <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
         <CustomGameLogicAdder selected={selectedOverlays[overlayKey(game)]||[]} onToggle={item=>toggleGameOverlay(game,item)}/>
       </CollapsibleLayer>
-      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-        <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Completion bonus set by selected game. Overlays add bonus points.</p></div>
-      </CollapsibleLayer>
-      <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <OverlayFamilyTabs selectedOverlays={selectedOverlays[overlayKey(game)]||[]} onToggle={layer=>toggleGameOverlay(game,layer)} context={game.title}/>
       </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+        <div className="infoBox"><strong>Default Scoring</strong><p>Win rally = +1. Completion bonus set by selected game. Overlays add bonus points.</p></div>
+      <UniversalPenaltyPanel/></CollapsibleLayer>
       <UniversalDBHandicapPanel/>
       <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
@@ -6847,18 +6872,16 @@ function TechnicalFocusBuilder({onAddToSession}){
         <div className="infoBox"><strong>Selected scoring</strong><p>{protocol(card).score}</p></div>
         <div className="infoBox"><strong>Selected consequence</strong><p>{protocol(card).consequence}</p></div>
       </CollapsibleLayer>
-
-      <CollapsibleLayer num="2" title="Scoring Logic" subtitle="Universal overlays" color="gold">
-        <OverlayFamilyTabs selectedOverlays={selectedOverlays[k(card)]||[]} onToggle={layer=>toggleTechnicalOverlay(card,layer)} context={'Technical Diagnostic · '+card.title} />
-      </CollapsibleLayer>
-
-      <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
         <p className="mutedText" style={{fontSize:'13px',padding:'4px 0'}}>Constraint games are shown above. Use Scoring Logic overlays to add additional behavioural constraints.</p>
       </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="Universal overlays" color="gold">
+        <OverlayFamilyTabs selectedOverlays={selectedOverlays[k(card)]||[]} onToggle={layer=>toggleTechnicalOverlay(card,layer)} context={'Technical Diagnostic · '+card.title} />
+      <UniversalPenaltyPanel/></CollapsibleLayer>
 
       <UniversalDBHandicapPanel/>
       <UniversalTinHeightPanel/>
-      <UniversalPenaltyPanel/>
+      
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -8558,15 +8581,7 @@ function CustomGameBuilder({onAddToSession}){
       <div className="quickLayers" style={{marginTop:'10px'}}>{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={layers.includes(item)?'activeLayer':''} onClick={()=>toggleLayer(item)}>{layers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
       <CustomGameLogicAdder selected={layers} onToggle={toggleLayer}/>
     </CollapsibleLayer>
-
-    {/* SCORING LOGIC */}
-    <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
-      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game"/>
-    </CollapsibleLayer>
-
-    {/* CONSTRAINTS */}
-    <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
       <label>Constraint Text<textarea value={conditionText} onChange={e=>setConditionText(e.target.value)} placeholder="Auto-filled from your selections above. Edit if needed."/></label>
       <label style={{marginTop:'8px'}}>Coach's Note<textarea value={coachNote} onChange={e=>setCoachNote(e.target.value)} placeholder="Private notes — what to look for, what to feedback, when to progress"/></label>
       <label style={{marginTop:'8px'}}>Player Focus<textarea value={playerFocus} onChange={e=>setPlayerFocus(e.target.value)}/></label>
@@ -8579,10 +8594,14 @@ function CustomGameBuilder({onAddToSession}){
         {randomResult&&<div className="infoBox" style={{marginTop:'8px'}}><strong>Random Result</strong><p>{randomResult}</p></div>}
       </div>
     </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <label>Scoring<textarea value={scoring} onChange={e=>setScoring(e.target.value)}/></label>
+      <OverlayFamilyTabs selectedOverlays={layers} onToggle={toggleLayer} context="Custom Game"/>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
 
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
-    <UniversalPenaltyPanel/>
+    
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
@@ -9908,22 +9927,20 @@ function AroundTheBoardBuilder({onAddToSession}){
                 onClick={()=>toggleItem(setSelectedGameLogic,o)}>{o}</button>)}
             </div>
           </CollapsibleLayer>
-
-          <CollapsibleLayer num="2" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-            <div className="atbOverlayChips">
-              {ATB_SCORING_LOGIC_OPTIONS.map(o=><button key={o} type="button"
-                className={selectedScoringLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
-                onClick={()=>toggleItem(setSelectedScoringLogic,o)}>{o}</button>)}
-            </div>
-          </CollapsibleLayer>
-
-          <CollapsibleLayer num="3" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
             <div className="atbOverlayChips">
               {ATB_CONSTRAINT_OPTIONS.map(o=><button key={o} type="button"
                 className={selectedConstraints.includes(o)?'atbOverlayActive':'atbOverlayChip'}
                 onClick={()=>toggleItem(setSelectedConstraints,o)}>{o}</button>)}
             </div>
           </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+            <div className="atbOverlayChips">
+              {ATB_SCORING_LOGIC_OPTIONS.map(o=><button key={o} type="button"
+                className={selectedScoringLogic.includes(o)?'atbOverlayActive':'atbOverlayChip'}
+                onClick={()=>toggleItem(setSelectedScoringLogic,o)}>{o}</button>)}
+            </div>
+          <UniversalPenaltyPanel/></CollapsibleLayer>
 
           <CollapsibleLayer num="+" title="Checkerboard Overlays" subtitle="Optional tactical overlays" color="teal">
             <div className="atbOverlayChips">
@@ -9935,7 +9952,7 @@ function AroundTheBoardBuilder({onAddToSession}){
 
           <UniversalDBHandicapPanel/>
           <UniversalTinHeightPanel/>
-          <UniversalPenaltyPanel/>
+          
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
