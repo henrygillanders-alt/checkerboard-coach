@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v504 Cross-courts chip stepper. Replaced the Length builder Cross-courts dropdown with the Pattern Lab chip style: Straight only / Cross allowed toggle plus a cap stepper (infinity by default, plus to cap the number of cross-courts per rally). Builds on v503.';
+const APP_VERSION='v506 Checkerboard random vs blind allocation. Added an Allocate Random (Shown) button that rolls random codes and reveals them on the player display, alongside Allocate Blind (Hidden) which rolls but keeps codes hidden. Re-roll now covers both random modes, and the player display shows or hides codes accordingly. Builds on v505.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -339,7 +339,7 @@ const LENGTH_LISTS={
  shortShot:['Any short shot','Straight drop','Crosscourt drop','Boast','Kill','Trickle boast'],
  crosscourts:['Cross-court allowed','Straight only (no cross-court)','1 cross-court per rally','2 cross-courts per rally']
 };
-const DEFAULT_LENGTH={height:'Full wall',depth:'Second bounce behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',crossMode:'allowed',crossCap:0};
+const DEFAULT_LENGTH={height:'Full wall',depth:'Second bounce behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',shortMethod:'Players choice',crossMode:'allowed',crossCap:0};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -479,7 +479,14 @@ const depthText=o.depth==='Behind the short line'?'The first bounce must land be
 const sideText=o.side==='Both sides'?'Both sides in play.':o.side==='Player choice'?'Player chooses the side.':(o.side.replace(' only','')+' only.');
 const shortsNum=o.shorts.indexOf('No')===0?0:o.shorts.indexOf('1')===0?1:o.shorts.indexOf('3')===0?3:2;
 const shortsConsec=o.consecutive==='Yes'&&shortsNum>1;
-const shortShotText=(shortsNum>0&&o.shortShot!=='Any short shot')?(' Each short ball must be a '+o.shortShot.toLowerCase()+'.'):'';
+const shortMethod=o.shortMethod||'Players choice';
+const shortShotName=(shortsNum>0&&o.shortShot&&o.shortShot!=='Any short shot')?o.shortShot.toLowerCase():'';
+let shortShotText='';
+if(shortsNum>0){
+  if(shortMethod==='Must be volley')shortShotText=shortShotName?(' Each short ball must be a volley '+shortShotName+'.'):' Each short ball must be volleyed.';
+  else if(shortMethod==='No volley')shortShotText=shortShotName?(' Each short ball must be a '+shortShotName+' played after the bounce.'):' Each short ball must be played after the bounce (no volley).';
+  else if(shortShotName)shortShotText=' Each short ball must be a '+shortShotName+'.';
+}
 const shortsText=shortsNum===0?'No short balls — length only; going short concedes the rally.':('Up to '+shortsNum+(shortsConsec?' consecutive':'')+' short ball'+((shortsNum===1&&!shortsConsec)?'':'s')+' per rally allowed; the next short ball concedes.'+shortShotText);
 const ccText=o.crossMode==='straight'?' Straight only — no cross-court.':((o.crossCap||0)>0?(' Up to '+o.crossCap+' cross-court'+(o.crossCap===1?'':'s')+' per rally.'):'');
 const cbText=(o.cbRef&&o.cbRef!=='None')?(' Checkerboard reference: '+o.cbRef+'.'):'';
@@ -5614,7 +5621,7 @@ const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[
 const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]','[6-4] + [8-1]','[5-3] + [7-2]','[5-4] + [6-3]','[8-1] + [7-2]','[5-1] + [6-2]','[5-2] + [6-1]','[7-3] + [8-4]','[7-4] + [8-3]','[5-4] + [7-2]','[6-3] + [8-1]','[6-3] + [5-4]','[7-2] + [8-1]'];
 const CB_TRIPLE_BANK=['[5-4] + [5-4] + [8-1]','[5-4] + [5-4] + [7-2]','[5-4] + [5-4] + [5-4]','[6-3] + [6-3] + [7-2]','[6-3] + [6-3] + [8-1]','[6-3] + [6-3] + [6-3]','[6-4] + [8-1] + [5-3]','[5-3] + [7-2] + [8-1]','[6-3] + [8-1] + [5-4]','[7-2] + [5-4] + [6-3]'];
 const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
-const CB_ALLOC_MODES=['Manual','Random Blind','Optional A/B','Mirror'];
+const CB_ALLOC_MODES=['Manual','Random Blind','Random Open','Optional A/B','Mirror'];
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
 const CB_SEAM_KEY='checkerboard_seam_allowance_v1';
 const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court','Per-Court']];
@@ -5911,8 +5918,9 @@ function CheckerboardSetup({setScreen,setSession}){
     if(scope==='court'){setCourtChallenges(prev=>prev.map(c=>tx(c)));return;}
     setAlloc(prev=>{const next={};Object.keys(prev).forEach(n=>next[n]=tx(prev[n]));return next;});
   }
-  function allocBlindAll(){eachTarget(r=>cbTxRoll({...r,mode:'Random Blind'}));setStatus('Blind challenges allocated to every player.');}
-  function rerollAll(){eachTarget(r=>r.mode==='Random Blind'?cbTxRoll(r):r);setStatus('Re-rolled all blind targets.');}
+  function allocBlindAll(){eachTarget(r=>cbTxRoll({...r,mode:'Random Blind'}));setStatus('Blind challenges allocated — codes hidden on the player display.');}
+  function allocRandomOpenAll(){eachTarget(r=>{const x=cbTxRoll({...r,mode:'Random Open'});return {...x,hidden:false,revealed:true};});setStatus('Random challenges allocated — codes shown on the player display.');}
+  function rerollAll(){eachTarget(r=>{if(r.mode==='Random Blind')return cbTxRoll(r);if(r.mode==='Random Open'){const x=cbTxRoll(r);return {...x,hidden:false,revealed:true};}return r;});setStatus('Re-rolled all random targets.');}
   function revealAll(){eachTarget(cbTxReveal);setStatus('All challenges revealed (coach view).');}
   // Set one level across every target at once. On per-player scope this covers every
   // present player, seeding a blank allocation for anyone not yet in alloc, so no one
@@ -6127,10 +6135,11 @@ function CheckerboardSetup({setScreen,setSession}){
 
     {/* 3 — BLIND ALLOCATION TOOLS */}
     <div className="cbsetSection">
-      <h2>3 · Blind Allocation Tools</h2>
-      <p className="cbsetSub">Set targets to Random Blind above, then allocate. Acts on the active scope ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
+      <h2>3 · Allocation Tools</h2>
+      <p className="cbsetSub"><strong>Random (Shown)</strong> rolls random codes and shows them on the player display. <strong>Blind (Hidden)</strong> rolls random codes but hides them on the player display. Acts on the active scope ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
       <div className="cbsetTools">
-        <button type="button" className="cbsetToolBtn good" onClick={allocBlindAll}>Allocate Blind (All)</button>
+        <button type="button" className="cbsetToolBtn good" onClick={allocRandomOpenAll}>🎲 Allocate Random (Shown)</button>
+        <button type="button" className="cbsetToolBtn good" onClick={allocBlindAll}>🙈 Allocate Blind (Hidden)</button>
         <button type="button" className="cbsetToolBtn" onClick={()=>{setOpenCards({});setCardScreen(true);}}>🃏 Open Card Screen (pass around)</button>
         <button type="button" className="cbsetToolBtn" onClick={rerollAll}>🎲 Re-roll All</button>
         <button type="button" className="cbsetToolBtn" onClick={revealAll}>👁 Reveal All</button>
@@ -6325,6 +6334,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
         <label>Short balls allowed<select value={cfg.shorts} onChange={e=>setOpt('shorts',e.target.value)}>{LENGTH_LISTS.shorts.map(o=><option key={o}>{o}</option>)}</select></label>
         {(cfg.shorts==='2 short balls per rally'||cfg.shorts==='3 short balls per rally')&&<label>Consecutive shorts<select value={cfg.consecutive} onChange={e=>setOpt('consecutive',e.target.value)}>{LENGTH_LISTS.consecutive.map(o=><option key={o}>{o}</option>)}</select></label>}
         {cfg.shorts!=='No short balls'&&<label>Short shot type<select value={cfg.shortShot} onChange={e=>setOpt('shortShot',e.target.value)}>{LENGTH_LISTS.shortShot.map(o=><option key={o}>{o}</option>)}</select></label>}
+        {cfg.shorts!=='No short balls'&&<label>Short shot method<select value={cfg.shortMethod||'Players choice'} onChange={e=>setOpt('shortMethod',e.target.value)}>{ATL_LISTS.method.map(o=><option key={o}>{o}</option>)}</select></label>}
         <label>Checkerboard Zone<select value={useCustomCb?'Custom':'Auto'} onChange={e=>setUseCustomCb(e.target.value==='Custom')}><option value="Auto">Auto (from side): {autoCbZone}</option><option value="Custom">Custom</option></select></label>
         {useCustomCb&&<label>Custom Zone / Code<input type="text" value={customCbZone} onChange={e=>setCustomCbZone(e.target.value)} placeholder="e.g. [7-2] + [8-1] or 5/6/3/4"/></label>}
       </div>
