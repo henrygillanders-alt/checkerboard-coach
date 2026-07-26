@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v498 Coach Suggestions live. Connected the delivery endpoint to the head coach Formspree form, so every suggestion (idea, CLA rationale, RLD rating, coach name) is emailed on submit as well as saved on the device. Builds on v497.';
+const APP_VERSION='v501 Coach chat live. Connected the Coach Suggestions module to the Coach Collaborations Firebase project, so suggestions and reply threads now sync live across every coach device via Firestore, with email pings as backup. Builds on v500.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4364,46 +4364,88 @@ function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
 const COACH_SUGGESTIONS_KEY='checkerboard_master_coach_suggestions_v1';
 // Paste the head coach's Formspree endpoint between the quotes to email every suggestion, e.g. 'https://formspree.io/f/abcdwxyz'
 const SUGGESTION_ENDPOINT='https://formspree.io/f/xykrbbav';
+const FIREBASE_CONFIG={apiKey:"AIzaSyADkl8sS8zVNoP-hTmIfQxnsfLJ1PT8fwk",authDomain:"coach-collaborations.firebaseapp.com",projectId:"coach-collaborations",storageBucket:"coach-collaborations.firebasestorage.app",messagingSenderId:"315516954436",appId:"1:315516954436:web:bb9fdd6c712306a3a45911",measurementId:"G-7EK8Z3CY8Z"};
+const SUGGEST_IDENTITY_KEY='checkerboard_master_suggest_identity_v1';
+let _fbDbPromise=null;
+function ensureFirestore(){
+  if(!FIREBASE_CONFIG)return Promise.resolve(null);
+  if(_fbDbPromise)return _fbDbPromise;
+  const load=s=>new Promise((res,rej)=>{const el=document.createElement('script');el.src=s;el.onload=res;el.onerror=()=>rej(new Error('Could not load '+s));document.head.appendChild(el);});
+  _fbDbPromise=load('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js')
+    .then(()=>load('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'))
+    .then(()=>{const fb=window.firebase;if(!fb.apps.length)fb.initializeApp(FIREBASE_CONFIG);return fb.firestore();})
+    .catch(e=>{_fbDbPromise=null;throw e;});
+  return _fbDbPromise;
+}
 function CoachSuggestionsModule(){
+  const online=!!FIREBASE_CONFIG;
   const empty={type:'Game',title:'',description:'',cla:'',rld:4,by:''};
-  const [items,setItems]=useState(()=>{try{const s=localStorage.getItem(COACH_SUGGESTIONS_KEY);return s?JSON.parse(s):[];}catch{return[];}});
+  const [items,setItems]=useState(()=>{if(online)return[];try{const s=localStorage.getItem(COACH_SUGGESTIONS_KEY);return s?JSON.parse(s):[];}catch{return[];}});
   const [form,setForm]=useState(empty);
   const [editId,setEditId]=useState(null);
   const [message,setMessage]=useState('');
-  useEffect(()=>{try{localStorage.setItem(COACH_SUGGESTIONS_KEY,JSON.stringify(items));}catch{}},[items]);
+  const [me,setMe]=useState(()=>{try{return localStorage.getItem(SUGGEST_IDENTITY_KEY)||'';}catch{return'';}});
+  const [replyText,setReplyText]=useState({});
+  function rldMeta(level){return RLD_LEVELS.find(x=>x.level===Number(level))||RLD_LEVELS[0];}
+  useEffect(()=>{try{localStorage.setItem(SUGGEST_IDENTITY_KEY,me);}catch{}},[me]);
+  useEffect(()=>{if(online)return;try{localStorage.setItem(COACH_SUGGESTIONS_KEY,JSON.stringify(items));}catch{}},[items,online]);
+  useEffect(()=>{
+    if(!online)return;
+    let unsub=null;
+    ensureFirestore().then(db=>{unsub=db.collection('coachSuggestions').orderBy('createdAt','desc').onSnapshot(snap=>setItems(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>setMessage('Shared list error: '+err.message));}).catch(e=>setMessage('Could not connect to the shared list: '+(e&&e.message||'error')));
+    return ()=>{if(unsub)unsub();};
+  },[online]);
   function setField(k,v){setForm(prev=>({...prev,[k]:v}));}
   function resetForm(){setForm(empty);setEditId(null);}
-  function sendToCoach(entry){
-    if(!SUGGESTION_ENDPOINT){setMessage('Suggestion saved on this device. Thank you.');return;}
+  function sendEmail(entry,kind,extraText){
+    if(!SUGGESTION_ENDPOINT)return;
     const meta=rldMeta(entry.rld);
-    const payload={type:entry.type,name:entry.title,description:entry.description,claRationale:entry.cla,rld:meta.short+' — '+meta.label,suggestedBy:entry.by,date:entry.date};
-    setMessage('Suggestion saved. Sending to the head coach…');
-    try{
-      fetch(SUGGESTION_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)})
-        .then(r=>setMessage(r.ok?'Suggestion saved and sent to the head coach. Thank you.':'Saved on this device — could not send just now, it will stay saved here.'))
-        .catch(()=>setMessage('Saved on this device — could not send just now, it will stay saved here.'));
-    }catch{setMessage('Saved on this device — could not send just now, it will stay saved here.');}
+    const payload={status:kind,type:entry.type,name:entry.title,description:entry.description,claRationale:entry.cla,rld:meta.short+' — '+meta.label,suggestedBy:entry.by,_subject:kind+': '+entry.title};
+    if(extraText)payload.message=extraText;
+    try{fetch(SUGGESTION_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});}catch{}
   }
   function save(){
     if(!form.title.trim()){setMessage('Please add a name for the suggestion.');return;}
     if(!form.by.trim()){setMessage('Please add your name in Suggested by.');return;}
-    if(editId){
-      setItems(prev=>prev.map(it=>it.id===editId?{...it,...form,rld:Number(form.rld)}:it));
-      setMessage('Suggestion updated.');
+    const base={type:form.type,title:form.title.trim(),description:form.description,cla:form.cla,rld:Number(form.rld),by:form.by.trim()};
+    if(!me.trim())setMe(base.by);
+    if(online){
+      ensureFirestore().then(db=>{
+        if(editId){return db.collection('coachSuggestions').doc(editId).update(base).then(()=>{setMessage('Update saved and shared with the squad.');sendEmail(base,'UPDATED coach suggestion');});}
+        return db.collection('coachSuggestions').add({...base,messages:[],createdAt:window.firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{setMessage('Suggestion shared with the squad.');sendEmail(base,'New coach suggestion');});
+      }).catch(e=>setMessage('Could not save: '+(e&&e.message||'error')));
+      resetForm();
     }else{
-      const entry={...form,rld:Number(form.rld),id:Date.now()+Math.random(),date:new Date().toLocaleDateString()};
-      setItems(prev=>[entry,...prev]);
-      sendToCoach(entry);
+      if(editId){const existing=items.find(it=>it.id===editId)||{};const updated={...existing,...base,id:editId};setItems(prev=>prev.map(it=>it.id===editId?updated:it));setMessage('Update saved on this device.');sendEmail(updated,'UPDATED coach suggestion');}
+      else{const entry={...base,id:Date.now()+Math.random(),date:new Date().toLocaleDateString(),messages:[]};setItems(prev=>[entry,...prev]);setMessage('Suggestion saved on this device.');sendEmail(entry,'New coach suggestion');}
+      resetForm();
     }
-    resetForm();
   }
-  function editItem(it){setForm({type:it.type,title:it.title,description:it.description,cla:it.cla,rld:it.rld,by:it.by});setEditId(it.id);setMessage('Editing suggestion — make your changes and Save.');}
-  function deleteItem(id){setItems(prev=>prev.filter(it=>it.id!==id));if(editId===id)resetForm();setMessage('Suggestion deleted.');}
-  function rldMeta(level){return RLD_LEVELS.find(x=>x.level===Number(level))||RLD_LEVELS[0];}
+  function editItem(it){setForm({type:it.type,title:it.title,description:it.description,cla:it.cla,rld:it.rld,by:it.by});setEditId(it.id);setMessage('Editing — make your changes and Save.');}
+  function deleteItem(id){
+    if(online){ensureFirestore().then(db=>db.collection('coachSuggestions').doc(id).delete()).catch(e=>setMessage('Could not delete: '+(e&&e.message||'error')));}
+    else setItems(prev=>prev.filter(it=>it.id!==id));
+    if(editId===id)resetForm();
+  }
+  function postReply(it){
+    const text=(replyText[it.id]||'').trim();
+    if(!text){setMessage('Type a message before sending.');return;}
+    if(!me.trim()){setMessage('Add your name at the top so replies are signed.');return;}
+    const msg={text,author:me.trim(),at:Date.now()};
+    if(online){
+      ensureFirestore().then(db=>db.collection('coachSuggestions').doc(it.id).update({messages:window.firebase.firestore.FieldValue.arrayUnion(msg)})).then(()=>sendEmail(it,'New reply on',text)).catch(e=>setMessage('Could not send: '+(e&&e.message||'error')));
+    }else{
+      setItems(prev=>prev.map(x=>x.id===it.id?{...x,messages:[...(x.messages||[]),msg]}:x));
+      sendEmail(it,'New reply on',text);
+    }
+    setReplyText(prev=>({...prev,[it.id]:''}));
+  }
   return <div className="gameCard coachSuggest">
-    <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;vertical-align:middle}`}</style>
+    <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea}.coachSuggest .thread{margin:8px 0;padding:8px 10px;background:#0b1a2a;border-radius:8px;border:1px solid #1d3547}.coachSuggest .msg{padding:5px 0;font-size:14px;color:#dce9f4;border-bottom:1px solid #16283a}.coachSuggest .msg:last-child{border-bottom:none}.coachSuggest .replyRow{display:flex;gap:8px;margin:8px 0}.coachSuggest .replyRow input{flex:1;padding:9px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:14px;box-sizing:border-box}`}</style>
     <div className="categoryTag">Coach Suggestions</div>
     <h2>{editId?'Edit Suggestion':'Suggest an Exercise, Activity or Game'}</h2>
+    <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Shared with all coaches — suggestions and replies sync live across every device.':'On this device only. Once the shared database is connected, everything syncs across all coaches.'}</div>
+    <label className="fw">Your name (so your replies are signed)<input type="text" value={me} onChange={e=>setMe(e.target.value)} placeholder="e.g. Henry"/></label>
     <p className="mutedText">Share an idea for the squad. Add the CLA rationale behind it, rate where it sits on the RLD scale, and sign it with your name.</p>
     {message&&<div className="statusBox">{message}</div>}
     <div className="atlOptionsGrid">
@@ -4420,7 +4462,7 @@ function CoachSuggestionsModule(){
     </div>
     <h3 style={{marginTop:'18px'}}>Suggestions ({items.length})</h3>
     {items.length===0?<div className="placeholder">No suggestions yet. Be the first to add one above.</div>:
-      <div className="suggestionList">{items.map(it=>{const r=rldMeta(it.rld);return <div key={it.id} className="infoBox" style={{marginBottom:'10px'}}>
+      <div className="suggestionList">{items.map(it=>{const r=rldMeta(it.rld);const msgs=(it.messages||[]).slice().sort((a,b)=>(a.at||0)-(b.at||0));return <div key={it.id} className="infoBox" style={{marginBottom:'12px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'6px'}}>
           <strong>{it.title}</strong>
           <span style={{display:'inline-block',padding:'2px 10px',borderRadius:'12px',fontSize:'12px',fontWeight:700,background:r.bg,color:r.textColor,border:'1px solid '+r.color}}>{r.short} · {r.label}</span>
@@ -4428,6 +4470,8 @@ function CoachSuggestionsModule(){
         <p style={{margin:'6px 0'}}><span className="suggestionType">{it.type}</span>{it.description}</p>
         {it.cla&&<p style={{margin:'6px 0'}}><strong>CLA rationale:</strong> {it.cla}</p>}
         <p className="mutedText" style={{margin:'6px 0'}}>Suggested by {it.by}{it.date?' · '+it.date:''}</p>
+        <div className="thread">{msgs.length===0?<p className="mutedText" style={{fontStyle:'italic',margin:0}}>No messages yet — start the conversation below.</p>:msgs.map((m,i)=><div key={i} className="msg"><strong>{m.author}:</strong> {m.text}</div>)}</div>
+        <div className="replyRow"><input type="text" value={replyText[it.id]||''} onChange={e=>setReplyText(prev=>({...prev,[it.id]:e.target.value}))} placeholder="Write a reply…" onKeyDown={e=>{if(e.key==='Enter')postReply(it);}}/><button className="secondaryBtn" onClick={()=>postReply(it)}>Reply</button></div>
         <div className="buttonRow"><button className="secondaryBtn" onClick={()=>editItem(it)}>Edit</button><button className="secondaryBtn" onClick={()=>deleteItem(it.id)}>Delete</button></div>
       </div>;})}</div>}
   </div>;
