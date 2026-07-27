@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v507 Checkerboard blind codes masked in session card. The Add To Session card and its Challenge line now hide the code for any blind (hidden) allocation, showing hidden (revealed on court) instead of the code, so blind challenges no longer leak codes into the Session Builder or the projected player display. Shown/revealed challenges still display the code. Builds on v506.';
+const APP_VERSION='v508 Length games no longer auto-attach scoring overlays. Removed the automatic Quality Length Before Attack and Clean Winner bonus layers from built Length games, so HOW TO SCORE shows only the base rally scoring. Coaches add overlays deliberately via the modifier engine. Builds on v507.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -498,7 +498,7 @@ if(shortsNum>0)rBits.push('allowing '+shortsNum+' short ball'+(shortsNum===1?'':
 if(o.crossMode==='straight')rBits.push('the straight-only condition tightens the side-wall length problem');
 const coach='Reshape the constraint rather than prescribe the swing. A ball short of the target concedes, so dying it deep becomes the only way to score. Progress: one side first then both, and tighten the shorts allowed from more to none. Scale the depth from behind the short line to deep in the back quarter as the rally holds.';
 const player=o.height==='Below the line (BTL)'?'Drive it low and commit to the pace — reach the back, do not guide it.':o.height==='Above the line (ATL)'?'Lift it high enough to reach the back, soft enough to die before the back wall.':'Any height — just make sure it dies deep, past the target line.';
-const autoLayers=['Quality Length Before Attack','Clean Winner'];
+const autoLayers=[];
 if(o.cbRef&&o.cbRef!=='None')autoLayers.push('CB Code');
 return{id:Date.now()+Math.random(),title:title,category:'Length Games',duration:8,format:'Conditioned Game',task:(heightText+' '+depthText+' '+shortsText+ccText+' '+sideText+cbText).replace(/\s+/g,' ').trim(),rationale:'This length game '+rBits.join(', ')+'.',coach:coach,playerFocus:player,scoring:'Win the rally = +1. A ball short of the target, or a short ball beyond the allowance, concedes. Overlays add bonus points.',layers:[...new Set(autoLayers)],cbCode:o.cbRef};
 }
