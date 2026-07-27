@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v512 Shot Clock game class. New temporal-constraint builder in the Games Library: Shot Clock (win before), Hold Clock (win after) and Window (win between), in seconds or shots, with apply-to and early-end rules. Produces a session card carrying its tcr config; the player display shows a band-aware Rally Clock with a colour-coded buzzer (WebAudio) for the seconds modes, startable on the display. Grounded in the modern rally-band profile. Builds on v511.';
+const APP_VERSION='v513 Squad Clock. A synchronised multi-court shot clock: one shared, player-facing clock that auto-cycles rally window to rest across a set number of rounds, with a colour-coded buzzer, for Shot Clock, Hold Clock or Window modes. Reached from a Home tile or the Shot Clock builder (Run as Squad Clock). Includes the temporal-constraint rationale (time versus the spatial checkerboard). Shot Clock rationale now names the temporal-vs-spatial contrast. Builds on v512.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -508,7 +508,7 @@ function buildShotClock(o){
     rTail='forces rapid solution-finding and decisive attacking under time pressure';
   }
   const coach='Borrowed from the basketball shot clock: the time gate is the whole constraint. It reshapes tempo and decision urgency with no verbal call — the clock officiates. Tighten it for more pressure, lengthen it for more patience. Pair it with a checkerboard code or length target to add a spatial demand on top of the temporal one.';
-  const rationale='A temporal constraint drawn from the rally-band profile of the modern game (Murray et al., 2016). The clock '+rTail+' as an emergent solution rather than a coached instruction.';
+  const rationale='A temporal constraint — it shapes the rally through time, in contrast to the spatial constraints of the checkerboard board. Drawn from the rally-band profile of the modern game (Murray et al., 2016), the clock '+rTail+' as an emergent solution rather than a coached instruction.';
   return {id:Date.now()+Math.random(),title:title,category:'Shot Clock',format:'Shot Clock',duration:8,task:task,rationale:rationale,coach:coach,playerFocus:player,scoring:scoring,layers:[],cbCode:'None',tcr:{mode:o.mode,unit:o.unit,t1:t1,t2:t2,applyTo:o.applyTo,earlyEnd:o.earlyEnd}};
 }
 
@@ -944,6 +944,82 @@ function RotationTimer({durationMin,resetKey}){
     <button className="secondaryBtn" onClick={()=>setRunning(r=>!r)} disabled={done&&!running}>{running?'⏸ Pause':(remaining===total?'▶ Start':'▶ Resume')}</button>
     <button className="secondaryBtn" onClick={()=>{setRunning(false);setRemaining(total);}}>↺ Reset</button>
     {done&&<span style={{color:'#ff7a7a',fontWeight:800}}>Time!</span>}
+  </div>;
+}
+function SquadClock({setScreen}){
+  const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
+  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||10,t2:(preset&&preset.t2)||16,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
+  const [running,setRunning]=useState(false);
+  const m=useRef({phase:'idle',round:1,remaining:0,gateFired:false});
+  const [,force]=useState(0);const rr=()=>force(x=>x+1);
+  const isCeiling=cfg.mode.indexOf('Shot Clock')===0;
+  const isHold=cfg.mode.indexOf('Hold')===0;
+  const isWindow=cfg.mode.indexOf('Window')===0;
+  const t1=Math.max(1,Number(cfg.t1)||10);
+  const t2=Math.max(t1+1,Number(cfg.t2)||t1+6);
+  const workLen=isCeiling?t1:isHold?Math.max(t1+1,Number(cfg.holdRally)||20):t2;
+  function bump(k,d,min){setCfg(p=>({...p,[k]:Math.max(min,(Number(p[k])||0)+d)}));}
+  function Row(lbl,key,step,min){return <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',margin:'8px 0'}}><span style={{color:'#8fb2cf',fontWeight:600}}>{lbl}</span><span style={{display:'flex',alignItems:'center',gap:'10px'}}><button className="secondaryBtn" onClick={()=>bump(key,-step,min)}>−</button><strong style={{minWidth:'44px',textAlign:'center',fontSize:'1.25rem'}}>{cfg[key]}</strong><button className="secondaryBtn" onClick={()=>bump(key,step,min)}>+</button></span></div>;}
+  useEffect(()=>{if(!running)return;const id=setInterval(tick,1000);return ()=>clearInterval(id);},[running]);
+  function tick(){
+    const s=m.current;
+    if(s.phase==='idle'||s.phase==='done')return;
+    if(s.remaining>1){
+      s.remaining-=1;
+      if(s.phase==='work'&&(isHold||isWindow)&&!s.gateFired&&(workLen-s.remaining)>=t1){s.gateFired=true;scBeep(1);}
+      rr();return;
+    }
+    if(s.phase==='ready'){s.phase='work';s.remaining=workLen;s.gateFired=false;scBeep(1);}
+    else if(s.phase==='work'){scBeep(2);if(s.round<cfg.rounds){s.phase='rest';s.remaining=Math.max(1,Number(cfg.rest)||15);}else{s.phase='done';s.remaining=0;setRunning(false);scBeep(3);}}
+    else if(s.phase==='rest'){s.round+=1;s.phase='work';s.remaining=workLen;s.gateFired=false;scBeep(1);}
+    rr();
+  }
+  function start(){scUnlock();m.current={phase:'ready',round:1,remaining:3,gateFired:false};setRunning(true);rr();}
+  function pause(){setRunning(r=>!r);}
+  function stop(){m.current={phase:'idle',round:1,remaining:0,gateFired:false};setRunning(false);rr();}
+  const s=m.current;
+  let big=s.remaining,label='',color='#7fe8bf',cue='';
+  if(s.phase==='ready'){label='GET READY';color='#f5c451';cue='All courts — server to the box.';}
+  else if(s.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
+  else if(s.phase==='done'){label='SESSION DONE';color='#7fe8bf';cue=cfg.rounds+' rounds complete.';}
+  else if(s.phase==='work'){
+    const elapsed=workLen-s.remaining;
+    if(isCeiling){label='SHOT CLOCK';color=s.remaining<=3?'#f5c451':'#7fe8bf';cue='Win before the buzzer — still live = point to returner.';}
+    else if(isHold){label=elapsed<t1?'HOLD':'ATTACK OPEN';color=elapsed<t1?'#ff7a7a':'#7fe8bf';cue=elapsed<t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
+    else{label=elapsed<t1?'HOLD':'STRIKE';color=elapsed<t1?'#f5c451':'#7fe8bf';cue=elapsed<t1?'Too early — keep building.':'Strike window open.';}
+  }
+  const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
+  const live=s.phase!=='idle';
+  return <div className="playerDisplayPage">
+    <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button>{live&&<button className="secondaryBtn" onClick={stop}>■ Stop</button>}</div>
+    {!live?<div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
+      <div className="categoryTag">Squad Clock</div>
+      <h2>Squad Clock — synchronised shot clock</h2>
+      <div className="claRationaleBox"><h2>Temporal Constraint</h2><p>One shared clock for every court. It shapes the whole squad through time rather than through space (the spatial checkerboard), turning the session into a representative interval block — fixed work windows and recovery, matching the rally-band profile of the modern game. Players adapt tempo and decision urgency to the clock; no verbal calls, the buzzer officiates. Place this device where all courts can see and hear it, then press Start.</p></div>
+      <div className="atlOptionsGrid" style={{marginTop:'6px'}}>
+        <label>Mode<select value={cfg.mode} onChange={e=>setCfg(p=>({...p,mode:e.target.value}))}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
+      </div>
+      <div style={{marginTop:'6px'}}>
+        {isCeiling&&Row('Shot clock (seconds)','t1',1,1)}
+        {isHold&&Row('Hold until (seconds)','t1',1,1)}
+        {isHold&&Row('Rally length (seconds)','holdRally',5,2)}
+        {isWindow&&Row('Window from (seconds)','t1',1,1)}
+        {isWindow&&Row('Window to (seconds)','t2',1,(Number(cfg.t1)||1)+1)}
+        {Row('Rest between rallies (seconds)','rest',5,1)}
+        {Row('Rounds','rounds',1,1)}
+      </div>
+      <div className="buttonRow sessionActionButtons"><button className="primaryBtn" onClick={start}>▶ Start Squad Clock</button></div>
+    </div>
+    :<div style={{maxWidth:'900px',margin:'18px auto',textAlign:'center'}}>
+      <div style={{color:'#8faec4',fontWeight:800,letterSpacing:'.06em',fontSize:'1.1rem'}}>ROUND {Math.min(s.round,cfg.rounds)} / {cfg.rounds} · {cfg.mode.split(' (')[0].toUpperCase()}</div>
+      <div style={{fontSize:'1.6rem',fontWeight:800,letterSpacing:'.08em',color:color,margin:'8px 0'}}>{label}</div>
+      <div style={{fontSize:'9rem',fontWeight:800,fontVariantNumeric:'tabular-nums',color:color,lineHeight:1}}>{mm}:{ss}</div>
+      <div style={{color:'#cfe0ee',fontSize:'1.15rem',margin:'8px 0 4px'}}>{cue}</div>
+      <div className="buttonRow" style={{justifyContent:'center',marginTop:'8px'}}>
+        <button className="secondaryBtn" onClick={pause}>{running?'⏸ Pause':'▶ Resume'}</button>
+        <button className="secondaryBtn" onClick={stop}>■ Stop &amp; reset</button>
+      </div>
+    </div>}
   </div>;
 }
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
@@ -4650,6 +4726,7 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClock')}><h2>Squad Clock</h2><span className="homeTileSubtitle">Synchronised shot clock · all courts</span></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
@@ -6553,6 +6630,7 @@ function ShotClockBuilder({onAddToSession,setScreen}){
     </div>
     <div className="buttonRow sessionActionButtons">
       <button type="button" className="primaryBtn" onClick={()=>addGame(composed)}>Add Shot Clock To Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem('SQUAD_CLOCK_CFG',JSON.stringify({mode:cfg.mode,t1:cfg.t1,t2:cfg.t2,holdRally:20}));}catch(e){} if(setScreen)setScreen('squadClock');}}>▶ Run as Squad Clock</button>
       <button type="button" className="secondaryBtn" onClick={()=>{addGame(composed); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
     </div>
@@ -22873,6 +22951,7 @@ button,select{-webkit-appearance:none;appearance:none;}
       {screen==='rotational'&&<RotationalAffordanceGames setScreen={go} setSession={setSession}/>} 
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
       {screen==='playerDisplay'&&<PlayerDisplayView session={session} setScreen={go}/>}
+      {screen==='squadClock'&&<SquadClock setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
