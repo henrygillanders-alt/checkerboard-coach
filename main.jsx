@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v508 Length games no longer auto-attach scoring overlays. Removed the automatic Quality Length Before Attack and Clean Winner bonus layers from built Length games, so HOW TO SCORE shows only the base rally scoring. Coaches add overlays deliberately via the modifier engine. Builds on v507.';
+const APP_VERSION='v509 Session Builder edit-in-place and unified actions. Every rotation now has a consistent dark-styled action row (Edit Game, Duplicate + Progress, Push Player Display, Copy Player Link) instead of the mismatched blue-on-white buttons. Edit Game opens the game editor inline and saves changes straight back to that rotation, so games can be edited in the session without rebuilding from scratch. Builds on v508.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5363,6 +5363,8 @@ function updateModifierScore(index,layer,value){saveSessionSnapshot();const upda
 function updateCb(index,code){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);updated[index].cbCode=code;if(code!=='None'&&!updated[index].layers.includes('CB Code'))updated[index].layers.push('CB Code');if(code==='None')updated[index].layers=updated[index].layers.filter(layer=>layer!=='CB Code');setSession(updated);}
 function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
 function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
+const [editIndex,setEditIndex]=useState(null);
+function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
@@ -5370,20 +5372,17 @@ return <div className="page sessionBuilderPage">
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
 {session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
+{editIndex===index?<div style={{padding:'2px'}}><div className="rotationTop"><div><strong>Editing Rotation {index+1}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" onClick={()=>setEditIndex(null)}>Close</button></div></div><UniversalGameEditor key={'edit-'+(game.id||index)} game={game} saveLabel="Save Changes" onAddToSession={g=>applyEdit(index,g)} onCancel={()=>setEditIndex(null)}/></div>:<>
 <div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
-{game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<>
-<div style={{display:'flex',gap:'16px',flexWrap:'wrap',alignItems:'flex-start'}}><div style={{flex:'1 1 320px',minWidth:0,display:'flex',flexDirection:'column',gap:'12px'}}><div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>
-
-
-
-</div><div className="gameActionBar" style={{flex:'0 0 210px',margin:0}}><strong>Game Actions</strong><div style={{display:'flex',flexDirection:'column',gap:'8px',alignItems:'stretch'}}>
-<button onClick={()=>duplicate(index)}>Duplicate + Progress</button>
-{game.format!=='Pattern Lab'&&<button onClick={()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,CATEGORY_TO_CLASS[game.category]||'');}catch{}if(typeof setScreen==='function')setScreen('games');}}>Edit in set-up →</button>}
-{game.format==='Pattern Lab'&&<button onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit</button>}
-<button className="primaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>PUSH PLAYER DISPLAY</button>
-<button className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Persistent Player Display link copied. This same link updates when you push any game/session/competition.':'Could not create player display link.');}}>COPY PLAYER LINK</button>
-</div></div></div>
+{game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>}
+<div className="buttonRow" style={{marginTop:'12px',flexWrap:'wrap',gap:'8px'}}>
+<button type="button" className="secondaryBtn" onClick={()=>setEditIndex(index)}>✏️ Edit Game</button>
+<button type="button" className="secondaryBtn" onClick={()=>duplicate(index)}>Duplicate + Progress</button>
+{game.format==='Pattern Lab'&&<button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit Pattern in Lab →</button>}
+<button type="button" className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>Push Player Display</button>
+<button type="button" className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} alert(url?'Persistent Player Display link copied. This same link updates when you push any game/session/competition.':'Could not create player display link.');}}>Copy Player Link</button>
+</div>
 </>}
 </div>)}
 </div>;
@@ -10146,7 +10145,7 @@ function appendToSessionState(prev,card){
   return [...base,normaliseGameCard(card)];
 }
 
-function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
+function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}){
   const [draft,setDraft]=useState(()=>{
     const base=normaliseGameCard(game);
     return {...base,
@@ -10195,7 +10194,7 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel}){
       appliesTo={draft.appliesTo} onAppliesToChange={v=>update('appliesTo',v)} namedPlayer={draft.namedPlayer} onNamedPlayerChange={v=>update('namedPlayer',v)} presentPlayers={presentPlayers}/>
 
     <div className="buttonRow">
-      {onAddToSession&&<button type="button" className="primaryBtn" onClick={doAddToSession}>Add to Session</button>}
+      {onAddToSession&&<button type="button" className="primaryBtn" onClick={doAddToSession}>{saveLabel||'Add to Session'}</button>}
       {onSaveCard&&<button type="button" className="primaryBtn" onClick={doSaveCard}>Save as Card</button>}
       <button type="button" className="secondaryBtn" onClick={onCancel}>Cancel</button>
     </div>
