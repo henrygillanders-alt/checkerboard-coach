@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v511 Checkerboard edit routing + removed duplicate. Editing a Checkerboard or Perception rotation now opens its real configure module (Checkerboard via the Home tile screen, Perception module) instead of the generic editor; other games still edit in place. Removed the duplicate Checkerboard entry from the Games Library so there is one checkerboard module, reached from the Home tile. Builds on v510.';
+const APP_VERSION='v512 Shot Clock game class. New temporal-constraint builder in the Games Library: Shot Clock (win before), Hold Clock (win after) and Window (win between), in seconds or shots, with apply-to and early-end rules. Produces a session card carrying its tcr config; the player display shows a band-aware Rally Clock with a colour-coded buzzer (WebAudio) for the seconds modes, startable on the display. Grounded in the modern rally-band profile. Builds on v511.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -285,8 +285,9 @@ const INFO_ANTICIPATION_KEY='checkerboard_info_anticipation_v92';
 const GAME_LIBRARY_DRAFT_KEY='checkerboard_master_v89_logic_draft';
 const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
 const GAME_LIBRARY_LENGTH_DRAFT_KEY='checkerboard_master_v90_length_draft';
+const GAME_LIBRARY_SHOTCLOCK_DRAFT_KEY='checkerboard_master_shotclock_draft_v1';
 const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
-const CATEGORY_TO_CLASS={'ATL / BTL':'atl','Checkerboard':'checkerboard','Around The Board':'atb','Power Play':'powerplay','Tactical Pressure':'tacticalpressure','Tactical Intentions':'tacticalIntentions','Classic Conditioned':'classic','Classic Constraint':'classicconstraint','Length Games':'length','Snakes & Ladders':'snakesladders','Ludo Squash':'ludosquash','Noughts & Crosses Squash':'noughtscrosses','Blind Target':'blindtarget','Serve & Return':'serveReturn','Technical':'technical','Volley & Intercept':'volley','Information & Anticipation':'information','Double Bounce':'doubleBounce','Tin War':'tinwar','Rotations':'rotations','Common Game Errors':'errors','Shot Bonus Rally':'shotbonus','Breakout Squash':'breakout','Press Call':'presscall','Hangman Squash':'hangman','Custom':'custom'};
+const CATEGORY_TO_CLASS={'ATL / BTL':'atl','Checkerboard':'checkerboard','Around The Board':'atb','Power Play':'powerplay','Tactical Pressure':'tacticalpressure','Tactical Intentions':'tacticalIntentions','Classic Conditioned':'classic','Classic Constraint':'classicconstraint','Length Games':'length','Shot Clock':'shotclock','Snakes & Ladders':'snakesladders','Ludo Squash':'ludosquash','Noughts & Crosses Squash':'noughtscrosses','Blind Target':'blindtarget','Serve & Return':'serveReturn','Technical':'technical','Volley & Intercept':'volley','Information & Anticipation':'information','Double Bounce':'doubleBounce','Tin War':'tinwar','Rotations':'rotations','Common Game Errors':'errors','Shot Bonus Rally':'shotbonus','Breakout Squash':'breakout','Press Call':'presscall','Hangman Squash':'hangman','Custom':'custom'};
 
 const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
@@ -340,6 +341,13 @@ const LENGTH_LISTS={
  crosscourts:['Cross-court allowed','Straight only (no cross-court)','1 cross-court per rally','2 cross-courts per rally']
 };
 const DEFAULT_LENGTH={height:'Full wall',depth:'Second bounce behind the short line',side:'Both sides',shorts:'No short balls',consecutive:'No',shortShot:'Any short shot',shortMethod:'Players choice',crossMode:'allowed',crossCap:0};
+const SHOTCLOCK_LISTS={
+ mode:['Shot Clock (win before)','Hold Clock (win after)','Window (win between)'],
+ unit:['Seconds','Shots'],
+ applyTo:['Server only','Both players'],
+ earlyEnd:['Replay the rally','Point to the constrained player']
+};
+const DEFAULT_SHOTCLOCK={mode:'Shot Clock (win before)',unit:'Seconds',t1:10,t2:16,applyTo:'Server only',earlyEnd:'Replay the rally'};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -472,6 +480,37 @@ function rankedBlockCourtAllocation(players,courtCount){
 
 
 
+
+function buildShotClock(o){
+  const unitWord=o.unit==='Shots'?'shots':'seconds';
+  const t1=Math.max(1,Number(o.t1)||10);
+  const t2=Math.max(t1+1,Number(o.t2)||t1+6);
+  const applyToText=o.applyTo==='Both players'?'The clock applies to whoever is trying to win the rally.':'The clock applies to the server; the returner plays freely.';
+  const earlyEndText=o.earlyEnd==='Point to the constrained player'?'awarded to the server (so the opponent cannot concede early to deny the window)':'replayed with no point either way';
+  let task,scoring,player,title,rTail;
+  if(o.mode==='Hold Clock (win after)'){
+    title='Hold Clock — win after '+t1+' '+unitWord;
+    task='Hold clock set to '+t1+' '+unitWord+'. The server may not win the rally until the clock reaches '+t1+' '+unitWord+' — build and sustain first. Any rally that ends before the gate is '+earlyEndText+'. After the gate, play is live and the server may go for the winner. '+applyToText;
+    scoring='Win the rally = +1, but only a rally won after the '+t1+'-'+unitWord+' gate counts; anything ending before the gate is '+(o.earlyEnd==='Point to the constrained player'?'awarded to the server':'replayed')+'. Overlays add bonus points.';
+    player='Stay patient — bank quality length, hold the T, and only strike once the clock opens.';
+    rTail='forces patience and construction';
+  } else if(o.mode==='Window (win between)'){
+    title='Strike Window — win between '+t1+' and '+t2+' '+unitWord;
+    task='Strike window '+t1+' to '+t2+' '+unitWord+'. The server must win the rally inside the window. Winning before '+t1+' '+unitWord+' is '+earlyEndText+'; if the rally is still live at '+t2+' '+unitWord+' the point goes to the returner. '+applyToText;
+    scoring='Win the rally = +1, but only a win inside the '+t1+' to '+t2+' '+unitWord+' window counts; too early is '+(o.earlyEnd==='Point to the constrained player'?'awarded to the server':'replayed')+', too late scores to the returner. Overlays add bonus points.';
+    player='Build first, then strike in the window — not too early, not too late.';
+    rTail='couples patient construction with a decisive strike in the right window';
+  } else {
+    title='Shot Clock — win before '+t1+' '+unitWord;
+    task='Shot clock set to '+t1+' '+unitWord+'. The server must win the rally before the clock runs out. If the rally is still live when the buzzer sounds, the point goes to the returner — they survived the siege. '+applyToText;
+    scoring='Win the rally = +1 if the server wins before the buzzer; if the rally is still live at '+t1+' '+unitWord+' the point goes to the returner. Overlays add bonus points.';
+    player='Find the winning solution early — commit to the attack, do not over-build.';
+    rTail='forces rapid solution-finding and decisive attacking under time pressure';
+  }
+  const coach='Borrowed from the basketball shot clock: the time gate is the whole constraint. It reshapes tempo and decision urgency with no verbal call — the clock officiates. Tighten it for more pressure, lengthen it for more patience. Pair it with a checkerboard code or length target to add a spatial demand on top of the temporal one.';
+  const rationale='A temporal constraint drawn from the rally-band profile of the modern game (Murray et al., 2016). The clock '+rTail+' as an emergent solution rather than a coached instruction.';
+  return {id:Date.now()+Math.random(),title:title,category:'Shot Clock',format:'Shot Clock',duration:8,task:task,rationale:rationale,coach:coach,playerFocus:player,scoring:scoring,layers:[],cbCode:'None',tcr:{mode:o.mode,unit:o.unit,t1:t1,t2:t2,applyTo:o.applyTo,earlyEnd:o.earlyEnd}};
+}
 
 function buildLength(o){
 const heightText=o.height==='Above the line (ATL)'?'Every shot must strike the front wall ABOVE the service line (ATL).':o.height==='Below the line (BTL)'?'Every shot must strike the front wall BELOW the service line (BTL).':'Full wall — any height on the front wall is allowed.';
@@ -846,6 +885,46 @@ function PdField({label,text,sep,className=''}){
       : <p>{text}</p>}
   </section>;
 }
+function scUnlock(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;if(!window.__scAudio)window.__scAudio=new C();if(window.__scAudio.state==='suspended')window.__scAudio.resume();}catch(e){}}
+function scBeep(times){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;if(!window.__scAudio)window.__scAudio=new C();const ctx=window.__scAudio;if(ctx.state==='suspended')ctx.resume();let t=ctx.currentTime+0.01;for(let i=0;i<(times||1);i++){const o=ctx.createOscillator(),g=ctx.createGain();o.type='square';o.frequency.value=880;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.35,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);o.start(t);o.stop(t+0.24);t+=0.3;}}catch(e){}}
+function RallyClock({tcr}){
+  const mode=(tcr&&tcr.mode)||'Shot Clock (win before)';
+  const t1=Math.max(1,Number(tcr&&tcr.t1)||10);
+  const t2=Math.max(t1+1,Number(tcr&&tcr.t2)||t1+6);
+  const seconds=((tcr&&tcr.unit)||'Seconds')==='Seconds';
+  const ceiling=mode.indexOf('Shot Clock')===0;
+  const floor=mode.indexOf('Hold')===0;
+  const windowMode=mode.indexOf('Window')===0;
+  const [elapsed,setElapsed]=useState(0);
+  const [running,setRunning]=useState(false);
+  const fired=useRef({});
+  useEffect(()=>{if(!running)return;const id=setInterval(()=>setElapsed(e=>e+1),1000);return ()=>clearInterval(id);},[running]);
+  useEffect(()=>{
+    if(!running)return;
+    if(ceiling&&elapsed>=t1&&!fired.current.buzz){fired.current.buzz=true;scBeep(2);setRunning(false);}
+    if((floor||windowMode)&&elapsed>=t1&&!fired.current.open){fired.current.open=true;scBeep(1);}
+    if(windowMode&&elapsed>=t2&&!fired.current.buzz){fired.current.buzz=true;scBeep(2);setRunning(false);}
+  },[elapsed,running,ceiling,floor,windowMode,t1,t2]);
+  function reset(){setRunning(false);setElapsed(0);fired.current={};}
+  function toggle(){if(!running)scUnlock();setRunning(r=>!r);}
+  if(!seconds){
+    const txt=ceiling?('win within '+t1+' shots'):floor?('hold until '+t1+' shots'):('win between '+t1+' and '+t2+' shots');
+    return <div style={{textAlign:'center',margin:'6px 0'}}><div style={{fontSize:'1.2rem',fontWeight:800,color:'#7fe8bf'}}>Shot-count clock</div><div style={{color:'#cfe0ee'}}>{txt}</div><div style={{color:'#8faec4',fontSize:'.82rem'}}>Count shots on court — no timer needed.</div></div>;
+  }
+  let big,label,color;
+  if(ceiling){const rem=Math.max(0,t1-elapsed);big=rem;if(elapsed>=t1){label='BUZZER — point to returner';color='#ff7a7a';}else if(rem<=3){label='WIN NOW';color='#f5c451';}else{label='SHOT CLOCK';color='#7fe8bf';}}
+  else if(floor){big=elapsed;if(elapsed>=t1){label='ATTACK OPEN';color='#7fe8bf';}else{label='HOLD — no winning yet';color='#ff7a7a';}}
+  else{big=elapsed;if(elapsed>=t2){label='TOO LATE — point to returner';color='#ff7a7a';}else if(elapsed>=t1){label='STRIKE WINDOW';color='#7fe8bf';}else{label='HOLD — too early';color='#f5c451';}}
+  const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
+  return <div style={{textAlign:'center',margin:'6px 0'}}>
+    <div style={{fontSize:'.78rem',fontWeight:800,letterSpacing:'.08em',color:color}}>{label}</div>
+    <div style={{fontSize:'3rem',fontWeight:800,fontVariantNumeric:'tabular-nums',color:color,lineHeight:1.05}}>{mm}:{ss}</div>
+    <div style={{display:'flex',gap:'10px',justifyContent:'center',flexWrap:'wrap',marginTop:'4px'}}>
+      <button className="secondaryBtn" onClick={toggle}>{running?'⏸ Pause':(elapsed===0?'▶ Start rally':'▶ Resume')}</button>
+      <button className="secondaryBtn" onClick={reset}>↺ New rally</button>
+    </div>
+  </div>;
+}
 function RotationTimer({durationMin,resetKey}){
   const total=Math.max(1,Math.round((Number(durationMin)||8)*60));
   const [remaining,setRemaining]=useState(total);
@@ -897,7 +976,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       </select>}
       {chosen&&<div className="pdTimerRow" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',flexWrap:'wrap',margin:'12px 0 2px'}}>
         {hasSession&&<button className="secondaryBtn" disabled={selectedIndex<=0} onClick={()=>onSelect&&onSelect(selectedIndex-1)}>◀ Prev</button>}
-        <RotationTimer durationMin={chosen.duration} resetKey={String(chosen.id||'')+'-'+selectedIndex}/>
+        {chosen.tcr?<RallyClock tcr={chosen.tcr}/>:<RotationTimer durationMin={chosen.duration} resetKey={String(chosen.id||'')+'-'+selectedIndex}/>}
         {hasSession&&<button className="secondaryBtn" disabled={selectedIndex>=session.length-1} onClick={()=>onSelect&&onSelect(selectedIndex+1)}>Next ▶</button>}
       </div>}
     </div>
@@ -6403,6 +6482,78 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
     <div className="buttonRow sessionActionButtons">
       <button type="button" className="primaryBtn" onClick={()=>addGame({...composedLength,dbHandicap:'No DB'})}>Add Length Game To Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>{addGame({...composedLength,dbHandicap:'No DB'}); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
+    </div>
+  </div>;
+}
+
+function ShotClockBuilder({onAddToSession,setScreen}){
+  const savedDraft=(()=>{try{const s=localStorage.getItem(GAME_LIBRARY_SHOTCLOCK_DRAFT_KEY);return s?JSON.parse(s):null;}catch{return null;}})();
+  const [cfg,setCfg]=useState(savedDraft?.cfg||DEFAULT_SHOTCLOCK);
+  const [manualLayers,setManualLayers]=useState(savedDraft?.manualLayers||[]);
+  const [builderModifierScores,setBuilderModifierScores]=useState(savedDraft?.modifierScores||{});
+  const [history,setHistory]=useState([]);
+  const built=useMemo(()=>buildShotClock(cfg),[cfg]);
+  const composed=useMemo(()=>{const layers=[...new Set([...(built.layers||[]),...manualLayers])];return {...built,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...builderModifierScores}};},[built,manualLayers,builderModifierScores]);
+  useEffect(()=>{localStorage.setItem(GAME_LIBRARY_SHOTCLOCK_DRAFT_KEY,JSON.stringify({cfg,manualLayers,modifierScores:builderModifierScores}));},[cfg,manualLayers,builderModifierScores]);
+  function snapshot(){setHistory(prev=>[...prev,{cfg:clone(cfg),manualLayers:clone(manualLayers),modifierScores:clone(builderModifierScores)}]);}
+  function setOpt(key,value){snapshot();setCfg(prev=>({...prev,[key]:value}));}
+  function bump(key,delta,min){setCfg(prev=>({...prev,[key]:Math.max(min,(Number(prev[key])||0)+delta)}));}
+  function toggleManualLayer(l){snapshot();setManualLayers(prev=>prev.includes(l)?prev.filter(x=>x!==l):[...prev,l]);}
+  function clearOverlays(){snapshot();setManualLayers([]);}
+  function resetBuilder(){snapshot();setCfg(DEFAULT_SHOTCLOCK);setManualLayers([]);}
+  function undo(){const last=history[history.length-1];if(!last)return;setCfg(last.cfg);setManualLayers(last.manualLayers);setBuilderModifierScores(last.modifierScores||{});setHistory(history.slice(0,-1));}
+  function updateBuilderModifierScore(l,v){setBuilderModifierScores(prev=>({...prev,[l]:v}));}
+  function addGame(game){const layers=safeLayersForSession(game);const withScores={...clone(game),modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...(game.modifierScores||{}),...builderModifierScores}};onAddToSession({...withScores,id:Date.now()+Math.random()});}
+  const unitWord=cfg.unit==='Shots'?'shots':'seconds';
+  const isWindow=cfg.mode==='Window (win between)';
+  const showEarlyEnd=cfg.mode!=='Shot Clock (win before)';
+  return <div className="gameCard">
+    <style>{`.scField{margin:6px 0 2px}.scField .lenFieldLabel{display:inline-block;font-weight:600;color:#8fb2cf;font-size:13px;margin:0 4px}.scField .pdChips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.scField .pdChip{padding:8px 12px;border-radius:9px;border:1px solid #2c3c4e;background:#0d1620;color:#cde0ee;cursor:pointer;font-size:.85rem}.scField .pdStepNum{min-width:44px;text-align:center;font-weight:800;color:#eaf4fb;font-size:1.3rem}`}</style>
+    <div className="categoryTag">Shot Clock</div>
+    <h2>Shot Clock Builder</h2>
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Clock</span><strong>Time Gate</strong><span className="baseGamePanelSub">Temporal constraint</span></div>
+      <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
+      <div className="atlOptionsGrid">
+        <label>Mode<select value={cfg.mode} onChange={e=>setOpt('mode',e.target.value)}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Unit<select value={cfg.unit} onChange={e=>setOpt('unit',e.target.value)}>{SHOTCLOCK_LISTS.unit.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Apply to<select value={cfg.applyTo} onChange={e=>setOpt('applyTo',e.target.value)}>{SHOTCLOCK_LISTS.applyTo.map(o=><option key={o}>{o}</option>)}</select></label>
+        {showEarlyEnd&&<label>If it ends early<select value={cfg.earlyEnd} onChange={e=>setOpt('earlyEnd',e.target.value)}>{SHOTCLOCK_LISTS.earlyEnd.map(o=><option key={o}>{o}</option>)}</select></label>}
+      </div>
+      <div className="scField">
+        <span className="lenFieldLabel">{isWindow?'Window':(cfg.mode==='Hold Clock (win after)'?'Hold until':'Clock')} ({unitWord})</span>
+        <div className="pdChips">
+          <span className="lenFieldLabel">{isWindow?'From':'Gate'}</span>
+          <PdChip on={false} onClick={()=>bump('t1',-1,1)}>−</PdChip>
+          <span className="pdStepNum">{cfg.t1}</span>
+          <PdChip on={false} onClick={()=>bump('t1',1,1)}>+</PdChip>
+          {isWindow&&<><span className="lenFieldLabel">To</span><PdChip on={false} onClick={()=>bump('t2',-1,(cfg.t1||1)+1)}>−</PdChip><span className="pdStepNum">{Math.max((cfg.t1||1)+1,cfg.t2)}</span><PdChip on={false} onClick={()=>bump('t2',1,(cfg.t1||1)+1)}>+</PdChip></>}
+        </div>
+      </div>
+      <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composed.task}</p></div>
+    </div>
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{COMPLETION_CONSTRAINTS.map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <CustomGameLogicAdder selected={manualLayers} onToggle={toggleManualLayer}/>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Shot Clock"/>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="infoBox"><strong>Default Scoring</strong><p>{composed.scoring}</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3>{editableModifierLayers(composed.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composed.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composed.modifierScores&&composed.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+    <div className="buttonRow">
+      <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
+      <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
+      <button className="secondaryBtn" onClick={resetBuilder}>Reset</button>
+    </div>
+    <div className="buttonRow sessionActionButtons">
+      <button type="button" className="primaryBtn" onClick={()=>addGame(composed)}>Add Shot Clock To Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{addGame(composed); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
     </div>
   </div>;
@@ -12847,6 +12998,7 @@ function Games({setSession,setScreen,onClassChange}){
   const gameClasses=[
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'length',label:'Length Games',category:'Length Games'},
+    {id:'shotclock',label:'Shot Clock',category:'Shot Clock'},
     {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play',category:'Power Play'},
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
@@ -12956,6 +13108,7 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='length'&&<LengthGamesBuilder key="length-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
+    {activeClassId==='shotclock'&&<ShotClockBuilder key="shotclock-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
