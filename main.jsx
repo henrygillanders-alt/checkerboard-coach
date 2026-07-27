@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v509 Session Builder edit-in-place and unified actions. Every rotation now has a consistent dark-styled action row (Edit Game, Duplicate + Progress, Push Player Display, Copy Player Link) instead of the mismatched blue-on-white buttons. Edit Game opens the game editor inline and saves changes straight back to that rotation, so games can be edited in the session without rebuilding from scratch. Builds on v508.';
+const APP_VERSION='v511 Checkerboard edit routing + removed duplicate. Editing a Checkerboard or Perception rotation now opens its real configure module (Checkerboard via the Home tile screen, Perception module) instead of the generic editor; other games still edit in place. Removed the duplicate Checkerboard entry from the Games Library so there is one checkerboard module, reached from the Home tile. Builds on v510.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -846,6 +846,27 @@ function PdField({label,text,sep,className=''}){
       : <p>{text}</p>}
   </section>;
 }
+function RotationTimer({durationMin,resetKey}){
+  const total=Math.max(1,Math.round((Number(durationMin)||8)*60));
+  const [remaining,setRemaining]=useState(total);
+  const [running,setRunning]=useState(false);
+  useEffect(()=>{setRemaining(total);setRunning(false);},[resetKey,total]);
+  useEffect(()=>{
+    if(!running)return;
+    const id=setInterval(()=>{setRemaining(r=>r>0?r-1:0);},1000);
+    return ()=>clearInterval(id);
+  },[running]);
+  useEffect(()=>{if(remaining===0&&running)setRunning(false);},[remaining,running]);
+  const mm=String(Math.floor(remaining/60)).padStart(2,'0');
+  const ss=String(remaining%60).padStart(2,'0');
+  const done=remaining===0;
+  return <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',justifyContent:'center'}}>
+    <div style={{fontSize:'2.6rem',fontWeight:800,fontVariantNumeric:'tabular-nums',color:done?'#ff7a7a':(running?'#7fe8bf':'#eaf4fb'),minWidth:'3.2em',textAlign:'center'}}>{mm}:{ss}</div>
+    <button className="secondaryBtn" onClick={()=>setRunning(r=>!r)} disabled={done&&!running}>{running?'⏸ Pause':(remaining===total?'▶ Start':'▶ Resume')}</button>
+    <button className="secondaryBtn" onClick={()=>{setRunning(false);setRemaining(total);}}>↺ Reset</button>
+    {done&&<span style={{color:'#ff7a7a',fontWeight:800}}>Time!</span>}
+  </div>;
+}
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText,rldLevel,rationale}=getPlayerDisplayFields(chosen);
@@ -874,6 +895,11 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       {hasSession&&<select value={selectedIndex} onChange={e=>onSelect&&onSelect(Number(e.target.value))}>
         {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
       </select>}
+      {chosen&&<div className="pdTimerRow" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',flexWrap:'wrap',margin:'12px 0 2px'}}>
+        {hasSession&&<button className="secondaryBtn" disabled={selectedIndex<=0} onClick={()=>onSelect&&onSelect(selectedIndex-1)}>◀ Prev</button>}
+        <RotationTimer durationMin={chosen.duration} resetKey={String(chosen.id||'')+'-'+selectedIndex}/>
+        {hasSession&&<button className="secondaryBtn" disabled={selectedIndex>=session.length-1} onClick={()=>onSelect&&onSelect(selectedIndex+1)}>Next ▶</button>}
+      </div>}
     </div>
     <div className="playerDisplayGrid">
       <PdField label="WHAT TO DO" text={what} sep={String(chosen&&chosen.category||'').toLowerCase()==='checkerboard'?'\n':' + '}/>
@@ -5377,7 +5403,7 @@ return <div className="page sessionBuilderPage">
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>}
 <div className="buttonRow" style={{marginTop:'12px',flexWrap:'wrap',gap:'8px'}}>
-<button type="button" className="secondaryBtn" onClick={()=>setEditIndex(index)}>✏️ Edit Game</button>
+<button type="button" className="secondaryBtn" onClick={()=>{if(game.category==='Checkerboard'){if(setScreen)setScreen('checkerboard');return;}if(game.category==='Perception'){if(setScreen)setScreen('perception');return;}setEditIndex(index);}}>✏️ Edit Game</button>
 <button type="button" className="secondaryBtn" onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 {game.format==='Pattern Lab'&&<button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit Pattern in Lab →</button>}
 <button type="button" className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>Push Player Display</button>
@@ -12821,7 +12847,6 @@ function Games({setSession,setScreen,onClassChange}){
   const gameClasses=[
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'length',label:'Length Games',category:'Length Games'},
-    {id:'checkerboard',label:'Checkerboard',category:'Checkerboard'},
     {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play',category:'Power Play'},
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
@@ -12929,7 +12954,6 @@ function Games({setSession,setScreen,onClassChange}){
 
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSaveCard={saveCard} onAddToSession={addAndGo} onCancel={()=>setEditingCard(null)}/>}
 
-    {activeClassId==='checkerboard'&&<CheckerboardEngine key="checkerboard-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='length'&&<LengthGamesBuilder key="length-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
