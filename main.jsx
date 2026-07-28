@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v515 Timer + finish-rule update. Shot Clock and Squad Clock time gates now step by 5 seconds (not 1) and default to 20 seconds (not 10); shot-unit gates still step by 1. Game Logic finish rules: added Volley finish in front of short line and removed Front wall finish and Floor finish. Constraints: added Volley In Front Of Short Line to the Tactical overlay library. Builds on v514.';
+const APP_VERSION='v516 Coach custom constraint library. Coaches can add their own constraints that become permanent options in every builder Constraints panel, kept private or shared with the team via the shared database; other coaches can adopt shared constraints into their own library. New My Constraints home tile and screen. Squad Clock removed from Home (still launched from the Shot Clock builder). Builds on v515.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1879,6 +1879,17 @@ const DIVERSITY_OVERLAYS=[
   {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
 ];
 
+// ── COACH CUSTOM CONSTRAINT LIBRARY ──────────────────────────────────────────
+// Design principle: coaches can add their own constraints and make them permanent.
+// Stored on-device (localStorage) as the source of truth for what appears in the
+// builders; shared items are also published to Firestore so other coaches can adopt them.
+const CUSTOM_CONSTRAINTS_KEY='checkerboard_custom_constraints_v1';
+const CUSTOM_CONSTRAINT_FAMILIES=['Technical','Tactical','Mental Performance','Diversity'];
+let CUSTOM_CONSTRAINT_STORE=(()=>{try{const s=localStorage.getItem(CUSTOM_CONSTRAINTS_KEY);const a=s?JSON.parse(s):[];return Array.isArray(a)?a:[];}catch(e){return[];}})();
+function getCustomConstraints(){return CUSTOM_CONSTRAINT_STORE;}
+function persistCustomConstraints(list){CUSTOM_CONSTRAINT_STORE=Array.isArray(list)?list:[];try{localStorage.setItem(CUSTOM_CONSTRAINTS_KEY,JSON.stringify(CUSTOM_CONSTRAINT_STORE));}catch(e){}return CUSTOM_CONSTRAINT_STORE;}
+function customConstraintKey(c){return((c.title||'').trim().toLowerCase()+'|'+(c.rule||'').trim().toLowerCase());}
+
 // ── v145 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
 // Single engine. Fixed panel order everywhere: Game Logic · Constraints · Scoring · Double Bounce.
 // Constraints reuse the real standard overlay library (OverlayFamilyTabs) — same as the Games Library.
@@ -2341,10 +2352,12 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
   const [customText,setCustomText]=useState('');
   const [showCustom,setShowCustom]=useState(false);
 
-  const technicalOptions=TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}));
-  const tacticalOptions=TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
-  const mentalOptions=UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}));
-  const diversityOptions=DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}));
+  const myCustom=getCustomConstraints();
+  const customFor=fam=>myCustom.filter(c=>c.family===fam).map(c=>({name:c.title,category:'★ '+(c.category||'Coach'),rule:c.rule,coach:c.coach||('Custom constraint added by '+(c.by||'coach'))}));
+  const technicalOptions=[...TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process})),...customFor('Technical')];
+  const tacticalOptions=[...TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach})),...customFor('Tactical')];
+  const mentalOptions=[...UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule})),...customFor('Mental Performance')];
+  const diversityOptions=[...DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach})),...customFor('Diversity')];
   const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : family==='Diversity' ? diversityOptions : mentalOptions;
   const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions,...diversityOptions];
   const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
@@ -4689,6 +4702,107 @@ function CoachSuggestionsModule(){
   </div>;
 }
 
+function CustomConstraintLibrary({setScreen}){
+  const online=!!FIREBASE_CONFIG;
+  const emptyForm={title:'',family:'Tactical',rule:'',coach:'',scope:'private'};
+  const [mine,setMine]=useState(()=>[...getCustomConstraints()]);
+  const [shared,setShared]=useState([]);
+  const [form,setForm]=useState(emptyForm);
+  const [editId,setEditId]=useState(null);
+  const [tab,setTab]=useState('mine');
+  const [message,setMessage]=useState('');
+  const [me,setMe]=useState(()=>{try{return localStorage.getItem(SUGGEST_IDENTITY_KEY)||'';}catch(e){return'';}});
+  useEffect(()=>{try{localStorage.setItem(SUGGEST_IDENTITY_KEY,me);}catch(e){}},[me]);
+  useEffect(()=>{
+    if(!online)return;
+    let unsub=null;
+    ensureFirestore().then(db=>{unsub=db.collection('customConstraints').orderBy('createdAt','desc').onSnapshot(snap=>setShared(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>setMessage('Shared library error: '+err.message));}).catch(e=>setMessage('Could not connect to the shared library: '+(e&&e.message||'error')));
+    return ()=>{if(unsub)unsub();};
+  },[online]);
+  function saveMine(list){persistCustomConstraints(list);setMine([...list]);}
+  function setField(k,v){setForm(prev=>({...prev,[k]:v}));}
+  function resetForm(){setForm(emptyForm);setEditId(null);}
+  function publishShared(item){if(!online)return Promise.resolve(null);return ensureFirestore().then(db=>db.collection('customConstraints').add({title:item.title,family:item.family,rule:item.rule,coach:item.coach||'',by:item.by||me||'',createdAt:window.firebase.firestore.FieldValue.serverTimestamp()}).then(ref=>ref.id));}
+  function unpublishShared(sharedId){if(!online||!sharedId)return Promise.resolve();return ensureFirestore().then(db=>db.collection('customConstraints').doc(sharedId).delete());}
+  function updateShared(sharedId,item){if(!online||!sharedId)return Promise.resolve();return ensureFirestore().then(db=>db.collection('customConstraints').doc(sharedId).update({title:item.title,family:item.family,rule:item.rule,coach:item.coach||''}));}
+  function save(){
+    const title=form.title.trim();
+    if(!title){setMessage('Give the constraint a name.');return;}
+    if(!form.rule.trim()){setMessage('Write the rule — what the player must do.');return;}
+    if(!me.trim()){setMessage('Add your name at the top so shared constraints are credited.');return;}
+    const list=[...getCustomConstraints()];
+    if(editId){
+      const idx=list.findIndex(i=>i.id===editId);
+      if(idx<0){resetForm();return;}
+      const prev=list[idx];
+      const item={...prev,title,family:form.family,rule:form.rule.trim(),coach:form.coach.trim(),scope:form.scope,by:prev.by||me.trim()};
+      if(form.scope==='shared'&&!prev.sharedId){publishShared(item).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===item.id?{...x,sharedId:id}:x));}}).catch(()=>{});}
+      else if(form.scope==='private'&&prev.sharedId){unpublishShared(prev.sharedId).catch(()=>{});item.sharedId=null;}
+      else if(form.scope==='shared'&&prev.sharedId){updateShared(prev.sharedId,item).catch(()=>{});}
+      list[idx]=item;saveMine(list);
+      setMessage('Constraint updated.');resetForm();
+    }else{
+      const item={id:'cc'+Date.now()+Math.floor(Math.random()*1000),title,family:form.family,rule:form.rule.trim(),coach:form.coach.trim(),by:me.trim(),scope:form.scope,sharedId:null,createdAt:Date.now()};
+      saveMine([item,...list]);
+      if(form.scope==='shared'){publishShared(item).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===item.id?{...x,sharedId:id}:x));}}).catch(()=>{});}
+      setMessage(form.scope==='shared'?'Added to your library and shared with the team.':'Added to your library — it now appears in every builder.');
+      resetForm();
+    }
+  }
+  function editItem(it){setForm({title:it.title,family:it.family,rule:it.rule,coach:it.coach||'',scope:it.scope||'private'});setEditId(it.id);setTab('mine');setMessage('Editing — make changes and Save.');}
+  function deleteItem(it){const list=getCustomConstraints().filter(x=>x.id!==it.id);saveMine(list);if(it.sharedId)unpublishShared(it.sharedId).catch(()=>{});if(editId===it.id)resetForm();setMessage('Removed from your library.');}
+  function toggleShare(it){
+    const list=[...getCustomConstraints()];
+    const idx=list.findIndex(x=>x.id===it.id);if(idx<0)return;
+    if(it.scope==='shared'&&it.sharedId){unpublishShared(it.sharedId).catch(()=>{});list[idx]={...it,scope:'private',sharedId:null};saveMine(list);setMessage('Now private — only in your library.');}
+    else{list[idx]={...it,scope:'shared'};saveMine(list);publishShared({...it,scope:'shared'}).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===it.id?{...x,sharedId:id}:x));}}).catch(()=>{});setMessage('Shared with the team.');}
+  }
+  function adopt(sh){
+    const list=[...getCustomConstraints()];
+    if(list.some(x=>customConstraintKey(x)===customConstraintKey(sh))){setMessage('That constraint is already in your library.');setTab('mine');return;}
+    const item={id:'cc'+Date.now()+Math.floor(Math.random()*1000),title:sh.title,family:sh.family||'Tactical',rule:sh.rule,coach:sh.coach||'',by:sh.by||'',scope:'private',sharedId:null,createdAt:Date.now(),adoptedFrom:sh.by||''};
+    saveMine([item,...list]);setMessage('Added to your library — it now appears in every builder.');setTab('mine');
+  }
+  const myKeys=new Set(mine.map(customConstraintKey));
+  const sharedFromOthers=shared.filter(s=>(s.by||'')!==me||!myKeys.has(customConstraintKey(s)));
+  return <div className="gameCard coachSuggest customLib">
+    <style>{`.customLib label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.customLib label.fw input,.customLib label.fw textarea,.customLib label.fw select{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.customLib .ccItem{margin:10px 0;padding:12px 14px;background:#0b1a2a;border:1px solid #22405a;border-radius:10px}.customLib .ccItem h4{margin:0 0 4px 0;color:#eaf4fb;font-size:1.05rem}.customLib .ccFam{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;margin-right:8px}.customLib .ccShared{background:#1d4030;color:#8fe0b0}.customLib .ccRule{color:#cfe0ee;margin:6px 0}.customLib .ccCoach{color:#9db6ca;font-size:13px;font-style:italic}.customLib .libTabs{display:flex;gap:8px;margin:10px 0}.customLib .libTabs button{flex:1;padding:10px;border-radius:9px;border:1px solid #294063;background:#132436;color:#9cc4ec;font-weight:700}.customLib .libTabs button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .scopeRow{display:flex;gap:8px;margin-top:6px}.customLib .scopeRow button{flex:1;padding:9px;border-radius:8px;border:1px solid #294063;background:#0e2033;color:#9cc4ec;font-weight:600}.customLib .scopeRow button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}`}</style>
+    <div className="pageTop"><div><div className="categoryTag">My Constraints</div><h2>Custom Constraint Library</h2></div>{setScreen&&<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>}</div>
+    <p className="mutedText">Add your own constraints and they become permanent options in every builder's Constraints panel. Keep them private, or share them so other coaches can adopt them.</p>
+    <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Connected — shared constraints sync across all coaches and your own devices.':'On this device. Your library is saved here; connect the shared database to sync and share across coaches.'}</div>
+    <label className="fw">Your name (credits shared constraints)<input type="text" value={me} onChange={e=>setMe(e.target.value)} placeholder="e.g. Henry"/></label>
+    <div className="libTabs"><button className={tab==='mine'?'on':''} onClick={()=>setTab('mine')}>My Library ({mine.length})</button><button className={tab==='shared'?'on':''} onClick={()=>setTab('shared')}>Shared Pool ({sharedFromOthers.length})</button></div>
+    {tab==='mine'&&<>
+      <div className="ccItem">
+        <h4>{editId?'Edit constraint':'Add a constraint'}</h4>
+        <label className="fw">Name<input type="text" value={form.title} onChange={e=>setField('title',e.target.value)} placeholder="e.g. Volley off the back foot"/></label>
+        <label className="fw">Family<select value={form.family} onChange={e=>setField('family',e.target.value)}>{CUSTOM_CONSTRAINT_FAMILIES.map(f=><option key={f}>{f}</option>)}</select></label>
+        <label className="fw">Rule — what the player must do<textarea rows={2} value={form.rule} onChange={e=>setField('rule',e.target.value)} placeholder="e.g. Every volley must be struck while stepping onto the back foot."/></label>
+        <label className="fw">Coach note (optional)<input type="text" value={form.coach} onChange={e=>setField('coach',e.target.value)} placeholder="What to watch for / why it works"/></label>
+        <div className="scopeRow"><button className={form.scope==='private'?'on':''} onClick={()=>setField('scope','private')}>🔒 Keep private</button><button className={form.scope==='shared'?'on':''} onClick={()=>setField('scope','shared')}>🔗 Share with team</button></div>
+        <div className="buttonRow" style={{marginTop:'10px'}}><button className="primaryBtn" onClick={save}>{editId?'Save changes':'Add to my library'}</button>{editId&&<button className="secondaryBtn" onClick={resetForm}>Cancel</button>}</div>
+      </div>
+      {mine.length===0?<p className="mutedText" style={{fontStyle:'italic'}}>No custom constraints yet. Add one above and it appears across every builder.</p>:mine.map(it=><div className="ccItem" key={it.id}>
+        <h4>{it.title}</h4>
+        <span className="ccFam">{it.family}</span><span className={it.scope==='shared'?'ccFam ccShared':'ccFam'}>{it.scope==='shared'?'Shared':'Private'}</span>
+        <p className="ccRule">{it.rule}</p>
+        {it.coach&&<p className="ccCoach">{it.coach}</p>}
+        <div className="buttonRow"><button className="secondaryBtn" onClick={()=>editItem(it)}>Edit</button><button className="secondaryBtn" onClick={()=>toggleShare(it)}>{it.scope==='shared'?'Make private':'Share'}</button><button className="secondaryBtn" onClick={()=>deleteItem(it)}>Delete</button></div>
+      </div>)}
+    </>}
+    {tab==='shared'&&<>
+      {!online?<p className="mutedText" style={{fontStyle:'italic'}}>The shared pool needs the shared database connected.</p>:sharedFromOthers.length===0?<p className="mutedText" style={{fontStyle:'italic'}}>No shared constraints from other coaches yet.</p>:sharedFromOthers.map(sh=><div className="ccItem" key={sh.id}>
+        <h4>{sh.title}</h4>
+        <span className="ccFam">{sh.family||'Tactical'}</span>{sh.by&&<span className="ccFam ccShared">by {sh.by}</span>}
+        <p className="ccRule">{sh.rule}</p>
+        {sh.coach&&<p className="ccCoach">{sh.coach}</p>}
+        <div className="buttonRow"><button className="primaryBtn" onClick={()=>adopt(sh)}>Add to my library</button></div>
+      </div>)}
+    </>}
+    {message&&<div className="statusBox">{message}</div>}
+  </div>;
+}
+
 function Home({setScreen}){
 return <div className="homeGrid homeGridV99h52">
       <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
@@ -4727,7 +4841,7 @@ return <div className="homeGrid homeGridV99h52">
 
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClock')}><h2>Squad Clock</h2><span className="homeTileSubtitle">Synchronised shot clock · all courts</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
@@ -22935,6 +23049,7 @@ button,select{-webkit-appearance:none;appearance:none;}
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
 {screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
+{screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
