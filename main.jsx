@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v513 Squad Clock. A synchronised multi-court shot clock: one shared, player-facing clock that auto-cycles rally window to rest across a set number of rounds, with a colour-coded buzzer, for Shot Clock, Hold Clock or Window modes. Reached from a Home tile or the Shot Clock builder (Run as Squad Clock). Includes the temporal-constraint rationale (time versus the spatial checkerboard). Shot Clock rationale now names the temporal-vs-spatial contrast. Builds on v512.';
+const APP_VERSION='v515 Timer + finish-rule update. Shot Clock and Squad Clock time gates now step by 5 seconds (not 1) and default to 20 seconds (not 10); shot-unit gates still step by 1. Game Logic finish rules: added Volley finish in front of short line and removed Front wall finish and Floor finish. Constraints: added Volley In Front Of Short Line to the Tactical overlay library. Builds on v514.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -347,7 +347,7 @@ const SHOTCLOCK_LISTS={
  applyTo:['Server only','Both players'],
  earlyEnd:['Replay the rally','Point to the constrained player']
 };
-const DEFAULT_SHOTCLOCK={mode:'Shot Clock (win before)',unit:'Seconds',t1:10,t2:16,applyTo:'Server only',earlyEnd:'Replay the rally'};
+const DEFAULT_SHOTCLOCK={mode:'Shot Clock (win before)',unit:'Seconds',t1:20,t2:25,applyTo:'Server only',earlyEnd:'Replay the rally'};
 
 // ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
@@ -948,15 +948,15 @@ function RotationTimer({durationMin,resetKey}){
 }
 function SquadClock({setScreen}){
   const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
-  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||10,t2:(preset&&preset.t2)||16,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
+  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
   const [running,setRunning]=useState(false);
   const m=useRef({phase:'idle',round:1,remaining:0,gateFired:false});
   const [,force]=useState(0);const rr=()=>force(x=>x+1);
   const isCeiling=cfg.mode.indexOf('Shot Clock')===0;
   const isHold=cfg.mode.indexOf('Hold')===0;
   const isWindow=cfg.mode.indexOf('Window')===0;
-  const t1=Math.max(1,Number(cfg.t1)||10);
-  const t2=Math.max(t1+1,Number(cfg.t2)||t1+6);
+  const t1=Math.max(5,Number(cfg.t1)||20);
+  const t2=Math.max(t1+5,Number(cfg.t2)||t1+5);
   const workLen=isCeiling?t1:isHold?Math.max(t1+1,Number(cfg.holdRally)||20):t2;
   function bump(k,d,min){setCfg(p=>({...p,[k]:Math.max(min,(Number(p[k])||0)+d)}));}
   function Row(lbl,key,step,min){return <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',margin:'8px 0'}}><span style={{color:'#8fb2cf',fontWeight:600}}>{lbl}</span><span style={{display:'flex',alignItems:'center',gap:'10px'}}><button className="secondaryBtn" onClick={()=>bump(key,-step,min)}>−</button><strong style={{minWidth:'44px',textAlign:'center',fontSize:'1.25rem'}}>{cfg[key]}</strong><button className="secondaryBtn" onClick={()=>bump(key,step,min)}>+</button></span></div>;}
@@ -1000,11 +1000,11 @@ function SquadClock({setScreen}){
         <label>Mode<select value={cfg.mode} onChange={e=>setCfg(p=>({...p,mode:e.target.value}))}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
       </div>
       <div style={{marginTop:'6px'}}>
-        {isCeiling&&Row('Shot clock (seconds)','t1',1,1)}
-        {isHold&&Row('Hold until (seconds)','t1',1,1)}
-        {isHold&&Row('Rally length (seconds)','holdRally',5,2)}
-        {isWindow&&Row('Window from (seconds)','t1',1,1)}
-        {isWindow&&Row('Window to (seconds)','t2',1,(Number(cfg.t1)||1)+1)}
+        {isCeiling&&Row('Shot clock (seconds)','t1',5,5)}
+        {isHold&&Row('Hold until (seconds)','t1',5,5)}
+        {isHold&&Row('Rally length (seconds)','holdRally',5,5)}
+        {isWindow&&Row('Window from (seconds)','t1',5,5)}
+        {isWindow&&Row('Window to (seconds)','t2',5,(Number(cfg.t1)||5)+5)}
         {Row('Rest between rallies (seconds)','rest',5,1)}
         {Row('Rounds','rounds',1,1)}
       </div>
@@ -1810,7 +1810,8 @@ const TACTICAL_OVERLAYS = [
   {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']},
   {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'A crosscourt only counts if it makes the opponent move more than 1 step \u2014 rather than being played by default or out of habit.', coach:'Ask: did that crosscourt move them more than a step? If not, it was non-functional.', pairings:['Route Breaker','Attack Only On Advantage']},
   {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
-  {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']}
+  {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
+  {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']}
 ];
 
 const MENTAL_PERFORMANCE_OVERLAYS = [
@@ -5622,7 +5623,7 @@ const CHECKERBOARD_LEVELS=[
   {level:4,label:'Level 4 — Triple + 4-shot window',challenge:'triple',window:'4-shot window',tZone:false,description:'Triple challenge with 4-shot window. T Challenge is selectable as an overlay.'},
   {level:5,label:'Level 5 — Triple + 2-shot window',challenge:'triple',window:'2-shot window',tZone:false,description:'Triple challenge with 2-shot window. T Challenge is selectable as an overlay.'}
 ];
-const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Opposite side finish','Weak-side finish','Front wall finish','Floor finish'];
+const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Volley finish in front of short line','Opposite side finish','Weak-side finish'];
 const GAME_LOGIC_COMPLETION=['Single','Pair','Triple','Sequence'];
 const GAME_LOGIC_FINISH_MODE=['Open','Blind'];
 const GAME_LOGIC_CONVERSION=['None','Within 4 shots','Within 2 shots','Immediate'];
@@ -6583,6 +6584,7 @@ function ShotClockBuilder({onAddToSession,setScreen}){
   function updateBuilderModifierScore(l,v){setBuilderModifierScores(prev=>({...prev,[l]:v}));}
   function addGame(game){const layers=safeLayersForSession(game);const withScores={...clone(game),modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...(game.modifierScores||{}),...builderModifierScores}};onAddToSession({...withScores,id:Date.now()+Math.random()});}
   const unitWord=cfg.unit==='Shots'?'shots':'seconds';
+  const gateStep=cfg.unit==='Shots'?1:5;
   const isWindow=cfg.mode==='Window (win between)';
   const showEarlyEnd=cfg.mode!=='Shot Clock (win before)';
   return <div className="gameCard">
@@ -6602,10 +6604,10 @@ function ShotClockBuilder({onAddToSession,setScreen}){
         <span className="lenFieldLabel">{isWindow?'Window':(cfg.mode==='Hold Clock (win after)'?'Hold until':'Clock')} ({unitWord})</span>
         <div className="pdChips">
           <span className="lenFieldLabel">{isWindow?'From':'Gate'}</span>
-          <PdChip on={false} onClick={()=>bump('t1',-1,1)}>−</PdChip>
+          <PdChip on={false} onClick={()=>bump('t1',-gateStep,gateStep)}>−</PdChip>
           <span className="pdStepNum">{cfg.t1}</span>
-          <PdChip on={false} onClick={()=>bump('t1',1,1)}>+</PdChip>
-          {isWindow&&<><span className="lenFieldLabel">To</span><PdChip on={false} onClick={()=>bump('t2',-1,(cfg.t1||1)+1)}>−</PdChip><span className="pdStepNum">{Math.max((cfg.t1||1)+1,cfg.t2)}</span><PdChip on={false} onClick={()=>bump('t2',1,(cfg.t1||1)+1)}>+</PdChip></>}
+          <PdChip on={false} onClick={()=>bump('t1',gateStep,gateStep)}>+</PdChip>
+          {isWindow&&<><span className="lenFieldLabel">To</span><PdChip on={false} onClick={()=>bump('t2',-gateStep,(cfg.t1||gateStep)+gateStep)}>−</PdChip><span className="pdStepNum">{Math.max((cfg.t1||gateStep)+gateStep,cfg.t2)}</span><PdChip on={false} onClick={()=>bump('t2',gateStep,(cfg.t1||gateStep)+gateStep)}>+</PdChip></>}
         </div>
       </div>
       <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composed.task}</p></div>
@@ -6630,7 +6632,7 @@ function ShotClockBuilder({onAddToSession,setScreen}){
     </div>
     <div className="buttonRow sessionActionButtons">
       <button type="button" className="primaryBtn" onClick={()=>addGame(composed)}>Add Shot Clock To Session</button>
-      <button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem('SQUAD_CLOCK_CFG',JSON.stringify({mode:cfg.mode,t1:cfg.t1,t2:cfg.t2,holdRally:20}));}catch(e){} if(setScreen)setScreen('squadClock');}}>▶ Run as Squad Clock</button>
+      <style>{`.gameCard .buttonRow .scRunSquad{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;font-weight:700 !important}`}</style><button type="button" className="secondaryBtn scRunSquad" onClick={()=>{try{localStorage.setItem('SQUAD_CLOCK_CFG',JSON.stringify({mode:cfg.mode,t1:cfg.t1,t2:cfg.t2,holdRally:20}));}catch(e){} if(setScreen)setScreen('squadClock');}}>▶ Run as Squad Clock</button>
       <button type="button" className="secondaryBtn" onClick={()=>{addGame(composed); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
     </div>
@@ -13210,7 +13212,7 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','classicconstraint','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','classicconstraint','length','shotclock','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
