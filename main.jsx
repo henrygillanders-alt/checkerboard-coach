@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v517 Coach custom library now covers Game Logic and Constraints. Coaches add their own finish rules (Game Logic) or overlay constraints and they become permanent options in the matching panel of every builder, kept private or shared with the team; other coaches can adopt shared items. New My Constraints home tile and screen. Squad Clock removed from Home (still launched from the Shot Clock builder). Builds on v515.';
+const APP_VERSION='v518 Custom library fix — adding a PRIVATE constraint or game-logic rule no longer requires a name (name is only needed to share). This was silently blocking Add when the name field was empty. Coaches add their own finish rules (Game Logic) or overlay constraints and they become permanent options in the matching panel of every builder, private or shared. Builds on v517.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4731,7 +4731,7 @@ function CustomConstraintLibrary({setScreen}){
     const title=form.title.trim();
     if(!title){setMessage('Give the constraint a name.');return;}
     if(!form.rule.trim()){setMessage('Write the rule — what the player must do.');return;}
-    if(!me.trim()){setMessage('Add your name at the top so shared constraints are credited.');return;}
+    if(!me.trim()&&form.scope==='shared'){setMessage('Add your name at the top to share — it credits the constraint. (Private ones need no name.)');return;}
     const list=[...getCustomConstraints()];
     if(editId){
       const idx=list.findIndex(i=>i.id===editId);
