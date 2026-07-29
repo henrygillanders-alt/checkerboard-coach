@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v518 Custom library fix — adding a PRIVATE constraint or game-logic rule no longer requires a name (name is only needed to share). This was silently blocking Add when the name field was empty. Coaches add their own finish rules (Game Logic) or overlay constraints and they become permanent options in the matching panel of every builder, private or shared. Builds on v517.';
+const APP_VERSION='v519 Custom library — constraints now visible. Custom constraints sort to the TOP of their family tab in every builder Constraints panel (were buried at the bottom of long lists), marked ★ My. Clearer Where should this live? type toggle (Constraint vs Game Logic) distinct from the private/share row. Live refresh so added items appear without reload. Builds on v518.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1889,7 +1889,7 @@ let CUSTOM_CONSTRAINT_STORE=(()=>{try{const s=localStorage.getItem(CUSTOM_CONSTR
 function getCustomConstraints(){return CUSTOM_CONSTRAINT_STORE;}
 function getCustomFinishRules(){return CUSTOM_CONSTRAINT_STORE.filter(c=>c.kind==='gamelogic').map(c=>c.title);}
 function getFinishRules(){return [...COMPLETION_CONSTRAINTS,...getCustomFinishRules()];}
-function persistCustomConstraints(list){CUSTOM_CONSTRAINT_STORE=Array.isArray(list)?list:[];try{localStorage.setItem(CUSTOM_CONSTRAINTS_KEY,JSON.stringify(CUSTOM_CONSTRAINT_STORE));}catch(e){}return CUSTOM_CONSTRAINT_STORE;}
+function persistCustomConstraints(list){CUSTOM_CONSTRAINT_STORE=Array.isArray(list)?list:[];try{localStorage.setItem(CUSTOM_CONSTRAINTS_KEY,JSON.stringify(CUSTOM_CONSTRAINT_STORE));}catch(e){}try{window.dispatchEvent(new CustomEvent('customlib-changed'));}catch(e){}return CUSTOM_CONSTRAINT_STORE;}
 function customConstraintKey(c){return((c.title||'').trim().toLowerCase()+'|'+(c.rule||'').trim().toLowerCase());}
 
 // ── v145 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
@@ -2354,12 +2354,14 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
   const [customText,setCustomText]=useState('');
   const [showCustom,setShowCustom]=useState(false);
 
+  const [,customLibBump]=useState(0);
+  useEffect(()=>{const h=()=>customLibBump(x=>x+1);window.addEventListener('customlib-changed',h);return()=>window.removeEventListener('customlib-changed',h);},[]);
   const myCustom=getCustomConstraints();
-  const customFor=fam=>myCustom.filter(c=>c.kind!=='gamelogic'&&c.family===fam).map(c=>({name:c.title,category:'★ '+(c.category||'Coach'),rule:c.rule,coach:c.coach||('Custom constraint added by '+(c.by||'coach'))}));
-  const technicalOptions=[...TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process})),...customFor('Technical')];
-  const tacticalOptions=[...TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach})),...customFor('Tactical')];
-  const mentalOptions=[...UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule})),...customFor('Mental Performance')];
-  const diversityOptions=[...DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach})),...customFor('Diversity')];
+  const customFor=fam=>myCustom.filter(c=>c.kind!=='gamelogic'&&c.family===fam).map(c=>({name:c.title,category:'★ My '+(c.category||fam),rule:c.rule,coach:c.coach||('Custom constraint added by '+(c.by||'coach'))}));
+  const technicalOptions=[...customFor('Technical'),...TECHNICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.process}))];
+  const tacticalOptions=[...customFor('Tactical'),...TACTICAL_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}))];
+  const mentalOptions=[...customFor('Mental Performance'),...UNIVERSAL_MENTAL_OVERLAYS.map(o=>({name:o.name,category:o.cat,rule:o.rule,coach:o.rule}))];
+  const diversityOptions=[...customFor('Diversity'),...DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}))];
   const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : family==='Diversity' ? diversityOptions : mentalOptions;
   const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions,...diversityOptions];
   const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
@@ -4768,7 +4770,7 @@ function CustomConstraintLibrary({setScreen}){
   const myKeys=new Set(mine.map(customConstraintKey));
   const sharedFromOthers=shared.filter(s=>(s.by||'')!==me||!myKeys.has(customConstraintKey(s)));
   return <div className="gameCard coachSuggest customLib">
-    <style>{`.customLib label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.customLib label.fw input,.customLib label.fw textarea,.customLib label.fw select{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.customLib .ccItem{margin:10px 0;padding:12px 14px;background:#0b1a2a;border:1px solid #22405a;border-radius:10px}.customLib .ccItem h4{margin:0 0 4px 0;color:#eaf4fb;font-size:1.05rem}.customLib .ccFam{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;margin-right:8px}.customLib .ccShared{background:#1d4030;color:#8fe0b0}.customLib .ccRule{color:#cfe0ee;margin:6px 0}.customLib .ccCoach{color:#9db6ca;font-size:13px;font-style:italic}.customLib .libTabs{display:flex;gap:8px;margin:10px 0}.customLib .libTabs button{flex:1;padding:10px;border-radius:9px;border:1px solid #294063;background:#132436;color:#9cc4ec;font-weight:700}.customLib .libTabs button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .scopeRow{display:flex;gap:8px;margin-top:6px}.customLib .scopeRow button{flex:1;padding:9px;border-radius:8px;border:1px solid #294063;background:#0e2033;color:#9cc4ec;font-weight:600}.customLib .scopeRow button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}`}</style>
+    <style>{`.customLib label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.customLib label.fw input,.customLib label.fw textarea,.customLib label.fw select{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.customLib .ccItem{margin:10px 0;padding:12px 14px;background:#0b1a2a;border:1px solid #22405a;border-radius:10px}.customLib .ccItem h4{margin:0 0 4px 0;color:#eaf4fb;font-size:1.05rem}.customLib .ccFam{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;margin-right:8px}.customLib .ccShared{background:#1d4030;color:#8fe0b0}.customLib .ccRule{color:#cfe0ee;margin:6px 0}.customLib .ccCoach{color:#9db6ca;font-size:13px;font-style:italic}.customLib .libTabs{display:flex;gap:8px;margin:10px 0}.customLib .libTabs button{flex:1;padding:10px;border-radius:9px;border:1px solid #294063;background:#132436;color:#9cc4ec;font-weight:700}.customLib .libTabs button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .scopeRow{display:flex;gap:8px;margin-top:6px}.customLib .scopeRow button{flex:1;padding:9px;border-radius:8px;border:1px solid #294063;background:#0e2033;color:#9cc4ec;font-weight:600}.customLib .scopeRow button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .kindLbl{margin:6px 0 4px;font-weight:700;color:#cfe0ee;font-size:13px}.customLib .kindRow{display:flex;gap:10px}.customLib .kindRow button{flex:1;padding:12px;border-radius:10px;border:1px solid #3a5170;background:#12283e;color:#a9c8e6;font-weight:800;font-size:15px}.customLib .kindRow button.on{background:#274b6b;color:#eaf4fb;border-color:#5b8fc0;box-shadow:0 0 0 1px rgba(91,143,192,.4)}`}</style>
     <div className="pageTop"><div><div className="categoryTag">My Constraints</div><h2>Custom Constraint Library</h2></div>{setScreen&&<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>}</div>
     <p className="mutedText">Add your own ideas — either Game Logic finish rules or Constraint overlays — and they become permanent options in the matching panel of every builder. Keep them private, or share them so other coaches can adopt them.</p>
     <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Connected — shared constraints sync across all coaches and your own devices.':'On this device. Your library is saved here; connect the shared database to sync and share across coaches.'}</div>
@@ -4777,8 +4779,9 @@ function CustomConstraintLibrary({setScreen}){
     {tab==='mine'&&<>
       <div className="ccItem">
         <h4>{editId?'Edit idea':'Add your own idea'}</h4>
-        <div className="scopeRow"><button className={form.kind==='constraint'?'on':''} onClick={()=>setField('kind','constraint')}>♟ Constraint</button><button className={form.kind==='gamelogic'?'on':''} onClick={()=>setField('kind','gamelogic')}>🎯 Game Logic</button></div>
-        <p className="ccCoach" style={{margin:'6px 0'}}>{form.kind==='gamelogic'?'A finish / eligibility rule — appears in the Game Logic panel of every builder.':'An overlay constraint — appears in the Constraints panel of every builder.'}</p>
+        <div className="kindLbl">Where should this live?</div>
+        <div className="kindRow"><button className={form.kind==='constraint'?'on':''} onClick={()=>setField('kind','constraint')}>♟ Constraint</button><button className={form.kind==='gamelogic'?'on':''} onClick={()=>setField('kind','gamelogic')}>🎯 Game Logic</button></div>
+        <p className="ccCoach" style={{margin:'6px 0'}}>{form.kind==='gamelogic'?'A finish / eligibility rule — appears in the Game Logic panel of every builder.':'An overlay constraint — appears in the Constraints panel (under its family tab) of every builder.'}</p>
         <label className="fw">Name<input type="text" value={form.title} onChange={e=>setField('title',e.target.value)} placeholder={form.kind==='gamelogic'?'e.g. Volley finish in front of short line':'e.g. Volley off the back foot'}/></label>
         {form.kind==='constraint'&&<label className="fw">Family<select value={form.family} onChange={e=>setField('family',e.target.value)}>{CUSTOM_CONSTRAINT_FAMILIES.map(f=><option key={f}>{f}</option>)}</select></label>}
         <label className="fw">Rule — what the player must do<textarea rows={2} value={form.rule} onChange={e=>setField('rule',e.target.value)} placeholder={form.kind==='gamelogic'?'e.g. The winning shot must be a volley struck in front of the short line.':'e.g. Every volley must be struck while stepping onto the back foot.'}/></label>
