@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v526 Muted buttons + Differential Learning. Retoned the bright blue primary and amber session-action buttons to muted checkerboard hues app-wide. Added Differential Learning (#18) — a Schöllhorn perturbation deck (non-dominant hand, wrong foot, one-legged, exaggerate the unwanted spin…) with a random on-court caller, a Produce the Shot solution tag, and add-to-session; the perturbations are also selectable as constraints in every builder under the Diversity tab. New Home tile under More Stuff. Builds on v525.';
+const APP_VERSION='v527 Networked Squad Clock (#7) + Home. WHY CLA? and RLD tiles restored to the main Home screen. New Networked Squad Clock — put a device on each court, set the same room name, one coach taps Start, and every court counts down in lockstep (a shared start-time is broadcast via the database; each court computes the identical clock locally, buzzers fire together). Reachable from a new Home tile and from the single-court Squad Clock. Builds on v526.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -960,6 +960,105 @@ function RotationTimer({durationMin,resetKey}){
     {done&&<span style={{color:'#ff7a7a',fontWeight:800}}>Time!</span>}
   </div>;
 }
+// Deterministic shared timeline — every court computes the SAME phase/remaining from
+// (elapsed since the broadcast start) + the shared config, so they stay in lockstep.
+function squadTimeline(cfg,elapsedSec){
+  const isCeiling=cfg.mode.indexOf('Shot Clock')===0,isHold=cfg.mode.indexOf('Hold')===0,isWindow=cfg.mode.indexOf('Window')===0;
+  const t1=Math.max(5,Number(cfg.t1)||20),t2=Math.max(t1+5,Number(cfg.t2)||t1+5);
+  const workLen=isCeiling?t1:isHold?Math.max(t1+1,Number(cfg.holdRally)||20):t2;
+  const rest=Math.max(1,Number(cfg.rest)||15),rounds=Math.max(1,Number(cfg.rounds)||8),ready=3;
+  if(elapsedSec<ready)return {phase:'ready',round:1,remaining:Math.ceil(ready-elapsedSec),elapsedInWork:0,workLen,t1,isCeiling,isHold,isWindow};
+  const e=elapsedSec-ready,roundLen=workLen+rest,total=rounds*roundLen-rest;
+  if(e>=total)return {phase:'done',round:rounds,remaining:0,elapsedInWork:0,workLen,t1,isCeiling,isHold,isWindow};
+  const roundIdx=Math.floor(e/roundLen),within=e-roundIdx*roundLen;
+  if(within<workLen)return {phase:'work',round:roundIdx+1,remaining:Math.ceil(workLen-within),elapsedInWork:within,workLen,t1,isCeiling,isHold,isWindow};
+  return {phase:'rest',round:roundIdx+1,remaining:Math.ceil(roundLen-within),elapsedInWork:0,workLen,t1,isCeiling,isHold,isWindow};
+}
+
+function NetworkedSquadClock({setScreen}){
+  const online=!!FIREBASE_CONFIG;
+  const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
+  const [room,setRoom]=useState(()=>{try{return localStorage.getItem('SQUAD_CLOCK_ROOM')||'MAIN';}catch(e){return 'MAIN';}});
+  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
+  const [state,setState]=useState(null);
+  const [joined,setJoined]=useState(false);
+  const [now,setNow]=useState(0);
+  const [msg,setMsg]=useState('');
+  const beatRef=useRef({phase:'',gate:false});
+  const isCeiling=cfg.mode.indexOf('Shot Clock')===0,isHold=cfg.mode.indexOf('Hold')===0,isWindow=cfg.mode.indexOf('Window')===0;
+  useEffect(()=>{try{localStorage.setItem('SQUAD_CLOCK_ROOM',room);}catch(e){}},[room]);
+  useEffect(()=>{
+    if(!online)return;let unsub=null;
+    ensureFirestore().then(db=>{unsub=db.collection('squadClockRooms').doc(room).onSnapshot(snap=>setState(snap.exists?snap.data():null),err=>setMsg('Room error: '+err.message));}).catch(e=>setMsg('Could not connect: '+(e&&e.message||'error')));
+    return ()=>{if(unsub)unsub();};
+  },[online,room]);
+  useEffect(()=>{const id=setInterval(()=>setNow(Date.now()),250);return ()=>clearInterval(id);},[]);
+  const live=!!(state&&state.running&&state.startAt);
+  const elapsed=live?Math.max(0,(now-state.startAt)/1000):0;
+  const tl=live?squadTimeline(state.cfg||cfg,elapsed):null;
+  const tlPhase=tl?tl.phase:'',tlSec=tl?Math.floor(tl.elapsedInWork||0):0;
+  useEffect(()=>{
+    if(!joined||!tl)return;const b=beatRef.current;
+    if(tl.phase==='work'&&b.phase!=='work'){scBeep(1);b.gate=false;}
+    if(tl.phase==='work'&&(tl.isHold||tl.isWindow)&&!b.gate&&tl.elapsedInWork>=tl.t1){b.gate=true;scBeep(1);}
+    if(b.phase==='work'&&tl.phase==='rest')scBeep(2);
+    if(b.phase&&b.phase!=='done'&&tl.phase==='done')scBeep(3);
+    b.phase=tl.phase;
+  },[tlPhase,tlSec,joined]);
+  function bump(k,d,min){setCfg(p=>({...p,[k]:Math.max(min,(Number(p[k])||0)+d)}));}
+  function Row(lbl,key,step,min){return <div key={key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'10px',margin:'8px 0'}}><span style={{color:'#8fb2cf',fontWeight:600}}>{lbl}</span><span style={{display:'flex',alignItems:'center',gap:'10px'}}><button className="secondaryBtn" onClick={()=>bump(key,-step,min)}>−</button><strong style={{minWidth:'44px',textAlign:'center',fontSize:'1.25rem'}}>{cfg[key]}</strong><button className="secondaryBtn" onClick={()=>bump(key,step,min)}>+</button></span></div>;}
+  function startAll(){if(!online){setMsg('Networked mode needs the shared database connected.');return;}scUnlock();setJoined(true);ensureFirestore().then(db=>db.collection('squadClockRooms').doc(room).set({startAt:Date.now(),cfg:cfg,running:true,updatedAt:Date.now()})).then(()=>setMsg('Started on every court in room “'+room+'”.')).catch(e=>setMsg('Could not start: '+(e&&e.message||'error')));}
+  function stopAll(){ensureFirestore().then(db=>db.collection('squadClockRooms').doc(room).set({running:false,updatedAt:Date.now()},{merge:true})).catch(()=>{});beatRef.current={phase:'',gate:false};}
+  function join(){scUnlock();setJoined(true);setMsg('Sound armed — this court is ready.');}
+  let big=tl?tl.remaining:0,label='',color='#7fe8bf',cue='';
+  if(tl){
+    if(tl.phase==='ready'){label='GET READY';color='#f5c451';cue='All courts — server to the box.';}
+    else if(tl.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
+    else if(tl.phase==='done'){label='SESSION DONE';color='#7fe8bf';cue='Rounds complete.';}
+    else if(tl.phase==='work'){
+      const el=tl.elapsedInWork;
+      if(tl.isCeiling){label='SHOT CLOCK';color=tl.remaining<=3?'#f5c451':'#7fe8bf';cue='Win before the buzzer — still live = point to returner.';}
+      else if(tl.isHold){label=el<tl.t1?'HOLD':'ATTACK OPEN';color=el<tl.t1?'#ff7a7a':'#7fe8bf';cue=el<tl.t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
+      else{label=el<tl.t1?'HOLD':'STRIKE';color=el<tl.t1?'#f5c451':'#7fe8bf';cue=el<tl.t1?'Too early — keep building.':'Strike window open.';}
+    }
+  }
+  const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
+  return <div className="playerDisplayPage">
+    <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button>{live&&<button className="secondaryBtn" onClick={stopAll}>■ Stop all</button>}</div>
+    {!live?<div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
+      <div className="categoryTag">Squad Clock — All Courts</div>
+      <h2>Networked Squad Clock 📡</h2>
+      <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Connected. One device sets the clock and taps Start — every court in the same room counts down together.':'Needs the shared database connected to sync across courts.'}</div>
+      <div className="claRationaleBox"><h2>One clock, every court</h2><p>Put a device on each court, set the same room name, and one coach taps Start. The start moment is broadcast and every court computes the identical countdown locally — so the buzzers fire together across the whole club. Each court taps “Arm sound” once so its speaker can beep.</p></div>
+      <label className="fw" style={{display:'block',margin:'10px 0',fontWeight:600,color:'#cfe0ee'}}>Room name (same on every court)<input value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}/></label>
+      <div className="atlOptionsGrid" style={{marginTop:'6px'}}>
+        <label>Mode<select value={cfg.mode} onChange={e=>setCfg(p=>({...p,mode:e.target.value}))}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
+      </div>
+      <div style={{marginTop:'6px'}}>
+        {isCeiling&&Row('Shot clock (seconds)','t1',5,5)}
+        {isHold&&Row('Hold until (seconds)','t1',5,5)}
+        {isHold&&Row('Rally length (seconds)','holdRally',5,5)}
+        {isWindow&&Row('Window from (seconds)','t1',5,5)}
+        {isWindow&&Row('Window to (seconds)','t2',5,(Number(cfg.t1)||5)+5)}
+        {Row('Rest between rallies (seconds)','rest',5,5)}
+        {Row('Rounds','rounds',1,1)}
+      </div>
+      <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>
+        <button type="button" className="primaryBtn" onClick={startAll}>▶ Start on all courts</button>
+        <button type="button" className="secondaryBtn" onClick={join}>🔊 Arm sound (this court)</button>
+      </div>
+      {msg&&<div className="statusBox">{msg}</div>}
+    </div>:<div style={{textAlign:'center',padding:'12px'}}>
+      {!joined&&<button type="button" className="primaryBtn" style={{padding:'14px 22px',marginBottom:'10px'}} onClick={join}>🔊 Tap to arm sound on this court</button>}
+      <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em',marginTop:'6px'}}>ROOM “{room}” · ROUND {tl?tl.round:1}</div>
+      <div style={{fontSize:'clamp(4rem,22vw,12rem)',fontWeight:900,lineHeight:1,color:color,margin:'6px 0'}}>{mm}:{ss}</div>
+      <div style={{fontSize:'clamp(1.4rem,6vw,2.6rem)',fontWeight:800,color:color,letterSpacing:'.04em'}}>{label}</div>
+      <div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'8px'}}>{cue}</div>
+      {msg&&<div className="statusBox" style={{maxWidth:'520px',margin:'14px auto 0'}}>{msg}</div>}
+    </div>}
+  </div>;
+}
+
 function SquadClock({setScreen}){
   const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
   const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
@@ -1022,7 +1121,7 @@ function SquadClock({setScreen}){
         {Row('Rest between rallies (seconds)','rest',5,1)}
         {Row('Rounds','rounds',1,1)}
       </div>
-      <div className="buttonRow sessionActionButtons"><button className="primaryBtn" onClick={start}>▶ Start Squad Clock</button></div>
+      <div className="buttonRow sessionActionButtons"><button className="primaryBtn" onClick={start}>▶ Start Squad Clock</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('squadClockNet')}>📡 Run across all courts</button></div>
     </div>
     :<div style={{maxWidth:'900px',margin:'18px auto',textAlign:'center'}}>
       <div style={{color:'#8faec4',fontWeight:800,letterSpacing:'.06em',fontSize:'1.1rem'}}>ROUND {Math.min(s.round,cfg.rounds)} / {cfg.rounds} · {cfg.mode.split(' (')[0].toUpperCase()}</div>
@@ -4925,18 +5024,7 @@ return <div className="homeGrid homeGridV99h52">
 .moreSectionLabel{grid-column:1/-1;color:#7f9bb5;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;margin:14px 4px 2px}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
-      {/* ── PRIMARY TILES — the five most-used ── */}
-      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
-      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
-      <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
-      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
-      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
-
-      {/* ── MORE STUFF — everything else, hidden by default ── */}
-      <button className="homeCard moreStuffCard homeTitleOnly" onClick={()=>setShowMore(v=>!v)}><h2>{showMore?'▲ Less':'▾ More Stuff'}</h2><span className="homeTileSubtitle">{showMore?'Hide the rest':'All the other modules'}</span></button>
-
-      {showMore&&<>
-      <div className="moreSectionLabel">Foundations</div>
+      {/* ── FOUNDATIONS — always on Home ── */}
       <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('whyCLA')}>
         <strong>WHY CLA?</strong>
         <p>Origins · principles · the science behind Checkerboard — the reason this app exists</p>
@@ -4951,6 +5039,17 @@ return <div className="homeGrid homeGridV99h52">
         </div>
       </button>
 
+      {/* ── PRIMARY TILES — the five most-used ── */}
+      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
+      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+      <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
+      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
+
+      {/* ── MORE STUFF — everything else, hidden by default ── */}
+      <button className="homeCard moreStuffCard homeTitleOnly" onClick={()=>setShowMore(v=>!v)}><h2>{showMore?'▲ Less':'▾ More Stuff'}</h2><span className="homeTileSubtitle">{showMore?'Hide the rest':'All the other modules'}</span></button>
+
+      {showMore&&<>
       <div className="moreSectionLabel">Planning & Building</div>
       <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
@@ -4965,6 +5064,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
       <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
       <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClockNet')}><h2>Squad Clock — All Courts</h2><span className="homeTileSubtitle">📡 Networked · synced across courts</span></button>
 
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
@@ -23309,6 +23409,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='live'&&<LiveSessionDelivery session={session} setScreen={go}/>} 
       {screen==='playerDisplay'&&<PlayerDisplayView session={session} setScreen={go}/>}
       {screen==='squadClock'&&<SquadClock setScreen={go}/>}
+      {screen==='squadClockNet'&&<NetworkedSquadClock setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
