@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v521 Tidy-up. Home screen now shows five primary tiles (Players, Games Library, Checkerboard, Competition, Sessions) plus a More Stuff toggle that reveals everything else, grouped into labelled sections. Games Library is organised into six themed groups (The Board, Pressure & Consequence, Play & Score, Perception & Decision, Technique/Phases/Movement, Coach Tools) instead of one flat wall of tiles. Builds on v520.';
+const APP_VERSION='v523 Bundled tidy + content. Games Library stays collapsed into six tappable category tiles. Solo Practice confidence panels retoned from garish red/green to muted checkerboard hues (#15). Added four science-module sections from the Jones et al. themes — reductionism / VO₂max limits, rule changes as task constraints (PARS-11), contextual anticipation, and the temporal profile of a rally — plus matching takeaways (#9). Builds on v522.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3731,6 +3731,26 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'The goal is not to produce one perfect movement.'},
       {t:'p',v:'The goal is to produce adaptable performers capable of finding effective solutions under the demands of real competition.'},
     ]},
+    {id:'d1-reductionism',title:'Physical Training and the Limits of Reductionism',blocks:[
+      {t:'p',v:'Traditional physical preparation often isolates single qualities — steady running to raise VO₂max, off-court circuits — on the assumption that a fitter engine automatically produces a better player.'},
+      {t:'p',v:'A constraints view is more cautious. Squash fitness is expressed through squash movement: lunging, changing direction, recovering to the T and repeating high-intensity efforts with only brief recovery. Capacity built in a decontextualised way does not always transfer to the specific coordination and energy demands of a rally.'},
+      {t:'p',v:'This does not make fitness unimportant. It means conditioning transfers best when it preserves the movements, information and time pressures of the game — for example through small-sided and constraint games that raise the physical load while keeping perception and action coupled.'},
+    ]},
+    {id:'d1-rulechange',title:'Rule Changes as Task-Constraint Manipulation',blocks:[
+      {t:'p',v:'Task constraints are not only invented by coaches. A sport’s governing bodies manipulate them too, and squash offers a clear example.'},
+      {t:'p',v:'The move to Point-A-Rally Scoring to 11 changed what the game rewards. Under the older hand-in/hand-out scoring to 9, players could absorb long attritional patterns at low cost. When every rally scores, the value of early, decisive attacking rises and the tolerance for safe, low-risk rallying falls.'},
+      {t:'p',v:'For a coach, this is a reminder that scoring systems are among the most powerful constraints available. Changing how points are won — exactly what Checkerboard’s scoring overlays do — reshapes tactical behaviour without a single word of instruction.'},
+    ]},
+    {id:'d1-anticipation',title:'Anticipation and Contextual Information',blocks:[
+      {t:'p',v:'Skilled players do not simply react to the ball; they read information early. Alongside kinematic cues — the opponent’s body shape and racket preparation — they use contextual cues such as court position, the score and an opponent’s known patterns to form expectations before contact.'},
+      {t:'p',v:'This is one reason representative practice matters: only in game-like situations is that contextual information present to be perceived and learned. Isolated feeding drills strip it away, so the very skill that separates good players is never trained.'},
+      {t:'p',v:'Constraints that reward early reading — take-the-ball-early rules, volley-before-the-short-line, hidden or delayed information — develop anticipation rather than shot mechanics alone.'},
+    ]},
+    {id:'d1-temporal',title:'The Temporal Profile of a Rally',blocks:[
+      {t:'p',v:'A squash match is not one continuous effort. It is a repeating cycle of short, high-intensity rallies separated by brief recovery periods — a distinct work–rest structure, or temporal profile.'},
+      {t:'p',v:'Recognising this structure lets coaches design practice that matches the real demands of the game, rather than steady-state running that never occurs in a match.'},
+      {t:'p',v:'It is also the basis of the temporal constraints in this app. The Shot Clock and Squad Clock manipulate rally time directly — win before, hold until, or strike within a window — so that time itself becomes the constraint shaping behaviour, complementing the spatial constraints of the checkerboard board.'},
+    ]},
   ];
   const d1Takeaways=[
     'Bernstein showed that expert movement involves "repetition without repetition."',
@@ -3745,6 +3765,10 @@ function WhyCLAScreen({setScreen}){
     'Task simplification scales the whole skill down while keeping perception and action coupled — unlike task decomposition, which isolates parts and risks decoupling them.',
     'CLA uses carefully designed practice environments to develop adaptable, intelligent performers.',
     'Scientific research supports CLA as an effective framework for learning skills that transfer to real competition.',
+    'Fitness transfers best when trained within the game — isolating qualities like VO₂max away from squash movement risks poor transfer.',
+    'Scoring rules are a powerful task constraint: the shift to PARS-11 changed tactical behaviour across the sport without any instruction.',
+    'Anticipation relies on contextual information that only exists in game-like practice; feeding drills remove it.',
+    'A rally has a temporal profile — short high-intensity efforts with brief recovery — which is the basis of the app’s Shot Clock and Squad Clock temporal constraints.',
   ];
   const d1Close='Ultimately, CLA is not a departure from science — it is built upon decades of scientific research into how humans perceive, move and learn.';
 
@@ -13180,6 +13204,7 @@ function HangmanSquashRaceDisplay({host,courtCount}){
 
 function Games({setSession,setScreen,onClassChange}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
+  const [openGroup,setOpenGroup]=useState(null);
   const [message,setMessage]=useState('');
   const [savedCards,setSavedCards]=useState(()=>{
     try{
@@ -13306,19 +13331,32 @@ function Games({setSession,setScreen,onClassChange}){
       <div className="pageTop">
         <h1>Games Library</h1>
       </div>
-      <style>{`.gameClassGroupLabel{grid-column:1/-1;color:#8fb2cf;font-weight:800;letter-spacing:.04em;font-size:14px;margin:16px 4px 6px;display:flex;align-items:center;gap:8px}.gameClassGroup{margin-bottom:6px}`}</style>
-      {GAME_GROUPS.map(grp=>
+      <style>{`
+.gameGroupCat{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:16px 18px;margin:8px 0;border-radius:14px;background:linear-gradient(135deg,#12263b,#0d1b2a);border:1px solid #274063;color:#eaf4fb;cursor:pointer}
+.gameGroupCat.open{border-color:#4f83b8;background:linear-gradient(135deg,#173049,#0f2135)}
+.gameGroupCat .gcEmoji{font-size:1.7rem;line-height:1}
+.gameGroupCat .gcText{flex:1}
+.gameGroupCat .gcTitle{font-weight:800;font-size:1.1rem;color:#eaf4fb}
+.gameGroupCat .gcSub{font-size:12px;color:#8fb2cf;margin-top:2px}
+.gameGroupCat .gcChev{font-size:1.1rem;color:#8fb2cf}
+.gameGroupBody{margin:2px 0 10px}
+`}</style>
+      {GAME_GROUPS.map(grp=>{const isOpen=openGroup===grp.title;const items=grp.ids.map(id=>gameClasses.find(g=>g.id===id)).filter(Boolean);return (
         <div className="gameClassGroup" key={grp.title}>
-          <div className="gameClassGroupLabel">{grp.emoji} {grp.title}</div>
-          <div className="gameClassGrid">
-            {grp.ids.map(id=>{const gc=gameClasses.find(g=>g.id===id);if(!gc)return null;return (
+          <button type="button" className={isOpen?'gameGroupCat open':'gameGroupCat'} onClick={()=>setOpenGroup(isOpen?null:grp.title)}>
+            <span className="gcEmoji">{grp.emoji}</span>
+            <span className="gcText"><span className="gcTitle">{grp.title}</span><span className="gcSub">{items.length} games{isOpen?'':' · tap to open'}</span></span>
+            <span className="gcChev">{isOpen?'▲':'▾'}</span>
+          </button>
+          {isOpen&&<div className="gameGroupBody"><div className="gameClassGrid">
+            {items.map(gc=>
               <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.id==='blindtarget'?setScreen('blindTargetScore'):gc.id==='serveReturn'?setScreen('serveReturn'):selectClass(gc.id)}>
                 {gc.label}
               </button>
-            );})}
-          </div>
+            )}
+          </div></div>}
         </div>
-      )}
+      );})}
     </>}
 
     {activeClassId&&<div className="pageTop">
@@ -18945,6 +18983,16 @@ function TacticalIntentionsModule({setScreen,setSession}){
 
 function SoloPracticeModule({setScreen}){
   return <div className="page soloPracticePage">
+    <style>{`
+.soloPracticePage .soloCompareCard{background:#0e1a28 !important;border:1px solid #26405a !important}
+.soloPracticePage .soloCompareCard strong{color:#eaf4fb !important}
+.soloPracticePage .soloCompareCard.warning{background:#15181f !important;border:1px solid #6d4b4f !important}
+.soloPracticePage .soloCompareCard.warning strong{color:#d29a9a !important}
+.soloPracticePage .soloCompareCard.success{background:#101d20 !important;border:1px solid #37624f !important}
+.soloPracticePage .soloCompareCard.success strong{color:#8fcfad !important}
+.soloPracticePage .soloCompareCard.traditional strong{color:#c9b98f !important}
+.soloPracticePage .soloCompareCard.cla strong{color:#8fb8d4 !important}
+`}</style>
     <div className="pageTop"><div><h1>Unopposed Practice</h1><p className="mutedText">Exploration vs Installation · Confidence, attractors and adaptability</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
 
     <div className="soloHero">
