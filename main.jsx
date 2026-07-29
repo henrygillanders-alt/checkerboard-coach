@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v519 Custom library — constraints now visible. Custom constraints sort to the TOP of their family tab in every builder Constraints panel (were buried at the bottom of long lists), marked ★ My. Clearer Where should this live? type toggle (Constraint vs Game Logic) distinct from the private/share row. Live refresh so added items appear without reload. Builds on v518.';
+const APP_VERSION='v520 Custom library share diagnostics. The Share action now reports its result on screen — shows a green confirmation when it writes to the cloud, or the actual error if the write fails — instead of failing silently. Helps confirm team sharing is wired to Firestore. Builds on v519.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4748,8 +4748,8 @@ function CustomConstraintLibrary({setScreen}){
     }else{
       const item={id:'cc'+Date.now()+Math.floor(Math.random()*1000),kind:form.kind,title,family:form.kind==='gamelogic'?'':form.family,rule:form.rule.trim(),coach:form.coach.trim(),by:me.trim(),scope:form.scope,sharedId:null,createdAt:Date.now()};
       saveMine([item,...list]);
-      if(form.scope==='shared'){publishShared(item).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===item.id?{...x,sharedId:id}:x));}}).catch(()=>{});}
-      setMessage(form.scope==='shared'?'Added to your library and shared with the team.':'Added to your library — it now appears in every builder.');
+      if(form.scope==='shared'){setMessage('Saved locally — sharing to the cloud…');publishShared(item).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===item.id?{...x,sharedId:id}:x));setMessage('✓ Shared to the cloud — other coaches can now adopt it.');}else{setMessage('Saved locally, but cloud sharing is off (no database).');}}).catch(e=>setMessage('Saved locally, but CLOUD SHARE FAILED: '+(e&&e.message||'error')));}
+      else setMessage('Added to your library — it now appears in every builder.');
       resetForm();
     }
   }
@@ -4759,7 +4759,7 @@ function CustomConstraintLibrary({setScreen}){
     const list=[...getCustomConstraints()];
     const idx=list.findIndex(x=>x.id===it.id);if(idx<0)return;
     if(it.scope==='shared'&&it.sharedId){unpublishShared(it.sharedId).catch(()=>{});list[idx]={...it,scope:'private',sharedId:null};saveMine(list);setMessage('Now private — only in your library.');}
-    else{list[idx]={...it,scope:'shared'};saveMine(list);publishShared({...it,scope:'shared'}).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===it.id?{...x,sharedId:id}:x));}}).catch(()=>{});setMessage('Shared with the team.');}
+    else{list[idx]={...it,scope:'shared'};saveMine(list);setMessage('Sharing to the cloud…');publishShared({...it,scope:'shared'}).then(id=>{if(id){saveMine(getCustomConstraints().map(x=>x.id===it.id?{...x,sharedId:id}:x));setMessage('✓ Shared to the cloud — other coaches can now adopt it.');}else{setMessage('Marked shared, but cloud sharing is off (no database).');}}).catch(e=>setMessage('CLOUD SHARE FAILED: '+(e&&e.message||'error')));}
   }
   function adopt(sh){
     const list=[...getCustomConstraints()];
