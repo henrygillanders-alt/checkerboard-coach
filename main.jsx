@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v523 Bundled tidy + content. Games Library stays collapsed into six tappable category tiles. Solo Practice confidence panels retoned from garish red/green to muted checkerboard hues (#15). Added four science-module sections from the Jones et al. themes — reductionism / VO₂max limits, rule changes as task constraints (PARS-11), contextual anticipation, and the temporal profile of a rally — plus matching takeaways (#9). Builds on v522.';
+const APP_VERSION='v524 Spatial + Temporal game class (#6). New builder combines a checkerboard zone (WHERE the winner must land) with a shot-clock gate (WHEN the rally must be won) on one card. Lives in Games Library under Pressure & Consequence. Player display shows the board target above the rally clock. The progression that fuses the spatial checkerboard board with the temporal clock. Builds on v523.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -287,7 +287,7 @@ const GAME_LIBRARY_ATL_DRAFT_KEY='checkerboard_master_v90_atl_draft';
 const GAME_LIBRARY_LENGTH_DRAFT_KEY='checkerboard_master_v90_length_draft';
 const GAME_LIBRARY_SHOTCLOCK_DRAFT_KEY='checkerboard_master_shotclock_draft_v1';
 const GAME_LIBRARY_CLASS_KEY='checkerboard_master_v89_active_class';
-const CATEGORY_TO_CLASS={'ATL / BTL':'atl','Checkerboard':'checkerboard','Around The Board':'atb','Power Play':'powerplay','Tactical Pressure':'tacticalpressure','Tactical Intentions':'tacticalIntentions','Classic Conditioned':'classic','Classic Constraint':'classicconstraint','Length Games':'length','Shot Clock':'shotclock','Snakes & Ladders':'snakesladders','Ludo Squash':'ludosquash','Noughts & Crosses Squash':'noughtscrosses','Blind Target':'blindtarget','Serve & Return':'serveReturn','Technical':'technical','Volley & Intercept':'volley','Information & Anticipation':'information','Double Bounce':'doubleBounce','Tin War':'tinwar','Rotations':'rotations','Common Game Errors':'errors','Shot Bonus Rally':'shotbonus','Breakout Squash':'breakout','Press Call':'presscall','Hangman Squash':'hangman','Custom':'custom'};
+const CATEGORY_TO_CLASS={'ATL / BTL':'atl','Checkerboard':'checkerboard','Around The Board':'atb','Power Play':'powerplay','Tactical Pressure':'tacticalpressure','Tactical Intentions':'tacticalIntentions','Classic Conditioned':'classic','Classic Constraint':'classicconstraint','Length Games':'length','Shot Clock':'shotclock','Spatial + Temporal':'fusion','Snakes & Ladders':'snakesladders','Ludo Squash':'ludosquash','Noughts & Crosses Squash':'noughtscrosses','Blind Target':'blindtarget','Serve & Return':'serveReturn','Technical':'technical','Volley & Intercept':'volley','Information & Anticipation':'information','Double Bounce':'doubleBounce','Tin War':'tinwar','Rotations':'rotations','Common Game Errors':'errors','Shot Bonus Rally':'shotbonus','Breakout Squash':'breakout','Press Call':'presscall','Hangman Squash':'hangman','Custom':'custom'};
 
 const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
@@ -510,6 +510,21 @@ function buildShotClock(o){
   const coach='Borrowed from the basketball shot clock: the time gate is the whole constraint. It reshapes tempo and decision urgency with no verbal call — the clock officiates. Tighten it for more pressure, lengthen it for more patience. Pair it with a checkerboard code or length target to add a spatial demand on top of the temporal one.';
   const rationale='A temporal constraint — it shapes the rally through time, in contrast to the spatial constraints of the checkerboard board. Drawn from the rally-band profile of the modern game (Murray et al., 2016), the clock '+rTail+' as an emergent solution rather than a coached instruction.';
   return {id:Date.now()+Math.random(),title:title,category:'Shot Clock',format:'Shot Clock',duration:8,task:task,rationale:rationale,coach:coach,playerFocus:player,scoring:scoring,layers:[],cbCode:'None',tcr:{mode:o.mode,unit:o.unit,t1:t1,t2:t2,applyTo:o.applyTo,earlyEnd:o.earlyEnd}};
+}
+
+const DEFAULT_FUSION={mode:'Shot Clock (win before)',unit:'Seconds',t1:20,t2:25,applyTo:'Server only',earlyEnd:'Replay the rally',cbCode:'[8-1]',finishMode:'Finish in'};
+function buildFusion(o){
+  const sc=buildShotClock(o);
+  const code=o.cbCode&&o.cbCode!=='None'&&o.cbCode!=='Custom'?o.cbCode:'';
+  const finishLead=o.finishMode==='Winning shot in'?'the winning shot must land in ':'the rally must be finished into ';
+  const spatialTask=code?(' Spatial target: '+finishLead+code+' on the checkerboard board — a win only counts if the finishing shot is struck into that zone.'):'';
+  const title=(code?code+' + ':'')+sc.title;
+  const task=sc.task+spatialTask;
+  const scoring=sc.scoring+(code?(' The win must ALSO be struck into '+code+' — a finish outside the zone does not score even if the clock condition is met.'):'');
+  const rationale='A combined constraint — it layers a spatial demand (the checkerboard zone '+(code||'—')+') on top of a temporal one (the clock). The player must solve WHERE and WHEN at the same time, which is closer to the real game than either constraint on its own. This is the progression from the Shot Clock and the checkerboard board: spatial and temporal constraints working together.';
+  const coach='Two constraints at once — the board says where the winner must go, the clock says when. Start generous (one zone, a long clock), then tighten either axis independently. No verbal call: the zone and the clock officiate together.';
+  const player='Read early: pick the shot that puts the ball into '+(code||'the target zone')+' AND satisfies the clock. Build toward it, then commit.';
+  return {...sc,title:title,category:'Spatial + Temporal',format:'Spatial + Temporal',task:task,scoring:scoring,rationale:rationale,coach:coach,playerFocus:player,cbCode:code||'None',finishMode:o.finishMode,fusion:true};
 }
 
 function buildLength(o){
@@ -1050,6 +1065,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       {hasSession&&<select value={selectedIndex} onChange={e=>onSelect&&onSelect(Number(e.target.value))}>
         {session.map((item,index)=><option key={item.id||index} value={index}>{index+1}. {item.title||'Game'}</option>)}
       </select>}
+      {chosen&&chosen.tcr&&chosen.cbCode&&chosen.cbCode!=='None'&&<div style={{textAlign:'center',margin:'10px 0 0'}}><span style={{display:'inline-block',padding:'7px 16px',borderRadius:'11px',background:'#12263b',border:'1px solid #4f83b8',color:'#eaf4fb',fontWeight:800,letterSpacing:'.04em',fontSize:'1.1rem'}}>🎯 Board target: {chosen.cbCode}</span></div>}
       {chosen&&<div className="pdTimerRow" style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'12px',flexWrap:'wrap',margin:'12px 0 2px'}}>
         {hasSession&&<button className="secondaryBtn" disabled={selectedIndex<=0} onClick={()=>onSelect&&onSelect(selectedIndex-1)}>◀ Prev</button>}
         {chosen.tcr?<RallyClock tcr={chosen.tcr}/>:<RotationTimer durationMin={chosen.duration} resetKey={String(chosen.id||'')+'-'+selectedIndex}/>}
@@ -6787,6 +6803,84 @@ function ShotClockBuilder({onAddToSession,setScreen}){
     <div className="buttonRow sessionActionButtons">
       <button type="button" className="primaryBtn" onClick={()=>addGame(composed)}>Add Shot Clock To Session</button>
       <style>{`.gameCard .buttonRow .scRunSquad{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;font-weight:700 !important}`}</style><button type="button" className="secondaryBtn scRunSquad" onClick={()=>{try{localStorage.setItem('SQUAD_CLOCK_CFG',JSON.stringify({mode:cfg.mode,t1:cfg.t1,t2:cfg.t2,holdRally:20}));}catch(e){} if(setScreen)setScreen('squadClock');}}>▶ Run as Squad Clock</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{addGame(composed); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
+    </div>
+  </div>;
+}
+
+function FusionBuilder({onAddToSession,setScreen}){
+  const [cfg,setCfg]=useState(DEFAULT_FUSION);
+  const [manualLayers,setManualLayers]=useState([]);
+  const [builderModifierScores,setBuilderModifierScores]=useState({});
+  const [history,setHistory]=useState([]);
+  const built=useMemo(()=>buildFusion(cfg),[cfg]);
+  const composed=useMemo(()=>{const layers=[...new Set([...(built.layers||[]),...manualLayers])];return {...built,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...builderModifierScores}};},[built,manualLayers,builderModifierScores]);
+  function snapshot(){setHistory(prev=>[...prev,{cfg:clone(cfg),manualLayers:clone(manualLayers),modifierScores:clone(builderModifierScores)}]);}
+  function setOpt(key,value){snapshot();setCfg(prev=>({...prev,[key]:value}));}
+  function bump(key,delta,min){setCfg(prev=>({...prev,[key]:Math.max(min,(Number(prev[key])||0)+delta)}));}
+  function toggleManualLayer(l){snapshot();setManualLayers(prev=>prev.includes(l)?prev.filter(x=>x!==l):[...prev,l]);}
+  function clearOverlays(){snapshot();setManualLayers([]);}
+  function resetBuilder(){snapshot();setCfg(DEFAULT_FUSION);setManualLayers([]);}
+  function undo(){const last=history[history.length-1];if(!last)return;setCfg(last.cfg);setManualLayers(last.manualLayers);setBuilderModifierScores(last.modifierScores||{});setHistory(history.slice(0,-1));}
+  function updateBuilderModifierScore(l,v){setBuilderModifierScores(prev=>({...prev,[l]:v}));}
+  function addGame(game){const layers=safeLayersForSession(game);const withScores={...clone(game),modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(l=>[l,defaultModifierScore(l)])),...(game.modifierScores||{}),...builderModifierScores}};onAddToSession({...withScores,id:Date.now()+Math.random()});}
+  const unitWord=cfg.unit==='Shots'?'shots':'seconds';
+  const gateStep=cfg.unit==='Shots'?1:5;
+  const isWindow=cfg.mode==='Window (win between)';
+  const showEarlyEnd=cfg.mode!=='Shot Clock (win before)';
+  return <div className="gameCard">
+    <style>{`.scField{margin:6px 0 2px}.scField .lenFieldLabel{display:inline-block;font-weight:600;color:#8fb2cf;font-size:13px;margin:0 4px}.scField .pdChips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.scField .pdChip{padding:8px 12px;border-radius:9px;border:1px solid #2c3c4e;background:#0d1620;color:#cde0ee;cursor:pointer;font-size:.85rem}.scField .pdStepNum{min-width:44px;text-align:center;font-weight:800;color:#eaf4fb;font-size:1.3rem}`}</style>
+    <div className="categoryTag">Spatial + Temporal</div>
+    <h2>Spatial + Temporal Builder</h2>
+    <p className="mutedText">Layer a checkerboard zone (WHERE) onto a shot-clock gate (WHEN) — one card, two constraints.</p>
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Board</span><strong>Spatial target</strong><span className="baseGamePanelSub">WHERE the winner must go</span></div>
+      <div className="atlOptionsGrid">
+        <label>Checkerboard zone<select value={cfg.cbCode} onChange={e=>setOpt('cbCode',e.target.value)}>{CB_CODES.filter(c=>c!=='Custom').map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Requirement<select value={cfg.finishMode} onChange={e=>setOpt('finishMode',e.target.value)}>{['Finish in','Winning shot in'].map(o=><option key={o}>{o}</option>)}</select></label>
+      </div>
+    </div>
+    <div className="baseGamePanel">
+      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Clock</span><strong>Time gate</strong><span className="baseGamePanelSub">WHEN the rally must be won</span></div>
+      <div className="atlOptionsGrid">
+        <label>Mode<select value={cfg.mode} onChange={e=>setOpt('mode',e.target.value)}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Unit<select value={cfg.unit} onChange={e=>setOpt('unit',e.target.value)}>{SHOTCLOCK_LISTS.unit.map(o=><option key={o}>{o}</option>)}</select></label>
+        <label>Apply to<select value={cfg.applyTo} onChange={e=>setOpt('applyTo',e.target.value)}>{SHOTCLOCK_LISTS.applyTo.map(o=><option key={o}>{o}</option>)}</select></label>
+        {showEarlyEnd&&<label>If it ends early<select value={cfg.earlyEnd} onChange={e=>setOpt('earlyEnd',e.target.value)}>{SHOTCLOCK_LISTS.earlyEnd.map(o=><option key={o}>{o}</option>)}</select></label>}
+      </div>
+      <div className="scField">
+        <span className="lenFieldLabel">{isWindow?'Window':(cfg.mode==='Hold Clock (win after)'?'Hold until':'Clock')} ({unitWord})</span>
+        <div className="pdChips">
+          <span className="lenFieldLabel">{isWindow?'From':'Gate'}</span>
+          <PdChip on={false} onClick={()=>bump('t1',-gateStep,gateStep)}>−</PdChip>
+          <span className="pdStepNum">{cfg.t1}</span>
+          <PdChip on={false} onClick={()=>bump('t1',gateStep,gateStep)}>+</PdChip>
+          {isWindow&&<><span className="lenFieldLabel">To</span><PdChip on={false} onClick={()=>bump('t2',-gateStep,(cfg.t1||gateStep)+gateStep)}>−</PdChip><span className="pdStepNum">{Math.max((cfg.t1||gateStep)+gateStep,cfg.t2)}</span><PdChip on={false} onClick={()=>bump('t2',gateStep,(cfg.t1||gateStep)+gateStep)}>+</PdChip></>}
+        </div>
+      </div>
+      <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composed.task}</p></div>
+    </div>
+    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
+      <div className="quickLayers">{getFinishRules().map(item=><button key={item} className={manualLayers.includes(item)?'activeLayer':''} onClick={()=>toggleManualLayer(item)}>{manualLayers.includes(item)?'✓ ':'+ '}{item}</button>)}</div>
+      <CustomGameLogicAdder selected={manualLayers} onToggle={toggleManualLayer}/>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
+      <OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Spatial + Temporal"/>
+    </CollapsibleLayer>
+    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
+      <div className="infoBox"><strong>Default Scoring</strong><p>{composed.scoring}</p></div>
+      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3>{editableModifierLayers(composed.layers).length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add constraints below, then set their bonus values here.</div>:<div className="modifierScoreGrid">{editableModifierLayers(composed.layers).map(layer=><label key={layer}><span>{layer}</span><select value={(composed.modifierScores&&composed.modifierScores[layer])||defaultModifierScore(layer)} onChange={e=>updateBuilderModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
+    <UniversalPenaltyPanel/></CollapsibleLayer>
+    <UniversalDBHandicapPanel/>
+    <UniversalTinHeightPanel/>
+    <div className="buttonRow">
+      <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
+      <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
+      <button className="secondaryBtn" onClick={resetBuilder}>Reset</button>
+    </div>
+    <div className="buttonRow sessionActionButtons">
+      <button type="button" className="primaryBtn" onClick={()=>addGame(composed)}>Add Spatial + Temporal To Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>{addGame(composed); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
       <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
     </div>
@@ -13234,6 +13328,7 @@ function Games({setSession,setScreen,onClassChange}){
     {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
     {id:'length',label:'Length Games',category:'Length Games'},
     {id:'shotclock',label:'Shot Clock',category:'Shot Clock'},
+    {id:'fusion',label:'Spatial + Temporal',category:'Spatial + Temporal'},
     {id:'atb',label:'Around The Board',category:'Around The Board'},
     {id:'powerplay',label:'Power Play',category:'Power Play'},
     {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
@@ -13262,7 +13357,7 @@ function Games({setSession,setScreen,onClassChange}){
 
   const GAME_GROUPS=[
     {title:'The Board — Spatial',emoji:'🎯',ids:['atb','atl','length','volley','breakout']},
-    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','tinwar','doubleBounce','tacticalpressure','shotbonus']},
+    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','fusion','tinwar','doubleBounce','tacticalpressure','shotbonus']},
     {title:'Play & Score — Formats',emoji:'🎲',ids:['snakesladders','ludosquash','noughtscrosses','blindtarget','hangman']},
     {title:'Perception & Decision',emoji:'👁️',ids:['information','tacticalIntentions','presscall']},
     {title:'Technique, Phases & Movement',emoji:'🎾',ids:['technical','serveReturn','classic','classicconstraint','powerplay','rotations']},
@@ -13371,6 +13466,7 @@ function Games({setSession,setScreen,onClassChange}){
     {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='length'&&<LengthGamesBuilder key="length-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='shotclock'&&<ShotClockBuilder key="shotclock-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
+    {activeClassId==='fusion'&&<FusionBuilder key="fusion-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
     {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
     {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
@@ -13394,7 +13490,7 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','classicconstraint','length','shotclock','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','classicconstraint','length','shotclock','fusion','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
