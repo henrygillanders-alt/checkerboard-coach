@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v525 Spatial + Temporal tidy. Removed the confusing Finish in / Winning shot in Requirement dropdown — the rule is simply that the winning shot must land in the zone. Slimmed the Draft saved automatically note in the builders from a big box to a small quiet line. Builds on v524.';
+const APP_VERSION='v526 Muted buttons + Differential Learning. Retoned the bright blue primary and amber session-action buttons to muted checkerboard hues app-wide. Added Differential Learning (#18) — a Schöllhorn perturbation deck (non-dominant hand, wrong foot, one-legged, exaggerate the unwanted spin…) with a random on-court caller, a Produce the Shot solution tag, and add-to-session; the perturbations are also selectable as constraints in every builder under the Diversity tab. New Home tile under More Stuff. Builds on v525.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1893,6 +1893,21 @@ const DIVERSITY_OVERLAYS=[
   {category:'Diversity Constraints',title:'Opposite Solution',rule:'The solution used to win or create advantage in the previous rally cannot be used as the first solution in the next rally.',coach:'Stops players repeating a successful habit without re-reading the current information.',pairings:['Counter Attack Recognition','Mental Performance','Pattern Recognition']},
   {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
 ];
+
+// ── DIFFERENTIAL LEARNING (Schöllhorn) — anti-technical perturbation deck ─────
+const DIFFERENTIAL_DECK=[
+  {name:'Non-dominant hand',rule:'Play the next shot with the other hand.',coach:'Forces a completely new movement solution and breaks the dominant pattern.'},
+  {name:'Wrong foot',rule:'Strike the ball off the “wrong” foot for that shot.',coach:'Removes the habitual footwork so the body must reorganise.'},
+  {name:'One-legged',rule:'Hit the shot while balanced on one leg.',coach:'Adds a balance fluctuation that widens the range of stable solutions.'},
+  {name:'Exaggerate the unwanted spin',rule:'Deliberately over-slice or over-roll the ball — the opposite of the “correct” spin.',coach:'Explores the edges of the solution space rather than one ideal.'},
+  {name:'Racquet swap',rule:'Change racquet (or hand grip) between every shot.',coach:'Never lets a single feel groove; keeps the system adapting.'},
+  {name:'Take it late',rule:'Let the ball drop much lower than comfortable before striking.',coach:'Shifts the timing constraint and forces a new contact point.'},
+  {name:'Take it early',rule:'Take the ball unusually early / on the rise.',coach:'Opposite timing perturbation — trains a different contact window.'},
+  {name:'Delayed split',rule:'Split-step deliberately late.',coach:'Perturbs the movement rhythm; the player must recover a solution.'},
+  {name:'Exaggerated follow-through',rule:'Massively over-extend, or deliberately cut short, the follow-through.',coach:'Varies the finish so no single mechanical pattern is installed.'},
+  {name:'Eyes on opponent',rule:'Keep your eyes on the opponent as long as possible before switching to the ball.',coach:'Perturbs the visual routine and trains later ball pickup.'}
+];
+DIVERSITY_OVERLAYS.push(...DIFFERENTIAL_DECK.map(d=>({category:'Differential Learning',title:'DL — '+d.name,rule:d.rule,coach:d.coach,pairings:['Differential Learning','Produce The Shot From Here']})));
 
 // ── COACH CUSTOM CONSTRAINT LIBRARY ──────────────────────────────────────────
 // Design principle: coaches can add their own constraints and make them permanent.
@@ -4849,6 +4864,52 @@ function CustomConstraintLibrary({setScreen}){
   </div>;
 }
 
+function DifferentialLearning({setScreen,setSession}){
+  const [drawn,setDrawn]=useState(null);
+  const [freq,setFreq]=useState('Every rally');
+  const [solutionTag,setSolutionTag]=useState(true);
+  const [message,setMessage]=useState('');
+  function draw(){const i=Math.floor(Math.random()*DIFFERENTIAL_DECK.length);setDrawn(DIFFERENTIAL_DECK[i]);}
+  function addToSession(){
+    const card={id:Date.now()+Math.random(),title:'Differential Learning'+(solutionTag?' + Produce the Shot':''),category:'Differential Learning',format:'Differential Learning',duration:8,
+      task:'Play the base game. '+(freq==='Every shot'?'Before every shot':'At the start of every rally')+' a differential-learning perturbation is called at random (e.g. non-dominant hand, wrong foot, one-legged, exaggerate the unwanted spin).'+(solutionTag?' Solution tag: the player must still PRODUCE THE SHOT from the position — solve the problem, not merely survive the perturbation.':''),
+      scoring:'Win the rally = +1. The perturbation itself is not scored — it exists to force new movement solutions, not to be beaten. Overlays add bonus points.',
+      coach:'Differential learning (Schöllhorn): deliberately adding movement noise — the opposite of grooving — stops a single deep attractor forming and widens the range of solutions the player can reach, which is what transfers to the unpredictable live game. Keep it playful and do not correct the “errors” the perturbation creates.',
+      playerFocus:'Don’t reproduce a perfect swing — solve each shot fresh under the called constraint.',
+      rationale:'A differential-learning overlay: instead of repeating one ideal technique the player never plays the same movement twice. The added fluctuations broaden the movement-solution landscape and raise the transfer of low-RLD repetition work (such as rotations) to competition.',
+      layers:['Differential Learning'],cbCode:'None'};
+    if(setSession)setSession(prev=>[...(prev||[]),card]);
+    setMessage('Added to session.');
+  }
+  return <div className="page">
+    <div className="pageTop"><div><h1>Differential Learning</h1><p className="mutedText">Anti-technical perturbations · de-groove · widen the solution range</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>
+    <div className="gameCard">
+      <div className="infoBox"><strong>Why it works</strong><p>Differential learning (Schöllhorn) deliberately adds movement noise — the opposite of grooving. By never repeating the same movement, the player is forced to self-organise a fresh solution each time. This widens the range of solutions they can access, which is exactly what transfers to the unpredictable live game. It’s the tool for lifting low-RLD repetition work — like rotations — into something that transfers.</p></div>
+      <div style={{display:'flex',gap:'10px',flexWrap:'wrap',margin:'12px 0'}}>
+        <div><div className="mutedText" style={{fontSize:'12px',marginBottom:'4px'}}>Call a perturbation…</div>
+          <div style={{display:'flex',gap:'8px'}}>{['Every rally','Every shot'].map(f=><button key={f} type="button" className={freq===f?'primaryBtn':'secondaryBtn'} onClick={()=>setFreq(f)}>{f}</button>)}</div>
+        </div>
+      </div>
+      <button type="button" className="primaryBtn" style={{width:'100%',padding:'16px',fontSize:'1.1rem'}} onClick={draw}>🎲 Draw a perturbation</button>
+      {drawn&&<div style={{textAlign:'center',margin:'14px 0',padding:'22px',borderRadius:'14px',background:'#12263b',border:'1px solid #4f83b8'}}>
+        <div style={{fontSize:'1.8rem',fontWeight:900,color:'#eaf4fb'}}>{drawn.name}</div>
+        <div style={{color:'#cfe0ee',marginTop:'6px'}}>{drawn.rule}</div>
+        <div className="mutedText" style={{marginTop:'8px',fontSize:'13px',fontStyle:'italic'}}>{drawn.coach}</div>
+      </div>}
+      <label style={{display:'flex',alignItems:'center',gap:'10px',margin:'10px 0'}}><input type="checkbox" checked={solutionTag} onChange={e=>setSolutionTag(e.target.checked)}/><span><strong>Produce the shot from here</strong> — require a real solution, not just surviving the perturbation.</span></label>
+      <div style={{marginTop:'10px'}}><strong style={{color:'#8fb2cf'}}>The deck</strong>
+        <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginTop:'8px'}}>{DIFFERENTIAL_DECK.map(d=><span key={d.name} style={{padding:'7px 12px',borderRadius:'10px',background:'#0d1620',border:'1px solid #2c3c4e',color:'#cde0ee',fontSize:'.85rem'}} title={d.rule}>{d.name}</span>)}</div>
+        <p className="mutedText" style={{fontSize:'12px',marginTop:'8px'}}>These are also available as constraints in every builder — Constraints panel → 🎲 Diversity tab → “DL — …”.</p>
+      </div>
+      <div className="buttonRow sessionActionButtons" style={{marginTop:'14px'}}>
+        <button type="button" className="primaryBtn" onClick={addToSession}>Add Differential Learning To Session</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{addToSession(); if(setScreen)setScreen('sessions');}}>Add + View Session</button>
+      </div>
+      {message&&<div className="statusBox">{message}</div>}
+    </div>
+  </div>;
+}
+
 function Home({setScreen}){
 const [showMore,setShowMore]=useState(false);
 return <div className="homeGrid homeGridV99h52">
@@ -4897,6 +4958,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -23184,6 +23246,10 @@ button,select{-webkit-appearance:none;appearance:none;}
 .modifierEngine .activeOverlayRule strong{color:#eaf4fb;font-size:.9rem;display:block;}
 .modifierEngine .activeOverlayRule p{color:#c7d4e2;font-size:.83rem;margin:3px 0 0;}
 .modifierEngine .meAppliesTo .meChipRow{margin-top:2px;}
+/* Muted action buttons app-wide — replace bright blue primary and amber session buttons */
+body .primaryBtn{background:#1f3a57 !important;border:1px solid #34557a !important;color:#eaf4fb !important;box-shadow:none !important;}
+body .primaryBtn:hover{background:#264a6e !important;}
+body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~.secondaryBtn{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;box-shadow:none !important;}
 `}</style>
 <div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
@@ -23223,6 +23289,7 @@ button,select{-webkit-appearance:none;appearance:none;}
 {screen==='home'&&<Home setScreen={go}/>}
 {screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
 {screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
+{screen==='differential'&&<DifferentialLearning setScreen={go} setSession={setSession}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
