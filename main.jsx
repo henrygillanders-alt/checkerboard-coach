@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v524 Spatial + Temporal game class (#6). New builder combines a checkerboard zone (WHERE the winner must land) with a shot-clock gate (WHEN the rally must be won) on one card. Lives in Games Library under Pressure & Consequence. Player display shows the board target above the rally clock. The progression that fuses the spatial checkerboard board with the temporal clock. Builds on v523.';
+const APP_VERSION='v525 Spatial + Temporal tidy. Removed the confusing Finish in / Winning shot in Requirement dropdown — the rule is simply that the winning shot must land in the zone. Slimmed the Draft saved automatically note in the builders from a big box to a small quiet line. Builds on v524.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -512,19 +512,18 @@ function buildShotClock(o){
   return {id:Date.now()+Math.random(),title:title,category:'Shot Clock',format:'Shot Clock',duration:8,task:task,rationale:rationale,coach:coach,playerFocus:player,scoring:scoring,layers:[],cbCode:'None',tcr:{mode:o.mode,unit:o.unit,t1:t1,t2:t2,applyTo:o.applyTo,earlyEnd:o.earlyEnd}};
 }
 
-const DEFAULT_FUSION={mode:'Shot Clock (win before)',unit:'Seconds',t1:20,t2:25,applyTo:'Server only',earlyEnd:'Replay the rally',cbCode:'[8-1]',finishMode:'Finish in'};
+const DEFAULT_FUSION={mode:'Shot Clock (win before)',unit:'Seconds',t1:20,t2:25,applyTo:'Server only',earlyEnd:'Replay the rally',cbCode:'[8-1]'};
 function buildFusion(o){
   const sc=buildShotClock(o);
   const code=o.cbCode&&o.cbCode!=='None'&&o.cbCode!=='Custom'?o.cbCode:'';
-  const finishLead=o.finishMode==='Winning shot in'?'the winning shot must land in ':'the rally must be finished into ';
-  const spatialTask=code?(' Spatial target: '+finishLead+code+' on the checkerboard board — a win only counts if the finishing shot is struck into that zone.'):'';
+  const spatialTask=code?(' Spatial target: the winning shot must land in '+code+' on the checkerboard board — the point only counts if the finishing shot is struck into that zone.'):'';
   const title=(code?code+' + ':'')+sc.title;
   const task=sc.task+spatialTask;
-  const scoring=sc.scoring+(code?(' The win must ALSO be struck into '+code+' — a finish outside the zone does not score even if the clock condition is met.'):'');
+  const scoring=sc.scoring+(code?(' The winner must ALSO be struck into '+code+' — a finish outside the zone does not score even if the clock condition is met.'):'');
   const rationale='A combined constraint — it layers a spatial demand (the checkerboard zone '+(code||'—')+') on top of a temporal one (the clock). The player must solve WHERE and WHEN at the same time, which is closer to the real game than either constraint on its own. This is the progression from the Shot Clock and the checkerboard board: spatial and temporal constraints working together.';
   const coach='Two constraints at once — the board says where the winner must go, the clock says when. Start generous (one zone, a long clock), then tighten either axis independently. No verbal call: the zone and the clock officiate together.';
   const player='Read early: pick the shot that puts the ball into '+(code||'the target zone')+' AND satisfies the clock. Build toward it, then commit.';
-  return {...sc,title:title,category:'Spatial + Temporal',format:'Spatial + Temporal',task:task,scoring:scoring,rationale:rationale,coach:coach,playerFocus:player,cbCode:code||'None',finishMode:o.finishMode,fusion:true};
+  return {...sc,title:title,category:'Spatial + Temporal',format:'Spatial + Temporal',task:task,scoring:scoring,rationale:rationale,coach:coach,playerFocus:player,cbCode:code||'None',fusion:true};
 }
 
 function buildLength(o){
@@ -6684,7 +6683,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
     <h2>Length Games Builder</h2>
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">Length structure</span></div>
-      <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
+      <div style={{fontSize:'11px',color:'#6f8296',margin:'2px 4px'}}>Draft saved automatically</div>
       <div className="atlOptionsGrid">
         <label>Front Wall<select value={cfg.height} onChange={e=>setOpt('height',e.target.value)}>{LENGTH_LISTS.height.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Floor<select value={cfg.depth} onChange={e=>setOpt('depth',e.target.value)}>{LENGTH_LISTS.depth.map(o=><option key={o}>{o}</option>)}</select></label>
@@ -6763,7 +6762,7 @@ function ShotClockBuilder({onAddToSession,setScreen}){
     <h2>Shot Clock Builder</h2>
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Clock</span><strong>Time Gate</strong><span className="baseGamePanelSub">Temporal constraint</span></div>
-      <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
+      <div style={{fontSize:'11px',color:'#6f8296',margin:'2px 4px'}}>Draft saved automatically</div>
       <div className="atlOptionsGrid">
         <label>Mode<select value={cfg.mode} onChange={e=>setOpt('mode',e.target.value)}>{SHOTCLOCK_LISTS.mode.map(o=><option key={o}>{o}</option>)}</select></label>
         <label>Unit<select value={cfg.unit} onChange={e=>setOpt('unit',e.target.value)}>{SHOTCLOCK_LISTS.unit.map(o=><option key={o}>{o}</option>)}</select></label>
@@ -6838,8 +6837,8 @@ function FusionBuilder({onAddToSession,setScreen}){
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Board</span><strong>Spatial target</strong><span className="baseGamePanelSub">WHERE the winner must go</span></div>
       <div className="atlOptionsGrid">
         <label>Checkerboard zone<select value={cfg.cbCode} onChange={e=>setOpt('cbCode',e.target.value)}>{CB_CODES.filter(c=>c!=='Custom').map(o=><option key={o}>{o}</option>)}</select></label>
-        <label>Requirement<select value={cfg.finishMode} onChange={e=>setOpt('finishMode',e.target.value)}>{['Finish in','Winning shot in'].map(o=><option key={o}>{o}</option>)}</select></label>
       </div>
+      <p className="mutedText" style={{margin:'6px 2px 0',fontSize:'13px'}}>The winning shot must land in this zone for the point to count.</p>
     </div>
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Clock</span><strong>Time gate</strong><span className="baseGamePanelSub">WHEN the rally must be won</span></div>
@@ -6961,7 +6960,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
 
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">ATL/BTL structure</span></div>
-      <div className="statusBox atlDraftSavedNote">Draft saved automatically.</div>
+      <div style={{fontSize:'11px',color:'#6f8296',margin:'2px 4px'}}>Draft saved automatically</div>
       <div className="atlOptionsGrid">
         <label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
         <label>ATL Count<select value={atl.atlCount} onChange={e=>setAtlOption('atlCount',e.target.value)}>{ATL_LISTS.atlCount.map(option=><option key={option}>{option}</option>)}</select></label>
