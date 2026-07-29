@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v520 Custom library share diagnostics. The Share action now reports its result on screen — shows a green confirmation when it writes to the cloud, or the actual error if the write fails — instead of failing silently. Helps confirm team sharing is wired to Firestore. Builds on v519.';
+const APP_VERSION='v521 Tidy-up. Home screen now shows five primary tiles (Players, Games Library, Checkerboard, Competition, Sessions) plus a More Stuff toggle that reveals everything else, grouped into labelled sections. Games Library is organised into six themed groups (The Board, Pressure & Consequence, Play & Score, Perception & Decision, Technique/Phases/Movement, Coach Tools) instead of one flat wall of tiles. Builds on v520.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4811,16 +4811,36 @@ function CustomConstraintLibrary({setScreen}){
 }
 
 function Home({setScreen}){
+const [showMore,setShowMore]=useState(false);
 return <div className="homeGrid homeGridV99h52">
-      <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}`}</style>
+      <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}
+.whyCLABrandTile{color:#eaf4fb!important}.whyCLABrandTile strong{color:#eaf4fb!important;font-size:2.4rem!important;line-height:1.1!important;display:block!important;letter-spacing:0.02em!important}.whyCLABrandTile p{color:#9fb3c4!important;margin:6px 0 0 0!important;font-size:0.95rem!important}
+.checkerboardHomeCard{background-color:#0e141b !important;background-image:linear-gradient(135deg, rgba(12,18,26,.72), rgba(28,79,102,.74)), repeating-conic-gradient(#eef2f6 0% 25%, #11161c 0% 50%) !important;background-size:auto, 22px 22px !important;border:2px solid #2E6E8E !important;box-shadow:0 4px 16px rgba(0,0,0,.42) !important;}
+.checkerboardHomeCard h2{color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,.7) !important;}
+.checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
+.playerPlansHomeCard{border:1px solid #4fb477 !important;background:#0d1722 !important;}
+.playerPlansHomeCard h2{color:#eaf4fb !important;}
+.moreStuffCard{border:1px dashed #3f6a93 !important;background:#0c1826 !important;}
+.moreStuffCard h2{color:#9cc4ec !important;}
+.moreSectionLabel{grid-column:1/-1;color:#7f9bb5;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;margin:14px 4px 2px}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
-      <style>{`.whyCLABrandTile{color:#eaf4fb!important}.whyCLABrandTile strong{color:#eaf4fb!important;font-size:2.4rem!important;line-height:1.1!important;display:block!important;letter-spacing:0.02em!important}.whyCLABrandTile p{color:#9fb3c4!important;margin:6px 0 0 0!important;font-size:0.95rem!important}`}</style>
+      {/* ── PRIMARY TILES — the five most-used ── */}
+      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
+      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+      <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
+      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
+
+      {/* ── MORE STUFF — everything else, hidden by default ── */}
+      <button className="homeCard moreStuffCard homeTitleOnly" onClick={()=>setShowMore(v=>!v)}><h2>{showMore?'▲ Less':'▾ More Stuff'}</h2><span className="homeTileSubtitle">{showMore?'Hide the rest':'All the other modules'}</span></button>
+
+      {showMore&&<>
+      <div className="moreSectionLabel">Foundations</div>
       <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('whyCLA')}>
         <strong>WHY CLA?</strong>
         <p>Origins · principles · the science behind Checkerboard — the reason this app exists</p>
       </button>
-
       <button className="homeRLDTile homeBrandCard" onClick={()=>setScreen('rld')}>
         <div className="homeRLDLeft">
           <strong>RLD & Challenge Point Framework</strong>
@@ -4831,44 +4851,33 @@ return <div className="homeGrid homeGridV99h52">
         </div>
       </button>
 
-      <style>{`
-.checkerboardHomeCard{background-color:#0e141b !important;background-image:linear-gradient(135deg, rgba(12,18,26,.72), rgba(28,79,102,.74)), repeating-conic-gradient(#eef2f6 0% 25%, #11161c 0% 50%) !important;background-size:auto, 22px 22px !important;border:2px solid #2E6E8E !important;box-shadow:0 4px 16px rgba(0,0,0,.42) !important;}
-.checkerboardHomeCard h2{color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,.7) !important;}
-.checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
-`}</style>
-      <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
-      <style>{`.playerPlansHomeCard{border:1px solid #4fb477 !important;background:#0d1722 !important;}
-.playerPlansHomeCard h2{color:#eaf4fb !important;}`}</style>
+      <div className="moreSectionLabel">Planning & Building</div>
       <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2></button>
-      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
-      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
-      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
-
-      <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
-      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
-      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
+      <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
+
+      <div className="moreSectionLabel">Live & Match Day</div>
+      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
+      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
+      <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
+      <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
+
+      <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
-      <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
+      <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
 
-      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
-      
-      <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
-
+      <div className="moreSectionLabel">Diagnostics & Tools</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
       <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
-
-      
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
-
-      <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachSuggestions')}><CoachSuggestUnreadBadge/><h2>Coach Suggestions</h2><span className="homeTileSubtitle">Ideas · CLA rationale · RLD rating</span></button>
+      </>}
     </div>;
 }
 
@@ -13226,6 +13235,15 @@ function Games({setSession,setScreen,onClassChange}){
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
 
+  const GAME_GROUPS=[
+    {title:'The Board — Spatial',emoji:'🎯',ids:['atb','atl','length','volley','breakout']},
+    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','tinwar','doubleBounce','tacticalpressure','shotbonus']},
+    {title:'Play & Score — Formats',emoji:'🎲',ids:['snakesladders','ludosquash','noughtscrosses','blindtarget','hangman']},
+    {title:'Perception & Decision',emoji:'👁️',ids:['information','tacticalIntentions','presscall']},
+    {title:'Technique, Phases & Movement',emoji:'🎾',ids:['technical','serveReturn','classic','classicconstraint','powerplay','rotations']},
+    {title:'Coach Tools',emoji:'🛠️',ids:['errors','custom','saved']}
+  ];
+
   const activeClass=gameClasses.find(item=>item.id===activeClassId);
   const activeCategory=activeClass?.category||null;
   const visibleCards=activeClassId==='saved'?savedCards:savedCards.filter(card=>card.category===activeCategory);
@@ -13288,14 +13306,19 @@ function Games({setSession,setScreen,onClassChange}){
       <div className="pageTop">
         <h1>Games Library</h1>
       </div>
-      <div className="gameClassGrid">
-        {gameClasses.map(gameClass=>
-          <button type="button" key={gameClass.id} className="gameClassBtn" onClick={()=>gameClass.id==='blindtarget'?setScreen('blindTargetScore'):gameClass.id==='serveReturn'?setScreen('serveReturn'):selectClass(gameClass.id)}>
-            {gameClass.label}
-          </button>
-        )}
-      </div>
-      <div className="placeholder">Tap a game class above.</div>
+      <style>{`.gameClassGroupLabel{grid-column:1/-1;color:#8fb2cf;font-weight:800;letter-spacing:.04em;font-size:14px;margin:16px 4px 6px;display:flex;align-items:center;gap:8px}.gameClassGroup{margin-bottom:6px}`}</style>
+      {GAME_GROUPS.map(grp=>
+        <div className="gameClassGroup" key={grp.title}>
+          <div className="gameClassGroupLabel">{grp.emoji} {grp.title}</div>
+          <div className="gameClassGrid">
+            {grp.ids.map(id=>{const gc=gameClasses.find(g=>g.id===id);if(!gc)return null;return (
+              <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.id==='blindtarget'?setScreen('blindTargetScore'):gc.id==='serveReturn'?setScreen('serveReturn'):selectClass(gc.id)}>
+                {gc.label}
+              </button>
+            );})}
+          </div>
+        </div>
+      )}
     </>}
 
     {activeClassId&&<div className="pageTop">
