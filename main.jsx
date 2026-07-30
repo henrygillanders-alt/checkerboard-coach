@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v527 Networked Squad Clock (#7) + Home. WHY CLA? and RLD tiles restored to the main Home screen. New Networked Squad Clock — put a device on each court, set the same room name, one coach taps Start, and every court counts down in lockstep (a shared start-time is broadcast via the database; each court computes the identical clock locally, buzzers fire together). Reachable from a new Home tile and from the single-court Squad Clock. Builds on v526.';
+const APP_VERSION='v529 Ghosting in Unopposed Practice. The Ghosting module now also opens from inside the Unopposed Practice module (its natural home), as well as the More Stuff tile. Carries the v528 Ghosting engine (rally-band 5:10:4:1 blocks for Rox, RLD 1-2, visualise + produce-the-shot) and the PETTLEP imagery guide in Mental Performance. Builds on v528.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -2008,6 +2008,21 @@ const DIFFERENTIAL_DECK=[
 ];
 DIVERSITY_OVERLAYS.push(...DIFFERENTIAL_DECK.map(d=>({category:'Differential Learning',title:'DL — '+d.name,rule:d.rule,coach:d.coach,pairings:['Differential Learning','Produce The Shot From Here']})));
 
+// ── GHOSTING — rally-band block engine (Murray et al. 2016 movement profile) ──
+// Zones: 1 front-left · 2 front-right · 3 back-right · 4 back-left.
+const GHOST_BLOCKS={
+  short:{label:'SHORT',dur:7,restAfter:5,pool:['1','2','1','2','3','4']},
+  medium:{label:'MEDIUM',dur:23,restAfter:14,pool:['1','2','3','4','3','4']},
+  long:{label:'LONG',dur:47,restAfter:14,pool:['3','4','3','4','1','2','3','4']},
+  very:{label:'VERY LONG',dur:160,restAfter:14,pool:['3','4','3','4','3','4','1','2']}
+};
+const GHOST_SESSIONS={
+  'Short (~9 min)':{short:4,medium:7,long:3,very:1},
+  'Medium (~16 min)':{short:6,medium:11,long:5,very:1},
+  'Long (~24 min)':{short:9,medium:18,long:8,very:1},
+  'Very Long (~32 min)':{short:12,medium:24,long:9,very:2}
+};
+
 // ── COACH CUSTOM CONSTRAINT LIBRARY ──────────────────────────────────────────
 // Design principle: coaches can add their own constraints and make them permanent.
 // Stored on-device (localStorage) as the source of truth for what appears in the
@@ -2554,6 +2569,7 @@ function MentalSkillsPlaceholder({setScreen}){
     ['🧭 Animal Diagnostic Engine','Choose the player challenge and get animal, breath and overlay recommendations','diagnostic'],
     ['👁 Visual Performance','Quiet Eye, tracking, opponent reading, second eye and external focus','visual'],
     ['🚀 Pre-Performance Preparation','Identity, cue statement, breathing, process goal and greatest hits video','ppp'],
+    ['🧠 Imagery — PETTLEP','A coach guide to making visualisation transfer — the 7-point checklist','pettlep'],
     ['🏃 Activation & Calibration','Ghosting, animal ghosting, coach feed & strike and court-available options','activation'],
     ['👁 Court Calibration','Official knock-up, opponent observation, Quiet Eye and information gathering','court'],
     ['🎯 Cue Statements','Animal-linked cues and custom performance cues','cues'],
@@ -2714,6 +2730,23 @@ function MentalSkillsPlaceholder({setScreen}){
     {!activeAnimal&&section==='activation'&&<div className="mentalContentPanel"><h2>🏃 Activation & Calibration</h2><p>This is the physical bridge from preparation to performance.</p><div className="mentalGrid"><div className="mentalCard"><h3>Ghosting</h3><p>Used for movement readiness and court-orientation imagery, not just fitness.</p></div><div className="mentalCard"><h3>Animal Ghosting</h3><p>Show the animal: Eagle scans, Golden Retriever re-engages, Tiger applies pressure, Elephant controls tempo.</p></div><div className="mentalCard"><h3>Coach Feed & Strike</h3><p>Small-space squash-ball feed: player lunges and strikes controlled ball back to coach to catch.</p></div><div className="mentalCard"><h3>If Court Available</h3><p>Use representative rally prep: lengths, volley activation, boast-drive or tactical imagery.</p></div></div></div>}
     {!activeAnimal&&section==='court'&&<div className="mentalContentPanel"><h2>👁 Court Calibration</h2><p>The official 4-minute knock-up is information gathering, not just warming up.</p><div className="mentalGrid"><div className="mentalCard"><h3>Self Calibration</h3><p>Check timing, length, movement, racket preparation and touch.</p></div><div className="mentalCard"><h3>Opponent Observation</h3><p>Notice whether opponent handles height, pace, volleys, late preparation or rotational swing paths.</p></div><div className="mentalCard"><h3>Quiet Eye</h3><p>Now the ball, court and opponent exist. Use target → ball → strike to launch into performance.</p></div></div></div>}
     {!activeAnimal&&section==='cues'&&<div className="mentalContentPanel"><h2>🎯 Cue Statements</h2><div className="mentalGrid">{animals.map(a=><div className="mentalCard" key={a.name}><h3>{a.emoji} {a.name}</h3><p>“{a.cue}”</p></div>)}</div></div>}
+    {!activeAnimal&&section==='pettlep'&&<div className="mentalContentPanel">
+      <h2>🧠 Imagery — the PETTLEP model</h2>
+      <p className="mutedText">The more an imagined rehearsal matches the real thing, the more it transfers. PETTLEP (Holmes &amp; Collins, 2001) is a seven-point checklist for making visualisation <em>functionally equivalent</em> to real performance. Use it whenever a player visualises — during ghosting, before a match, or when grooving a new shot. It is the tool that turns visualisation from “thinking about it” into representative practice.</p>
+      <div className="mentalGrid">
+        <div className="mentalCard"><h3>P — Physical</h3><p>Put the body in a stance close to the real action: racket in hand, ready position, on the move if ghosting. Imagery done slumped in a chair transfers far less than imagery done in a squash posture.</p></div>
+        <div className="mentalCard"><h3>E — Environment</h3><p>Imagine it in the real place. On court is best; otherwise use a photo or clip of the court, or have them recall the sounds, light and feel. The closer the setting, the stronger the transfer.</p></div>
+        <div className="mentalCard"><h3>T — Task</h3><p>Match the image to the player’s level and the exact task — the specific shot, the specific rally pattern. A developing player should not be imagining a pro’s solution.</p></div>
+        <div className="mentalCard"><h3>T — Timing</h3><p>Run the image in real time. A rally imagined in slow motion trains the wrong tempo — match true match speed. (Ghosting to the clock is a natural way to hold this.)</p></div>
+        <div className="mentalCard"><h3>L — Learning</h3><p>Update the image as the player improves. Re-image the skill as it changes so the rehearsal evolves with the player rather than replaying an old version.</p></div>
+        <div className="mentalCard"><h3>E — Emotion</h3><p>Include the feelings of the real moment — the intent, the pressure, the arousal — so the image is more like the real thing. Keep it functional and confident, not anxiety-inducing.</p></div>
+        <div className="mentalCard"><h3>P — Perspective</h3><p>Usually first-person (through your own eyes) for feel and timing; switch to third-person (watching yourself) when checking shape or court position. Choose to fit the goal.</p></div>
+      </div>
+      <div className="mentalPhilosophyBox" style={{marginTop:'12px'}}>
+        <h2>Using it on court</h2>
+        <p>Tie it straight to ghosting: <strong>“see the ball, see the opponent, feel the shot — at real speed.”</strong> Keep reps short and vivid (a few good ones beat long dull ones), and always pair imagery with physical practice — the two together beat either alone. Afterwards, ask the player what they saw and felt; vividness and control both improve with practice. This is exactly what lifts a low-RLD movement drill like ghosting toward transfer: the movement stays coupled to imagined game information instead of becoming empty pattern.</p>
+      </div>
+    </div>}
     {!activeAnimal&&section==='breathing'&&<div className="mentalContentPanel"><h2>🫁 Breathing & Regulation</h2><p className="mutedText">Breathing is a tool selected when useful. The aim is agency, not dependency on a ritual.</p><div className="mentalGrid"><div className="mentalCard"><h3>😌 Calm Breath</h3><p><strong>Use:</strong> anxiety, rushing, panic, over-arousal.</p><p><strong>Protocol:</strong> inhale 4 seconds → exhale 6–8 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 30 seconds.</p><p><strong>Animals:</strong> Elephant + Golden Retriever.</p><p><strong>Coach observes:</strong> slower tempo, reduced rushing, calmer reset.</p></div><div className="mentalCard"><h3>🎯 Centre Breath</h3><p><strong>Use:</strong> refocus, distraction, overthinking, between rallies.</p><p><strong>Protocol:</strong> inhale 3 seconds → hold 3 seconds → exhale 3 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 20–30 seconds.</p><p><strong>Animals:</strong> Eagle + Wolf.</p><p><strong>Coach observes:</strong> breath, cue, eyes up, ready posture.</p></div><div className="mentalCard"><h3>⚡ Activate Breath</h3><p><strong>Use:</strong> flat, passive or under-aroused players.</p><p><strong>Protocol:</strong> inhale 1 second → forceful exhale 1 second → repeat 2–3 times.</p><p><strong>Total time:</strong> approximately 4–6 seconds.</p><p><strong>Animals:</strong> Lion + Cheetah.</p><p><strong>Coach observes:</strong> stronger posture, faster first movement, commitment.</p></div><div className="mentalCard"><h3>🦁 Attack Breath</h3><p><strong>Use:</strong> immediately before an attacking opportunity.</p><p><strong>Protocol:</strong> recognise opportunity → 1-second inhale → 1-second forceful exhale → attack.</p><p><strong>Total time:</strong> 1–2 seconds, single repetition.</p><p><strong>Animals:</strong> Lion + Eagle.</p><p><strong>Coach observes:</strong> attack linked to information, not a blind rush.</p></div></div></div>}
     {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Modifier Engine</button></div>}
   </div>;
@@ -4963,6 +4996,63 @@ function CustomConstraintLibrary({setScreen}){
   </div>;
 }
 
+function GhostingModule({setScreen}){
+  const [size,setSize]=useState('Medium (~16 min)');
+  const [running,setRunning]=useState(false);
+  const m=useRef({seq:[],idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0});
+  const [,force]=useState(0);const rr=()=>force(x=>x+1);
+  function sampleZone(pool){return pool[Math.floor(Math.random()*pool.length)];}
+  function buildSeq(counts){const arr=[];Object.keys(counts).forEach(k=>{for(let i=0;i<counts[k];i++)arr.push(k);});for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t;}return arr;}
+  useEffect(()=>{if(!running)return;const id=setInterval(tick,1000);return ()=>clearInterval(id);},[running]);
+  function startBlockWork(){const s=m.current;const blk=GHOST_BLOCKS[s.seq[s.idx]];s.phase='work';s.remaining=blk.dur;s.zone=sampleZone(blk.pool);s.sinceZone=0;scBeep(1);}
+  function tick(){
+    const s=m.current;if(s.phase==='idle'||s.phase==='done')return;
+    if(s.remaining>1){s.remaining-=1;
+      if(s.phase==='work'){s.sinceZone+=1;if(s.sinceZone>=2){s.sinceZone=0;s.zone=sampleZone(GHOST_BLOCKS[s.seq[s.idx]].pool);scBeep(1);}}
+      rr();return;}
+    if(s.phase==='work'){scBeep(2);s.phase='rest';s.remaining=GHOST_BLOCKS[s.seq[s.idx]].restAfter;}
+    else if(s.phase==='rest'){s.idx+=1;if(s.idx>=s.seq.length){s.phase='done';s.remaining=0;setRunning(false);scBeep(3);}else{startBlockWork();}}
+    rr();
+  }
+  function start(){scUnlock();const seq=buildSeq(GHOST_SESSIONS[size]);m.current={seq,idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0};m.current.idx=0;setRunning(true);startBlockWork();rr();}
+  function stop(){m.current={seq:[],idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0};setRunning(false);rr();}
+  const s=m.current;const live=s.phase!=='idle';
+  const blk=live&&s.seq[s.idx]?GHOST_BLOCKS[s.seq[s.idx]]:null;
+  const counts=GHOST_SESSIONS[size];
+  if(live){
+    let label='',color='#7fe8bf',big='';
+    if(s.phase==='done'){label='SESSION DONE';color='#7fe8bf';big='✓';}
+    else if(s.phase==='rest'){label='REST';color='#6db3e6';big=String(s.remaining);}
+    else{label=(blk?blk.label:'')+' RALLY';color='#7fe8bf';big=s.zone;}
+    return <div className="playerDisplayPage">
+      <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={stop}>■ Stop</button></div>
+      <div style={{textAlign:'center',padding:'10px'}}>
+        <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>BLOCK {Math.min(s.idx+1,s.seq.length)} / {s.seq.length} · {s.phase==='rest'?'REST':(blk?blk.label:'')}</div>
+        <div style={{fontSize:'clamp(5rem,34vw,18rem)',fontWeight:900,lineHeight:1,color:color,margin:'6px 0'}}>{big}</div>
+        <div style={{fontSize:'clamp(1.2rem,5vw,2.2rem)',fontWeight:800,color:color,letterSpacing:'.04em'}}>{label}</div>
+        {s.phase==='work'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px',maxWidth:'560px',marginLeft:'auto',marginRight:'auto'}}>Move to zone <strong>{s.zone}</strong> · <strong>see the ball</strong> into it · play the shot · recover to the T. <em>Visualise a real opponent — real speed.</em></div>}
+        {s.phase==='rest'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px'}}>Walk back, breathe, and picture the next rally before it starts.</div>}
+        {s.phase==='work'&&<div style={{marginTop:'6px',color:'#8fb2cf'}}>Rally clock: {s.remaining}s</div>}
+      </div>
+    </div>;
+  }
+  return <div className="page">
+    <div className="pageTop"><div><h1>Ghosting</h1><p className="mutedText">Rally-band movement blocks · for your Rox / lights · RLD 1–2</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>
+    <div className="gameCard">
+      <div className="claRationaleBox"><h2>Honest about RLD</h2><p>Ghosting is a <strong>movement and conditioning tool</strong>, not a game-reading one — with no ball or opponent it sits low on the RLD scale (1–2). This module makes it the least-un-CLA version possible: the blocks reproduce the <strong>real rally-length profile</strong> of the modern game (Murray et al., 2016) in a 5 : 10 : 4 : 1 short : medium : long : very-long mix, the called zone is <strong>never fully predictable</strong> (repetition without repetition), and every rep carries a <strong>visualise + produce-the-shot</strong> prompt so the movement stays coupled to imagined game information. Programme the same blocks into your Rox; use this as the shared clock and cue.</p></div>
+      <div className="infoBox" style={{marginTop:'8px'}}><strong>Tip:</strong> pair with the Mental Performance → Imagery (PETTLEP) guide — physical stance, real environment, real timing — to keep the visualisation functional.</div>
+      <label className="fw" style={{display:'block',margin:'12px 0',fontWeight:600,color:'#cfe0ee'}}>Session length<select value={size} onChange={e=>setSize(e.target.value)} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}>{Object.keys(GHOST_SESSIONS).map(k=><option key={k}>{k}</option>)}</select></label>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'8px',margin:'8px 0'}}>
+        {[['SHORT',counts.short,'7s · front-biased'],['MEDIUM',counts.medium,'23s'],['LONG',counts.long,'47s · back-biased'],['VERY LONG',counts.very,'160s · deep back']].map(b=><div key={b[0]} style={{flex:'1 1 130px',padding:'10px 12px',borderRadius:'10px',background:'#0d1620',border:'1px solid #2c3c4e'}}><div style={{fontWeight:800,color:'#eaf4fb'}}>{b[0]} × {b[1]}</div><div className="mutedText" style={{fontSize:'12px'}}>{b[2]}</div></div>)}
+      </div>
+      <p className="mutedText" style={{fontSize:'12px'}}>Rests: 14s between blocks, 5s after a short block. Zone numbers: 1 front-left · 2 front-right · 3 back-right · 4 back-left. The app calls a fresh zone roughly every 2s, sampled from that block’s bias (front for short, back for long).</p>
+      <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>
+        <button type="button" className="primaryBtn" onClick={start}>▶ Start ghosting session</button>
+      </div>
+    </div>
+  </div>;
+}
+
 function DifferentialLearning({setScreen,setSession}){
   const [drawn,setDrawn]=useState(null);
   const [freq,setFreq]=useState('Every rally');
@@ -5058,6 +5148,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -19260,6 +19351,12 @@ function SoloPracticeModule({setScreen}){
       <div className="soloRldNote"><strong>RLD position:</strong> Solo practice usually sits around RLD 0–1. Low representativeness does not mean low value. It means limited direct transfer to competitive performance.</div>
     </div>
 
+    <button type="button" className="gameCard" style={{width:'100%',textAlign:'left',cursor:'pointer',border:'1px solid #35557a',background:'linear-gradient(135deg,#12263b,#0d1b2a)'}} onClick={()=>setScreen&&setScreen('ghosting')}>
+      <div className="categoryTag">Unopposed Movement</div>
+      <h2 style={{margin:'4px 0'}}>🏃 Ghosting →</h2>
+      <p className="mutedText" style={{margin:0}}>Rally-band movement blocks (5:10:4:1) for your Rox / lights, honestly tagged RLD 1–2, with a visualise + produce-the-shot prompt. The unopposed movement tool, made the least-un-CLA way possible.</p>
+    </button>
+
     <section className="soloSection">
       <h2>The Great Debate</h2>
       <div className="soloCompareGrid">
@@ -23390,6 +23487,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
 {screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
 {screen==='differential'&&<DifferentialLearning setScreen={go} setSession={setSession}/>}
+{screen==='ghosting'&&<GhostingModule setScreen={go}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
