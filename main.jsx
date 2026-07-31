@@ -1,3 +1,5 @@
+// v535 CLA Update part 2 — Role Constraint engine + Court Geometry (see APP_VERSION)
+// v534 CLA Update — McBroom & Gray integration (see APP_VERSION history)
 // v142 game-builder/scoring/player-display cleanup build
 /* v135 Competition Payload Export Fix */
 
@@ -218,7 +220,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v533 Occlusion Read demo mode. Added a Demo mode script to OCCLUSION READ (Perception module) — the one-off awareness demonstration: occlude at contact, player commits with the feet, reveal, discuss how much was read before ball flight. Sits above the tallied training. Carries v532 early-pickup progression. Builds on v532.';
+const APP_VERSION='v535 CLA Update part 2 — completes the book game queue. New Role Constraint engine: assign a different shot-type constraint to each player simultaneously (Boast & Drive flagship preset, Siege — Hold the Front, custom pairings from a 9-role registry, start positions, swap cadence, in-role bonuses). New Court Geometry module: Deep Bounce with both book progressions, 3/4 Court Out-Zone, Above the Cut height game, Cross-Court Confinement, Passing Rules position tree. Both in the CLA Update library group, searchable, self-officiated on existing zone conventions. Builds on v534.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3948,6 +3950,82 @@ function WhyCLAScreen({setScreen}){
   ];
   const d1Close='Ultimately, CLA is not a departure from science — it is built upon decades of scientific research into how humans perceive, move and learn.';
 
+  // ── CLA UPDATE — McBroom & Gray integration: concepts identified as gaps in the
+  //    Checkerboard content library by the book gap analysis. ──
+  const sections3=[
+    {id:'d3-offline-online',title:'Offline vs Online Information',blocks:[
+      {t:'p',v:'Two kinds of information control action.'},
+      {t:'beat',v:'Offline information is usable before the event begins.'},
+      {t:'p',v:'Situational probabilities, court position, an opponent\u2019s serving habits over the last few points.'},
+      {t:'beat',v:'Online information is only available once the ball is struck.'},
+      {t:'p',v:'Racket face at contact, ball flight, tau — the ratio of a gap to its rate of change — and tau-dot.'},
+      {t:'p',v:'The traditional story says experts use offline information to predict and commit early. The evidence says otherwise: pre-strike anticipation movement occurs in only 6–13% of professional points, and mostly when a player is behind and guessing (Triolet et al., 2017).'},
+      {t:'p',v:'Skilled players use offline information to tune continuous ONLINE control — not to fire a stored response early.'},
+      {t:'p',v:'This is the precise vocabulary for why fixed-position, fixed-speed feeding is weaker than live opponent-present play: the feed strips out the online information the shot must be coupled to.'},
+    ]},
+    {id:'d3-specifying',title:'Specifying vs Non-Specifying Information',blocks:[
+      {t:'p',v:'Not all cues are equal.'},
+      {t:'beat',v:'Non-specifying information needs further elaboration to be useful.'},
+      {t:'p',v:'A higher arc might mean a lob — but it does not say when or where the ball will arrive.'},
+      {t:'beat',v:'Specifying information is action-relevant with no processing required.'},
+      {t:'p',v:'Time-to-contact (tau) incorporates every relevant variable at once.'},
+      {t:'p',v:'A player educated onto non-specifying cues looks skilled in stable practice and breaks down the moment variability rises — because the workable shortcut stops working.'},
+      {t:'p',v:'The best tool for moving a player toward specifying information is adding variability until the weak cue fails (Jacobs & Michaels, 2007). If a player\u2019s read collapses when you vary pace and height, they were leaning on a non-specifying cue. That collapse is the lesson, not a problem.'},
+    ]},
+    {id:'d3-essential',title:'Essential vs Elemental Variables',blocks:[
+      {t:'p',v:'Bernstein\u2019s distinction gives coaches language for what to correct and what to leave alone.'},
+      {t:'beat',v:'Essential variables must stay low-variability to achieve the outcome.'},
+      {t:'p',v:'These are the non-negotiables — for example, the back-hip loading that drives serve speed.'},
+      {t:'beat',v:'Elemental variables can and should vary from repetition to repetition.'},
+      {t:'p',v:'Exact wrist angle, elbow position, contact point — responses to the ever-changing constraints of each ball.'},
+      {t:'p',v:'Traditional coaching corrects elemental variables while ignoring essential ones. A player whose drives all look slightly different but land tight is adapting correctly — coaching that corrects that movement variability interrupts the solution process.'},
+    ]},
+    {id:'d3-hysteresis',title:'Hysteresis — History Shapes the Next Shot',blocks:[
+      {t:'p',v:'What a player just did influences what they do next. The movement system is pulled toward recently-used patterns — attractor states — and the current shot choice depends on the history of the last few shots, not just the current ball.'},
+      {t:'p',v:'In a table tennis study (S\u00f8rensen et al.), the same ball location produced a backhand when the sequence arrived from the right and a forehand when it arrived from the left.'},
+      {t:'beat',v:'Three backhand cross-courts make a fourth more likely — even when a straight drive is tactically better.'},
+      {t:'p',v:'This is both a vulnerability opponents can exploit and a trainable weapon: sequences of shots can be deliberately designed to manipulate an opponent\u2019s attractor states.'},
+      {t:'p',v:'It is also why sequence-dependent scoring — Pattern Lab\u2019s run rules, Snakes & Ladders\u2019 pending-ladder mechanic — works. Name it for players: "you\u2019ve hit three cross — what does your opponent now expect?"'},
+    ]},
+    {id:'d3-reinvestment',title:'Reinvestment — Why Explicit Rules Choke Under Pressure',blocks:[
+      {t:'p',v:'Players trained with explicit rules about HOW to move carry that knowledge into pressure moments — and under pressure, attention shifts inward. They start consciously trying to control movements that should self-organise.'},
+      {t:'p',v:'That is choking. The more explicit knowledge a player holds, the more there is to reinvest.'},
+      {t:'p',v:'Players who learned implicitly — through constraints, without conscious rules about body positions — have nothing stored to reinvest. Under pressure conditions, explicitly-instructed groups declined significantly while guided-discovery groups were unaffected (Smeeton et al.).'},
+      {t:'beat',v:'It can be better to say nothing than to give an internal-focus cue.'},
+      {t:'p',v:'This is the standing rationale for the whole Checkerboard implicit-learning design — and for why perception modules never prescribe where to look or how to move.'},
+    ]},
+    {id:'d3-analogy',title:'Coaching by Analogy — Biological Degeneracy',blocks:[
+      {t:'p',v:'An analogy conveys the movement invariant — the shape of the solution — without naming a single body part, leaving each player free to solve it with their own body.'},
+      {t:'p',v:'Lee et al. (2014) compared prescriptive technical instruction with a single analogy for the novice forehand. After training, the prescriptive group\u2019s movements had collapsed to 3 clusters; the analogy group had expanded to 8 — more diverse, more adaptable solutions to the same problem.'},
+      {t:'p',v:'The same function achieved by different combinations of parts is biological degeneracy — and it is the goal, not a fault.'},
+      {t:'beat',v:'One image. Zero body parts. Never translate the analogy back into joint positions.'},
+      {t:'p',v:'The Analogy Library (Home → More Stuff) carries the squash starter set.'},
+    ]},
+    {id:'d3-credibility',title:'Source Credibility — The Standard for Every Citation',blocks:[
+      {t:'p',v:'Eaton\u2019s (2018) hierarchy is the internal standard for anything cited in this app.'},
+      {t:'ul',v:['Tier 1 — peer-reviewed journals, university-press books, peer-reviewed conference proceedings. The default.','Tier 2 — edited journals and white papers. Use moderately.','Tier 3 — magazines, self-published books and articles. Proceed with caution.','Tier 4 — social media, Wikipedia, YouTube. Sources with intentions other than knowledge. Never the basis of a claim.']},
+      {t:'p',v:'Everything in this chapter and the one above names its study or sits at Tier 1.'},
+    ]},
+    {id:'d3-barriers',title:'Why This Feels Different — For Sceptical Coaches and Parents',blocks:[
+      {t:'p',v:'If constraint-led sessions feel unfamiliar, that is expected — coaching is a culturally handed-down activity.'},
+      {t:'beat',v:'90% of coaches were taught by physical education teachers who used the traditional style; 84% were coached in sport the same way (Moy, Renshaw & Davids, 2013).'},
+      {t:'p',v:'And blocked drilling FEELS like more learning even when it is not: 78% of participants believed they had learned more from blocked trials than variable ones, while the results showed the opposite (Kornell & Bjork, 2008).'},
+      {t:'p',v:'The book closes with three generations of coaches who all opened every session with volleys. None of them knew why — the habit had simply been handed down from a coach at the University of Iowa decades earlier.'},
+      {t:'quote',v:'"So, I challenge you to always ask yourself \u2018why?\u2019 Why did you choose this particular activity? Why are you feeding from this position? Why are you feeding at all, and is there a better way for the learner?"'},
+    ]},
+  ];
+  const d3Takeaways=[
+    'Offline information (probabilities, habits, position) tunes continuous online control — it is not used to predict and commit early. Pre-strike anticipation occurs in only 6–13% of professional points.',
+    'Add variability until non-specifying cues fail — that collapse educates attention toward specifying information like time-to-contact.',
+    'Correct essential variables; leave elemental variables alone. Movement variability with consistent outcomes is expertise, not error.',
+    'Hysteresis: shot choice depends on the last few shots, not just this ball — exploitable in opponents, trainable through sequence-dependent scoring.',
+    'Implicit, constraint-led learning is the most pressure-resilient path: no stored explicit rules means nothing to reinvest when it matters.',
+    'Analogies produced 8 movement clusters vs 3 for prescriptive instruction — convey the invariant, never the body parts.',
+    'Every citation is held to Eaton\u2019s credibility hierarchy — peer-reviewed first, social media never.',
+    'Blocked practice feels like more learning even when it teaches less — the 78% illusion is why this approach can feel wrong while working better.',
+  ];
+  const d3Close='These additions come from the Checkerboard gap analysis of McBroom & Gray\u2019s A Constraints-Led Approach to Coaching Tennis — each one either names a mechanism the app already uses, or sets the standard for what gets added next.';
+
   const renderBlock=(b,i)=>{
     if(b.t==='p')return <p key={i}>{b.v}</p>;
     if(b.t==='beat')return <p key={i} className="whyCLABeat">{b.v}</p>;
@@ -4006,6 +4084,18 @@ function WhyCLAScreen({setScreen}){
       <ul>{d1Takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
     </div>
     <p className="whyCLAClose">{d1Close}</p>
+
+    <div className="whyCLADivider"><span>CLA Update — McBroom &amp; Gray Integration</span></div>
+
+    {sections3.map(s=><div key={s.id} className="whyCLASection">
+      <h2>{s.title}</h2>
+      {s.blocks.map((b,i)=>renderBlock(b,i))}
+    </div>)}
+    <div className="whyCLATakeaways">
+      <h2>Key Takeaways</h2>
+      <ul>{d3Takeaways.map((t,i)=><li key={i}>{t}</li>)}</ul>
+    </div>
+    <p className="whyCLAClose">{d3Close}</p>
   </div>;
 }
 function RLDScreen({setScreen}){
@@ -4019,6 +4109,18 @@ function RLDScreen({setScreen}){
     {id:'transfer',label:'Transfer intent',q:'Is it clear how this specific task transfers to match-play, and is that link strong?'},
   ];
   const [rpat,setRpat]=useState(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;});
+  // CLA Update — the Six Activity Design Questions (McBroom & Gray, Ch. 7): the
+  // simpler entry-point gate. Only build a challenge if all six pass.
+  const SIX_QUESTIONS=[
+    'Is there a clear OUTCOME GOAL — a named affordance being amplified?',
+    'Are there real DECISIONS for the player to make?',
+    'Are those decisions CONSISTENT WITH REAL MATCH PLAY?',
+    'Is there a plan to GUIDE the player toward solutions — questioning, analogy, constraint or demonstration?',
+    'Is the CONSTRAINT TYPE identified — task, environmental or individual?',
+    'Are PROGRESSIONS and REGRESSIONS ready if needed?'
+  ];
+  const [sixQ,setSixQ]=useState([false,false,false,false,false,false]);
+  const sixPass=sixQ.filter(Boolean).length;
   const rpatTotal=RPAT_DIMS.reduce((s,d)=>s+(rpat[d.id]||0),0);
   const rpatMax=RPAT_DIMS.length*5;
   const rpatMin=RPAT_DIMS.length;
@@ -4092,6 +4194,19 @@ function RLDScreen({setScreen}){
         <p>A quick coach self-assessment in the spirit of the <strong>Representative Practice Assessment Tool (RPAT)</strong> (Krause, Farrow et al., 2018). Rate the activity on each dimension and the module returns an RLD level. For the validated tennis instrument, see the original paper.</p>
         <div className="rldHeroPrinciple">"How much does this look and feel like real squash?"</div>
       </div>
+
+      {/* ── CLA UPDATE: SIX ACTIVITY DESIGN QUESTIONS — the quick gate ── */}
+      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #d9a441',borderRadius:'12px',padding:'16px 18px',marginBottom:'14px'}}>
+        <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Quick gate — the Six Activity Design Questions</strong>
+        <p className="mutedText" style={{margin:'4px 0 12px',lineHeight:1.4}}>The entry-point check before the full assessment (McBroom &amp; Gray, Ch. 7). Answer honestly for the activity as it will actually run. <strong style={{color:'#ecd39b'}}>Only build the challenge if all six pass.</strong></p>
+        {SIX_QUESTIONS.map((q,i)=><div key={i} role="button" tabIndex={0} onClick={()=>setSixQ(prev=>prev.map((v,j)=>j===i?!v:v))} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSixQ(prev=>prev.map((v,j)=>j===i?!v:v));}} style={{display:'flex',gap:'10px',alignItems:'flex-start',padding:'8px 10px',marginBottom:'6px',borderRadius:'9px',cursor:'pointer',background:sixQ[i]?'#0b1f14':'#0d1722',border:sixQ[i]?'1px solid #1d6b3f':'1px solid #2a3a4f'}}>
+          <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'6px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'0.85rem',background:sixQ[i]?'#114d2c':'#0b1118',border:sixQ[i]?'1px solid #34e07a':'1px solid #2c3c4e',color:sixQ[i]?'#bff0d0':'#5b6e80'}}>{sixQ[i]?'\u2713':i+1}</span>
+          <span style={{color:sixQ[i]?'#d7e4c4':'#c7d4e2',fontSize:'0.9rem',lineHeight:1.4}}>{q}</span>
+        </div>)}
+        <div style={{marginTop:'10px',padding:'10px 14px',borderRadius:'9px',fontWeight:800,background:sixPass===6?'#0b1f14':'#2a1414',border:sixPass===6?'1px solid #1d6b3f':'1px solid #5a2a2a',color:sixPass===6?'#86efac':'#fca5a5'}}>{sixPass===6?'6 / 6 — build it, then rate representativeness below.':`${sixPass} / 6 — don\u2019t build yet. Fix the unchecked items first; the sliders below can wait.`}</div>
+        <div style={{marginTop:'8px'}}><button type="button" className="secondaryBtn" onClick={()=>setSixQ([false,false,false,false,false,false])}>Reset questions</button></div>
+      </div>
+
       {RPAT_DIMS.map(d=><div key={d.id} style={{background:'#0f1822',border:'1px solid #223044',borderRadius:'12px',padding:'14px 16px',marginBottom:'10px',display:'flex',flexDirection:'column',gap:'8px'}}>
         <strong style={{color:'#eaf4fb'}}>{d.label}</strong>
         <p className="mutedText" style={{margin:0,lineHeight:1.4}}>{d.q}</p>
@@ -4105,6 +4220,22 @@ function RLDScreen({setScreen}){
         </div>
         <p style={{margin:0,lineHeight:1.45,color:'#d7e4c4'}}>{rpatLevel<=1?'Largely isolated — useful for calibration or grooving a pattern, but plan a clear route back into representative play.':rpatLevel<=3?'Partly representative — add live opponent interaction, real decisions or match-like consequence to climb the scale.':rpatLevel<=5?'Strongly representative — close to competition. Use the Challenge Point Framework to tune the difficulty for each player.':'Match Play — full representativeness. The real test of transfer.'}</p>
         <button type="button" className="secondaryBtn" onClick={()=>setRpat(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;})} style={{alignSelf:'flex-start'}}>Reset ratings</button>
+      </div>
+
+      {/* ── CLA UPDATE: FOUR FIDELITIES + KRAUSE BENCHMARKS ── */}
+      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #d9a441',borderRadius:'12px',padding:'16px 18px',marginTop:'14px'}}>
+        <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Four fidelity lenses — what "representative" actually means</strong>
+        <p className="mutedText" style={{margin:'4px 0 10px',lineHeight:1.4}}>When a rating above feels hard to give, check the activity through each lens separately (McBroom &amp; Gray, Ch. 8). An activity can score high on one and fail another — a hard physical drill with no decisions has physiological fidelity and nothing else.</p>
+        <ul style={{margin:0,paddingLeft:'20px',color:'#c7d4e2',lineHeight:1.55}}>
+          <li><strong style={{color:'#eaf4fb'}}>Action fidelity</strong> — are the movements (shots, footwork, recovery) the same as real play?</li>
+          <li><strong style={{color:'#eaf4fb'}}>Affective fidelity</strong> — does it produce the same emotional states as real play (consequence, pressure, stakes)?</li>
+          <li><strong style={{color:'#eaf4fb'}}>Conceptual fidelity</strong> — are the decisions available the same as real play?</li>
+          <li><strong style={{color:'#eaf4fb'}}>Physiological fidelity</strong> — does it mimic the physical demands of real play?</li>
+        </ul>
+        <div style={{marginTop:'12px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'10px',padding:'12px 14px'}}>
+          <strong style={{display:'block',color:'#9cc4ec',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px'}}>The Krause benchmarks — and the non-linear warning</strong>
+          <p style={{margin:0,color:'#dbe6f2',lineHeight:1.45,fontSize:'0.9rem'}}>On the validated tennis instrument, no-opponent serve practice scored 22, opponent-returns-then-stop scored 33, and full-point-played-out scored 40 (Krause et al., 2019). After six weeks, only the high-representativeness group learned to prioritise placement over speed on second serves — the opposite of a simple linear prediction. As the authors put it: "Constraints do not cause behaviors… they lead to complex emergent behaviors." Rate honestly, then watch what actually emerges.</p>
+        </div>
       </div>
     </div>}
 
@@ -4301,7 +4432,7 @@ const PERCEPTION_ACTION_LAYERS=['Contact Sync','Early Read','Early Take','High C
 const PERCEPTION_SECTIONS=[
   {id:'exit-framework',title:'EXIT FRAMEWORK™',subtitle:'Read source. Exit source.',focus:'Source Exit → Target Exit → Pair Exit',rld:4,rationale:'Traditional coaching often tells players to watch the opponent, but this instruction is frequently too vague. In Exit Framework™, the task itself makes the opponent, target or Checkerboard pattern the primary information source. Players are not allowed to return into the source their opponent has just created, except for straight back-court exchanges from 3→3 or 4→4. This forces continuous perception of where the opponent hit from, where they hit to, what pattern they created and what spaces are now available. Questioning can be used initially and then faded, similar to the two-coloured racquet task: ask often, ask randomly, then let the game constraint maintain the visual search behaviour.'},
   {id:'early-read',title:'EARLY READ™',subtitle:'Developing earlier information pickup and anticipation.',focus:'Organisation → Directional commitment → Functional advantage',rld:3},
-  {id:'quiet-eye',title:'QUIET EYE™',subtitle:'Visual attention, gaze control and head stability.',focus:'Where and when to look.',rld:1},
+  {id:'quiet-eye',title:'QUIET EYE™',subtitle:'Visual attention, gaze control and head stability.',focus:'Where and when to look.',rld:1,rationale:'The Quiet Eye — the final stable fixation before movement begins (Vickers) — is one of the very few areas where the evidence supports DIRECT attentional guidance. Longer QE durations track with skill level and with successful attempts, and training it transfers: QE training cut elite golfers\u2019 putts per round (Vine, Moore & Wilson), and beat off-court sports-vision exercises for learning the tennis serve (Fard et al., 2024). Contrast this with prescriptive gaze training — telling players where to look and what to see — which does NOT work: trained novices\u2019 gaze was no different from controls and performance did not change (Klostermann et al.). So the one legitimate cue is stabilisation, not location: settle one fixation on the opponent\u2019s preparation area and hold it until after contact. Everything else — WHICH information the player uses — must self-organise, which is what the games below and the Call the Shot companion train implicitly. Note the deliberate contrast with OCCLUSION READ™: there the response is movement-only to keep perception coupled to action; here the shot-call is made BEFORE the ball crosses the front wall, so it is a genuine advance-cue read, not a decoupled commentary.'},
   {id:'tracking',title:'TRACKING™',subtitle:'Ball tracking, time-to-contact and chipping progressions.',focus:'Seeing ball flight and calibrating interception.',rld:0},
   {id:'interception',title:'INTERCEPTION™',subtitle:'Using information to gain time.',focus:'Early take, volley, T interception and court control.',rld:3},
   {id:'deception',title:'DECEPTION & CUE READING™',subtitle:'Reliable and unreliable information sources.',focus:'Holds, disguise, racquet face, shoulder and body cues.',rld:4},
@@ -4358,7 +4489,8 @@ function perceptionPlaceholderCards(section){
       {id:'per-qe3',code:'QE3',module:'Quiet Eye',phase:'Front Wall',title:'Front Wall Quiet Eye',category:'Perception',duration:6,format:'ATL / Length Rally',rld:2,gate:'Front wall contact',task:'P1 tracks the ball to front wall contact, then picks up the rebound early without head flicking or guessing.',scoring:'Stable tracking to wall + clean rebound pickup = 1. Losing ball or head flick = 0.',rationale:'Develops the front-wall information pickup needed for length, boasts, counter-drops and early movement.',coach:'Use when players miss the rebound line or move after the ball has already passed them.',playerFocus:'Track to wall, pick up rebound.',layers:['Tracking','Quiet Eye']},
       {id:'per-qe4',code:'QE4',module:'Quiet Eye',phase:'Head Stability',title:'Quiet Head Rally',category:'Perception',duration:7,format:'Cooperative / Conditioned',rld:3,gate:'Every strike',task:'P1 and P2 rally with one focus: head stays quiet through contact and recovery. Pace is reduced if the head becomes unstable.',scoring:'Longest rally with quiet head. Reset count when head pulls away early or body spins out.',rationale:'Head stability supports perception, spacing and timing. The constraint makes visual control observable.',coach:'Keep instruction external: “keep the picture steady” rather than body-part correction unless necessary.',playerFocus:'Keep the picture steady.',layers:['Head Stability','Quiet Eye']},
       {id:'per-qe5',code:'QE5',module:'Quiet Eye',phase:'Pressure',title:'Quiet Eye Under Pressure',category:'Perception',duration:8,format:'Pressure Rally',rld:4,gate:'Contact under pressure',task:'P1 plays under time or physical pressure. Bonus is awarded only when P1 maintains quiet head and contact gaze before playing the next shot.',scoring:'Normal rally score plus quiet-eye bonus. Coach tracks breakdowns under fatigue or rush.',rationale:'Quiet eye only transfers if it survives pressure, pace and fatigue.',coach:'Look for the moment attention collapses: contact, recovery, or opponent contact.',playerFocus:'Under pressure, keep the picture steady.',layers:['Pressure','Quiet Eye']},
-      {id:'per-qe6',code:'QE6',module:'Quiet Eye',phase:'Transfer',title:'Quiet Eye Matchplay',category:'Perception',duration:10,format:'Matchplay',rld:5,gate:'Natural',task:'Open or conditioned game. P1 plays normally while coach samples quiet-eye moments: contact, opponent contact, front wall and recovery.',scoring:'Normal scoring. Optional observation: stable gaze events / rushed gaze events.',rationale:'Transfers gaze control into the whole game without turning it into a conscious technical checklist.',coach:'Use only one focus per block. Too many gaze cues will overload the player.',playerFocus:'Compete with a quiet picture.',layers:['Quiet Eye','Matchplay']}
+      {id:'per-qe6',code:'QE6',module:'Quiet Eye',phase:'Transfer',title:'Quiet Eye Matchplay',category:'Perception',duration:10,format:'Matchplay',rld:5,gate:'Natural',task:'Open or conditioned game. P1 plays normally while coach samples quiet-eye moments: contact, opponent contact, front wall and recovery.',scoring:'Normal scoring. Optional observation: stable gaze events / rushed gaze events.',rationale:'Transfers gaze control into the whole game without turning it into a conscious technical checklist.',coach:'Use only one focus per block. Too many gaze cues will overload the player.',playerFocus:'Compete with a quiet picture.',layers:['Quiet Eye','Matchplay']},
+      {id:'per-qe7',code:'QE7',module:'Quiet Eye',phase:'Advance Cues',title:'Call the Shot',category:'Perception',duration:8,format:'Live Rally / Feed + Rally',rld:3,gate:'Before ball crosses front wall',task:'P1 settles a stable fixation on P2\u2019s preparation area (shoulder region) before P2 strikes, holds it until after contact, and calls the shot out loud \u2014 "short/long" and "straight/cross" \u2014 BEFORE the ball crosses the front wall. Work in blocks of 10 calls. Progression (neutralisation): P2 deliberately disguises their usual tells \u2014 experiencing that a cue has stopped working drives the search for richer information far better than hiding the cue would (Smeeton et al., 2013).',scoring:'Blocks of 10: count correct calls per block. Accuracy climbing across blocks = attention educating itself toward specifying information. Do not tell the player which cues to use \u2014 if accuracy stalls, add variability or start the neutralisation progression instead.',rationale:'Trains gaze stabilisation and advance-cue reading implicitly in one task: the early-call deadline forces the eyes to settle on the opponent early, and block-scored accuracy gives self-organising feedback with no prescribed cues \u2014 the guided-discovery approach that stays robust under pressure where explicit gaze instruction collapses. The natural companion to OCCLUSION READ\u2122: same advance-information target, no goggles required, call-based where occlusion work is movement-only.',coach:'Never answer "what should I look at?" \u2014 reply "what did you see that time?" One block of 10, brief pause, next block. Introduce the disguise progression only once baseline accuracy is consistently above chance.',playerFocus:'Settle the eyes early \u2014 call it before the front wall.',layers:['Quiet Eye','Opponent Information','Advance Cues']}
     ],
     tracking:[
       {id:'per-tr1',code:'TR1',module:'Tracking',phase:'Chipping',title:'Stationary Chipping',category:'Perception',duration:6,format:'Solo / Pairs',rld:0,gate:'Ball bounce',task:'P1 chips the ball repeatedly from short distance to a wall, using any wall route that creates a controllable rebound. Start with large ball if needed.',scoring:'Longest sequence of clean contacts. No technical rating.',rationale:'Builds basic ball tracking, rebound reading and time-to-contact without pressure.',coach:'This is not a technique drill. It is a perception-control task: see the rebound and organise contact.',playerFocus:'See the rebound early.',layers:['Tracking','Level 0']},
@@ -5191,6 +5323,83 @@ function DifferentialLearning({setScreen,setSession}){
   </div>;
 }
 
+// ── CLA UPDATE — ANALOGY LIBRARY ─────────────────────────────────────────────
+// Browsable external-focus analogies per shot type (McBroom & Gray, Ch. 7).
+// The evidence: analogy-trained novices produced 8 distinct movement clusters vs
+// 3 for prescriptive instruction (Lee et al., 2014) — the analogy conveys the
+// movement INVARIANT without naming body parts, so each player solves it with
+// their own degrees of freedom (biological degeneracy). Coaches can add their
+// own analogies; custom entries persist locally.
+const ANALOGY_LIBRARY_KEY='checkerboard_analogy_library_v1';
+const ANALOGY_STARTERS=[
+  {shot:'Straight Drive',cue:'Throw a bucket of water at the back wall.',why:'Invariant: sustained line and depth — the "water" has to travel the full length and soak the back.'},
+  {shot:'Boast',cue:'Shape the ball around the corner.',why:'Invariant: the curved two-wall path — the corner does the work, not the arm.'},
+  {shot:'Lob',cue:'Float it up onto a high shelf in the back corner.',why:'Invariant: height plus a soft landing — a shelf placement can\u2019t be thrown, only placed.'},
+  {shot:'Drop',cue:'Make it die in the nick.',why:'Invariant: energy taken out of the ball — "die" specifies the outcome, never the wrist.'},
+  {shot:'Length Target',cue:'Drive it so deep they can\u2019t volley.',why:'Invariant: depth defined by the opponent\u2019s reach — the target is their racket, not a floor mark.'},
+  {shot:'Serve',cue:'Land it on their shoulder like a falling leaf.',why:'Invariant: a dying trajectory into the body\u2013wall pocket that denies a clean swing.'},
+  {shot:'Volley Kill',cue:'Slam the door before they get through it.',why:'Invariant: early interception and finality — timing framed as shutting off the opponent\u2019s option.'},
+  {shot:'Movement to the T',cue:'Own the middle of the web.',why:'Invariant: the T as the affordance hub — everything reachable from the centre.'}
+];
+function AnalogyLibraryScreen({setScreen}){
+  const [custom,setCustom]=useState(()=>{try{return JSON.parse(localStorage.getItem(ANALOGY_LIBRARY_KEY))||[];}catch{return[];}});
+  const [newShot,setNewShot]=useState('');
+  const [newCue,setNewCue]=useState('');
+  useEffect(()=>{try{localStorage.setItem(ANALOGY_LIBRARY_KEY,JSON.stringify(custom));}catch{}},[custom]);
+  function addCustom(){
+    const shot=newShot.trim(),cue=newCue.trim();
+    if(!shot||!cue)return;
+    setCustom(prev=>[...prev,{id:Date.now()+Math.random(),shot,cue}]);
+    setNewShot('');setNewCue('');
+  }
+  function removeCustom(id){setCustom(prev=>prev.filter(a=>a.id!==id));}
+  return <div className="page">
+    <style>{`
+.anaHero{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:18px 22px;margin-bottom:16px}
+.anaHero h2{color:#eaf4fb;margin:0 0 8px;font-size:1.2rem}
+.anaHero p{color:#c7e2cf;margin:0 0 8px;line-height:1.55;font-size:0.95rem}
+.anaHero p:last-child{margin-bottom:0}
+.anaHero strong{color:#86efac}
+.anaRow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:12px 2px;border-bottom:1px solid #1e2c3c}
+.anaShot{color:#9cc4ec;font-weight:800;font-size:0.95rem;flex:0 0 160px;text-transform:uppercase;letter-spacing:0.03em}
+.anaCue{color:#eaf4fb;font-size:1.05rem;font-style:italic;flex:1 1 260px}
+.anaWhy{color:#7c8ea0;font-size:0.82rem;flex:1 1 100%;line-height:1.4}
+.anaDel{background:transparent;border:1px solid #5a2a2a;color:#fca5a5;border-radius:8px;padding:4px 10px;font-weight:700;font-size:0.78rem;cursor:pointer}
+.anaAdd{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.anaAdd input{flex:1 1 160px;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:0.9rem;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none}
+.anaAdd input:focus{border-color:#2E6E8E}
+.anaWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #d9a441;border-radius:14px;padding:16px 18px}
+`}</style>
+    <div className="pageTop">
+      <div><h1>Analogy Library</h1><p className="mutedText">External-focus cues per shot — convey the invariant, never the body parts</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <div className="anaHero">
+      <h2>The rule</h2>
+      <p>An analogy conveys the movement <strong>invariant</strong> — the shape of the solution — without naming a single body part. External focus, always. The evidence: analogy-trained players produced <strong>8 distinct movement clusters</strong> vs <strong>3</strong> for prescriptive instruction (Lee et al., 2014) — more diverse, more adaptable solutions to the same problem. That diversity is biological degeneracy, and it is the goal.</p>
+      <p>Never translate an analogy back into "which means turn your shoulders…" — that reintroduces the explicit knowledge that causes reinvestment and choking under pressure. If an image doesn’t land with a particular player, swap the image, not the principle.</p>
+    </div>
+    <div className="anaWrap">
+      {ANALOGY_STARTERS.map((a,i)=><div className="anaRow" key={'s'+i}>
+        <span className="anaShot">{a.shot}</span>
+        <span className="anaCue">“{a.cue}”</span>
+        <span className="anaWhy">{a.why}</span>
+      </div>)}
+      {custom.map(a=><div className="anaRow" key={a.id}>
+        <span className="anaShot">{a.shot}</span>
+        <span className="anaCue">“{a.cue}”</span>
+        <button type="button" className="anaDel" onClick={()=>removeCustom(a.id)}>Remove</button>
+      </div>)}
+      <div className="anaAdd">
+        <input placeholder="Shot type (e.g. Nick, Hold, Counter-drop)" value={newShot} onChange={e=>setNewShot(e.target.value)}/>
+        <input placeholder="Your analogy — one image, zero body parts" value={newCue} onChange={e=>setNewCue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addCustom();}}/>
+        <button type="button" className="primaryBtn" onClick={addCustom} disabled={!newShot.trim()||!newCue.trim()}>Add analogy</button>
+      </div>
+      <p className="mutedText" style={{marginTop:'10px',fontSize:'0.82rem'}}>Custom analogies save on this device. Test of a good one: could the player act on it without knowing which joint you meant? If it names a body part, it’s an instruction wearing a costume.</p>
+    </div>
+  </div>;
+}
+
 function Home({setScreen}){
 const [showMore,setShowMore]=useState(false);
 return <div className="homeGrid homeGridV99h52">
@@ -5240,6 +5449,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
@@ -5344,6 +5554,11 @@ function ShotBonusRally({setSession}){
   // Per-shot point values — each selected shot carries its own independent rep/finish
   // value (e.g. Nick worth more than a straight drop) rather than one global setting.
   const [shotPoints,setShotPoints]=useState({'straight-drop':{rep:1,finish:1}});
+  // CLA Update — Weak-Side Amplifier (Fitzpatrick et al.): amplify the affordance of
+  // the weak side inside live, opposed play rather than fed-ball drilling. Optional
+  // decay removes the amplifier mid-block so the invited behaviour has to stand alone.
+  const [weakSide,setWeakSide]=useState('off');
+  const [weakDecay,setWeakDecay]=useState(false);
   const [added,setAdded]=useState('');
   const [liveMode,setLiveMode]=useState(false);
   const [tally,setTally]=useState({}); // {name:{win:0, byShot:{shotId:{rep:0,finish:0}}}}
@@ -5382,16 +5597,18 @@ function ShotBonusRally({setSession}){
     const t2='As Tier 1, but the rep point only counts when the shot is also taken at a tactically sound moment (opponent out of position, genuine opportunity created) rather than just mechanically produced.';
     const tagNote=tier==='2'&&(tags.length||customTag.trim())?` Behavioural add-on in play: ${[...tags,customTag.trim()].filter(Boolean).join(', ')}.`:'';
     const zoneNote=restricted?` Space manipulation: ball must land in Checkerboard zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside these zones the ball is out and does not count.`:'';
-    return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}`;
+    const weakNote=weakSide!=='off'?` Weak-Side Amplifier: any of the target shot(s) played on the ${weakSide} counts DOUBLE (rep and finish)${weakDecay?' for the first half of the block only — then the amplifier is removed and normal values apply, so the invited behaviour has to stand on its own':''}. This amplifies the affordance of the weak side inside live, opposed play rather than fed-ball drilling.`:'';
+    return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}${weakNote}`;
   }
   function buildScoring(){
     const perShot=chosen.map(s=>{const p=shotPoints[s.id]||{rep:1,finish:1};return `${s.label}: rep +${p.rep}, finish bonus +${p.finish}`;}).join(' · ');
-    return `Win the rally = 1 point. Per-shot values — ${perShot||'set rep/finish points per shot above'}. Rep tap: awarded every successful completion of that shot, rally continues. Finish bonus: additional points on top of the rep tap if that same shot also ends the rally as the winner (stacks, not either/or, and stacks on top of the rally-win point). Each selected shot is tallied and tapped separately. Tallied by an off-court waiting player, attributed to the current striker.`;
+    const weakScore=weakSide!=='off'?` Weak-Side Amplifier active: ${weakSide} completions of the target shot(s) score double${weakDecay?' during the first half of the block, normal value after':''}.`:'';
+    return `Win the rally = 1 point. Per-shot values — ${perShot||'set rep/finish points per shot above'}. Rep tap: awarded every successful completion of that shot, rally continues. Finish bonus: additional points on top of the rep tap if that same shot also ends the rally as the winner (stacks, not either/or, and stacks on top of the rally-win point).${weakScore} Each selected shot is tallied and tapped separately. Tallied by an off-court waiting player, attributed to the current striker.`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
-    const layers=tier==='2'?['Tactical: Shot Selection',...tags]:['Shot Repetition'];
-    const card={id:Date.now()+Math.random(),title:`Shot Bonus Rally — ${chosen.map(s=>s.label).join(' + ')||'Shot'}`,category:'Shot Bonus Rally',format:'Rally + Live Tally',duration:9,task:buildTask(),rationale:'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition, with an optional tactical-appropriateness gate.',coach:'Let the rep tap run freely in Tier 1. Move to Tier 2 once the shot is reliably produced, so the reward tightens to tactically sound moments.',playerFocus:tier==='1'?'Get the shot in as often as the rally allows.':'Only claim the tap when the moment is actually on.',scoring:buildScoring(),layers,rld:tier==='2'?4:3};
+    const layers=[...(tier==='2'?['Tactical: Shot Selection',...tags]:['Shot Repetition']),...(weakSide!=='off'?['Weak-Side Amplifier']:[])];
+    const card={id:Date.now()+Math.random(),title:`Shot Bonus Rally — ${chosen.map(s=>s.label).join(' + ')||'Shot'}${weakSide!=='off'?` (${weakSide[0].toUpperCase()+weakSide.slice(1)} Amplified)`:''}`,category:'Shot Bonus Rally',format:'Rally + Live Tally',duration:9,task:buildTask(),rationale:weakSide!=='off'?'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition — with the weak-side affordance amplified during realistic play. The evidence (Fitzpatrick et al., U8, 8 weeks): the CLA amplification group increased weak-side frequency, winners, technical proficiency and rally maintenance; the fed-ball drilling group showed no change.':'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition, with an optional tactical-appropriateness gate.',coach:'Let the rep tap run freely in Tier 1. Move to Tier 2 once the shot is reliably produced, so the reward tightens to tactically sound moments.',playerFocus:tier==='1'?'Get the shot in as often as the rally allows.':'Only claim the tap when the moment is actually on.',scoring:buildScoring(),layers,rld:tier==='2'?4:3};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -5487,6 +5704,14 @@ function ShotBonusRally({setSession}){
         <div className="sbrLabel">3. Space manipulation — restrict to Checkerboard zones</div>
         <div className="sbrZoneGrid">{SHOT_BONUS_ZONES.map(z=><div key={z} role="button" tabIndex={0} className={zoneRestrict.includes(z)?'sbrZoneBtn on':'sbrZoneBtn'} onClick={()=>toggleZone(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleZone(z);}}>{z}</div>)}</div>
         <p className="sbrHint">{restricted?`Ball must land in zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside is out and doesn't count. Rule-based, no court markings needed.`:'All zones active — no space restriction. Deselect zones to manipulate how often the shot\u2019s affordance appears.'}</p>
+      </div>
+      <div className="sbrSection">
+        <div className="sbrLabel">CLA Update — Weak-Side Amplifier (optional)</div>
+        <div className="sbrChips">
+          {[['off','Off'],['backhand','Backhand \u00d72'],['forehand','Forehand \u00d72']].map(([id,label])=><div key={id} role="button" tabIndex={0} className={weakSide===id?'sbrChip on':'sbrChip'} onClick={()=>setWeakSide(id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setWeakSide(id);}}>{label}</div>)}
+          {weakSide!=='off'&&<div role="button" tabIndex={0} className={weakDecay?'sbrChip on':'sbrChip'} onClick={()=>setWeakDecay(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setWeakDecay(v=>!v);}}>{weakDecay?'\u2713 ':''}Decaying (first half of block only)</div>}
+        </div>
+        <p className="sbrHint">Amplifies the weak side’s affordance inside live, opposed play — the strongest-evidenced build in the book gap analysis (Fitzpatrick et al.: amplification during realistic play beat fed-ball backhand drilling on frequency, winners AND technical proficiency; the book’s youth data showed a 6:1 forehand practice bias). Decay removes the amplifier mid-block so the behaviour has to survive without the reward.</p>
       </div>
       <div className="sbrSection">
         <div className="sbrLabel">4. Points — per shot</div>
@@ -5751,6 +5976,404 @@ function PressCallModule({setSession}){
       <div className="pcAddRow">
         <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
         {added&&<span className="pcAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── CLA UPDATE — McBROOM & GRAY BOOK BUILDS ──────────────────────────────────
+// The four vetted games from the gap-analysis build order (Depth Cap, Attack
+// Straight, Serve for Advantage, Deep Touch) plus the Action Boundary design
+// decision. Specs are the CORRECTED Part D versions, which supersede all earlier
+// drafts. Key squash-mechanics correction applied throughout: squash has no
+// "run around the backhand" — a serve/shot that denies a clean response forces a
+// weaker SHOT TYPE (the boast), not a wrong side. Every bonus condition below is
+// objectively detectable (shot-type flag + existing floor-zone system 1–4), so
+// scoring is self-officiated with no coach adjudication.
+const CLA_UPDATE_GAME_DEFS=[
+  {id:'depthcap',label:'Depth Cap',prio:'Build 1',was:'was "Court Asymmetry / Nadal vs Federer"',
+   summary:'The constrained player\u2019s shots may not land in the back quarter of the court (zones 3/4) \u2014 they are denied squash\u2019s highest-percentage winning area. Everything else is normal squash. Bonus if the constrained player wins a rally in which they forced the free player to retreat into that same back-quarter zone.',
+   correction:'The original draft restricted "three-quarter court" without saying which quarter, and the bonus referenced forcing the free player "outside the restricted zone" \u2014 a zone the free player was never restricted to. Not scoreable as written. This version applies the pre-validated racquetball 3/4 Court mechanic (a marked zone where landing is out) asymmetrically to one player.',
+   gqA:'Constrained player: "You can\u2019t use the back corners \u2014 where did you create pressure instead?"',
+   gqB:'Free player: "What kept dragging you deep when they couldn\u2019t even hit it there?"'},
+  {id:'attackstraight',label:'Attack Straight',prio:'Build 2',was:'was "Attack Down the Line" \u2014 sound, no changes needed',
+   summary:'The receiver must play cross-court only until they choose to attack straight. The moment they play straight, the point opens to full court for both players. Normal squash consequences apply: release too early or rushed and the opponent\u2019s court position punishes it; never release and no advantage is ever gained.',
+   correction:'No correction needed \u2014 no rule forces a losing outcome from a correct decision. The affordance trained is reading the correct MOMENT to change direction based on the opponent\u2019s court position: a live decision-timing skill, not a technique.',
+   gqA:'Receiver: "Where was your opponent when you decided to attack straight?"',
+   gqB:'Opponent: "Could you read the release coming \u2014 what told you?"'},
+  {id:'serveadv',label:'Serve for Advantage',prio:'Build 3',was:'was "Force Opponent to Backhand"',
+   summary:'Server has a configurable number of serve attempts per point (default 2 \u2014 the existing house rule: creative freedom, not fault-avoidance). The chain bonus rewards the full two-shot nested sequence, never the serve alone: serve denies a clean length response \u2192 receiver is forced to boast \u2192 server converts the resulting loose ball with an attacking shot in the front zone (1/2).',
+   correction:'Squash has no "run around the backhand". A serve that denies a clean response forces a weaker shot type \u2014 the boast \u2014 not a wrong side. "Receiver played a boast" and "server\u2019s next shot landed front zone" are both objectively detectable, making the whole chain self-officiating. This is the book\u2019s nested-affordances concept made squash-native.',
+   gqA:'Server: "What did that serve take away from them? Which of your two serves worked, and why?"',
+   gqB:'Receiver: "What were you protecting against on that return \u2014 could you have driven or lobbed instead of boasting?"'},
+  {id:'deeptouch',label:'Deep Touch',prio:'Build 4',was:'was "Front Court Constraint / A Finer Touch"',
+   summary:'Player A may not proactively move forward to volley or attack. A MAY enter the front court to retrieve \u2014 but only to play a defensive/neutral shot (lob, high straight, or soft boast back to length). The trigger is A hitting an ATTACKING shot from the front zone (winner, tight drop, volley kill) \u2014 not A\u2019s presence there. Player B plays anywhere; B\u2019s job is to deny A any clean, loose ball from deep.',
+   correction:'The original rule cost A the point simply for entering the front quarter \u2014 meaning retrieving their own successful drop shot (correct squash) could lose them the exchange they had just won. A rule that punishes the correct outcome of good play is not valid. The fix: a shot-type + zone COMBINATION check, not a zone-presence check.',
+   gqA:'Player A: "How did you hide that short ball inside your length swing?"',
+   gqB:'Player B: "Which of your shots gave them the loose ball \u2014 and what would you change?"'},
+  {id:'actionboundary',label:'Action Boundary',prio:'Blocked',was:'design decision pending \u2014 lowest priority of the five',
+   summary:'Coach and player play points. At random moments the coach introduces a short ball. The player must read in real time whether it affords attack, drop, or defensive push \u2014 based on their position, speed and fatigue in that exact moment. Develops genuine affordance perception rather than scripted responses.',
+   correction:'No logical contradiction \u2014 but no objectively scoreable rule. "The correct affordance" for a given short ball depends on live coach judgement, not anything the app can detect. Do not build scoring until a path is chosen below.',
+   gqA:'Player: "What made that one attackable \u2014 and what made the last one not?"',
+   gqB:'Coach: judge the read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed.'}
+];
+function CLAUpdateGames({setSession}){
+  const [gameId,setGameId]=useState('depthcap');
+  const [dcBonus,setDcBonus]=useState('2');
+  const [asBonus,setAsBonus]=useState('1');
+  const [saBonus,setSaBonus]=useState('2');
+  const [saServes,setSaServes]=useState('2');
+  const [dtBonus,setDtBonus]=useState('1');
+  const [abPath,setAbPath]=useState('');
+  const [added,setAdded]=useState('');
+  const g=CLA_UPDATE_GAME_DEFS.find(x=>x.id===gameId);
+  function buildTask(){
+    if(gameId==='depthcap')return `One player is the Constrained player, the other the Free player. The Constrained player's shots may NOT land in the back quarter of the court (Checkerboard zones 3/4 at back-quarter depth) \u2014 any of their balls landing there is out and loses the point. Everything else is normal squash for both players. Swap roles each game.`;
+    if(gameId==='attackstraight')return `The receiver must play cross-court only until they choose to attack straight. The moment they play a straight shot (the "release"), the point opens to full court for both players and normal squash continues. A straight shot before a deliberate release, or any non-cross-court shot pre-release, loses the point. The decision of WHEN to release is entirely the receiver's.`;
+    if(gameId==='serveadv')return `Server has ${saServes} serve attempt${saServes==='1'?'':'s'} per point${saServes==='1'?' \u2014 one chance, so the serve decision has to be committed to':', framed as creative freedom \u2014 use them to experiment with pace, height, width and spin'}. Normal rally scoring throughout. The chain: if the serve denies a clean length response and the receiver is forced to BOAST their return, the chain is armed; if the server then converts the resulting loose ball with an attacking shot landing in the front zone (1/2), the chain bonus is awarded on top of the rally point. The bonus rewards the full sequence (serve \u2192 forced boast \u2192 front-zone attack), never the serve in isolation.`;
+    if(gameId==='deeptouch')return `Player A may not proactively move forward to volley or attack the ball. A MAY enter the front court to retrieve, but only to play a defensive/neutral shot \u2014 lob, high straight, or soft boast back to length. If A hits an ATTACKING shot (winner attempt, tight drop, volley kill) from the front zone, A loses the point immediately. Player B plays anywhere. A must construct every attacking opportunity from deep \u2014 developing deception and disguise in length play, since A can never simply walk in and finish a loose ball.`;
+    return abPath==='a'
+      ?`Coach-led live-feedback drill (path a \u2014 no in-app scoring). Coach and player play points; at random moments the coach introduces a short ball. The player reads in real time whether it affords attack, drop, or defensive push \u2014 based on their position, speed and fatigue in that exact moment. The coach's live judgement IS the feedback; there is no scoreboard.`
+      :`Blocked pending design decision \u2014 choose path (a) or (b) below before running this as a scored game.`;
+  }
+  function buildScoring(){
+    if(gameId==='depthcap')return `Normal rally scoring. Constrained player's ball lands in the back quarter = out, point to the Free player. Bonus +${dcBonus} on top of the rally point if the Constrained player wins a rally in which they forced the Free player to retreat into that same back-quarter zone \u2014 the zone check is the existing floor-zone system (zones 3/4), fully self-officiated.`;
+    if(gameId==='attackstraight')return `Normal rally scoring. Cross-court violation before release = point to the opponent.${Number(asBonus)>0?` Release bonus: +${asBonus} on top of the rally point when the receiver releases straight AND wins the rally \u2014 rewarding a well-timed direction change, not the change itself.`:' No release bonus \u2014 the natural consequences of the release timing do the teaching.'}`;
+    if(gameId==='serveadv')return `Normal rally scoring. Chain bonus: serve forces a boasted return AND the server's next shot is an attacking shot landing in the front zone (1/2) = +${saBonus} on top of the rally point. Both chain conditions are objectively detectable (shot-type flag + floor zone) \u2014 no adjudication. If the chain is armed but the server does not convert, play simply continues at normal scoring.`;
+    if(gameId==='deeptouch')return `Normal rally scoring. A attacking from the front zone = immediate point to B (shot-type + zone combination check \u2014 a defensive retrieve from the front is legal and play continues).${Number(dtBonus)>0?` Bonus +${dtBonus} when A wins the rally with a winning shot struck from behind the short line \u2014 rewarding the attack constructed from deep.`:''}`;
+    return abPath==='a'?'No in-app scoring \u2014 coach judgement only. The realisation is the point, not a score.':'\u2014';
+  }
+  const coachText={
+    depthcap:`${g.gqA} ${g.gqB} Watch for the constrained player discovering width, holds and short pressure once depth is removed \u2014 do not prescribe the alternatives.`,
+    attackstraight:`${g.gqA} Ask it after both won AND lost releases \u2014 the timing read is the skill. Do not coach when to release; let punished-early and never-released rallies do the teaching.`,
+    serveadv:`Server: ${g.gqA} Receiver: ${g.gqB} The receiver's question matters as much \u2014 recognising when a boast was genuinely forced versus chosen is its own perceptual skill.`,
+    deeptouch:`A: ${g.gqA} B: ${g.gqB} Watch A's length play for emerging disguise \u2014 the same preparation producing drive, drop and boast is the goal behaviour.`,
+    actionboundary:`${g.gqB} Ask "${g.gqA.split('"')[1]}" after contrasting decisions. One question per pause \u2014 this drill is about the read, not a debrief.`
+  };
+  const playerFocusText={depthcap:'No back corners \u2014 find another way to hurt them.',attackstraight:'Cross until the moment is real \u2014 then go straight.',serveadv:'Serve to take something away, then take the short ball.',deeptouch:'Build it from deep \u2014 hide the short ball in your length.',actionboundary:'Read what THIS ball, in THIS moment, is offering you.'};
+  const rationaleText={
+    depthcap:'CLA mechanism: the task constraint eliminates the constrained player\u2019s dominant attractor \u2014 deep length into the back corners, squash\u2019s highest-percentage solution \u2014 forcing a search of the rest of the movement solution space (width, holds, short pressure) under live opposition. The forced-retreat bonus performs education of intention: depth-as-an-OUTCOME stays the goal even with depth-as-a-TARGET removed. Directly analogous to the racquetball 3/4 Court Game, applied asymmetrically \u2014 a clean landing-zone validity check on the existing floor-zone system.',
+    attackstraight:'CLA mechanism: education of attention \u2014 the release decision can only be timed well by perceiving the opponent\u2019s court position, so the constraint forces that perceptual variable into the control loop on every rally. The guided question ("where was your opponent when you went?") then performs education of intention without ever prescribing when to go. No rule forces a losing outcome from a correct decision: the constraint creates the decision, normal squash consequences grade it \u2014 the environment, not the coach, delivers the feedback.',
+    serveadv:'A squash-native nested-affordance sequence: the serve\u2019s job is to take away the clean length response, the forced boast is the detectable evidence it worked, and the front-zone conversion is the payoff the server must still earn. Rewarding the sequence (not the serve) keeps the serve honest \u2014 a spectacular serve that doesn\u2019t create the next ball earns nothing extra.',
+    deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and holds live. B is simultaneously educated to perceive and deny the loose-ball affordance before it exists. The corrected trigger (attacking shot type AND front-zone location) punishes the choice, never the correct outcome of good play \u2014 A retrieving their own winning drop remains legal squash.',
+    actionboundary:'Develops genuine affordance perception \u2014 reading what a short ball offers THIS player in THIS moment (position, speed, fatigue) rather than executing a scripted response to a category of ball. Affordances are personal and transitory; the coach\u2019s live judgement is the only valid referee, which is why this stays unscored.'
+  };
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    if(gameId==='actionboundary'&&abPath!=='a')return;
+    const titles={depthcap:'Depth Cap \u2014 Back-Quarter Denial',attackstraight:'Attack Straight \u2014 Release Decision',serveadv:`Serve for Advantage \u2014 Nested Chain (${saServes}-Serve)`,deeptouch:'Deep Touch \u2014 Build From Deep',actionboundary:'Action Boundary \u2014 Coach-Led Affordance Read'};
+    const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:'Coach-Led Drill (Unscored)'};
+    const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:buildTask(),rationale:rationaleText[gameId],coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:buildScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const bonusRow=(label,value,setter,choices)=>(<div className="cluSection"><div className="cluLabel">{label}</div><div className="cluChips">{choices.map(n=><div key={n} role="button" tabIndex={0} className={value===n?'cluChip on':'cluChip'} onClick={()=>setter(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setter(n);}}>+{n}</div>)}</div></div>);
+  const STYLE=`
+.cluWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #d9a441;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.cluSection{margin:14px 0;}
+.cluLabel{color:#ecd39b;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.cluChips{display:flex;flex-wrap:wrap;gap:8px;}
+.cluChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.cluChip.on{border-color:#d9a441;background:#241c0c;color:#f0dcb0;}
+.cluGameBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;width:100%;margin-bottom:8px;}
+.cluGameBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
+.cluGameBtn.on{border-color:#d9a441;background:#241c0c;}
+.cluGameBtn .cluPrio{display:inline-block;background:#16466a;border:1px solid #2E6E8E;color:#bcd6f5;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:800;margin-right:8px;text-transform:uppercase;letter-spacing:0.04em;}
+.cluGameBtn.blockedGame .cluPrio{background:#2a1414;border-color:#e05a5a;color:#f0c4c4;}
+.cluBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.cluBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.cluBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.cluBox.correction{border-color:#5a3a1a;background:#1a1408;}
+.cluBox.correction strong{color:#ecd39b;}
+.cluGq{background:#0b1f14;border:1px solid #1d3a28;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.cluGq strong{display:block;color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.cluGq p{margin:0 0 6px;color:#d7e4c4;line-height:1.45;font-style:italic;}
+.cluGq p:last-child{margin-bottom:0;}
+.cluAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.cluAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cluHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>📚 CLA Update — New Games</h2><p>The four vetted builds from the McBroom &amp; Gray gap analysis, in build-priority order, plus the blocked Action Boundary decision. All specs are the corrected versions — every bonus condition is objectively detectable via shot-type + floor zones, so scoring is self-officiated.</p></div>
+    <div className="cluWrap">
+      <div className="cluSection">
+        <div className="cluLabel">Game (build-priority order)</div>
+        {CLA_UPDATE_GAME_DEFS.map(def=><div key={def.id} role="button" tabIndex={0} className={(gameId===def.id?'cluGameBtn on':'cluGameBtn')+(def.id==='actionboundary'?' blockedGame':'')} onClick={()=>{setGameId(def.id);setAdded('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setGameId(def.id);setAdded('');}}}><span className="cluPrio">{def.prio}</span>{def.label}<span>{def.was}</span></div>)}
+      </div>
+      <div className="cluBox"><strong>Mechanic</strong><p>{g.summary}</p></div>
+      <div className="cluBox correction"><strong>{gameId==='attackstraight'?'Vetting note':'Why the correction was needed'}</strong><p>{g.correction}</p></div>
+      <div className="cluGq"><strong>Guided questioning</strong><p>{g.gqA}</p><p>{g.gqB}</p></div>
+      {gameId==='depthcap'&&bonusRow('Forced-retreat bonus (constrained wins + forced free player into back quarter)',dcBonus,setDcBonus,['1','2','3'])}
+      {gameId==='attackstraight'&&bonusRow('Release bonus (released straight AND won the rally \u2014 0 = consequences only)',asBonus,setAsBonus,['0','1','2'])}
+      {gameId==='serveadv'&&<div className="cluSection"><div className="cluLabel">Serves per point</div><div className="cluChips">{['1','2','3'].map(n=><div key={n} role="button" tabIndex={0} className={saServes===n?'cluChip on':'cluChip'} onClick={()=>setSaServes(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSaServes(n);}}>{n}</div>)}</div><p className="cluHint">2 is the standing house rule — creative freedom, not fault-avoidance. Drop to 1 to sharpen commitment to the serve decision; raise to 3 as a regression for players still exploring what a serve can take away.</p></div>}
+      {gameId==='serveadv'&&bonusRow('Chain bonus (serve \u2192 forced boast \u2192 front-zone attack converted)',saBonus,setSaBonus,['1','2','3'])}
+      {gameId==='deeptouch'&&bonusRow('Deep-build bonus (A wins with a winner struck from behind the short line \u2014 0 = off)',dtBonus,setDtBonus,['0','1','2'])}
+      {gameId==='actionboundary'&&<div className="cluSection">
+        <div className="cluLabel">Design decision — choose a path</div>
+        <div role="button" tabIndex={0} className={abPath==='a'?'cluGameBtn on':'cluGameBtn'} onClick={()=>setAbPath('a')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbPath('a');}}>(a) Coach-led drill — no in-app scoring<span>Ship as a session-plan entry. The coach’s live judgement is the feedback. Available to add below.</span></div>
+        <div role="button" tabIndex={0} className={abPath==='b'?'cluGameBtn on':'cluGameBtn'} onClick={()=>setAbPath('b')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbPath('b');}}>(b) Proxy rule — scoreable constraint (pending build)<span>Bonus for attacking a short ball when the opponent has not recovered toward the T within a threshold; conceded point for attacking when the opponent was set. Converts "read the moment" into a detectable rule — queued behind Deep Touch, not yet built.</span></div>
+        {abPath==='b'&&<p className="cluHint">Path (b) recorded as the chosen direction — the T-recovery threshold check needs building before this can be added as a scored game. Until then, only path (a) can go into a session.</p>}
+      </div>}
+      <div className="cluBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="cluBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalModifierEngine title="Universal Modifiers"/>
+
+      <div className="cluAddRow">
+        <button className="primaryBtn" onClick={addToSession} disabled={gameId==='actionboundary'&&abPath!=='a'}>Add To Session</button>
+        {gameId==='actionboundary'&&abPath!=='a'&&<span className="cluHint">Choose path (a) to add as a coach-led drill — path (b) is pending build.</span>}
+        {added&&<span className="cluAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── ROLE CONSTRAINT — REUSABLE ASYMMETRIC-ROLE ENGINE (v535) ─────────────────
+// Part C priority #1: no existing module assigns different shot-type constraints
+// to each player simultaneously (ATL/BTL and zone codes constrain both players
+// identically). Boast & Drive (Ch. 11) is the flagship preset; the engine
+// generalises it into reusable attacker/defender shot-type pairings, absorbing
+// the pickleball Kitchen Attack/Defend translation as the Siege preset.
+const ROLE_CONSTRAINT_ROLES=[
+  {id:'none',label:'No restriction',rule:'plays normal squash — any shot, any time'},
+  {id:'boastOnly',label:'Boast only',rule:'may only play boasts (the ball must hit at least two walls before the floor)'},
+  {id:'straightOnly',label:'Straight drives only',rule:'may only play straight drives'},
+  {id:'crossOnly',label:'Cross-court only',rule:'may only play cross-court shots'},
+  {id:'lobOnly',label:'Lobs only',rule:'may only play lobs (above the cut line, landing behind the short line)'},
+  {id:'dropDrive',label:'Drop + drive only',rule:'may only play straight drops and straight drives — no cross-court, no boast'},
+  {id:'volleyHunt',label:'Volley whenever possible',rule:'must take any ball they can reach on the volley; letting a volleyable ball bounce loses the point'},
+  {id:'defensiveOnly',label:'Defensive / neutralising only',rule:'may only play defensive or neutralising shots (lob, high straight, soft boast back to length) — no winner attempts, tight drops or kills'},
+  {id:'attackAtWill',label:'Attack at will',rule:'may play attacking shots at any moment of their choosing'}
+];
+const ROLE_CONSTRAINT_STARTS=[
+  {id:'none',label:'Anywhere'},
+  {id:'behindShort',label:'Behind the short line'},
+  {id:'backQuarter',label:'Back quarter'}
+];
+const ROLE_CONSTRAINT_PRESETS=[
+  {id:'boastdrive',label:'Boast & Drive (Ch. 11 — book exact)',roleA:'boastOnly',roleB:'straightOnly',startA:'none',startB:'behindShort',
+   note:'Player A may only boast (2+ walls before the floor); Player B starts behind the short line and may only play straight drives. Emphasises movement to the front and back of the court and forces both players into movement solutions they would not otherwise choose from those positions — a direct book-sourced example of asymmetric task constraints creating nested affordances.'},
+  {id:'siege',label:'Siege — Hold the Front',roleA:'defensiveOnly',roleB:'attackAtWill',startA:'none',startB:'none',
+   note:'The defender may only play defensive/neutralising shots; the attacker may attack at any moment of their choosing. Translated from the pickleball Kitchen Attack/Defend game: the constraint is symmetric on one side, free on the other, shifting the psychological framing to attacker-vs-defender roles rather than shared rules. Progressions from the book: attacker backhand-only, then attacker cross-court-only.'},
+  {id:'custom',label:'Custom pairing',roleA:'boastOnly',roleB:'none',startA:'none',startB:'none',
+   note:'Build your own asymmetric pairing below. If a player is producing shots they would never use in a match, that is fine — the process of finding a solution to the problem is what develops adaptable movement solvers (Ch. 12).'}
+];
+function RoleConstraintEngine({setSession}){
+  const [presetId,setPresetId]=useState('boastdrive');
+  const [roleA,setRoleA]=useState('boastOnly');
+  const [roleB,setRoleB]=useState('straightOnly');
+  const [startA,setStartA]=useState('none');
+  const [startB,setStartB]=useState('behindShort');
+  const [swapCadence,setSwapCadence]=useState('game');
+  const [bonusA,setBonusA]=useState('1');
+  const [bonusB,setBonusB]=useState('1');
+  const [added,setAdded]=useState('');
+  const preset=ROLE_CONSTRAINT_PRESETS.find(p=>p.id===presetId);
+  function choosePreset(p){setPresetId(p.id);setRoleA(p.roleA);setRoleB(p.roleB);setStartA(p.startA);setStartB(p.startB);setAdded('');}
+  function setRole(which,id){presetId!=='custom'&&setPresetId('custom');which==='A'?setRoleA(id):setRoleB(id);}
+  function setStart(which,id){presetId!=='custom'&&setPresetId('custom');which==='A'?setStartA(id):setStartB(id);}
+  const rA=ROLE_CONSTRAINT_ROLES.find(r=>r.id===roleA),rB=ROLE_CONSTRAINT_ROLES.find(r=>r.id===roleB);
+  const sA=ROLE_CONSTRAINT_STARTS.find(s=>s.id===startA),sB=ROLE_CONSTRAINT_STARTS.find(s=>s.id===startB);
+  const swapText=swapCadence==='never'?'Roles stay fixed for the block.':swapCadence==='five'?'Swap roles every 5 points.':'Swap roles each game.';
+  function buildTask(){
+    const startNoteA=startA!=='none'?` and must start each rally ${sA.label.toLowerCase()}`:'';
+    const startNoteB=startB!=='none'?` and must start each rally ${sB.label.toLowerCase()}`:'';
+    return `Player A ${rA.rule}${startNoteA}. Player B ${rB.rule}${startNoteB}. A shot outside your role loses the point. ${swapText} Both players are being pushed into movement solutions they would not choose from those positions — that exploration is the point, not a bug.`;
+  }
+  function buildScoring(){
+    const bA=Number(bonusA)||0,bB=Number(bonusB)||0;
+    const lines=[bA>0&&roleA!=='none'?`Player A wins a rally while inside their role = +${bA} on top of the point.`:null,bB>0&&roleB!=='none'?`Player B wins a rally while inside their role = +${bB} on top of the point.`:null].filter(Boolean).join(' ');
+    return `Normal rally scoring. Shot outside your assigned role = point to the opponent, self-officiated. ${lines||'No role bonuses — the constraint itself does the work.'}`;
+  }
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const title=presetId==='custom'?`Role Constraint — ${rA.label} vs ${rB.label}`:`Role Constraint — ${preset.label.split(' (')[0]}`;
+    const card={id:Date.now()+Math.random(),title,category:'Role Constraint',format:'Asymmetric Roles',duration:9,task:buildTask(),
+      rationale:preset.note+' CLA mechanism: assigning each player a different shot-type constraint removes their attractor solutions from those court positions, so alternative movement solutions must self-organise through live, opposed play — repetition without repetition, since the outcome (a legal in-role shot) must be repeated while the movements finding it cannot be. Because each role demands unfamiliar coordination (a boast from everywhere; length from behind the short line), players are also pushed to free frozen degrees of freedom rather than lean on grooved patterns.',
+      coach:'Do not demonstrate the "right" solution for either role — ask each player what their restriction is forcing them to discover. Guided questioning: "What can you do from there that you never normally try?" Swap roles so both players explore both problems.',
+      playerFocus:'Solve YOUR restriction — the shots you are left with are the lesson.',
+      scoring:buildScoring(),layers:['Asymmetric Roles','Space Manipulation','Movement Solutions'],rld:4};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const roleChips=(which,current)=>(<div className="rceChips">{ROLE_CONSTRAINT_ROLES.map(r=><div key={r.id} role="button" tabIndex={0} className={current===r.id?'rceChip on':'rceChip'} onClick={()=>setRole(which,r.id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setRole(which,r.id);}}>{r.label}</div>)}</div>);
+  const startChips=(which,current)=>(<div className="rceChips">{ROLE_CONSTRAINT_STARTS.map(s=><div key={s.id} role="button" tabIndex={0} className={current===s.id?'rceChip on':'rceChip'} onClick={()=>setStart(which,s.id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setStart(which,s.id);}}>{s.label}</div>)}</div>);
+  const bonusChips=(value,setter)=>(<div className="rceChips">{['0','1','2','3'].map(n=><div key={n} role="button" tabIndex={0} className={value===n?'rceChip on':'rceChip'} onClick={()=>setter(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setter(n);}}>+{n}</div>)}</div>);
+  const STYLE=`
+.rceWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #a06bd6;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.rceSection{margin:14px 0;}
+.rceLabel{color:#dcc4f0;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.rceChips{display:flex;flex-wrap:wrap;gap:8px;}
+.rceChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.rceChip.on{border-color:#a06bd6;background:#1d1230;color:#dcc4f0;}
+.rcePresetBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;width:100%;margin-bottom:8px;}
+.rcePresetBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;line-height:1.45;}
+.rcePresetBtn.on{border-color:#a06bd6;background:#1d1230;}
+.rcePlayerBlock{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+.rcePlayerBlock h4{margin:0 0 8px;color:#eaf4fb;font-size:0.95rem;}
+.rceBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.rceBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.rceBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.rceAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.rceAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.rceHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>⚔️ Role Constraint</h2><p>Assign a different shot-type constraint to each player simultaneously — the reusable asymmetric-role engine from the CLA Update. Boast &amp; Drive (Ch. 11) is the flagship; build any attacker/defender pairing from the role registry.</p></div>
+    <div className="rceWrap">
+      <div className="rceSection">
+        <div className="rceLabel">1. Preset</div>
+        {ROLE_CONSTRAINT_PRESETS.map(p=><div key={p.id} role="button" tabIndex={0} className={presetId===p.id?'rcePresetBtn on':'rcePresetBtn'} onClick={()=>choosePreset(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePreset(p);}}>{p.label}<span>{p.note}</span></div>)}
+      </div>
+      <div className="rceSection">
+        <div className="rceLabel">2. Roles &amp; starting positions</div>
+        <div className="rcePlayerBlock"><h4>Player A</h4>{roleChips('A',roleA)}<div className="rceLabel" style={{marginTop:10}}>Start position</div>{startChips('A',startA)}</div>
+        <div className="rcePlayerBlock"><h4>Player B</h4>{roleChips('B',roleB)}<div className="rceLabel" style={{marginTop:10}}>Start position</div>{startChips('B',startB)}</div>
+        <p className="rceHint">Editing a role or start switches the preset to Custom pairing. "Volley whenever possible" is a demanding role — pair it with a lob-only opponent for the classic height-vs-intercept battle.</p>
+      </div>
+      <div className="rceSection">
+        <div className="rceLabel">3. Role swap cadence</div>
+        <div className="rceChips">{[['game','Each game'],['five','Every 5 points'],['never','Fixed for the block']].map(([id,label])=><div key={id} role="button" tabIndex={0} className={swapCadence===id?'rceChip on':'rceChip'} onClick={()=>setSwapCadence(id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSwapCadence(id);}}>{label}</div>)}</div>
+        <p className="rceHint">Both players should explore both problems — asymmetry is the constraint, not a privilege.</p>
+      </div>
+      <div className="rceSection">
+        <div className="rceLabel">4. In-role win bonuses (optional)</div>
+        <div className="rceLabel" style={{color:'#9fb6cf',marginBottom:6}}>Player A wins while inside their role</div>{bonusChips(bonusA,setBonusA)}
+        <div className="rceLabel" style={{color:'#9fb6cf',margin:'10px 0 6px'}}>Player B wins while inside their role</div>{bonusChips(bonusB,setBonusB)}
+        <p className="rceHint">Weight the harder role higher so the risk of the tighter restriction stays worth taking.</p>
+      </div>
+      <div className="rceBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="rceBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalModifierEngine title="Universal Modifiers"/>
+
+      <div className="rceAddRow">
+        <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
+        {added&&<span className="rceAdded">Added: {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── COURT GEOMETRY — DEPTH, HEIGHT & DIRECTION VARIANTS (v535) ───────────────
+// Part C priorities #3 and #6: Deep Bounce fills the genuine depth-zone gap in
+// the constraint library (which is mostly shot-count based); Out-Zone removes a
+// zone where Deep Bounce requires one; Above the Cut maps racquetball's ceiling
+// game onto squash's missing height dimension; Cross-Court Confinement and the
+// Passing Rules tree complete the Ch. 11 variant queue. All rules are
+// self-officiated via the existing floor-zone conventions (zones 3/4 = back).
+const COURT_GEOMETRY_MODES=[
+  {id:'deepbounce',label:'Deep Bounce',emoji:'📏',
+   note:'Every shot must bounce behind the short line (zones 3/4). CLA mechanism: removing every short affordance forces within-skill variability of LENGTH — the same outcome (a deep bounce) repeated from endlessly different positions, heights and pressures, calibrating the information–movement control laws for length under live opposition. Fills the depth-zone gap that front-biased and shot-count games do not reach.'},
+  {id:'outzone',label:'3/4 Court Out-Zone',emoji:'🚫',
+   note:'A chosen strip of the court is removed from play for both players — any first bounce landing there is out. CLA mechanism: deleting a zone reshapes the whole landscape of affordances, and the game becomes a live search for what the remaining court still invites — education of attention to space, not shots. Removes a zone where Deep Bounce requires one; complements rather than duplicates it.'},
+  {id:'abovecut',label:'Above the Cut',emoji:'⬆️',
+   note:'Every shot must strike the front wall above the cut line or the point is lost. Squash has no ceiling — this maps the racquetball Ceiling Ball Game onto the height dimension. CLA mechanism: height is an unexplored axis of most players\u2019 solution space; constraining to it demands open racket faces, high contact points and float — degrees of freedom that low-tin attacking games leave frozen.'},
+  {id:'crossconfine',label:'Cross-Court Confinement',emoji:'✖️',
+   note:'Each player owns one side of the court; every shot must land on the opposite side. CLA mechanism: the direction constraint removes the straight game each player defaults to, inviting the cross-court volleys and wide lobs their attractor patterns never visit — and educating attention to width and angle as tactical variables (the book\u2019s own rationale for the Cross-Court Game, Ch. 11).'},
+  {id:'passingrules',label:'Passing Rules',emoji:'🧭',
+   note:'Shot choice is dictated by a rule tree read from opponent position and ball height — training opponent court position as the specifying variable for shot selection (Ch. 5), not a fixed pattern.'}
+];
+function CourtGeometryModule({setSession}){
+  const [modeId,setModeId]=useState('deepbounce');
+  const [dbProg,setDbProg]=useState('base');
+  const [ozZones,setOzZones]=useState(['3','4']);
+  const [ccSwap,setCcSwap]=useState(true);
+  const [acServesExempt,setAcServesExempt]=useState(false);
+  const [added,setAdded]=useState('');
+  const mode=COURT_GEOMETRY_MODES.find(m=>m.id===modeId);
+  function toggleOzZone(z){setOzZones(prev=>prev.includes(z)?(prev.length>1?prev.filter(x=>x!==z):prev):[...prev,z]);}
+  function buildTask(){
+    if(modeId==='deepbounce'){
+      if(dbProg==='shortvolley')return 'Every shot must bounce behind the short line (zones 3/4) — with one exception: a player who gets in front of their opponent (closer to the front wall) may play a short volley. Rewards taking the T; everything off the bounce must still carry length.';
+      if(dbProg==='secondbounce')return 'The first bounce of a shot may land anywhere, but the second bounce must be behind the short line. Allows a more attacking style and a higher pace of play while still demanding shots that carry — the closest progression to a normal game.';
+      return 'Every shot must bounce behind the short line (zones 3/4). A ball whose first bounce lands in front of the short line is out. Pure length discipline: the whole rally lives in the back court.';
+    }
+    if(modeId==='outzone')return `Checkerboard zone${ozZones.length>1?'s':''} ${ozZones.join('/')} ${ozZones.length>1?'are':'is'} out of play for BOTH players — any first bounce landing there is out and loses the point. Everything else is normal squash. Both players lose the same territory, so the game becomes a search for what the remaining court still affords.`;
+    if(modeId==='abovecut')return `Every shot must strike the front wall ABOVE the cut line${acServesExempt?' (serves exempt — serve normally, then the height rule applies from the return onward)':''}. A ball hitting the front wall below the cut line loses the point. The whole rally is played in the air above head height — lobs, high drives, floated width.`;
+    if(modeId==='crossconfine')return `Each player is confined to one side of the court, and every shot they hit must land on the OPPOSITE side. A ball landing on your own side is out.${ccSwap?' Swap sides each game.':''} Volleys and lobs to the cross become the natural currency — solutions most players never reach for from their own side.`;
+    return 'Shot choice is dictated by a rule tree, read live from opponent position and ball height: (1) ball waist-high or below AND your opponent is in front of you (nearer the front wall) = you must play a cross-court or wide-angle pass. (2) Ball waist-high or below AND you are in front of your opponent = you must play a straight pass down the line. (3) Any ball above waist height = you must lob (above the cut line, landing deep). A shot outside the rule for your situation loses the point. The rule tree makes opponent court position the specifying variable — you cannot choose correctly without reading where they are.';
+  }
+  function buildScoring(){
+    if(modeId==='deepbounce')return dbProg==='secondbounce'?'Normal rally scoring. Second bounce in front of the short line = out, point to the opponent. Self-officiated on the existing floor zones.':'Normal rally scoring. First bounce in front of the short line = out, point to the opponent'+(dbProg==='shortvolley'?' — unless it was a short volley played from in front of the opponent, which is legal':'')+'. Self-officiated on the existing floor zones.';
+    if(modeId==='outzone')return `Normal rally scoring. First bounce in zone${ozZones.length>1?'s':''} ${ozZones.join('/')} = out, point to the opponent. Self-officiated.`;
+    if(modeId==='abovecut')return 'Normal rally scoring. Front-wall contact below the cut line = point to the opponent. The cut line is the tin for this game.';
+    if(modeId==='crossconfine')return 'Normal rally scoring. Ball landing on your own side of the court = out, point to the opponent.';
+    return 'Normal rally scoring. Shot outside the rule tree for your situation = point to the opponent. Players call their own violations; the off-court player can arbitrate opponent-position disputes.';
+  }
+  const coachByMode={
+    deepbounce:'Watch for players discovering the dying length and the high, wide cross that cannot be volleyed — do not name those solutions, let the constraint surface them. If rallies stall, move to the second-bounce progression rather than abandoning the depth demand.',
+    outzone:'Vary WHICH zone is out across blocks — removing the front changes the game completely versus removing a back corner. Ask: "with that zone gone, where does the pressure live now?"',
+    abovecut:'Expect early frustration — the height demand removes most players\u2019 default game. Hold the constraint; the lob and high-drive solutions that emerge are exactly the missing height dimension. Add the serve exemption if the serve itself keeps ending rallies.',
+    crossconfine:'The learning is in the shots players never normally choose — cross-court volleys, wide floated lobs. Ask after: "which of those would survive in a real match?" (Ch. 12: shots they would never use in a match are still fine — the solution-finding is the training.)',
+    passingrules:'Do not pre-teach the tree beyond reading it out once — the rule forces the read of opponent position, and mistakes ARE the education of attention. Ask after violations: "where was your opponent when you chose that?"'
+  };
+  const focusByMode={deepbounce:'Everything carries — nothing dies short.',outzone:'Find what the remaining court still affords.',abovecut:'Live above the cut — height is the weapon.',crossconfine:'Own your side, attack theirs.',passingrules:'Read where they are — the rule follows their position.'};
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const titleSuffix=modeId==='deepbounce'?(dbProg==='base'?'':dbProg==='shortvolley'?' — Short Volley Progression':' — Second Bounce Progression'):modeId==='outzone'?` — Zone${ozZones.length>1?'s':''} ${ozZones.join('/')}`:'';
+    const card={id:Date.now()+Math.random(),title:`Court Geometry — ${mode.label}${titleSuffix}`,category:'Court Geometry',format:'Geometry Constraint',duration:9,task:buildTask(),
+      rationale:mode.note+' All five geometry variants are book-sourced (Ch. 11) and self-officiate on the existing zone conventions. Shared CLA logic: each variant is a task constraint that reshapes the court\u2019s affordance landscape, so movement solutions must reorganise around it through live, opposed play — problems to solve, never solutions to copy.',
+      coach:coachByMode[modeId],playerFocus:focusByMode[modeId],scoring:buildScoring(),
+      layers:modeId==='abovecut'?['Height Constraint','Space Manipulation']:modeId==='passingrules'?['Opponent Reading','Decision Making']:['Space Manipulation','Movement Solutions'],rld:modeId==='passingrules'?4:3};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(card.title);
+  }
+  const STYLE=`
+.cgWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E8B9E;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.cgSection{margin:14px 0;}
+.cgLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.cgChips{display:flex;flex-wrap:wrap;gap:8px;}
+.cgChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.cgChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.cgModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;width:100%;margin-bottom:8px;}
+.cgModeBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;line-height:1.45;}
+.cgModeBtn.on{border-color:#34e07a;background:#0c2418;}
+.cgZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;}
+.cgZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 4px;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;font-size:0.78rem;}
+.cgZoneBtn.on{border-color:#e05a5a;background:#2a1414;color:#f0c4c4;}
+.cgBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
+.cgBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.cgBox p{margin:0;color:#dbe6f2;line-height:1.45;}
+.cgAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
+.cgAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cgHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
+  return <div>
+    <style>{STYLE}</style>
+    <div className="libraryStageIntro"><h2>📐 Court Geometry</h2><p>Depth, height and direction variants from the CLA Update (Ch. 11) — five book-sourced ways to reshape the court so new movement solutions have to emerge. All self-officiated on the existing zone conventions.</p></div>
+    <div className="cgWrap">
+      <div className="cgSection">
+        <div className="cgLabel">1. Mode</div>
+        {COURT_GEOMETRY_MODES.map(m=><div key={m.id} role="button" tabIndex={0} className={modeId===m.id?'cgModeBtn on':'cgModeBtn'} onClick={()=>{setModeId(m.id);setAdded('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setModeId(m.id);setAdded('');}}}>{m.emoji} {m.label}<span>{m.note}</span></div>)}
+      </div>
+      {modeId==='deepbounce'&&<div className="cgSection">
+        <div className="cgLabel">2. Progression</div>
+        <div className="cgChips">{[['base','Base — every bounce deep'],['shortvolley','Option 1 — short volley if in front'],['secondbounce','Option 2 — second bounce deep']].map(([id,label])=><div key={id} role="button" tabIndex={0} className={dbProg===id?'cgChip on':'cgChip'} onClick={()=>setDbProg(id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDbProg(id);}}>{label}</div>)}</div>
+        <p className="cgHint">Book progressions verbatim: Option 1 rewards getting in front of the opponent; Option 2 restores attacking pace and gets closest to a normal game.</p>
+      </div>}
+      {modeId==='outzone'&&<div className="cgSection">
+        <div className="cgLabel">2. Out zone(s)</div>
+        <div className="cgZoneGrid">{['1','2','3','4'].map(z=><div key={z} role="button" tabIndex={0} className={ozZones.includes(z)?'cgZoneBtn on':'cgZoneBtn'} onClick={()=>toggleOzZone(z)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')toggleOzZone(z);}}>{z}<br/>{BREAKOUT_ZONE_DESC[z]}</div>)}</div>
+        <p className="cgHint">At least one zone stays out. Zones 3/4 = the classic back-strip removal; try removing a single front corner to relocate all short pressure to one side.</p>
+      </div>}
+      {modeId==='abovecut'&&<div className="cgSection">
+        <div className="cgLabel">2. Serve handling</div>
+        <div role="button" tabIndex={0} className={acServesExempt?'cgChip on':'cgChip'} onClick={()=>setAcServesExempt(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAcServesExempt(v=>!v);}} style={{display:'inline-block'}}>{acServesExempt?'\u2713 ':''}Serves exempt from the height rule</div>
+        <p className="cgHint">Exempt serves if the height demand on the serve itself keeps killing rallies before they start.</p>
+      </div>}
+      {modeId==='crossconfine'&&<div className="cgSection">
+        <div className="cgLabel">2. Side swap</div>
+        <div role="button" tabIndex={0} className={ccSwap?'cgChip on':'cgChip'} onClick={()=>setCcSwap(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setCcSwap(v=>!v);}} style={{display:'inline-block'}}>{ccSwap?'\u2713 ':''}Swap sides each game</div>
+        <p className="cgHint">Both players should solve the problem from both wings — forehand-side and backhand-side cross games are different animals.</p>
+      </div>}
+      <div className="cgBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="cgBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+
+      <UniversalModifierEngine title="Universal Modifiers"/>
+
+      <div className="cgAddRow">
+        <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
+        {added&&<span className="cgAdded">Added: {added}</span>}
       </div>
     </div>
   </div>;
@@ -13696,6 +14319,9 @@ function Games({setSession,setScreen,onClassChange}){
     {id:'breakout',label:'Breakout Squash',category:'Breakout Squash'},
     {id:'presscall',label:'Press Call',category:'Press Call'},
     {id:'hangman',label:'Hangman Squash',category:'Hangman Squash'},
+    {id:'claupdate',label:'CLA Update — New Games',category:'CLA Update'},
+    {id:'roleconstraint',label:'Role Constraint',category:'Role Constraint'},
+    {id:'courtgeometry',label:'Court Geometry',category:'Court Geometry'},
     {id:'custom',label:'Game Builder',category:'Custom'},
     {id:'saved',label:'Saved Cards',category:'Saved Cards'}
   ];
@@ -13705,6 +14331,7 @@ function Games({setSession,setScreen,onClassChange}){
     {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','fusion','tinwar','doubleBounce','tacticalpressure','shotbonus']},
     {title:'Play & Score — Formats',emoji:'🎲',ids:['snakesladders','ludosquash','noughtscrosses','blindtarget','hangman']},
     {title:'Perception & Decision',emoji:'👁️',ids:['information','tacticalIntentions','presscall']},
+    {title:'CLA Update — Book Builds',emoji:'📚',ids:['claupdate','roleconstraint','courtgeometry']},
     {title:'Technique, Phases & Movement',emoji:'🎾',ids:['technical','serveReturn','classic','classicconstraint','powerplay','rotations']},
     {title:'Coach Tools',emoji:'🛠️',ids:['errors','custom','saved']}
   ];
@@ -13831,11 +14458,14 @@ function Games({setSession,setScreen,onClassChange}){
     {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
     {activeClassId==='breakout'&&<BreakoutSquash setSession={setSession}/>}
     {activeClassId==='presscall'&&<PressCallModule setSession={setSession}/>}
+    {activeClassId==='claupdate'&&<CLAUpdateGames setSession={setSession}/>}
+    {activeClassId==='roleconstraint'&&<RoleConstraintEngine setSession={setSession}/>}
+    {activeClassId==='courtgeometry'&&<CourtGeometryModule setSession={setSession}/>}
     {activeClassId==='hangman'&&<HangmanSquashGame key="hangman-engine" setSession={setSession} setScreen={setScreen}/>}
 
     {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
 
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','classicconstraint','length','shotclock','fusion','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved'].includes(activeClassId)&&
+    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','claupdate','roleconstraint','courtgeometry','classicconstraint','length','shotclock','fusion','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved'].includes(activeClassId)&&
       <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
     }
 
@@ -19546,7 +20176,23 @@ const SEARCH_DESTINATIONS=[
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
   {label:'Competition',sub:'King of court & formats',kw:'competition king court tournament invasion',screen:'competition'},
-  {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level',screen:'rld'},
+  {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level six questions fidelity krause',screen:'rld'},
+  {label:'CLA Update — New Games',sub:'McBroom & Gray book builds',kw:'cla update book builds mcbroom gray new games',screen:'games',classId:'claupdate'},
+  {label:'Depth Cap',sub:'CLA Update · back-quarter denial',kw:'depth cap back quarter zone constraint asymmetric nadal federer court asymmetry',screen:'games',classId:'claupdate'},
+  {label:'Attack Straight',sub:'CLA Update · release decision',kw:'attack straight down the line cross court release direction change',screen:'games',classId:'claupdate'},
+  {label:'Serve for Advantage',sub:'CLA Update · nested chain',kw:'serve advantage forced boast chain nested affordance two serves',screen:'games',classId:'claupdate'},
+  {label:'Deep Touch',sub:'CLA Update · build from deep',kw:'deep touch front court constraint deception disguise finer touch',screen:'games',classId:'claupdate'},
+  {label:'Action Boundary',sub:'CLA Update · coach-led affordance read',kw:'action boundary short ball affordance read coach drill',screen:'games',classId:'claupdate'},
+  {label:'Analogy Library',sub:'External-focus cues per shot',kw:'analogy library external focus cue rainbow bucket water invariant degeneracy',screen:'analogies'},
+  {label:'Role Constraint',sub:'CLA Update · asymmetric-role engine',kw:'role constraint asymmetric boast drive siege hold the front attacker defender pairing',screen:'games',classId:'roleconstraint'},
+  {label:'Boast & Drive',sub:'Role Constraint · book preset',kw:'boast drive asymmetric role two walls straight behind short line',screen:'games',classId:'roleconstraint'},
+  {label:'Siege — Hold the Front',sub:'Role Constraint · attack vs defend',kw:'siege hold the front kitchen attack defend neutralise defensive',screen:'games',classId:'roleconstraint'},
+  {label:'Court Geometry',sub:'CLA Update · depth height direction variants',kw:'court geometry depth height variants ch11',screen:'games',classId:'courtgeometry'},
+  {label:'Deep Bounce',sub:'Court Geometry · length discipline',kw:'deep bounce depth discipline behind short line length second bounce',screen:'games',classId:'courtgeometry'},
+  {label:'Above the Cut',sub:'Court Geometry · height constraint',kw:'above the cut height lob high drive ceiling ball',screen:'games',classId:'courtgeometry'},
+  {label:'Cross-Court Confinement',sub:'Court Geometry · direction constraint',kw:'cross court confinement opposite side confined',screen:'games',classId:'courtgeometry'},
+  {label:'3/4 Court Out-Zone',sub:'Court Geometry · zone removal',kw:'out zone three quarter court removed strip taped',screen:'games',classId:'courtgeometry'},
+  {label:'Passing Rules',sub:'Court Geometry · position rule tree',kw:'passing rules position height rule tree opponent reading pass lob',screen:'games',classId:'courtgeometry'},
   {label:'Blind Target Score',sub:'Poker psychology · Raise & Fold',kw:'poker blind target raise fold bluff pressure',screen:'blindTargetScore'},
   {label:'Serve & Return',sub:'Serve · return · first 3 shots · read & react',kw:'serve return first three shots third ball read react quiet eye split step deep width jam deception',screen:'serveReturn'},
   {label:'Bucket Lob',sub:'Learn the lob with no instruction',kw:'lob bucket guards high cross lob defensive trajectory back corner',screen:'bucketLob'},
@@ -23580,6 +24226,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
 {screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
 {screen==='differential'&&<DifferentialLearning setScreen={go} setSession={setSession}/>}
+{screen==='analogies'&&<AnalogyLibraryScreen setScreen={go}/>}
 {screen==='ghosting'&&<GhostingModule setScreen={go}/>}
 {screen==='rallyBand'&&<RallyBandModule setScreen={go}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
