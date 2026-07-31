@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v531 Repeat-Sprint + Anticipation overlays. Ghosting now has two modes — Rally-Band Ghosting and Repeat-Sprint (Wilkinson 2012: 10 explosive multidirectional efforts, 20s recovery) — both carrying the same visualise + produce-the-shot RLD scaffolds. Added an Anticipation cluster to the Tactical overlays (Early Ball Pick-Up, Move Before The Bounce, Split On Their Contact, Take It Early) — the practical, occlusion-free way to train early reading. Builds on v530.';
+const APP_VERSION='v533 Occlusion Read demo mode. Added a Demo mode script to OCCLUSION READ (Perception module) — the one-off awareness demonstration: occlude at contact, player commits with the feet, reveal, discuss how much was read before ball flight. Sits above the tallied training. Carries v532 early-pickup progression. Builds on v532.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1926,10 +1926,10 @@ const TACTICAL_OVERLAYS = [
   {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
   {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
   {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']},
-  {category:'Anticipation', title:'Early Ball Pick-Up', rule:'Player reads the opponent’s racket and body before contact and picks the ball up early, so movement can start sooner.', coach:'The read replaces the reach — reward an earlier first movement, not a later scramble. (This is the practical, on-court way to train what an occlusion drill aims at.)', pairings:['Move Before The Bounce','Split On Their Contact','Take It Early']},
-  {category:'Anticipation', title:'Move Before The Bounce', rule:'First movement must begin off the opponent’s strike — before it is obvious where the ball is going — rather than waiting to be sure.', coach:'Watch for a positive first step at the opponent’s contact, not after the bounce.', pairings:['Early Ball Pick-Up','Split On Their Contact']},
-  {category:'Anticipation', title:'Split On Their Contact', rule:'Land the split-step as the opponent strikes, so the legs are loaded to push off in any direction.', coach:'Times perception to first movement — the flat-footed start disappears.', pairings:['Early Ball Pick-Up','Move Before The Bounce']},
-  {category:'Anticipation', title:'Take It Early', rule:'Player looks to take the ball at the earliest sensible contact point rather than letting it travel to the back — buying time back off the opponent.', coach:'Rewards reading and stepping in; the less-time modern game in one constraint.', pairings:['Volley Before Short Line','Early Ball Pick-Up']}
+  {category:'Anticipation', title:'Pickup 1 · Before the Bounce', rule:'The player’s first movement to the ball must begin before it bounces on their side of the court.', coach:'Easiest tier of the early-information-pickup progression: commit before the bounce, not after it. Watch for movement started while the ball is still in the air.', pairings:['Pickup 2 · Before the Front Wall','Tracking']},
+  {category:'Anticipation', title:'Pickup 2 · Before the Front Wall', rule:'The player must read the shot and start moving before the opponent’s ball reaches the front wall.', coach:'Tier 2: the read comes off ball flight earlier in its path. The player is moving while the ball is still travelling forward.', pairings:['Pickup 1 · Before the Bounce','Pickup 3 · On Contact']},
+  {category:'Anticipation', title:'Pickup 3 · On Contact', rule:'The player’s split-step / first movement is timed to the moment the opponent strikes the ball.', coach:'Tier 3: perception is coupled to the opponent’s contact — the classic split-step timing. The flat-footed start disappears.', pairings:['Pickup 2 · Before the Front Wall','Pickup 4 · Before Contact']},
+  {category:'Anticipation', title:'Pickup 4 · Before Contact', rule:'The player anticipates from the opponent’s preparation — racket, shoulders, balance, court position — and begins to commit before the opponent strikes.', coach:'Hardest tier: reading the shape before contact. Only reward it when the anticipation is information-led, not a blind guess.', pairings:['Pickup 3 · On Contact','Opponent Reading']}
 ];
 
 const MENTAL_PERFORMANCE_OVERLAYS = [
@@ -4446,7 +4446,19 @@ function OcclusionReadTool(){
 .ocrAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}`;
   return <div className="perceptionOcclusionRead">
     <style>{STYLE}</style>
-    <div className="libraryStageIntro"><h2>OCCLUSION READ™</h2><p>Goggles control the actual occlusion — set the cut point on the goggles' own app first. This tool is just for judging and tallying the player's movement response, and logging the cut point reached.</p></div>
+    <div className="libraryStageIntro"><h2>OCCLUSION READ™</h2><p>Electronically-controlled occlusion goggles (driven from their own phone app) cut the player's vision at a chosen point in the rally — set the cut point there first. This tool is for judging and tallying the player's movement response and logging the cut point reached.</p></div>
+    <details className="ocrDemoPanel" style={{margin:'0 0 14px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'12px',padding:'12px 14px'}}>
+      <summary style={{cursor:'pointer',fontWeight:800,color:'#9cc4ec',listStyle:'none'}}>👁️ Demo mode — the awareness demonstration (tap to open)</summary>
+      <p className="mutedText" style={{margin:'8px 0'}}>Use this as a one-off eye-opener before any tallied training — to show a player how much they can already read <em>before</em> the ball, from the opponent alone.</p>
+      <ol style={{margin:'8px 0 4px 18px',color:'#cfe0ee',lineHeight:1.5}}>
+        <li>Set the goggles to occlude <strong>at (or just before) the opponent's contact</strong> from the phone app.</li>
+        <li>Feed / play a shot. The player's vision cuts at contact — they see the preparation, not the ball flight.</li>
+        <li>The player <strong>commits with their feet</strong> — moves in the direction they believe the ball will finish. No talking, movement only.</li>
+        <li>Restore vision immediately and let them <strong>see where the ball actually went</strong>.</li>
+        <li>Ask: “How did you know? What did you see before the ball?” Let them discover it was the opponent's racket, shoulders, balance and position.</li>
+      </ol>
+      <p className="mutedText" style={{margin:'6px 0 0'}}>The point is the realisation, not a score — players are usually surprised how often they’re right with no ball flight at all. Then switch to the tally below to train it, moving the cut point earlier as they cope. Pair with the Tactical <strong>Pickup 1–4</strong> progression.</p>
+    </details>
     <div className="ocrWrap">
       <div className="ocrSection">
         <div className="ocrLabel">1. Player</div>
