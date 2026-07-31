@@ -218,7 +218,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v529 Ghosting in Unopposed Practice. The Ghosting module now also opens from inside the Unopposed Practice module (its natural home), as well as the More Stuff tile. Carries the v528 Ghosting engine (rally-band 5:10:4:1 blocks for Rox, RLD 1-2, visualise + produce-the-shot) and the PETTLEP imagery guide in Mental Performance. Builds on v528.';
+const APP_VERSION='v531 Repeat-Sprint + Anticipation overlays. Ghosting now has two modes — Rally-Band Ghosting and Repeat-Sprint (Wilkinson 2012: 10 explosive multidirectional efforts, 20s recovery) — both carrying the same visualise + produce-the-shot RLD scaffolds. Added an Anticipation cluster to the Tactical overlays (Early Ball Pick-Up, Move Before The Bounce, Split On Their Contact, Take It Early) — the practical, occlusion-free way to train early reading. Builds on v530.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -1925,7 +1925,11 @@ const TACTICAL_OVERLAYS = [
   {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'A crosscourt only counts if it makes the opponent move more than 1 step \u2014 rather than being played by default or out of habit.', coach:'Ask: did that crosscourt move them more than a step? If not, it was non-functional.', pairings:['Route Breaker','Attack Only On Advantage']},
   {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
   {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
-  {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']}
+  {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']},
+  {category:'Anticipation', title:'Early Ball Pick-Up', rule:'Player reads the opponent’s racket and body before contact and picks the ball up early, so movement can start sooner.', coach:'The read replaces the reach — reward an earlier first movement, not a later scramble. (This is the practical, on-court way to train what an occlusion drill aims at.)', pairings:['Move Before The Bounce','Split On Their Contact','Take It Early']},
+  {category:'Anticipation', title:'Move Before The Bounce', rule:'First movement must begin off the opponent’s strike — before it is obvious where the ball is going — rather than waiting to be sure.', coach:'Watch for a positive first step at the opponent’s contact, not after the bounce.', pairings:['Early Ball Pick-Up','Split On Their Contact']},
+  {category:'Anticipation', title:'Split On Their Contact', rule:'Land the split-step as the opponent strikes, so the legs are loaded to push off in any direction.', coach:'Times perception to first movement — the flat-footed start disappears.', pairings:['Early Ball Pick-Up','Move Before The Bounce']},
+  {category:'Anticipation', title:'Take It Early', rule:'Player looks to take the ball at the earliest sensible contact point rather than letting it travel to the back — buying time back off the opponent.', coach:'Rewards reading and stepping in; the less-time modern game in one constraint.', pairings:['Volley Before Short Line','Early Ball Pick-Up']}
 ];
 
 const MENTAL_PERFORMANCE_OVERLAYS = [
@@ -2014,7 +2018,8 @@ const GHOST_BLOCKS={
   short:{label:'SHORT',dur:7,restAfter:5,pool:['1','2','1','2','3','4']},
   medium:{label:'MEDIUM',dur:23,restAfter:14,pool:['1','2','3','4','3','4']},
   long:{label:'LONG',dur:47,restAfter:14,pool:['3','4','3','4','1','2','3','4']},
-  very:{label:'VERY LONG',dur:160,restAfter:14,pool:['3','4','3','4','3','4','1','2']}
+  very:{label:'VERY LONG',dur:160,restAfter:14,pool:['3','4','3','4','3','4','1','2']},
+  sprint:{label:'SPRINT',dur:8,restAfter:20,pool:['1','2','3','4']}
 };
 const GHOST_SESSIONS={
   'Short (~9 min)':{short:4,medium:7,long:3,very:1},
@@ -2022,6 +2027,15 @@ const GHOST_SESSIONS={
   'Long (~24 min)':{short:9,medium:18,long:8,very:1},
   'Very Long (~32 min)':{short:12,medium:24,long:9,very:2}
 };
+
+// ── RALLY BAND — land the rally duration in the assigned band (Murray 2016) ────
+const RALLY_BANDS=[
+  {key:'short',label:'SHORT',min:0,max:12,color:'#f5c451',cue:'Resolve it fast — attack early and force a quick finish.'},
+  {key:'medium',label:'MEDIUM',min:13,max:30,color:'#7fe8bf',cue:'Build, then strike — a normal working rally.'},
+  {key:'long',label:'LONG',min:31,max:60,color:'#6db3e6',cue:'Sustain — construct patiently and deny the opening.'},
+  {key:'very',label:'VERY LONG',min:61,max:99999,color:'#c58ff0',cue:'Grind — stay disciplined and outlast them.'}
+];
+const RALLY_BAND_WEIGHTS={short:5,medium:10,long:4,very:1};
 
 // ── COACH CUSTOM CONSTRAINT LIBRARY ──────────────────────────────────────────
 // Design principle: coaches can add their own constraints and make them permanent.
@@ -4996,8 +5010,64 @@ function CustomConstraintLibrary({setScreen}){
   </div>;
 }
 
+function RallyBandModule({setScreen}){
+  const [band,setBand]=useState(null);
+  const [timing,setTiming]=useState(false);
+  const [startTs,setStartTs]=useState(0);
+  const [now,setNow]=useState(0);
+  const [result,setResult]=useState(null);
+  const [tally,setTally]=useState({inBand:0,total:0});
+  const [activeKeys,setActiveKeys]=useState({short:true,medium:true,long:true,very:true});
+  useEffect(()=>{if(!timing)return;const id=setInterval(()=>setNow(Date.now()),200);return ()=>clearInterval(id);},[timing]);
+  function pickBand(){
+    const pool=[];RALLY_BANDS.forEach(b=>{if(activeKeys[b.key]){for(let i=0;i<(RALLY_BAND_WEIGHTS[b.key]||1);i++)pool.push(b);}});
+    if(!pool.length)return RALLY_BANDS[1];
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function newRally(){scUnlock();const b=pickBand();setBand(b);setResult(null);setStartTs(Date.now());setNow(Date.now());setTiming(true);}
+  function rallyOver(){
+    const dur=Math.round((Date.now()-startTs)/1000);
+    const inBand=dur>=band.min&&dur<=band.max;
+    setTiming(false);
+    setResult({dur,inBand,verdict:inBand?'IN BAND':(dur<band.min?'TOO SHORT':'TOO LONG')});
+    setTally(t=>({inBand:t.inBand+(inBand?1:0),total:t.total+1}));
+    scBeep(inBand?2:1);
+  }
+  function reset(){setBand(null);setResult(null);setTiming(false);setTally({inBand:0,total:0});}
+  const elapsed=timing?Math.round((now-startTs)/1000):0;
+  const running=timing||result;
+  return <div className="playerDisplayPage">
+    <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button>{tally.total>0&&<button className="secondaryBtn" onClick={reset}>Reset tally</button>}</div>
+    {!running?<div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
+      <div className="categoryTag">Rally Band</div>
+      <h2>Rally Band 🎯⏱️</h2>
+      <div className="claRationaleBox"><h2>Land the rally in its band</h2><p>Each rally the app deals a target <strong>duration band</strong> — short, medium, long or very long — drawn in the real post-rule-change frequency of the modern game (5 : 10 : 4 : 1; Murray et al., 2016). The rally must <strong>end inside the assigned band</strong>: short rewards quick resolution, long rewards sustained construction. It trains deliberate control of tempo — reading when to accelerate a rally and when to hold it — instead of playing every rally the same way. No verbal call: the clock judges.</p></div>
+      <div style={{margin:'10px 0'}}><strong style={{color:'#8fb2cf'}}>Bands in play</strong>
+        <div style={{display:'flex',flexWrap:'wrap',gap:'8px',marginTop:'8px'}}>{RALLY_BANDS.map(b=><button key={b.key} type="button" onClick={()=>setActiveKeys(a=>({...a,[b.key]:!a[b.key]}))} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid '+(activeKeys[b.key]?b.color:'#2c3c4e'),background:activeKeys[b.key]?'#12263b':'#0d1620',color:activeKeys[b.key]?'#eaf4fb':'#6f8296',fontWeight:700}}>{b.label} {b.min}–{b.max>9000?'∞':b.max}s</button>)}</div>
+      </div>
+      <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}><button type="button" className="primaryBtn" onClick={newRally}>▶ Deal a rally band</button></div>
+    </div>:<div style={{textAlign:'center',padding:'12px'}}>
+      <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>TARGET BAND · IN BAND {tally.inBand}/{tally.total}</div>
+      <div style={{fontSize:'clamp(2.4rem,12vw,5rem)',fontWeight:900,color:band.color,margin:'6px 0 0'}}>{band.label}</div>
+      <div style={{fontSize:'1.2rem',color:'#cfe0ee'}}>{band.min}–{band.max>9000?'∞':band.max} seconds</div>
+      {timing&&<>
+        <div style={{fontSize:'clamp(4rem,24vw,13rem)',fontWeight:900,lineHeight:1,color:elapsed>band.max?'#ff7a7a':band.color,margin:'8px 0'}}>{elapsed}s</div>
+        <div style={{fontSize:'1.05rem',color:'#cfe0ee',marginBottom:'12px'}}>{band.cue}</div>
+        <button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={rallyOver}>■ Rally over</button>
+      </>}
+      {result&&<>
+        <div style={{fontSize:'clamp(3rem,18vw,9rem)',fontWeight:900,lineHeight:1,color:result.inBand?'#7fe8bf':'#ff7a7a',margin:'8px 0'}}>{result.inBand?'✓':'✗'}</div>
+        <div style={{fontSize:'1.6rem',fontWeight:800,color:result.inBand?'#7fe8bf':'#ff7a7a'}}>{result.verdict}</div>
+        <div style={{fontSize:'1.1rem',color:'#cfe0ee',marginTop:'6px'}}>Rally lasted {result.dur}s · target {band.min}–{band.max>9000?'∞':band.max}s</div>
+        <div className="buttonRow sessionActionButtons" style={{marginTop:'14px',justifyContent:'center'}}><button type="button" className="primaryBtn" onClick={newRally}>▶ Next rally</button></div>
+      </>}
+    </div>}
+  </div>;
+}
+
 function GhostingModule({setScreen}){
   const [size,setSize]=useState('Medium (~16 min)');
+  const [mode,setMode]=useState('rally');
   const [running,setRunning]=useState(false);
   const m=useRef({seq:[],idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0});
   const [,force]=useState(0);const rr=()=>force(x=>x+1);
@@ -5014,40 +5084,50 @@ function GhostingModule({setScreen}){
     else if(s.phase==='rest'){s.idx+=1;if(s.idx>=s.seq.length){s.phase='done';s.remaining=0;setRunning(false);scBeep(3);}else{startBlockWork();}}
     rr();
   }
-  function start(){scUnlock();const seq=buildSeq(GHOST_SESSIONS[size]);m.current={seq,idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0};m.current.idx=0;setRunning(true);startBlockWork();rr();}
+  function start(){scUnlock();const seq=mode==='sprint'?Array(10).fill('sprint'):buildSeq(GHOST_SESSIONS[size]);m.current={seq,idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0};m.current.idx=0;setRunning(true);startBlockWork();rr();}
   function stop(){m.current={seq:[],idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0};setRunning(false);rr();}
   const s=m.current;const live=s.phase!=='idle';
   const blk=live&&s.seq[s.idx]?GHOST_BLOCKS[s.seq[s.idx]]:null;
   const counts=GHOST_SESSIONS[size];
+  const sprintMode=s.seq[s.idx]==='sprint';
   if(live){
     let label='',color='#7fe8bf',big='';
     if(s.phase==='done'){label='SESSION DONE';color='#7fe8bf';big='✓';}
-    else if(s.phase==='rest'){label='REST';color='#6db3e6';big=String(s.remaining);}
-    else{label=(blk?blk.label:'')+' RALLY';color='#7fe8bf';big=s.zone;}
+    else if(s.phase==='rest'){label=sprintMode?'RECOVER':'REST';color='#6db3e6';big=String(s.remaining);}
+    else{label=sprintMode?'SPRINT':(blk?blk.label:'')+' RALLY';color=sprintMode?'#f5c451':'#7fe8bf';big=s.zone;}
     return <div className="playerDisplayPage">
       <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={stop}>■ Stop</button></div>
       <div style={{textAlign:'center',padding:'10px'}}>
-        <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>BLOCK {Math.min(s.idx+1,s.seq.length)} / {s.seq.length} · {s.phase==='rest'?'REST':(blk?blk.label:'')}</div>
+        <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>{sprintMode?'EFFORT':'BLOCK'} {Math.min(s.idx+1,s.seq.length)} / {s.seq.length} · {s.phase==='rest'?(sprintMode?'RECOVER':'REST'):(blk?blk.label:'')}</div>
         <div style={{fontSize:'clamp(5rem,34vw,18rem)',fontWeight:900,lineHeight:1,color:color,margin:'6px 0'}}>{big}</div>
         <div style={{fontSize:'clamp(1.2rem,5vw,2.2rem)',fontWeight:800,color:color,letterSpacing:'.04em'}}>{label}</div>
-        {s.phase==='work'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px',maxWidth:'560px',marginLeft:'auto',marginRight:'auto'}}>Move to zone <strong>{s.zone}</strong> · <strong>see the ball</strong> into it · play the shot · recover to the T. <em>Visualise a real opponent — real speed.</em></div>}
-        {s.phase==='rest'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px'}}>Walk back, breathe, and picture the next rally before it starts.</div>}
-        {s.phase==='work'&&<div style={{marginTop:'6px',color:'#8fb2cf'}}>Rally clock: {s.remaining}s</div>}
+        {s.phase==='work'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px',maxWidth:'560px',marginLeft:'auto',marginRight:'auto'}}>{sprintMode?<><strong>Explode</strong> to zone <strong>{s.zone}</strong> — chase the imagined ball, play the shot, recover to the T. <em>Maximum effort — real speed.</em></>:<>Move to zone <strong>{s.zone}</strong> · <strong>see the ball</strong> into it · play the shot · recover to the T. <em>Visualise a real opponent — real speed.</em></>}</div>}
+        {s.phase==='rest'&&<div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'10px'}}>{sprintMode?'20s recovery — stay loose, breathe, and picture the next effort.':'Walk back, breathe, and picture the next rally before it starts.'}</div>}
+        {s.phase==='work'&&<div style={{marginTop:'6px',color:'#8fb2cf'}}>{sprintMode?'Effort':'Rally'} clock: {s.remaining}s</div>}
       </div>
     </div>;
   }
   return <div className="page">
-    <div className="pageTop"><div><h1>Ghosting</h1><p className="mutedText">Rally-band movement blocks · for your Rox / lights · RLD 1–2</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>Ghosting</h1><p className="mutedText">Unopposed movement · for your Rox / lights · RLD 1–2</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button></div>
     <div className="gameCard">
-      <div className="claRationaleBox"><h2>Honest about RLD</h2><p>Ghosting is a <strong>movement and conditioning tool</strong>, not a game-reading one — with no ball or opponent it sits low on the RLD scale (1–2). This module makes it the least-un-CLA version possible: the blocks reproduce the <strong>real rally-length profile</strong> of the modern game (Murray et al., 2016) in a 5 : 10 : 4 : 1 short : medium : long : very-long mix, the called zone is <strong>never fully predictable</strong> (repetition without repetition), and every rep carries a <strong>visualise + produce-the-shot</strong> prompt so the movement stays coupled to imagined game information. Programme the same blocks into your Rox; use this as the shared clock and cue.</p></div>
-      <div className="infoBox" style={{marginTop:'8px'}}><strong>Tip:</strong> pair with the Mental Performance → Imagery (PETTLEP) guide — physical stance, real environment, real timing — to keep the visualisation functional.</div>
-      <label className="fw" style={{display:'block',margin:'12px 0',fontWeight:600,color:'#cfe0ee'}}>Session length<select value={size} onChange={e=>setSize(e.target.value)} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}>{Object.keys(GHOST_SESSIONS).map(k=><option key={k}>{k}</option>)}</select></label>
-      <div style={{display:'flex',flexWrap:'wrap',gap:'8px',margin:'8px 0'}}>
-        {[['SHORT',counts.short,'7s · front-biased'],['MEDIUM',counts.medium,'23s'],['LONG',counts.long,'47s · back-biased'],['VERY LONG',counts.very,'160s · deep back']].map(b=><div key={b[0]} style={{flex:'1 1 130px',padding:'10px 12px',borderRadius:'10px',background:'#0d1620',border:'1px solid #2c3c4e'}}><div style={{fontWeight:800,color:'#eaf4fb'}}>{b[0]} × {b[1]}</div><div className="mutedText" style={{fontSize:'12px'}}>{b[2]}</div></div>)}
+      <div className="scopeRow" style={{display:'flex',gap:'10px',marginBottom:'12px'}}>
+        <button type="button" className={mode==='rally'?'primaryBtn':'secondaryBtn'} style={{flex:1}} onClick={()=>setMode('rally')}>🎾 Rally-Band Ghosting</button>
+        <button type="button" className={mode==='sprint'?'primaryBtn':'secondaryBtn'} style={{flex:1}} onClick={()=>setMode('sprint')}>⚡ Repeat-Sprint</button>
       </div>
-      <p className="mutedText" style={{fontSize:'12px'}}>Rests: 14s between blocks, 5s after a short block. Zone numbers: 1 front-left · 2 front-right · 3 back-right · 4 back-left. The app calls a fresh zone roughly every 2s, sampled from that block’s bias (front for short, back for long).</p>
+      {mode==='rally'?<>
+        <div className="claRationaleBox"><h2>Honest about RLD</h2><p>Ghosting is a <strong>movement and conditioning tool</strong>, not a game-reading one — with no ball or opponent it sits low on the RLD scale (1–2). This module makes it the least-un-CLA version possible: the blocks reproduce the <strong>real rally-length profile</strong> of the modern game (Murray et al., 2016) in a 5 : 10 : 4 : 1 short : medium : long : very-long mix, the called zone is <strong>never fully predictable</strong> (repetition without repetition), and every rep carries a <strong>visualise + produce-the-shot</strong> prompt so the movement stays coupled to imagined game information. Programme the same blocks into your Rox; use this as the shared clock and cue.</p></div>
+        <div className="infoBox" style={{marginTop:'8px'}}><strong>Tip:</strong> pair with the Mental Performance → Imagery (PETTLEP) guide — physical stance, real environment, real timing — to keep the visualisation functional.</div>
+        <label className="fw" style={{display:'block',margin:'12px 0',fontWeight:600,color:'#cfe0ee'}}>Session length<select value={size} onChange={e=>setSize(e.target.value)} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}>{Object.keys(GHOST_SESSIONS).map(k=><option key={k}>{k}</option>)}</select></label>
+        <div style={{display:'flex',flexWrap:'wrap',gap:'8px',margin:'8px 0'}}>
+          {[['SHORT',counts.short,'7s · front-biased'],['MEDIUM',counts.medium,'23s'],['LONG',counts.long,'47s · back-biased'],['VERY LONG',counts.very,'160s · deep back']].map(b=><div key={b[0]} style={{flex:'1 1 130px',padding:'10px 12px',borderRadius:'10px',background:'#0d1620',border:'1px solid #2c3c4e'}}><div style={{fontWeight:800,color:'#eaf4fb'}}>{b[0]} × {b[1]}</div><div className="mutedText" style={{fontSize:'12px'}}>{b[2]}</div></div>)}
+        </div>
+        <p className="mutedText" style={{fontSize:'12px'}}>Rests: 14s between blocks, 5s after a short block. Zone numbers: 1 front-left · 2 front-right · 3 back-right · 4 back-left. The app calls a fresh zone roughly every 2s, sampled from that block’s bias (front for short, back for long).</p>
+      </>:<>
+        <div className="claRationaleBox"><h2>Repeat-Sprint — conditioning, same RLD scaffolds</h2><p>The validated squash repeat-sprint protocol (Wilkinson et al., 2012): <strong>10 explosive multidirectional efforts, 20 seconds recovery</strong> between each — it develops the repeated-sprint ability the modern game demands and correlates with ranking. It is a <strong>conditioning tool (RLD 1–2)</strong>, so it carries the same upgrades as the ghosting protocol: each effort calls corners to move to, with a <strong>visualise + produce-the-shot</strong> prompt (chase the imagined ball, play the shot, recover to the T) so the fitness work stays coupled to the game rather than becoming blind running. Mirror the same efforts on your Rox.</p></div>
+        <div className="infoBox" style={{marginTop:'8px'}}><strong>Protocol:</strong> 10 × ~8s maximum-effort multidirectional ghost to the called corners · 20s recovery between · buzzers on each corner call and each transition. Pair with the Imagery (PETTLEP) guide to keep the visualisation functional.</div>
+      </>}
       <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>
-        <button type="button" className="primaryBtn" onClick={start}>▶ Start ghosting session</button>
+        <button type="button" className="primaryBtn" onClick={start}>{mode==='sprint'?'▶ Start repeat-sprint (10 × 20s)':'▶ Start ghosting session'}</button>
       </div>
     </div>
   </div>;
@@ -5160,6 +5240,7 @@ return <div className="homeGrid homeGridV99h52">
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
       <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rallyBand')}><h2>Rally Band</h2><span className="homeTileSubtitle">Land the rally in its duration band</span></button>
       <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
@@ -23488,6 +23569,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
 {screen==='differential'&&<DifferentialLearning setScreen={go} setSession={setSession}/>}
 {screen==='ghosting'&&<GhostingModule setScreen={go}/>}
+{screen==='rallyBand'&&<RallyBandModule setScreen={go}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
