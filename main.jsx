@@ -1,4 +1,5 @@
-// v536 Coach-facing cleanup of CLA Update games (see APP_VERSION)
+// v537 Deep Touch rationale rewrite (see APP_VERSION)
+// v536 Coach-facing cleanup of CLA Update games
 // v535 CLA Update part 2 — Role Constraint engine + Court Geometry
 // v534 CLA Update — McBroom & Gray integration (see APP_VERSION history)
 // v142 game-builder/scoring/player-display cleanup build
@@ -221,7 +222,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v536 Coach-facing cleanup of the CLA Update games. Removed all build-process notes from the New Games module (correction boxes, build badges, blocked/pending language). Deep Touch instructions rewritten in plain coaching language with concrete shot definitions. Action Boundary is now runnable: coach-led drill by default with a Scored Variant toggle (off-T attack bonus / attack-when-set penalty, called by coach or off-court player) \u2014 always addable to sessions. Builds on v535.';
+const APP_VERSION='v537 Deep Touch rationale rewritten without build-process references; "disguise and hold live" grammar fix. Builds on v536.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4039,7 +4040,7 @@ function WhyCLAScreen({setScreen}){
     'Every citation is held to Eaton\u2019s credibility hierarchy — peer-reviewed first, social media never.',
     'Blocked practice feels like more learning even when it teaches less — the 78% illusion is why this approach can feel wrong while working better.',
   ];
-  const d3Close='These additions come from the Checkerboard gap analysis of McBroom & Gray\u2019s A Constraints-Led Approach to Coaching Tennis — each one either names a mechanism the app already uses, or sets the standard for what gets added next.';
+  const d3Close='These concepts come from McBroom & Gray\u2019s A Constraints-Led Approach to Coaching Tennis \u2014 each one either names a mechanism the app already uses, or sets the standard for what gets added next.';
 
   const renderBlock=(b,i)=>{
     if(b.t==='p')return <p key={i}>{b.v}</p>;
@@ -5726,7 +5727,7 @@ function ShotBonusRally({setSession}){
           {[['off','Off'],['backhand','Backhand \u00d72'],['forehand','Forehand \u00d72']].map(([id,label])=><div key={id} role="button" tabIndex={0} className={weakSide===id?'sbrChip on':'sbrChip'} onClick={()=>setWeakSide(id)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setWeakSide(id);}}>{label}</div>)}
           {weakSide!=='off'&&<div role="button" tabIndex={0} className={weakDecay?'sbrChip on':'sbrChip'} onClick={()=>setWeakDecay(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setWeakDecay(v=>!v);}}>{weakDecay?'\u2713 ':''}Decaying (first half of block only)</div>}
         </div>
-        <p className="sbrHint">Amplifies the weak side’s affordance inside live, opposed play — the strongest-evidenced build in the book gap analysis (Fitzpatrick et al.: amplification during realistic play beat fed-ball backhand drilling on frequency, winners AND technical proficiency; the book’s youth data showed a 6:1 forehand practice bias). Decay removes the amplifier mid-block so the behaviour has to survive without the reward.</p>
+        <p className="sbrHint">Amplifies the weak side’s affordance inside live, opposed play — the strongest-evidenced idea in the book (Fitzpatrick et al.: amplification during realistic play beat fed-ball backhand drilling on frequency, winners AND technical proficiency; the book’s youth data showed a 6:1 forehand practice bias). Decay removes the amplifier mid-block so the behaviour has to survive without the reward.</p>
       </div>
       <div className="sbrSection">
         <div className="sbrLabel">4. Points — per shot</div>
@@ -6064,7 +6065,7 @@ function CLAUpdateGames({setSession}){
     depthcap:'CLA mechanism: the task constraint eliminates the constrained player\u2019s dominant attractor \u2014 deep length into the back corners, squash\u2019s highest-percentage TARGET and the platform most attacks are built from \u2014 forcing a search of the rest of the movement solution space (width, holds, short pressure) under live opposition. The forced-retreat bonus performs education of intention: depth-as-an-OUTCOME stays the goal even with depth-as-a-TARGET removed. Directly analogous to the racquetball 3/4 Court Game, applied asymmetrically \u2014 a clean landing check against the back line of the service boxes, squash\u2019s own painted marker for the strip.',
     attackstraight:'CLA mechanism: education of attention \u2014 the release decision can only be timed well by perceiving the opponent\u2019s court position, so the constraint forces that perceptual variable into the control loop on every rally. The guided question ("where was your opponent when you went?") then performs education of intention without ever prescribing when to go. No rule forces a losing outcome from a correct decision: the constraint creates the decision, normal squash consequences grade it \u2014 the environment, not the coach, delivers the feedback.',
     serveadv:'A squash-native nested-affordance sequence: the serve\u2019s job is to take away the clean length response, the forced boast is the detectable evidence it worked, and the front-zone conversion is the payoff the server must still earn. Rewarding the sequence (not the serve) keeps the serve honest \u2014 a spectacular serve that doesn\u2019t create the next ball earns nothing extra.',
-    deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and holds live. B is simultaneously educated to perceive and deny the loose-ball affordance before it exists. The corrected trigger (attacking shot type AND front-zone location) punishes the choice, never the correct outcome of good play \u2014 A retrieving their own winning drop remains legal squash.',
+    deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and hold live. B is simultaneously educated to perceive and deny the loose-ball affordance before it exists. The rule punishes the choice of shot, never the outcome of good play \u2014 A chasing down and retrieving their own winning drop remains legal squash.',
     actionboundary:'Develops genuine affordance perception \u2014 reading what a short ball offers THIS player in THIS moment (position, speed, fatigue) rather than executing a scripted response to a category of ball. Affordances are personal and transitory; the coach\u2019s live judgement is the only valid referee, which is why this stays unscored.'
   };
   const dcSymRationale='CLA mechanism: with the back strip removed for BOTH players, the shared attractor of safe length disappears and the entire game must be solved short and mid-court \u2014 amplifying the affordances of the hold, the counter-drop, deception and the volley, which length-based games let players avoid. The Egyptian style is the emergent behaviour, not an instruction. The forced-retreat bonus keeps depth alive as an EFFECT (carry off the back wall, the lob that climbs over) even while it is forbidden as a target for everyone.';
