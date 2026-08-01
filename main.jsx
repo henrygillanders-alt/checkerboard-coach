@@ -1,4 +1,5 @@
-// v535 CLA Update part 2 — Role Constraint engine + Court Geometry (see APP_VERSION)
+// v536 Coach-facing cleanup of CLA Update games (see APP_VERSION)
+// v535 CLA Update part 2 — Role Constraint engine + Court Geometry
 // v534 CLA Update — McBroom & Gray integration (see APP_VERSION history)
 // v142 game-builder/scoring/player-display cleanup build
 /* v135 Competition Payload Export Fix */
@@ -220,7 +221,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v535 CLA Update part 2 — completes the book game queue. New Role Constraint engine: assign a different shot-type constraint to each player simultaneously (Boast & Drive flagship preset, Siege — Hold the Front, custom pairings from a 9-role registry, start positions, swap cadence, in-role bonuses). New Court Geometry module: Deep Bounce with both book progressions, 3/4 Court Out-Zone, Above the Cut height game, Cross-Court Confinement, Passing Rules position tree. Both in the CLA Update library group, searchable, self-officiated on existing zone conventions. Builds on v534.';
+const APP_VERSION='v536 Coach-facing cleanup of the CLA Update games. Removed all build-process notes from the New Games module (correction boxes, build badges, blocked/pending language). Deep Touch instructions rewritten in plain coaching language with concrete shot definitions. Action Boundary is now runnable: coach-led drill by default with a Scored Variant toggle (off-T attack bonus / attack-when-set penalty, called by coach or off-court player) \u2014 always addable to sessions. Builds on v535.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -3883,7 +3884,20 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'A study of small-sided football at the Manchester United academy found that reducing an 8 v 8 game down to 4 v 4 dramatically increased meaningful actions: far more passes were completed, considerably more shooting attempts and goals occurred, and 1 v 1 duels and dribbling attempts rose sharply too (Fenoglio, 2003, cited in Renshaw, Chow, Davids & Hammond, 2010).'},
       {t:'p',v:'Smaller-sided games are not simply easier versions of the full game — they multiply the number of representative learning opportunities available within the same amount of time.'},
       {t:'p',v:'Small-sided games have also been shown to build physical fitness alongside skill. Impellizzeri et al. (2006) found that junior soccer players training with small-sided games achieved similar aerobic fitness gains to those doing separate interval training — without sacrificing time spent on decision-making and technical skill.'},
-      {t:'p',v:'For squash coaches running multi-court sessions, this supports building smaller-sided, representative court games rather than long isolated drills: conditioning and tactical learning can develop together, not as separate blocks of session time.'},
+      {t:'p',v:'In squash there is no "smaller side" \u2014 the translation is the CONDITIONED GAME: a reduced court area or a modified rule that concentrates the targeted action, played live. Half-court games, front-court-only exchanges, restricted-zone games and short-format rotations (winner-stays-on across courts) do for squash what 4 v 4 did for football \u2014 far more meaningful actions per minute than queue-based feeding, with conditioning and tactical learning developing together rather than as separate blocks of session time.'},
+    ]},
+    {id:'d1-ssgsquash',title:'Converting Small-Sided Games to a Squash Context',blocks:[
+      {t:'p',v:'A small-sided football game shrinks two things at once: the number of players AND the pitch \u2014 4 v 4 is played on a small pitch, not a full one. Squash cannot pull the player lever, because 1 v 1 is already the minimum side. So the right question is: what was the small-sided game actually DOING? Fenoglio\u2019s 4 v 4 finding was not about smallness for its own sake \u2014 shrinking the game concentrated it, so each player got dramatically more touches, duels, shots and decisions per minute while the game itself stayed intact. The squash equivalent is anything that achieves that same concentration, and with the player lever unavailable, squash leans entirely on the remaining four.'},
+      {t:'beat',v:'Lever 1 \u2014 Reduce the court instead of the side.'},
+      {t:'p',v:'Half-court games, 3/4 court, front-court-only or back-court-only exchanges. This is the lever squash SHARES with football \u2014 small-sided games shrink their pitch too; squash simply has to rely on it more. A half-court straight game concentrates length exchanges the way a reduced-pitch 4 v 4 concentrates passing: the same actions, far higher density, live opposition throughout.'},
+      {t:'beat',v:'Lever 2 \u2014 Condition the rules instead of the numbers.'},
+      {t:'p',v:'Football\u2019s small-sided games often add rule tweaks (two-touch, must-dribble-before-passing); the squash version is the conditioned game \u2014 everything above the cut line, all shots past the short line, cross-court only, boast-and-drive. The rule concentrates the targeted action inside a real, contested rally. The Court Geometry and Role Constraint engines in the Games Library are built on exactly this lever.'},
+      {t:'beat',v:'Lever 3 \u2014 Shrink the format instead of the pitch.'},
+      {t:'p',v:'First-to-5, timed bursts, handicap starts (begin 2\u20139 down), sudden-death points. Small games produce more goals and more decisive moments per minute; short formats produce more pressure points, more serves, and more starts and finishes per minute than one long game to 11.'},
+      {t:'beat',v:'Lever 4 \u2014 Rotate instead of queue.'},
+      {t:'p',v:'The problem small-sided games solve for a football coach is twenty kids and one ball. The squash coach\u2019s version of that problem is six players and two courts \u2014 and the traditional answer, queue-based feeding, is precisely the low-density practice the evidence argues against. The equivalents are winner-stays-on / king of the court, monarch formats, 2 v 1 conditioned games and tag-team rotations: everyone stays in live, scored play with minimal standing time.'},
+      {t:'p',v:'The conditioning claim translates the same way. Impellizzeri showed small-sided games matched interval training for aerobic gains while still training decisions; the squash parallel is that a high-tempo all-length game or a 3/4-court chase game delivers the physical load of ghosting or court sprints while perception and action stay coupled \u2014 ghosting is squash\u2019s version of the isolated fitness block.'},
+      {t:'quote',v:'"Football concentrates the game by removing players and space together; squash cannot remove players \u2014 so it removes space, shots, or time instead. The goal in both is the same: more meaningful, contested actions per minute."'},
     ]},
     {id:'d1-vs',title:'Traditional Coaching vs CLA',blocks:[
       {t:'p',v:'Traditional coaching often asks:'},
@@ -3912,7 +3926,7 @@ function WhyCLAScreen({setScreen}){
     {id:'d1-reductionism',title:'Physical Training and the Limits of Reductionism',blocks:[
       {t:'p',v:'Traditional physical preparation often isolates single qualities — steady running to raise VO₂max, off-court circuits — on the assumption that a fitter engine automatically produces a better player.'},
       {t:'p',v:'A constraints view is more cautious. Squash fitness is expressed through squash movement: lunging, changing direction, recovering to the T and repeating high-intensity efforts with only brief recovery. Capacity built in a decontextualised way does not always transfer to the specific coordination and energy demands of a rally.'},
-      {t:'p',v:'This does not make fitness unimportant. It means conditioning transfers best when it preserves the movements, information and time pressures of the game — for example through small-sided and constraint games that raise the physical load while keeping perception and action coupled.'},
+      {t:'p',v:'This does not make fitness unimportant. It means conditioning transfers best when it preserves the movements, information and time pressures of the game — in squash, through conditioned and constraint games (reduced court areas, modified rules, short high-tempo scoring formats) that raise the physical load while keeping perception and action coupled.'},
     ]},
     {id:'d1-rulechange',title:'Rule Changes as Task-Constraint Manipulation',blocks:[
       {t:'p',v:'Task constraints are not only invented by coaches. A sport’s governing bodies manipulate them too, and squash offers a clear example.'},
@@ -3931,6 +3945,7 @@ function WhyCLAScreen({setScreen}){
     ]},
   ];
   const d1Takeaways=[
+    'Small-sided games shrink players AND pitch; squash cannot shrink the side, so it concentrates the game through the other levers: reduce the court, condition the rules, shrink the format, rotate instead of queue.',
     'Bernstein showed that expert movement involves "repetition without repetition."',
     'Gibson demonstrated that perception and action work together.',
     'Dynamic Systems Theory explains how movement self-organises.',
@@ -5991,79 +6006,74 @@ function PressCallModule({setSession}){
 // objectively detectable (shot-type flag + existing floor-zone system 1–4), so
 // scoring is self-officiated with no coach adjudication.
 const CLA_UPDATE_GAME_DEFS=[
-  {id:'depthcap',label:'Depth Cap',prio:'Build 1',was:'was "Court Asymmetry / Nadal vs Federer"',
-   summary:'The constrained player\u2019s shots may not land in the back quarter of the court (zones 3/4) \u2014 they are denied squash\u2019s highest-percentage winning area. Everything else is normal squash. Bonus if the constrained player wins a rally in which they forced the free player to retreat into that same back-quarter zone.',
-   correction:'The original draft restricted "three-quarter court" without saying which quarter, and the bonus referenced forcing the free player "outside the restricted zone" \u2014 a zone the free player was never restricted to. Not scoreable as written. This version applies the pre-validated racquetball 3/4 Court mechanic (a marked zone where landing is out) asymmetrically to one player.',
+  {id:'depthcap',label:'Depth Cap',sub:'the Egyptian \u00be-court game \u2014 asymmetric by default, classic symmetric as a mode',
+   summary:'The constrained player\u2019s shots may not land in the strip behind the back line of the service boxes \u2014 squash\u2019s own painted marker for the back quarter (note: NOT all of zones 3/4; the band between the short line and the service-box line stays legal). They are denied squash\u2019s highest-percentage TARGET: the safe, pressure-building length that rallies are won FROM. Winners themselves mostly land short \u2014 but they are created from deep. Everything else is normal squash. Bonus if the constrained player wins a rally in which they forced the free player to retreat into that same back-quarter zone \u2014 depth as an EFFECT (carry off the back wall, lobs that climb over, width that drags them back) while depth as a landing spot stays forbidden.',
    gqA:'Constrained player: "You can\u2019t use the back corners \u2014 where did you create pressure instead?"',
    gqB:'Free player: "What kept dragging you deep when they couldn\u2019t even hit it there?"'},
-  {id:'attackstraight',label:'Attack Straight',prio:'Build 2',was:'was "Attack Down the Line" \u2014 sound, no changes needed',
+  {id:'attackstraight',label:'Attack Straight',sub:'reading the moment to change direction',
    summary:'The receiver must play cross-court only until they choose to attack straight. The moment they play straight, the point opens to full court for both players. Normal squash consequences apply: release too early or rushed and the opponent\u2019s court position punishes it; never release and no advantage is ever gained.',
-   correction:'No correction needed \u2014 no rule forces a losing outcome from a correct decision. The affordance trained is reading the correct MOMENT to change direction based on the opponent\u2019s court position: a live decision-timing skill, not a technique.',
    gqA:'Receiver: "Where was your opponent when you decided to attack straight?"',
    gqB:'Opponent: "Could you read the release coming \u2014 what told you?"'},
-  {id:'serveadv',label:'Serve for Advantage',prio:'Build 3',was:'was "Force Opponent to Backhand"',
+  {id:'serveadv',label:'Serve for Advantage',sub:'serve \u2192 forced boast \u2192 short-ball conversion',
    summary:'Server has a configurable number of serve attempts per point (default 2 \u2014 the existing house rule: creative freedom, not fault-avoidance). The chain bonus rewards the full two-shot nested sequence, never the serve alone: serve denies a clean length response \u2192 receiver is forced to boast \u2192 server converts the resulting loose ball with an attacking shot in the front zone (1/2).',
-   correction:'Squash has no "run around the backhand". A serve that denies a clean response forces a weaker shot type \u2014 the boast \u2014 not a wrong side. "Receiver played a boast" and "server\u2019s next shot landed front zone" are both objectively detectable, making the whole chain self-officiating. This is the book\u2019s nested-affordances concept made squash-native.',
    gqA:'Server: "What did that serve take away from them? Which of your two serves worked, and why?"',
    gqB:'Receiver: "What were you protecting against on that return \u2014 could you have driven or lobbed instead of boasting?"'},
-  {id:'deeptouch',label:'Deep Touch',prio:'Build 4',was:'was "Front Court Constraint / A Finer Touch"',
-   summary:'Player A may not proactively move forward to volley or attack. A MAY enter the front court to retrieve \u2014 but only to play a defensive/neutral shot (lob, high straight, or soft boast back to length). The trigger is A hitting an ATTACKING shot from the front zone (winner, tight drop, volley kill) \u2014 not A\u2019s presence there. Player B plays anywhere; B\u2019s job is to deny A any clean, loose ball from deep.',
-   correction:'The original rule cost A the point simply for entering the front quarter \u2014 meaning retrieving their own successful drop shot (correct squash) could lose them the exchange they had just won. A rule that punishes the correct outcome of good play is not valid. The fix: a shot-type + zone COMBINATION check, not a zone-presence check.',
+  {id:'deeptouch',label:'Deep Touch',sub:'construct every attack from deep',
+   summary:'Player A may not attack from the front of the court \u2014 every attacking chance must be built from behind the short line. A can still run in and retrieve anything, but from the front A may only reset: a lob (straight or cross) or a high, deep straight drive. Player B plays normal squash.',
    gqA:'Player A: "How did you hide that short ball inside your length swing?"',
    gqB:'Player B: "Which of your shots gave them the loose ball \u2014 and what would you change?"'},
-  {id:'actionboundary',label:'Action Boundary',prio:'Blocked',was:'design decision pending \u2014 lowest priority of the five',
-   summary:'Coach and player play points. At random moments the coach introduces a short ball. The player must read in real time whether it affords attack, drop, or defensive push \u2014 based on their position, speed and fatigue in that exact moment. Develops genuine affordance perception rather than scripted responses.',
-   correction:'No logical contradiction \u2014 but no objectively scoreable rule. "The correct affordance" for a given short ball depends on live coach judgement, not anything the app can detect. Do not build scoring until a path is chosen below.',
+  {id:'actionboundary',label:'Action Boundary',sub:'read what the short ball offers \u2014 coach-led',
+   summary:'Coach and player play points. At random moments the coach slips a short ball into the rally. The player reads, in that moment, what the ball offers THEM \u2014 attack it, drop it, or push it deep and reset \u2014 based on where they are, how fast they are moving and how tired they are. The same ball is attackable when you are balanced and early, and not when you are scrambling: there is no fixed right answer, which is exactly the skill.',
    gqA:'Player: "What made that one attackable \u2014 and what made the last one not?"',
    gqB:'Coach: judge the read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed.'}
 ];
 function CLAUpdateGames({setSession}){
   const [gameId,setGameId]=useState('depthcap');
   const [dcBonus,setDcBonus]=useState('2');
+  const [dcSym,setDcSym]=useState(false);
   const [asBonus,setAsBonus]=useState('1');
   const [saBonus,setSaBonus]=useState('2');
   const [saServes,setSaServes]=useState('2');
   const [dtBonus,setDtBonus]=useState('1');
-  const [abPath,setAbPath]=useState('');
+  const [abScored,setAbScored]=useState(false);
   const [added,setAdded]=useState('');
   const g=CLA_UPDATE_GAME_DEFS.find(x=>x.id===gameId);
   function buildTask(){
-    if(gameId==='depthcap')return `One player is the Constrained player, the other the Free player. The Constrained player's shots may NOT land in the back quarter of the court (Checkerboard zones 3/4 at back-quarter depth) \u2014 any of their balls landing there is out and loses the point. Everything else is normal squash for both players. Swap roles each game.`;
+    if(gameId==='depthcap')return dcSym?`Classic Egyptian \u00be-court: BOTH players' shots may NOT first-bounce behind the back line of the service boxes \u2014 the painted line marks the forbidden strip. The whole game lives between the front wall and that line: attack, hold and deceive short, because length is off the table for everyone. Note the constraint is on the ball's first bounce, not on the players \u2014 a ball in the legal band that carries off the back wall still forces a deep retrieve.`:`One player is the Constrained player, the other the Free player. The Constrained player's shots may NOT first-bounce behind the back line of the service boxes \u2014 the painted line is the marker for the forbidden strip (the back quarter). Everything between the short line and that line is LEGAL, and that band is where the game lives: a firm ball landing just short of the forbidden line carries off the back wall, a lob dropping in the legal band climbs over the Free player and dies deep, width and pace drag them back off the T. Balls landing in the front half will rarely trouble the back wall before their second bounce \u2014 the forcing solutions come from the legal deep band, not from the front. Everything else is normal squash for both players. Swap roles each game.`;
     if(gameId==='attackstraight')return `The receiver must play cross-court only until they choose to attack straight. The moment they play a straight shot (the "release"), the point opens to full court for both players and normal squash continues. A straight shot before a deliberate release, or any non-cross-court shot pre-release, loses the point. The decision of WHEN to release is entirely the receiver's.`;
     if(gameId==='serveadv')return `Server has ${saServes} serve attempt${saServes==='1'?'':'s'} per point${saServes==='1'?' \u2014 one chance, so the serve decision has to be committed to':', framed as creative freedom \u2014 use them to experiment with pace, height, width and spin'}. Normal rally scoring throughout. The chain: if the serve denies a clean length response and the receiver is forced to BOAST their return, the chain is armed; if the server then converts the resulting loose ball with an attacking shot landing in the front zone (1/2), the chain bonus is awarded on top of the rally point. The bonus rewards the full sequence (serve \u2192 forced boast \u2192 front-zone attack), never the serve in isolation.`;
-    if(gameId==='deeptouch')return `Player A may not proactively move forward to volley or attack the ball. A MAY enter the front court to retrieve, but only to play a defensive/neutral shot \u2014 lob, high straight, or soft boast back to length. If A hits an ATTACKING shot (winner attempt, tight drop, volley kill) from the front zone, A loses the point immediately. Player B plays anywhere. A must construct every attacking opportunity from deep \u2014 developing deception and disguise in length play, since A can never simply walk in and finish a loose ball.`;
-    return abPath==='a'
-      ?`Coach-led live-feedback drill (path a \u2014 no in-app scoring). Coach and player play points; at random moments the coach introduces a short ball. The player reads in real time whether it affords attack, drop, or defensive push \u2014 based on their position, speed and fatigue in that exact moment. The coach's live judgement IS the feedback; there is no scoreboard.`
-      :`Blocked pending design decision \u2014 choose path (a) or (b) below before running this as a scored game.`;
+    if(gameId==='deeptouch')return `Normal rallies with one rule on Player A. From the FRONT of the court (in front of the short line), A may only play reset shots: a lob \u2014 straight or cross \u2014 or a high, deep straight drive. What A may NOT do from the front is try to win the rally \u2014 no drops, no kills, no low put-aways, no tight counter-drops, and no boasts (any boast from the front is a short attacking ball, which is exactly what this rule removes). The moment A plays one of those from the front, the rally stops and the point goes to B. A can still chase down and retrieve any ball, anywhere. B plays normal squash with no restrictions. So A's only route to winning is built from BEHIND the short line: accurate length, holds and disguise that either beat B outright from deep or force the weak ball A can finish from deep.`;
+    return `Play normal points \u2014 coach against player, or two players with the coach feeding in. Without warning, mid-rally, the coach introduces a short ball: a boast, a drop feed, or a deliberately loose ball. The player chooses in the moment \u2014 attack it, drop it, or push it deep and reset \u2014 and the point plays out. After some of these moments (not every one), pause and ask one question, then play on. Run 8\u201312 injected short balls per block, then swap or rest.`;
   }
   function buildScoring(){
-    if(gameId==='depthcap')return `Normal rally scoring. Constrained player's ball lands in the back quarter = out, point to the Free player. Bonus +${dcBonus} on top of the rally point if the Constrained player wins a rally in which they forced the Free player to retreat into that same back-quarter zone \u2014 the zone check is the existing floor-zone system (zones 3/4), fully self-officiated.`;
+    if(gameId==='depthcap')return dcSym?`Normal rally scoring. Either player's ball first bounces behind the service-box line = out, point to the opponent \u2014 a ball check against a painted line both players can see. Bonus +${dcBonus} if you win the rally AND forced your opponent to play at least one shot from behind that line during it (retrieving off the back wall counts) \u2014 a POSITION check on the opponent's body, called by the off-court tallier or agreed by both players.`:`Normal rally scoring. Constrained player's ball first bounces behind the service-box line = out, point to the Free player \u2014 a ball check against a painted line both players can see, no zone judgement needed. Bonus +${dcBonus} on top of the rally point if the Constrained player wins the rally AND the Free player was forced to play at least one shot from behind that same line during it \u2014 retrieving off the back wall counts. The bonus is a POSITION check on the Free player's body, not a ball check: called by the off-court tallier, or agreed by both players.`;
     if(gameId==='attackstraight')return `Normal rally scoring. Cross-court violation before release = point to the opponent.${Number(asBonus)>0?` Release bonus: +${asBonus} on top of the rally point when the receiver releases straight AND wins the rally \u2014 rewarding a well-timed direction change, not the change itself.`:' No release bonus \u2014 the natural consequences of the release timing do the teaching.'}`;
     if(gameId==='serveadv')return `Normal rally scoring. Chain bonus: serve forces a boasted return AND the server's next shot is an attacking shot landing in the front zone (1/2) = +${saBonus} on top of the rally point. Both chain conditions are objectively detectable (shot-type flag + floor zone) \u2014 no adjudication. If the chain is armed but the server does not convert, play simply continues at normal scoring.`;
-    if(gameId==='deeptouch')return `Normal rally scoring. A attacking from the front zone = immediate point to B (shot-type + zone combination check \u2014 a defensive retrieve from the front is legal and play continues).${Number(dtBonus)>0?` Bonus +${dtBonus} when A wins the rally with a winning shot struck from behind the short line \u2014 rewarding the attack constructed from deep.`:''}`;
-    return abPath==='a'?'No in-app scoring \u2014 coach judgement only. The realisation is the point, not a score.':'\u2014';
+    if(gameId==='deeptouch')return `Normal rally scoring. A plays an attacking shot from in front of the short line = rally stops, point to B \u2014 called by the players; the shot speaks for itself (was it trying to win the rally from the front?). A retrieving or resetting from the front is legal and play continues.${Number(dtBonus)>0?` Bonus +${dtBonus} when A wins the rally with a winning shot struck from behind the short line.`:''}`;
+    return abScored?`Rally points as normal, plus two rules called by the coach or the off-court player: attack the short ball while the opponent is OFF the T and still recovering = +1 bonus if you go on to win the rally. Attack it while the opponent is already SET and waiting = point straight to the opponent, whatever happens next. Pushing deep or dropping is always safe \u2014 no bonus, no penalty.`:'No score \u2014 the coach\u2019s live judgement and the questioning are the feedback. Turn on the scored variant below if the group needs stakes.';
   }
   const coachText={
     depthcap:`${g.gqA} ${g.gqB} Watch for the constrained player discovering width, holds and short pressure once depth is removed \u2014 do not prescribe the alternatives.`,
     attackstraight:`${g.gqA} Ask it after both won AND lost releases \u2014 the timing read is the skill. Do not coach when to release; let punished-early and never-released rallies do the teaching.`,
     serveadv:`Server: ${g.gqA} Receiver: ${g.gqB} The receiver's question matters as much \u2014 recognising when a boast was genuinely forced versus chosen is its own perceptual skill.`,
     deeptouch:`A: ${g.gqA} B: ${g.gqB} Watch A's length play for emerging disguise \u2014 the same preparation producing drive, drop and boast is the goal behaviour.`,
-    actionboundary:`${g.gqB} Ask "${g.gqA.split('"')[1]}" after contrasting decisions. One question per pause \u2014 this drill is about the read, not a debrief.`
+    actionboundary:'Judge each read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed. After contrasting decisions ask: "What made that one attackable \u2014 and what made the last one not?" One question per pause; the drill is the read, not the debrief.'
   };
   const playerFocusText={depthcap:'No back corners \u2014 find another way to hurt them.',attackstraight:'Cross until the moment is real \u2014 then go straight.',serveadv:'Serve to take something away, then take the short ball.',deeptouch:'Build it from deep \u2014 hide the short ball in your length.',actionboundary:'Read what THIS ball, in THIS moment, is offering you.'};
   const rationaleText={
-    depthcap:'CLA mechanism: the task constraint eliminates the constrained player\u2019s dominant attractor \u2014 deep length into the back corners, squash\u2019s highest-percentage solution \u2014 forcing a search of the rest of the movement solution space (width, holds, short pressure) under live opposition. The forced-retreat bonus performs education of intention: depth-as-an-OUTCOME stays the goal even with depth-as-a-TARGET removed. Directly analogous to the racquetball 3/4 Court Game, applied asymmetrically \u2014 a clean landing-zone validity check on the existing floor-zone system.',
+    depthcap:'CLA mechanism: the task constraint eliminates the constrained player\u2019s dominant attractor \u2014 deep length into the back corners, squash\u2019s highest-percentage TARGET and the platform most attacks are built from \u2014 forcing a search of the rest of the movement solution space (width, holds, short pressure) under live opposition. The forced-retreat bonus performs education of intention: depth-as-an-OUTCOME stays the goal even with depth-as-a-TARGET removed. Directly analogous to the racquetball 3/4 Court Game, applied asymmetrically \u2014 a clean landing check against the back line of the service boxes, squash\u2019s own painted marker for the strip.',
     attackstraight:'CLA mechanism: education of attention \u2014 the release decision can only be timed well by perceiving the opponent\u2019s court position, so the constraint forces that perceptual variable into the control loop on every rally. The guided question ("where was your opponent when you went?") then performs education of intention without ever prescribing when to go. No rule forces a losing outcome from a correct decision: the constraint creates the decision, normal squash consequences grade it \u2014 the environment, not the coach, delivers the feedback.',
     serveadv:'A squash-native nested-affordance sequence: the serve\u2019s job is to take away the clean length response, the forced boast is the detectable evidence it worked, and the front-zone conversion is the payoff the server must still earn. Rewarding the sequence (not the serve) keeps the serve honest \u2014 a spectacular serve that doesn\u2019t create the next ball earns nothing extra.',
     deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and holds live. B is simultaneously educated to perceive and deny the loose-ball affordance before it exists. The corrected trigger (attacking shot type AND front-zone location) punishes the choice, never the correct outcome of good play \u2014 A retrieving their own winning drop remains legal squash.',
     actionboundary:'Develops genuine affordance perception \u2014 reading what a short ball offers THIS player in THIS moment (position, speed, fatigue) rather than executing a scripted response to a category of ball. Affordances are personal and transitory; the coach\u2019s live judgement is the only valid referee, which is why this stays unscored.'
   };
+  const dcSymRationale='CLA mechanism: with the back strip removed for BOTH players, the shared attractor of safe length disappears and the entire game must be solved short and mid-court \u2014 amplifying the affordances of the hold, the counter-drop, deception and the volley, which length-based games let players avoid. The Egyptian style is the emergent behaviour, not an instruction. The forced-retreat bonus keeps depth alive as an EFFECT (carry off the back wall, the lob that climbs over) even while it is forbidden as a target for everyone.';
+  const currentRationale=()=>gameId==='depthcap'&&dcSym?dcSymRationale:rationaleText[gameId];
   function addToSession(){
     if(typeof setSession!=='function')return;
-    if(gameId==='actionboundary'&&abPath!=='a')return;
-    const titles={depthcap:'Depth Cap \u2014 Back-Quarter Denial',attackstraight:'Attack Straight \u2014 Release Decision',serveadv:`Serve for Advantage \u2014 Nested Chain (${saServes}-Serve)`,deeptouch:'Deep Touch \u2014 Build From Deep',actionboundary:'Action Boundary \u2014 Coach-Led Affordance Read'};
-    const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:'Coach-Led Drill (Unscored)'};
-    const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:buildTask(),rationale:rationaleText[gameId],coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:buildScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
+    const titles={depthcap:dcSym?'Egyptian \u00be Court \u2014 Classic (Symmetric)':'Depth Cap \u2014 Back-Quarter Denial',attackstraight:'Attack Straight \u2014 Release Decision',serveadv:`Serve for Advantage \u2014 Nested Chain (${saServes}-Serve)`,deeptouch:'Deep Touch \u2014 Build From Deep',actionboundary:abScored?'Action Boundary \u2014 Scored (Off-T Bonus)':'Action Boundary \u2014 Coach-Led Read'};
+    const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:abScored?'Injected Short Ball + Called Rules':'Coach-Led Drill'};
+    const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:buildTask(),rationale:currentRationale(),coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:buildScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -6094,25 +6104,28 @@ function CLAUpdateGames({setSession}){
 .cluHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
-    <div className="libraryStageIntro"><h2>📚 CLA Update — New Games</h2><p>The four vetted builds from the McBroom &amp; Gray gap analysis, in build-priority order, plus the blocked Action Boundary decision. All specs are the corrected versions — every bonus condition is objectively detectable via shot-type + floor zones, so scoring is self-officiated.</p></div>
+    <div className="libraryStageIntro"><h2>📚 CLA Update — New Games</h2><p>Five games from the McBroom &amp; Gray book work. Every rule is decided by things players can see — shot type, painted lines, and where the opponent is standing — so the games self-officiate, with the off-court player calling position checks.</p></div>
     <div className="cluWrap">
       <div className="cluSection">
-        <div className="cluLabel">Game (build-priority order)</div>
-        {CLA_UPDATE_GAME_DEFS.map(def=><div key={def.id} role="button" tabIndex={0} className={(gameId===def.id?'cluGameBtn on':'cluGameBtn')+(def.id==='actionboundary'?' blockedGame':'')} onClick={()=>{setGameId(def.id);setAdded('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setGameId(def.id);setAdded('');}}}><span className="cluPrio">{def.prio}</span>{def.label}<span>{def.was}</span></div>)}
+        <div className="cluLabel">Game</div>
+        {CLA_UPDATE_GAME_DEFS.map(def=><div key={def.id} role="button" tabIndex={0} className={gameId===def.id?'cluGameBtn on':'cluGameBtn'} onClick={()=>{setGameId(def.id);setAdded('');}} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' '){setGameId(def.id);setAdded('');}}}>{def.label}<span>{def.sub}</span></div>)}
       </div>
       <div className="cluBox"><strong>Mechanic</strong><p>{g.summary}</p></div>
-      <div className="cluBox correction"><strong>{gameId==='attackstraight'?'Vetting note':'Why the correction was needed'}</strong><p>{g.correction}</p></div>
       <div className="cluGq"><strong>Guided questioning</strong><p>{g.gqA}</p><p>{g.gqB}</p></div>
-      {gameId==='depthcap'&&bonusRow('Forced-retreat bonus (constrained wins + forced free player into back quarter)',dcBonus,setDcBonus,['1','2','3'])}
+      <CoachRationale label="Why this game — CLA rationale"><p>{currentRationale()}</p></CoachRationale>
+      {gameId==='depthcap'&&<div className="cluSection"><div className="cluLabel">Mode</div><div className="cluChips">{[[false,'Asymmetric \u2014 Depth Cap (one player constrained)'],[true,'Symmetric \u2014 classic Egyptian \u00be court (both constrained)']].map(([v,label])=><div key={String(v)} role="button" tabIndex={0} className={dcSym===v?'cluChip on':'cluChip'} onClick={()=>setDcSym(v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDcSym(v);}}>{label}</div>)}</div></div>}
+      {gameId==='depthcap'&&bonusRow(dcSym?'Forced-retreat bonus (win + forced opponent behind the line \u2014 either player can earn it)':'Forced-retreat bonus (constrained wins + forced free player behind the line)',dcBonus,setDcBonus,['1','2','3'])}
       {gameId==='attackstraight'&&bonusRow('Release bonus (released straight AND won the rally \u2014 0 = consequences only)',asBonus,setAsBonus,['0','1','2'])}
       {gameId==='serveadv'&&<div className="cluSection"><div className="cluLabel">Serves per point</div><div className="cluChips">{['1','2','3'].map(n=><div key={n} role="button" tabIndex={0} className={saServes===n?'cluChip on':'cluChip'} onClick={()=>setSaServes(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSaServes(n);}}>{n}</div>)}</div><p className="cluHint">2 is the standing house rule — creative freedom, not fault-avoidance. Drop to 1 to sharpen commitment to the serve decision; raise to 3 as a regression for players still exploring what a serve can take away.</p></div>}
       {gameId==='serveadv'&&bonusRow('Chain bonus (serve \u2192 forced boast \u2192 front-zone attack converted)',saBonus,setSaBonus,['1','2','3'])}
       {gameId==='deeptouch'&&bonusRow('Deep-build bonus (A wins with a winner struck from behind the short line \u2014 0 = off)',dtBonus,setDtBonus,['0','1','2'])}
       {gameId==='actionboundary'&&<div className="cluSection">
-        <div className="cluLabel">Design decision — choose a path</div>
-        <div role="button" tabIndex={0} className={abPath==='a'?'cluGameBtn on':'cluGameBtn'} onClick={()=>setAbPath('a')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbPath('a');}}>(a) Coach-led drill — no in-app scoring<span>Ship as a session-plan entry. The coach’s live judgement is the feedback. Available to add below.</span></div>
-        <div role="button" tabIndex={0} className={abPath==='b'?'cluGameBtn on':'cluGameBtn'} onClick={()=>setAbPath('b')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbPath('b');}}>(b) Proxy rule — scoreable constraint (pending build)<span>Bonus for attacking a short ball when the opponent has not recovered toward the T within a threshold; conceded point for attacking when the opponent was set. Converts "read the moment" into a detectable rule — queued behind Deep Touch, not yet built.</span></div>
-        {abPath==='b'&&<p className="cluHint">Path (b) recorded as the chosen direction — the T-recovery threshold check needs building before this can be added as a scored game. Until then, only path (a) can go into a session.</p>}
+        <div className="cluLabel">Scoring</div>
+        <div className="cluChips">
+          <div role="button" tabIndex={0} className={!abScored?'cluChip on':'cluChip'} onClick={()=>setAbScored(false)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbScored(false);}}>Coach-led — no score</div>
+          <div role="button" tabIndex={0} className={abScored?'cluChip on':'cluChip'} onClick={()=>setAbScored(true)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAbScored(true);}}>Scored variant — off-T bonus / set penalty</div>
+        </div>
+        <p className="cluHint">The scored variant turns the read into rules a person can call: attack while the opponent is off the T and recovering = bonus if you win; attack while they are set = point to them. "Set or not" is called by the coach or the off-court player, same as the tallier convention in other games.</p>
       </div>}
       <div className="cluBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="cluBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
@@ -6120,8 +6133,7 @@ function CLAUpdateGames({setSession}){
       <UniversalModifierEngine title="Universal Modifiers"/>
 
       <div className="cluAddRow">
-        <button className="primaryBtn" onClick={addToSession} disabled={gameId==='actionboundary'&&abPath!=='a'}>Add To Session</button>
-        {gameId==='actionboundary'&&abPath!=='a'&&<span className="cluHint">Choose path (a) to add as a coach-led drill — path (b) is pending build.</span>}
+        <button className="primaryBtn" onClick={addToSession}>Add To Session</button>
         {added&&<span className="cluAdded">Added: {added}</span>}
       </div>
     </div>
@@ -6142,7 +6154,7 @@ const ROLE_CONSTRAINT_ROLES=[
   {id:'lobOnly',label:'Lobs only',rule:'may only play lobs (above the cut line, landing behind the short line)'},
   {id:'dropDrive',label:'Drop + drive only',rule:'may only play straight drops and straight drives — no cross-court, no boast'},
   {id:'volleyHunt',label:'Volley whenever possible',rule:'must take any ball they can reach on the volley; letting a volleyable ball bounce loses the point'},
-  {id:'defensiveOnly',label:'Defensive / neutralising only',rule:'may only play defensive or neutralising shots (lob, high straight, soft boast back to length) — no winner attempts, tight drops or kills'},
+  {id:'defensiveOnly',label:'Defensive / neutralising only',rule:'may only play defensive or neutralising shots — lobs and high, deep straight drives, plus the defensive boast as an escape when trapped in the back corner (remember a boast travels SHORT, so it buys time at the price of inviting pressure) — no winner attempts, tight drops or kills'},
   {id:'attackAtWill',label:'Attack at will',rule:'may play attacking shots at any moment of their choosing'}
 ];
 const ROLE_CONSTRAINT_STARTS=[
@@ -6169,6 +6181,7 @@ function RoleConstraintEngine({setSession}){
   const [bonusB,setBonusB]=useState('1');
   const [added,setAdded]=useState('');
   const preset=ROLE_CONSTRAINT_PRESETS.find(p=>p.id===presetId);
+  const rceRationale=()=>preset.note+' CLA mechanism: assigning each player a different shot-type constraint removes their attractor solutions from those court positions, so alternative movement solutions must self-organise through live, opposed play \u2014 repetition without repetition, since the outcome (a legal in-role shot) must be repeated while the movements finding it cannot be. Because each role demands unfamiliar coordination (a boast from everywhere; length from behind the short line), players are also pushed to free frozen degrees of freedom rather than lean on grooved patterns.';
   function choosePreset(p){setPresetId(p.id);setRoleA(p.roleA);setRoleB(p.roleB);setStartA(p.startA);setStartB(p.startB);setAdded('');}
   function setRole(which,id){presetId!=='custom'&&setPresetId('custom');which==='A'?setRoleA(id):setRoleB(id);}
   function setStart(which,id){presetId!=='custom'&&setPresetId('custom');which==='A'?setStartA(id):setStartB(id);}
@@ -6189,7 +6202,7 @@ function RoleConstraintEngine({setSession}){
     if(typeof setSession!=='function')return;
     const title=presetId==='custom'?`Role Constraint — ${rA.label} vs ${rB.label}`:`Role Constraint — ${preset.label.split(' (')[0]}`;
     const card={id:Date.now()+Math.random(),title,category:'Role Constraint',format:'Asymmetric Roles',duration:9,task:buildTask(),
-      rationale:preset.note+' CLA mechanism: assigning each player a different shot-type constraint removes their attractor solutions from those court positions, so alternative movement solutions must self-organise through live, opposed play — repetition without repetition, since the outcome (a legal in-role shot) must be repeated while the movements finding it cannot be. Because each role demands unfamiliar coordination (a boast from everywhere; length from behind the short line), players are also pushed to free frozen degrees of freedom rather than lean on grooved patterns.',
+      rationale:rceRationale(),
       coach:'Do not demonstrate the "right" solution for either role — ask each player what their restriction is forcing them to discover. Guided questioning: "What can you do from there that you never normally try?" Swap roles so both players explore both problems.',
       playerFocus:'Solve YOUR restriction — the shots you are left with are the lesson.',
       scoring:buildScoring(),layers:['Asymmetric Roles','Space Manipulation','Movement Solutions'],rld:4};
@@ -6244,6 +6257,7 @@ function RoleConstraintEngine({setSession}){
       </div>
       <div className="rceBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="rceBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+      <CoachRationale label="Why this game — CLA rationale"><p>{rceRationale()}</p></CoachRationale>
 
       <UniversalModifierEngine title="Universal Modifiers"/>
 
@@ -6282,6 +6296,7 @@ function CourtGeometryModule({setSession}){
   const [acServesExempt,setAcServesExempt]=useState(false);
   const [added,setAdded]=useState('');
   const mode=COURT_GEOMETRY_MODES.find(m=>m.id===modeId);
+  const cgRationale=()=>mode.note+' All five geometry variants are book-sourced (Ch. 11) and self-officiate on the existing zone conventions. Shared CLA logic: each variant is a task constraint that reshapes the court\u2019s affordance landscape, so movement solutions must reorganise around it through live, opposed play \u2014 problems to solve, never solutions to copy.';
   function toggleOzZone(z){setOzZones(prev=>prev.includes(z)?(prev.length>1?prev.filter(x=>x!==z):prev):[...prev,z]);}
   function buildTask(){
     if(modeId==='deepbounce'){
@@ -6313,7 +6328,7 @@ function CourtGeometryModule({setSession}){
     if(typeof setSession!=='function')return;
     const titleSuffix=modeId==='deepbounce'?(dbProg==='base'?'':dbProg==='shortvolley'?' — Short Volley Progression':' — Second Bounce Progression'):modeId==='outzone'?` — Zone${ozZones.length>1?'s':''} ${ozZones.join('/')}`:'';
     const card={id:Date.now()+Math.random(),title:`Court Geometry — ${mode.label}${titleSuffix}`,category:'Court Geometry',format:'Geometry Constraint',duration:9,task:buildTask(),
-      rationale:mode.note+' All five geometry variants are book-sourced (Ch. 11) and self-officiate on the existing zone conventions. Shared CLA logic: each variant is a task constraint that reshapes the court\u2019s affordance landscape, so movement solutions must reorganise around it through live, opposed play — problems to solve, never solutions to copy.',
+      rationale:cgRationale(),
       coach:coachByMode[modeId],playerFocus:focusByMode[modeId],scoring:buildScoring(),
       layers:modeId==='abovecut'?['Height Constraint','Space Manipulation']:modeId==='passingrules'?['Opponent Reading','Decision Making']:['Space Manipulation','Movement Solutions'],rld:modeId==='passingrules'?4:3};
     setSession(prev=>appendToSessionState(prev,card));
@@ -6368,6 +6383,7 @@ function CourtGeometryModule({setSession}){
       </div>}
       <div className="cgBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
       <div className="cgBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
+      <CoachRationale label="Why this game — CLA rationale"><p>{cgRationale()}</p></CoachRationale>
 
       <UniversalModifierEngine title="Universal Modifiers"/>
 
