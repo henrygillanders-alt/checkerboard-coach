@@ -1,4 +1,5 @@
-// v537 Deep Touch rationale rewrite (see APP_VERSION)
+// v538 Player Display brevity pass (see APP_VERSION)
+// v537 Deep Touch rationale rewrite
 // v536 Coach-facing cleanup of CLA Update games
 // v535 CLA Update part 2 — Role Constraint engine + Court Geometry
 // v534 CLA Update — McBroom & Gray integration (see APP_VERSION history)
@@ -222,7 +223,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v537 Deep Touch rationale rewritten without build-process references; "disguise and hold live" grammar fix. Builds on v536.';
+const APP_VERSION='v538 Player Display brevity pass. All CLA Update, Role Constraint, Court Geometry, QE7 and Weak-Side Amplifier session cards now carry short numbered player steps, one-line scoring, and a 1\u20132 sentence rationale \u2014 full coach detail stays on the module screens. Player A / Player B naming throughout; Deep Touch rationale sentences clarified. Builds on v537.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -4506,7 +4507,7 @@ function perceptionPlaceholderCards(section){
       {id:'per-qe4',code:'QE4',module:'Quiet Eye',phase:'Head Stability',title:'Quiet Head Rally',category:'Perception',duration:7,format:'Cooperative / Conditioned',rld:3,gate:'Every strike',task:'P1 and P2 rally with one focus: head stays quiet through contact and recovery. Pace is reduced if the head becomes unstable.',scoring:'Longest rally with quiet head. Reset count when head pulls away early or body spins out.',rationale:'Head stability supports perception, spacing and timing. The constraint makes visual control observable.',coach:'Keep instruction external: “keep the picture steady” rather than body-part correction unless necessary.',playerFocus:'Keep the picture steady.',layers:['Head Stability','Quiet Eye']},
       {id:'per-qe5',code:'QE5',module:'Quiet Eye',phase:'Pressure',title:'Quiet Eye Under Pressure',category:'Perception',duration:8,format:'Pressure Rally',rld:4,gate:'Contact under pressure',task:'P1 plays under time or physical pressure. Bonus is awarded only when P1 maintains quiet head and contact gaze before playing the next shot.',scoring:'Normal rally score plus quiet-eye bonus. Coach tracks breakdowns under fatigue or rush.',rationale:'Quiet eye only transfers if it survives pressure, pace and fatigue.',coach:'Look for the moment attention collapses: contact, recovery, or opponent contact.',playerFocus:'Under pressure, keep the picture steady.',layers:['Pressure','Quiet Eye']},
       {id:'per-qe6',code:'QE6',module:'Quiet Eye',phase:'Transfer',title:'Quiet Eye Matchplay',category:'Perception',duration:10,format:'Matchplay',rld:5,gate:'Natural',task:'Open or conditioned game. P1 plays normally while coach samples quiet-eye moments: contact, opponent contact, front wall and recovery.',scoring:'Normal scoring. Optional observation: stable gaze events / rushed gaze events.',rationale:'Transfers gaze control into the whole game without turning it into a conscious technical checklist.',coach:'Use only one focus per block. Too many gaze cues will overload the player.',playerFocus:'Compete with a quiet picture.',layers:['Quiet Eye','Matchplay']},
-      {id:'per-qe7',code:'QE7',module:'Quiet Eye',phase:'Advance Cues',title:'Call the Shot',category:'Perception',duration:8,format:'Live Rally / Feed + Rally',rld:3,gate:'Before ball crosses front wall',task:'P1 settles a stable fixation on P2\u2019s preparation area (shoulder region) before P2 strikes, holds it until after contact, and calls the shot out loud \u2014 "short/long" and "straight/cross" \u2014 BEFORE the ball crosses the front wall. Work in blocks of 10 calls. Progression (neutralisation): P2 deliberately disguises their usual tells \u2014 experiencing that a cue has stopped working drives the search for richer information far better than hiding the cue would (Smeeton et al., 2013).',scoring:'Blocks of 10: count correct calls per block. Accuracy climbing across blocks = attention educating itself toward specifying information. Do not tell the player which cues to use \u2014 if accuracy stalls, add variability or start the neutralisation progression instead.',rationale:'Trains gaze stabilisation and advance-cue reading implicitly in one task: the early-call deadline forces the eyes to settle on the opponent early, and block-scored accuracy gives self-organising feedback with no prescribed cues \u2014 the guided-discovery approach that stays robust under pressure where explicit gaze instruction collapses. The natural companion to OCCLUSION READ\u2122: same advance-information target, no goggles required, call-based where occlusion work is movement-only.',coach:'Never answer "what should I look at?" \u2014 reply "what did you see that time?" One block of 10, brief pause, next block. Introduce the disguise progression only once baseline accuracy is consistently above chance.',playerFocus:'Settle the eyes early \u2014 call it before the front wall.',layers:['Quiet Eye','Opponent Information','Advance Cues']}
+      {id:'per-qe7',code:'QE7',module:'Quiet Eye',phase:'Advance Cues',title:'Call the Shot',category:'Perception',duration:8,format:'Live Rally / Feed + Rally',rld:3,gate:'Before ball crosses front wall',task:'1) Player 1 settles their eyes on Player 2\u2019s shoulder area before the strike and holds until after contact. 2) Player 1 calls "short/long" and "straight/cross" BEFORE the ball reaches the front wall. 3) Work in blocks of 10 calls. Progression: Player 2 disguises their usual tells.',scoring:'Count correct calls per block of 10. Rising accuracy across blocks is the win.',rationale:'Settling the eyes early and calling before the front wall trains advance-cue reading \u2014 without ever prescribing where to look.',coach:'Never answer "what should I look at?" \u2014 ask "what did you see?" One block of 10, brief pause, next block. Add the disguise progression once accuracy is consistently above chance.',playerFocus:'Settle the eyes early \u2014 call it before the front wall.',layers:['Quiet Eye','Opponent Information','Advance Cues']}
     ],
     tracking:[
       {id:'per-tr1',code:'TR1',module:'Tracking',phase:'Chipping',title:'Stationary Chipping',category:'Perception',duration:6,format:'Solo / Pairs',rld:0,gate:'Ball bounce',task:'P1 chips the ball repeatedly from short distance to a wall, using any wall route that creates a controllable rebound. Start with large ball if needed.',scoring:'Longest sequence of clean contacts. No technical rating.',rationale:'Builds basic ball tracking, rebound reading and time-to-contact without pressure.',coach:'This is not a technique drill. It is a perception-control task: see the rebound and organise contact.',playerFocus:'See the rebound early.',layers:['Tracking','Level 0']},
@@ -5613,7 +5614,7 @@ function ShotBonusRally({setSession}){
     const t2='As Tier 1, but the rep point only counts when the shot is also taken at a tactically sound moment (opponent out of position, genuine opportunity created) rather than just mechanically produced.';
     const tagNote=tier==='2'&&(tags.length||customTag.trim())?` Behavioural add-on in play: ${[...tags,customTag.trim()].filter(Boolean).join(', ')}.`:'';
     const zoneNote=restricted?` Space manipulation: ball must land in Checkerboard zone${zoneRestrict.length>1?'s':''} ${zoneRestrict.join('/')} — outside these zones the ball is out and does not count.`:'';
-    const weakNote=weakSide!=='off'?` Weak-Side Amplifier: any of the target shot(s) played on the ${weakSide} counts DOUBLE (rep and finish)${weakDecay?' for the first half of the block only — then the amplifier is removed and normal values apply, so the invited behaviour has to stand on its own':''}. This amplifies the affordance of the weak side inside live, opposed play rather than fed-ball drilling.`:'';
+    const weakNote=weakSide!=='off'?` Weak-Side Amplifier: ${weakSide} target shots count double (rep and finish)${weakDecay?' for the first half of the block only':''}.`:'';
     return `Target shot(s): ${shotList}. ${tier==='1'?t1:t2}${tagNote}${zoneNote}${weakNote}`;
   }
   function buildScoring(){
@@ -5624,7 +5625,7 @@ function ShotBonusRally({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const layers=[...(tier==='2'?['Tactical: Shot Selection',...tags]:['Shot Repetition']),...(weakSide!=='off'?['Weak-Side Amplifier']:[])];
-    const card={id:Date.now()+Math.random(),title:`Shot Bonus Rally — ${chosen.map(s=>s.label).join(' + ')||'Shot'}${weakSide!=='off'?` (${weakSide[0].toUpperCase()+weakSide.slice(1)} Amplified)`:''}`,category:'Shot Bonus Rally',format:'Rally + Live Tally',duration:9,task:buildTask(),rationale:weakSide!=='off'?'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition — with the weak-side affordance amplified during realistic play. The evidence (Fitzpatrick et al., U8, 8 weeks): the CLA amplification group increased weak-side frequency, winners, technical proficiency and rally maintenance; the fed-ball drilling group showed no change.':'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition, with an optional tactical-appropriateness gate.',coach:'Let the rep tap run freely in Tier 1. Move to Tier 2 once the shot is reliably produced, so the reward tightens to tactically sound moments.',playerFocus:tier==='1'?'Get the shot in as often as the rally allows.':'Only claim the tap when the moment is actually on.',scoring:buildScoring(),layers,rld:tier==='2'?4:3};
+    const card={id:Date.now()+Math.random(),title:`Shot Bonus Rally — ${chosen.map(s=>s.label).join(' + ')||'Shot'}${weakSide!=='off'?` (${weakSide[0].toUpperCase()+weakSide.slice(1)} Amplified)`:''}`,category:'Shot Bonus Rally',format:'Rally + Live Tally',duration:9,task:buildTask(),rationale:weakSide!=='off'?'Live rally reps with the weak side worth double — amplifying its affordance in real play (Fitzpatrick: this beat fed-ball drilling on frequency, winners and technique).':'Practises the shot within a live, opposed rally rather than many self-fed reps — repetition without repetition.',coach:'Let the rep tap run freely in Tier 1. Move to Tier 2 once the shot is reliably produced, so the reward tightens to tactically sound moments.',playerFocus:tier==='1'?'Get the shot in as often as the rally allows.':'Only claim the tap when the moment is actually on.',scoring:buildScoring(),layers,rld:tier==='2'?4:3};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -6020,7 +6021,7 @@ const CLA_UPDATE_GAME_DEFS=[
    gqA:'Server: "What did that serve take away from them? Which of your two serves worked, and why?"',
    gqB:'Receiver: "What were you protecting against on that return \u2014 could you have driven or lobbed instead of boasting?"'},
   {id:'deeptouch',label:'Deep Touch',sub:'construct every attack from deep',
-   summary:'Player A may not attack from the front of the court \u2014 every attacking chance must be built from behind the short line. A can still run in and retrieve anything, but from the front A may only reset: a lob (straight or cross) or a high, deep straight drive. Player B plays normal squash.',
+   summary:'Player A may not attack from the front of the court \u2014 every attacking chance must be built from behind the short line. Player A can still run in and retrieve anything, but from the front may only reset: a lob (straight or cross) or a high, deep straight drive. Player B plays normal squash.',
    gqA:'Player A: "How did you hide that short ball inside your length swing?"',
    gqB:'Player B: "Which of your shots gave them the loose ball \u2014 and what would you change?"'},
   {id:'actionboundary',label:'Action Boundary',sub:'read what the short ball offers \u2014 coach-led',
@@ -6043,21 +6044,48 @@ function CLAUpdateGames({setSession}){
     if(gameId==='depthcap')return dcSym?`Classic Egyptian \u00be-court: BOTH players' shots may NOT first-bounce behind the back line of the service boxes \u2014 the painted line marks the forbidden strip. The whole game lives between the front wall and that line: attack, hold and deceive short, because length is off the table for everyone. Note the constraint is on the ball's first bounce, not on the players \u2014 a ball in the legal band that carries off the back wall still forces a deep retrieve.`:`One player is the Constrained player, the other the Free player. The Constrained player's shots may NOT first-bounce behind the back line of the service boxes \u2014 the painted line is the marker for the forbidden strip (the back quarter). Everything between the short line and that line is LEGAL, and that band is where the game lives: a firm ball landing just short of the forbidden line carries off the back wall, a lob dropping in the legal band climbs over the Free player and dies deep, width and pace drag them back off the T. Balls landing in the front half will rarely trouble the back wall before their second bounce \u2014 the forcing solutions come from the legal deep band, not from the front. Everything else is normal squash for both players. Swap roles each game.`;
     if(gameId==='attackstraight')return `The receiver must play cross-court only until they choose to attack straight. The moment they play a straight shot (the "release"), the point opens to full court for both players and normal squash continues. A straight shot before a deliberate release, or any non-cross-court shot pre-release, loses the point. The decision of WHEN to release is entirely the receiver's.`;
     if(gameId==='serveadv')return `Server has ${saServes} serve attempt${saServes==='1'?'':'s'} per point${saServes==='1'?' \u2014 one chance, so the serve decision has to be committed to':', framed as creative freedom \u2014 use them to experiment with pace, height, width and spin'}. Normal rally scoring throughout. The chain: if the serve denies a clean length response and the receiver is forced to BOAST their return, the chain is armed; if the server then converts the resulting loose ball with an attacking shot landing in the front zone (1/2), the chain bonus is awarded on top of the rally point. The bonus rewards the full sequence (serve \u2192 forced boast \u2192 front-zone attack), never the serve in isolation.`;
-    if(gameId==='deeptouch')return `Normal rallies with one rule on Player A. From the FRONT of the court (in front of the short line), A may only play reset shots: a lob \u2014 straight or cross \u2014 or a high, deep straight drive. What A may NOT do from the front is try to win the rally \u2014 no drops, no kills, no low put-aways, no tight counter-drops, and no boasts (any boast from the front is a short attacking ball, which is exactly what this rule removes). The moment A plays one of those from the front, the rally stops and the point goes to B. A can still chase down and retrieve any ball, anywhere. B plays normal squash with no restrictions. So A's only route to winning is built from BEHIND the short line: accurate length, holds and disguise that either beat B outright from deep or force the weak ball A can finish from deep.`;
+    if(gameId==='deeptouch')return `Normal rallies with one rule on Player A. From the FRONT of the court (in front of the short line), Player A may only play reset shots: a lob \u2014 straight or cross \u2014 or a high, deep straight drive. What Player A may NOT do from the front is try to win the rally \u2014 no drops, no kills, no low put-aways, no tight counter-drops, and no boasts (any boast from the front is a short attacking ball, which is exactly what this rule removes). The moment Player A plays one of those from the front, the rally stops and the point goes to Player B. Player A can still chase down and retrieve any ball, anywhere. Player B plays normal squash with no restrictions. So Player A's only route to winning is built from BEHIND the short line: accurate length, holds and disguise that either beat Player B outright from deep, or force the weak ball Player A can finish from deep.`;
     return `Play normal points \u2014 coach against player, or two players with the coach feeding in. Without warning, mid-rally, the coach introduces a short ball: a boast, a drop feed, or a deliberately loose ball. The player chooses in the moment \u2014 attack it, drop it, or push it deep and reset \u2014 and the point plays out. After some of these moments (not every one), pause and ask one question, then play on. Run 8\u201312 injected short balls per block, then swap or rest.`;
   }
   function buildScoring(){
     if(gameId==='depthcap')return dcSym?`Normal rally scoring. Either player's ball first bounces behind the service-box line = out, point to the opponent \u2014 a ball check against a painted line both players can see. Bonus +${dcBonus} if you win the rally AND forced your opponent to play at least one shot from behind that line during it (retrieving off the back wall counts) \u2014 a POSITION check on the opponent's body, called by the off-court tallier or agreed by both players.`:`Normal rally scoring. Constrained player's ball first bounces behind the service-box line = out, point to the Free player \u2014 a ball check against a painted line both players can see, no zone judgement needed. Bonus +${dcBonus} on top of the rally point if the Constrained player wins the rally AND the Free player was forced to play at least one shot from behind that same line during it \u2014 retrieving off the back wall counts. The bonus is a POSITION check on the Free player's body, not a ball check: called by the off-court tallier, or agreed by both players.`;
     if(gameId==='attackstraight')return `Normal rally scoring. Cross-court violation before release = point to the opponent.${Number(asBonus)>0?` Release bonus: +${asBonus} on top of the rally point when the receiver releases straight AND wins the rally \u2014 rewarding a well-timed direction change, not the change itself.`:' No release bonus \u2014 the natural consequences of the release timing do the teaching.'}`;
     if(gameId==='serveadv')return `Normal rally scoring. Chain bonus: serve forces a boasted return AND the server's next shot is an attacking shot landing in the front zone (1/2) = +${saBonus} on top of the rally point. Both chain conditions are objectively detectable (shot-type flag + floor zone) \u2014 no adjudication. If the chain is armed but the server does not convert, play simply continues at normal scoring.`;
-    if(gameId==='deeptouch')return `Normal rally scoring. A plays an attacking shot from in front of the short line = rally stops, point to B \u2014 called by the players; the shot speaks for itself (was it trying to win the rally from the front?). A retrieving or resetting from the front is legal and play continues.${Number(dtBonus)>0?` Bonus +${dtBonus} when A wins the rally with a winning shot struck from behind the short line.`:''}`;
+    if(gameId==='deeptouch')return `Normal rally scoring. Player A plays an attacking shot from in front of the short line = rally stops, point to Player B \u2014 called by the players; the shot speaks for itself (was it trying to win the rally from the front?). Player A retrieving or resetting from the front is legal and play continues.${Number(dtBonus)>0?` Bonus +${dtBonus} when A wins the rally with a winning shot struck from behind the short line.`:''}`;
     return abScored?`Rally points as normal, plus two rules called by the coach or the off-court player: attack the short ball while the opponent is OFF the T and still recovering = +1 bonus if you go on to win the rally. Attack it while the opponent is already SET and waiting = point straight to the opponent, whatever happens next. Pushing deep or dropping is always safe \u2014 no bonus, no penalty.`:'No score \u2014 the coach\u2019s live judgement and the questioning are the feedback. Turn on the scored variant below if the group needs stakes.';
+  }
+  function cardTask(){
+    if(gameId==='depthcap')return dcSym
+      ?'1) Neither player may let a shot first-bounce behind the back line of the service boxes. 2) Everything else is normal squash.'
+      :'1) Player A (constrained) must not let any shot first-bounce behind the back line of the service boxes. 2) Player B plays normal squash. 3) Swap roles each game.';
+    if(gameId==='attackstraight')return '1) The receiver plays cross-court only. 2) When ready, the receiver attacks straight \u2014 the release. 3) After the release, full court for both players.';
+    if(gameId==='serveadv')return `1) Server has ${saServes} serve${saServes==='1'?'':'s'} per point. 2) Play the rally as normal. 3) The chain: serve forces a boasted return, then the server attacks the loose ball into the front zone.`;
+    if(gameId==='deeptouch')return '1) Player A may not attack from in front of the short line \u2014 no drops, kills or boasts there. 2) From the front, Player A may only lob or play a high, deep straight drive. 3) Player B plays normal squash.';
+    return '1) Play points; the coach slips in a random short ball. 2) The player chooses: attack it, drop it, or push it deep. 3) Play the point out; the coach asks one question after some of them.';
+  }
+  function cardScoring(){
+    if(gameId==='depthcap')return dcSym
+      ?`Rally = 1. Ball behind the line = point to the opponent. +${dcBonus} if you win a rally that forced your opponent behind the line.`
+      :`Rally = 1. Player A's ball behind the line = point to Player B. +${dcBonus} when Player A wins a rally that forced Player B behind the line.`;
+    if(gameId==='attackstraight')return `Rally = 1. Wrong direction before the release = point to the opponent.${Number(asBonus)>0?` Release straight AND win = +${asBonus}.`:''}`;
+    if(gameId==='serveadv')return `Rally = 1. Chain completed (serve \u2192 forced boast \u2192 front-zone attack) = +${saBonus}.`;
+    if(gameId==='deeptouch')return `Rally = 1. Player A attacks from the front = point to Player B.${Number(dtBonus)>0?` Player A wins with a winner from behind the short line = +${dtBonus}.`:''}`;
+    return abScored?'Rally = 1. Attack the short ball with your opponent off the T and win = +1. Attack while they are set = point to them.':'No score \u2014 the coach\u2019s judgement and questions are the feedback.';
+  }
+  function cardRationale(){
+    if(gameId==='depthcap')return dcSym
+      ?'With safe length gone for both players, the game must be won short \u2014 holds, drops, deception and the volley take over.'
+      :'Player A loses safe length, so new pressure \u2014 width, holds, short \u2014 has to emerge. The bonus keeps pushing the opponent deep as the goal.';
+    if(gameId==='attackstraight')return 'Trains picking the moment to change direction off your opponent\u2019s position \u2014 go early and get punished, never go and gain nothing.';
+    if(gameId==='serveadv')return 'Rewards the serve for what it creates, not how it looks \u2014 the bonus only pays when the whole sequence lands.';
+    if(gameId==='deeptouch')return 'Player A must build every attack from deep \u2014 disguise and hold inside the length swing. Player B learns to spot the loose ball early and shut it down.';
+    return 'The same short ball is attackable one moment and not the next \u2014 the skill is reading what THIS ball offers YOU right now.';
   }
   const coachText={
     depthcap:`${g.gqA} ${g.gqB} Watch for the constrained player discovering width, holds and short pressure once depth is removed \u2014 do not prescribe the alternatives.`,
     attackstraight:`${g.gqA} Ask it after both won AND lost releases \u2014 the timing read is the skill. Do not coach when to release; let punished-early and never-released rallies do the teaching.`,
     serveadv:`Server: ${g.gqA} Receiver: ${g.gqB} The receiver's question matters as much \u2014 recognising when a boast was genuinely forced versus chosen is its own perceptual skill.`,
-    deeptouch:`A: ${g.gqA} B: ${g.gqB} Watch A's length play for emerging disguise \u2014 the same preparation producing drive, drop and boast is the goal behaviour.`,
+    deeptouch:`${g.gqA} ${g.gqB} Watch Player A's length play for emerging disguise \u2014 the same preparation producing drive, drop and boast is the goal behaviour.`,
     actionboundary:'Judge each read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed. After contrasting decisions ask: "What made that one attackable \u2014 and what made the last one not?" One question per pause; the drill is the read, not the debrief.'
   };
   const playerFocusText={depthcap:'No back corners \u2014 find another way to hurt them.',attackstraight:'Cross until the moment is real \u2014 then go straight.',serveadv:'Serve to take something away, then take the short ball.',deeptouch:'Build it from deep \u2014 hide the short ball in your length.',actionboundary:'Read what THIS ball, in THIS moment, is offering you.'};
@@ -6065,7 +6093,7 @@ function CLAUpdateGames({setSession}){
     depthcap:'CLA mechanism: the task constraint eliminates the constrained player\u2019s dominant attractor \u2014 deep length into the back corners, squash\u2019s highest-percentage TARGET and the platform most attacks are built from \u2014 forcing a search of the rest of the movement solution space (width, holds, short pressure) under live opposition. The forced-retreat bonus performs education of intention: depth-as-an-OUTCOME stays the goal even with depth-as-a-TARGET removed. Directly analogous to the racquetball 3/4 Court Game, applied asymmetrically \u2014 a clean landing check against the back line of the service boxes, squash\u2019s own painted marker for the strip.',
     attackstraight:'CLA mechanism: education of attention \u2014 the release decision can only be timed well by perceiving the opponent\u2019s court position, so the constraint forces that perceptual variable into the control loop on every rally. The guided question ("where was your opponent when you went?") then performs education of intention without ever prescribing when to go. No rule forces a losing outcome from a correct decision: the constraint creates the decision, normal squash consequences grade it \u2014 the environment, not the coach, delivers the feedback.',
     serveadv:'A squash-native nested-affordance sequence: the serve\u2019s job is to take away the clean length response, the forced boast is the detectable evidence it worked, and the front-zone conversion is the payoff the server must still earn. Rewarding the sequence (not the serve) keeps the serve honest \u2014 a spectacular serve that doesn\u2019t create the next ball earns nothing extra.',
-    deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and hold live. B is simultaneously educated to perceive and deny the loose-ball affordance before it exists. The rule punishes the choice of shot, never the outcome of good play \u2014 A chasing down and retrieving their own winning drop remains legal squash.',
+    deeptouch:'CLA mechanism: with the front-court finish removed from A\u2019s options, the affordance of the short ball must be CREATED from deep rather than accepted at the front \u2014 shifting A\u2019s education of intention from "take the opening" to "manufacture the opening", which is where disguise and hold live. Player B, meanwhile, learns to spot the loose ball coming and shut it down before it arrives. The rule punishes shot choice, not good play: if Player A drops from deep and runs in to cover the reply, that is still legal squash \u2014 only attacking FROM the front is banned.',
     actionboundary:'Develops genuine affordance perception \u2014 reading what a short ball offers THIS player in THIS moment (position, speed, fatigue) rather than executing a scripted response to a category of ball. Affordances are personal and transitory; the coach\u2019s live judgement is the only valid referee, which is why this stays unscored.'
   };
   const dcSymRationale='CLA mechanism: with the back strip removed for BOTH players, the shared attractor of safe length disappears and the entire game must be solved short and mid-court \u2014 amplifying the affordances of the hold, the counter-drop, deception and the volley, which length-based games let players avoid. The Egyptian style is the emergent behaviour, not an instruction. The forced-retreat bonus keeps depth alive as an EFFECT (carry off the back wall, the lob that climbs over) even while it is forbidden as a target for everyone.';
@@ -6074,7 +6102,7 @@ function CLAUpdateGames({setSession}){
     if(typeof setSession!=='function')return;
     const titles={depthcap:dcSym?'Egyptian \u00be Court \u2014 Classic (Symmetric)':'Depth Cap \u2014 Back-Quarter Denial',attackstraight:'Attack Straight \u2014 Release Decision',serveadv:`Serve for Advantage \u2014 Nested Chain (${saServes}-Serve)`,deeptouch:'Deep Touch \u2014 Build From Deep',actionboundary:abScored?'Action Boundary \u2014 Scored (Off-T Bonus)':'Action Boundary \u2014 Coach-Led Read'};
     const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:abScored?'Injected Short Ball + Called Rules':'Coach-Led Drill'};
-    const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:buildTask(),rationale:currentRationale(),coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:buildScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
+    const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:cardTask(),rationale:cardRationale(),coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:cardScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -6189,6 +6217,22 @@ function RoleConstraintEngine({setSession}){
   const rA=ROLE_CONSTRAINT_ROLES.find(r=>r.id===roleA),rB=ROLE_CONSTRAINT_ROLES.find(r=>r.id===roleB);
   const sA=ROLE_CONSTRAINT_STARTS.find(s=>s.id===startA),sB=ROLE_CONSTRAINT_STARTS.find(s=>s.id===startB);
   const swapText=swapCadence==='never'?'Roles stay fixed for the block.':swapCadence==='five'?'Swap roles every 5 points.':'Swap roles each game.';
+  const ROLE_CARD_SHORT={none:'plays normal squash',boastOnly:'boasts only (two walls before the floor)',straightOnly:'straight drives only',crossOnly:'cross-courts only',lobOnly:'lobs only',dropDrive:'straight drops and drives only',volleyHunt:'must volley anything reachable',defensiveOnly:'defensive shots only \u2014 lobs, high deep drives, and the back-corner escape boast',attackAtWill:'attacks whenever they choose'};
+  function cardTask(){
+    const stA=startA!=='none'?` (starts ${sA.label.toLowerCase()})`:'';
+    const stB=startB!=='none'?` (starts ${sB.label.toLowerCase()})`:'';
+    return `1) Player A ${ROLE_CARD_SHORT[roleA]}${stA}. 2) Player B ${ROLE_CARD_SHORT[roleB]}${stB}. 3) A shot outside your role = point to the opponent. ${swapText}`;
+  }
+  function cardScoring(){
+    const bA=Number(bonusA)||0,bB=Number(bonusB)||0;
+    const extra=[bA>0&&roleA!=='none'?`Player A in-role win = +${bA}.`:null,bB>0&&roleB!=='none'?`Player B in-role win = +${bB}.`:null].filter(Boolean).join(' ');
+    return `Rally = 1. Out-of-role shot = point to the opponent.${extra?' '+extra:''}`;
+  }
+  function cardRationale(){
+    if(presetId==='boastdrive')return 'Both players are pushed into shots and movement they would never choose \u2014 front-corner work for Player A, relentless length for Player B.';
+    if(presetId==='siege')return 'The defender solves survival without attacking; the attacker learns when to strike a set defence.';
+    return 'Each player must solve their own restriction live \u2014 the shots left to them are the lesson.';
+  }
   function buildTask(){
     const startNoteA=startA!=='none'?` and must start each rally ${sA.label.toLowerCase()}`:'';
     const startNoteB=startB!=='none'?` and must start each rally ${sB.label.toLowerCase()}`:'';
@@ -6202,11 +6246,11 @@ function RoleConstraintEngine({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const title=presetId==='custom'?`Role Constraint — ${rA.label} vs ${rB.label}`:`Role Constraint — ${preset.label.split(' (')[0]}`;
-    const card={id:Date.now()+Math.random(),title,category:'Role Constraint',format:'Asymmetric Roles',duration:9,task:buildTask(),
-      rationale:rceRationale(),
+    const card={id:Date.now()+Math.random(),title,category:'Role Constraint',format:'Asymmetric Roles',duration:9,task:cardTask(),
+      rationale:cardRationale(),
       coach:'Do not demonstrate the "right" solution for either role — ask each player what their restriction is forcing them to discover. Guided questioning: "What can you do from there that you never normally try?" Swap roles so both players explore both problems.',
       playerFocus:'Solve YOUR restriction — the shots you are left with are the lesson.',
-      scoring:buildScoring(),layers:['Asymmetric Roles','Space Manipulation','Movement Solutions'],rld:4};
+      scoring:cardScoring(),layers:['Asymmetric Roles','Space Manipulation','Movement Solutions'],rld:4};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -6317,6 +6361,27 @@ function CourtGeometryModule({setSession}){
     if(modeId==='crossconfine')return 'Normal rally scoring. Ball landing on your own side of the court = out, point to the opponent.';
     return 'Normal rally scoring. Shot outside the rule tree for your situation = point to the opponent. Players call their own violations; the off-court player can arbitrate opponent-position disputes.';
   }
+  function cardTask(){
+    if(modeId==='deepbounce')return dbProg==='secondbounce'?'1) First bounce may land anywhere. 2) The second bounce must be behind the short line. 3) Rally as normal.':dbProg==='shortvolley'?'1) Every shot must first-bounce behind the short line. 2) Exception: if you are in front of your opponent, you may play a short volley. 3) Rally as normal.':'1) Every shot must first-bounce behind the short line. 2) Rally as normal.';
+    if(modeId==='outzone')return `1) Zone${ozZones.length>1?'s':''} ${ozZones.join('/')} ${ozZones.length>1?'are':'is'} out for both players. 2) First bounce there = out. 3) Rally as normal.`;
+    if(modeId==='abovecut')return acServesExempt?'1) Every shot must hit the front wall above the cut line. 2) Serves are exempt \u2014 serve normally. 3) Rally as normal.':'1) Every shot must hit the front wall above the cut line. 2) Rally as normal.';
+    if(modeId==='crossconfine')return `1) Each player owns one side of the court. 2) Every shot must land on the opposite side.${ccSwap?' 3) Swap sides each game.':''}`;
+    return '1) Low ball with your opponent in front of you \u2192 play a cross-court pass. 2) Low ball with you in front \u2192 play a straight pass. 3) High ball \u2192 lob it deep.';
+  }
+  function cardScoring(){
+    if(modeId==='deepbounce')return dbProg==='secondbounce'?'Rally = 1. Second bounce short of the line = point to the opponent.':'Rally = 1. First bounce short of the line = point to the opponent.';
+    if(modeId==='outzone')return 'Rally = 1. First bounce in the out zone = point to the opponent.';
+    if(modeId==='abovecut')return 'Rally = 1. Front wall below the cut line = point to the opponent.';
+    if(modeId==='crossconfine')return 'Rally = 1. Ball landing on your own side = point to the opponent.';
+    return 'Rally = 1. Wrong shot for the situation = point to the opponent.';
+  }
+  function cardRationaleShort(){
+    if(modeId==='deepbounce')return 'Length under live pressure \u2014 from every position, one outcome: the ball dies deep.';
+    if(modeId==='outzone')return 'With that space gone, the game becomes finding what the rest of the court still offers.';
+    if(modeId==='abovecut')return 'The cut line becomes the tin \u2014 height, lobs and float become the weapons.';
+    if(modeId==='crossconfine')return 'The straight game is gone \u2014 cross-court volleys and wide lobs take over.';
+    return 'Shot choice follows where your opponent is \u2014 read them, not a pattern.';
+  }
   const coachByMode={
     deepbounce:'Watch for players discovering the dying length and the high, wide cross that cannot be volleyed — do not name those solutions, let the constraint surface them. If rallies stall, move to the second-bounce progression rather than abandoning the depth demand.',
     outzone:'Vary WHICH zone is out across blocks — removing the front changes the game completely versus removing a back corner. Ask: "with that zone gone, where does the pressure live now?"',
@@ -6328,9 +6393,9 @@ function CourtGeometryModule({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const titleSuffix=modeId==='deepbounce'?(dbProg==='base'?'':dbProg==='shortvolley'?' — Short Volley Progression':' — Second Bounce Progression'):modeId==='outzone'?` — Zone${ozZones.length>1?'s':''} ${ozZones.join('/')}`:'';
-    const card={id:Date.now()+Math.random(),title:`Court Geometry — ${mode.label}${titleSuffix}`,category:'Court Geometry',format:'Geometry Constraint',duration:9,task:buildTask(),
-      rationale:cgRationale(),
-      coach:coachByMode[modeId],playerFocus:focusByMode[modeId],scoring:buildScoring(),
+    const card={id:Date.now()+Math.random(),title:`Court Geometry — ${mode.label}${titleSuffix}`,category:'Court Geometry',format:'Geometry Constraint',duration:9,task:cardTask(),
+      rationale:cardRationaleShort(),
+      coach:coachByMode[modeId],playerFocus:focusByMode[modeId],scoring:cardScoring(),
       layers:modeId==='abovecut'?['Height Constraint','Space Manipulation']:modeId==='passingrules'?['Opponent Reading','Decision Making']:['Space Manipulation','Movement Solutions'],rld:modeId==='passingrules'?4:3};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
