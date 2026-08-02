@@ -6088,8 +6088,11 @@ function CLAUpdateGames({setSession}){
   const [dcBonus,setDcBonus]=useState('2');
   const [dcSym,setDcSym]=useState(false);
   const [asBonus,setAsBonus]=useState('1');
+  const [asMin,setAsMin]=useState('2');
+  const [asRead,setAsRead]=useState('1');
   const [saBonus,setSaBonus]=useState('2');
   const [saServes,setSaServes]=useState('2');
+  const [saExp,setSaExp]=useState('1');
   const [dtBonus,setDtBonus]=useState('1');
   const [abScored,setAbScored]=useState(false);
   const [added,setAdded]=useState('');
@@ -6112,7 +6115,7 @@ function CLAUpdateGames({setSession}){
     if(gameId==='depthcap')return dcSym
       ?'1) Neither player may let a shot first-bounce behind the back line of the service boxes. 2) Everything else is normal squash.'
       :'1) Player A (constrained) must not let any shot first-bounce behind the back line of the service boxes. 2) Player B plays normal squash. 3) Swap roles each game.';
-    if(gameId==='attackstraight')return '1) The receiver plays cross-court only. 2) When ready, the receiver attacks straight \u2014 the release. 3) After the release, full court for both players.';
+    if(gameId==='attackstraight')return `1) The receiver plays cross-court only \u2014 at least ${asMin} cross-court${asMin==='1'?'':'s'} before the release is allowed. 2) When ready, the receiver attacks straight \u2014 the release. 3) After the release, full court for both players. 4) The server hunts the release: read it coming and win that rally for the read bonus.`;
     if(gameId==='serveadv')return `1) Server has ${saServes} serve${saServes==='1'?'':'s'} per point. 2) Play the rally as normal. 3) The chain: serve forces a boasted return, then the server attacks the loose ball into the front zone.`;
     if(gameId==='deeptouch')return '1) Player A may not attack from in front of the short line \u2014 no drops, kills or boasts there. 2) From the front, Player A may only lob or play a high, deep straight drive. 3) Player B plays normal squash.';
     return '1) Play points; the coach slips in a random short ball. 2) The player chooses: attack it, drop it, or push it deep. 3) Play the point out; the coach asks one question after some of them.';
@@ -6121,8 +6124,8 @@ function CLAUpdateGames({setSession}){
     if(gameId==='depthcap')return dcSym
       ?`Rally = 1. Ball behind the line = point to the opponent. +${dcBonus} if you win a rally that forced your opponent behind the line.`
       :`Rally = 1. Player A's ball behind the line = point to Player B. +${dcBonus} when Player A wins a rally that forced Player B behind the line.`;
-    if(gameId==='attackstraight')return `Rally = 1. Wrong direction before the release = point to the opponent.${Number(asBonus)>0?` Release straight AND win = +${asBonus}.`:''}`;
-    if(gameId==='serveadv')return `Rally = 1. Chain completed (serve \u2192 forced boast \u2192 front-zone attack) = +${saBonus}.`;
+    if(gameId==='attackstraight')return `Rally = 1. Wrong direction before the release = point to the opponent. Releasing before ${asMin} cross-court${asMin==='1'?'':'s'} = point to the server.${Number(asBonus)>0?` Release straight AND win = +${asBonus}.`:''}${Number(asRead)>0?` Server wins the release rally = +${asRead} (the read bonus).`:''}`;
+    if(gameId==='serveadv')return `Rally = 1. Chain completed (serve \u2192 forced boast \u2192 front-zone attack) = +${saBonus}.${Number(saExp)>0&&Number(saServes)>1?` Corner serve (side wall, then back wall at or below the glass stripes) = +${saExp} on serve 1, +${Number(saExp)+1} on serve 2${saServes==='3'?' and serve 3':''} \u2014 the extra serves are where experiments are cheapest.`:''}`;
     if(gameId==='deeptouch')return `Rally = 1. Player A attacks from the front = point to Player B.${Number(dtBonus)>0?` Player A wins with a winner from behind the short line = +${dtBonus}.`:''}`;
     return abScored?'Rally = 1. Attack the short ball with your opponent off the T and win = +1. Attack while they are set = point to them.':'No score \u2014 the coach\u2019s judgement and questions are the feedback.';
   }
@@ -6199,8 +6202,11 @@ function CLAUpdateGames({setSession}){
       {gameId==='depthcap'&&<div className="cluSection"><div className="cluLabel">Mode</div><div className="cluChips">{[[false,'Asymmetric \u2014 Depth Cap (one player constrained)'],[true,'Symmetric \u2014 classic Egyptian \u00be court (both constrained)']].map(([v,label])=><div key={String(v)} role="button" tabIndex={0} className={dcSym===v?'cluChip on':'cluChip'} onClick={()=>setDcSym(v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDcSym(v);}}>{label}</div>)}</div></div>}
       {gameId==='depthcap'&&bonusRow(dcSym?'Forced-retreat bonus (win + forced opponent behind the line \u2014 either player can earn it)':'Forced-retreat bonus (constrained wins + forced free player behind the line)',dcBonus,setDcBonus,['1','2','3'])}
       {gameId==='attackstraight'&&bonusRow('Release bonus (released straight AND won the rally \u2014 0 = consequences only)',asBonus,setAsBonus,['0','1','2'])}
+      {gameId==='attackstraight'&&<div className="cluSection"><div className="cluLabel">Minimum cross-courts before the release is legal</div><div className="cluChips">{['1','2','3','4'].map(n=><div key={n} role="button" tabIndex={0} className={asMin===n?'cluChip on':'cluChip'} onClick={()=>setAsMin(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAsMin(n);}}>{n}</div>)}</div></div>}
+      {gameId==='attackstraight'&&bonusRow('Server read bonus (server wins the release rally \u2014 0 = off)',asRead,setAsRead,['0','1','2'])}
       {gameId==='serveadv'&&<div className="cluSection"><div className="cluLabel">Serves per point</div><div className="cluChips">{['1','2','3'].map(n=><div key={n} role="button" tabIndex={0} className={saServes===n?'cluChip on':'cluChip'} onClick={()=>setSaServes(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSaServes(n);}}>{n}</div>)}</div><p className="cluHint">2 is the standing house rule — creative freedom, not fault-avoidance. Drop to 1 to sharpen commitment to the serve decision; raise to 3 as a regression for players still exploring what a serve can take away.</p></div>}
       {gameId==='serveadv'&&bonusRow('Chain bonus (serve \u2192 forced boast \u2192 front-zone attack converted)',saBonus,setSaBonus,['1','2','3'])}
+      {gameId==='serveadv'&&Number(saServes)>1&&bonusRow('Corner-serve bonus (side wall, then back wall at or below the glass stripes \u2014 tape a line on solid walls; pays more on the extra serves; 0 = off)',saExp,setSaExp,['0','1','2'])}
       {gameId==='deeptouch'&&bonusRow('Deep-build bonus (A wins with a winner struck from behind the short line \u2014 0 = off)',dtBonus,setDtBonus,['0','1','2'])}
       {gameId==='actionboundary'&&<div className="cluSection">
         <div className="cluLabel">Scoring</div>
@@ -12437,6 +12443,12 @@ const DB_GAMES=[
    earn:['Volley win → +1 point and +1 DB'],
    scoring:'Live point tracker. A DB spend applies the point penalty.',
    note:'Refinement: the point penalty is configurable (0 / 1 / 2) so spending stays a live option, not a trap.'},
+  {id:'db9',title:'Court Currency',tag:'Promotion',
+   principle:'Earn bounces here — spend them on the harder court.',
+   logic:'Runs alongside monarch / king-of-court rotation. Volley a ball and win the rally within 3 shots of that volley → bank 1 DB. Banked DB travel WITH the player when promoted and are spent to survive on the harder court. Relegated players keep nothing — the bank resets.',
+   earn:['Volley, then win within 3 shots of it → +1 DB (banked)','Promoted → take your bank with you','Relegated → bank resets to 0'],
+   scoring:'Normal rally scoring on every court. The bank is the bridge between courts.',
+   note:'The earn condition is the promotion skill itself — taking the ball early and converting fast — so the currency is earned by the behaviour the harder court will demand.'},
   {id:'db8',title:'Golden Bounce',tag:'Clutch',
    principle:'One bounce, all-or-nothing.',
    logic:'Each player has 1 Golden DB. Use it and win the rally → you keep it. Use it and lose → it is gone for good. Normal DB are unaffected.',
@@ -12533,6 +12545,7 @@ function DBSuiteStyles(){
 
 
 function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
+  const [modifier,setModifier]=useState(emptyModifierConfig());
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2']);
   const [gameId,setGameId]=useState('db1');
@@ -12733,7 +12746,8 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
     <div className="dbBottomBar">
       <button type="button" className="dbUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
       <button type="button" className="secondaryBtn" onClick={resetEconomy}>Reset</button>
-      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Double Bounce — '+game.title,category:'Double Bounce',format:'Resource economy',duration:10,task:'Run the Double Bounce Suite live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Double bounce as a resource economy — spend to survive, earn to dominate.',coach:'Debrief the decisions — when they spent, when they held, what they earned.',playerFocus:'Spend a bounce to survive; earn it back through pressure.',layers:['Double Bounce'],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
+      {typeof setSession==='function'&&<UniversalModifierEngine title="Universal Modifiers" context="Double Bounce" value={modifier} onChange={setModifier} presentPlayers={presents} hideDoubleBounce={true}/>}
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Double Bounce — '+game.title,category:'Double Bounce',format:'Resource economy',duration:10,task:'Run the Double Bounce Suite live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Double bounce as a resource economy — spend to survive, earn to dominate.',coach:'Debrief the decisions — when they spent, when they held, what they earned.',playerFocus:'Spend a bounce to survive; earn it back through pressure.',modifier,layers:['Double Bounce',...(modifier.constraints||[])],rld:4}));alert(game.title+' added to your session. Open Session Builder to see the rotation.');}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
 
