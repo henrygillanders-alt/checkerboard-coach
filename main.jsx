@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v541 CLA Lexicon\u2122 \u2014 coach education reference for the language of ecological dynamics. 154 terms and 15 researcher profiles across five categories, each with a plain-English reading, a squash example, coaching tips and common misunderstandings; browse by category, alphabetical index or instant search, with clickable related terms. Terms are also indexed in global search. Builds on v540.';
+const APP_VERSION='v543 Parent Education. Explains the approach by method rather than by session format \u2014 how much a player is told versus works out \u2014 so it applies equally to group and individual coaching. Names what clear instruction does well, states the trade-offs openly, treats neatness as a property of the setting rather than of any coach, and hands parents four questions to judge any coaching including ours. Adds a parent Q&A guide and the Breakthrough Log, a dated per-player record shareable with a player\u2019s other coaches. Builds on v542.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5486,7 +5486,9 @@ return <div className="homeGrid homeGridV99h52">
           {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
         </div>
       </button>
-      <button className="homeCard homeTitleOnly" style={{borderLeft:'4px solid #4a9de0'}} onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('parents')}><h2>Why We Coach This Way</h2><span className="homeTileSubtitle">Parent education · explain, defend and send home</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       {/* ── PRIMARY TILES — the five most-used ── */}
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
@@ -20506,8 +20508,230 @@ function LexiconScreen({setScreen}){
 }
 
 
+const PARENT_SECTIONS=[{"id":"look","t":"What a session looks like","b":["Coaching approaches differ mainly in one thing: how much a player is told, and how much they are asked to work out.","Every coach uses both. A grip has to be shown. Reading an opponent cannot be. The difference between approaches is the proportion and the timing, not whether one uses instruction and the other does not.","Our sessions sit further towards the working-it-out end than you may be used to. Players solve problems, compete, adapt and experiment, and the coach often says less than you might expect.","That is deliberate rather than casual. Each activity is built so the situations your child meets in practice are the situations they meet in a match."]},{"id":"two","t":"Two ways of teaching the same skill","b":["Take a drop shot. One approach shows the player the correct technique, breaks it into parts, and has them repeat it until it is reliable, then puts it into a game.","The other puts the player in situations where a drop is the best available answer, and lets them find a version that works for them, shaping it as they go.","The first is quicker to produce something that looks right. The second is slower to look good and tends to hold up better when someone is trying to stop them.","Most skills need some of both. What matters is which one is doing the heavy lifting, and at what stage."]},{"id":"bike","t":"Why some things cannot be told","b":["Someone can explain balance on a bicycle clearly and helpfully, and you still have to get on and wobble.","Some things are best explained. Others can only be found by doing, because they depend on a situation that has to be present to be learned.","A player can be told where to stand. Reading an opponent, choosing between three options in half a second, and staying composed at 9-9 have to be discovered in conditions that demand them."]},{"id":"diff","t":"Every child is different","b":["Children grow at different rates and have different heights, strengths, limb lengths and temperaments. A movement that suits a tall, long-limbed player will not suit a small, quick one.","So there are principles of good movement that apply to everyone, and details that should differ between players.","Our job is to hold the principles firm while letting each child find the version that works for their body."]},{"id":"correct","t":"How and when we correct","b":["We do correct things. The question is when, and how often.","Correcting immediately and every time is right for some things — anything unsafe, anything with an injury risk, anything limiting what a player can do at all, and anything a player has asked about directly.","For most match skills we hold back a little, because a player who is always told the answer does not get practice at finding one. In a match nobody can tell them what to do.","So we choose the moment rather than avoiding it. If your child is doing something that genuinely needs fixing, we will fix it."]},{"id":"direct","t":"What clear instruction does well","b":["It would be wrong to suggest technical teaching has no place. It does, and we use it.","It is the fastest way to give a beginner a starting point when they have no solution at all. It is right for grip, for safety, and for anything carrying an injury risk.","It is valuable when a player has hit a genuine ceiling and something in how they move is closing off options that need naming plainly.","And it is far better than vague encouragement. A coach who can explain precisely what is happening is a good coach, whichever approach they lean towards."]},{"id":"games","t":"Why so many games","b":["Children have learned through play for as long as there have been children. Play develops decision making, creativity, adaptability, resilience and competitiveness at the same time.","The games are not there only to keep sessions enjoyable, though they do. Each is built to develop particular behaviours while keeping the realism of a match.","If a game looks like it is just a game, that usually means it is working."]},{"id":"comp","t":"Why practice looks like competition","b":["Skills tend to stay attached to the conditions they were learned in. A shot practised from a gentle feed, with no opponent and no consequence, is being learned under conditions that never quite occur in a match.","So we keep the opponent, the decision and the pressure in place, and make things easier by changing the space, the ball or the scoring instead.","It also means practice looks messier. A shot always looks cleaner without an opponent — that is true of any coach's session, including ours. It is worth remembering when judging what you are watching."]},{"id":"var","t":"Mistakes and messy patches","b":["A run of errors is not always a sign that something has gone wrong. When a player is reorganising how they do something, performance usually gets less consistent before it gets better.","If a child never struggles in practice, the task is probably too easy for them to be learning much from it.","We aim for roughly 70% success — enough to keep confidence, enough failure to require adaptation."]},{"id":"judge","t":"How to judge any coaching, including ours","b":["You do not need to take a view on coaching theory to work out whether something is working. These are the questions we would apply to ourselves, and we would encourage you to apply them to us.","Does it show up in matches? A shot can work perfectly in practice and disappear the moment an opponent is trying to stop it.","Can they do it when nobody is telling them? That is the difference between a player who has learned something and a player who is being operated.","Does it survive a change of venue, opponent or ball? Skills that only work in familiar conditions tend to be narrower than they look.","Are they getting better at solving problems, or better at one solution? Both matter, but only one of them keeps working as opponents improve.","And a question worth asking any coach: what were you trying to produce today, and how would you know if it worked? Any good coach has a clear answer, whatever their approach."]},{"id":"cost","t":"What this approach costs","b":["It would be dishonest to present this as free of trade-offs.","It looks less impressive to watch, and progress is harder for a parent to see week to week. Early on, a player drilled intensively on one shot will often produce a tidier-looking version of it sooner.","It asks more of the coach, because designing a good game is harder than delivering a good drill and a badly designed game teaches nothing.","We accept those costs because of what happens later, in unfamiliar venues against unfamiliar players when nobody can help."]},{"id":"indep","t":"Building independent players","b":["The goal is players who no longer need us: who can read a situation, adapt under pressure, stay composed and keep learning on their own.","That is what people mean by sporting intelligence, and it is what keeps players in the game long after junior results stop mattering."]}];
+const PARENT_HELP=["Ask what they tried, not whether they won. It changes what they pay attention to next time.","Resist coaching from the side of the court during matches. It splits their attention at the worst moment.","Get them playing against as many different people as possible. Variety of opponent does more than variety of drill.","Protect unstructured play and other sports. Early variety is associated with better long-term outcomes, not worse.","Tell us who else is coaching your child, so everyone can work to the same picture.","Do not panic at a run of losses during a change. It is usually the middle of the change, not the end of the progress."];
+const PARENT_FAQ=[{"q":"Should we also book individual lessons?","a":["Often yes. More court time and individual attention are valuable, and many of our players do both.","The question is less about group or individual than about how a session is run. An individual session can be built around problems and decisions just as a group can, and a group can be run as a drill just as a lesson can.","The only thing we would ask is that you tell us who else is working with your child. Children progress faster when the adults around them are pulling in the same direction, and that is much easier to arrange when we know who to call."]},{"q":"One coach’s sessions look neater than the other’s.","a":["Neatness is mostly a property of the setting, not the coach. Any shot looks better without an opponent. A fed ball, time to prepare, no pressure and no consequence produce a cleaner stroke than the same stroke in a rally.","So a quiet, controlled session is a flattering place to watch a player. It is an excellent place to see technique and a difficult place to judge how that technique will hold up on Saturday morning.","The test is the same for everything, including our own sessions: does it survive contact with an opponent?"]},{"q":"Will my child still develop good technique?","a":["Yes. Sound technique comes both from clear teaching of the basics and from solving the same problems repeatedly in realistic situations.","We do technical work; it is often less visible. Changing what a player is trying to achieve reorganises their movement without a word being said about elbows."]},{"q":"Why is the coach asking questions instead of giving answers?","a":["Because a solution a player works out is one they can still use when nobody is there to remind them.","Questions also tell the coach what the player is actually noticing, which is more useful than whether they can repeat an instruction back."]},{"q":"My child seems to be making more mistakes than before.","a":["That is common when someone is genuinely changing how they do something, and it usually settles at a higher level than before.","If it lasts more than a few weeks, please tell us. That is worth looking at properly."]},{"q":"Why are they not practising one shot over and over?","a":["They sometimes do, particularly when learning something new. But no two shots in a match are identical: the ball, position, balance and opponent differ every time.","So most of our practice repeats the problem rather than the solution."]},{"q":"It looks less structured than the coaching I remember.","a":["The structure sits in the design rather than the delivery. The rules, court size, scoring and constraints of each game are chosen to produce particular behaviours.","A quiet coach is often a sign of a carefully built task rather than an inattentive one."]},{"q":"Does this mean winning does not matter?","a":["Winning matters and we compete hard. Junior results are simply an unreliable guide to how good a player becomes later.","We would rather your child be the one still improving at eighteen."]}];
+const PARENT_SCRIPTS=[{"s":"A parent credits another coach’s session for something you saw in yours","l":"\"Could well be both. Thing about a quiet court is anything looks cleaner without an opponent — mine included. Great place to see a shot, harder to tell how it'll hold up Saturday. Either way she's got it, which is the bit that matters.\""},{"s":"A parent asks whether group work is enough on its own","l":"\"Depends on the player. A few of our strongest have only ever done group work, which tells you something. But I wouldn't tell anyone not to do individual sessions — they give a kind of attention I can't give in a group of eight.\""},{"s":"A parent asks why you are not correcting more","l":"\"I'll correct anything unsafe or anything really holding her back straight away. For this one I want her to notice it herself, because I'm not on court on Saturday. Watch how long it takes her without me — that's the bit that lasts.\""},{"s":"A parent is worried by a run of errors","l":"\"That's what it looks like when something's genuinely changing. Give it three or four weeks and tell me if it hasn't settled — and do tell me, because occasionally it doesn't.\""},{"s":"A parent says the session looked chaotic","l":"\"I know it looks loose. Every game in there had a rule doing a specific job — the scoring in that last one is why they were all volleying. If I'd just told them to volley more they'd have stopped the moment I did.\""},{"s":"A parent asks what they can do at home","l":"\"Ask her what she tried rather than whether she won. And get her playing different people — that does more than any drill I could give you.\""}];
+const PARENT_EVIDENCE=["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press. — no two repetitions of a skill are ever identical, even in experts.","Gibson, J. J. (1979). The ecological approach to visual perception. Houghton Mifflin. — players act on opportunities they perceive directly in the situation.","Newell, K. M. (1986). Constraints on the development of coordination. In Wade & Whiting (Eds.), Motor development in children (pp. 341-360). Martinus Nijhoff. — behaviour emerges from the interaction of player, task and environment.","Masters, R. S. W. (1992). Knowledge, knerves and know-how. British Journal of Psychology, 83(3), 343-358. — explicit technical rules are what break down under pressure.","Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155. — practice transfers when it preserves the information of the real game.","Wulf, G. (2013). Attentional focus and motor learning: A review of 15 years. International Review of Sport and Exercise Psychology, 6(1), 77-104. — focusing on the effect beats focusing on body parts.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach. Routledge. — the applied coaching framework.","Cote, J., Baker, J., & Abernethy, B. (2007). Practice and play in the development of sport expertise. In Handbook of Sport Psychology. — early variety and play are associated with better long-term outcomes."];
+const PARENT_COACH_NOTE=["The real difference is method, not session format. You can coach this way one-to-one and you can run a group as a drill. Framing it as group versus individual concedes ground you do not need to concede, and it closes a door you want open with colleagues.","Individual sessions come with a built-in commentary — “today we worked on X”. Group sessions do not, because we deliberately do not narrate. Nobody is taking credit; there is only one story being told.","Close that gap at pick-up. Two sentences naming what the player found today and the game that produced it.","Use the Breakthrough Log as a shared record with a player’s other coaches, not as evidence for your side. Offered that way it is collaboration; offered the other way it is an argument.","If a colleague coaches more traditionally, the persuasive move is a shared player and a shared record, not a document. Ask what they are seeing before offering what you are seeing. Disagreement about method survives that conversation; suspicion about motive does not."];
+const PARENT_QA_GUIDE=[{"h":"Run it one parent at a time","b":["Fifteen minutes, booked, not at pick-up. A parent with a queue behind them cannot ask the question they actually came with.","Ask what they are hoping their child gets out of squash before you explain anything. The answer tells you which parts of this matter to them, and half of what you were going to say will turn out to be irrelevant."]},{"h":"Open with a question, not a pitch","b":["“What have you noticed about her game over the last couple of months?” beats any opening you could prepare.","If they describe something tactical or adaptive, that is your answer already and you can simply agree with them."]},{"h":"Never name the other coach","b":["Talk about approaches, settings and stages. The moment a colleague is named, the conversation becomes about people and the parent has to take a side.","If the parent names them, stay on method: “That sounds like the telling-first approach, which is exactly right for what he was working on.”"]},{"h":"Concede the genuine strengths early","b":["Say what clear instruction is good for before you say what it is not. A parent who hears a balanced account trusts the rest.","Say the costs of our approach out loud too. It looks messier, progress is harder to see, and a badly designed game teaches nothing."]},{"h":"Hand over the test, not the verdict","b":["Give them the four questions: does it hold up against someone trying to win, can they do it unprompted, does it survive a change of conditions, are they getting better at solving problems.","Then let them apply those to everything, including you. A parent who reaches a conclusion themselves defends it; a parent who is handed one repeats it to the wrong person."]},{"h":"Close with a request, not a conclusion","b":["“Tell me who else is working with her and I will give them a ring” is the outcome you want from the meeting.","You do not need the parent to agree with you. You need them to introduce you."]}];
+
+/* ───────────────── PARENT EDUCATION — "Why We Coach This Way" ─────────────────
+   Two audiences on one screen: content to show or send to parents, and short
+   answers a coach can use in the conversation on the night. */
+function ParentStyles(){return <style>{`
+.parWrap{display:flex;flex-direction:column;gap:14px;}
+.parTabs{display:flex;flex-wrap:wrap;gap:8px;}
+.parTab{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:10px;padding:10px 15px;font-weight:700;font-size:.88rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.parTabOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.parSec{background:#0b1320;border:1px solid #223044;border-left:4px solid #2E6E8E;border-radius:13px;padding:16px 18px;}
+.parSec h3{color:#eaf4fb;font-size:1.12rem;margin:0 0 9px;font-weight:800;}
+.parSec p{color:#c7d4e2;font-size:.97rem;line-height:1.65;margin:0 0 9px;}
+.parSec p:last-child{margin-bottom:0;}
+.parQ{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:14px 16px;}
+.parQ h4{color:#9cc4ec;font-size:.98rem;margin:0 0 8px;font-weight:800;}
+.parQ p{color:#c7d4e2;font-size:.94rem;line-height:1.62;margin:0 0 8px;}
+.parQ p:last-child{margin-bottom:0;}
+.parScript{background:#0b1f16;border:1px solid #1d6b3f;border-radius:12px;padding:14px 16px;}
+.parScript h4{color:#7fc8a0;font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 8px;}
+.parScript p{color:#dff3e6;font-size:1rem;line-height:1.6;margin:0;font-style:italic;}
+.parProg{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:14px 16px;}
+.parProg h4{color:#fbbf24;font-size:.8rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 9px;}
+.parProg ul{margin:0;padding-left:19px;color:#c7d4e2;font-size:.94rem;line-height:1.6;}
+.parProg li{margin-bottom:6px;}
+.parLead{color:#9fb3c4;font-size:.95rem;line-height:1.6;margin:0;}
+.parRefs{color:#7c8ea0;font-size:.79rem;line-height:1.6;margin:0;padding-left:18px;}
+.parRefs li{margin-bottom:7px;}
+`}</style>;}
+
+function parentPackText(){
+  const L=[];
+  L.push('WHY WE COACH THIS WAY');
+  L.push('Checkerboard Squash - a short guide for parents');
+  L.push('');
+  PARENT_SECTIONS.forEach(s=>{L.push(s.t.toUpperCase());s.b.forEach(p=>L.push(p));L.push('');});
+  L.push('HOW YOU CAN HELP');
+  PARENT_HELP.forEach(h=>L.push('- '+h));
+  L.push('');
+  L.push('QUESTIONS PARENTS ASK');
+  PARENT_FAQ.forEach(f=>{L.push(f.q);f.a.forEach(a=>L.push(a));L.push('');});
+  L.push('WHERE THIS COMES FROM');
+  PARENT_EVIDENCE.forEach(e=>L.push('- '+e));
+  return L.join('\n');
+}
+
+function ParentEducation({setScreen}){
+  const [tab,setTab]=useState('explain');
+  const [copied,setCopied]=useState(false);
+  async function copyPack(){
+    const txt=parentPackText();
+    try{await navigator.clipboard.writeText(txt);setCopied(true);setTimeout(()=>setCopied(false),2000);}
+    catch{window.prompt('Parent pack — copy this text:',txt);}
+  }
+  return <div className="gameCard parWrap"><ParentStyles/>
+    <div className="moduleHead"><div><h1>Why We Coach This Way</h1><p className="mutedText">Parent education. Read it with them, show it on a screen at a parents&rsquo; evening, or send it home. The Coach&rsquo;s answers tab is for the conversation on the night.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="parTabs">
+      {[['explain','Explain it'],['help','How you can help'],['faq','Questions parents ask'],['scripts',"Coach's answers"],['attrib','Getting the credit'],['qa','Running a parent Q&A'],['evidence','Where this comes from']].map(([id,label])=>
+        <button type="button" key={id} className={tab===id?'parTab parTabOn':'parTab'} onClick={()=>setTab(id)}>{label}</button>)}
+    </div>
+
+    {tab==='explain'&&<>
+      <p className="parLead">Most parents judge coaching by what they can see. This explains what they are looking at and why it is built that way.</p>
+      {PARENT_SECTIONS.map(s=><div key={s.id} className="parSec">
+        <h3>{s.t}</h3>{s.b.map((p,i)=><p key={i}>{p}</p>)}
+      </div>)}
+    </>}
+
+    {tab==='help'&&<>
+      <p className="parLead">Parents who are given something useful to do are less likely to go looking for something to buy. Worth saying out loud rather than leaving in the pack.</p>
+      <div className="parProg"><h4>How you can help</h4><ul>{PARENT_HELP.map((h,i)=><li key={i}>{h}</li>)}</ul></div>
+    </>}
+
+    {tab==='faq'&&<>
+      <p className="parLead">Written to be read by a parent, not by a coach. Send it, print it or read it out.</p>
+      {PARENT_FAQ.map((f,i)=><div key={i} className="parQ">
+        <h4>{f.q}</h4>{f.a.map((a,j)=><p key={j}>{a}</p>)}
+      </div>)}
+    </>}
+
+    {tab==='scripts'&&<>
+      <p className="parLead">Short answers for the conversation at the side of the court. Say them in your own words — the point is the shape of the answer, not the wording.</p>
+      {PARENT_SCRIPTS.map((s,i)=><div key={i} className="parScript">
+        <h4>{s.s}</h4><p>{s.l}</p>
+      </div>)}
+    </>}
+
+    {tab==='attrib'&&<>
+      <p className="parLead">Parents crediting the one-to-one for change built in your group sessions is an attribution problem, not a coaching one. These are the four things that shift it.</p>
+      {PARENT_COACH_NOTE.map((n,i)=><div key={i} className="parScript"><p style={{fontStyle:'normal',color:'#dff3e6'}}>{n}</p></div>)}
+    </>}
+
+    {tab==='qa'&&<>
+      <p className="parLead">The letter opens the conversation; it does not finish it. Fifteen booked minutes with one parent does more than any document, and these are the six things that decide how it goes.</p>
+      {PARENT_QA_GUIDE.map((g,i)=><div key={i} className="parSec">
+        <h3>{g.h}</h3>{g.b.map((x,j)=><p key={j}>{x}</p>)}
+      </div>)}
+    </>}
+
+    {tab==='evidence'&&<>
+      <p className="parLead">Name the source rather than saying &ldquo;research shows&rdquo;. Parents who ask this question usually want to know it is real, and one named study settles it.</p>
+      <ul className="parRefs">{PARENT_EVIDENCE.map((e,i)=><li key={i}>{e}</li>)}</ul>
+    </>}
+
+    <button type="button" className="primaryBtn" onClick={copyPack}>{copied?'Copied ✓ — paste into an email':'Copy parent pack as text'}</button>
+  </div>;
+}
+
+
+
+/* ───────────── BREAKTHROUGH LOG — dated evidence of where change happened ─────────────
+   Attribution arguments are settled by a record written at the time, not by memory. */
+const BREAKTHROUGH_KEY='cb_breakthroughs_v1';
+const BREAKTHROUGH_PICKS=[
+ 'Found a new solution to a familiar problem',
+ 'Read the opponent earlier',
+ 'Changed approach when something stopped working',
+ 'Recovered from a bad start within a game',
+ 'Held options open instead of committing early',
+ 'Attacked from an advantage rather than from hope',
+ 'Volleyed under pressure',
+ 'Stayed composed after an error',
+ 'Solved it without being told',
+ 'Kept length when tired',
+];
+function bkLoad(){try{return JSON.parse(localStorage.getItem(BREAKTHROUGH_KEY))||[];}catch{return[];}}
+function bkSave(list){try{localStorage.setItem(BREAKTHROUGH_KEY,JSON.stringify(list));}catch{}}
+function bkDate(ts){try{return new Date(ts).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}catch{return '';}}
+
+function BreakthroughStyles(){return <style>{`
+.bkWrap{display:flex;flex-direction:column;gap:14px;}
+.bkPanel{background:#0b1320;border:1px solid #223044;border-radius:13px;padding:15px 17px;}
+.bkPanel h4{color:#9cc4ec;font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:0 0 9px;}
+.bkChips{display:flex;flex-wrap:wrap;gap:7px;}
+.bkChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:8px 13px;font-size:.85rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:left;}
+.bkChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.bkInput{width:100%;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:.92rem;padding:11px 13px;outline:none;-webkit-appearance:none;appearance:none;}
+.bkEntry{background:#0c1626;border:1px solid #1e2c3c;border-left:3px solid #1d6b3f;border-radius:11px;padding:12px 14px;}
+.bkEntry .bkWhen{color:#7fc8a0;font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.bkEntry strong{display:block;color:#eaf4fb;font-size:.97rem;margin:3px 0;}
+.bkEntry .bkCtx{color:#8aa0b6;font-size:.83rem;}
+.bkEntry .bkNote{color:#c7d4e2;font-size:.88rem;margin-top:5px;line-height:1.5;}
+.bkDel{background:none;border:none;color:#6b8299;font-size:.78rem;cursor:pointer;padding:4px 0 0;text-decoration:underline;}
+.bkEmpty{color:#8aa0b6;font-size:.9rem;line-height:1.6;}
+`}</style>;}
+
+function BreakthroughLog({setScreen}){
+  const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [list,setList]=useState(bkLoad);
+  const [player,setPlayer]=useState(roster[0]||'');
+  const [pick,setPick]=useState('');
+  const [note,setNote]=useState('');
+  const [ctx,setCtx]=useState('');
+  const [copied,setCopied]=useState(false);
+  const mine=useMemo(()=>list.filter(e=>e.player===player).sort((a,b)=>b.ts-a.ts),[list,player]);
+
+  function add(){
+    if(!player||!pick)return;
+    const next=[...list,{id:Date.now()+Math.random(),ts:Date.now(),player,what:pick,note:note.trim(),ctx:ctx.trim()||'Group session'}];
+    setList(next);bkSave(next);setPick('');setNote('');setCtx('');
+  }
+  function remove(id){const next=list.filter(e=>e.id!==id);setList(next);bkSave(next);}
+  async function copySummary(){
+    if(!mine.length)return;
+    const L=[player+' — where the change first appeared',''];
+    mine.slice().reverse().forEach(e=>{
+      L.push(bkDate(e.ts)+' · '+e.ctx);
+      L.push('  '+e.what+(e.note?' — '+e.note:''));
+    });
+    L.push('');
+    L.push('These are the sessions where each behaviour was first seen, recorded on the day.');
+    const txt=L.join('\n');
+    try{await navigator.clipboard.writeText(txt);setCopied(true);setTimeout(()=>setCopied(false),2000);}
+    catch{window.prompt('Progress summary:',txt);}
+  }
+
+  return <div className="gameCard bkWrap"><BreakthroughStyles/>
+    <div className="moduleHead"><div><h1>Breakthrough Log</h1><p className="mutedText">Record what a player found, on the day they found it. A dated record written at the time is the only thing that settles an argument about where progress came from.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="bkPanel">
+      <h4>Player</h4>
+      {roster.length?<div className="bkChips">{roster.map(n=><button type="button" key={n} className={player===n?'bkChip bkChipOn':'bkChip'} onClick={()=>setPlayer(n)}>{n}</button>)}</div>
+        :<p className="bkEmpty">No players in the register yet. Add them in the player register first.</p>}
+    </div>
+
+    {player&&<>
+      <div className="bkPanel">
+        <h4>What did they find today?</h4>
+        <div className="bkChips">{BREAKTHROUGH_PICKS.map(b=><button type="button" key={b} className={pick===b?'bkChip bkChipOn':'bkChip'} onClick={()=>setPick(pick===b?'':b)}>{b}</button>)}</div>
+        <div style={{display:'flex',flexDirection:'column',gap:'8px',marginTop:'11px'}}>
+          <input className="bkInput" value={ctx} onChange={e=>setCtx(e.target.value)} placeholder="Which session or game? (defaults to Group session)"/>
+          <input className="bkInput" value={note} onChange={e=>setNote(e.target.value)} placeholder="What did it look like? (optional)"/>
+          <button type="button" className="primaryBtn" disabled={!pick} onClick={add}>Log it</button>
+        </div>
+      </div>
+
+      <div className="bkPanel">
+        <h4>{player} — {mine.length} entr{mine.length===1?'y':'ies'}</h4>
+        {mine.length?<div style={{display:'flex',flexDirection:'column',gap:'9px'}}>
+          {mine.map(e=><div key={e.id} className="bkEntry">
+            <span className="bkWhen">{bkDate(e.ts)}</span>
+            <strong>{e.what}</strong>
+            <span className="bkCtx">{e.ctx}</span>
+            {e.note&&<p className="bkNote">{e.note}</p>}
+            <button type="button" className="bkDel" onClick={()=>remove(e.id)}>Remove</button>
+          </div>)}
+        </div>:<p className="bkEmpty">Nothing logged for {player} yet. Two entries a term is enough to change a conversation — the point is that it was written on the day, not remembered afterwards.</p>}
+        {mine.length>0&&<button type="button" className="secondaryBtn" style={{marginTop:'11px'}} onClick={copySummary}>{copied?'Copied ✓ — send to the parent':'Copy summary for parent'}</button>}
+      </div>
+    </>}
+  </div>;
+}
+
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Breakthrough Log',sub:'Dated evidence \u00b7 what a player found and where',kw:'breakthrough log progress record evidence attribution first seen dated parent one to one credit development milestone',screen:'breakthrough'},
+  {label:'Why We Coach This Way',sub:'Parent education \u00b7 explain and defend the framework',kw:'parents parent education why we coach this way explain defend traditional coach technique lessons philosophy faq evening pack send home',screen:'parents'},
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
@@ -24885,6 +25109,8 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
       {screen==='rotation'&&<RotationEngine setScreen={go} setSession={setSession}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
+      {screen==='parents'&&<ParentEducation setScreen={go}/>}
+      {screen==='breakthrough'&&<BreakthroughLog setScreen={go}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
