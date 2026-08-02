@@ -1,4 +1,5 @@
-// v538 Player Display brevity pass (see APP_VERSION)
+// v539 Player Display step-renderer + design principle (see APP_VERSION)
+// v538 Player Display brevity pass
 // v537 Deep Touch rationale rewrite
 // v536 Coach-facing cleanup of CLA Update games
 // v535 CLA Update part 2 — Role Constraint engine + Court Geometry
@@ -223,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v538 Player Display brevity pass. All CLA Update, Role Constraint, Court Geometry, QE7 and Weak-Side Amplifier session cards now carry short numbered player steps, one-line scoring, and a 1\u20132 sentence rationale \u2014 full coach detail stays on the module screens. Player A / Player B naming throughout; Deep Touch rationale sentences clarified. Builds on v537.';
+const APP_VERSION='v539 Player Display full review. WHAT TO DO and HOW TO SCORE now render every card \u2014 including all legacy content \u2014 as short numbered steps (numbered markers, then newlines, then legacy separators, then sentence-per-step), and the rationale box shows at most two sentences, so nothing bleeds off the screen. Standing design principle documented in code above pdBullets(): cards carry numbered player steps, one-line scoring, 1\u20132 sentence rationale; full coach detail lives on module screens only. Builds on v538.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -891,8 +892,47 @@ function buildPlayerCompetitionUrl(state){
 // racquet. Sequences and scoring arrive already delimited (" + " for shots,
 // " · " for scoring rules), so split them into bullets rather than printing the
 // raw run-on string. One idea per line, no prose walls, nothing clipped.
+/* ────────────────────────────────────────────────────────────────────────────
+   DESIGN PRINCIPLE — PLAYER DISPLAY (v539; standing rule for all future cards)
+   Players read this screen mid-session, often from across a court. Every
+   session card must carry: task = short NUMBERED STEPS ("1) … 2) … 3) …", as
+   few words as possible), scoring = one line, rationale = 1–2 short sentences.
+   Full coach detail belongs on the module screens, never on the card.
+   The display enforces this defensively — pdBullets() renders any prose as
+   numbered steps (numbered markers → newlines → legacy separator → sentences)
+   and the rationale box caps at two sentences — but WRITE CARDS TO THE
+   PRINCIPLE; the safety net is not the standard.
+   ──────────────────────────────────────────────────────────────────────────── */
+function pdSentenceParts(text){
+  const t=String(text||'').trim();
+  if(!t)return [];
+  const m=t.match(/[^.!?]*[.!?]+["\u201d)]*\s*|[^.!?]+$/g);
+  return (m||[t]).map(x=>x.trim()).filter(Boolean);
+}
+function pdFirstSentences(text,n){
+  const parts=pdSentenceParts(text);
+  return parts.slice(0,Math.max(1,n||2)).join(' ');
+}
 function pdBullets(text,sep){
-  const parts=String(text||'').split(sep).map(s=>s.trim()).filter(Boolean);
+  const t=String(text||'').trim();
+  if(!t)return null;
+  // 1. explicit numbered steps: "1) … 2) … 3) …"
+  if(/(^|\s)1\)\s/.test(t)){
+    const parts=t.split(/\s*(?=\d+\)\s)/).map(x=>x.replace(/^\d+\)\s*/,'').trim()).filter(Boolean);
+    if(parts.length>1)return parts;
+  }
+  // 2. newlines
+  if(t.includes('\n')){
+    const parts=t.split('\n').map(x=>x.trim()).filter(Boolean);
+    if(parts.length>1)return parts;
+  }
+  // 3. legacy separator passed by the caller
+  if(sep&&sep!=='\n'){
+    const parts=t.split(sep).map(x=>x.trim()).filter(Boolean);
+    if(parts.length>1)return parts;
+  }
+  // 4. sentences — any prose becomes one short line per sentence
+  const parts=pdSentenceParts(t);
   return parts.length>1?parts:null;
 }
 function PdField({label,text,sep,className=''}){
@@ -1186,7 +1226,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
     {(() => {const isPL=String(chosen&&chosen.format||'')==='Pattern Lab';return <>
       {rationale&&<div className="claRationaleBox">
         <h2>{isPL?'Description':'CLA Rationale'}</h2>
-        <p>{rationale}</p>
+        <p>{pdFirstSentences(rationale,2)}</p>
       </div>}
       {isPL&&<div className="claRationaleBox">
         <h2>About Pattern Lab</h2>
