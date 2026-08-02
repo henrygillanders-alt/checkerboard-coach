@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v543 Parent Education. Explains the approach by method rather than by session format \u2014 how much a player is told versus works out \u2014 so it applies equally to group and individual coaching. Names what clear instruction does well, states the trade-offs openly, treats neatness as a property of the setting rather than of any coach, and hands parents four questions to judge any coaching including ours. Adds a parent Q&A guide and the Breakthrough Log, a dated per-player record shareable with a player\u2019s other coaches. Builds on v542.';
+const APP_VERSION='v545 Housekeeping. CLA Lexicon, Why We Coach This Way and Breakthrough Log move off the Home screen into a new Coach Education section in More Stuff. Rotation Engine now supports up to 6 courts, matching Tin War, Disruption and Court Monitor. Builds on v544.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5486,9 +5486,6 @@ return <div className="homeGrid homeGridV99h52">
           {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
         </div>
       </button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('parents')}><h2>Why We Coach This Way</h2><span className="homeTileSubtitle">Parent education · explain, defend and send home</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       {/* ── PRIMARY TILES — the five most-used ── */}
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
@@ -5527,6 +5524,11 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
+
+      <div className="moreSectionLabel">Coach Education</div>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('parents')}><h2>Why We Coach This Way</h2><span className="homeTileSubtitle">Parent education · explain, defend and send home</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       <div className="moreSectionLabel">Diagnostics & Tools</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
@@ -24585,7 +24587,7 @@ const ROTATION_TRIGGERS=[
 
 function rotBuildBoard(names,courtCount,formatId){
   const fmt=ROTATION_FORMATS.find(f=>f.id===formatId)||ROTATION_FORMATS[0];
-  const cc=Math.max(1,Math.min(4,courtCount));
+  const cc=Math.max(1,Math.min(6,courtCount));
   const courts=Array.from({length:cc},(_,i)=>({n:i+1,on:[],wait:[]}));
   const pool=names.filter(Boolean);
   let idx=0;
@@ -24775,7 +24777,7 @@ function RotationEngine({setScreen,setSession}){
 
     <div className="rotPanel">
       <h4>Courts</h4>
-      <div className="rotChipRow">{[1,2,3,4].map(n=><button type="button" key={n} className={courtCount===n?'rotChip rotChipOn':'rotChip'} onClick={()=>setCourtCount(n)}>{n} court{n>1?'s':''}</button>)}</div>
+      <div className="rotChipRow">{[1,2,3,4,5,6].map(n=><button type="button" key={n} className={courtCount===n?'rotChip rotChipOn':'rotChip'} onClick={()=>setCourtCount(n)}>{n} court{n>1?'s':''}</button>)}</div>
     </div>
 
     <div className="rotPanel">
