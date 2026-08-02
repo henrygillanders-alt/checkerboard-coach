@@ -24868,10 +24868,6 @@ const TF_SUITES=[
 ];
 const TF_COMBOS=CB_CODES.filter(c=>/^\[\d-\d\]$/.test(c));
 
-function tfComboLabel(code){
-  const m=code.match(/^\[(\d)-(\d)\]$/); if(!m)return code;
-  return code+' — '+(TF_WALL[m[1]]||('wall '+m[1]))+' into '+(TF_FLOOR[m[2]]||('floor '+m[2])).toLowerCase();
-}
 function tfShotLabel(id){const s=SHOT_BONUS_REGISTRY.find(x=>x.id===id);return s?s.label:id;}
 
 function TacticalFinishStyles(){return <style>{`
@@ -24890,6 +24886,8 @@ function TacticalFinishStyles(){return <style>{`
 `}</style>;}
 
 function TacticalFinishGames({setSession}){
+  const [modifier,setModifier]=useState(emptyModifierConfig());
+  const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [floorZ,setFloorZ]=useState(['4']);
   const [wallZ,setWallZ]=useState([]);
   const [combos,setCombos]=useState(['[8-1]']);
@@ -24898,7 +24896,7 @@ function TacticalFinishGames({setSession}){
   const [fullShots,setFullShots]=useState(['straight-drop']);
   const [bonus,setBonus]=useState({spatial:'+1',combo:'+2',shot:'+1',full:'+3'});
   const [added,setAdded]=useState('');
-  const tog=(set)=>(v)=>set(cur=>cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]);
+  const tog=(set)=>(v)=>{setAdded('');set(cur=>cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]);};
   const togFloor=tog(setFloorZ),togWall=tog(setWallZ),togCombo=tog(setCombos),togShot=tog(setShots),togFullShot=tog(setFullShots);
 
   function spatialTargets(){
@@ -24907,40 +24905,37 @@ function TacticalFinishGames({setSession}){
     return [...f,...w];
   }
   function task(id){
-    if(id==='spatial')return 'Normal rally rules. A rally won with a ball that '+(wallZ.length&&floorZ.length?'dies in ':'')+(floorZ.length?'dies in '+floorZ.map(z=>TF_FLOOR[z].toLowerCase()+' (zone '+z+')').join(' or '):'')+(floorZ.length&&wallZ.length?', or strikes ':wallZ.length?'strikes ':'')+(wallZ.length?wallZ.map(z=>TF_WALL[z].toLowerCase()+' (zone '+z+')').join(' or '):'')+' scores the bonus.';
-    if(id==='combo')return 'Normal rally rules. The bonus fires when the winner travels the designated route: '+combos.map(tfComboLabel).join('; ')+'.';
+    if(id==='spatial')return 'Normal rally rules. A rally won with a ball that '+(wallZ.length&&floorZ.length?'dies in ':'')+(floorZ.length?'dies in zone '+floorZ.join(' or '):'')+(floorZ.length&&wallZ.length?', or strikes ':wallZ.length?'strikes ':'')+(wallZ.length?'wall zone '+wallZ.join(' or '):'')+' scores the bonus.';
+    if(id==='combo')return 'Normal rally rules. The bonus fires when the winner travels the designated route: '+combos.join(', ')+'.';
     if(id==='shot')return 'Normal rally rules. The bonus fires when the rally is won with '+shots.map(tfShotLabel).join(' or ')+', anywhere on court.';
-    return 'Normal rally rules. The bonus fires only for the complete picture: '+fullShots.map(tfShotLabel).join(' or ')+' through '+tfComboLabel(fullCombo)+'.';
+    return 'Normal rally rules. The bonus fires only for the complete picture: '+fullShots.map(tfShotLabel).join(' or ')+' through '+fullCombo+'.';
   }
   function scoring(id){
-    return 'Rally win = 1. Designated finish = '+bonus[id].replace('+','+')+' bonus (so '+(1+parseInt(bonus[id].slice(1)))+' total). Layer Negative Scoring, DB Handicap or Tin Height with the universal modifiers as usual.';
+    return 'Rally win = 1. Designated finish = '+bonus[id].replace('+','+')+' bonus (so '+(1+parseInt(bonus[id].slice(1)))+' total). Add Negative Scoring, DB Handicap or Tin Height from the Universal Modifiers panel below.';
   }
   const RAT={
-   spatial:'Amplifies a spatial finishing affordance without constraining the route \u2014 players discover the build-ups that make the target zone available.',
-   combo:'The wall-into-floor route narrows the solution space to a specific ball flight, so players must create the position the route requires \u2014 the manipulate-then-exploit chain.',
+   spatial:'Amplifies a spatial finishing affordance without constraining the route — players discover the build-ups that make the target zone available.',
+   combo:'The wall-into-floor route narrows the solution space to a specific ball flight, so players must create the position the route requires — the manipulate-then-exploit chain.',
    shot:'Moves the constraint from space to action: the finish must arrive through a designated shot, so players hunt situations where that shot is the answer.',
-   full:'The complete finishing picture \u2014 shot, route and landing together. Hardest to force, so it rewards genuine construction over opportunism.'};
-  const FOCUS={spatial:'Build the rally that opens the zone.',combo:'Create the position the route needs.',shot:'Hunt the moment the shot is on.',full:'Construct it \u2014 this one cannot be forced.'};
+   full:'The complete finishing picture — shot, route and landing together. Hardest to force, so it rewards genuine construction over opportunism.'};
+  const FOCUS={spatial:'Build the rally that opens the zone.',combo:'Create the position the route needs.',shot:'Hunt the moment the shot is on.',full:'Construct it — this one cannot be forced.'};
 
   function add(id){
     const suite=TF_SUITES.find(s2=>s2.id===id);
-    const layers=[];
-    if(id==='shot'||id==='full'){if((id==='shot'?shots:fullShots).some(x=>x.includes('volley')))layers.push('Volley Finish');}
-    layers.push('Clean Winner');
     const card=normaliseGameCard({id:Date.now()+Math.random(),
-      title:'Tactical Finish '+suite.n+' \u2014 '+suite.title,category:'Tactical Finish',
+      title:'Tactical Finish '+suite.n+' — '+suite.title,category:'Tactical Finish',
       format:'Conditioned Game',duration:8,rld:4,
       task:task(id),scoring:scoring(id),rationale:RAT[id],
       coach:'Ask what created the finish, not whether it landed. If one route grooves, disable it verbally for a game.',
-      playerFocus:FOCUS[id],layers,
+      playerFocus:FOCUS[id],modifier,layers:modifier.constraints||[],
       cbCode:id==='combo'?(combos[0]||'None'):id==='full'?fullCombo:'None'});
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(id);
   }
-  const bonusChips=(id)=><div className="tfChips">{SHOT_BONUS_POINT_CHOICES.map(p=><button type="button" key={p} className={bonus[id]===p?'tfChip on':'tfChip'} onClick={()=>setBonus(b=>({...b,[id]:p}))}>{p}</button>)}</div>;
+  const bonusChips=(id)=><div className="tfChips">{SHOT_BONUS_POINT_CHOICES.map(p=><button type="button" key={p} className={bonus[id]===p?'tfChip on':'tfChip'} onClick={()=>{setAdded('');setBonus(b=>({...b,[id]:p}))}}>{p}</button>)}</div>;
 
   return <div className="gameCard tfWrap"><TacticalFinishStyles/>
-    <p className="mutedText" style={{margin:0}}>Four suites, one idea, tightening as they go: the rally is normal squash \u2014 the bonus is earned by how it ends. Zone numbers follow the court map (floor 1\u20134 clockwise from front left; wall 5\u20138 clockwise from top left), with names shown so nobody has to trust the number.</p>
+    <p className="mutedText" style={{margin:0}}>Four suites, one idea, tightening as they go: the rally is normal squash — the bonus is earned by how it ends.</p>
 
     {TF_SUITES.map(su=><div key={su.id} className="tfSuite">
       <div className="tfSuiteHead"><span className="tfNo">SUITE {su.n}</span><h3>{su.title}</h3><span>{su.sub}</span></div>
@@ -24948,14 +24943,14 @@ function TacticalFinishGames({setSession}){
 
       {su.id==='spatial'&&<>
         <div className="tfLabel">Floor zones (ball dies in)</div>
-        <div className="tfChips">{Object.keys(TF_FLOOR).map(z=><button type="button" key={z} className={floorZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togFloor(z)}>{z} \u00b7 {TF_FLOOR[z]}</button>)}</div>
+        <div className="tfChips">{Object.keys(TF_FLOOR).map(z=><button type="button" key={z} className={floorZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togFloor(z)}>{z}</button>)}</div>
         <div className="tfLabel">Wall zones (winner strikes)</div>
-        <div className="tfChips">{Object.keys(TF_WALL).map(z=><button type="button" key={z} className={wallZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togWall(z)}>{z} \u00b7 {TF_WALL[z]}</button>)}</div>
+        <div className="tfChips">{Object.keys(TF_WALL).map(z=><button type="button" key={z} className={wallZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togWall(z)}>{z}</button>)}</div>
       </>}
 
       {su.id==='combo'&&<>
-        <div className="tfLabel">Wall \u2192 floor routes</div>
-        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={combos.includes(c)?'tfChip on':'tfChip'} onClick={()=>togCombo(c)}>{tfComboLabel(c)}</button>)}</div>
+        <div className="tfLabel">Wall → floor routes</div>
+        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={combos.includes(c)?'tfChip on':'tfChip'} onClick={()=>togCombo(c)}>{c}</button>)}</div>
       </>}
 
       {su.id==='shot'&&<>
@@ -24965,7 +24960,7 @@ function TacticalFinishGames({setSession}){
 
       {su.id==='full'&&<>
         <div className="tfLabel">Route</div>
-        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={fullCombo===c?'tfChip on':'tfChip'} onClick={()=>setFullCombo(c)}>{tfComboLabel(c)}</button>)}</div>
+        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={fullCombo===c?'tfChip on':'tfChip'} onClick={()=>{setAdded('');setFullCombo(c);}}>{c}</button>)}</div>
         <div className="tfLabel">Shot</div>
         <div className="tfChips">{SHOT_BONUS_REGISTRY.map(s2=><button type="button" key={s2.id} className={fullShots.includes(s2.id)?'tfChip on':'tfChip'} onClick={()=>togFullShot(s2.id)}>{s2.label}</button>)}</div>
       </>}
@@ -24973,8 +24968,14 @@ function TacticalFinishGames({setSession}){
       <div className="tfLabel">Bonus</div>
       {bonusChips(su.id)}
       <div className="tfTask"><strong style={{color:'#9cc4ec'}}>Task:</strong> {task(su.id)}<br/><strong style={{color:'#9cc4ec'}}>Scoring:</strong> {scoring(su.id)}</div>
-      <button type="button" className="primaryBtn" style={{marginTop:'11px'}} onClick={()=>add(su.id)}>{added===su.id?'Added \u2713':'Add To Session'}</button>
+      {added!==su.id&&<button type="button" className="primaryBtn" style={{marginTop:'11px'}} onClick={()=>add(su.id)}>Add To Session</button>}
+      {added===su.id&&<div style={{display:'flex',gap:'8px',marginTop:'11px',flexWrap:'wrap',alignItems:'center'}}>
+        <span style={{color:'#7fc8a0',fontWeight:800,fontSize:'.9rem'}}>Added ✓</span>
+        <button type="button" className="primaryBtn" onClick={()=>setAdded('')}>Configure Next Game</button>
+        <button type="button" className="secondaryBtn" onClick={()=>add(su.id)}>Add Same Again</button>
+      </div>}
     </div>)}
+    <UniversalModifierEngine title="Universal Modifiers" context="Tactical Finish" value={modifier} onChange={setModifier} presentPlayers={present}/>
   </div>;
 }
 
