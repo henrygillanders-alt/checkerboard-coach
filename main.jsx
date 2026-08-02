@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v539 Player Display full review. WHAT TO DO and HOW TO SCORE now render every card \u2014 including all legacy content \u2014 as short numbered steps (numbered markers, then newlines, then legacy separators, then sentence-per-step), and the rationale box shows at most two sentences, so nothing bleeds off the screen. Standing design principle documented in code above pdBullets(): cards carry numbered player steps, one-line scoring, 1\u20132 sentence rationale; full coach detail lives on module screens only. Builds on v538.';
+const APP_VERSION='v540 Rotation Engine \u2014 group formats for more players than courts. Winner Stays On, Monarch, Two v One and Tag Team, with any Games Library game as the rotation rule set, 1\u20134 courts, rotation triggered by rally, mini-game or timer, and a live rotation board for the wall display. Builds on v539.';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5515,6 +5515,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
       <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClockNet')}><h2>Squad Clock — All Courts</h2><span className="homeTileSubtitle">📡 Networked · synced across courts</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rotation')}><h2>Rotation Engine™</h2><span className="homeTileSubtitle">Group formats · more players than courts</span></button>
 
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
@@ -20294,6 +20295,7 @@ function SoloPracticeModule({setScreen}){
 
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
@@ -24109,6 +24111,290 @@ function LiveMatchTraceModule({setScreen}){
 }
 
 
+
+/* ───────────────────────── ROTATION ENGINE™ — group formats ─────────────────────────
+   Lever 4 of the small-sided conversion: rotate instead of queue. Any Games Library
+   game can be dropped in as the rotation's rule set. */
+const ROTATION_FORMATS=[
+  {id:'winnerStays',title:'Winner Stays On',tag:'King of the Court',onCount:2,minPlayers:3,
+   blurb:'The winner holds the court. The loser goes to the back of the queue and the next player comes on.',
+   mechanism:'Repetition without repetition — the same problem returns against a different opponent every rotation.',
+   question:'What changed about the rally when the new player came on?',
+   scoring:'Winner of the rally holds the court. Loser joins the back of the queue.'},
+  {id:'monarch',title:'Monarch',tag:'Ladder · self-levelling',onCount:2,minPlayers:4,
+   blurb:'Courts are ranked. Winners move up a court, losers move down. Every court finds its own level.',
+   mechanism:'Continuous re-matching toward the 70% learning zone — the ladder pitches each player against a near-equal.',
+   question:'Was that closer or further from an even contest than the last one?',
+   scoring:'Winner moves up one court. Loser moves down one court. Court 1 winner and bottom-court loser hold.'},
+  {id:'twoVOne',title:'Two v One',tag:'Conditioned pressure',onCount:3,minPlayers:4,
+   blurb:'One player against two. The pair share the court; the single player covers alone.',
+   mechanism:'Affordance amplification — constant pressure makes the retrieval and the counter the standing opportunity.',
+   question:'Where did the single player find time, and what created it?',
+   scoring:'Rally scoring. The single player rotates out on the trigger; a new single player takes over.'},
+  {id:'tagTeam',title:'Tag Team',tag:'Paired rotation',onCount:4,minPlayers:4,
+   blurb:'Two pairs. Partners alternate rallies, so every player plays every other rally.',
+   mechanism:'Shared affordances — each player reads a rally they are about to inherit rather than one they are playing.',
+   question:'What did you notice while your partner was playing that you used on your rally?',
+   scoring:'Pair scoring. Partners alternate rallies and the pair total carries.'},
+];
+const ROTATION_TRIGGERS=[
+  {id:'point',label:'Every rally',hint:'Rotate after each rally. Highest turnover, shortest waits.'},
+  {id:'miniGame',label:'Mini-game',hint:'Rotate when a player reaches the target score.'},
+  {id:'timer',label:'Timer',hint:'Rotate when the clock runs out, whatever the score.'},
+];
+
+function rotBuildBoard(names,courtCount,formatId){
+  const fmt=ROTATION_FORMATS.find(f=>f.id===formatId)||ROTATION_FORMATS[0];
+  const cc=Math.max(1,Math.min(4,courtCount));
+  const courts=Array.from({length:cc},(_,i)=>({n:i+1,on:[],wait:[]}));
+  const pool=names.filter(Boolean);
+  let idx=0;
+  for(let c=0;c<cc;c++){for(let s=0;s<fmt.onCount&&idx<pool.length;s++){courts[c].on.push(pool[idx++]);}}
+  let c=0;
+  while(idx<pool.length){courts[c%cc].wait.push(pool[idx++]);c++;}
+  return courts;
+}
+function rotRotateCourt(court,winner,formatId){
+  const fmt=ROTATION_FORMATS.find(f=>f.id===formatId)||ROTATION_FORMATS[0];
+  const on=court.on.slice(),wait=court.wait.slice();
+  if(!wait.length&&fmt.id!=='tagTeam')return {...court,on,wait};
+  if(fmt.id==='winnerStays'){
+    const losers=on.filter(p=>p!==winner);
+    const next=wait.shift();
+    return {...court,on:[winner,next].filter(Boolean),wait:[...wait,...losers]};
+  }
+  if(fmt.id==='twoVOne'){
+    const single=on[0],pair=on.slice(1);
+    const next=wait.shift();
+    return {...court,on:[pair[0],pair[1],next].filter(Boolean),wait:[...wait,single]};
+  }
+  if(fmt.id==='tagTeam'){
+    if(wait.length>=2){const a=wait.shift(),b=wait.shift();return {...court,on:[on[2],on[3],a,b].filter(Boolean),wait:[...wait,on[0],on[1]].filter(Boolean)};}
+    return {...court,on:[on[1],on[0],on[3],on[2]].filter(Boolean),wait};
+  }
+  return {...court,on,wait};
+}
+function rotRotateMonarch(courts,winners){
+  const n=courts.length;
+  const w=[],l=[];
+  courts.forEach((c,i)=>{
+    const win=winners[c.n]||c.on[0]||null;
+    w[i]=win;
+    l[i]=c.on.find(p=>p!==win)||null;
+  });
+  const wait=courts.map(c=>c.wait.slice());
+  const on=courts.map(()=>[]);
+  for(let i=0;i<n;i++){
+    if(i===0){if(w[0])on[0].push(w[0]);}
+    else if(l[i-1])on[i].push(l[i-1]);
+    if(i===n-1){if(l[i])on[i].push(l[i]);}
+    else if(w[i+1])on[i].push(w[i+1]);
+  }
+  for(let i=0;i<n;i++){
+    while(on[i].length<2&&wait[i].length)on[i].push(wait[i].shift());
+    while(on[i].length>2)wait[i].push(on[i].pop());
+  }
+  return courts.map((c,i)=>({...c,on:on[i].filter(Boolean),wait:wait[i]}));
+}
+
+function RotationStyles(){return <style>{`
+.rotWrap{display:flex;flex-direction:column;gap:14px;}
+.rotTabs{display:flex;flex-wrap:wrap;gap:8px;}
+.rotTab{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:11px;padding:9px 13px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
+.rotTab strong{font-size:.9rem;color:#eaf4fb;}
+.rotTab span{font-size:.72rem;color:#8aa0b6;}
+.rotTabOn{background:#114d2c;border-color:#1d6b3f;}
+.rotTabOn strong{color:#bff0d0;}
+.rotTabOn span{color:#7fc8a0;}
+.rotPanel{background:#0b1320;border:1px solid #223044;border-radius:14px;padding:14px 16px;}
+.rotPanel h4{color:#9cc4ec;font-size:.8rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;margin:0 0 8px;}
+.rotPanel p{color:#c7d4e2;font-size:.88rem;margin:0 0 6px;line-height:1.5;}
+.rotChipRow{display:flex;flex-wrap:wrap;gap:8px;}
+.rotChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:8px 14px;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.rotChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.rotBoard{display:flex;flex-direction:column;gap:10px;}
+.rotCourt{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:12px 14px;}
+.rotCourtHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.rotCourtHead strong{color:#eaf4fb;font-size:.95rem;}
+.rotCourtHead span{color:#7fc8a0;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.rotOnRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.rotPlayer{background:#0f1c2c;border:1px solid #2c3c4e;color:#eaf4fb;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.92rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.rotPlayerWin{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.rotWait{color:#8aa0b6;font-size:.8rem;}
+.rotWait b{color:#c7d4e2;font-weight:700;}
+.rotBar{display:flex;flex-wrap:wrap;gap:8px;}
+.rotTimer{font-size:2rem;font-weight:800;color:#eaf4fb;letter-spacing:.04em;}
+.rotTimerLive{color:#7fc8a0;}
+.rotDisplayPage{min-height:100vh;background:#070d14;padding:20px;}
+.rotDisplayTop{text-align:center;margin-bottom:18px;}
+.rotDisplayTop span{color:#7fc8a0;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
+.rotDisplayTop h1{color:#eaf4fb;font-size:2.1rem;margin:4px 0 2px;}
+.rotDisplayTop p{color:#9fb3c4;margin:0;font-size:1rem;}
+.rotDisplayGrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
+.rotDisplayCourt{flex:1 1 260px;max-width:360px;background:#0c1626;border:2px solid #25405f;border-radius:16px;padding:16px;}
+.rotDisplayCourt h2{color:#7fc8a0;font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;}
+.rotDisplayOn{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+.rotDisplayOn div{background:#114d2c;border:1px solid #1d6b3f;color:#eaf4fb;border-radius:10px;padding:11px 14px;font-size:1.25rem;font-weight:800;}
+.rotDisplayNext{color:#9fb3c4;font-size:.95rem;}
+.rotDisplayNext b{color:#eaf4fb;}
+`}</style>;}
+
+function RotationEngine({setScreen,setSession}){
+  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  const [names,setNames]=useState(()=>presents.length>=3?presents:['Player 1','Player 2','Player 3','Player 4','Player 5','Player 6']);
+  const [nameInput,setNameInput]=useState('');
+  const [formatId,setFormatId]=useState('winnerStays');
+  const [courtCount,setCourtCount]=useState(2);
+  const [triggerId,setTriggerId]=useState('miniGame');
+  const [target,setTarget]=useState(5);
+  const [minutes,setMinutes]=useState(4);
+  const [ruleSet,setRuleSet]=useState('Normal rally rules');
+  const [board,setBoard]=useState(()=>rotBuildBoard(names,2,'winnerStays'));
+  const [winners,setWinners]=useState({});
+  const [rounds,setRounds]=useState(0);
+  const [secs,setSecs]=useState(0);
+  const [running,setRunning]=useState(false);
+  const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
+  const fmt=ROTATION_FORMATS.find(f=>f.id===formatId)||ROTATION_FORMATS[0];
+  const games=useMemo(()=>{try{return standardGames().map(g=>g.title);}catch{return[];}},[]);
+  const enough=names.length>=fmt.minPlayers;
+
+  useEffect(()=>{setBoard(rotBuildBoard(names,courtCount,formatId));setWinners({});setRounds(0);},[names.join('|'),courtCount,formatId]);
+  useEffect(()=>{
+    if(!running)return;
+    const id=setInterval(()=>setSecs(s=>s>0?s-1:0),1000);
+    return ()=>clearInterval(id);
+  },[running]);
+  useEffect(()=>{
+    if(!projecting)return;
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'rotation',{type:'rotation',
+      format:fmt.title,tag:fmt.tag,ruleSet,round:rounds,
+      trigger:triggerId==='timer'?minutes+' min':triggerId==='miniGame'?'First to '+target:'Every rally',
+      courts:board.map(c=>({n:c.n,on:c.on,next:c.wait[0]||null,waiting:c.wait.length}))});
+  },[projecting,board,rounds,fmt,ruleSet,triggerId,target,minutes]);
+
+  function addName(){const v=nameInput.trim();if(!v)return;setNames(p=>[...p,v]);setNameInput('');}
+  function removeName(n){setNames(p=>p.filter(x=>x!==n));}
+  function pickWinner(courtN,player){setWinners(p=>({...p,[courtN]:p[courtN]===player?null:player}));}
+  function rotateAll(){
+    if(formatId==='monarch'){
+      const done=board.every(c=>winners[c.n]);
+      if(!done)return;
+      setBoard(rotRotateMonarch(board,winners));
+    }else{
+      setBoard(board.map(c=>{
+        const w=winners[c.n];
+        if(formatId==='winnerStays'&&!w)return c;
+        return rotRotateCourt(c,w,formatId);
+      }));
+    }
+    setWinners({});setRounds(r=>r+1);
+    if(triggerId==='timer'){setSecs(minutes*60);setRunning(true);}
+  }
+  function startTimer(){setSecs(minutes*60);setRunning(true);}
+  function addCard(){
+    const trig=triggerId==='timer'?('every '+minutes+' minutes'):triggerId==='miniGame'?('when a player reaches '+target):'after every rally';
+    setSession(prev=>appendToSessionState(prev,{
+      id:Date.now()+Math.random(),
+      title:'Rotation — '+fmt.title,
+      category:'Group Formats',
+      format:fmt.tag,
+      duration:12,
+      rld:4,
+      task:'1) Split into '+courtCount+' court'+(courtCount>1?'s':'')+'. 2) Play '+ruleSet+'. 3) Rotate '+trig+'. 4) Follow the rotation board for who is next.',
+      scoring:fmt.scoring,
+      rationale:fmt.mechanism,
+      coach:fmt.question,
+      playerFocus:'Watch the board and be ready before your rally.',
+      layers:[],cbCode:'None'}));
+  }
+  async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);alert('Rotation board link copied.');}catch{window.prompt('Rotation board link:',url);}}
+  const mm=String(Math.floor(secs/60)).padStart(2,'0'),ss=String(secs%60).padStart(2,'0');
+
+  return <div className="gameCard rotWrap">
+    <RotationStyles/>
+    <div className="moduleHead"><div><h1>Rotation Engine™</h1><p className="mutedText">Group formats for more players than courts. Pick a format, drop in any game as the rule set, and the board tells everyone who is on next.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="rotPanel">
+      <h4>Format</h4>
+      <div className="rotTabs">{ROTATION_FORMATS.map(f=><button type="button" key={f.id} className={formatId===f.id?'rotTab rotTabOn':'rotTab'} onClick={()=>setFormatId(f.id)}><strong>{f.title}</strong><span>{f.tag}</span></button>)}</div>
+      <p style={{marginTop:'10px'}}>{fmt.blurb}</p>
+      <p className="mutedText" style={{fontSize:'.82rem'}}><strong style={{color:'#9cc4ec'}}>Why this format:</strong> {fmt.mechanism}</p>
+      <p className="mutedText" style={{fontSize:'.82rem'}}><strong style={{color:'#9cc4ec'}}>Ask between rounds:</strong> {fmt.question}</p>
+    </div>
+
+    <div className="rotPanel">
+      <h4>Players ({names.length})</h4>
+      <div className="rotChipRow">{names.map(n=><button type="button" key={n} className="rotChip" onClick={()=>removeName(n)}>{n} ×</button>)}</div>
+      <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap'}}>
+        <input value={nameInput} onChange={e=>setNameInput(e.target.value)} placeholder="Add a player" style={{flex:'1 1 160px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',fontSize:'.9rem',padding:'10px 12px',outline:'none'}}/>
+        <button type="button" className="secondaryBtn" onClick={addName}>Add</button>
+      </div>
+      {!enough&&<p className="mutedText" style={{color:'#fca5a5',marginTop:'8px',fontSize:'.83rem'}}>{fmt.title} needs at least {fmt.minPlayers} players.</p>}
+    </div>
+
+    <div className="rotPanel">
+      <h4>Courts</h4>
+      <div className="rotChipRow">{[1,2,3,4].map(n=><button type="button" key={n} className={courtCount===n?'rotChip rotChipOn':'rotChip'} onClick={()=>setCourtCount(n)}>{n} court{n>1?'s':''}</button>)}</div>
+    </div>
+
+    <div className="rotPanel">
+      <h4>Rule set on court</h4>
+      <p className="mutedText" style={{fontSize:'.83rem'}}>Any Games Library game can be the rotation&rsquo;s rule set.</p>
+      <select value={ruleSet} onChange={e=>setRuleSet(e.target.value)} style={{width:'100%',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',fontSize:'.9rem',padding:'10px 12px',WebkitAppearance:'none',appearance:'none'}}>
+        <option>Normal rally rules</option>
+        {games.map(g=><option key={g}>{g}</option>)}
+      </select>
+    </div>
+
+    <div className="rotPanel">
+      <h4>Rotation trigger</h4>
+      <div className="rotChipRow">{ROTATION_TRIGGERS.map(t=><button type="button" key={t.id} className={triggerId===t.id?'rotChip rotChipOn':'rotChip'} onClick={()=>setTriggerId(t.id)}>{t.label}</button>)}</div>
+      <p className="mutedText" style={{fontSize:'.82rem',marginTop:'8px'}}>{(ROTATION_TRIGGERS.find(t=>t.id===triggerId)||{}).hint}</p>
+      {triggerId==='miniGame'&&<div className="rotChipRow" style={{marginTop:'8px'}}>{[3,5,7,11].map(v=><button type="button" key={v} className={target===v?'rotChip rotChipOn':'rotChip'} onClick={()=>setTarget(v)}>First to {v}</button>)}</div>}
+      {triggerId==='timer'&&<>
+        <div className="rotChipRow" style={{marginTop:'8px'}}>{[2,3,4,5,6].map(v=><button type="button" key={v} className={minutes===v?'rotChip rotChipOn':'rotChip'} onClick={()=>setMinutes(v)}>{v} min</button>)}</div>
+        <div style={{display:'flex',alignItems:'center',gap:'12px',marginTop:'10px'}}>
+          <span className={running&&secs>0?'rotTimer rotTimerLive':'rotTimer'}>{mm}:{ss}</span>
+          <button type="button" className="secondaryBtn" onClick={startTimer}>Start</button>
+          <button type="button" className="secondaryBtn" onClick={()=>setRunning(false)}>Stop</button>
+        </div>
+      </>}
+    </div>
+
+    <div className="rotPanel">
+      <h4>Rotation board — round {rounds+1}</h4>
+      <p className="mutedText" style={{fontSize:'.83rem'}}>{formatId==='monarch'?'Tap the winner on every court, then Rotate All.':'Tap the winner, then Rotate.'}</p>
+      <div className="rotBoard">{board.map(c=><div key={c.n} className="rotCourt">
+        <div className="rotCourtHead"><strong>Court {c.n}</strong>{formatId==='monarch'&&<span>{c.n===1?'Top court':c.n===board.length?'Bottom court':'Court '+c.n}</span>}</div>
+        <div className="rotOnRow">{c.on.map(p=><button type="button" key={p} className={winners[c.n]===p?'rotPlayer rotPlayerWin':'rotPlayer'} onClick={()=>pickWinner(c.n,p)}>{p}</button>)}</div>
+        <div className="rotWait">{c.wait.length?<>Next on: <b>{c.wait[0]}</b>{c.wait.length>1?' · then '+c.wait.slice(1).join(', '):''}</>:'No one waiting on this court.'}</div>
+      </div>)}</div>
+      <div className="rotBar" style={{marginTop:'12px'}}>
+        <button type="button" className="primaryBtn" onClick={rotateAll}>{formatId==='monarch'?'Rotate All':'Rotate'}</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{setBoard(rotBuildBoard(names,courtCount,formatId));setWinners({});setRounds(0);}}>Reset board</button>
+      </div>
+    </div>
+
+    <div className="rotBar">
+      <button type="button" className="secondaryBtn" onClick={addCard}>Add To Session</button>
+      <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Board live ✓ — copy link':'Copy Board Link'}</button>
+    </div>
+  </div>;
+}
+
+function RotationPlayerDisplay({payload={}}){
+  const courts=Array.isArray(payload.courts)?payload.courts:[];
+  return <div className="playerDisplayPage rotDisplayPage"><RotationStyles/>
+    <div className="rotDisplayTop"><span>ROTATION BOARD</span><h1>{payload.format||'Rotation'}</h1><p>{payload.ruleSet||''} · rotate {payload.trigger||''}</p></div>
+    <div className="rotDisplayGrid">{courts.map(c=><div key={c.n} className="rotDisplayCourt">
+      <h2>Court {c.n}</h2>
+      <div className="rotDisplayOn">{(c.on||[]).map(p=><div key={p}>{p}</div>)}</div>
+      <div className="rotDisplayNext">{c.next?<>Next on: <b>{c.next}</b></>:'No one waiting'}</div>
+    </div>)}</div>
+  </div>;
+}
+
 function App(){
 const courtMode=useMemo(()=>getCourtModeFromUrl(),[]);
 const[liveRoomParam]=useState(()=>getLiveRoomFromUrl()||(courtMode?courtRoomId(courtMode.host,courtMode.court):''));
@@ -24230,6 +24516,7 @@ if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeRet
 if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='pattern'){return <PatternLabPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='courtstandings'){return <CourtStandingsPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='rotation'){return <RotationPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='matchTrace'){return <MatchTracePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='checkerboard'){return <CheckerboardPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='courtTraceGame'){return <CourtTraceGamePlayerDisplay payload={livePayload}/>;}
@@ -24380,6 +24667,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='serveReturn'&&<ServeReturnModule setScreen={go} setSession={setSession}/>}
       {screen==='bucketLob'&&<LobModule setScreen={go} setSession={setSession}/>}
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
+      {screen==='rotation'&&<RotationEngine setScreen={go} setSession={setSession}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
