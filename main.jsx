@@ -224,7 +224,10 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v545 Housekeeping. CLA Lexicon, Why We Coach This Way and Breakthrough Log move off the Home screen into a new Coach Education section in More Stuff. Rotation Engine now supports up to 6 courts, matching Tin War, Disruption and Court Monitor. Builds on v544.';
+const APP_VERSION='v547 Tactical Finish. A four-suite progression on how the rally is finished, each suite tightening the constraint: 1 Spatial (floor or wall zone), 2 Wall + Floor (checkerboard [wall-floor] routes), 3 Shot (designated finishing shots), 4 Full (route + shot together). Lives in the Games Library under Pressure & Consequence; targets are picked from existing vocabulary (ATB zones, CB codes, shot registry) and bonuses from the standard +1/+2/+3, with corner and wall names shown throughout. Builds on v546.';
+
+const MORE_OPEN_KEY='cb_more_open_v1';
+const MORE_SCROLL_KEY='cb_more_scroll_v1';
 
 // Back-interceptor registry: lets a module with an inner (second) page tell the
 // floating Back button to step back inside the module before leaving to the
@@ -5458,7 +5461,12 @@ function AnalogyLibraryScreen({setScreen}){
 }
 
 function Home({setScreen}){
-const [showMore,setShowMore]=useState(false);
+const [showMore,setShowMore]=useState(()=>{try{return localStorage.getItem(MORE_OPEN_KEY)==='1';}catch{return false;}});
+  useEffect(()=>{try{localStorage.setItem(MORE_OPEN_KEY,showMore?'1':'0');}catch{}},[showMore]);
+  useEffect(()=>{if(!showMore)return;const y=(()=>{try{return parseInt(localStorage.getItem(MORE_SCROLL_KEY)||'0',10)||0;}catch{return 0;}})();
+    if(y>0){const t=setTimeout(()=>{try{window.scrollTo(0,y);}catch{}},60);return ()=>clearTimeout(t);}},[showMore]);
+  useEffect(()=>{if(!showMore)return;const onS=()=>{try{localStorage.setItem(MORE_SCROLL_KEY,String(Math.round(window.scrollY||0)));}catch{}};
+    window.addEventListener('scroll',onS,{passive:true});return ()=>window.removeEventListener('scroll',onS);},[showMore]);
 return <div className="homeGrid homeGridV99h52">
       <style>{`.diagnosticHomeCard{background:linear-gradient(135deg,#123552,#0b1f33)!important;border:1px solid #2E6E8E!important;color:#eaf4fb!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}.diagnosticHomeCard h2{color:#eaf4fb!important}.diagnosticHomeCard .homeTileSubtitle{color:#9fb3c4!important}
 .whyCLABrandTile{color:#eaf4fb!important}.whyCLABrandTile strong{color:#eaf4fb!important;font-size:2.4rem!important;line-height:1.1!important;display:block!important;letter-spacing:0.02em!important}.whyCLABrandTile p{color:#9fb3c4!important;margin:6px 0 0 0!important;font-size:0.95rem!important}
@@ -14444,6 +14452,7 @@ function Games({setSession,setScreen,onClassChange}){
     {id:'rotations',label:'Rotations',category:'Rotations'},
     {id:'errors',label:'Common Game Errors',category:'Common Game Errors'},
     {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally'},
+    {id:'tacticalfinish',label:'Tactical Finish',category:'Tactical Finish'},
     {id:'breakout',label:'Breakout Squash',category:'Breakout Squash'},
     {id:'presscall',label:'Press Call',category:'Press Call'},
     {id:'hangman',label:'Hangman Squash',category:'Hangman Squash'},
@@ -14456,7 +14465,7 @@ function Games({setSession,setScreen,onClassChange}){
 
   const GAME_GROUPS=[
     {title:'The Board — Spatial',emoji:'🎯',ids:['atb','atl','length','volley','breakout']},
-    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','fusion','tinwar','doubleBounce','tacticalpressure','shotbonus']},
+    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','fusion','tinwar','doubleBounce','tacticalpressure','shotbonus','tacticalfinish']},
     {title:'Play & Score — Formats',emoji:'🎲',ids:['snakesladders','ludosquash','noughtscrosses','blindtarget','hangman']},
     {title:'Perception & Decision',emoji:'👁️',ids:['information','tacticalIntentions','presscall']},
     {title:'CLA Update — Book Builds',emoji:'📚',ids:['claupdate','roleconstraint','courtgeometry']},
@@ -14587,6 +14596,7 @@ function Games({setSession,setScreen,onClassChange}){
     {activeClassId==='breakout'&&<BreakoutSquash setSession={setSession}/>}
     {activeClassId==='presscall'&&<PressCallModule setSession={setSession}/>}
     {activeClassId==='claupdate'&&<CLAUpdateGames setSession={setSession}/>}
+    {activeClassId==='tacticalfinish'&&<TacticalFinishGames setSession={setSession}/>}
     {activeClassId==='roleconstraint'&&<RoleConstraintEngine setSession={setSession}/>}
     {activeClassId==='courtgeometry'&&<CourtGeometryModule setSession={setSession}/>}
     {activeClassId==='hangman'&&<HangmanSquashGame key="hangman-engine" setSession={setSession} setScreen={setScreen}/>}
@@ -20732,6 +20742,7 @@ function BreakthroughLog({setScreen}){
 
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Tactical Finish',sub:'Game suite \u00b7 how the rally is finished',kw:'tactical finish suite off t corner kill two shot conversion volley finish judge earn winner games',screen:'games',classId:'tacticalfinish'},
   {label:'Breakthrough Log',sub:'Dated evidence \u00b7 what a player found and where',kw:'breakthrough log progress record evidence attribution first seen dated parent one to one credit development milestone',screen:'breakthrough'},
   {label:'Why We Coach This Way',sub:'Parent education \u00b7 explain and defend the framework',kw:'parents parent education why we coach this way explain defend traditional coach technique lessons philosophy faq evening pack send home',screen:'parents'},
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
@@ -24834,6 +24845,136 @@ function RotationPlayerDisplay({payload={}}){
       <div className="rotDisplayOn">{(c.on||[]).map(p=><div key={p}>{p}</div>)}</div>
       <div className="rotDisplayNext">{c.next?<>Next on: <b>{c.next}</b></>:'No one waiting'}</div>
     </div>)}</div>
+  </div>;
+}
+
+
+
+/* ───────────────────────── TACTICAL FINISH — four-suite progression ─────────────────────────
+   One game pattern — normal rally, bonus for the designated finish — tightened across
+   four suites: floor/wall zone → wall-into-floor combo → shot → combo + shot.
+   All vocabulary is existing: ATB zones, CB codes, SHOT_BONUS_REGISTRY, point choices. */
+const TF_FLOOR={'1':'Front left','2':'Front right','3':'Back right','4':'Back left'};
+const TF_WALL={'5':'Front wall top left','6':'Front wall top right','7':'Front wall bottom right','8':'Front wall bottom left'};
+const TF_SUITES=[
+ {id:'spatial',n:1,title:'Spatial Finish',sub:'Finish in a floor zone or off a wall zone',
+  blurb:'The loosest constraint: the winning ball must die in a designated floor zone, or strike a designated front-wall zone. Where the finish lands matters; how it gets there is free.'},
+ {id:'combo',n:2,title:'Wall + Floor Finish',sub:'Finish through a wall zone into a floor zone',
+  blurb:'Tighter: the winner must strike the designated front-wall zone AND die in its paired floor zone — the [wall-floor] combinations from the checkerboard notation.'},
+ {id:'shot',n:3,title:'Shot Finish',sub:'Finish with a designated shot',
+  blurb:'The constraint moves from space to shot: the rally must be won with one of the designated finishing shots, anywhere on court.'},
+ {id:'full',n:4,title:'Full Finish',sub:'Wall + floor combo, with a designated shot',
+  blurb:'The tightest constraint: the designated shot, through the designated wall zone, dying in the designated floor zone. The complete finishing picture.'},
+];
+const TF_COMBOS=CB_CODES.filter(c=>/^\[\d-\d\]$/.test(c));
+
+function tfComboLabel(code){
+  const m=code.match(/^\[(\d)-(\d)\]$/); if(!m)return code;
+  return code+' — '+(TF_WALL[m[1]]||('wall '+m[1]))+' into '+(TF_FLOOR[m[2]]||('floor '+m[2])).toLowerCase();
+}
+function tfShotLabel(id){const s=SHOT_BONUS_REGISTRY.find(x=>x.id===id);return s?s.label:id;}
+
+function TacticalFinishStyles(){return <style>{`
+.tfWrap{display:flex;flex-direction:column;gap:12px;}
+.tfSuite{background:#0f1822;border:1px solid #223044;border-left:3px solid #e0a334;border-radius:14px;padding:15px 17px;}
+.tfSuiteHead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.tfSuiteHead .tfNo{color:#e0a334;font-weight:800;font-size:.78rem;letter-spacing:.06em;}
+.tfSuiteHead h3{color:#eaf4fb;margin:0;font-size:1.08rem;}
+.tfSuiteHead span{color:#8aa0b6;font-size:.82rem;}
+.tfBlurb{color:#9fb6cf;font-size:.86rem;line-height:1.55;margin:8px 0 10px;}
+.tfLabel{color:#9cc4ec;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin:10px 0 7px;}
+.tfChips{display:flex;flex-wrap:wrap;gap:7px;}
+.tfChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 13px;color:#dbe6f2;font-weight:700;font-size:.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.tfChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.tfTask{color:#c7d4e2;font-size:.88rem;line-height:1.55;background:#0c1626;border:1px solid #1e2c3c;border-radius:10px;padding:11px 13px;margin-top:10px;}
+`}</style>;}
+
+function TacticalFinishGames({setSession}){
+  const [floorZ,setFloorZ]=useState(['4']);
+  const [wallZ,setWallZ]=useState([]);
+  const [combos,setCombos]=useState(['[8-1]']);
+  const [shots,setShots]=useState(['straight-drop','straight-volley-drop']);
+  const [fullCombo,setFullCombo]=useState('[8-1]');
+  const [fullShots,setFullShots]=useState(['straight-drop']);
+  const [bonus,setBonus]=useState({spatial:'+1',combo:'+2',shot:'+1',full:'+3'});
+  const [added,setAdded]=useState('');
+  const tog=(set)=>(v)=>set(cur=>cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]);
+  const togFloor=tog(setFloorZ),togWall=tog(setWallZ),togCombo=tog(setCombos),togShot=tog(setShots),togFullShot=tog(setFullShots);
+
+  function spatialTargets(){
+    const f=floorZ.map(z=>'floor zone '+z+' ('+TF_FLOOR[z].toLowerCase()+')');
+    const w=wallZ.map(z=>'wall zone '+z+' ('+TF_WALL[z].toLowerCase()+')');
+    return [...f,...w];
+  }
+  function task(id){
+    if(id==='spatial')return 'Normal rally rules. A rally won with a ball that '+(wallZ.length&&floorZ.length?'dies in ':'')+(floorZ.length?'dies in '+floorZ.map(z=>TF_FLOOR[z].toLowerCase()+' (zone '+z+')').join(' or '):'')+(floorZ.length&&wallZ.length?', or strikes ':wallZ.length?'strikes ':'')+(wallZ.length?wallZ.map(z=>TF_WALL[z].toLowerCase()+' (zone '+z+')').join(' or '):'')+' scores the bonus.';
+    if(id==='combo')return 'Normal rally rules. The bonus fires when the winner travels the designated route: '+combos.map(tfComboLabel).join('; ')+'.';
+    if(id==='shot')return 'Normal rally rules. The bonus fires when the rally is won with '+shots.map(tfShotLabel).join(' or ')+', anywhere on court.';
+    return 'Normal rally rules. The bonus fires only for the complete picture: '+fullShots.map(tfShotLabel).join(' or ')+' through '+tfComboLabel(fullCombo)+'.';
+  }
+  function scoring(id){
+    return 'Rally win = 1. Designated finish = '+bonus[id].replace('+','+')+' bonus (so '+(1+parseInt(bonus[id].slice(1)))+' total). Layer Negative Scoring, DB Handicap or Tin Height with the universal modifiers as usual.';
+  }
+  const RAT={
+   spatial:'Amplifies a spatial finishing affordance without constraining the route \u2014 players discover the build-ups that make the target zone available.',
+   combo:'The wall-into-floor route narrows the solution space to a specific ball flight, so players must create the position the route requires \u2014 the manipulate-then-exploit chain.',
+   shot:'Moves the constraint from space to action: the finish must arrive through a designated shot, so players hunt situations where that shot is the answer.',
+   full:'The complete finishing picture \u2014 shot, route and landing together. Hardest to force, so it rewards genuine construction over opportunism.'};
+  const FOCUS={spatial:'Build the rally that opens the zone.',combo:'Create the position the route needs.',shot:'Hunt the moment the shot is on.',full:'Construct it \u2014 this one cannot be forced.'};
+
+  function add(id){
+    const suite=TF_SUITES.find(s2=>s2.id===id);
+    const layers=[];
+    if(id==='shot'||id==='full'){if((id==='shot'?shots:fullShots).some(x=>x.includes('volley')))layers.push('Volley Finish');}
+    layers.push('Clean Winner');
+    const card=normaliseGameCard({id:Date.now()+Math.random(),
+      title:'Tactical Finish '+suite.n+' \u2014 '+suite.title,category:'Tactical Finish',
+      format:'Conditioned Game',duration:8,rld:4,
+      task:task(id),scoring:scoring(id),rationale:RAT[id],
+      coach:'Ask what created the finish, not whether it landed. If one route grooves, disable it verbally for a game.',
+      playerFocus:FOCUS[id],layers,
+      cbCode:id==='combo'?(combos[0]||'None'):id==='full'?fullCombo:'None'});
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(id);
+  }
+  const bonusChips=(id)=><div className="tfChips">{SHOT_BONUS_POINT_CHOICES.map(p=><button type="button" key={p} className={bonus[id]===p?'tfChip on':'tfChip'} onClick={()=>setBonus(b=>({...b,[id]:p}))}>{p}</button>)}</div>;
+
+  return <div className="gameCard tfWrap"><TacticalFinishStyles/>
+    <p className="mutedText" style={{margin:0}}>Four suites, one idea, tightening as they go: the rally is normal squash \u2014 the bonus is earned by how it ends. Zone numbers follow the court map (floor 1\u20134 clockwise from front left; wall 5\u20138 clockwise from top left), with names shown so nobody has to trust the number.</p>
+
+    {TF_SUITES.map(su=><div key={su.id} className="tfSuite">
+      <div className="tfSuiteHead"><span className="tfNo">SUITE {su.n}</span><h3>{su.title}</h3><span>{su.sub}</span></div>
+      <p className="tfBlurb">{su.blurb}</p>
+
+      {su.id==='spatial'&&<>
+        <div className="tfLabel">Floor zones (ball dies in)</div>
+        <div className="tfChips">{Object.keys(TF_FLOOR).map(z=><button type="button" key={z} className={floorZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togFloor(z)}>{z} \u00b7 {TF_FLOOR[z]}</button>)}</div>
+        <div className="tfLabel">Wall zones (winner strikes)</div>
+        <div className="tfChips">{Object.keys(TF_WALL).map(z=><button type="button" key={z} className={wallZ.includes(z)?'tfChip on':'tfChip'} onClick={()=>togWall(z)}>{z} \u00b7 {TF_WALL[z]}</button>)}</div>
+      </>}
+
+      {su.id==='combo'&&<>
+        <div className="tfLabel">Wall \u2192 floor routes</div>
+        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={combos.includes(c)?'tfChip on':'tfChip'} onClick={()=>togCombo(c)}>{tfComboLabel(c)}</button>)}</div>
+      </>}
+
+      {su.id==='shot'&&<>
+        <div className="tfLabel">Designated finishing shots</div>
+        <div className="tfChips">{SHOT_BONUS_REGISTRY.map(s2=><button type="button" key={s2.id} className={shots.includes(s2.id)?'tfChip on':'tfChip'} onClick={()=>togShot(s2.id)}>{s2.label}</button>)}</div>
+      </>}
+
+      {su.id==='full'&&<>
+        <div className="tfLabel">Route</div>
+        <div className="tfChips">{TF_COMBOS.map(c=><button type="button" key={c} className={fullCombo===c?'tfChip on':'tfChip'} onClick={()=>setFullCombo(c)}>{tfComboLabel(c)}</button>)}</div>
+        <div className="tfLabel">Shot</div>
+        <div className="tfChips">{SHOT_BONUS_REGISTRY.map(s2=><button type="button" key={s2.id} className={fullShots.includes(s2.id)?'tfChip on':'tfChip'} onClick={()=>togFullShot(s2.id)}>{s2.label}</button>)}</div>
+      </>}
+
+      <div className="tfLabel">Bonus</div>
+      {bonusChips(su.id)}
+      <div className="tfTask"><strong style={{color:'#9cc4ec'}}>Task:</strong> {task(su.id)}<br/><strong style={{color:'#9cc4ec'}}>Scoring:</strong> {scoring(su.id)}</div>
+      <button type="button" className="primaryBtn" style={{marginTop:'11px'}} onClick={()=>add(su.id)}>{added===su.id?'Added \u2713':'Add To Session'}</button>
+    </div>)}
   </div>;
 }
 
