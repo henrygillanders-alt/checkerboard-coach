@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v550 Coaching Paradigms. Why traditional and ecological coaching design different sessions \u2014 they answer the question of where skill comes from differently. Emergent behaviour is the organising concept: a coach can install technique but not skill, and traditional coaching has no category for emergence. Fourteen comparisons opening with the shared goal, a fourteen-term traditional lexicon written so a traditional coach recognises their own practice, and an honest ledger of practical cautions on both sides. Links to the CLA Lexicon rather than duplicating it. Builds on v549.';
+const APP_VERSION='v551 Poker Tables. Poker across several courts, run like poker with multiple tables: every player draws their own hidden target, scoring stays individual, and the first player on any court to reach their target takes the round \u2014 all courts stop, then the ladder rotates by one or two players. A win on Court 1 is worth 3, Court 2 is worth 2 and so on, so being demoted is never the profitable move; uneven tables can be evened by scaling the hidden targets or by fractional points. Per-court Scoring links and a Tables Display for the projector showing rally counts only, never targets. Universal Modifiers now available throughout Poker. Builds on v550.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -19431,6 +19431,9 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
   </div>;
 }
 function BlindTargetScoreModule({setScreen,players=[],setSession}){
+  const[modifier,setModifier]=useState(emptyModifierConfig());
+  const btsPresent=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
+  const[tables,setTables]=useState(false);
   const[mode,setMode]=useState('assisted');
   const[deck,setDeck]=useState('4-9');
   const[mult,setMult]=useState(3);
@@ -19457,8 +19460,14 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   useEffect(()=>{if(!projecting)return;writeLivePlayerRoom(getPersistentLiveRoomId(),'blindtarget',{type:'blindtarget',started,players:competitors.map(n=>({name:n,score:scores[n]||0})),leaderName:leadName,leaderScore:scores[leadName]||0,winnerName:winner});},[projecting,scores,started,winner]);
   const groups=['King of Court','Junior','Tier 1','Tier 2','Tier 3'];
   return <div className="page btsPage">
-    <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',layers:['Informational Pressure'],rld:4}));}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
+    <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',modifier,layers:['Informational Pressure',...(modifier.constraints||[])],rld:4}));}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
+    <div className="ptChips" style={{margin:"10px 0"}}>
+      <button type="button" className={!tables?"ptChip on":"ptChip"} onClick={()=>setTables(false)}>One court</button>
+      <button type="button" className={tables?"ptChip on":"ptChip"} onClick={()=>setTables(true)}>Tables (multi-court)</button>
+    </div>
+    {tables&&<PokerTablesControl deckRange={deckRange} mult={mult}/>}
+
     <div className="btsPressureFamilies"><div><strong>Physical Pressure</strong><span>loads the body</span></div><div><strong>Tactical Pressure</strong><span>loads the tactical problem</span></div><div className="active"><strong>Informational Pressure</strong><span>loads decisions through uncertainty</span></div></div>
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowRationale(!showRationale)}>{showRationale?'− Hide rationale':'Why these games — coach rationale'}</button>
@@ -19509,6 +19518,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
         <div className="btsToggleRow" style={{marginTop:'10px'}}><button type="button" onClick={undoRally} disabled={!undoStack.length}>Undo</button><button type="button" onClick={newMatch}>New match · new hidden target</button>{projecting&&<span className="mutedText" style={{alignSelf:'center'}}>● reporting to Court Monitor</span>}</div></>}
     </div>
     {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players} mult={mult}/>)}</div></section>)}
+    <UniversalModifierEngine title="Universal Modifiers" context="Poker" value={modifier} onChange={setModifier} presentPlayers={btsPresent}/>
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
   </div>;
 }
@@ -20946,6 +20956,308 @@ function CoachingParadigms({setScreen}){
         <p>The reflection questions are the useful part. They apply to both paradigms and neither has a comfortable answer to all thirteen.</p>
       </div>
     </>}
+  </div>;
+}
+
+
+/* ───────────────────────── POKER TABLES — multi-court blind target ─────────────────────────
+   Poker with several tables. Every player draws their own blind target; scoring stays
+   individual so opponents on a court remain opponents. First player anywhere to complete
+   takes the round, all courts stop, ladder rotates. Round points scale with court so that
+   being demoted is never the profitable move. Targets are NEVER shown on the display. */
+function pokerCourtRoom(base,n){return `${base}__poker${n}`;}
+function pokerControlRoom(base){return `${base}__pokerctl`;}
+function buildPokerScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?pokerScore=${n}&host=${encodeURIComponent(base)}`;}
+function getPokerScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('pokerScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function buildPokerTablesLink(base,n){const b=window.location.origin+window.location.pathname;return `${b}?pokerTables=${encodeURIComponent(base)}&n=${n}`;}
+function getPokerTablesFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('pokerTables');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function pokerRoundValue(court){return Math.max(1,4-court);}   /* C1=3, C2=2, C3=1, floor 1 */
+
+function PokerTablesStyles(){return <style>{`
+.ptWrap{display:flex;flex-direction:column;gap:12px;}
+.ptPanel{background:#0f1822;border:1px solid #223044;border-radius:13px;padding:14px 16px;}
+.ptLabel{color:#9cc4ec;font-size:.73rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
+.ptChips{display:flex;flex-wrap:wrap;gap:7px;}
+.ptChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 13px;color:#dbe6f2;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ptChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.ptCourt{background:#0c1626;border:1px solid #1e2c3c;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.ptCourtHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.ptCourtHead strong{color:#eaf4fb;font-size:.95rem;}
+.ptVal{color:#e0a334;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
+.ptNames{color:#9fb6cf;font-size:.84rem;margin-bottom:8px;}
+.ptWarn{color:#fbbf24;font-size:.83rem;line-height:1.5;background:#1a1410;border:1px solid #4a3520;border-radius:9px;padding:9px 12px;}
+.ptLead{color:#9fb6cf;font-size:.87rem;line-height:1.55;margin:0;}
+.ptBoard{display:flex;flex-direction:column;gap:6px;}
+.ptRow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0c1626;border:1px solid #1e2c3c;border-radius:9px;padding:9px 12px;}
+.ptRow b{color:#eaf4fb;}
+.ptRow span{color:#8aa0b6;font-size:.82rem;}
+.ptPts{color:#bff0d0;font-weight:800;font-size:1.05rem;}
+.ptDisplay{min-height:100vh;background:#070d14;padding:22px;}
+.ptDispTop{text-align:center;margin-bottom:18px;}
+.ptDispTop span{color:#7fc8a0;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
+.ptDispTop h1{color:#eaf4fb;font-size:2.2rem;margin:5px 0 2px;}
+.ptDispTop p{color:#9fb3c4;margin:0;font-size:1rem;}
+.ptGrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:20px;}
+.ptCard{flex:1 1 250px;max-width:340px;background:#0c1626;border:2px solid #25405f;border-radius:16px;padding:15px;}
+.ptCard h2{color:#7fc8a0;font-size:.85rem;letter-spacing:.09em;text-transform:uppercase;margin:0 0 4px;}
+.ptCard .ptCardVal{color:#e0a334;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px;}
+.ptCard div.ptP{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#0f1c2c;border:1px solid #2c3c4e;border-radius:9px;padding:9px 12px;margin-bottom:6px;}
+.ptCard div.ptP b{color:#eaf4fb;font-size:1.05rem;}
+.ptCard div.ptP i{color:#7fc8a0;font-style:normal;font-weight:800;font-size:1.2rem;}
+.ptLead2{color:#9fb3c4;text-align:center;font-size:.9rem;}
+.ptWin{background:#0c2418;border:2px solid #1d6b3f;border-radius:14px;padding:16px;text-align:center;margin-bottom:18px;}
+.ptWin strong{color:#bff0d0;font-size:1.5rem;display:block;}
+.ptWin span{color:#7fc8a0;font-size:.95rem;}
+.ptScorer{min-height:100vh;background:#070d14;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.ptTarget{background:#0c2418;border:2px solid #1d6b3f;border-radius:14px;padding:14px 16px;}
+.ptTarget .ptTgtName{color:#eaf4fb;font-size:1.15rem;font-weight:800;}
+.ptTarget .ptTgtNum{color:#bff0d0;font-size:2.4rem;font-weight:800;line-height:1;}
+.ptTarget .ptTgtSub{color:#7fc8a0;font-size:.8rem;}
+.ptBig{background:#12203a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:12px;padding:16px;font-size:1.1rem;font-weight:800;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent;}
+`}</style>;}
+
+/* ── Court device: scores its own table, holds its players' blind targets ── */
+function PokerCourtScorer({court,host}){
+  useWakeLock();
+  const roomId=pokerCourtRoom(host,court);
+  const ctlId=pokerControlRoom(host);
+  const [names,setNames]=useState([]);
+  const [scores,setScores]=useState({});
+  const [targets,setTargets]=useState({});
+  const [round,setRound]=useState(0);
+  const [locked,setLocked]=useState(false);
+  const [winner,setWinner]=useState(null);
+  const [status,setStatus]=useState('Connecting…');
+  const [reveal,setReveal]=useState(null);
+
+  useEffect(()=>{
+    let dead=false;
+    async function poll(){
+      const row=await readLivePlayerRoom(ctlId);
+      if(dead)return;
+      const p=row&&row.payload&&row.payload.type==='pokerctl'?row.payload:null;
+      if(!p){setStatus('Waiting for the coach to start a round…');return;}
+      setStatus('');
+      const mine=(p.courts||[]).find(c=>c.n===court);
+      if(mine&&p.round!==round){
+        const t={},s={};
+        (mine.players||[]).forEach(n=>{t[n]=p.drawFor?(p.drawFor[n]||0):0;s[n]=0;});
+        setNames(mine.players||[]);setTargets(t);setScores(s);
+        setRound(p.round);setLocked(false);setWinner(null);
+      }
+      if(p.roundOver&&p.round===round){setLocked(true);setWinner(p.winner||null);}
+    }
+    poll(); const id=setInterval(poll,1200);
+    return ()=>{dead=true;clearInterval(id);};
+  },[ctlId,court,round]);
+
+  useEffect(()=>{
+    if(!round)return;
+    writeLivePlayerRoom(roomId,'poker',{type:'poker',court,round,
+      players:names.map(n=>({name:n,score:scores[n]||0,done:(scores[n]||0)>=(targets[n]||99)}))});
+  },[roomId,court,round,names,scores,targets]);
+
+  function win(n){
+    if(locked)return;
+    const next=(scores[n]||0)+1;
+    setScores(p=>({...p,[n]:next}));
+    if(next>=(targets[n]||99)){
+      setLocked(true);
+      writeLivePlayerRoom(roomId,'poker',{type:'poker',court,round,claim:{name:n,at:Date.now(),target:targets[n]},
+        players:names.map(x=>({name:x,score:x===n?next:(scores[x]||0),done:x===n}))});
+    }
+  }
+
+  return <div className="ptScorer"><PokerTablesStyles/>
+    <div style={{textAlign:'center'}}>
+      <div style={{color:'#7fc8a0',fontSize:'.78rem',fontWeight:800,letterSpacing:'.12em'}}>COURT {court} · SCORING</div>
+      <div style={{color:'#eaf4fb',fontSize:'1.3rem',fontWeight:800}}>Poker — Round {round||'—'}</div>
+      <div style={{color:'#9fb3c4',fontSize:'.85rem'}}>Worth {pokerRoundValue(court)} point{pokerRoundValue(court)===1?'':'s'} to the winner</div>
+    </div>
+    {status&&<p className="ptLead" style={{textAlign:'center'}}>{status}</p>}
+    {locked&&<div className="ptWin"><strong>{winner?winner+' took the round':'Round over'}</strong><span>Wait for the coach to rotate and start the next round.</span></div>}
+    {names.map(n=><div key={n} className="ptTarget" style={locked?{opacity:.55}:{}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+        <div><div className="ptTgtName">{n}</div><div className="ptTgtSub">{reveal===n?'target '+(targets[n]||'—'):'target hidden'} · on {scores[n]||0}</div></div>
+        <div className="ptTgtNum">{scores[n]||0}</div>
+      </div>
+      <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap'}}>
+        <button type="button" className="ptBig" style={{flex:'1 1 140px'}} disabled={locked} onClick={()=>win(n)}>{n} won the rally</button>
+        <button type="button" className="ptBig" style={{flex:'none',minWidth:'92px',background:'#0d1722'}} onClick={()=>setReveal(reveal===n?null:n)}>{reveal===n?'Hide':'Peek'}</button>
+      </div>
+    </div>)}
+    <p className="ptLead" style={{textAlign:'center'}}>Targets stay hidden. Peek only if a player asks to check their own number.</p>
+  </div>;
+}
+
+/* ── Projector: every table side by side. Scores only, never targets. ── */
+function PokerTablesDisplay({host,courtCount}){
+  useWakeLock();
+  const [courts,setCourts]=useState([]);
+  const [ctl,setCtl]=useState(null);
+  useEffect(()=>{
+    let dead=false;
+    async function load(){
+      const [rows,c]=await Promise.all([
+        Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(pokerCourtRoom(host,i+1)))),
+        readLivePlayerRoom(pokerControlRoom(host))]);
+      if(dead)return;
+      setCourts(rows.map(r=>r&&r.payload&&r.payload.type==='poker'?r.payload:null));
+      setCtl(c&&c.payload&&c.payload.type==='pokerctl'?c.payload:null);
+    }
+    load(); const id=setInterval(load,1400);
+    return ()=>{dead=true;clearInterval(id);};
+  },[host,courtCount]);
+  const board=(ctl&&ctl.leaderboard)||[];
+  return <div className="ptDisplay"><PokerTablesStyles/>
+    <div className="ptDispTop"><span>● LIVE</span><h1>Poker — Tables</h1>
+      <p>{courtCount} tables · round {ctl?ctl.round:'—'} · first to finish takes the round</p></div>
+    {ctl&&ctl.roundOver&&ctl.winner&&<div className="ptWin"><strong>{ctl.winner} takes round {ctl.round}</strong><span>+{ctl.winnerValue||1} point{(ctl.winnerValue||1)===1?'':'s'} · rotating now</span></div>}
+    <div className="ptGrid">{Array.from({length:courtCount},(_,i)=>{
+      const p=courts[i]; const v=pokerRoundValue(i+1);
+      return <div key={i} className="ptCard">
+        <h2>Court {i+1}</h2>
+        <div className="ptCardVal">win here = {v} point{v===1?'':'s'}</div>
+        {p&&p.players&&p.players.length
+          ? p.players.map(pl=><div key={pl.name} className="ptP"><b>{pl.name}</b><i>{pl.score}</i></div>)
+          : <div className="ptP"><b style={{color:'#8aa0b6'}}>waiting…</b></div>}
+      </div>;})}
+    </div>
+    <p className="ptLead2">Rally counts only — every target stays private to its player.</p>
+    {board.length>0&&<div style={{maxWidth:'620px',margin:'18px auto 0'}}>
+      <div className="ptLabel" style={{textAlign:'center'}}>Session leaderboard</div>
+      <div className="ptBoard">{board.map((r,i)=><div key={r.name} className="ptRow">
+        <span>{i+1}</span><b style={{flex:1}}>{r.name}</b><span className="ptPts">{r.points}</span>
+      </div>)}</div>
+    </div>}
+  </div>;
+}
+
+/* ── Coach device: allocation, links, round control, ladder rotation ── */
+function PokerTablesControl({deckRange,mult}){
+  const base=useMemo(()=>getPersistentLiveRoomId(),[]);
+  const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
+  const [courtCount,setCourtCount]=useState(2);
+  const [move,setMove]=useState(1);
+  const [evenUp,setEvenUp]=useState('targets');
+  const [order,setOrder]=useState(roster);
+  const [round,setRound]=useState(0);
+  const [points,setPoints]=useState({});
+  const [roundOver,setRoundOver]=useState(false);
+  const [winner,setWinner]=useState(null);
+  const [copied,setCopied]=useState('');
+
+  const alloc=useMemo(()=>{
+    const per=Math.floor(order.length/courtCount);
+    const g=Array.from({length:courtCount},(_,i)=>order.slice(i*per,(i+1)*per));
+    const left=order.slice(per*courtCount);
+    left.forEach((n,i)=>g[g.length-1-i%courtCount].push(n));
+    return g;
+  },[order,courtCount]);
+  const uneven=alloc.some(g=>g.length!==alloc[0].length);
+
+  function draw(){const lo=deckRange[0],hi=deckRange[1];return Math.max(4,(lo+Math.floor(Math.random()*(hi-lo+1)))*mult);}
+  const maxSize=useMemo(()=>Math.max(...alloc.map(g=>g.length),1),[alloc]);
+  function sizeFactor(k){return (evenUp==='targets'&&k>0)?(maxSize/k):1;}
+  function pointFactor(k){return (evenUp==='points'&&maxSize>0)?(k/maxSize):1;}
+
+  async function startRound(){
+    const r=round+1;
+    const drawFor={}; alloc.forEach(g=>{const f=sizeFactor(g.length);g.forEach(n=>{drawFor[n]=Math.max(4,Math.round(draw()*f));});});
+    setRound(r);setRoundOver(false);setWinner(null);
+    await writeLivePlayerRoom(pokerControlRoom(base),'pokerctl',{type:'pokerctl',round:r,roundOver:false,winner:null,
+      drawFor,courts:alloc.map((g,i)=>({n:i+1,players:g})),
+      leaderboard:leaderboard(points)});
+  }
+  function leaderboard(p){return Object.keys(p).map(n=>({name:n,points:p[n]})).sort((a,b)=>b.points-a.points).slice(0,12);}
+
+  useEffect(()=>{
+    if(!round||roundOver)return;
+    let dead=false;
+    async function poll(){
+      const rows=await Promise.all(alloc.map((_,i)=>readLivePlayerRoom(pokerCourtRoom(base,i+1))));
+      if(dead)return;
+      let claim=null,ci=-1;
+      rows.forEach((r,i)=>{const p=r&&r.payload;if(p&&p.type==='poker'&&p.round===round&&p.claim&&(!claim||p.claim.at<claim.at)){claim=p.claim;ci=i;}});
+      if(claim){
+        const val=Math.round(pokerRoundValue(ci+1)*pointFactor((alloc[ci]||[]).length)*10)/10;
+        const np={...points,[claim.name]:(points[claim.name]||0)+val};
+        setPoints(np);setWinner(claim.name);setRoundOver(true);
+        await writeLivePlayerRoom(pokerControlRoom(base),'pokerctl',{type:'pokerctl',round,roundOver:true,
+          winner:claim.name,winnerValue:val,courts:alloc.map((g,i)=>({n:i+1,players:g})),leaderboard:leaderboard(np)});
+      }
+    }
+    poll(); const id=setInterval(poll,1300);
+    return ()=>{dead=true;clearInterval(id);};
+  },[round,roundOver,alloc,base,points]);
+
+  function rotate(){
+    const next=alloc.map(g=>g.slice());
+    for(let i=0;i<next.length-1;i++){
+      const m=Math.min(move,next[i].length,next[i+1].length);
+      if(!m)continue;
+      const down=next[i].splice(next[i].length-m,m);   /* bottom m of this court drop */
+      const up=next[i+1].splice(0,m);                  /* top m of the court below climb */
+      next[i].push(...up); next[i+1].unshift(...down);
+    }
+    setOrder(next.flat());
+  }
+  async function copy(kind,n){
+    const url=kind==='score'?buildPokerScoreLink(n,base):buildPokerTablesLink(base,courtCount);
+    try{await navigator.clipboard.writeText(url);setCopied(kind+n);setTimeout(()=>setCopied(''),1500);}
+    catch{window.prompt('Link:',url);}
+  }
+
+  return <div className="ptWrap"><PokerTablesStyles/>
+    <div className="ptPanel">
+      <div className="ptLabel">Tables</div>
+      <div className="ptChips">{[2,3,4,5,6].map(n=><button type="button" key={n} className={courtCount===n?'ptChip on':'ptChip'} onClick={()=>setCourtCount(n)}>{n} tables</button>)}</div>
+      <div className="ptLabel" style={{marginTop:'12px'}}>Promote / demote each round</div>
+      <div className="ptChips">{[1,2].map(n=><button type="button" key={n} className={move===n?'ptChip on':'ptChip'} onClick={()=>setMove(n)}>{n} player{n===1?'':'s'}</button>)}</div>
+      {uneven&&<>
+        <div className="ptLabel" style={{marginTop:'12px'}}>Uneven tables — how to even them up</div>
+        <div className="ptChips">
+          <button type="button" className={evenUp==='targets'?'ptChip on':'ptChip'} onClick={()=>setEvenUp('targets')}>Scale targets</button>
+          <button type="button" className={evenUp==='points'?'ptChip on':'ptChip'} onClick={()=>setEvenUp('points')}>Fraction of a point</button>
+          <button type="button" className={evenUp==='off'?'ptChip on':'ptChip'} onClick={()=>setEvenUp('off')}>Leave it</button>
+        </div>
+        <p className="ptWarn" style={{marginTop:'10px'}}>
+          {evenUp==='targets'
+            ? 'On a smaller table each player is on court more often, so they reach a given target sooner. Targets on the smaller tables are multiplied up to match — and since targets are hidden anyway, nobody sees the adjustment.'
+            : evenUp==='points'
+            ? 'The race stays uneven, but a win on a smaller table is worth proportionally less. Simple, though it produces fractional scores and the small table still wins most rounds.'
+            : 'Uneven tables left as they are. A player on the smaller table will tend to finish first regardless of how well they play.'}
+        </p>
+      </>}
+      <p className="ptLead" style={{marginTop:'10px'}}>Court 1 is the top table. A win there is worth {pokerRoundValue(1)}, Court 2 is worth {pokerRoundValue(2)}, and so on — so dropping down never becomes the easy way to score.</p>
+    </div>
+
+    <div className="ptPanel">
+      <div className="ptLabel">Courts and links</div>
+      {alloc.map((g,i)=><div key={i} className="ptCourt">
+        <div className="ptCourtHead"><strong>Court {i+1}</strong><span className="ptVal">win = {pokerRoundValue(i+1)} pt{pokerRoundValue(i+1)===1?'':'s'}</span></div>
+        <div className="ptNames">{g.join(' · ')||'—'}</div>
+        <button type="button" className="secondaryBtn" onClick={()=>copy('score',i+1)}>{copied==='score'+(i+1)?'Copied ✓':'Copy Scoring link'}</button>
+      </div>)}
+      <button type="button" className="primaryBtn" style={{marginTop:'6px'}} onClick={()=>copy('display',0)}>{copied==='display0'?'Copied ✓':'Copy Tables Display link (projector — all courts)'}</button>
+    </div>
+
+    <div className="ptPanel">
+      <div className="ptLabel">Round {round||'—'}</div>
+      {!round&&<p className="ptLead">Send each court its Scoring link, put the display on the projector, then start round 1. Every player draws their own hidden target.</p>}
+      {round>0&&!roundOver&&<p className="ptLead">Live. The first player on any court to reach their own target takes the round — all courts stop the moment that happens.</p>}
+      {roundOver&&<p className="ptLead" style={{color:'#bff0d0'}}><strong>{winner}</strong> took round {round}. Rotate, then start the next round.</p>}
+      <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap'}}>
+        <button type="button" className="primaryBtn" onClick={startRound}>{round?'Start round '+(round+1):'Start round 1'}</button>
+        <button type="button" className="secondaryBtn" disabled={!roundOver} onClick={rotate}>Rotate ladder</button>
+      </div>
+    </div>
+
+    {Object.keys(points).length>0&&<div className="ptPanel">
+      <div className="ptLabel">Session leaderboard</div>
+      <div className="ptBoard">{leaderboard(points).map((r,i)=><div key={r.name} className="ptRow">
+        <span>{i+1}</span><b style={{flex:1}}>{r.name}</b><span className="ptPts">{r.points}</span></div>)}</div>
+    </div>}
   </div>;
 }
 
@@ -25229,6 +25541,8 @@ useEffect(()=>{
 const[backStack,setBackStack]=useState([]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
+const pokerScoreParam=useMemo(()=>getPokerScoreFromUrl(),[]);
+const pokerTablesParam=useMemo(()=>getPokerTablesFromUrl(),[]);
 const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
 const slRaceParam=useMemo(()=>getSlRaceFromUrl(),[]);
 const ludoScoreParam=useMemo(()=>getLudoScoreFromUrl(),[]);
@@ -25277,6 +25591,8 @@ useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[sess
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
+if(pokerScoreParam){return <PokerCourtScorer court={pokerScoreParam.court} host={pokerScoreParam.host}/>;}
+if(pokerTablesParam){return <PokerTablesDisplay host={pokerTablesParam.host} courtCount={pokerTablesParam.courtCount}/>;}
 if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host}/>;}
 if(slRaceParam){return <SnakesLaddersRaceDisplay host={slRaceParam.host} courtCount={slRaceParam.courtCount}/>;}
 if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} host={ludoScoreParam.host}/>;}
