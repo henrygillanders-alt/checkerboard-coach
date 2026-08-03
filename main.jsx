@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v551 Poker Tables. Poker across several courts, run like poker with multiple tables: every player draws their own hidden target, scoring stays individual, and the first player on any court to reach their target takes the round \u2014 all courts stop, then the ladder rotates by one or two players. A win on Court 1 is worth 3, Court 2 is worth 2 and so on, so being demoted is never the profitable move; uneven tables can be evened by scaling the hidden targets or by fractional points. Per-court Scoring links and a Tables Display for the projector showing rally counts only, never targets. Universal Modifiers now available throughout Poker. Builds on v550.';
+const APP_VERSION='v552 Poker restructured. Every game now opens into its own screen with its deck, multiplier, mirror and reveal options, the players allocated from today\u2019s attendance, and a Start button \u2014 previously only one generic match was playable and the ten game cards just dealt cards. Power Play, The Gambler and Declare or Hold get their own scoring buttons. Plus Poker Tables across courts, and Universal Modifiers throughout Poker. Builds on v550.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -19383,7 +19383,7 @@ function BTSRevealCard({label,value,suit}){
   function reveal(){setShow(true);clearTimeout(ref.current);ref.current=setTimeout(()=>setShow(false),3000);}
   return <div className="btsRevealCard"><strong>{label}</strong><button onClick={reveal} className="btsCardBtn"><BTSCardFace value={value} suit={suit} hidden={!show}/></button><small>{show?'Auto-hides in 3 seconds':'Tap to reveal'}</small></div>;
 }
-function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=3}){
+function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=3,onSelect}){
   const[open,setOpen]=useState(false);
   const[deal,setDeal]=useState(null);
   const[playerCount,setPlayerCount]=useState(4);
@@ -19417,7 +19417,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
     {game.flagship&&<span className="btsFlag">★ FLAGSHIP</span>}
     <div className="btsGameTop"><div><h3>{game.title}</h3><div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div></div><div className="btsMechanism"><b>{BTS_SUITS[game.suit]}</b><small>{game.mechanism}</small></div></div>
     <p>{game.blurb}</p>
-    <div className="buttonRow"><button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
+    <div className="buttonRow">{onSelect&&<button className="primaryBtn" onClick={onSelect}>Open &amp; start</button>}<button className="secondaryBtn" onClick={()=>setOpen(!open)}>{open?'Hide More Info':'More Info'}</button>{mode!=='coach'&&<button className="primaryBtn" onClick={makeDeal}>{deal?'Redeal Hidden Targets':'Deal Hidden Targets'}</button>}</div>
     {game.format==='King of Court'&&mode!=='coach'&&<div className="btsKocControls"><strong>KOC rotation players</strong>{rankedAttendance.length?<><p className="mutedText">Using {rankedAttendance.length} present player{rankedAttendance.length===1?'':'s'} from Attendance. Allocation is ranked blocks, not snake seeding.</p><div className="hsModeRow">{[2,3,4,5,6].map(n=><button type="button" key={n} className={courtCount===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setCourtCount(n)}>{n} courts</button>)}</div><div className="btsCourtPreview">{rankedAttendanceCourts.map((court,idx)=><div key={idx}><strong>Court {idx+1}</strong><span>{court.length?court.join(' · '):'Empty'}</span></div>)}</div></>:<><p className="mutedText">No present attendance players found. Use generic player labels.</p><div className="hsModeRow">{[3,4,5].map(n=><button type="button" key={n} className={playerCount===n?'hsModeBtn on':'hsModeBtn'} onClick={()=>setPlayerCount(n)}>{n} players</button>)}</div></>}<p className="mutedText">Targets are for this rotation only. Re-deal after promotion/relegation.</p></div>}
     {deal&&mode!=='coach'&&<div className="btsDealBox">{deal.pair&&<p className="btsPair">Target pair: <strong>{deal.pair[0]}</strong> and <strong>{deal.pair[1]}</strong>. Players do not know which they hold.</p>}{deal.koc?<><div className="btsRevealGrid">{deal.players.map(p=><BTSRevealCard key={`${p.court}-${p.label}`} label={`${p.court?`${p.court} · `:''}${p.label}`} value={p.target} suit={deal.suit}/>)}</div><p className="mutedText">For Blind Race, these are {mult>1?('card × '+mult):'card-value'} targets tied to named Attendance players for this rotation. Hand the device to each player; card auto-hides after 3 seconds.</p><div className="btsRaceFlow"><strong>Blind Race controls to run courtside</strong><span>Target Achieved → Final Rally → Reveal Targets → Tie-break if needed → Winner +3 next rotation</span></div></>:<><div className="btsRevealGrid"><BTSRevealCard label="P1" value={deal.a} suit={deal.suit}/><BTSRevealCard label="P2" value={deal.b} suit={deal.suit}/></div><p className="mutedText">Hand the device to each player. Card auto-hides after 3 seconds.</p></>}</div>}
     {open&&<div className="btsMoreInfo">
@@ -19431,6 +19431,7 @@ function BTSGameCard({game,mode,deckRange,mirrorBlock,attendancePlayers=[],mult=
   </div>;
 }
 function BlindTargetScoreModule({setScreen,players=[],setSession}){
+  const[picked,setPicked]=useState(null);
   const[modifier,setModifier]=useState(emptyModifierConfig());
   const btsPresent=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
   const[tables,setTables]=useState(false);
@@ -19517,7 +19518,8 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
         {winner?<div className="btsWinBanner">🏆 Target was {target} — {winner} wins!</div>:<p className="mutedText" style={{marginTop:'10px'}}>Hidden target in play — every rally could be match ball.</p>}
         <div className="btsToggleRow" style={{marginTop:'10px'}}><button type="button" onClick={undoRally} disabled={!undoStack.length}>Undo</button><button type="button" onClick={newMatch}>New match · new hidden target</button>{projecting&&<span className="mutedText" style={{alignSelf:'center'}}>● reporting to Court Monitor</span>}</div></>}
     </div>
-    {groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players} mult={mult}/>)}</div></section>)}
+    {picked&&<PokerGameRunner game={picked} deck={deck} setDeck={setDeck} deckRange={deckRange} mult={mult} setMult={setMult} mirror={mirror} setMirror={setMirror} revealFirst={revealFirst} setRevealFirst={setRevealFirst} onBack={()=>setPicked(null)} setSession={setSession} modifier={modifier}/>}
+    {!picked&&groups.map(g=><section key={g} className="btsSection"><div className="btsSectionHead"><h2>{g}</h2><span>{BTS_GAMES.filter(x=>x.group===g).length} activities</span></div><div className="btsGrid">{BTS_GAMES.filter(x=>x.group===g).map(game=><BTSGameCard key={game.id} game={game} mode={mode} deckRange={deckRange} mirrorBlock={mirror} attendancePlayers={players} mult={mult} onSelect={pokerIsPlayable(game)?()=>setPicked(game):null}/>)}</div></section>)}
     <UniversalModifierEngine title="Universal Modifiers" context="Poker" value={modifier} onChange={setModifier} presentPlayers={btsPresent}/>
     <div className="gameCard"><h2>Coach Notes</h2><p>Coach-lite by design. Do not pre-teach the inference layer; discovery is the learning. Debrief decisions, not scores.</p><div className="playerGrid"><div className="infoBox"><strong>Observe</strong><ul><li>Who rushes?</li><li>Who folds well?</li><li>Who cannot fold?</li><li>Who over-raises?</li><li>Who manages emotion well?</li></ul></div><div className="infoBox"><strong>Debrief questions</strong><ul><li>What did the raise tell you?</li><li>What made you fold?</li><li>When did the game feel heaviest?</li><li>What did you think your opponent knew?</li></ul></div></div></div>
   </div>;
@@ -21258,6 +21260,117 @@ function PokerTablesControl({deckRange,mult}){
       <div className="ptBoard">{leaderboard(points).map((r,i)=><div key={r.name} className="ptRow">
         <span>{i+1}</span><b style={{flex:1}}>{r.name}</b><span className="ptPts">{r.points}</span></div>)}</div>
     </div>}
+  </div>;
+}
+
+
+/* ── Poker: pick a game, configure it, allocate players, start it ── */
+const PF_EVENT_GAMES={hold:1,gambler:1};
+function pokerIsPlayable(g){return g.id!=='court-blind-target';}
+
+function PokerGameRunner({game,deck,setDeck,deckRange,mult,setMult,mirror,setMirror,revealFirst,setRevealFirst,onBack,setSession,modifier}){
+  const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
+  const [picked,setPicked]=useState(roster);
+  const [started,setStarted]=useState(false);
+  const [scores,setScores]=useState({});
+  const [targets,setTargets]=useState({});
+  const [winner,setWinner]=useState(null);
+  const [reveal,setReveal]=useState(null);
+  const [undo,setUndo]=useState([]);
+  const eventGame=!!PF_EVENT_GAMES[game.id];
+  const gDeck=game.deck||deckRange;
+
+  function drawOne(){const lo=gDeck[0],hi=gDeck[1];return Math.max(4,(lo+Math.floor(Math.random()*(hi-lo+1)))*mult);}
+  function start(){
+    const t={},s={};
+    picked.forEach(n=>{s[n]=0;t[n]=eventGame?0:drawOne();});
+    if(mirror&&!eventGame&&picked.length===2){let guard=0;while(t[picked[1]]===t[picked[0]]&&guard++<20)t[picked[1]]=drawOne();}
+    setScores(s);setTargets(t);setWinner(null);setUndo([]);setStarted(true);setReveal(null);
+  }
+  function push(){setUndo(u=>[...u.slice(-29),{scores:{...scores},winner}]);}
+  function add(n,v){
+    if(winner)return; push();
+    const next=(scores[n]||0)+v;
+    setScores(p=>({...p,[n]:next}));
+    if(!eventGame&&next>=(targets[n]||99))setWinner(n);
+  }
+  function stepBack(){setUndo(u=>{if(!u.length)return u;const l=u[u.length-1];setScores(l.scores);setWinner(l.winner);return u.slice(0,-1);});}
+  function toggle(n){setPicked(p=>p.includes(n)?p.filter(x=>x!==n):[...p,n]);}
+  function addCard(){
+    if(typeof setSession!=='function')return;
+    setSession(prev=>appendToSessionState(prev,normaliseGameCard({id:Date.now()+Math.random(),
+      title:'Poker — '+game.title,category:'Blind Target',format:game.format,duration:10,rld:4,
+      task:(game.steps||[]).map((x,i)=>(i+1)+') '+x).join(' '),scoring:game.scoring||'Rally winner +1.',
+      rationale:game.blurb,coach:game.coachMsg||'Debrief decisions, not scores.',
+      playerFocus:'Every rally could already be match ball.',modifier,
+      layers:['Informational Pressure',...((modifier&&modifier.constraints)||[])],cbCode:'None'})));
+  }
+
+  return <div className="gameCard" style={{display:'flex',flexDirection:'column',gap:'12px'}}><PokerTablesStyles/>
+    <button type="button" className="secondaryBtn" style={{alignSelf:'flex-start'}} onClick={onBack}>‹ All Poker games</button>
+    <div>
+      <h2 style={{color:'#eaf4fb',margin:'0 0 4px'}}>{game.title}</h2>
+      <div className="btsPills"><span>{game.tier}</span><span>{game.level}</span><span>{game.format}</span></div>
+      <p className="mutedText" style={{marginTop:'8px'}}>{game.blurb}</p>
+    </div>
+
+    {game.steps&&<div className="ptPanel"><div className="ptLabel">How it runs</div>
+      <ol style={{margin:0,paddingLeft:'19px',color:'#c7d4e2',fontSize:'.9rem',lineHeight:1.6}}>{game.steps.map((x,i)=><li key={i}>{x}</li>)}</ol>
+      {game.scoring&&<p className="ptLead" style={{marginTop:'9px'}}><strong style={{color:'#9cc4ec'}}>Scoring:</strong> {game.scoring}</p>}
+    </div>}
+
+    {!started&&<>
+      <div className="ptPanel">
+        <div className="ptLabel">Deck{game.deck?' (fixed for this game)':''}</div>
+        {game.deck
+          ? <p className="ptLead">{game.deck[0]}–{game.deck[1]}, multiplied by {mult}.</p>
+          : <div className="ptChips">{BTS_DECKS.map(d=><button type="button" key={d.id} className={deck===d.id?'ptChip on':'ptChip'} onClick={()=>setDeck(d.id)}>{d.label}</button>)}</div>}
+        <div className="ptLabel" style={{marginTop:'11px'}}>Target multiplier</div>
+        <div className="ptChips">{[1,2,3].map(v=><button type="button" key={v} className={mult===v?'ptChip on':'ptChip'} onClick={()=>setMult(v)}>× {v}</button>)}</div>
+        <div className="ptChips" style={{marginTop:'11px'}}>
+          <button type="button" className={mirror?'ptChip on':'ptChip'} onClick={()=>setMirror(!mirror)}>Mirror Block {mirror?'ON':'OFF'}</button>
+          <button type="button" className={revealFirst?'ptChip on':'ptChip'} onClick={()=>setRevealFirst(!revealFirst)}>Reveal on First Ball {revealFirst?'ON':'OFF'}</button>
+        </div>
+      </div>
+
+      <div className="ptPanel">
+        <div className="ptLabel">Players ({picked.length})</div>
+        {roster.length
+          ? <div className="ptChips">{roster.map(n=><button type="button" key={n} className={picked.includes(n)?'ptChip on':'ptChip'} onClick={()=>toggle(n)}>{n}</button>)}</div>
+          : <p className="ptLead">No players marked present. Mark attendance in the Players tab first.</p>}
+        {game.format==='1 v 1'&&picked.length>2&&<p className="ptWarn" style={{marginTop:'9px'}}>This is a 1 v 1 game and {picked.length} players are selected. They will all be scored on one court — for separate pairs use Tables mode.</p>}
+      </div>
+
+      <button type="button" className="primaryBtn" disabled={picked.length<2} onClick={start}>Start {game.title} · {picked.length} player{picked.length===1?'':'s'}</button>
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={addCard}>Add To Session</button>}
+    </>}
+
+    {started&&<>
+      <div className="ptPanel">
+        <div className="ptLabel">{eventGame?'Score the events':'Tap the rally winner'}</div>
+        <div className="btsScorerGrid">{picked.map(n=><div key={n} role="button" tabIndex={0} className="btsScoreCard"
+            onClick={()=>add(n,1)} onKeyDown={e=>{if(e.key==='Enter')add(n,1);}}
+            style={winner===n?{borderColor:'#1d6b3f',background:'#0d2417'}:undefined}>
+          <div className="nm">{n}</div><div className="pts">{scores[n]||0}</div>
+          <div className="hint">{reveal===n&&!eventGame?'target '+targets[n]:'tap = won rally'}</div>
+        </div>)}</div>
+
+        {game.id==='powerplay'&&<div className="ptChips" style={{marginTop:'10px'}}>{picked.map(n=><button type="button" key={n} className="ptChip" onClick={()=>add(n,2)}>{n} +2 (Power Play)</button>)}</div>}
+        {game.id==='gambler'&&<div className="ptChips" style={{marginTop:'10px'}}>{picked.map(n=><button type="button" key={n} className="ptChip" onClick={()=>add(n,2)}>{n} won a raise +2</button>)}</div>}
+        {game.id==='hold'&&<div className="ptChips" style={{marginTop:'10px'}}>{picked.map(n=><button type="button" key={n} className="ptChip" onClick={()=>add(n,2)}>{n} held and won +2</button>)}</div>}
+
+        {winner&&<div className="btsWinBanner">🏆 {winner} reached {targets[winner]} — game over</div>}
+        {!winner&&!eventGame&&<p className="ptLead" style={{marginTop:'9px'}}>Hidden targets in play — every rally could already be match ball.</p>}
+        {!winner&&eventGame&&<p className="ptLead" style={{marginTop:'9px'}}>Session points, not a race — end the game when you choose.</p>}
+
+        <div className="ptChips" style={{marginTop:'11px'}}>
+          <button type="button" className="ptChip" onClick={stepBack} disabled={!undo.length}>Undo</button>
+          <button type="button" className="ptChip" onClick={start}>New game · redraw</button>
+          {!eventGame&&<button type="button" className="ptChip" onClick={()=>setReveal(reveal?null:picked[0])}>{reveal?'Hide target':'Peek a target'}</button>}
+          <button type="button" className="ptChip" onClick={()=>setStarted(false)}>Change setup</button>
+        </div>
+      </div>
+    </>}
   </div>;
 }
 
