@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v549 Quiet confirmations. All 57 confirmation popups (added to session, link copied, modifier saved and the rest) removed entirely \u2014 the on-screen state (Added \u2713, button feedback) is the confirmation. Dialogs that genuinely need input are unchanged. Builds on v548.';
+const APP_VERSION='v550 Coaching Paradigms. Explains why traditional and ecological coaching design different sessions \u2014 they answer different questions about where skill comes from. Thirteen comparisons, each opening with the goal both approaches share, plus a fourteen-term traditional lexicon written so a traditional coach recognises their own practice, and an honest ledger of what traditional coaching gets right and where the ecological case is weaker than advocates claim. Links to the existing CLA Lexicon rather than duplicating it. Builds on v549.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5534,7 +5534,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
 
       <div className="moreSectionLabel">Coach Education</div>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('paradigms')}><h2>Coaching Paradigms</h2><span className="homeTileSubtitle">Traditional vs ecological · where skill comes from</span></button>      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('parents')}><h2>Why We Coach This Way</h2><span className="homeTileSubtitle">Parent education · explain, defend and send home</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
@@ -20754,8 +20754,183 @@ function BreakthroughLog({setScreen}){
   </div>;
 }
 
+const CP_TRAD=[{"t":"Technique","d":"A movement pattern considered mechanically effective for a given shot, taught as a model to be reproduced.","w":"The model gives a beginner a starting point when they have no solution at all, and gives the coach a shared language for talking about movement. Where it runs into trouble is that no two shots in a match present the same problem, so the model has to be departed from constantly.","e":"Coaches who use technique models well treat them as a starting shape, not a destination. The strongest version of this position is that a sound base makes later adaptation easier, not harder."},{"t":"Motor Programme","d":"A stored set of movement commands, retrieved and executed to produce a familiar action.","w":"It explains why skilled movement is fast: there is no time to compute a swing from scratch between shots. Its difficulty is the storage problem — a separate programme for every variation of every shot is more than a nervous system plausibly holds.","e":"Generalised motor programme theory answered this with a single programme plus adjustable parameters, which is a more serious position than it is usually given credit for."},{"t":"Schema Theory","d":"Schmidt's account in which practice builds a rule relating movement parameters to outcomes, allowing novel versions of a known action.","w":"It predicted that varied practice beats constant practice, which turned out to be right and is now common ground. Its weaker claim is that the rule lives in the performer rather than in the performer-environment relationship.","e":"Schmidt revised the theory substantially over his career. Criticising the 1975 version as though it were the current position is a straw man; the variability-of-practice prediction survives in both paradigms."},{"t":"Demonstration","d":"Showing the movement so the athlete can copy it.","w":"Fast, universal and works — humans learn a great deal by watching. The question is what the watcher takes from it.","e":"Both paradigms use demonstration. The difference is whether it transmits a pattern to copy or information about how a problem can be solved."},{"t":"Instruction","d":"Telling the athlete what to do, usually in terms of body positions or movement sequence.","w":"Unambiguous, quick, and the right tool for safety, grip and anything with injury risk. Its cost is that explicit rules are the material that gets consciously monitored under pressure.","e":"A precise instruction from a coach who can see what is actually happening beats vague encouragement every time. Volume and timing are the variables, not whether instruction is legitimate."},{"t":"Technical Correction","d":"Identifying a deviation from the model and adjusting it, usually immediately.","w":"Prevents faults becoming entrenched and gives the athlete clear feedback. The risk is dependence: an athlete corrected constantly gets practice at being corrected rather than at self-correcting.","e":"Correcting immediately is right for anything unsafe, anything limiting what the player can do at all, and anything the athlete has asked about."},{"t":"Automaticity","d":"The state in which a skill runs without conscious attention, freeing attention for tactics.","w":"A real and important phenomenon — expert movement genuinely is not consciously controlled. The disagreement is about how it is reached, not whether it exists.","e":"Both paradigms want it. Traditional coaching pursues it through repetition to fluency; ecological approaches through implicit acquisition that leaves nothing explicit to reinvest."},{"t":"Deliberate Practice","d":"Ericsson's framework: effortful, focused practice on specific weaknesses with immediate feedback.","w":"It established that time alone does not produce expertise — the structure of practice matters. Later work found its role smaller and more variable across sports than first claimed, particularly in open-skill sports.","e":"The core insight, that practice must be effortful and targeted rather than comfortable, is fully compatible with representative design. The two are often wrongly treated as opposed."},{"t":"Knowledge of Performance","d":"Feedback about how the movement was executed, as distinct from whether it worked.","w":"Useful when an athlete genuinely cannot feel what they are doing. Frequent use directs attention inward and can create reliance on the feedback itself.","e":"Reduced and delayed feedback generally supports better retention than constant commentary. This is common ground across both traditions."},{"t":"Repetition","d":"Performing the same movement many times to build consistency.","w":"Volume matters and nobody disputes it. The contested part is what should be repeated — the movement, or the problem the movement solves.","e":"Bernstein, who is claimed by the ecological side, spent his career studying repetition. His finding was not that it is useless but that it never actually reproduces itself."},{"t":"Blocked Practice","d":"Practising one task repeatedly before moving to the next.","w":"It produces rapid within-session improvement and feels productive to athlete and parent alike. The contextual interference literature consistently finds it produces worse retention and transfer than interleaving.","e":"This is one of the most replicated findings in motor learning, and it comes from the information-processing tradition rather than the ecological one. Both paradigms accept it."},{"t":"Progressive Drills","d":"Sequencing practice from simple and isolated toward complex and game-like.","w":"The intuition — reduce difficulty for beginners — is sound. The problem is what gets removed on the way down: usually the opponent, the decision and the information.","e":"The ecological objection is not to making things easier. It is to making them easier by decomposition rather than by scaling."},{"t":"Technique Before Tactics","d":"The principle that execution should be established before decision-making is introduced.","w":"It offers a clear developmental order and reduces early overwhelm. It assumes the two are separable, which is where the paradigms part company.","e":"In practice most experienced traditional coaches interleave them heavily, whatever the stated principle."},{"t":"Unopposed (Solo) Practice","d":"Practising without an opponent — shadow swings, ghosting, solo drives, wall work, technical feeding.","w":"Legitimate and useful for warm-up, rehabilitation, physical preparation, equipment familiarisation and specific movement exploration. Its limit is that the information which organises competitive skill is absent.","e":"The honest position is that solo practice has a real role, and that it is a poor primary environment for developing competitive skill. Those two statements are compatible."}];
+const CP_COMPARE=[{"id":"core","t":"Core Assumption","goal":"Explain where skilled performance comes from, so that practice can be designed to produce it.","trad":"Skill is a capability the performer acquires and then carries into competition. Build the capability, then apply it.","eco":"Skill is a relationship between performer and environment. It is expressed in the interaction and cannot be fully separated from it.","clashT":"Skill is stored in the performer.","clashE":"Skill is distributed across the performer-environment system.","consT":["Build the capability first","Test it later","Diagnose faults in the performer"],"consE":["Build in the environment from the start","Diagnose the fit between player and situation","Change the problem, not just the player"],"q":"When a player performs badly, is your first question about them, or about the situation they were in?"},{"id":"develops","t":"How Skill Develops","goal":"Develop performers who can produce effective play in competition.","trad":"Through learning and refining technique, then applying it under progressively more realistic conditions.","eco":"Through the interaction of performer, task and environment, with functional solutions emerging under constraints.","clashT":"Learning proceeds from acquisition to application.","clashE":"Learning is continuous adaptation; there is no separate application stage.","consT":["Sequence from simple to complex","Introduce opposition later","Progress by adding difficulty"],"consE":["Keep the whole task from the start","Scale difficulty rather than remove elements","Progress by tightening constraints"],"q":"Does your session have an application stage at the end, and what happens if you run out of time?"},{"id":"coach","t":"Role of the Coach","goal":"Support the athlete to become an effective performer.","trad":"Instructor, demonstrator and corrector — the holder of the model and the source of feedback.","eco":"Designer of representative learning environments and manipulator of constraints; questioner rather than answerer.","clashT":"The coach supplies the solution.","clashE":"The coach designs the conditions in which the athlete finds a solution.","consT":["Demonstrate","Instruct","Correct","Refine"],"consE":["Design","Manipulate constraints","Observe","Question","Support self-organisation"],"q":"In your last session, what proportion of your talking supplied an answer rather than directed attention?"},{"id":"athlete","t":"Role of the Athlete","goal":"Become an effective, independent performer.","trad":"Learn and reproduce the technique; execute reliably under pressure.","eco":"Explore, perceive, organise and continually reorganise movement in response to what the situation offers.","clashT":"The athlete is a reproducer.","clashE":"The athlete is a problem-solver.","consT":["Follow the model","Practise to consistency","Trust the technique"],"consE":["Search for solutions","Practise adaptability","Trust the read"],"q":"Do your players wait to be told what to work on?"},{"id":"movement","t":"Movement","goal":"Produce effective movement in competition.","trad":"General patterns are learned, then adjusted to the situation.","eco":"Functional movement continually organises and reorganises in response to constraints.","clashT":"Movement is a pattern that gets adjusted.","clashE":"Movement is assembled fresh for each situation.","consT":["Standardise the pattern","Reduce deviation","Correct toward the model"],"consE":["Expect solutions to differ between players","Judge outcome before form","Treat variation as adaptation"],"q":"When two players solve the same problem differently and both succeed, do you correct either of them?"},{"id":"technique","t":"Technique","goal":"Develop reliable movement under competitive pressure.","trad":"Technique exists before performance and is applied to it.","eco":"Functional movement emerges during performance itself.","clashT":"Technique exists before performance.","clashE":"Technique emerges through interaction.","consT":["Demonstrate","Instruct","Correct","Repeat","Refine"],"consE":["Design","Manipulate constraints","Observe","Guide","Encourage exploration","Support self-organisation"],"q":"Are you trying to teach a movement, or create conditions where the movement becomes the obvious answer?"},{"id":"practice","t":"Practice Design","goal":"Prepare athletes for competition.","trad":"Often progresses from isolated drills toward game play as competence develops.","eco":"Representative environments preserve competitive information from the outset; difficulty is scaled rather than removed.","clashT":"Realism is added as competence grows.","clashE":"Realism is the condition of learning, not its reward.","consT":["Isolate the element","Build up to the game","Add opposition when ready"],"consE":["Keep opponent, decision and information","Change space, ball, scoring or numbers","Simplify without decomposing"],"q":"If you made your hardest drill easier, would you remove the opponent or shrink the court?"},{"id":"errors","t":"Errors","goal":"Improve performance.","trad":"Deviations from the model that require identification and correction.","eco":"Information the system uses to adapt — often evidence that reorganisation is under way.","clashT":"Errors are faults to eliminate.","clashE":"Errors are information to exploit.","consT":["Correct promptly","Prevent repetition of the fault","Reduce error rate"],"consE":["Let some errors run","Ask what the error was solving","Target roughly 70% success"],"q":"Last time a player made the same error three times, did you correct it or change the task?"},{"id":"variability","t":"Variability","goal":"Reliable performance when it counts.","trad":"Usually reduced — consistency of movement is treated as the marker of skill.","eco":"Functional variability is encouraged; consistency of outcome matters more than consistency of form.","clashT":"Variation is noise to be minimised.","clashE":"Variation is adaptation to be preserved.","consT":["Groove the movement","Measure repeatability","Eliminate deviation"],"consE":["Vary every repetition","Measure outcome consistency","Distinguish functional from dysfunctional variation"],"q":"Do you measure whether the shot worked, or whether it looked the same as the last one?"},{"id":"repetition","t":"Repetition","goal":"Reliable performance.","trad":"Repeat the movement until it becomes automatic.","eco":"Repeat the task while allowing movement organisation to change — repetition without repetition.","clashT":"Repeat the solution.","clashE":"Repeat the problem.","consT":["High volume of the same movement","Consistent feed","Block the practice"],"consE":["High volume of the same problem","Varied conditions","Interleave"],"q":"In your last drill, what exactly was being repeated?"},{"id":"decisions","t":"Decision Making","goal":"Better decisions under pressure.","trad":"Often instructed — options are taught, then selected between.","eco":"Emerges through the perception of affordances; the decision and the action are not separable stages.","clashT":"Decide, then act.","clashE":"Perceiving and acting are one continuous process.","consT":["Teach the options","Rehearse the choice","Explain the situation"],"consE":["Present live situations","Let options compete","Train the read, not the rule"],"q":"Can your players make the right decision in a drill where they already know what is coming?"},{"id":"feedback","t":"Feedback","goal":"Accelerate learning.","trad":"Coach-directed correction, usually prompt and specific to the movement.","eco":"Guides attention toward information while supporting self-organisation; much of it is already in the task.","clashT":"Feedback supplies the correction.","clashE":"Feedback directs attention to the information.","consT":["Tell them what went wrong","Give the fix","Feedback often"],"consE":["Ask what they noticed","Let the task inform them","Feedback less, and later"],"q":"How much of what you said last session was already visible to the player?"},{"id":"competition","t":"Competition","goal":"Successful performance.","trad":"The arena in which learned technique is applied and tested.","eco":"An environment where skill continues to emerge and reorganise — part of learning, not separate from it.","clashT":"Competition tests learning.","clashE":"Competition is learning.","consT":["Prepare, then perform","Protect the technique under pressure","Review afterwards"],"consE":["Compete throughout the week","Expect adaptation mid-match","Debrief the reads, not the errors"],"q":"Is match play in your programme an assessment, or a session?"}];
+const CP_TRAD_STRENGTHS=["Direct instruction is the fastest route to a starting point for a beginner with no solution at all, and it is the right tool for grip, safety and anything carrying injury risk.","A coach who can name precisely what is happening in a movement is a good coach in any paradigm. Precision is not the property of one tradition.","The variability-of-practice finding, the contextual interference effect and the retention-versus-performance distinction all come from the information-processing tradition. Ecological coaching inherited them rather than discovering them.","Deliberate practice established that the structure of practice matters more than its volume. That is fully compatible with representative design and is often wrongly treated as opposed to it.","Traditional coaching produced most of the players and coaches now working in the sport, including the ones reading this. A theory that cannot explain that is incomplete."];
+const CP_ECO_LIMITS=["It is harder to do well. Designing a game that reliably produces a target behaviour is more demanding than delivering a good drill, and a badly designed game teaches nothing while looking like coaching.","It looks less impressive to watch, and progress is harder for an athlete or parent to see week to week. That is a real cost, not just a perception problem.","Much of the applied evidence base is small-sample and sport-specific. The theoretical case is strong; the volume of controlled outcome data is thinner than advocates usually imply.","Representativeness can be over-applied. A beginner who cannot yet rally has little to be representative of, and insisting on full context can leave them with no entry point.","The vocabulary is off-putting. Affordances, degeneracy and self-organisation are precise terms doing real work, but they can function as a barrier to coaches who are already doing much of this intuitively."];
+const CP_NOTE_DEMO="Ecological dynamics does not reject demonstration or observational learning. The difference is why a demonstration is used. In traditional coaching it communicates the movement pattern to be copied. In an ecological frame it communicates information about how a performance problem can be solved, helping the athlete become attuned to timing, rhythm and the possibilities in the situation. The same action on court; a different intention behind it.";
+
+/* ───────────────────────── COACHING PARADIGMS — where skill comes from ─────────────────────────
+   Not who is right. Why two good coaches, watching the same player, design different sessions. */
+function CoachingParadigmsStyles(){return <style>{`
+.cpWrap{display:flex;flex-direction:column;gap:14px;}
+.cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
+.cpTab{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 15px;color:#dbe6f2;font-weight:700;font-size:.87rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.cpTab.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.cpHero{background:#0c1a2e;border:1px solid #25405f;border-radius:14px;padding:18px 20px;}
+.cpHero h2{color:#eaf4fb;margin:0 0 8px;font-size:1.2rem;}
+.cpHero p{color:#c7d4e2;font-size:.97rem;line-height:1.6;margin:0 0 8px;}
+.cpHero p:last-child{margin-bottom:0;}
+.cpQ{color:#7fc8a0;font-size:1.05rem;font-weight:800;}
+.cpStack{display:flex;flex-direction:column;align-items:center;gap:0;margin:14px 0 4px;}
+.cpNode{width:100%;max-width:460px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px 15px;text-align:center;}
+.cpNode strong{display:block;color:#eaf4fb;font-size:1rem;}
+.cpNode span{color:#8aa0b6;font-size:.8rem;}
+.cpNode.cpEco{border-color:#1d6b3f;background:#0b1f16;}
+.cpNode.cpTradNode{border-color:#7a5a2a;background:#1a1410;}
+.cpArrow{color:#4a6b8a;font-size:1.3rem;line-height:1.5;}
+.cpDivide{color:#6b8299;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:10px 0 6px;}
+.cpCard{background:#0f1822;border:1px solid #223044;border-radius:13px;padding:14px 16px;}
+.cpCard h3{color:#eaf4fb;margin:0 0 4px;font-size:1.02rem;}
+.cpCard .cpDef{color:#c7d4e2;font-size:.92rem;line-height:1.55;margin:0 0 9px;}
+.cpCard .cpSub{color:#9cc4ec;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin:0 0 5px;}
+.cpCard .cpBody{color:#9fb6cf;font-size:.88rem;line-height:1.55;margin:0 0 9px;}
+.cpFair{background:#0b1f16;border:1px solid #1d6b3f;border-radius:10px;padding:10px 13px;}
+.cpFair .cpSub{color:#7fc8a0;}
+.cpFair .cpBody{color:#dff3e6;margin:0;}
+.cpCmp{background:#0f1822;border:1px solid #223044;border-radius:13px;overflow:hidden;}
+.cpCmpHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.cpCmpHead strong{color:#eaf4fb;font-size:1.02rem;}
+.cpCmpHead span{color:#6b8299;font-size:1.1rem;}
+.cpCmpBody{padding:0 16px 15px;}
+.cpGoal{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:11px 13px;margin-bottom:11px;}
+.cpGoal .cpSub{color:#9cc4ec;}
+.cpGoal p{color:#dbe6f2;font-size:.9rem;line-height:1.5;margin:0;}
+.cpCols{display:flex;flex-wrap:wrap;gap:10px;}
+.cpCol{flex:1 1 240px;border-radius:10px;padding:11px 13px;}
+.cpColT{background:#1a1410;border:1px solid #4a3520;}
+.cpColE{background:#0b1f16;border:1px solid #1d6b3f;}
+.cpCol .cpSub{margin-bottom:6px;}
+.cpColT .cpSub{color:#e0a334;}
+.cpColE .cpSub{color:#7fc8a0;}
+.cpCol p{font-size:.88rem;line-height:1.55;margin:0;}
+.cpColT p{color:#e8d9c0;}
+.cpColE p{color:#dff3e6;}
+.cpCol ul{margin:0;padding-left:17px;font-size:.85rem;line-height:1.5;}
+.cpColT ul{color:#e8d9c0;}
+.cpColE ul{color:#dff3e6;}
+.cpClash{background:#0c1626;border:1px solid #1e2c3c;border-radius:10px;padding:11px 13px;margin:11px 0;}
+.cpClash .cpSub{color:#fbbf24;}
+.cpClash div{color:#c7d4e2;font-size:.88rem;line-height:1.55;margin-bottom:4px;}
+.cpClash b{color:#eaf4fb;}
+.cpRefl{background:#0c2418;border:1px solid #1d6b3f;border-radius:10px;padding:12px 14px;margin-top:11px;}
+.cpRefl .cpSub{color:#7fc8a0;}
+.cpRefl p{color:#dff3e6;font-size:.95rem;line-height:1.55;margin:0;font-style:italic;}
+.cpLead{color:#9fb6cf;font-size:.92rem;line-height:1.6;margin:0;}
+.cpLink{background:#0c1a2e;border:1px solid #25405f;border-radius:12px;padding:14px 16px;cursor:pointer;width:100%;text-align:left;-webkit-tap-highlight-color:transparent;}
+.cpLink strong{display:block;color:#eaf4fb;font-size:1rem;margin-bottom:3px;}
+.cpLink span{color:#8aa0b6;font-size:.85rem;}
+.cpList{margin:0;padding-left:19px;color:#c7d4e2;font-size:.92rem;line-height:1.62;}
+.cpList li{margin-bottom:9px;}
+`}</style>;}
+
+function CoachingParadigms({setScreen}){
+  const [tab,setTab]=useState('paradigms');
+  const [open,setOpen]=useState('core');
+  return <div className="gameCard cpWrap"><CoachingParadigmsStyles/>
+    <div className="moduleHead"><div><h1>Coaching Paradigms</h1><p className="mutedText">Two good coaches watch the same player, want the same outcome, and design completely different sessions. This explains why — and it is not about drills.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="cpTabs">
+      {[['paradigms','The paradigms'],['comparator','Comparator'],['traditional','Traditional lexicon'],['ledger','Honest ledger']].map(([id,label])=>
+        <button type="button" key={id} className={tab===id?'cpTab on':'cpTab'} onClick={()=>setTab(id)}>{label}</button>)}
+    </div>
+
+    {tab==='paradigms'&&<>
+      <div className="cpHero">
+        <h2>The central question</h2>
+        <p className="cpQ">Where does skill come from?</p>
+        <p>Every difference between these two approaches traces back to that one question. They are not two sets of drills. They are two explanations of the origin of skill, and the drills follow from the explanation.</p>
+        <p>Traditional coaching generally answers: skill is a capability the performer acquires, then carries into competition. Ecological dynamics answers: skill is the continual organisation of functional movement, emerging through the interaction of performer, task and environment.</p>
+      </div>
+
+      <div className="cpHero">
+        <h2>The organising principle — emergence</h2>
+        <p style={{color:'#bff0d0',fontWeight:700,fontSize:'1.02rem'}}>Skill is not transferred from coach to athlete. It emerges through the continuous interaction between the performer, the task and the environment.</p>
+        <p>That single sentence is what the whole framework rests on. If it is true, then a coach cannot install technique — only design the conditions in which useful technique becomes the obvious answer.</p>
+      </div>
+
+      <div className="cpDivide">How the terms relate</div>
+      <div className="cpStack">
+        <div className="cpNode cpTradNode"><strong>Traditional Coaching</strong><span>The historical paradigm — a different answer to the same question</span></div>
+        <div className="cpArrow" style={{opacity:.35}}>— — —</div>
+        <div className="cpNode cpEco"><strong>Ecological Dynamics</strong><span>The scientific framework — explains how skill emerges</span></div>
+        <div className="cpArrow">↓</div>
+        <div className="cpNode cpEco"><strong>Constraints-Led Approach</strong><span>The coaching methodology — how to design for it</span></div>
+        <div className="cpArrow">↓</div>
+        <div className="cpNode cpEco"><strong>Checkerboard Squash™</strong><span>The practical system — this app</span></div>
+      </div>
+      <p className="cpLead">Ecological dynamics explains <em>why</em> learning happens. CLA explains <em>how</em> to design for it. Checkerboard is one worked implementation. Traditional coaching sits outside that chain because it answers the founding question differently — it is a parallel explanation, not an earlier step.</p>
+
+      <div className="cpCard">
+        <div className="cpSub">A note on demonstration</div>
+        <p className="cpBody" style={{marginBottom:0}}>{CP_NOTE_DEMO}</p>
+      </div>
+
+      <button type="button" className="cpLink" onClick={()=>setScreen&&setScreen('lexicon')}>
+        <strong>CLA Lexicon™ →</strong>
+        <span>The ecological vocabulary — affordances, constraints, emergence, representative learning design and 150 more, each with a squash example. Kept in one place so there is only ever one definition of each term.</span>
+      </button>
+    </>}
+
+    {tab==='comparator'&&<>
+      <p className="cpLead">Thirteen comparisons. The point is not to decide who is right — it is to see why each paradigm designs practice the way it does. Every one starts with the goal both approaches share.</p>
+      {CP_COMPARE.map(c=><div key={c.id} className="cpCmp">
+        <div className="cpCmpHead" role="button" tabIndex={0} onClick={()=>setOpen(open===c.id?'':c.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')setOpen(open===c.id?'':c.id);}}>
+          <strong>{c.t}</strong><span>{open===c.id?'▾':'▸'}</span>
+        </div>
+        {open===c.id&&<div className="cpCmpBody">
+          <div className="cpGoal"><div className="cpSub">Shared goal</div><p>{c.goal}</p></div>
+          <div className="cpCols">
+            <div className="cpCol cpColT"><div className="cpSub">Traditional</div><p>{c.trad}</p></div>
+            <div className="cpCol cpColE"><div className="cpSub">Ecological dynamics</div><p>{c.eco}</p></div>
+          </div>
+          <div className="cpClash">
+            <div className="cpSub">The paradigm clash</div>
+            <div><b>Traditional assumption:</b> {c.clashT}</div>
+            <div><b>Ecological assumption:</b> {c.clashE}</div>
+          </div>
+          <div className="cpCols">
+            <div className="cpCol cpColT"><div className="cpSub">Coaching consequences</div><ul>{c.consT.map((x,i)=><li key={i}>{x}</li>)}</ul></div>
+            <div className="cpCol cpColE"><div className="cpSub">Coaching consequences</div><ul>{c.consE.map((x,i)=><li key={i}>{x}</li>)}</ul></div>
+          </div>
+          <div className="cpRefl"><div className="cpSub">Reflection</div><p>{c.q}</p></div>
+        </div>}
+      </div>)}
+    </>}
+
+    {tab==='traditional'&&<>
+      <p className="cpLead">The vocabulary of the paradigm most of us were coached in. Written so that a coach who works this way recognises their own practice — including where it is strong.</p>
+      {CP_TRAD.map(t=><div key={t.t} className="cpCard">
+        <h3>{t.t}</h3>
+        <p className="cpDef">{t.d}</p>
+        <div className="cpSub">What it does well, and where it strains</div>
+        <p className="cpBody">{t.w}</p>
+        <div className="cpFair"><div className="cpSub">In fairness</div><p className="cpBody">{t.e}</p></div>
+      </div>)}
+    </>}
+
+    {tab==='ledger'&&<>
+      <p className="cpLead">A comparison that only lists one side&rsquo;s strengths is advocacy, not education. This page exists so the module can be handed to a sceptical colleague without it reading as a rebuke.</p>
+      <div className="cpCard" style={{borderLeft:'3px solid #e0a334'}}>
+        <div className="cpSub" style={{color:'#e0a334'}}>What traditional coaching gets right</div>
+        <ul className="cpList">{CP_TRAD_STRENGTHS.map((x,i)=><li key={i}>{x}</li>)}</ul>
+      </div>
+      <div className="cpCard" style={{borderLeft:'3px solid #7fc8a0'}}>
+        <div className="cpSub" style={{color:'#7fc8a0'}}>Where the ecological case is weaker than its advocates say</div>
+        <ul className="cpList">{CP_ECO_LIMITS.map((x,i)=><li key={i}>{x}</li>)}</ul>
+      </div>
+      <div className="cpHero">
+        <h2>How to use this with a colleague</h2>
+        <p>Do not hand someone a document that explains why they are wrong. Ask which comparison they would argue with, and listen to the answer — most experienced coaches are already doing half of this and have reasons for the other half.</p>
+        <p>The reflection questions are the useful part. They apply to both paradigms and neither has a comfortable answer to all thirteen.</p>
+      </div>
+    </>}
+  </div>;
+}
+
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Coaching Paradigms',sub:'Traditional vs ecological \u00b7 where skill comes from',kw:'coaching paradigms traditional ecological dynamics comparator comparison technique motor programme schema theory blocked practice deliberate practice emergence assumptions reflection',screen:'paradigms'},
   {label:'Tactical Finish',sub:'Game suite \u00b7 how the rally is finished',kw:'tactical finish suite off t corner kill two shot conversion volley finish judge earn winner games',screen:'games',classId:'tacticalfinish'},
   {label:'Breakthrough Log',sub:'Dated evidence \u00b7 what a player found and where',kw:'breakthrough log progress record evidence attribution first seen dated parent one to one credit development milestone',screen:'breakthrough'},
   {label:'Why We Coach This Way',sub:'Parent education \u00b7 explain and defend the framework',kw:'parents parent education why we coach this way explain defend traditional coach technique lessons philosophy faq evening pack send home',screen:'parents'},
@@ -25267,6 +25442,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
       {screen==='rotation'&&<RotationEngine setScreen={go} setSession={setSession}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
+      {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
       {screen==='breakthrough'&&<BreakthroughLog setScreen={go}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
