@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v553 Muted palette. Brown and amber panels retoned to neutral dark surfaces with muted gold accents, and saturated greens replaced with sage \u2014 539 colour values across the app, so colour reads as accent rather than decoration. Poker: the One court / Tables toggle is styled correctly on load, Tables now states which games it suits, and the generic scorer is relabelled Quick Match so it is distinct from opening a specific game. Builds on v552.';
+const APP_VERSION='v555 Rotation Recorder. Season Ladder gains a tap-only way to run the ladder with big groups: pull the players from today\u2019s attendance, split them across the courts, and each rotation tap who goes up and who goes down \u2014 two up, two down works \u2014 then save. Everyone promoted from the same court earns the same points (the ladder records promotion, not the order within it), holding Court 1 counts as the win on Court 1, and demotion still never pays. Builds on v554.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5524,6 +5524,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClockNet')}><h2>Squad Clock — All Courts</h2><span className="homeTileSubtitle">📡 Networked · synced across courts</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rotation')}><h2>Rotation Engine™</h2><span className="homeTileSubtitle">Group formats · more players than courts</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('seasonLadder')}><h2>Season Ladder™</h2><span className="homeTileSubtitle">Season points · promotion & demotion · annual award</span></button>
 
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
@@ -21448,6 +21449,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Why We Coach This Way',sub:'Parent education \u00b7 explain and defend the framework',kw:'parents parent education why we coach this way explain defend traditional coach technique lessons philosophy faq evening pack send home',screen:'parents'},
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
+  {label:'Season Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award',kw:'season ladder annual award points table leaderboard promotion demotion ranking performance competitive year trophy attendance win share ranked game log',screen:'seasonLadder'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
@@ -25393,6 +25395,566 @@ function RotationStyles(){return <style>{`
 .rotDisplayNext b{color:#eaf4fb;}
 `}</style>;}
 
+/* ── SEASON LADDER ─────────────────────────────────────────────────────────────
+   Season-long performance points built from what the app already records:
+   Rotation Engine winners (promotion / demotion) and ranked one-off games.
+   Scoring core is pure and unit-tested; events are append-only so the season
+   can always be recomputed and audited. */
+const LADDER_KEY='checkerboard_season_ladder_v1';
+function ladderDefaultStore(){
+  const y=new Date().getFullYear();
+  return {seasonName:y+'\u2013'+String(y+1).slice(2),startedAt:new Date().toISOString(),minSessions:0,aliases:{},events:[],archive:[]};
+}
+function ladderLoadStore(){
+  try{
+    const s=JSON.parse(localStorage.getItem(LADDER_KEY));
+    if(!s||typeof s!=='object')return ladderDefaultStore();
+    return {...ladderDefaultStore(),...s,aliases:s.aliases||{},events:Array.isArray(s.events)?s.events:[],archive:Array.isArray(s.archive)?s.archive:[]};
+  }catch{return ladderDefaultStore();}
+}
+function ladderSaveStore(store){try{localStorage.setItem(LADDER_KEY,JSON.stringify(store));}catch{}}
+function ladderSessionKey(){const d=new Date();const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function ladderAppendEvents(list){
+  if(!Array.isArray(list)||!list.length)return;
+  const store=ladderLoadStore();
+  const at=new Date().toISOString();
+  list.forEach(ev=>{store.events.push({id:makeLocalId(),at,sessionKey:ladderSessionKey(),...ev});});
+  ladderSaveStore(store);
+}
+function ladderCanonName(name,aliases){
+  const raw=String(name||'').trim();
+  if(!raw)return '';
+  const mapped=aliases&&aliases[raw.toLowerCase()];
+  return (mapped&&String(mapped).trim())||raw;
+}
+function ladderCourtWinValue(court){
+  /* House rule: demotion must not pay. Court 1 = 3, Court 2 = 2, Court 3+ = 1. */
+  const n=Number(court)||1;
+  return n<=1?3:n===2?2:1;
+}
+function ladderPlacementPoints(rank,fieldSize){
+  const N=Number(fieldSize)||0,r=Number(rank)||0;
+  if(N<2||r<1||r>N)return 0;
+  return Math.round((6*(N-r)/(N-1))*10)/10;
+}
+function ladderWinSharePoints(wins,totalWins,fieldSize){
+  const w=Number(wins),t=Number(totalWins),N=Number(fieldSize)||0;
+  if(!isFinite(w)||!isFinite(t)||t<=0||N<2||w<0)return 0;
+  return Math.round(Math.min(2,(w/t)*N)*10)/10;
+}
+function ladderScoreSeason(events,aliases,opts){
+  const o=opts||{};
+  const rows={};
+  const sessionsByPlayer={};
+  const climbTrack={};
+  function row(name){
+    if(!rows[name])rows[name]={player:name,total:0,rotationPts:0,rankedPts:0,climbPts:0,attendancePts:0,rotationWins:0,rotations:0,rankedGames:0,winShareSum:0,winShareCount:0,sessions:0};
+    return rows[name];
+  }
+  function touchSession(name,sessionKey){
+    if(!name||!sessionKey)return;
+    if(!sessionsByPlayer[name])sessionsByPlayer[name]={};
+    sessionsByPlayer[name][sessionKey]=true;
+  }
+  (events||[]).forEach(ev=>{
+    if(!ev||!ev.type)return;
+    if(ev.type==='rotation'){
+      const court=Number(ev.court)||1;
+      const winner=ladderCanonName(ev.winner,aliases);
+      const others=(ev.others||[]).map(n=>ladderCanonName(n,aliases)).filter(Boolean);
+      if(winner){
+        const r=row(winner);
+        const v=ladderCourtWinValue(court);
+        r.rotationPts+=v;r.rotationWins+=1;r.rotations+=1;
+        touchSession(winner,ev.sessionKey);
+      }
+      others.forEach(n=>{if(n===winner)return;const r=row(n);r.rotations+=1;touchSession(n,ev.sessionKey);});
+      /* Climb tracking: Monarch only — court rank is meaningful there. */
+      if(ev.format==='monarch'&&ev.sessionKey){
+        [winner,...others].filter(Boolean).forEach(n=>{
+          const key=n+'||'+ev.sessionKey;
+          if(!climbTrack[key])climbTrack[key]={first:court,last:court};
+          climbTrack[key].last=court;
+        });
+      }
+    }else if(ev.type==='promotion'){
+      /* Rotation Recorder: several players can go up or down from one court in
+         the same rotation. Everyone promoted from a court earns the same — the
+         ladder records promotion, not the order within it. Court 1 holds count
+         as the win on Court 1. */
+      const court=Number(ev.court)||1;
+      const up=(ev.up||[]).map(x=>ladderCanonName(x,aliases)).filter(Boolean);
+      const down=(ev.down||[]).map(x=>ladderCanonName(x,aliases)).filter(Boolean);
+      const stayed=(ev.stayed||[]).map(x=>ladderCanonName(x,aliases)).filter(Boolean);
+      up.forEach(nm=>{const r=row(nm);r.rotationPts+=ladderCourtWinValue(court);r.rotationWins+=1;r.rotations+=1;touchSession(nm,ev.sessionKey);});
+      [...down,...stayed].forEach(nm=>{if(up.includes(nm))return;const r=row(nm);r.rotations+=1;touchSession(nm,ev.sessionKey);});
+      if(ev.sessionKey){
+        [...up,...down,...stayed].forEach(nm=>{
+          const key=nm+'||'+ev.sessionKey;
+          if(!climbTrack[key])climbTrack[key]={first:court,last:court};
+          climbTrack[key].last=court;
+        });
+      }
+    }else if(ev.type==='ranked'){
+      const entries=(ev.entries||[]).map(e=>({player:ladderCanonName(e.player,aliases),rank:Number(e.rank)||0,wins:e.wins==null?null:Number(e.wins)})).filter(e=>e.player);
+      const N=entries.length;
+      const weight=Math.max(0.5,Math.min(3,Number(ev.weight)||1));
+      const haveWins=entries.some(e=>e.wins!=null&&isFinite(e.wins));
+      const totalWins=haveWins?entries.reduce((s,e)=>s+(isFinite(e.wins)?Math.max(0,e.wins):0),0):0;
+      entries.forEach(e=>{
+        const r=row(e.player);
+        const place=ladderPlacementPoints(e.rank,N)*weight;
+        const share=haveWins?ladderWinSharePoints(Math.max(0,e.wins||0),totalWins,N)*weight:0;
+        r.rankedPts+=Math.round((place+share)*10)/10;
+        r.rankedGames+=1;
+        if(haveWins&&totalWins>0&&N>=2){r.winShareSum+=(Math.max(0,e.wins||0)/totalWins)*N;r.winShareCount+=1;}
+        touchSession(e.player,ev.sessionKey);
+      });
+    }
+  });
+  /* Climb bonus: +1 per net court climbed toward Court 1, per Monarch session. Never negative. */
+  Object.keys(climbTrack).forEach(key=>{
+    const name=key.split('||')[0];
+    const t=climbTrack[key];
+    const climbed=Math.max(0,(t.first-t.last));
+    if(climbed>0)row(name).climbPts+=climbed;
+  });
+  /* Attendance: +1 per distinct session a player appears in. */
+  Object.keys(rows).forEach(name=>{
+    const n=Object.keys(sessionsByPlayer[name]||{}).length;
+    rows[name].sessions=n;
+    rows[name].attendancePts=n;
+  });
+  const minSessions=Math.max(0,Number(o.minSessions)||0);
+  const list=Object.values(rows).map(r=>{
+    r.rotationPts=Math.round(r.rotationPts*10)/10;
+    r.rankedPts=Math.round(r.rankedPts*10)/10;
+    r.total=Math.round((r.rotationPts+r.rankedPts+r.climbPts+r.attendancePts)*10)/10;
+    r.avgWinShare=r.winShareCount?Math.round((r.winShareSum/r.winShareCount)*100)/100:0;
+    r.eligible=r.sessions>=minSessions;
+    return r;
+  });
+  list.sort((a,b)=>(b.total-a.total)||(b.rotationWins-a.rotationWins)||(b.avgWinShare-a.avgWinShare)||a.player.localeCompare(b.player));
+  return list;
+}
+function ladderCsv(list){
+  const head=['Rank','Player','Total','Rotation pts','Ranked-game pts','Climb pts','Attendance pts','Rotation wins','Rotations played','Ranked games','Avg win share','Sessions','Eligible'];
+  const lines=[head.join(',')];
+  list.forEach((r,i)=>{lines.push([i+1,'"'+String(r.player).replace(/"/g,'""')+'"',r.total,r.rotationPts,r.rankedPts,r.climbPts,r.attendancePts,r.rotationWins,r.rotations,r.rankedGames,r.avgWinShare,r.sessions,r.eligible?'Yes':'No'].join(','));});
+  return lines.join('\n');
+}
+/* Pull individual win counts out of a live court-room payload, for logging a
+   ranked game straight from a scoring link. Individual formats only — team
+   totals never feed the individual ladder. */
+function ladderParseCourtPayload(payload){
+  if(!payload||!payload.type)return null;
+  const t=payload.type;
+  if(t==='snakesladders'){
+    const players=(payload.players||[]).map(x=>({name:x.name,wins:Number(x.pos)||0})).filter(p=>p.name);
+    return players.length>=2?{game:'Snakes & Ladders',players}:null;
+  }
+  if(t==='ludosquash'){
+    const players=(payload.players||[]).map(x=>({name:x.name,wins:(x.pieces||[]).filter(d=>d>=LUDO_FINISH).length})).filter(p=>p.name);
+    return players.length>=2?{game:'Ludo Squash',players}:null;
+  }
+  if(t==='blindtarget'){
+    const players=(payload.players||[]).map(x=>({name:x.name,wins:Number(x.score)||0})).filter(p=>p.name);
+    return players.length>=2?{game:'Poker',players}:null;
+  }
+  if(t==='hangmansquash'){
+    const players=(payload.entities||[]).map(x=>({name:x.name,wins:Math.max(0,HANGMAN_MAX_STEPS-(Number(x.steps)||0))})).filter(p=>p.name);
+    return players.length>=2?{game:'Hangman Squash',players}:null;
+  }
+  if(t==='noughtscrosses'&&payload.format==='ffa'){
+    const names=payload.playerNames||[];
+    const players=names.map((n,i)=>({name:n,wins:(payload.board||[]).filter(s=>s.claimedBy===i).length})).filter(p=>p.name);
+    return players.length>=2?{game:'Noughts & Crosses',players}:null;
+  }
+  if(t==='matchplay'){
+    const a=payload.a,b=payload.b;
+    if(!a||!b)return null;
+    return {game:'Matchplay',players:[{name:a,wins:Number(payload.winsA)||0},{name:b,wins:Number(payload.winsB)||0}]};
+  }
+  return null;
+}
+function ladderRecorderApplyMoves(courts,marks){
+  /* courts: array of name arrays, index 0 = Court 1. marks: {name:'up'|'down'|'hold'}.
+     Ups join the court above, downs the court below; Court 1 holds and bottom-court
+     downs stay put. Everyone unmarked stays. Conservation by construction. */
+  const last=courts.length-1;
+  const next=courts.map(c=>c.filter(nm=>{const m=marks[nm];return !m||m==='hold';}));
+  courts.forEach((c,i)=>{
+    c.forEach(nm=>{
+      const m=marks[nm];
+      if(m==='up'){if(i>0)next[i-1].push(nm);else next[0].push(nm);}
+      else if(m==='down'){if(i<last)next[i+1].push(nm);else next[last].push(nm);}
+    });
+  });
+  return next;
+}
+function ladderRecorderBuildEvents(courts,marks){
+  const evs=[];
+  courts.forEach((c,i)=>{
+    const up=c.filter(nm=>marks[nm]==='up'||(i===0&&marks[nm]==='hold'));
+    const down=c.filter(nm=>marks[nm]==='down');
+    const stayed=c.filter(nm=>!up.includes(nm)&&!down.includes(nm));
+    if(up.length||down.length)evs.push({type:'promotion',format:'recorder',court:i+1,courtCount:courts.length,up,down,stayed});
+  });
+  return evs;
+}
+function LadderStyles(){return <style>{`
+.ladWrap{max-width:1100px;margin:0 auto;}
+.ladPanel{background:#0b1320;border:1px solid #223044;border-radius:14px;padding:16px;margin-bottom:14px;}
+.ladPanel h4{margin:0 0 10px;color:#d9c08a;font-size:1rem;letter-spacing:0.02em;}
+.ladTabRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.ladTab{background:#0b1118;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:9px;padding:9px 14px;font-weight:700;font-size:0.88rem;cursor:pointer;}
+.ladTab.on{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
+.ladChipRow{display:flex;gap:8px;flex-wrap:wrap;}
+.ladChip{background:#0b1118;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:9px;padding:7px 12px;font-weight:700;font-size:0.84rem;cursor:pointer;}
+.ladChip.on{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
+.ladTable{width:100%;border-collapse:collapse;font-size:0.88rem;}
+.ladTable th{text-align:left;color:#8aa0b6;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;padding:7px 8px;border-bottom:1px solid #223044;}
+.ladTable td{padding:8px;border-bottom:1px solid #16202e;color:#eaf4fb;}
+.ladTable tr.ladTop td{color:#d9c08a;font-weight:800;}
+.ladTable tr.ladInel td{opacity:0.45;}
+.ladNum{text-align:right;font-variant-numeric:tabular-nums;}
+.ladPill{display:inline-block;background:#131a24;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:999px;padding:1px 9px;font-size:0.72rem;font-weight:700;}
+.ladLead{color:#8aa0b6;font-size:0.85rem;margin:6px 0 0;}
+.ladEntryRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0c1626;border:1px solid #223044;border-radius:10px;padding:8px 10px;margin-bottom:8px;}
+.ladEntryRank{color:#d9c08a;font-weight:800;min-width:26px;}
+.ladEntryName{color:#eaf4fb;font-weight:700;flex:1;min-width:110px;}
+.ladMini{background:#0b1118;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:8px;padding:5px 9px;font-weight:700;font-size:0.8rem;cursor:pointer;}
+.ladMini:disabled{opacity:0.35;cursor:default;}
+.ladWinsInput{width:64px;background:#0b1118;border:1px solid #2c3c4e;border-radius:8px;color:#eaf4fb;padding:6px 8px;font-size:0.88rem;}
+.ladSelect{width:100%;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:0.9rem;padding:10px 12px;-webkit-appearance:none;appearance:none;}
+.ladFound{background:#0c1626;border:1px solid #2f5c46;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.ladFound b{color:#8fbfa4;}
+.ladWarn{color:#d9c08a;font-size:0.84rem;}
+.ladSessionCard{background:#0c1626;border:1px solid #223044;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.ladAliasRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #16202e;padding:8px 0;}
+.ladAliasName{color:#eaf4fb;font-weight:700;min-width:120px;}
+.ladExplain{color:#8aa0b6;font-size:0.86rem;line-height:1.5;margin:0 0 8px;}
+.ladExplain b{color:#d9c08a;}
+.ladRecCourt{background:#0c1626;border:1px solid #223044;border-radius:12px;padding:12px;margin-bottom:10px;}
+.ladRecCourtHead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.ladRecCourtHead b{color:#d9c08a;font-size:1rem;}
+.ladRecCourtHead span{color:#8aa0b6;font-size:0.76rem;}
+.ladRecChips{display:flex;gap:8px;flex-wrap:wrap;}
+.ladRecChip{background:#0b1118;border:1px solid #2c3c4e;color:#eaf4fb;border-radius:9px;padding:8px 13px;font-weight:700;font-size:0.88rem;cursor:pointer;}
+.ladRecChip.up{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
+.ladRecChip.hold{background:#131a24;border-color:#c8a552;color:#d9c08a;}
+.ladRecChip.down{background:#131a24;border-color:#2c3c4e;color:#8aa0b6;opacity:0.75;}
+.ladRecLegend{display:flex;gap:14px;flex-wrap:wrap;color:#8aa0b6;font-size:0.8rem;margin:8px 0 0;}
+`}</style>;}
+function SeasonLadder({setScreen}){
+  const [store,setStore]=useState(()=>ladderLoadStore());
+  const [tab,setTab]=useState('ladder');
+  const [found,setFound]=useState(null);
+  const [searching,setSearching]=useState(false);
+  const [entries,setEntries]=useState([]);
+  const [gameName,setGameName]=useState('');
+  const [weight,setWeight]=useState(1);
+  const [addName,setAddName]=useState('');
+  const [savedFlash,setSavedFlash]=useState(false);
+  const [recCourts,setRecCourts]=useState(null);
+  const [recMarks,setRecMarks]=useState({});
+  const [recCourtCount,setRecCourtCount]=useState(3);
+  const [recRound,setRecRound]=useState(0);
+  const [recFlash,setRecFlash]=useState(false);
+  const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
+  function update(mut){const next=mut(ladderLoadStore());ladderSaveStore(next);setStore(next);}
+  const board=useMemo(()=>ladderScoreSeason(store.events,store.aliases,{minSessions:store.minSessions}),[store]);
+  const seenNames=useMemo(()=>{
+    const s=new Set();
+    store.events.forEach(ev=>{
+      if(ev.type==='rotation'){if(ev.winner)s.add(String(ev.winner).trim());(ev.others||[]).forEach(n=>n&&s.add(String(n).trim()));}
+      if(ev.type==='ranked')(ev.entries||[]).forEach(e=>e.player&&s.add(String(e.player).trim()));
+    });
+    return Array.from(s).sort((a,b)=>a.localeCompare(b));
+  },[store.events]);
+  const sessions=useMemo(()=>{
+    const m={};
+    store.events.forEach(ev=>{const k=ev.sessionKey||'unknown';if(!m[k])m[k]={key:k,rotations:0,ranked:0};if(ev.type==='rotation')m[k].rotations++;if(ev.type==='ranked')m[k].ranked++;});
+    return Object.values(m).sort((a,b)=>b.key.localeCompare(a.key));
+  },[store.events]);
+  async function findLiveGames(){
+    setSearching(true);setFound(null);
+    const base=getPersistentLiveRoomId();
+    const bases=[base,base+'-ludo',base+'-nc',base+'-hangman',base+'-matchplay'];
+    const reads=[];
+    bases.forEach(b=>{reads.push(readLivePlayerRoom(b));for(let n=1;n<=6;n++)reads.push(readLivePlayerRoom(courtRoomId(b,n)));});
+    const rows=await Promise.all(reads.map(p=>p.catch(()=>null)));
+    const games=[];
+    rows.forEach(row=>{
+      if(!row||!row.payload)return;
+      const age=row.updated_at?Date.now()-new Date(row.updated_at).getTime():null;
+      if(age!=null&&age>5400000)return;
+      const parsed=ladderParseCourtPayload(row.payload);
+      if(parsed)games.push(parsed);
+    });
+    /* De-duplicate identical rosters (a game can echo in more than one room). */
+    const seen=new Set();
+    const unique=games.filter(g=>{const k=g.game+'|'+g.players.map(p=>p.name+':'+p.wins).join(',');if(seen.has(k))return false;seen.add(k);return true;});
+    setFound(unique);setSearching(false);
+  }
+  function loadGame(g){
+    const sorted=[...g.players].sort((a,b)=>(b.wins-a.wins)||a.name.localeCompare(b.name));
+    setEntries(sorted.map((p,i)=>({player:p.name,rank:i+1,wins:p.wins})));
+    setGameName(g.game);setFound(null);
+  }
+  function moveEntry(i,dir){
+    setEntries(prev=>{
+      const next=prev.slice();const j=i+dir;
+      if(j<0||j>=next.length)return prev;
+      const t=next[i];next[i]=next[j];next[j]=t;
+      return next.map((e,idx)=>({...e,rank:idx+1}));
+    });
+  }
+  function removeEntry(i){setEntries(prev=>prev.filter((_,idx)=>idx!==i).map((e,idx)=>({...e,rank:idx+1})));}
+  function setEntryWins(i,v){setEntries(prev=>prev.map((e,idx)=>idx===i?{...e,wins:v===''?null:Math.max(0,Number(v)||0)}:e));}
+  function addEntry(name){
+    const v=String(name||'').trim();
+    if(!v)return;
+    setEntries(prev=>prev.some(e=>e.player.toLowerCase()===v.toLowerCase())?prev:[...prev,{player:v,rank:prev.length+1,wins:null}]);
+    setAddName('');
+  }
+  function saveRanked(){
+    if(entries.length<2)return;
+    ladderAppendEvents([{type:'ranked',game:gameName||'Ranked game',weight,entries:entries.map(e=>({player:e.player,rank:e.rank,wins:e.wins}))}]);
+    setEntries([]);setGameName('');setWeight(1);
+    setStore(ladderLoadStore());
+    setSavedFlash(true);setTimeout(()=>setSavedFlash(false),1600);
+  }
+  function recStart(){
+    const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}})();
+    const pool=(present.length?present:roster).filter(Boolean);
+    const cc=Math.max(1,Math.min(6,recCourtCount));
+    const per=Math.ceil(pool.length/cc)||1;
+    const courts=Array.from({length:cc},(_,i)=>pool.slice(i*per,(i+1)*per));
+    setRecCourts(courts);setRecMarks({});setRecRound(0);
+  }
+  function recSeedMove(name,dir){
+    setRecCourts(prev=>{
+      if(!prev)return prev;
+      const i=prev.findIndex(c=>c.includes(name));
+      const j=i+dir;
+      if(i<0||j<0||j>=prev.length)return prev;
+      const next=prev.map(c=>c.filter(n=>n!==name));
+      next[j]=[...next[j],name];
+      return next;
+    });
+  }
+  function recTap(name,courtIdx){
+    setRecMarks(prev=>{
+      const cur=prev[name];
+      const isTop=courtIdx===0,isBottom=recCourts&&courtIdx===recCourts.length-1;
+      let nextMark;
+      if(isTop)nextMark=cur==null?'hold':cur==='hold'?'down':null;
+      else if(isBottom)nextMark=cur==null?'up':null;
+      else nextMark=cur==null?'up':cur==='up'?'down':null;
+      const next={...prev};
+      if(nextMark)next[name]=nextMark;else delete next[name];
+      return next;
+    });
+  }
+  function recSaveRotation(){
+    if(!recCourts)return;
+    const evs=ladderRecorderBuildEvents(recCourts,recMarks);
+    if(!evs.length)return;
+    ladderAppendEvents(evs);
+    setRecCourts(ladderRecorderApplyMoves(recCourts,recMarks));
+    setRecMarks({});setRecRound(r=>r+1);
+    setStore(ladderLoadStore());
+    setRecFlash(true);setTimeout(()=>setRecFlash(false),1400);
+  }
+  const recMarkedCount=Object.keys(recMarks).length;
+  function undoLast(){
+    if(!store.events.length)return;
+    if(!window.confirm('Remove the most recent ladder entry? This cannot be undone.'))return;
+    update(s=>({...s,events:s.events.slice(0,-1)}));
+  }
+  function deleteSession(key){
+    if(!window.confirm('Delete every ladder entry recorded on '+key+'? This cannot be undone.'))return;
+    update(s=>({...s,events:s.events.filter(ev=>(ev.sessionKey||'unknown')!==key)}));
+  }
+  function setAlias(seen,canon){
+    update(s=>{
+      const aliases={...s.aliases};
+      const k=seen.toLowerCase();
+      if(!canon||canon===seen)delete aliases[k];else aliases[k]=canon;
+      return {...s,aliases};
+    });
+  }
+  function exportCsv(){
+    const csv=ladderCsv(board);
+    try{
+      const blob=new Blob([csv],{type:'text/csv'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download='season-ladder-'+(store.seasonName||'season').replace(/[^a-z0-9-]/gi,'')+'.csv';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    }catch{window.prompt('Copy the ladder CSV:',csv);}
+  }
+  function startNewSeason(){
+    if(!window.confirm('Close the '+store.seasonName+' season and start a new one? The closed season is archived and its final table stays available in the export.'))return;
+    update(s=>({
+      ...ladderDefaultStore(),
+      aliases:s.aliases,
+      minSessions:s.minSessions,
+      archive:[...(s.archive||[]),{seasonName:s.seasonName,startedAt:s.startedAt,endedAt:new Date().toISOString(),events:s.events}],
+    }));
+  }
+  const leader=board.filter(r=>r.eligible)[0]||board[0]||null;
+  return <div className="gameCard ladWrap">
+    <LadderStyles/>
+    <div className="moduleHead"><div><h1>Season Ladder™</h1><p className="mutedText">Season-long points from every recorded rotation and ranked game. One table, one annual award.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="ladTabRow">
+      {[['ladder','Ladder'],['rotations','Rotation Recorder'],['log','Log a Game'],['sessions','Sessions'],['players','Players'],['season','Season']].map(([id,label])=>
+        <button type="button" key={id} className={tab===id?'ladTab on':'ladTab'} onClick={()=>setTab(id)}>{label}</button>)}
+    </div>
+
+    {tab==='ladder'&&<div className="ladPanel">
+      <h4>{store.seasonName} — season table</h4>
+      {leader&&<p className="ladLead">Leading: <b style={{color:'#d9c08a'}}>{leader.player}</b> on {leader.total} points{store.minSessions>0?' · minimum '+store.minSessions+' sessions to qualify':''}</p>}
+      {!board.length&&<p className="ladLead">Nothing recorded yet. Use the <b>Rotation Recorder</b> tab, turn on <b>Record to Season Ladder</b> in the Rotation Engine, or log a ranked game from the Log a Game tab.</p>}
+      {board.length>0&&<div style={{overflowX:'auto',marginTop:'10px'}}><table className="ladTable">
+        <thead><tr><th>#</th><th>Player</th><th className="ladNum">Total</th><th className="ladNum">Rotation</th><th className="ladNum">Ranked</th><th className="ladNum">Climb</th><th className="ladNum">Attend</th><th className="ladNum">Rot. wins</th><th className="ladNum">Sessions</th></tr></thead>
+        <tbody>{board.map((r,i)=><tr key={r.player} className={(i===0&&r.eligible?'ladTop':'')+(r.eligible?'':' ladInel')}>
+          <td>{i+1}</td><td>{r.player}{!r.eligible&&<span className="ladPill" style={{marginLeft:'7px'}}>needs {store.minSessions}+ sessions</span>}</td>
+          <td className="ladNum">{r.total}</td><td className="ladNum">{r.rotationPts}</td><td className="ladNum">{r.rankedPts}</td><td className="ladNum">{r.climbPts}</td><td className="ladNum">{r.attendancePts}</td><td className="ladNum">{r.rotationWins}</td><td className="ladNum">{r.sessions}</td>
+        </tr>)}</tbody>
+      </table></div>}
+      <p className="ladLead" style={{marginTop:'10px'}}>Tie-break order: total points, then rotation wins, then average win share.</p>
+    </div>}
+
+    {tab==='rotations'&&<div className="ladPanel">
+      <h4>Rotation Recorder{recRound>0?' — rotation '+(recRound+1):''}</h4>
+      {!recCourts&&<>
+        <p className="ladLead">Runs the ladder from taps alone — no board needed. Players are pulled from today&rsquo;s attendance and split across the courts; each rotation, tap who goes up and who goes down (two up, two down is fine), then save. Points go straight to the season table.</p>
+        <span className="ladLead" style={{display:'block',margin:'12px 0 6px'}}>Courts</span>
+        <div className="ladChipRow">{[2,3,4,5,6].map(nn=><button type="button" key={nn} className={recCourtCount===nn?'ladChip on':'ladChip'} onClick={()=>setRecCourtCount(nn)}>{nn} courts</button>)}</div>
+        <div style={{marginTop:'12px'}}><button type="button" className="primaryBtn" onClick={recStart}>Pull attendance &amp; set up courts</button></div>
+      </>}
+      {recCourts&&recRound===0&&recMarkedCount===0&&<p className="ladLead">Check the starting courts — use ▲ ▼ to move anyone, then start tapping results. Court 1 is the top court.</p>}
+      {recCourts&&recCourts.map((c,i)=><div key={i} className="ladRecCourt">
+        <div className="ladRecCourtHead"><b>Court {i+1}</b><span>{i===0?'Top court · tap once to hold 👑':i===recCourts.length-1?'Bottom court · tap once for up ▲':'Tap once for up ▲, twice for down ▼'}</span></div>
+        <div className="ladRecChips">{c.map(nm=>{
+          const m=recMarks[nm];
+          return <button type="button" key={nm} className={'ladRecChip'+(m==='up'?' up':m==='down'?' down':m==='hold'?' hold':'')} onClick={()=>recTap(nm,i)}>{m==='up'?'▲ ':m==='down'?'▼ ':m==='hold'?'👑 ':''}{nm}</button>;
+        })}</div>
+        {recRound===0&&<div style={{display:'flex',gap:'8px',marginTop:'8px',flexWrap:'wrap'}}>{c.map(nm=><span key={nm} style={{display:'inline-flex',gap:'4px',alignItems:'center'}}><span className="ladPill">{nm}</span><button type="button" className="ladMini" disabled={i===0} onClick={()=>recSeedMove(nm,-1)}>▲</button><button type="button" className="ladMini" disabled={i===recCourts.length-1} onClick={()=>recSeedMove(nm,1)}>▼</button></span>)}</div>}
+      </div>)}
+      {recCourts&&<>
+        <div className="ladRecLegend"><span>👑 holds Court 1 = 3 pts</span><span>▲ promoted = the court&rsquo;s win value (3 / 2 / 1)</span><span>▼ demoted = 0 — dropping never costs extra</span></div>
+        <div style={{display:'flex',gap:'8px',marginTop:'12px',alignItems:'center',flexWrap:'wrap'}}>
+          <button type="button" className="primaryBtn" disabled={!recMarkedCount} onClick={recSaveRotation}>Save rotation &amp; move players</button>
+          {recFlash&&<span style={{color:'#8fbfa4',fontWeight:800}}>Saved ✓</span>}
+          <button type="button" className="secondaryBtn" onClick={()=>{if(window.confirm('Finish recording? Courts reset; everything saved so far stays on the ladder.'))setRecCourts(null);}}>Finish recording</button>
+        </div>
+      </>}
+    </div>}
+
+    {tab==='log'&&<>
+      <div className="ladPanel">
+        <h4>Pull a finished game from a scoring link</h4>
+        <p className="ladLead">Finds live or recently finished games on this host&rsquo;s court links and fills in every player&rsquo;s wins automatically. Individual formats only.</p>
+        <div style={{marginTop:'10px'}}><button type="button" className="secondaryBtn" onClick={findLiveGames}>{searching?'Searching\u2026':'Find live games'}</button></div>
+        {found&&!found.length&&<p className="ladWarn" style={{marginTop:'8px'}}>No individual games found on this host&rsquo;s court links. Enter the result below instead.</p>}
+        {found&&found.map((g,i)=><div key={i} className="ladFound" style={{marginTop:i===0?'10px':undefined}}>
+          <span><b>{g.game}</b> — {g.players.map(p=>p.name+' '+p.wins).join(' · ')}</span>
+          <button type="button" className="ladMini" onClick={()=>loadGame(g)}>Use this result</button>
+        </div>)}
+      </div>
+      <div className="ladPanel">
+        <h4>Result</h4>
+        <input className="ladWinsInput" style={{width:'100%',marginBottom:'10px'}} placeholder="Game name — e.g. Snakes & Ladders, First to 25" value={gameName} onChange={e=>setGameName(e.target.value)}/>
+        {!entries.length&&<p className="ladLead">Add players in finishing order — first added is 1st. Wins are optional but reward close finishes.</p>}
+        {entries.map((e,i)=><div key={e.player} className="ladEntryRow">
+          <span className="ladEntryRank">{e.rank}.</span>
+          <span className="ladEntryName">{e.player}</span>
+          <input className="ladWinsInput" type="number" min="0" placeholder="wins" value={e.wins==null?'':e.wins} onChange={ev=>setEntryWins(i,ev.target.value)}/>
+          <button type="button" className="ladMini" disabled={i===0} onClick={()=>moveEntry(i,-1)}>↑</button>
+          <button type="button" className="ladMini" disabled={i===entries.length-1} onClick={()=>moveEntry(i,1)}>↓</button>
+          <button type="button" className="ladMini" onClick={()=>removeEntry(i)}>×</button>
+        </div>)}
+        <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'8px'}}>
+          <select className="ladSelect" style={{flex:'1',minWidth:'160px'}} value="" onChange={e=>addEntry(e.target.value)}>
+            <option value="">Add a player…</option>
+            {roster.filter(n=>!entries.some(x=>x.player.toLowerCase()===n.toLowerCase())).map(n=><option key={n} value={n}>{n}</option>)}
+          </select>
+          <input className="ladWinsInput" style={{width:'150px'}} placeholder="or type a name" value={addName} onChange={e=>setAddName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addEntry(addName);}}/>
+          <button type="button" className="ladMini" onClick={()=>addEntry(addName)}>Add</button>
+        </div>
+        <div style={{marginTop:'12px'}}>
+          <span className="ladLead" style={{display:'block',marginBottom:'6px'}}>Game weight — a season finale can count for more</span>
+          <div className="ladChipRow">{[1,1.5,2].map(w=><button type="button" key={w} className={weight===w?'ladChip on':'ladChip'} onClick={()=>setWeight(w)}>{w===1?'Standard':w+'\u00d7'}</button>)}</div>
+        </div>
+        <div style={{display:'flex',gap:'8px',marginTop:'14px',alignItems:'center',flexWrap:'wrap'}}>
+          <button type="button" className="primaryBtn" disabled={entries.length<2} onClick={saveRanked}>Save to ladder</button>
+          {savedFlash&&<span style={{color:'#8fbfa4',fontWeight:800}}>Saved ✓</span>}
+          {entries.length===1&&<span className="ladWarn">A ranked game needs at least two players.</span>}
+        </div>
+      </div>
+    </>}
+
+    {tab==='sessions'&&<div className="ladPanel">
+      <h4>Recorded sessions</h4>
+      {!sessions.length&&<p className="ladLead">No sessions recorded yet this season.</p>}
+      {sessions.map(s=><div key={s.key} className="ladSessionCard">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',flexWrap:'wrap'}}>
+          <span><b style={{color:'#d9c08a'}}>{s.key}</b><span className="ladPill" style={{marginLeft:'8px'}}>{s.rotations} rotation{s.rotations===1?'':'s'}</span><span className="ladPill" style={{marginLeft:'6px'}}>{s.ranked} ranked game{s.ranked===1?'':'s'}</span></span>
+          <button type="button" className="ladMini" onClick={()=>deleteSession(s.key)}>Delete session</button>
+        </div>
+      </div>)}
+      {store.events.length>0&&<div style={{marginTop:'10px'}}><button type="button" className="secondaryBtn" onClick={undoLast}>Undo last entry</button></div>}
+    </div>}
+
+    {tab==='players'&&<div className="ladPanel">
+      <h4>Player names on the ladder</h4>
+      <p className="ladLead">If the same player has been recorded under two spellings, point the stray spelling at their register name and every past and future entry counts as one player.</p>
+      {!seenNames.length&&<p className="ladLead" style={{marginTop:'8px'}}>No names recorded yet.</p>}
+      {seenNames.map(n=>{
+        const mapped=store.aliases[n.toLowerCase()]||'';
+        return <div key={n} className="ladAliasRow">
+          <span className="ladAliasName">{n}</span>
+          <select className="ladSelect" style={{flex:'1',minWidth:'170px'}} value={mapped} onChange={e=>setAlias(n,e.target.value)}>
+            <option value="">Counts as “{n}”</option>
+            {roster.filter(r=>r.toLowerCase()!==n.toLowerCase()).map(r=><option key={r} value={r}>Counts as {r}</option>)}
+          </select>
+          {mapped&&<span className="ladPill">merged</span>}
+        </div>;
+      })}
+    </div>}
+
+    {tab==='season'&&<>
+      <div className="ladPanel">
+        <h4>Season</h4>
+        <span className="ladLead" style={{display:'block',marginBottom:'6px'}}>Season name — shown on the table and the export</span>
+        <input className="ladWinsInput" style={{width:'100%'}} value={store.seasonName} onChange={e=>update(s=>({...s,seasonName:e.target.value}))}/>
+        <span className="ladLead" style={{display:'block',margin:'12px 0 6px'}}>Sessions needed to qualify for the annual award</span>
+        <div className="ladChipRow">{[0,5,10,15,20].map(n=><button type="button" key={n} className={store.minSessions===n?'ladChip on':'ladChip'} onClick={()=>update(s=>({...s,minSessions:n}))}>{n===0?'No minimum':n+'+'}</button>)}</div>
+        <div style={{display:'flex',gap:'8px',marginTop:'14px',flexWrap:'wrap'}}>
+          <button type="button" className="primaryBtn" onClick={exportCsv}>Export season table (CSV)</button>
+          <button type="button" className="secondaryBtn" onClick={startNewSeason}>Close season &amp; start new</button>
+        </div>
+        {store.archive.length>0&&<p className="ladLead" style={{marginTop:'10px'}}>{store.archive.length} closed season{store.archive.length===1?'':'s'} archived on this device.</p>}
+      </div>
+      <div className="ladPanel">
+        <h4>How points are earned</h4>
+        <p className="ladExplain"><b>Rotation wins.</b> Winning a rotation on Court 1 is worth 3, Court 2 is worth 2, every other court 1 — so dropping down never becomes the easy way to score. Record these from the Rotation Engine.</p>
+        <p className="ladExplain"><b>Promotions.</b> In the Rotation Recorder, everyone promoted from the same court earns the same points — the ladder records promotion, not the order within it. When two go up from Court 2, both earn 2. Holding Court 1 counts as the win on Court 1.</p>
+        <p className="ladExplain"><b>Climbing.</b> In Monarch, finishing a session on a higher court than you started earns 1 point per court climbed. Dropping courts never costs points — losing form is its own penalty.</p>
+        <p className="ladExplain"><b>Ranked games.</b> Winning any one-off game is worth 6, last place 0, everyone else spaced evenly — so winning a 4-player game and a 9-player game pay the same per place. Recorded wins add up to 2 more for a player&rsquo;s share of the rallies, so a close loss beats a blow-out loss.</p>
+        <p className="ladExplain"><b>Attendance.</b> 1 point per session recorded. Consistency counts, but never more than performance.</p>
+        <p className="ladExplain"><b>Ties.</b> Broken by rotation wins, then by average win share across the season.</p>
+      </div>
+    </>}
+  </div>;
+}
+/* ── END SEASON LADDER ── */
+
 function RotationEngine({setScreen,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
   const [names,setNames]=useState(()=>presents.length>=3?presents:['Player 1','Player 2','Player 3','Player 4','Player 5','Player 6']);
@@ -25404,6 +25966,8 @@ function RotationEngine({setScreen,setSession}){
   const [minutes,setMinutes]=useState(4);
   const [ruleSet,setRuleSet]=useState('Normal rally rules');
   const [board,setBoard]=useState(()=>rotBuildBoard(names,2,'winnerStays'));
+  const [ladderRec,setLadderRec]=useState(false);
+  const ladderable=formatId==='winnerStays'||formatId==='monarch';
   const [winners,setWinners]=useState({});
   const [rounds,setRounds]=useState(0);
   const [secs,setSecs]=useState(0);
@@ -25434,8 +25998,16 @@ function RotationEngine({setScreen,setSession}){
     if(formatId==='monarch'){
       const done=board.every(c=>winners[c.n]);
       if(!done)return;
+      if(ladderRec){
+        const evs=board.filter(c=>winners[c.n]&&c.on.length>1).map(c=>({type:'rotation',format:formatId,court:c.n,courtCount:board.length,winner:winners[c.n],others:c.on.filter(p=>p!==winners[c.n])}));
+        if(evs.length)ladderAppendEvents(evs);
+      }
       setBoard(rotRotateMonarch(board,winners));
     }else{
+      if(ladderRec&&formatId==='winnerStays'){
+        const evs=board.filter(c=>winners[c.n]&&c.on.length>1).map(c=>({type:'rotation',format:formatId,court:c.n,courtCount:board.length,winner:winners[c.n],others:c.on.filter(p=>p!==winners[c.n])}));
+        if(evs.length)ladderAppendEvents(evs);
+      }
       setBoard(board.map(c=>{
         const w=winners[c.n];
         if(formatId==='winnerStays'&&!w)return c;
@@ -25524,6 +26096,10 @@ function RotationEngine({setScreen,setSession}){
         <div className="rotOnRow">{c.on.map(p=><button type="button" key={p} className={winners[c.n]===p?'rotPlayer rotPlayerWin':'rotPlayer'} onClick={()=>pickWinner(c.n,p)}>{p}</button>)}</div>
         <div className="rotWait">{c.wait.length?<>Next on: <b>{c.wait[0]}</b>{c.wait.length>1?' · then '+c.wait.slice(1).join(', '):''}</>:'No one waiting on this court.'}</div>
       </div>)}</div>
+      {ladderable&&<div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',marginTop:'12px'}}>
+        <button type="button" className={ladderRec?'rotChip rotChipOn':'rotChip'} onClick={()=>setLadderRec(v=>!v)}>{ladderRec?'● Recording to Season Ladder':'○ Record to Season Ladder'}</button>
+        {ladderRec&&<span className="mutedText" style={{fontSize:'.8rem'}}>Each rotation’s winners are saved to the season table before the board rotates.</span>}
+      </div>}
       <div className="rotBar" style={{marginTop:'12px'}}>
         <button type="button" className="primaryBtn" onClick={rotateAll}>{formatId==='monarch'?'Rotate All':'Rotate'}</button>
         <button type="button" className="secondaryBtn" onClick={()=>{setBoard(rotBuildBoard(names,courtCount,formatId));setWinners({});setRounds(0);}}>Reset board</button>
@@ -25957,6 +26533,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='bucketLob'&&<LobModule setScreen={go} setSession={setSession}/>}
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
       {screen==='rotation'&&<RotationEngine setScreen={go} setSession={setSession}/>}
+      {screen==='seasonLadder'&&<SeasonLadder setScreen={go}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
       {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
