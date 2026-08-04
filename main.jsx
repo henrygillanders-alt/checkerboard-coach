@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v558 Ladders live with Players. The season points table is now the Performance Ladder and lives inside the Players tile as its own tab, next to the seeding ladder \u2014 renamed Challenge Ladder \u2014 so ranking, seeding and attendance sit in one place. The Rotation Engine toggle now reads Record to Performance Ladder. Also carries the ratings overview paragraph and the clearer climbing note from v556\u2013v557. Builds on v557.';
+const APP_VERSION='v559 Ratings explainer up front. The paragraph explaining how the Performance Ladder rates players now sits directly under the season table on the opening tab, as well as atop the full points breakdown in the Season tab \u2014 both drawn from one source so they can never drift apart. Builds on v558.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -25402,6 +25402,7 @@ function RotationStyles(){return <style>{`
    Scoring core is pure and unit-tested; events are append-only so the season
    can always be recomputed and audited. */
 const LADDER_KEY='checkerboard_season_ladder_v1';
+const LADDER_OVERVIEW='The ladder rates a whole season, not a single night, and it measures four things. How often you win — and where: a win is worth most on Court 1 and least further down, so the only way to score big is to keep beating the best. How far you climb — finishing a session higher up the courts than you started. How close you finish — in one-off games, finishing place earns most of the points and your share of the rallies tops them up, so a narrow loss is always worth more than a blow-out. And how often you turn up — one point a session, so consistency counts but never outweighs performance. Every point traces back to something recorded on the night, which is what makes the year-end table, and the award, fair to stand behind.';
 function ladderDefaultStore(){
   const y=new Date().getFullYear();
   return {seasonName:y+'\u2013'+String(y+1).slice(2),startedAt:new Date().toISOString(),minSessions:0,aliases:{},events:[],archive:[]};
@@ -25828,6 +25829,7 @@ function SeasonLadder({setScreen}){
         </tr>)}</tbody>
       </table></div>}
       <p className="ladLead" style={{marginTop:'10px'}}>Tie-break order: total points, then rotation wins, then average win share.</p>
+      <p className="ladExplain" style={{marginTop:'12px',borderTop:'1px solid #16202e',paddingTop:'12px'}}>{LADDER_OVERVIEW}</p>
     </div>}
 
     {tab==='rotations'&&<div className="ladPanel">
@@ -25944,7 +25946,7 @@ function SeasonLadder({setScreen}){
       </div>
       <div className="ladPanel">
         <h4>How points are earned</h4>
-        <p className="ladExplain">The ladder rates a whole season, not a single night, and it measures four things. How often you win — and where: a win is worth most on Court 1 and least further down, so the only way to score big is to keep beating the best. How far you climb — finishing a session higher up the courts than you started. How close you finish — in one-off games, finishing place earns most of the points and your share of the rallies tops them up, so a narrow loss is always worth more than a blow-out. And how often you turn up — one point a session, so consistency counts but never outweighs performance. Every point traces back to something recorded on the night, which is what makes the year-end table, and the award, fair to stand behind.</p>
+        <p className="ladExplain">{LADDER_OVERVIEW}</p>
         <p className="ladExplain"><b>Rotation wins.</b> Winning a rotation on Court 1 is worth 3, Court 2 is worth 2, every other court 1 — so dropping down never becomes the easy way to score. Record these from the Rotation Engine.</p>
         <p className="ladExplain"><b>Promotions.</b> In the Rotation Recorder, everyone promoted from the same court earns the same points — the ladder records promotion, not the order within it. When two go up from Court 2, both earn 2. Holding Court 1 counts as the win on Court 1.</p>
         <p className="ladExplain"><b>Climbing.</b> In Monarch, finishing a session on a higher court than you started earns 1 point per court climbed. Dropping courts never costs points — being demoted is penalty enough.</p>
