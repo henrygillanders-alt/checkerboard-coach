@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v557 Clearer climbing note. The Season tab\u2019s Climbing paragraph now ends \u201cbeing demoted is penalty enough\u201d \u2014 the old wording wrapped as \u201cform is its own penalty\u201d on the wall display and read like a typo. Builds on v556.';
+const APP_VERSION='v558 Ladders live with Players. The season points table is now the Performance Ladder and lives inside the Players tile as its own tab, next to the seeding ladder \u2014 renamed Challenge Ladder \u2014 so ranking, seeding and attendance sit in one place. The Rotation Engine toggle now reads Record to Performance Ladder. Also carries the ratings overview paragraph and the clearer climbing note from v556\u2013v557. Builds on v557.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5524,7 +5524,6 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClockNet')}><h2>Squad Clock — All Courts</h2><span className="homeTileSubtitle">📡 Networked · synced across courts</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rotation')}><h2>Rotation Engine™</h2><span className="homeTileSubtitle">Group formats · more players than courts</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('seasonLadder')}><h2>Season Ladder™</h2><span className="homeTileSubtitle">Season points · promotion & demotion · annual award</span></button>
 
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
@@ -18556,7 +18555,7 @@ function JuniorLadder({players=[],setPlayers=()=>{}}){
   function endDrag(){if(!dragName)return;const finalOrder=order.length?order:ladderPlayers.map(p=>p.name);commitOrder(finalOrder);setDragName(null);setOrder([]);}
   const visible=dragName&&order.length?order.map(n=>ladderPlayers.find(p=>p.name===n)).filter(Boolean):ladderPlayers;
   const presentCount=(players||[]).filter(p=>p&&p.present).length;
-  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Junior Programme Ladder</strong><span>Lower rank number = stronger seed. Drag the ⠿ handle to reorder; ladder allocation uses ranked blocks.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{visible.length?visible.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} ref={el=>{if(el)rowRefs.current[p.name]=el;}} className={dragName===p.name?'juniorLadderRow ladderRowDragging':'juniorLadderRow'}><button type="button" className="ladderDragHandle" style={{touchAction:'none'}} onPointerDown={e=>startDrag(e,p.name)} onPointerMove={onDragMove} onPointerUp={endDrag} onPointerCancel={endDrag} aria-label="Drag to reorder">⠿</button><div className="ladderRankBadge">{dragName?`#${idx+1}`:`#${rawRank===''?'—':rawRank}`}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
+  return <div className="juniorLadderPage"><div className="juniorLadderHero"><strong>Challenge Ladder</strong><span>Lower rank number = stronger seed. Drag the ⠿ handle to reorder; ladder allocation uses ranked blocks.</span></div><div className="buttonRow"><button type="button" className="primaryBtn" onClick={normalizeRanks}>Normalise ranks 1–{ladderPlayers.length}</button><button type="button" className="secondaryBtn" onClick={()=>setShowAll(!showAll)}>{showAll?'Hide guests':'Show guests'}</button></div><div className="hintBox"><strong>Current attendance:</strong> {presentCount} present player{presentCount===1?'':'s'} available for ranked court allocation and Blind Race.</div><div className="juniorLadderList">{visible.length?visible.map((p,idx)=>{const rawRank=p.juniorRanking??p.ranking??'';return <div key={p.name} ref={el=>{if(el)rowRefs.current[p.name]=el;}} className={dragName===p.name?'juniorLadderRow ladderRowDragging':'juniorLadderRow'}><button type="button" className="ladderDragHandle" style={{touchAction:'none'}} onPointerDown={e=>startDrag(e,p.name)} onPointerMove={onDragMove} onPointerUp={endDrag} onPointerCancel={endDrag} aria-label="Drag to reorder">⠿</button><div className="ladderRankBadge">{dragName?`#${idx+1}`:`#${rawRank===''?'—':rawRank}`}</div><div className="ladderPlayerInfo"><strong>{p.name}</strong><span>{p.category||'No category'} · Level {p.level||'?'} · {p.present?'Present':'Absent'}{p.playerType==='Guest Player'?' · Guest':''}</span></div><div className="ladderRankEdit"><label>Rank <input type="text" inputMode="numeric" value={rawRank} onChange={e=>updateRank(p.name,e.target.value)} onBlur={()=>{if(rawRank==='')normalizeRanks();}}/></label></div></div>}):<div className="gameCard"><p>No programme players yet. Add players in Attendance.</p></div>}</div><div className="gameCard"><h2>How this feeds court allocation</h2><p>Present players are sorted by ladder rank, then split into ranked court blocks. Example: 10 players / 3 courts = Court 1 ranks 1–3, Court 2 ranks 4–7, Court 3 ranks 8–10. Court 1 is biased to the smaller group; Court 2 receives the first extra player.</p></div></div>;
 }
 
 function emptyAnnualPlan(playerName){
@@ -18678,11 +18677,13 @@ function PlayerHub({players,setPlayers,session,setSession}){
   return <div className="page playerHubPage">
     <div className="playerHubTabs">
       <button className={tab==='attendance'?'activeTab':''} onClick={()=>setTab('attendance')}>Attendance</button>
-      <button className={tab==='ladder'?'activeTab':''} onClick={()=>setTab('ladder')}>Ladder</button>
+      <button className={tab==='ladder'?'activeTab':''} onClick={()=>setTab('ladder')}>Challenge Ladder</button>
+      <button className={tab==='performance'?'activeTab':''} onClick={()=>setTab('performance')}>Performance Ladder</button>
       <button className={tab==='storage'?'activeTab':''} onClick={()=>setTab('storage')}>Storage & Backup</button>
     </div>
     {tab==='attendance'&&<Players players={players} setPlayers={setPlayers}/>}
     {tab==='ladder'&&<JuniorLadder players={players} setPlayers={setPlayers}/>}
+    {tab==='performance'&&<SeasonLadder/>}
     {tab==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
   </div>;
 }
@@ -21449,7 +21450,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Why We Coach This Way',sub:'Parent education \u00b7 explain and defend the framework',kw:'parents parent education why we coach this way explain defend traditional coach technique lessons philosophy faq evening pack send home',screen:'parents'},
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
-  {label:'Season Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award',kw:'season ladder annual award points table leaderboard promotion demotion ranking performance competitive year trophy attendance win share ranked game log',screen:'seasonLadder'},
+  {label:'Performance Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award \u00b7 in Players',kw:'performance season ladder annual award points table leaderboard promotion demotion ranking competitive year trophy attendance win share ranked game log challenge players',screen:'seasonLadder'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
@@ -25808,7 +25809,7 @@ function SeasonLadder({setScreen}){
   const leader=board.filter(r=>r.eligible)[0]||board[0]||null;
   return <div className="gameCard ladWrap">
     <LadderStyles/>
-    <div className="moduleHead"><div><h1>Season Ladder™</h1><p className="mutedText">Season-long points from every recorded rotation and ranked game. One table, one annual award.</p></div><button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+    <div className="moduleHead"><div><h1>Performance Ladder™</h1><p className="mutedText">Season-long points from every recorded rotation and ranked game. One table, one annual award.</p></div>{setScreen&&<button type="button" className="homeBtn" onClick={()=>setScreen('home')}>HOME</button>}</div>
 
     <div className="ladTabRow">
       {[['ladder','Ladder'],['rotations','Rotation Recorder'],['log','Log a Game'],['sessions','Sessions'],['players','Players'],['season','Season']].map(([id,label])=>
@@ -25818,7 +25819,7 @@ function SeasonLadder({setScreen}){
     {tab==='ladder'&&<div className="ladPanel">
       <h4>{store.seasonName} — season table</h4>
       {leader&&<p className="ladLead">Leading: <b style={{color:'#d9c08a'}}>{leader.player}</b> on {leader.total} points{store.minSessions>0?' · minimum '+store.minSessions+' sessions to qualify':''}</p>}
-      {!board.length&&<p className="ladLead">Nothing recorded yet. Use the <b>Rotation Recorder</b> tab, turn on <b>Record to Season Ladder</b> in the Rotation Engine, or log a ranked game from the Log a Game tab.</p>}
+      {!board.length&&<p className="ladLead">Nothing recorded yet. Use the <b>Rotation Recorder</b> tab, turn on <b>Record to Performance Ladder</b> in the Rotation Engine, or log a ranked game from the Log a Game tab.</p>}
       {board.length>0&&<div style={{overflowX:'auto',marginTop:'10px'}}><table className="ladTable">
         <thead><tr><th>#</th><th>Player</th><th className="ladNum">Total</th><th className="ladNum">Rotation</th><th className="ladNum">Ranked</th><th className="ladNum">Climb</th><th className="ladNum">Attend</th><th className="ladNum">Rot. wins</th><th className="ladNum">Sessions</th></tr></thead>
         <tbody>{board.map((r,i)=><tr key={r.player} className={(i===0&&r.eligible?'ladTop':'')+(r.eligible?'':' ladInel')}>
@@ -26098,7 +26099,7 @@ function RotationEngine({setScreen,setSession}){
         <div className="rotWait">{c.wait.length?<>Next on: <b>{c.wait[0]}</b>{c.wait.length>1?' · then '+c.wait.slice(1).join(', '):''}</>:'No one waiting on this court.'}</div>
       </div>)}</div>
       {ladderable&&<div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',marginTop:'12px'}}>
-        <button type="button" className={ladderRec?'rotChip rotChipOn':'rotChip'} onClick={()=>setLadderRec(v=>!v)}>{ladderRec?'● Recording to Season Ladder':'○ Record to Season Ladder'}</button>
+        <button type="button" className={ladderRec?'rotChip rotChipOn':'rotChip'} onClick={()=>setLadderRec(v=>!v)}>{ladderRec?'● Recording to Performance Ladder':'○ Record to Performance Ladder'}</button>
         {ladderRec&&<span className="mutedText" style={{fontSize:'.8rem'}}>Each rotation’s winners are saved to the season table before the board rotates.</span>}
       </div>}
       <div className="rotBar" style={{marginTop:'12px'}}>
