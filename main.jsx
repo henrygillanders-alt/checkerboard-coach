@@ -11695,50 +11695,70 @@ function AroundTheBoardBuilder({onAddToSession}){
 // Left flank = LEFT SIDE WALL, three depth bands A/B/C (front→back) each split HI/LO.
 // Right flank = RIGHT SIDE WALL, mirrored (LO/HI column order reversed vs left).
 function CheckerboardCourtMap({width='100%',compact=false}){
-  /* Rendered from ATB_FLOOR_ZONES / ATB_WALL_ZONES so the map can never disagree
-     with the data model. Floor runs clockwise from front left: 1 FL, 2 FR, 3 BR, 4 BL. */
+  /* Rendered from ATB_FLOOR_ZONES / ATB_WALL_ZONES so the map cannot drift from the
+     data model. Layout follows the original definitive reference: unfolded schematic,
+     centre strip TIN / front wall / floor / back wall, side walls as perspective flanks
+     with three depth bands A-C (front->back) each split High / Low. */
   const F=(typeof ATB_FLOOR_ZONES!=='undefined')?ATB_FLOOR_ZONES:{1:{short:'FL'},2:{short:'FR'},3:{short:'BR'},4:{short:'BL'}};
-  const W=(typeof ATB_WALL_ZONES!=='undefined')?ATB_WALL_ZONES:{5:{short:'FW-TL'},6:{short:'FW-TR'},7:{short:'FW-BR'},8:{short:'FW-BL'}};
-  const pos={};
-  Object.keys(F).forEach(k=>{const d=(F[k].short||'').toUpperCase();pos[d]=k;});
-  const fl=pos.FL||'1', fr=pos.FR||'2', br=pos.BR||'3', bl=pos.BL||'4';
-  const wpos={};
-  Object.keys(W).forEach(k=>{const d=(W[k].desc||'').toLowerCase();
-    if(d.includes('top left'))wpos.TL=k; else if(d.includes('top right'))wpos.TR=k;
-    else if(d.includes('bottom right'))wpos.BR=k; else if(d.includes('bottom left'))wpos.BL=k;});
-  const wtl=wpos.TL||'5', wtr=wpos.TR||'6', wbr=wpos.BR||'7', wbl=wpos.BL||'8';
-  const A='#182231', B='#1e2a3b', LN='#33445c', TX='#dbe6f2', MU='#8aa0b6';
-  const cell=(x,y,w,h,fill,label,sub,big)=>(<g key={label+x+y}>
-    <rect x={x} y={y} width={w} height={h} fill={fill} stroke={LN} strokeWidth="1.5"/>
-    <text x={x+w/2} y={y+h/2+(sub?-2:6)} textAnchor="middle" fill={TX} fontSize={big?22:13} fontWeight="800">{label}</text>
-    {sub&&<text x={x+w/2} y={y+h/2+14} textAnchor="middle" fill={MU} fontSize="9" fontWeight="700">{sub}</text>}
+  const W=(typeof ATB_WALL_ZONES!=='undefined')?ATB_WALL_ZONES:{5:{},6:{},7:{},8:{}};
+  const fp={}; Object.keys(F).forEach(k=>{fp[(F[k].short||'').toUpperCase()]=k;});
+  const fl=fp.FL||'1', fr=fp.FR||'2', br=fp.BR||'3', bl=fp.BL||'4';
+  const wp={}; Object.keys(W).forEach(k=>{const d=(W[k].desc||'').toLowerCase();
+    if(d.includes('top left'))wp.TL=k; else if(d.includes('top right'))wp.TR=k;
+    else if(d.includes('bottom right'))wp.BR=k; else if(d.includes('bottom left'))wp.BL=k;});
+  const wtl=wp.TL||'5', wtr=wp.TR||'6', wbr=wp.BR||'7', wbl=wp.BL||'8';
+
+  const SH='#1b2636', LT='#212e40', LN='#3a4a63', TX='#dbe6f2', MU='#8aa0b6';
+  const L=130, R=290, Y0=175, Y1=490;                    /* centre strip + floor extent */
+  const bands=[[175,280,'A'],[280,385,'B'],[385,490,'C']];
+  const outL=y=>44+(y-Y0)*(78-44)/(Y1-Y0);               /* left flank outer edge, perspective */
+  const outR=y=>376-(y-Y0)*(376-342)/(Y1-Y0);
+  const box=(x,y,w,h,fill,label,big)=>(<g key={'b'+x+y}>
+    <rect x={x} y={y} width={w} height={h} fill={fill} stroke={LN} strokeWidth="1.4"/>
+    <text x={x+w/2} y={y+h/2+(big?8:4)} textAnchor="middle" fill={TX} fontSize={big?23:12} fontWeight="800">{label}</text>
   </g>);
-  return <svg viewBox="0 0 420 560" style={{width,maxWidth:compact?360:520,display:'block',margin:'0 auto'}} role="img"
-      aria-label="Checkerboard court map. Floor 1 front left, 2 front right, 3 back right, 4 back left. Front wall 5 to 8. Back wall BL and BR.">
-    <rect x="0" y="0" width="420" height="560" fill="none"/>
-    <text x="210" y="14" textAnchor="middle" fill={MU} fontSize="10" fontWeight="800" letterSpacing="2">FRONT WALL</text>
-    {cell(130,22,80,70,B,wtl,W[wtl]&&W[wtl].short)}
-    {cell(210,22,80,70,A,wtr,W[wtr]&&W[wtr].short)}
-    {cell(130,92,80,60,A,wbl,W[wbl]&&W[wbl].short)}
-    {cell(210,92,80,60,B,wbr,W[wbr]&&W[wbr].short)}
-    <rect x="130" y="152" width="160" height="13" fill="#2b3a4e" stroke={LN}/>
-    <text x="210" y="162" textAnchor="middle" fill={MU} fontSize="8" fontWeight="800" letterSpacing="2">TIN</text>
-    <text x="60" y="300" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" transform="rotate(-90 60 300)">LEFT SIDE WALL</text>
-    <text x="360" y="300" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" transform="rotate(90 360 300)">RIGHT SIDE WALL</text>
-    {['A','B','C'].map((band,i)=>{const y=170+i*105;return <g key={band}>
-      {cell(72,y,58,105,i%2?A:B,'L'+band,'HI / LO')}
-      {cell(290,y,58,105,i%2?B:A,'R'+band,'LO / HI')}
-    </g>;})}
-    {cell(130,170,80,155,B,fl,F[fl]&&F[fl].short,true)}
-    {cell(210,170,80,155,A,fr,F[fr]&&F[fr].short,true)}
-    {cell(130,325,80,155,A,bl,F[bl]&&F[bl].short,true)}
-    {cell(210,325,80,155,B,br,F[br]&&F[br].short,true)}
-    <line x1="130" y1="325" x2="290" y2="325" stroke={MU} strokeWidth="2" strokeDasharray="5 4"/>
-    <text x="296" y="322" fill={MU} fontSize="8" fontWeight="700">SHORT LINE</text>
-    {cell(130,486,80,34,A,'BL')}
-    {cell(210,486,80,34,B,'BR')}
-    <text x="210" y="536" textAnchor="middle" fill={MU} fontSize="10" fontWeight="800" letterSpacing="2">BACK WALL</text>
-    <text x="210" y="551" textAnchor="middle" fill={MU} fontSize="9">Floor 1–4 clockwise from front left · Front wall 5–8 · Side walls A–C (front→back) × High / Low</text>
+
+  return <svg viewBox="0 0 420 590" style={{width,maxWidth:compact?360:520,display:'block',margin:'0 auto'}} role="img"
+      aria-label="Checkerboard court map. Floor 1 front left, 2 front right, 3 back right, 4 back left. Front wall 5 to 8. Side walls A to C high and low. Back wall BL and BR.">
+    <text x="210" y="15" textAnchor="middle" fill={MU} fontSize="12" fontWeight="800" letterSpacing="1.5">CHECKERBOARD COURT MAP</text>
+    <text x="210" y="30" textAnchor="middle" fill={MU} fontSize="8.5">Floor 1–4 · Front wall 5–8 · Side walls A–C (front→back) × High / Low · Back wall BL / BR</text>
+    <text x="210" y="46" textAnchor="middle" fill={MU} fontSize="8.5" fontWeight="800" letterSpacing="2">FRONT WALL</text>
+
+    {box(L,52,80,62,SH,wtl)}{box(R-80,52,80,62,LT,wtr)}
+    {box(L,114,80,52,LT,wbl)}{box(R-80,114,80,52,SH,wbr)}
+    <rect x={L} y="166" width={R-L} height="11" fill="#2b3a4e" stroke={LN}/>
+    <text x="210" y="174.5" textAnchor="middle" fill={MU} fontSize="7.5" fontWeight="800" letterSpacing="2">TIN</text>
+
+    {/* side wall flanks — perspective quadrilaterals, three depth bands, dashed High / Low split */}
+    {bands.map(([y,y2,band],i)=>{
+      const fill=i%2?LT:SH;
+      const loL=(outL(y)+L)/2, loL2=(outL(y2)+L)/2;
+      const loR=(outR(y)+R)/2, loR2=(outR(y2)+R)/2;
+      return <g key={band}>
+        <polygon points={`${outL(y)},${y} ${L},${y} ${L},${y2} ${outL(y2)},${y2}`} fill={fill} stroke={LN} strokeWidth="1.4"/>
+        <line x1={loL} y1={y} x2={loL2} y2={y2} stroke={MU} strokeWidth="1" strokeDasharray="4 3"/>
+        <text x={(outL(y)+loL)/2} y={(y+y2)/2+3} textAnchor="middle" fill={TX} fontSize="8.5" fontWeight="800">{'L'+band+'-HI'}</text>
+        <text x={(loL+L)/2} y={(y+y2)/2+3} textAnchor="middle" fill={TX} fontSize="8.5" fontWeight="800">{'L'+band+'-LO'}</text>
+        <polygon points={`${R},${y} ${outR(y)},${y} ${outR(y2)},${y2} ${R},${y2}`} fill={fill} stroke={LN} strokeWidth="1.4"/>
+        <line x1={loR} y1={y} x2={loR2} y2={y2} stroke={MU} strokeWidth="1" strokeDasharray="4 3"/>
+        <text x={(R+loR)/2} y={(y+y2)/2+3} textAnchor="middle" fill={TX} fontSize="8.5" fontWeight="800">{'R'+band+'-LO'}</text>
+        <text x={(loR+outR(y))/2} y={(y+y2)/2+3} textAnchor="middle" fill={TX} fontSize="8.5" fontWeight="800">{'R'+band+'-HI'}</text>
+      </g>;})}
+    <text x="30" y="330" textAnchor="middle" fill={MU} fontSize="8" fontWeight="700" letterSpacing="1.5" transform="rotate(-90 30 330)">LEFT SIDE WALL</text>
+    <text x="392" y="330" textAnchor="middle" fill={MU} fontSize="8" fontWeight="700" letterSpacing="1.5" transform="rotate(90 392 330)">RIGHT SIDE WALL</text>
+
+    {/* floor — clockwise from front left */}
+    {box(L,Y0,80,155,SH,fl,true)}{box(R-80,Y0,80,155,LT,fr,true)}
+    {box(L,330,80,160,LT,bl,true)}{box(R-80,330,80,160,SH,br,true)}
+    <line x1={L} y1="330" x2={R} y2="330" stroke={MU} strokeWidth="1.6" strokeDasharray="5 4"/>
+
+    {box(L,490,80,30,LT,'BL')}{box(R-80,490,80,30,SH,'BR')}
+    <text x="210" y="536" textAnchor="middle" fill={MU} fontSize="8.5" fontWeight="800" letterSpacing="2">BACK WALL</text>
+
+    <rect x="120" y="556" width="11" height="11" fill={SH} stroke={LN}/><rect x="131" y="556" width="11" height="11" fill={LT} stroke={LN}/>
+    <text x="148" y="565" fill={MU} fontSize="8.5">Zone shading</text>
+    <line x1="236" y1="561" x2="262" y2="561" stroke={MU} strokeWidth="1" strokeDasharray="4 3"/>
+    <text x="268" y="565" fill={MU} fontSize="8.5">High / Low split (side walls)</text>
   </svg>;
 }
 
