@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v556 How the ladder rates you. The Season Ladder\u2019s points explainer now opens with a plain overview of what the season table measures \u2014 how often you win and where, how far you climb, how close you finish, and how often you turn up \u2014 so a coach can explain the annual award in one breath. Builds on v555.';
+const APP_VERSION='v557 Clearer climbing note. The Season tab\u2019s Climbing paragraph now ends \u201cbeing demoted is penalty enough\u201d \u2014 the old wording wrapped as \u201cform is its own penalty\u201d on the wall display and read like a typo. Builds on v556.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -25946,7 +25946,7 @@ function SeasonLadder({setScreen}){
         <p className="ladExplain">The ladder rates a whole season, not a single night, and it measures four things. How often you win — and where: a win is worth most on Court 1 and least further down, so the only way to score big is to keep beating the best. How far you climb — finishing a session higher up the courts than you started. How close you finish — in one-off games, finishing place earns most of the points and your share of the rallies tops them up, so a narrow loss is always worth more than a blow-out. And how often you turn up — one point a session, so consistency counts but never outweighs performance. Every point traces back to something recorded on the night, which is what makes the year-end table, and the award, fair to stand behind.</p>
         <p className="ladExplain"><b>Rotation wins.</b> Winning a rotation on Court 1 is worth 3, Court 2 is worth 2, every other court 1 — so dropping down never becomes the easy way to score. Record these from the Rotation Engine.</p>
         <p className="ladExplain"><b>Promotions.</b> In the Rotation Recorder, everyone promoted from the same court earns the same points — the ladder records promotion, not the order within it. When two go up from Court 2, both earn 2. Holding Court 1 counts as the win on Court 1.</p>
-        <p className="ladExplain"><b>Climbing.</b> In Monarch, finishing a session on a higher court than you started earns 1 point per court climbed. Dropping courts never costs points — losing form is its own penalty.</p>
+        <p className="ladExplain"><b>Climbing.</b> In Monarch, finishing a session on a higher court than you started earns 1 point per court climbed. Dropping courts never costs points — being demoted is penalty enough.</p>
         <p className="ladExplain"><b>Ranked games.</b> Winning any one-off game is worth 6, last place 0, everyone else spaced evenly — so winning a 4-player game and a 9-player game pay the same per place. Recorded wins add up to 2 more for a player&rsquo;s share of the rallies, so a close loss beats a blow-out loss.</p>
         <p className="ladExplain"><b>Attendance.</b> 1 point per session recorded. Consistency counts, but never more than performance.</p>
         <p className="ladExplain"><b>Ties.</b> Broken by rotation wins, then by average win share across the season.</p>
