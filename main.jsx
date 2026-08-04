@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v555 Rotation Recorder. Season Ladder gains a tap-only way to run the ladder with big groups: pull the players from today\u2019s attendance, split them across the courts, and each rotation tap who goes up and who goes down \u2014 two up, two down works \u2014 then save. Everyone promoted from the same court earns the same points (the ladder records promotion, not the order within it), holding Court 1 counts as the win on Court 1, and demotion still never pays. Builds on v554.';
+const APP_VERSION='v556 How the ladder rates you. The Season Ladder\u2019s points explainer now opens with a plain overview of what the season table measures \u2014 how often you win and where, how far you climb, how close you finish, and how often you turn up \u2014 so a coach can explain the annual award in one breath. Builds on v555.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -25943,6 +25943,7 @@ function SeasonLadder({setScreen}){
       </div>
       <div className="ladPanel">
         <h4>How points are earned</h4>
+        <p className="ladExplain">The ladder rates a whole season, not a single night, and it measures four things. How often you win — and where: a win is worth most on Court 1 and least further down, so the only way to score big is to keep beating the best. How far you climb — finishing a session higher up the courts than you started. How close you finish — in one-off games, finishing place earns most of the points and your share of the rallies tops them up, so a narrow loss is always worth more than a blow-out. And how often you turn up — one point a session, so consistency counts but never outweighs performance. Every point traces back to something recorded on the night, which is what makes the year-end table, and the award, fair to stand behind.</p>
         <p className="ladExplain"><b>Rotation wins.</b> Winning a rotation on Court 1 is worth 3, Court 2 is worth 2, every other court 1 — so dropping down never becomes the easy way to score. Record these from the Rotation Engine.</p>
         <p className="ladExplain"><b>Promotions.</b> In the Rotation Recorder, everyone promoted from the same court earns the same points — the ladder records promotion, not the order within it. When two go up from Court 2, both earn 2. Holding Court 1 counts as the win on Court 1.</p>
         <p className="ladExplain"><b>Climbing.</b> In Monarch, finishing a session on a higher court than you started earns 1 point per court climbed. Dropping courts never costs points — losing form is its own penalty.</p>
