@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v552 Poker restructured. Every game now opens into its own screen with its deck, multiplier, mirror and reveal options, the players allocated from today\u2019s attendance, and a Start button \u2014 previously only one generic match was playable and the ten game cards just dealt cards. Power Play, The Gambler and Declare or Hold get their own scoring buttons. Plus Poker Tables across courts, and Universal Modifiers throughout Poker. Builds on v550.';
+const APP_VERSION='v553 Muted palette. Brown and amber panels retoned to neutral dark surfaces with muted gold accents, and saturated greens replaced with sage \u2014 539 colour values across the app, so colour reads as accent rather than decoration. Poker: the One court / Tables toggle is styled correctly on load, Tables now states which games it suits, and the generic scorer is relabelled Quick Match so it is distinct from opening a specific game. Builds on v552.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -245,11 +245,11 @@ function useBackIntercept(active,handler){
 const RLD_LEVELS=[
   {level:0,label:'Foundation',short:'RLD 0',desc:'Perceptual and movement foundations. Simplified environment, reduced uncertainty.',color:'#6b7280',bg:'#111827',textColor:'#9ca3af'},
   {level:1,label:'Coach Controlled',short:'RLD 1',desc:'Coach calls every target, task or decision. Player solves the coach\'s problem.',color:'#ef4444',bg:'#450a0a',textColor:'#fca5a5'},
-  {level:2,label:'Player Choice',short:'RLD 2',desc:'Player selects own sequence or task. Early autonomous decision making.',color:'#f97316',bg:'#431407',textColor:'#fdba74'},
-  {level:3,label:'Interactive',short:'RLD 3',desc:'Leader-follower interaction. Behaviour emerges through continuous adaptation.',color:'#eab308',bg:'#422006',textColor:'#fde047'},
-  {level:4,label:'Pressure & Consequence',short:'RLD 4',desc:'Scoring pressure active. Risk-reward decisions and tactical choices emerge.',color:'#86efac',bg:'#052e16',textColor:'#86efac'},
-  {level:5,label:'Competitive Practice',short:'RLD 5',desc:'Competitive representative practice. High uncertainty, tactical adaptation, competitive intent.',color:'#4ade80',bg:'#052e16',textColor:'#4ade80'},
-  {level:6,label:'Match Play',short:'RLD 6',desc:'Competition itself. Maximum uncertainty, consequence, emotional pressure and opponent adaptation.',color:'#15803d',bg:'#052e16',textColor:'#4ade80',doubleDot:true},
+  {level:2,label:'Player Choice',short:'RLD 2',desc:'Player selects own sequence or task. Early autonomous decision making.',color:'#b07a3c',bg:'#431407',textColor:'#fdba74'},
+  {level:3,label:'Interactive',short:'RLD 3',desc:'Leader-follower interaction. Behaviour emerges through continuous adaptation.',color:'#b9982f',bg:'#422006',textColor:'#fde047'},
+  {level:4,label:'Pressure & Consequence',short:'RLD 4',desc:'Scoring pressure active. Risk-reward decisions and tactical choices emerge.',color:'#8fbfa4',bg:'#052e16',textColor:'#8fbfa4'},
+  {level:5,label:'Competitive Practice',short:'RLD 5',desc:'Competitive representative practice. High uncertainty, tactical adaptation, competitive intent.',color:'#6fae8b',bg:'#052e16',textColor:'#6fae8b'},
+  {level:6,label:'Match Play',short:'RLD 6',desc:'Competition itself. Maximum uncertainty, consequence, emotional pressure and opponent adaptation.',color:'#15803d',bg:'#052e16',textColor:'#6fae8b',doubleDot:true},
 ];
 
 function RLDBadge({level,size='sm'}){
@@ -971,12 +971,12 @@ function RallyClock({tcr}){
   function toggle(){if(!running)scUnlock();setRunning(r=>!r);}
   if(!seconds){
     const txt=ceiling?('win within '+t1+' shots'):floor?('hold until '+t1+' shots'):('win between '+t1+' and '+t2+' shots');
-    return <div style={{textAlign:'center',margin:'6px 0'}}><div style={{fontSize:'1.2rem',fontWeight:800,color:'#7fe8bf'}}>Shot-count clock</div><div style={{color:'#cfe0ee'}}>{txt}</div><div style={{color:'#8faec4',fontSize:'.82rem'}}>Count shots on court — no timer needed.</div></div>;
+    return <div style={{textAlign:'center',margin:'6px 0'}}><div style={{fontSize:'1.2rem',fontWeight:800,color:'#86b8a4'}}>Shot-count clock</div><div style={{color:'#cfe0ee'}}>{txt}</div><div style={{color:'#8faec4',fontSize:'.82rem'}}>Count shots on court — no timer needed.</div></div>;
   }
   let big,label,color;
-  if(ceiling){const rem=Math.max(0,t1-elapsed);big=rem;if(elapsed>=t1){label='BUZZER — point to returner';color='#ff7a7a';}else if(rem<=3){label='WIN NOW';color='#f5c451';}else{label='SHOT CLOCK';color='#7fe8bf';}}
-  else if(floor){big=elapsed;if(elapsed>=t1){label='ATTACK OPEN';color='#7fe8bf';}else{label='HOLD — no winning yet';color='#ff7a7a';}}
-  else{big=elapsed;if(elapsed>=t2){label='TOO LATE — point to returner';color='#ff7a7a';}else if(elapsed>=t1){label='STRIKE WINDOW';color='#7fe8bf';}else{label='HOLD — too early';color='#f5c451';}}
+  if(ceiling){const rem=Math.max(0,t1-elapsed);big=rem;if(elapsed>=t1){label='BUZZER — point to returner';color='#ff7a7a';}else if(rem<=3){label='WIN NOW';color='#c8a552';}else{label='SHOT CLOCK';color='#86b8a4';}}
+  else if(floor){big=elapsed;if(elapsed>=t1){label='ATTACK OPEN';color='#86b8a4';}else{label='HOLD — no winning yet';color='#ff7a7a';}}
+  else{big=elapsed;if(elapsed>=t2){label='TOO LATE — point to returner';color='#ff7a7a';}else if(elapsed>=t1){label='STRIKE WINDOW';color='#86b8a4';}else{label='HOLD — too early';color='#c8a552';}}
   const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
   return <div style={{textAlign:'center',margin:'6px 0'}}>
     <div style={{fontSize:'.78rem',fontWeight:800,letterSpacing:'.08em',color:color}}>{label}</div>
@@ -1002,7 +1002,7 @@ function RotationTimer({durationMin,resetKey}){
   const ss=String(remaining%60).padStart(2,'0');
   const done=remaining===0;
   return <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',justifyContent:'center'}}>
-    <div style={{fontSize:'2.6rem',fontWeight:800,fontVariantNumeric:'tabular-nums',color:done?'#ff7a7a':(running?'#7fe8bf':'#eaf4fb'),minWidth:'3.2em',textAlign:'center'}}>{mm}:{ss}</div>
+    <div style={{fontSize:'2.6rem',fontWeight:800,fontVariantNumeric:'tabular-nums',color:done?'#ff7a7a':(running?'#86b8a4':'#eaf4fb'),minWidth:'3.2em',textAlign:'center'}}>{mm}:{ss}</div>
     <button className="secondaryBtn" onClick={()=>setRunning(r=>!r)} disabled={done&&!running}>{running?'⏸ Pause':(remaining===total?'▶ Start':'▶ Resume')}</button>
     <button className="secondaryBtn" onClick={()=>{setRunning(false);setRemaining(total);}}>↺ Reset</button>
     {done&&<span style={{color:'#ff7a7a',fontWeight:800}}>Time!</span>}
@@ -1058,16 +1058,16 @@ function NetworkedSquadClock({setScreen}){
   function startAll(){if(!online){setMsg('Networked mode needs the shared database connected.');return;}scUnlock();setJoined(true);ensureFirestore().then(db=>db.collection('squadClockRooms').doc(room).set({startAt:Date.now(),cfg:cfg,running:true,updatedAt:Date.now()})).then(()=>setMsg('Started on every court in room “'+room+'”.')).catch(e=>setMsg('Could not start: '+(e&&e.message||'error')));}
   function stopAll(){ensureFirestore().then(db=>db.collection('squadClockRooms').doc(room).set({running:false,updatedAt:Date.now()},{merge:true})).catch(()=>{});beatRef.current={phase:'',gate:false};}
   function join(){scUnlock();setJoined(true);setMsg('Sound armed — this court is ready.');}
-  let big=tl?tl.remaining:0,label='',color='#7fe8bf',cue='';
+  let big=tl?tl.remaining:0,label='',color='#86b8a4',cue='';
   if(tl){
-    if(tl.phase==='ready'){label='GET READY';color='#f5c451';cue='All courts — server to the box.';}
+    if(tl.phase==='ready'){label='GET READY';color='#c8a552';cue='All courts — server to the box.';}
     else if(tl.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
-    else if(tl.phase==='done'){label='SESSION DONE';color='#7fe8bf';cue='Rounds complete.';}
+    else if(tl.phase==='done'){label='SESSION DONE';color='#86b8a4';cue='Rounds complete.';}
     else if(tl.phase==='work'){
       const el=tl.elapsedInWork;
-      if(tl.isCeiling){label='SHOT CLOCK';color=tl.remaining<=3?'#f5c451':'#7fe8bf';cue='Win before the buzzer — still live = point to returner.';}
-      else if(tl.isHold){label=el<tl.t1?'HOLD':'ATTACK OPEN';color=el<tl.t1?'#ff7a7a':'#7fe8bf';cue=el<tl.t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
-      else{label=el<tl.t1?'HOLD':'STRIKE';color=el<tl.t1?'#f5c451':'#7fe8bf';cue=el<tl.t1?'Too early — keep building.':'Strike window open.';}
+      if(tl.isCeiling){label='SHOT CLOCK';color=tl.remaining<=3?'#c8a552':'#86b8a4';cue='Win before the buzzer — still live = point to returner.';}
+      else if(tl.isHold){label=el<tl.t1?'HOLD':'ATTACK OPEN';color=el<tl.t1?'#ff7a7a':'#86b8a4';cue=el<tl.t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
+      else{label=el<tl.t1?'HOLD':'STRIKE';color=el<tl.t1?'#c8a552':'#86b8a4';cue=el<tl.t1?'Too early — keep building.':'Strike window open.';}
     }
   }
   const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
@@ -1076,7 +1076,7 @@ function NetworkedSquadClock({setScreen}){
     {!live?<div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
       <div className="categoryTag">Squad Clock — All Courts</div>
       <h2>Networked Squad Clock 📡</h2>
-      <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Connected. One device sets the clock and taps Start — every court in the same room counts down together.':'Needs the shared database connected to sync across courts.'}</div>
+      <div className="statusBox" style={{borderColor:online?'#3f7a5c':'#6b5a3a'}}>{online?'Connected. One device sets the clock and taps Start — every court in the same room counts down together.':'Needs the shared database connected to sync across courts.'}</div>
       <div className="claRationaleBox"><h2>One clock, every court</h2><p>Put a device on each court, set the same room name, and one coach taps Start. The start moment is broadcast and every court computes the identical countdown locally — so the buzzers fire together across the whole club. Each court taps “Arm sound” once so its speaker can beep.</p></div>
       <label className="fw" style={{display:'block',margin:'10px 0',fontWeight:600,color:'#cfe0ee'}}>Room name (same on every court)<input value={room} onChange={e=>setRoom(e.target.value.toUpperCase())} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}/></label>
       <div className="atlOptionsGrid" style={{marginTop:'6px'}}>
@@ -1139,15 +1139,15 @@ function SquadClock({setScreen}){
   function pause(){setRunning(r=>!r);}
   function stop(){m.current={phase:'idle',round:1,remaining:0,gateFired:false};setRunning(false);rr();}
   const s=m.current;
-  let big=s.remaining,label='',color='#7fe8bf',cue='';
-  if(s.phase==='ready'){label='GET READY';color='#f5c451';cue='All courts — server to the box.';}
+  let big=s.remaining,label='',color='#86b8a4',cue='';
+  if(s.phase==='ready'){label='GET READY';color='#c8a552';cue='All courts — server to the box.';}
   else if(s.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
-  else if(s.phase==='done'){label='SESSION DONE';color='#7fe8bf';cue=cfg.rounds+' rounds complete.';}
+  else if(s.phase==='done'){label='SESSION DONE';color='#86b8a4';cue=cfg.rounds+' rounds complete.';}
   else if(s.phase==='work'){
     const elapsed=workLen-s.remaining;
-    if(isCeiling){label='SHOT CLOCK';color=s.remaining<=3?'#f5c451':'#7fe8bf';cue='Win before the buzzer — still live = point to returner.';}
-    else if(isHold){label=elapsed<t1?'HOLD':'ATTACK OPEN';color=elapsed<t1?'#ff7a7a':'#7fe8bf';cue=elapsed<t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
-    else{label=elapsed<t1?'HOLD':'STRIKE';color=elapsed<t1?'#f5c451':'#7fe8bf';cue=elapsed<t1?'Too early — keep building.':'Strike window open.';}
+    if(isCeiling){label='SHOT CLOCK';color=s.remaining<=3?'#c8a552':'#86b8a4';cue='Win before the buzzer — still live = point to returner.';}
+    else if(isHold){label=elapsed<t1?'HOLD':'ATTACK OPEN';color=elapsed<t1?'#ff7a7a':'#86b8a4';cue=elapsed<t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
+    else{label=elapsed<t1?'HOLD':'STRIKE';color=elapsed<t1?'#c8a552':'#86b8a4';cue=elapsed<t1?'Too early — keep building.':'Strike window open.';}
   }
   const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
   const live=s.phase!=='idle';
@@ -1189,8 +1189,8 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
   const constraints=layers.length?layers:((constraintText&&constraintText!=='No extra constraints selected.')?[constraintText]:[]);
   const CLA_BOX_STYLE=`
-.claRationaleBox{background:#0c1f1a!important;border:1px solid #1d4a38!important;border-left:4px solid #34e0a0!important;border-radius:12px!important;padding:14px 16px!important;margin:10px 0!important;}
-.claRationaleBox h2{color:#7fe8bf!important;font-size:0.78rem!important;text-transform:uppercase!important;letter-spacing:0.05em!important;font-weight:800!important;margin:0 0 6px!important;}
+.claRationaleBox{background:#0c1f1a!important;border:1px solid #1d4a38!important;border-left:4px solid #6fae8b!important;border-radius:12px!important;padding:14px 16px!important;margin:10px 0!important;}
+.claRationaleBox h2{color:#86b8a4!important;font-size:0.78rem!important;text-transform:uppercase!important;letter-spacing:0.05em!important;font-weight:800!important;margin:0 0 6px!important;}
 .claRationaleBox p{color:#dbf2e8!important;line-height:1.5!important;margin:0!important;}
 /* Nothing on a player display may be clipped: a half-read rule is worse than
    none. Let the card grow to its content rather than spill past its own border. */
@@ -1500,16 +1500,16 @@ function CompetitionPlayerDisplayCard({competition}){
 .rrStandTbl td{padding:6px 8px;border-bottom:1px solid #1a2c43;color:#eaf4fb;}
 .rrStandTbl td.rrName{font-weight:700;}
 .rrStandTbl th:not(:nth-child(2)),.rrStandTbl td:not(.rrName){text-align:center;}
-.rrStandTbl tr.rrLead td{background:#0d2417;color:#bff0d0;}
+.rrStandTbl tr.rrLead td{background:#101d18;color:#a9cbb8;}
 .rrStandTbl tr.rrLead td.rrName::before{content:'👑 ';}
 .rrEmpty{color:#6b8299;font-style:italic;}
 .rrFixList{display:grid;gap:5px;margin-top:6px;}
 .rrFixRow{display:flex;gap:8px;align-items:center;background:#0f1822;border:1px solid #223044;border-radius:8px;padding:6px 10px;}
 .rrFixRow b{color:#9cc4ec;min-width:2.4rem;}
 .rrFixMatch{flex:1;}
-.rrFixMatch .rrWin{font-weight:800;color:#86efac;}
+.rrFixMatch .rrWin{font-weight:800;color:#8fbfa4;}
 .rrFixMatch .rrLoseN{color:#9fb0c2;}
-.rrFixRes{color:#ffd479;font-weight:700;font-variant-numeric:tabular-nums;}
+.rrFixRes{color:#d9c08a;font-weight:700;font-variant-numeric:tabular-nums;}
 .rrFixPend{color:#6b8299;font-style:italic;}
 .rrBoxBlock{background:#0b1320;border:1px solid #223044;border-radius:12px;padding:12px 14px;}
 .rrBoxBlock h3{margin:0 0 4px;color:#9cc4ec;font-size:1.05rem;}
@@ -2078,8 +2078,8 @@ const GHOST_SESSIONS={
 
 // ── RALLY BAND — land the rally duration in the assigned band (Murray 2016) ────
 const RALLY_BANDS=[
-  {key:'short',label:'SHORT',min:0,max:12,color:'#f5c451',cue:'Resolve it fast — attack early and force a quick finish.'},
-  {key:'medium',label:'MEDIUM',min:13,max:30,color:'#7fe8bf',cue:'Build, then strike — a normal working rally.'},
+  {key:'short',label:'SHORT',min:0,max:12,color:'#c8a552',cue:'Resolve it fast — attack early and force a quick finish.'},
+  {key:'medium',label:'MEDIUM',min:13,max:30,color:'#86b8a4',cue:'Build, then strike — a normal working rally.'},
   {key:'long',label:'LONG',min:31,max:60,color:'#6db3e6',cue:'Sustain — construct patiently and deny the opening.'},
   {key:'very',label:'VERY LONG',min:61,max:99999,color:'#c58ff0',cue:'Grind — stay disciplined and outlast them.'}
 ];
@@ -2899,18 +2899,18 @@ function ShotsModule({setScreen}){
 .shotFnCard:active{transform:scale(0.995);}
 .shotFnCard .shotFnTitle{display:block;font-size:1.2rem;font-weight:800;color:#eaf4fb;letter-spacing:0.01em;}
 .shotFnCard .shotFnTag{display:block;margin-top:5px;font-size:0.95rem;font-weight:700;color:#5fae84;}
-.shotFnCard.shotFnActive{background:linear-gradient(135deg,#0d3722,#0f2e44);border-color:#1d6b3f;box-shadow:0 0 0 1px rgba(52,224,122,0.25);}
+.shotFnCard.shotFnActive{background:linear-gradient(135deg,#0d3722,#0f2e44);border-color:#2f5c46;box-shadow:0 0 0 1px rgba(52,224,122,0.25);}
 .shotFnCard.shotFnActive .shotFnTitle{color:#ffffff;}
-.shotFnCard.shotFnActive .shotFnTag{color:#bff0d0;}
+.shotFnCard.shotFnActive .shotFnTag{color:#a9cbb8;}
 .shotDetailPanel{background:#0f1822 !important;border:1px solid #223044 !important;border-radius:16px !important;padding:20px !important;color:#eaf4fb !important;box-shadow:none !important;}
 .shotDetailPanel .shotDetailHeader{align-items:flex-start;}
-.shotDetailPanel h2{color:#ffd479 !important;}
+.shotDetailPanel h2{color:#d9c08a !important;}
 .shotDetailPanel h3{color:#9cc4ec !important;}
 .shotDetailPanel p,.shotDetailPanel li,.shotDetailPanel span{color:#c7d4e2;}
 .shotDetailPanel .mutedText{color:#8aa0b6 !important;}
 .shotDetailPanel .categoryTag{background:#16325a !important;color:#bcd6f5 !important;}
 .shotDetailPanel .gameCard,.shotDetailPanel .shotsPrincipleCard{background:#0b1320 !important;border:1px solid #223044 !important;color:#eaf4fb !important;box-shadow:none !important;}
-.shotDetailPanel .gameCard h3,.shotDetailPanel .shotsPrincipleCard h3{color:#ffd479 !important;}
+.shotDetailPanel .gameCard h3,.shotDetailPanel .shotsPrincipleCard h3{color:#d9c08a !important;}
 .shotDetailPanel .gameCard p,.shotDetailPanel .shotsPrincipleCard p{color:#c7d4e2 !important;}
 .shotDetailPanel .shotQuickGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:8px 0 16px;}
 .shotDetailPanel .claPrincipleList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:8px 0 16px;}
@@ -2919,12 +2919,12 @@ function ShotsModule({setScreen}){
 .shotDetailPanel .shotQuickCard p,.shotDetailPanel .claPrincipleList>div p{color:#c7d4e2 !important;margin:0 !important;line-height:1.45 !important;}
 .shotDetailPanel .shotsLearnTabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
 .shotDetailPanel .shotsLearnTabs button{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;border-radius:999px !important;padding:9px 18px !important;font-weight:800 !important;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.shotDetailPanel .shotsLearnTabs button.activeShotTab{background:linear-gradient(135deg,#0d3722,#0f2e44) !important;border-color:#1d6b3f !important;color:#bff0d0 !important;box-shadow:0 0 0 1px rgba(52,224,122,0.25) !important;}
+.shotDetailPanel .shotsLearnTabs button.activeShotTab{background:linear-gradient(135deg,#0d3722,#0f2e44) !important;border-color:#2f5c46 !important;color:#a9cbb8 !important;box-shadow:0 0 0 1px rgba(52,224,122,0.25) !important;}
 .shotDetailPanel .shotCoachRule{background:#0c1a2e !important;border:1px solid #25405f !important;border-radius:12px !important;padding:14px 16px !important;margin-top:12px !important;}
-.shotDetailPanel .shotCoachRule h3{color:#ffd479 !important;}
+.shotDetailPanel .shotCoachRule h3{color:#d9c08a !important;}
 .shotDetailPanel .shotCoachRule p,.shotDetailPanel .shotCoachRule strong{color:#dbe6f2 !important;}
 .shotDetailPanel .playerViewCard.shotPlayerView{background:linear-gradient(135deg,#0d2a2a,#0b1726) !important;border:1px solid #1d5b6b !important;border-radius:12px !important;color:#dbe6f2 !important;margin-top:14px !important;}
-.shotDetailPanel .playerViewCard.shotPlayerView h3{color:#ffd479 !important;}
+.shotDetailPanel .playerViewCard.shotPlayerView h3{color:#d9c08a !important;}
 .shotDetailPanel .playerViewCard.shotPlayerView p,.shotDetailPanel .playerViewCard.shotPlayerView strong{color:#dbe6f2 !important;}
 .whyCompareGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:8px 0 16px;}
 .whyBox{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;padding:14px 16px !important;color:#c7d4e2 !important;box-shadow:none !important;}
@@ -2932,31 +2932,31 @@ function ShotsModule({setScreen}){
 .whyBox p{color:#c7d4e2 !important;margin:0 0 8px !important;line-height:1.45 !important;}
 .whyBox strong{color:#eaf4fb !important;}
 .whyBox.traditionalBox{border-left:3px solid #6b7280 !important;}
-.whyBox.checkerboardBox{border-left:3px solid #34e07a !important;}
+.whyBox.checkerboardBox{border-left:3px solid #6fae8b !important;}
 /* v457: soften garish Time Givers/Takers panel + coloured detail cards (scoped to .shotsPage) */
 .shotsPage .shotsTimePanel,.shotsPage .shotsTimePanelReadable{background:#0f1822 !important;border:1px solid #223044 !important;box-shadow:none !important;border-radius:16px !important;}
 .shotsPage .shotsTimePanel h2,.shotsPage .shotsTimePanel h3{color:#eaf4fb !important;}
 .shotsPage .shotsTimePanel .timeLead{color:#c7d4e2 !important;}
 .shotsPage .timeListBox{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;box-shadow:none !important;}
 .shotsPage .timeListBox.giveBox{border-left:3px solid #a15b57 !important;}
-.shotsPage .timeListBox.takeBox{border-left:3px solid #34e07a !important;}
+.shotsPage .timeListBox.takeBox{border-left:3px solid #6fae8b !important;}
 .shotsPage .timeListBox h4{font-weight:800 !important;}
 .shotsPage .timeListBox.giveBox h4{color:#d98a86 !important;}
-.shotsPage .timeListBox.takeBox h4{color:#7fe0a6 !important;}
+.shotsPage .timeListBox.takeBox h4{color:#8fbfa4 !important;}
 .shotsPage .timeListBox li,.shotsPage .timeListBox p{color:#c7d4e2 !important;}
 .shotsPage .timeCoachQuestion,.shotsPage .shotsCallout{background:#0c1a2e !important;border:1px solid #25405f !important;color:#dbe6f2 !important;border-radius:12px !important;}
 .shotsPage .timeBadge{border-radius:999px !important;font-weight:800 !important;box-shadow:none !important;}
-.shotsPage .timeBadge.take{background:rgba(52,224,122,0.14) !important;color:#7fe0a6 !important;border:1px solid rgba(52,224,122,0.40) !important;}
+.shotsPage .timeBadge.take{background:rgba(52,224,122,0.14) !important;color:#8fbfa4 !important;border:1px solid rgba(52,224,122,0.40) !important;}
 .shotsPage .timeBadge.give{background:rgba(180,83,79,0.14) !important;color:#d98a86 !important;border:1px solid rgba(180,83,79,0.40) !important;}
 .shotsPage .shotsTimeMini{background:#0b1320 !important;border:1px solid #223044 !important;border-radius:12px !important;box-shadow:none !important;}
 .shotsPage .shotInfoCard{background:#0b1320 !important;border:1px solid #223044 !important;box-shadow:none !important;}
 .shotsPage .shotInfoCard h3{color:#9cc4ec !important;}
 .shotsPage .shotInfoCard p,.shotsPage .shotInfoCard li{color:#c7d4e2 !important;}
 .shotsPage .shotInfoCard.dangerCard{border-left:3px solid #a15b57 !important;}
-.shotsPage .shotInfoCard.checkerboardCard{border-left:3px solid #34e07a !important;}
+.shotsPage .shotInfoCard.checkerboardCard{border-left:3px solid #6fae8b !important;}
 .shotsPage .shotInfoCard.traditionalCard{border-left:3px solid #6b7280 !important;}
 .shotsPage .shotInfoCard.exampleCard{border-left:3px solid #3f6ea3 !important;}
-.shotsPage .shotInfoCard.coachObservationCard{border-left:3px solid #c9a24a !important;}
+.shotsPage .shotInfoCard.coachObservationCard{border-left:3px solid #c8a552 !important;}
 .shotsPage .shotHero{background:#0f1822 !important;border:1px solid #223044 !important;box-shadow:none !important;}
 .shotsPage .shotHero h2{color:#ffffff !important;}
 .shotsPage .shotPrincipleBox,.shotsPage .shotTakeaway{background:#0c1a2e !important;border:1px solid #25405f !important;color:#dbe6f2 !important;border-radius:12px !important;}
@@ -4110,8 +4110,8 @@ function WhyCLAScreen({setScreen}){
 .whyCLABeat{color:#eaf4fb!important;font-weight:700;font-size:1.02rem;margin:6px 0!important;padding-left:12px;border-left:2px solid #2E6E8E}
 .whyCLAQuote{color:#9fd3f0;font-style:italic;font-weight:800;font-size:1.5rem;line-height:1.35;text-align:center;margin:16px 0!important;padding:6px 10px}
 .whyCLADivider{display:flex;align-items:center;gap:14px;margin:34px 0 18px 0}
-.whyCLADivider::before,.whyCLADivider::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,transparent,#d9a441,transparent)}
-.whyCLADivider span{color:#d9a441;font-weight:900;letter-spacing:0.08em;font-size:0.95rem;white-space:nowrap;text-transform:uppercase}
+.whyCLADivider::before,.whyCLADivider::after{content:'';flex:1;height:2px;background:linear-gradient(90deg,transparent,#c8a552,transparent)}
+.whyCLADivider span{color:#c8a552;font-weight:900;letter-spacing:0.08em;font-size:0.95rem;white-space:nowrap;text-transform:uppercase}
 .whyCLATakeaways{background:#0b1f14;border:1px solid #1d3a28;border-radius:14px;padding:20px 22px;margin-top:8px}
 .whyCLATakeaways h2{color:#eaf4fb;margin:0 0 12px 0;font-size:1.15rem;font-weight:800}
 .whyCLATakeaways ul{margin:0;padding-left:20px;color:#c7e2cf}
@@ -4256,14 +4256,14 @@ function RLDScreen({setScreen}){
       </div>
 
       {/* ── CLA UPDATE: SIX ACTIVITY DESIGN QUESTIONS — the quick gate ── */}
-      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #d9a441',borderRadius:'12px',padding:'16px 18px',marginBottom:'14px'}}>
+      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #c8a552',borderRadius:'12px',padding:'16px 18px',marginBottom:'14px'}}>
         <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Quick gate — the Six Activity Design Questions</strong>
-        <p className="mutedText" style={{margin:'4px 0 12px',lineHeight:1.4}}>The entry-point check before the full assessment (McBroom &amp; Gray, Ch. 7). Answer honestly for the activity as it will actually run. <strong style={{color:'#ecd39b'}}>Only build the challenge if all six pass.</strong></p>
-        {SIX_QUESTIONS.map((q,i)=><div key={i} role="button" tabIndex={0} onClick={()=>setSixQ(prev=>prev.map((v,j)=>j===i?!v:v))} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSixQ(prev=>prev.map((v,j)=>j===i?!v:v));}} style={{display:'flex',gap:'10px',alignItems:'flex-start',padding:'8px 10px',marginBottom:'6px',borderRadius:'9px',cursor:'pointer',background:sixQ[i]?'#0b1f14':'#0d1722',border:sixQ[i]?'1px solid #1d6b3f':'1px solid #2a3a4f'}}>
-          <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'6px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'0.85rem',background:sixQ[i]?'#114d2c':'#0b1118',border:sixQ[i]?'1px solid #34e07a':'1px solid #2c3c4e',color:sixQ[i]?'#bff0d0':'#5b6e80'}}>{sixQ[i]?'\u2713':i+1}</span>
+        <p className="mutedText" style={{margin:'4px 0 12px',lineHeight:1.4}}>The entry-point check before the full assessment (McBroom &amp; Gray, Ch. 7). Answer honestly for the activity as it will actually run. <strong style={{color:'#d9c08a'}}>Only build the challenge if all six pass.</strong></p>
+        {SIX_QUESTIONS.map((q,i)=><div key={i} role="button" tabIndex={0} onClick={()=>setSixQ(prev=>prev.map((v,j)=>j===i?!v:v))} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setSixQ(prev=>prev.map((v,j)=>j===i?!v:v));}} style={{display:'flex',gap:'10px',alignItems:'flex-start',padding:'8px 10px',marginBottom:'6px',borderRadius:'9px',cursor:'pointer',background:sixQ[i]?'#0b1f14':'#0d1722',border:sixQ[i]?'1px solid #2f5c46':'1px solid #2a3a4f'}}>
+          <span style={{flexShrink:0,width:'22px',height:'22px',borderRadius:'6px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:'0.85rem',background:sixQ[i]?'#114d2c':'#0b1118',border:sixQ[i]?'1px solid #6fae8b':'1px solid #2c3c4e',color:sixQ[i]?'#a9cbb8':'#5b6e80'}}>{sixQ[i]?'\u2713':i+1}</span>
           <span style={{color:sixQ[i]?'#d7e4c4':'#c7d4e2',fontSize:'0.9rem',lineHeight:1.4}}>{q}</span>
         </div>)}
-        <div style={{marginTop:'10px',padding:'10px 14px',borderRadius:'9px',fontWeight:800,background:sixPass===6?'#0b1f14':'#2a1414',border:sixPass===6?'1px solid #1d6b3f':'1px solid #5a2a2a',color:sixPass===6?'#86efac':'#fca5a5'}}>{sixPass===6?'6 / 6 — build it, then rate representativeness below.':`${sixPass} / 6 — don\u2019t build yet. Fix the unchecked items first; the sliders below can wait.`}</div>
+        <div style={{marginTop:'10px',padding:'10px 14px',borderRadius:'9px',fontWeight:800,background:sixPass===6?'#0b1f14':'#2a1414',border:sixPass===6?'1px solid #2f5c46':'1px solid #5a2a2a',color:sixPass===6?'#8fbfa4':'#fca5a5'}}>{sixPass===6?'6 / 6 — build it, then rate representativeness below.':`${sixPass} / 6 — don\u2019t build yet. Fix the unchecked items first; the sliders below can wait.`}</div>
         <div style={{marginTop:'8px'}}><button type="button" className="secondaryBtn" onClick={()=>setSixQ([false,false,false,false,false,false])}>Reset questions</button></div>
       </div>
 
@@ -4276,14 +4276,14 @@ function RLDScreen({setScreen}){
       <div style={{background:'#0b1f14',border:'1px solid #1d3a28',borderRadius:'14px',padding:'18px',display:'flex',flexDirection:'column',gap:'12px',marginTop:'6px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
           <RLDBadge level={rpatLevel} size="lg"/>
-          <div><div style={{fontSize:'0.8rem',color:'#7c8ea0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Assessed level · score {rpatTotal} / {rpatMax}</div><div style={{fontSize:'1.4rem',fontWeight:800,color:'#86efac'}}>RLD {rpatLevel}</div></div>
+          <div><div style={{fontSize:'0.8rem',color:'#7c8ea0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Assessed level · score {rpatTotal} / {rpatMax}</div><div style={{fontSize:'1.4rem',fontWeight:800,color:'#8fbfa4'}}>RLD {rpatLevel}</div></div>
         </div>
         <p style={{margin:0,lineHeight:1.45,color:'#d7e4c4'}}>{rpatLevel<=1?'Largely isolated — useful for calibration or grooving a pattern, but plan a clear route back into representative play.':rpatLevel<=3?'Partly representative — add live opponent interaction, real decisions or match-like consequence to climb the scale.':rpatLevel<=5?'Strongly representative — close to competition. Use the Challenge Point Framework to tune the difficulty for each player.':'Match Play — full representativeness. The real test of transfer.'}</p>
         <button type="button" className="secondaryBtn" onClick={()=>setRpat(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;})} style={{alignSelf:'flex-start'}}>Reset ratings</button>
       </div>
 
       {/* ── CLA UPDATE: FOUR FIDELITIES + KRAUSE BENCHMARKS ── */}
-      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #d9a441',borderRadius:'12px',padding:'16px 18px',marginTop:'14px'}}>
+      <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #c8a552',borderRadius:'12px',padding:'16px 18px',marginTop:'14px'}}>
         <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Four fidelity lenses — what "representative" actually means</strong>
         <p className="mutedText" style={{margin:'4px 0 10px',lineHeight:1.4}}>When a rating above feels hard to give, check the activity through each lens separately (McBroom &amp; Gray, Ch. 8). An activity can score high on one and fail another — a hard physical drill with no decisions has physiological fidelity and nothing else.</p>
         <ul style={{margin:0,paddingLeft:'20px',color:'#c7d4e2',lineHeight:1.55}}>
@@ -4453,12 +4453,12 @@ function RLDScreen({setScreen}){
           </div>
           <div className="rldFlowArrow">↓</div>
           <div className="rldFlowStep rldFlowYellow">
-            <span className="rldFlowNum" style={{background:'#eab308'}}>🟡</span>
+            <span className="rldFlowNum" style={{background:'#b9982f'}}>🟡</span>
             <div><strong>Around 70% — stay here</strong><p>This is the learning zone. Keep the activity running. Observe adaptation. Do not intervene.</p></div>
           </div>
           <div className="rldFlowArrow">↓</div>
           <div className="rldFlowStep rldFlowGreen">
-            <span className="rldFlowNum" style={{background:'#4ade80',color:'#000'}}>🟢</span>
+            <span className="rldFlowNum" style={{background:'#6fae8b',color:'#000'}}>🟢</span>
             <div><strong>Above 90% — move up</strong><p>Increase the RLD level. Add opponent pressure. Add scoring. Increase representativeness.</p></div>
           </div>
         </div>
@@ -4469,8 +4469,8 @@ function RLDScreen({setScreen}){
           <span className="cpPrincipleNo" style={{color:'#ef4444',display:'block',fontSize:'12px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'6px'}}>Do not ask:</span>
           <p style={{color:'#9fb0c8',fontStyle:'italic',fontSize:'14px',margin:0}}>"What is the hardest task?"</p>
         </div>
-        <div className="cpPrincipleAsk cpPrincipleYes" style={{background:'#052e16',border:'1px solid #4ade80',borderRadius:'12px',padding:'14px 16px'}}>
-          <span style={{display:'block',color:'#4ade80',fontSize:'12px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'6px'}}>Ask instead:</span>
+        <div className="cpPrincipleAsk cpPrincipleYes" style={{background:'#052e16',border:'1px solid #6fae8b',borderRadius:'12px',padding:'14px 16px'}}>
+          <span style={{display:'block',color:'#6fae8b',fontSize:'12px',fontWeight:900,textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'6px'}}>Ask instead:</span>
           <p style={{color:'#fff',fontWeight:700,fontStyle:'italic',fontSize:'14px',margin:0}}>"What is the hardest task this player can successfully adapt to?"</p>
         </div>
       </div>
@@ -4621,14 +4621,14 @@ function OcclusionReadTool(){
 .ocrLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .ocrChips{display:flex;flex-wrap:wrap;gap:8px;}
 .ocrChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.ocrChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.ocrChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .ocrCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:9px 11px;color:#dbe6f2;font-size:0.88rem;margin-top:8px;}
 .ocrBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .ocrBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .ocrBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .ocrTallyRow{display:flex;gap:10px;margin-top:12px;}
 .ocrTapBtn{flex:1;border-radius:12px;padding:22px 8px;font-weight:800;font-size:1.05rem;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.ocrTapBtn.clean{background:#0c2418;border:1px solid #34e07a;color:#bff0d0;}
+.ocrTapBtn.clean{background:#101d18;border:1px solid #6fae8b;color:#a9cbb8;}
 .ocrTapBtn.notclean{background:#2a1414;border:1px solid #e05a5a;color:#f0c4c4;}
 .ocrTapCount{display:block;font-size:1.6rem;margin-top:4px;}
 .ocrScoreLine{margin-top:12px;color:#eaf4fb;font-weight:800;font-size:0.95rem;}
@@ -5074,7 +5074,7 @@ function CoachSuggestionsModule(){
     <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea}.coachSuggest .thread{margin:8px 0;padding:8px 10px;background:#0b1a2a;border-radius:8px;border:1px solid #1d3547}.coachSuggest .msg{padding:5px 0;font-size:14px;color:#dce9f4;border-bottom:1px solid #16283a}.coachSuggest .msg:last-child{border-bottom:none}.coachSuggest .replyRow{display:flex;gap:8px;margin:8px 0}.coachSuggest .replyRow input{flex:1;padding:9px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:14px;box-sizing:border-box}`}</style>
     <div className="categoryTag">Coach Suggestions</div>
     <h2>{editId?'Edit Suggestion':'Suggest an Exercise, Activity or Game'}</h2>
-    <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Shared with all coaches — suggestions and replies sync live across every device.':'On this device only. Once the shared database is connected, everything syncs across all coaches.'}</div>
+    <div className="statusBox" style={{borderColor:online?'#3f7a5c':'#6b5a3a'}}>{online?'Shared with all coaches — suggestions and replies sync live across every device.':'On this device only. Once the shared database is connected, everything syncs across all coaches.'}</div>
     <label className="fw">Your name (so your replies are signed)<input type="text" value={me} onChange={e=>setMe(e.target.value)} placeholder="e.g. Henry"/></label>
     <p className="mutedText">Share an idea for the squad. Add the CLA rationale behind it, rate where it sits on the RLD scale, and sign it with your name.</p>
     {message&&<div className="statusBox">{message}</div>}
@@ -5177,7 +5177,7 @@ function CustomConstraintLibrary({setScreen}){
     <style>{`.customLib label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.customLib label.fw input,.customLib label.fw textarea,.customLib label.fw select{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.customLib .ccItem{margin:10px 0;padding:12px 14px;background:#0b1a2a;border:1px solid #22405a;border-radius:10px}.customLib .ccItem h4{margin:0 0 4px 0;color:#eaf4fb;font-size:1.05rem}.customLib .ccFam{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;background:#1c3a52;color:#9fd0ea;margin-right:8px}.customLib .ccShared{background:#1d4030;color:#8fe0b0}.customLib .ccRule{color:#cfe0ee;margin:6px 0}.customLib .ccCoach{color:#9db6ca;font-size:13px;font-style:italic}.customLib .libTabs{display:flex;gap:8px;margin:10px 0}.customLib .libTabs button{flex:1;padding:10px;border-radius:9px;border:1px solid #294063;background:#132436;color:#9cc4ec;font-weight:700}.customLib .libTabs button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .scopeRow{display:flex;gap:8px;margin-top:6px}.customLib .scopeRow button{flex:1;padding:9px;border-radius:8px;border:1px solid #294063;background:#0e2033;color:#9cc4ec;font-weight:600}.customLib .scopeRow button.on{background:#1c3a52;color:#eaf4fb;border-color:#3f6a93}.customLib .kindLbl{margin:6px 0 4px;font-weight:700;color:#cfe0ee;font-size:13px}.customLib .kindRow{display:flex;gap:10px}.customLib .kindRow button{flex:1;padding:12px;border-radius:10px;border:1px solid #3a5170;background:#12283e;color:#a9c8e6;font-weight:800;font-size:15px}.customLib .kindRow button.on{background:#274b6b;color:#eaf4fb;border-color:#5b8fc0;box-shadow:0 0 0 1px rgba(91,143,192,.4)}`}</style>
     <div className="pageTop"><div><div className="categoryTag">My Constraints</div><h2>Custom Constraint Library</h2></div>{setScreen&&<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>}</div>
     <p className="mutedText">Add your own ideas — either Game Logic finish rules or Constraint overlays — and they become permanent options in the matching panel of every builder. Keep them private, or share them so other coaches can adopt them.</p>
-    <div className="statusBox" style={{borderColor:online?'#2E8E5A':'#8E6E2E'}}>{online?'Connected — shared constraints sync across all coaches and your own devices.':'On this device. Your library is saved here; connect the shared database to sync and share across coaches.'}</div>
+    <div className="statusBox" style={{borderColor:online?'#3f7a5c':'#6b5a3a'}}>{online?'Connected — shared constraints sync across all coaches and your own devices.':'On this device. Your library is saved here; connect the shared database to sync and share across coaches.'}</div>
     <label className="fw">Your name (credits shared constraints)<input type="text" value={me} onChange={e=>setMe(e.target.value)} placeholder="e.g. Henry"/></label>
     <div className="libTabs"><button className={tab==='mine'?'on':''} onClick={()=>setTab('mine')}>My Library ({mine.length})</button><button className={tab==='shared'?'on':''} onClick={()=>setTab('shared')}>Shared Pool ({sharedFromOthers.length})</button></div>
     {tab==='mine'&&<>
@@ -5260,8 +5260,8 @@ function RallyBandModule({setScreen}){
         <button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={rallyOver}>■ Rally over</button>
       </>}
       {result&&<>
-        <div style={{fontSize:'clamp(3rem,18vw,9rem)',fontWeight:900,lineHeight:1,color:result.inBand?'#7fe8bf':'#ff7a7a',margin:'8px 0'}}>{result.inBand?'✓':'✗'}</div>
-        <div style={{fontSize:'1.6rem',fontWeight:800,color:result.inBand?'#7fe8bf':'#ff7a7a'}}>{result.verdict}</div>
+        <div style={{fontSize:'clamp(3rem,18vw,9rem)',fontWeight:900,lineHeight:1,color:result.inBand?'#86b8a4':'#ff7a7a',margin:'8px 0'}}>{result.inBand?'✓':'✗'}</div>
+        <div style={{fontSize:'1.6rem',fontWeight:800,color:result.inBand?'#86b8a4':'#ff7a7a'}}>{result.verdict}</div>
         <div style={{fontSize:'1.1rem',color:'#cfe0ee',marginTop:'6px'}}>Rally lasted {result.dur}s · target {band.min}–{band.max>9000?'∞':band.max}s</div>
         <div className="buttonRow sessionActionButtons" style={{marginTop:'14px',justifyContent:'center'}}><button type="button" className="primaryBtn" onClick={newRally}>▶ Next rally</button></div>
       </>}
@@ -5295,10 +5295,10 @@ function GhostingModule({setScreen}){
   const counts=GHOST_SESSIONS[size];
   const sprintMode=s.seq[s.idx]==='sprint';
   if(live){
-    let label='',color='#7fe8bf',big='';
-    if(s.phase==='done'){label='SESSION DONE';color='#7fe8bf';big='✓';}
+    let label='',color='#86b8a4',big='';
+    if(s.phase==='done'){label='SESSION DONE';color='#86b8a4';big='✓';}
     else if(s.phase==='rest'){label=sprintMode?'RECOVER':'REST';color='#6db3e6';big=String(s.remaining);}
-    else{label=sprintMode?'SPRINT':(blk?blk.label:'')+' RALLY';color=sprintMode?'#f5c451':'#7fe8bf';big=s.zone;}
+    else{label=sprintMode?'SPRINT':(blk?blk.label:'')+' RALLY';color=sprintMode?'#c8a552':'#86b8a4';big=s.zone;}
     return <div className="playerDisplayPage">
       <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={stop}>■ Stop</button></div>
       <div style={{textAlign:'center',padding:'10px'}}>
@@ -5419,7 +5419,7 @@ function AnalogyLibraryScreen({setScreen}){
 .anaHero h2{color:#eaf4fb;margin:0 0 8px;font-size:1.2rem}
 .anaHero p{color:#c7e2cf;margin:0 0 8px;line-height:1.55;font-size:0.95rem}
 .anaHero p:last-child{margin-bottom:0}
-.anaHero strong{color:#86efac}
+.anaHero strong{color:#8fbfa4}
 .anaRow{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;padding:12px 2px;border-bottom:1px solid #1e2c3c}
 .anaShot{color:#9cc4ec;font-weight:800;font-size:0.95rem;flex:0 0 160px;text-transform:uppercase;letter-spacing:0.03em}
 .anaCue{color:#eaf4fb;font-size:1.05rem;font-style:italic;flex:1 1 260px}
@@ -5428,7 +5428,7 @@ function AnalogyLibraryScreen({setScreen}){
 .anaAdd{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .anaAdd input{flex:1 1 160px;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:0.9rem;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none}
 .anaAdd input:focus{border-color:#2E6E8E}
-.anaWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #d9a441;border-radius:14px;padding:16px 18px}
+.anaWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #c8a552;border-radius:14px;padding:16px 18px}
 `}</style>
     <div className="pageTop">
       <div><h1>Analogy Library</h1><p className="mutedText">External-focus cues per shot — convey the invariant, never the body parts</p></div>
@@ -5473,7 +5473,7 @@ return <div className="homeGrid homeGridV99h52">
 .checkerboardHomeCard{background-color:#0e141b !important;background-image:linear-gradient(135deg, rgba(12,18,26,.72), rgba(28,79,102,.74)), repeating-conic-gradient(#eef2f6 0% 25%, #11161c 0% 50%) !important;background-size:auto, 22px 22px !important;border:2px solid #2E6E8E !important;box-shadow:0 4px 16px rgba(0,0,0,.42) !important;}
 .checkerboardHomeCard h2{color:#ffffff !important;text-shadow:0 1px 3px rgba(0,0,0,.7) !important;}
 .checkerboardHomeCard .homeTileSubtitle{color:#e2f1fc !important;text-shadow:0 1px 2px rgba(0,0,0,.7) !important;}
-.playerPlansHomeCard{border:1px solid #4fb477 !important;background:#0d1722 !important;}
+.playerPlansHomeCard{border:1px solid #6fae8b !important;background:#0d1722 !important;}
 .playerPlansHomeCard h2{color:#eaf4fb !important;}
 .moreStuffCard{border:1px dashed #3f6a93 !important;background:#0c1826 !important;}
 .moreStuffCard h2{color:#9cc4ec !important;}
@@ -5689,34 +5689,34 @@ function ShotBonusRally({setSession}){
 .sbrLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .sbrChips{display:flex;flex-wrap:wrap;gap:8px;}
 .sbrChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.sbrChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.sbrChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .sbrTierRow{display:flex;gap:8px;}
 .sbrTierBtn{flex:1;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .sbrTierBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
-.sbrTierBtn.on{border-color:#34e07a;background:#0c2418;}
+.sbrTierBtn.on{border-color:#6fae8b;background:#101d18;}
 .sbrZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;}
 .sbrZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 0;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.sbrZoneBtn.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.sbrZoneBtn.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .sbrHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}
 .sbrCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:9px 11px;color:#dbe6f2;font-size:0.88rem;margin-top:8px;}
 .sbrBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .sbrBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .sbrBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .sbrAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.sbrAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.sbrAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .sbrLiveBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:10px;padding:10px 16px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .sbrTallyGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px;}
 .sbrTallyCard{background:#0d1722;border:1px solid #2a3a4f;border-radius:12px;padding:12px 14px;}
 .sbrTallyName{color:#eaf4fb;font-weight:800;margin-bottom:8px;font-size:1rem;}
 .sbrTallyRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;}
-.sbrTapBtn{flex:1;background:#0c2418;border:1px solid #34e07a;color:#bff0d0;border-radius:10px;padding:10px 8px;font-weight:800;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
+.sbrTapBtn{flex:1;background:#101d18;border:1px solid #6fae8b;color:#a9cbb8;border-radius:10px;padding:10px 8px;font-weight:800;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;}
 .sbrTapBtn.finish{background:#2a1a3a;border-color:#a06bd6;color:#dcc4f0;}
 .sbrTapBtn.win{background:#1a2a3a;border-color:#4a90d6;color:#bcd6f5;}
 .sbrTapCount{min-width:26px;text-align:center;color:#eaf4fb;font-weight:800;}
 .sbrBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
 .sbrShotPointRow{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
 .sbrShotPointName{display:block;color:#eaf4fb;font-weight:800;font-size:0.88rem;margin-bottom:6px;}
-.sbrTallyTotal{float:right;color:#7fc8a0;font-weight:800;font-size:0.85rem;}
+.sbrTallyTotal{float:right;color:#7bb096;font-weight:800;font-size:0.85rem;}
 .sbrShotTallyBlock{border-top:1px solid #1e2a3a;margin-top:8px;padding-top:8px;}
 .sbrShotTallyLabel{color:#9cc4ec;font-size:0.76rem;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;}`;
   if(liveMode){
@@ -5880,23 +5880,23 @@ function BreakoutSquash({setSession}){
 .brkLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .brkChips{display:flex;flex-wrap:wrap;gap:8px;}
 .brkChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.brkChip.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
+.brkChip.on{border-color:#6fae8b;background:#0d2a1c;color:#a9cbb8;}
 .brkTierRow{display:flex;gap:8px;}
 .brkTierBtn{flex:1;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .brkTierBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
-.brkTierBtn.on{border-color:#34e07a;background:#0d2a1c;}
+.brkTierBtn.on{border-color:#6fae8b;background:#0d2a1c;}
 .brkZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:320px;}
 .brkZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 4px;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;font-size:0.78rem;}
-.brkZoneBtn.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
+.brkZoneBtn.on{border-color:#6fae8b;background:#0d2a1c;color:#a9cbb8;}
 .brkZoneBtn.restrictedOn{border-color:#4a90d6;background:#0c1e2e;color:#bcd6f5;}
 .brkHint{color:#9fb6cf;font-size:0.82rem;margin:6px 0 0;line-height:1.4;}
 .brkDepthBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 14px;color:#dbe6f2;font-weight:700;font-size:0.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;display:inline-block;}
-.brkDepthBtn.on{border-color:#34e07a;background:#0d2a1c;color:#bff0d0;}
+.brkDepthBtn.on{border-color:#6fae8b;background:#0d2a1c;color:#a9cbb8;}
 .brkBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .brkBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .brkBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .brkAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.brkAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}`;
+.brkAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}`;
   return <div>
     <style>{STYLE}</style>
     <div className="libraryStageIntro"><h2>🚪 Breakout Squash</h2><p>Restricted-zone rally with a configurable breakout mechanic. Either player may escape the restricted zone with one shot — but escaping brings pressure with it.</p></div>
@@ -5999,21 +5999,21 @@ function PressCallModule({setSession}){
     setAdded(card.title);
   }
   const STYLE=`
-.pcWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #34e07a;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.pcWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #6fae8b;border-radius:14px;padding:16px 18px;margin-top:14px;}
 .pcSection{margin:14px 0;}
 .pcLabel{color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .pcChips{display:flex;flex-wrap:wrap;gap:8px;}
 .pcChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.pcChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.pcChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .pcModeRow{display:flex;flex-direction:column;gap:8px;}
 .pcModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .pcModeBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
-.pcModeBtn.on{border-color:#34e07a;background:#0c2418;}
+.pcModeBtn.on{border-color:#6fae8b;background:#101d18;}
 .pcBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .pcBox strong{display:block;color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .pcBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .pcAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.pcAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.pcAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .pcHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
@@ -6165,28 +6165,28 @@ function CLAUpdateGames({setSession}){
   }
   const bonusRow=(label,value,setter,choices)=>(<div className="cluSection"><div className="cluLabel">{label}</div><div className="cluChips">{choices.map(n=><div key={n} role="button" tabIndex={0} className={value===n?'cluChip on':'cluChip'} onClick={()=>setter(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setter(n);}}>+{n}</div>)}</div></div>);
   const STYLE=`
-.cluWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #d9a441;border-radius:14px;padding:16px 18px;margin-top:14px;}
+.cluWrap{background:#0f1822;border:1px solid #223044;border-left:3px solid #c8a552;border-radius:14px;padding:16px 18px;margin-top:14px;}
 .cluSection{margin:14px 0;}
-.cluLabel{color:#ecd39b;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
+.cluLabel{color:#d9c08a;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .cluChips{display:flex;flex-wrap:wrap;gap:8px;}
 .cluChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.cluChip.on{border-color:#d9a441;background:#241c0c;color:#f0dcb0;}
+.cluChip.on{border-color:#c8a552;background:#241c0c;color:#f0dcb0;}
 .cluGameBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;width:100%;margin-bottom:8px;}
 .cluGameBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;}
-.cluGameBtn.on{border-color:#d9a441;background:#241c0c;}
+.cluGameBtn.on{border-color:#c8a552;background:#241c0c;}
 .cluGameBtn .cluPrio{display:inline-block;background:#16466a;border:1px solid #2E6E8E;color:#bcd6f5;border-radius:6px;padding:2px 8px;font-size:0.7rem;font-weight:800;margin-right:8px;text-transform:uppercase;letter-spacing:0.04em;}
 .cluGameBtn.blockedGame .cluPrio{background:#2a1414;border-color:#e05a5a;color:#f0c4c4;}
 .cluBox{background:#0c1a2e;border:1px solid #25405f;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .cluBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .cluBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .cluBox.correction{border-color:#5a3a1a;background:#1a1408;}
-.cluBox.correction strong{color:#ecd39b;}
+.cluBox.correction strong{color:#d9c08a;}
 .cluGq{background:#0b1f14;border:1px solid #1d3a28;border-radius:10px;padding:12px 14px;margin:10px 0;}
 .cluGq strong{display:block;color:#9ce0b8;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .cluGq p{margin:0 0 6px;color:#d7e4c4;line-height:1.45;font-style:italic;}
 .cluGq p:last-child{margin-bottom:0;}
 .cluAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.cluAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cluAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .cluHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
@@ -6333,7 +6333,7 @@ function RoleConstraintEngine({setSession}){
 .rceBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .rceBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .rceAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.rceAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.rceAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .rceHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
@@ -6466,10 +6466,10 @@ function CourtGeometryModule({setSession}){
 .cgLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:8px;}
 .cgChips{display:flex;flex-wrap:wrap;gap:8px;}
 .cgChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#dbe6f2;font-weight:700;font-size:0.86rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.cgChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.cgChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .cgModeBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#dbe6f2;font-weight:800;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;width:100%;margin-bottom:8px;}
 .cgModeBtn span{display:block;font-weight:600;color:#9fb6cf;font-size:0.8rem;margin-top:3px;line-height:1.45;}
-.cgModeBtn.on{border-color:#34e07a;background:#0c2418;}
+.cgModeBtn.on{border-color:#6fae8b;background:#101d18;}
 .cgZoneGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:280px;}
 .cgZoneBtn{background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:9px 4px;color:#dbe6f2;font-weight:800;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;font-size:0.78rem;}
 .cgZoneBtn.on{border-color:#e05a5a;background:#2a1414;color:#f0c4c4;}
@@ -6477,7 +6477,7 @@ function CourtGeometryModule({setSession}){
 .cgBox strong{display:block;color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .cgBox p{margin:0;color:#dbe6f2;line-height:1.45;}
 .cgAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.cgAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cgAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .cgHint{color:#9fb6cf;font-size:0.82rem;margin-top:6px;line-height:1.4;}`;
   return <div>
     <style>{STYLE}</style>
@@ -6570,8 +6570,8 @@ function CommonGameErrors({setSession}){
 .cgeCard .gErow{margin:7px 0;}
 .cgeCard .gElabel{display:block;font-size:0.68rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:800;margin-bottom:1px;}
 .cgeCard .gErow.err .gElabel{color:#ff9db5;}
-.cgeCard .gErow.cost .gElabel{color:#ffd479;}
-.cgeCard .gErow.train .gElabel{color:#7fc8a0;}
+.cgeCard .gErow.cost .gElabel{color:#d9c08a;}
+.cgeCard .gErow.train .gElabel{color:#7bb096;}
 .cgeCard .gErow p{margin:0;color:#c7d4e2;font-size:0.9rem;line-height:1.42;}
 .cgeCard .cgeOpen{margin-top:10px;color:#9cc4ec;font-weight:800;font-size:0.86rem;}
 .cgeDetail{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px 18px;margin-top:14px;}
@@ -6585,30 +6585,30 @@ function CommonGameErrors({setSession}){
 .cgeBrief{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:10px 0;}
 .cgeBrief div{background:#0d1722;border:1px solid #223044;border-radius:8px;padding:8px 10px;}
 .cgeBrief .l{display:block;font-size:0.66rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin-bottom:2px;}
-.cgeBrief .err .l{color:#ff9db5;}.cgeBrief .cost .l{color:#ffd479;}.cgeBrief .train .l{color:#7fc8a0;}
+.cgeBrief .err .l{color:#ff9db5;}.cgeBrief .cost .l{color:#d9c08a;}.cgeBrief .train .l{color:#7bb096;}
 .cgeBrief p{margin:0;color:#c7d4e2;font-size:0.84rem;line-height:1.36;}
 .cgeScoreLabel{color:#9cc4ec;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin:14px 0 6px;}
 .cgeScoreOpt{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:11px 13px;margin:7px 0;color:#dbe6f2;line-height:1.4;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;gap:10px;align-items:flex-start;}
 .cgeScoreOpt .dot{flex:0 0 auto;width:16px;height:16px;border-radius:50%;border:2px solid #456;margin-top:2px;}
-.cgeScoreOpt.on{border-color:#34e07a;background:#0c2418;}
-.cgeScoreOpt.on .dot{border-color:#34e07a;background:#34e07a;}
+.cgeScoreOpt.on{border-color:#6fae8b;background:#101d18;}
+.cgeScoreOpt.on .dot{border-color:#6fae8b;background:#6fae8b;}
 .cgeCustom{width:100%;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 12px;color:#dbe6f2;font-size:0.9rem;margin-top:6px;}
 .cgeCustom::placeholder{color:#6b7d92;}
 .cgeAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;}
-.cgeAdded{color:#7fc8a0;font-weight:800;font-size:0.9rem;}
+.cgeAdded{color:#7bb096;font-weight:800;font-size:0.9rem;}
 .cgeBack{display:inline-block;color:#9cc4ec;font-weight:800;cursor:pointer;margin-bottom:6px;-webkit-tap-highlight-color:transparent;}
 .cgeEnfModes{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px;}
 .cgeEnfMode{flex:1;min-width:150px;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 12px;color:#dbe6f2;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .cgeEnfMode span{display:block;font-size:0.64rem;font-weight:700;color:#7d8ea3;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;}
-.cgeEnfMode.on{border-color:#34e07a;background:#0c2418;}
-.cgeEnfMode.on span{color:#7fc8a0;}
+.cgeEnfMode.on{border-color:#6fae8b;background:#101d18;}
+.cgeEnfMode.on span{color:#7bb096;}
 .cgeEnfPen{background:#0c1622;border:1px solid #223044;border-radius:10px;padding:10px 12px;}
 .cgeEnfRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #182636;flex-wrap:wrap;}
 .cgeEnfRow:last-child{border-bottom:none;}
 .cgeEnfName{color:#dbe6f2;font-weight:700;font-size:0.9rem;}
 .cgePenVals{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
 .cgePenVal{min-width:30px;text-align:center;background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:6px 9px;color:#bcd6f5;font-weight:800;cursor:pointer;font-size:0.84rem;-webkit-tap-highlight-color:transparent;}
-.cgePenVal.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.cgePenVal.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .cgePenCustom{width:54px;box-sizing:border-box;background:#0d1722;border:1px solid #2a3a4f;border-radius:8px;padding:6px 8px;color:#dbe6f2;font-size:0.84rem;}
 .cgeEnfNote{color:#9fb6cf;font-size:0.84rem;margin:6px 0 0;line-height:1.4;}`;
   if(e){
@@ -7195,13 +7195,13 @@ const CB_SET_CSS=`
 .cbsetTools{display:flex;flex-wrap:wrap;gap:8px;}
 .cbsetToolBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:10px;padding:9px 14px;font-weight:700;cursor:pointer;font-size:.85rem;}
 .cbsetToolBtn.warn{background:#5a2233;border-color:#9e3a52;}
-.cbsetToolBtn.good{background:#1f6b3f;border-color:#2e9e5f;}
+.cbsetToolBtn.good{background:#1f6b3f;border-color:#3f7a5c;}
 .cbsetStatus{margin-top:10px;color:#bfe6cf;background:#10261a;border:1px solid #1f5a39;border-radius:10px;padding:8px 12px;font-size:.85rem;}
 .cbsetCard{background:#0c141d;border:1px solid #213040;border-radius:12px;padding:12px;margin-bottom:12px;}
 .cbsetCardTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
 .cbsetName{font-weight:800;color:#eaf4fb;font-size:1.02rem;}
 .cbsetBadge{font-size:.72rem;font-weight:700;border-radius:999px;padding:3px 10px;}
-.cbsetBadge.hid{background:#3a2a10;border:1px solid #8a6a1f;color:#f0d79a;}
+.cbsetBadge.hid{background:#3a2a10;border:1px solid #8a6a1f;color:#d9c08a;}
 .cbsetBadge.rev{background:#10261a;border:1px solid #1f5a39;color:#bfe6cf;}
 .cbsetBadge.set{background:#13283a;border:1px solid #2E6E8E;color:#cfe6f4;}
 .cbsetField{margin:8px 0;}
@@ -7213,7 +7213,7 @@ const CB_SET_CSS=`
 .cbsetAssignBox{flex:1;min-width:140px;background:#0a121b;border:1px solid #213040;border-radius:10px;padding:9px 12px;}
 .cbsetAssignBox small{display:block;color:#7c92a6;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;}
 .cbsetAssignBox strong{display:block;color:#eaf4fb;font-size:1.05rem;margin-top:3px;letter-spacing:.02em;}
-.cbsetAssignBox strong.hidden{color:#f0d79a;}
+.cbsetAssignBox strong.hidden{color:#d9c08a;}
 .cbsetBank{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
 .cbsetCodeBtn{background:#13283a;border:1px solid #2E6E8E;color:#dff0fb;border-radius:8px;padding:7px 10px;font-size:.84rem;font-weight:700;cursor:pointer;letter-spacing:.02em;}
 .cbsetCodeBtn:active{transform:scale(.97);}
@@ -7273,7 +7273,7 @@ const CB_PD_CSS=`
 .cbPdOptBox small{display:block;color:#7c92a6;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;}
 .cbPdOptBox strong{display:block;font-size:1.5rem;color:#eaf4fb;margin-top:4px;}
 .cbPdReveal{margin-top:16px;background:#2E6E8E;border:1px solid #48a0c4;color:#fff;border-radius:12px;padding:16px 22px;font-size:1.05rem;font-weight:800;cursor:pointer;width:100%;max-width:520px;}
-.cbPdHint{color:#f0d79a;font-size:1.1rem;font-weight:700;margin:10px 0;}
+.cbPdHint{color:#d9c08a;font-size:1.1rem;font-weight:700;margin:10px 0;}
 .cbPdSeam{color:#9fb3c4;font-size:.9rem;line-height:1.5;margin:14px 0 0;}
 .cbPdEmpty{color:#8aa0b4;text-align:center;font-size:1rem;}
 .cbPdAllGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%;max-width:760px;}
@@ -7281,7 +7281,7 @@ const CB_PD_CSS=`
 .cbPdAllCard strong{display:block;color:#eaf4fb;font-size:1rem;}
 .cbPdAllCard .t{color:#7fb6d6;font-size:.78rem;margin:3px 0 6px;}
 .cbPdAllCard .c{color:#eaf4fb;font-weight:800;font-size:1.05rem;}
-.cbPdAllCard .c.h{color:#f0d79a;}
+.cbPdAllCard .c.h{color:#d9c08a;}
 .cbCardScreen{position:fixed;inset:0;z-index:9999;background:#0a1722;display:flex;flex-direction:column;padding:20px 24px 24px;box-sizing:border-box;overflow:hidden;}
 .cbCardScreenTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex:0 0 auto;margin-bottom:16px;}
 .cbCardScreenTop h1{color:#eaf4fb;font-size:1.7rem;margin:0 0 4px;}
@@ -7290,7 +7290,7 @@ const CB_PD_CSS=`
 .cbCardDeck{flex:1 1 auto;display:flex;flex-wrap:wrap;gap:18px;align-content:center;justify-content:center;align-items:center;min-height:0;overflow:auto;padding:8px;}
 .cbPlayCard{position:relative;flex:0 0 auto;width:clamp(140px,18vw,240px);aspect-ratio:5/7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:18px;border:none;background:#fbfdff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #d4e2ee;cursor:pointer;padding:20px 14px;overflow:hidden;transition:transform .1s,box-shadow .15s;}
 .cbPlayCard:active{transform:scale(0.97);}
-.cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #34e0a0;}
+.cbPlayCard.open{background:#eafff5;box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 3px #6fae8b;}
 .cbPlayCorner{position:absolute;font-weight:800;font-size:1.1rem;color:#c0324a;}
 .cbPlayCorner.tl{top:10px;left:12px;}
 .cbPlayCorner.br{bottom:10px;right:12px;transform:rotate(180deg);}
@@ -7702,7 +7702,7 @@ function CheckerboardPlayerDisplay({payload}){
     // coach / all view
     return <div className="cbPdPage"><style>{CB_PD_CSS}</style>
       <div className="cbPdHead"><span>Checkerboard · Coach View</span><h1>{scope==='group'?'Group':scope==='court'?'Courts':'All Players'}</h1></div>
-      {scope==='group'?(()=>{const r=group||{};const hidden=r.hidden&&!r.revealed;const empty=!hidden&&(cbCodeText(r,seam)==='—');return empty?<div className="cbPdCard"><p className="cbPdEmpty">No challenge set yet. Your coach will send one shortly.</p></div>:<div className="cbPdCard"><div className="cbPdLabel">All present players</div><div className="cbPdCode" style={hidden?{color:'#f0d79a'}:null}>{hidden?'🙈 hidden':cbCodeText(r,seam)}</div><div className="cbPdLabel">{r.type||''}</div></div>;})()
+      {scope==='group'?(()=>{const r=group||{};const hidden=r.hidden&&!r.revealed;const empty=!hidden&&(cbCodeText(r,seam)==='—');return empty?<div className="cbPdCard"><p className="cbPdEmpty">No challenge set yet. Your coach will send one shortly.</p></div>:<div className="cbPdCard"><div className="cbPdLabel">All present players</div><div className="cbPdCode" style={hidden?{color:'#d9c08a'}:null}>{hidden?'🙈 hidden':cbCodeText(r,seam)}</div><div className="cbPdLabel">{r.type||''}</div></div>;})()
         :scope==='court'?<div className="cbPdAllGrid">{courts.length===0?<p className="cbPdEmpty">No allocation published yet.</p>:courts.map((c,i)=>{const r=c.challenge||{};const hidden=r.hidden&&!r.revealed;return <div className="cbPdAllCard" key={i}><strong>Court {i+1}</strong><div className="t">{(c.players||[]).join(' · ')||'—'}</div><div className={hidden?'c h':'c'}>{hidden?'🙈 hidden':cbCodeText(r,seam)}</div></div>;})}</div>
         :<div className="cbPdAllGrid">{Object.keys(alloc).length===0?<p className="cbPdEmpty">No allocation published yet.</p>:Object.keys(alloc).map(n=>{const r=alloc[n]||{};const hidden=r.hidden&&!r.revealed;return <div className="cbPdAllCard" key={n}><strong>{n}</strong><div className="t">{r.type||'—'}</div><div className={hidden?'c h':'c'}>{hidden?'🙈 hidden':cbCodeText(r,seam)}</div></div>;})}</div>}
     </div>;
@@ -9223,10 +9223,10 @@ function TacticalPressureModule({onAddToSession}){
   const game=TP_GAMES.find(g=>g.id===activeGame);
 
   const purposeColors={
-    'Recognise':'#f97316',
-    'Sustain':'#eab308',
-    'Build':'#86efac',
-    'Patient Attack':'#4ade80',
+    'Recognise':'#b07a3c',
+    'Sustain':'#b9982f',
+    'Build':'#8fbfa4',
+    'Patient Attack':'#6fae8b',
     'Convert':'#22d3ee',
     'Compete':'#15803d',
   };
@@ -9420,10 +9420,10 @@ function TacticalPressureModule({onAddToSession}){
         <strong>The Pressure Cycle</strong>
         <div className="tpFlowSteps">
           {[
-            {label:'Create',desc:'Force opponent outside corridor',color:'#f97316'},
-            {label:'Sustain',desc:'Prevent recovery — keep opponent outside',color:'#eab308'},
-            {label:'Build',desc:'Three consecutive forced contacts',color:'#86efac'},
-            {label:'Recognise',desc:'Identify when pressure has become opportunity',color:'#4ade80'},
+            {label:'Create',desc:'Force opponent outside corridor',color:'#b07a3c'},
+            {label:'Sustain',desc:'Prevent recovery — keep opponent outside',color:'#b9982f'},
+            {label:'Build',desc:'Three consecutive forced contacts',color:'#8fbfa4'},
+            {label:'Recognise',desc:'Identify when pressure has become opportunity',color:'#6fae8b'},
             {label:'Convert',desc:'Attack with conviction from a position of pressure',color:'#22d3ee'},
           ].map((s,i)=><div key={s.label} className="tpFlowStep" style={{borderColor:s.color}}>
             <span className="tpFlowNum" style={{background:s.color,color:s.label==='Build'||s.label==='Recognise'?'#000':'#fff'}}>{i+1}</span>
@@ -11249,7 +11249,7 @@ const ATB_FLOOR_ZONES={
 const ATB_WALL_ZONES={
   5:{label:'Zone 5',desc:'Front wall top left',color:'#dc2626',short:'FW-TL'},
   6:{label:'Zone 6',desc:'Front wall top right',color:'#0891b2',short:'FW-TR'},
-  7:{label:'Zone 7',desc:'Front wall bottom right',color:'#65a30d',short:'FW-BR'},
+  7:{label:'Zone 7',desc:'Front wall bottom right',color:'#7a8f4a',short:'FW-BR'},
   8:{label:'Zone 8',desc:'Front wall bottom left',color:'#c026d3',short:'FW-BL'},
 };
 
@@ -11374,10 +11374,10 @@ const ATB_GAME_FAMILIES=[
 
 const ATB_RLD_LEVELS=[
   {level:1,label:'Coach Called',desc:'Coach calls each zone target',color:'#ef4444',dot:'●'},
-  {level:2,label:'Leader Called',desc:'Leader calls zone aloud before playing',color:'#f97316',dot:'●'},
-  {level:3,label:'Leader Selected',desc:'Leader chooses silently — no announcement',color:'#eab308',dot:'●'},
-  {level:4,label:'Under Pressure',desc:'Leader selects targets during live competitive play',color:'#86efac',dot:'●'},
-  {level:5,label:'Open Play',desc:'Zones emerge naturally from game play — no calling',color:'#4ade80',dot:'⦿'},
+  {level:2,label:'Leader Called',desc:'Leader calls zone aloud before playing',color:'#b07a3c',dot:'●'},
+  {level:3,label:'Leader Selected',desc:'Leader chooses silently — no announcement',color:'#b9982f',dot:'●'},
+  {level:4,label:'Under Pressure',desc:'Leader selects targets during live competitive play',color:'#8fbfa4',dot:'●'},
+  {level:5,label:'Open Play',desc:'Zones emerge naturally from game play — no calling',color:'#6fae8b',dot:'⦿'},
 ];
 
 const ATB_SCORING_OPTIONS=[
@@ -11499,7 +11499,7 @@ function AroundTheBoardBuilder({onAddToSession}){
               </div>}
               {family.linear&&<div style={{marginTop:'10px'}}>
                 <div className="atbOppositeGrid">
-                  <div><strong style={{color:'#4ade80',fontSize:'12px'}}>Linear</strong>{family.linear.map(l=><p key={l} style={{color:'#c4c9d9',fontSize:'13px',margin:'4px 0'}}>{l}</p>)}</div>
+                  <div><strong style={{color:'#6fae8b',fontSize:'12px'}}>Linear</strong>{family.linear.map(l=><p key={l} style={{color:'#c4c9d9',fontSize:'13px',margin:'4px 0'}}>{l}</p>)}</div>
                 </div>
               </div>}
             </div>
@@ -11631,7 +11631,7 @@ function AroundTheBoardBuilder({onAddToSession}){
             <div className="atbWallZone" style={{background:'#dc262622',borderColor:'#dc2626'}}><span>5</span><small>Top Left</small></div>
             <div className="atbWallZone" style={{background:'#0891b222',borderColor:'#0891b2'}}><span>6</span><small>Top Right</small></div>
             <div className="atbWallZone" style={{background:'#c026d322',borderColor:'#c026d3'}}><span>8</span><small>Bottom Left</small></div>
-            <div className="atbWallZone" style={{background:'#65a30d22',borderColor:'#65a30d'}}><span>7</span><small>Bottom Right</small></div>
+            <div className="atbWallZone" style={{background:'#7a8f4a22',borderColor:'#7a8f4a'}}><span>7</span><small>Bottom Right</small></div>
           </div>
         </div>
         <div className="atbIntegratedFloor">
@@ -11639,8 +11639,8 @@ function AroundTheBoardBuilder({onAddToSession}){
           <div className="atbFloorGrid">
             <div className="atbFloorZone" style={{background:'#1f5dd022',borderColor:'#1f5dd0'}}><span>1</span><small>Front Left</small></div>
             <div className="atbFloorZone" style={{background:'#22d3ee22',borderColor:'#22d3ee'}}><span>2</span><small>Front Right</small></div>
-            <div className="atbFloorZone" style={{background:'#4ade8022',borderColor:'#4ade80'}}><span>4</span><small>Back Left</small></div>
-            <div className="atbFloorZone" style={{background:'#ffd98022',borderColor:'#ffd980'}}><span>3</span><small>Back Right</small></div>
+            <div className="atbFloorZone" style={{background:'#6fae8b22',borderColor:'#6fae8b'}}><span>4</span><small>Back Left</small></div>
+            <div className="atbFloorZone" style={{background:'#d9c08a22',borderColor:'#d9c08a'}}><span>3</span><small>Back Right</small></div>
           </div>
         </div>
       </div>
@@ -11855,7 +11855,7 @@ function slSerpentine(size,cols){
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
 function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null}){
-  const SL_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0','#ffe000','#a98bff'];
+  const SL_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
@@ -11981,16 +11981,16 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   return <div className="slCourt">
     <style>{`
 .slBoard .slCell{background:#1a2942 !important;border:1.5px solid #3a5a8c !important;}
-.slBoard .slCell.slLadder{background:#12592f !important;border-color:#38d074 !important;}
+.slBoard .slCell.slLadder{background:#12592f !important;border-color:#6fae8b !important;}
 .slBoard .slCell.slSnake{background:#5e1633 !important;border-color:#ff5fa2 !important;}
-.slBoard .slCell.slFinish{background:#5f4d0f !important;border-color:#ffd400 !important;}
+.slBoard .slCell.slFinish{background:#3d4657 !important;border-color:#c8a552 !important;}
 .slBoard .slNum{font-size:1.8rem !important;font-weight:800 !important;color:#f2f7ff !important;line-height:1.05 !important;}
 .slBoard .slTok{font-size:1.35rem !important;min-width:2.1rem !important;height:2.1rem !important;line-height:2.1rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
-.slBoard .slMark{font-size:1.55rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.1 !important;}
-.slDisplayBoard .slMark{font-size:2.1rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slBoard .slMark{font-size:1.55rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.1 !important;}
+.slDisplayBoard .slMark{font-size:2.1rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.1rem !important;}
-.slChallengeConfirm{background:#1a1408;border:1px solid #f5c542;border-radius:12px;padding:12px 14px;margin:10px 0;}
-.slChallengeConfirm p{margin:0 0 10px;color:#ffe9a8;font-weight:600;}
+.slChallengeConfirm{background:#1a1408;border:1px solid #c8a552;border-radius:12px;padding:12px 14px;margin:10px 0;}
+.slChallengeConfirm p{margin:0 0 10px;color:#e0d3b4;font-weight:600;}
 .slChallengeConfirmBtns{display:flex;gap:8px;flex-wrap:wrap;}
 .slChallengeEditor{margin:10px 0;}
 .slChallengeEditorPanel{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 13px;margin-top:8px;display:flex;flex-direction:column;gap:8px;}
@@ -12025,7 +12025,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#f5c542',fontWeight:700}}> ⏳ climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#c8a552',fontWeight:700}}> ⏳ climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -12246,7 +12246,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 .slModeBtn{flex:1;min-width:180px;background:#0b1118;border:1px solid #2c3c4e;color:#cdd9e6;border-radius:9px;padding:11px 14px;font-size:0.9rem;font-weight:600;cursor:pointer;text-align:center;}
 .slModeBtnOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;box-shadow:0 0 0 1px #2E6E8E inset;}
 .slAllocRow{display:flex;align-items:center;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:9px;padding:8px 12px;font-size:0.85rem;color:#9fb0c2;}
-.slAllocRow strong{color:#f0c49c;}
+.slAllocRow strong{color:#c7d4e2;}
 .slAllocRowOn{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
 `}</style>
       <div>
@@ -12264,7 +12264,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
           <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I’ll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
-          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>Unassigned: {unassigned.join(', ')}</p>}
           {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
             <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
             <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
@@ -12346,7 +12346,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
 function SnakesLaddersPlayerDisplay({payload={}}){
   useWakeLock();
-  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff'];
+  const SL_COLORS=['#5b9bff','#c8a552','#6fae8b','#e069c0','#c8a552','#7d7bff'];
   const size=payload.size||21;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const rows=Math.ceil(size/cols);
@@ -12369,16 +12369,16 @@ function SnakesLaddersPlayerDisplay({payload={}}){
 .slDisplayBoardWrap{width:100%;display:flex;justify-content:center;box-sizing:border-box;padding:2px;}
 .slDisplayBoard{display:grid !important;gap:6px !important;box-sizing:border-box;width:min(94vw,calc(70vh * ${cols} / ${rows}),1000px) !important;}
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
-.slDisplayBoard .slMark{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slDisplayBoard .slMark{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#f2f7ff !important;}
 .slDisplayBoard .slTok{font-size:clamp(0.6rem,1.6vw,1.5rem) !important;min-width:clamp(1.1rem,2.6vw,2.4rem) !important;height:clamp(1.1rem,2.6vw,2.4rem) !important;line-height:clamp(1.1rem,2.6vw,2.4rem) !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
 .slDisplayBoard .slActiveLadder{animation:slLadderPulse 1.1s ease-in-out infinite;}
-@keyframes slLadderPulse{0%,100%{box-shadow:0 0 0 2px #f5c542 inset;}50%{box-shadow:0 0 0 6px #f5c542 inset;}}
+@keyframes slLadderPulse{0%,100%{box-shadow:0 0 0 2px #c8a552 inset;}50%{box-shadow:0 0 0 6px #c8a552 inset;}}
 `}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
       :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
-    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);const chText=(payload.pendingChallenge||{})[p.name];return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{chText?<span style={{color:'#ffe9a8',fontWeight:700}}> ⏳ "{chText}"</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);const chText=(payload.pendingChallenge||{})[p.name];return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{chText?<span style={{color:'#e0d3b4',fontWeight:700}}> ⏳ "{chText}"</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
     <div className="slDisplayBoardWrap">
       <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
         {grid.flat().map((n,idx)=>{
@@ -12477,7 +12477,7 @@ function DBSuiteStyles(){
 .dbInfoGrid h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;}
 .dbInfoGrid p,.dbInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
 .dbInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
-.dbNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
+.dbNote{margin:0;font-size:0.84rem;color:#8fbfa4;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
 .dbSettings{display:flex;flex-wrap:wrap;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;}
 .dbSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
 .dbSettings select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:8px;padding:7px 9px;font-size:0.95rem;}
@@ -12490,24 +12490,24 @@ function DBSuiteStyles(){
 .dbPlayerCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
 .dbPlayerTop{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .dbPlayerTop strong{font-size:1.1rem;}
-.dbGoldenChip{font-size:0.72rem;font-weight:700;color:#f5c542;background:#2a2206;border:1px solid #6a5410;border-radius:999px;padding:3px 9px;}
+.dbGoldenChip{font-size:0.72rem;font-weight:700;color:#c8a552;background:#2a2206;border:1px solid #3d4657;border-radius:999px;padding:3px 9px;}
 .dbGoldenLost{color:#7c8ea0;background:#161b22;border-color:#2c3c4e;text-decoration:line-through;}
 .dbPointChip{font-size:0.78rem;font-weight:700;color:#8fd0ee;background:#123040;border:1px solid #2E6E8E;border-radius:999px;padding:3px 9px;}
 .dbCounterRow{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .dbCounterBtn{width:58px;height:58px;border-radius:14px;border:none;font-size:2rem;font-weight:800;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;line-height:1;}
 .dbMinus{background:#7a2233;}
-.dbPlus{background:#1d6b3f;}
+.dbPlus{background:#2f5c46;}
 .dbCounter{display:flex;flex-direction:column;align-items:center;line-height:1;}
 .dbCounterNum{font-size:2.6rem;font-weight:800;color:#eaf4fb;}
 .dbCounterLabel{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;color:#7c8ea0;}
 .dbActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
 .dbActionBtn{flex:1;min-width:120px;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px 10px;font-size:0.84rem;font-weight:600;cursor:pointer;}
-.dbActionGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.dbActionGood{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
 .dbActionDanger{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
-.dbStealTarget{margin-top:2px;background:#2a1206;border:1px dashed #b8821f;color:#f5c542;border-radius:9px;padding:8px;font-weight:700;cursor:pointer;}
-.dbRecoveryBanner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#1a1206;border:1px solid #6a5410;border-radius:14px;padding:14px 18px;}
-.dbRecoveryBanner>strong{font-size:1.05rem;color:#f5c542;letter-spacing:0.03em;}
-.dbRecoveryCount{font-size:2.4rem;font-weight:800;color:#f5c542;}
+.dbStealTarget{margin-top:2px;background:#131a24;border:1px dashed #b8821f;color:#c8a552;border-radius:9px;padding:8px;font-weight:700;cursor:pointer;}
+.dbRecoveryBanner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:#1a1206;border:1px solid #3d4657;border-radius:14px;padding:14px 18px;}
+.dbRecoveryBanner>strong{font-size:1.05rem;color:#c8a552;letter-spacing:0.03em;}
+.dbRecoveryCount{font-size:2.4rem;font-weight:800;color:#c8a552;}
 .dbRecoveryBtns{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
 .dbBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .dbBottomBar .primaryBtn{margin-left:auto;}
@@ -12526,13 +12526,13 @@ function DBSuiteStyles(){
 .dbDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
 .dbDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:20px;padding:26px;text-align:center;display:flex;flex-direction:column;gap:6px;}
 .dbDisplayName{font-size:1.5rem;font-weight:700;color:#eaf4fb;display:flex;align-items:center;justify-content:center;gap:8px;}
-.dbGoldDot{color:#f5c542;font-size:1.1rem;}
+.dbGoldDot{color:#c8a552;font-size:1.1rem;}
 .dbGoldDotLost{color:#46596c;font-size:1.1rem;}
 .dbDisplayNum{font-size:5rem;font-weight:800;color:#7db8ff;line-height:1;}
 .dbDisplaySub{font-size:0.85rem;text-transform:uppercase;letter-spacing:0.08em;color:#5e89b0;}
 .dbDisplayPoints{margin-top:6px;font-size:1.2rem;font-weight:700;color:#8fd0ee;}
-.dbDisplayRecovery{text-align:center;font-size:1.6rem;font-weight:700;color:#f5c542;background:#1a1206;border:1px solid #6a5410;border-radius:14px;padding:16px;}
-.dbDisplaySteal{text-align:center;font-size:1.3rem;color:#f5c542;}
+.dbDisplayRecovery{text-align:center;font-size:1.6rem;font-weight:700;color:#c8a552;background:#1a1206;border:1px solid #3d4657;border-radius:14px;padding:16px;}
+.dbDisplaySteal{text-align:center;font-size:1.3rem;color:#c8a552;}
 
 @media (max-width:600px){
   .dbGameTabs{grid-template-columns:repeat(2,1fr);}
@@ -12797,7 +12797,7 @@ function TinWarStyles(){
 .twInfoGrid h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#7c8ea0;}
 .twInfoGrid p,.twInfoGrid li{font-size:0.9rem;line-height:1.42;color:#cdd9e6;}
 .twInfoGrid ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:4px;}
-.twNote{margin:0;font-size:0.84rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
+.twNote{margin:0;font-size:0.84rem;color:#8fbfa4;background:#0b1f14;border:1px solid #1d3a28;border-radius:8px;padding:8px 11px;}
 .twExample{background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:10px 13px;}
 .twExample h4{margin:0 0 5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.05em;color:#8fd0ee;}
 .twExample p{margin:0;font-size:0.88rem;line-height:1.45;color:#dbeeff;}
@@ -12805,7 +12805,7 @@ function TinWarStyles(){
 .twSettings label{display:flex;flex-direction:column;gap:5px;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.03em;color:#9fb0c2;}
 .twActionStrip{display:flex;flex-wrap:wrap;gap:7px;}
 .twActionBtn{flex:1;min-width:120px;background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:9px 10px;font-size:0.84rem;font-weight:600;cursor:pointer;}
-.twActionGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.twActionGood{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
 .twBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .twBottomBar .primaryBtn{margin-left:auto;}
 
@@ -12826,7 +12826,7 @@ function TinWarStyles(){
 .twDisplayExample{background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:18px 20px;}
 .twDisplayExample h4{margin:0 0 8px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;color:#8fd0ee;}
 .twDisplayExample p{margin:0;font-size:1.05rem;line-height:1.5;color:#dbeeff;}
-.twDisplayNote{margin:0;text-align:center;font-size:1.05rem;color:#86efac;background:#0b1f14;border:1px solid #1d3a28;border-radius:12px;padding:14px 18px;}
+.twDisplayNote{margin:0;text-align:center;font-size:1.05rem;color:#8fbfa4;background:#0b1f14;border:1px solid #1d3a28;border-radius:12px;padding:14px 18px;}
 @media (max-width:700px){
   .twGameTabs{grid-template-columns:repeat(2,1fr);}
   .twInfoGrid{grid-template-columns:1fr;gap:10px;}
@@ -13062,9 +13062,9 @@ function DisruptionStyles(){
 .drBtnRow{display:flex;gap:8px;flex-wrap:wrap;}
 .drBtn{background:#123040;border:1px solid #2E6E8E;color:#cfe9f7;border-radius:9px;padding:10px 14px;font-size:0.86rem;font-weight:600;cursor:pointer;}
 .drBtnPrimary{background:#16466a;border-color:#7db8ff;color:#eaf4fb;}
-.drBtnGood{background:#0d2a18;border-color:#1d6b3f;color:#86efac;}
+.drBtnGood{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
 .drBtnGhost{background:#161b22;border-color:#3a4a5e;color:#cdd9e6;}
-.drChip{font-size:0.78rem;font-weight:700;padding:4px 11px;border-radius:999px;background:#2a1206;border:1px solid #6a5410;color:#f5c542;}
+.drChip{font-size:0.78rem;font-weight:700;padding:4px 11px;border-radius:999px;background:#131a24;border:1px solid #3d4657;color:#c8a552;}
 .drSpecial{background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:9px;}
 .drSpecial h4{margin:0;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:#9fb0c2;}
 .drComboRow{display:flex;align-items:center;gap:8px;background:#0f1822;border:1px solid #223044;border-radius:8px;padding:7px 10px;}
@@ -13076,7 +13076,7 @@ function DisruptionStyles(){
 .drDbCard select{background:#0b1118;border:1px solid #2c3c4e;color:#eaf2f9;border-radius:7px;padding:5px 8px;}
 .drBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .drBottomBar .drBtnPrimary{margin-left:auto;}
-.drWon{text-align:center;background:#0d2a18;border:1px solid #1d6b3f;border-radius:12px;padding:14px;color:#86efac;font-weight:800;font-size:1.1rem;}
+.drWon{text-align:center;background:#101d18;border:1px solid #2f5c46;border-radius:12px;padding:14px;color:#8fbfa4;font-weight:800;font-size:1.1rem;}
 .drScoreOpts{display:flex;flex-wrap:wrap;gap:10px;}
 .drScoreOpts label{display:flex;align-items:center;gap:7px;font-size:0.85rem;color:#cdd9e6;background:#0f1822;border:1px solid #223044;border-radius:9px;padding:7px 11px;cursor:pointer;}
 .drLog{display:flex;flex-direction:column;gap:3px;background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;}
@@ -13092,11 +13092,11 @@ function DisruptionStyles(){
 .drDisplayShot .txt{font-size:2.6rem;font-weight:800;color:#7db8ff;margin-top:8px;line-height:1.15;}
 .drDisplayMeta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
 .drDispChip{font-size:1.1rem;font-weight:700;padding:8px 16px;border-radius:999px;background:#0b2530;border:1px solid #2E6E8E;color:#8fd0ee;}
-.drDispChipHot{background:#2a1206;border-color:#6a5410;color:#f5c542;}
+.drDispChipHot{background:#131a24;border-color:#3d4657;color:#c8a552;}
 .drDisplayDb{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
 .drDispDb{background:#0f1c2b;border:1px solid #21384e;border-radius:12px;padding:12px 18px;color:#eaf4fb;}
 .drDispDb b{color:#8fd0ee;}
-.drDisplayWon{font-size:2rem;font-weight:800;color:#86efac;}
+.drDisplayWon{font-size:2rem;font-weight:800;color:#8fbfa4;}
 @media (max-width:600px){
   .drTabs{grid-template-columns:repeat(2,1fr);}
   .drSectionGrid{grid-template-columns:1fr;}
@@ -13379,9 +13379,9 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
         <p className="mutedText" style={{margin:0,fontSize:'0.85rem'}}>Each court strings together as many cycles in a row as it can. A break resets that court's run to 0 but keeps its best. Most successive cycles wins.</p>
         <div className="drBtnRow"><span className="drShotLabel" style={{alignSelf:'center'}}>Courts:</span>{[2,3,4,5,6].map(c=><button key={c} type="button" className={courtCount===c?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setCourtCount(c)}>{c}</button>)}<span className="drShotLabel" style={{alignSelf:'center',marginLeft:'8px'}}>First to:</span>{[5,10,15].map(t=><button key={t} type="button" className={battleTarget===t?'drBtn drBtnPrimary':'drBtn'} onClick={()=>setBattleTarget(t)}>{t}</button>)}</div>
         {battleWon&&<div className="drWon">🏆 Court {battleLeader+1} reached {battleTarget} successive cycles!</div>}
-        <div className="drDbGrid">{courts.map((c,i)=>{const lead=i===battleLeader&&streaks[i]&&streaks[i].best>0;return <div className="drDbCard" key={i} style={{flexDirection:'column',alignItems:'stretch',gap:'8px',background:lead?'#0d2a18':'#0f1822',borderColor:lead?'#1d6b3f':'#223044'}}>
+        <div className="drDbGrid">{courts.map((c,i)=>{const lead=i===battleLeader&&streaks[i]&&streaks[i].best>0;return <div className="drDbCard" key={i} style={{flexDirection:'column',alignItems:'stretch',gap:'8px',background:lead?'#101d18':'#0f1822',borderColor:lead?'#2f5c46':'#223044'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><strong>Court {i+1}{lead?' 👑':''}</strong><span className="drShotLabel">{c.join(' · ')||'—'}</span></div>
-          <div style={{display:'flex',gap:'12px',alignItems:'baseline'}}><span className="drCycleNum" style={{fontSize:'1.8rem'}}>{streaks[i]?streaks[i].current:0}</span><span className="drShotLabel">current run</span><span style={{color:'#86efac',fontWeight:700}}>best {streaks[i]?streaks[i].best:0}</span></div>
+          <div style={{display:'flex',gap:'12px',alignItems:'baseline'}}><span className="drCycleNum" style={{fontSize:'1.8rem'}}>{streaks[i]?streaks[i].current:0}</span><span className="drShotLabel">current run</span><span style={{color:'#8fbfa4',fontWeight:700}}>best {streaks[i]?streaks[i].best:0}</span></div>
           <div className="drBtnRow"><button type="button" className="drBtn drBtnGood" onClick={()=>courtCycle(i)}>Cycle ✓</button><button type="button" className="drBtn" onClick={()=>courtBreak(i)} style={{background:'#2a0d12',borderColor:'#7a2233',color:'#fca5b5'}}>Break ✗</button></div>
         </div>;})}</div>
       </div>}
@@ -13419,7 +13419,7 @@ function DisruptionPlayerDisplay({payload={}}){
       <div className="drDisplayShell">
         <div className="drDisplayTop"><span>DISRUPTION ROTATIONS · COURT BATTLE</span><h1>{rot.title||'Rotation'}</h1><p>Most successive cycles wins · first to {battle.target}</p></div>
         <div className="drDisplayDb" style={{flexDirection:'column',gap:'14px',maxWidth:'700px',margin:'0 auto',width:'100%'}}>
-          {ranked.map((c,r)=><div className="drDispDb" key={c.idx} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'16px',background:r===0&&c.best>0?'#0d2a18':'#0f1c2b',borderColor:r===0&&c.best>0?'#1d6b3f':'#21384e'}}>
+          {ranked.map((c,r)=><div className="drDispDb" key={c.idx} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'16px',background:r===0&&c.best>0?'#101d18':'#0f1c2b',borderColor:r===0&&c.best>0?'#2f5c46':'#21384e'}}>
             <div style={{textAlign:'left'}}><div style={{fontSize:'1.4rem',fontWeight:800,color:'#eaf4fb'}}>{r===0&&c.best>0?'👑 ':''}{c.label}</div><div style={{fontSize:'0.95rem',color:'#5e89b0'}}>{(c.players||[]).join(' · ')}</div></div>
             <div style={{textAlign:'right'}}><div style={{fontSize:'2.4rem',fontWeight:800,color:'#7db8ff',lineHeight:1}}>{c.best}</div><div style={{fontSize:'0.85rem',color:'#5e89b0'}}>best run · now {c.current}</div></div>
           </div>)}
@@ -13455,7 +13455,7 @@ function HangmanStyles(){
 .hsIntro h2{margin:0;font-size:1.15rem;color:#f2a6b3;}
 .hsIntro p{margin:0;line-height:1.45;color:#cdd9e6;}
 .hsSetup{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
-.hsLabel{color:#f0c49c;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
+.hsLabel{color:#c7d4e2;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;}
 .hsModeRow{display:flex;gap:8px;flex-wrap:wrap;}
 .hsModeBtn{appearance:none!important;-webkit-appearance:none!important;background:#0d1722!important;border:1px solid #2a3a4f!important;border-radius:9px!important;padding:9px 13px!important;color:#dbe6f2!important;font-weight:700!important;cursor:pointer;font-size:0.86rem;-webkit-tap-highlight-color:transparent;flex:1 1 0;text-align:center;}
 .hsModeBtn.on{border-color:#2E6E8E!important;background:#12203a!important;color:#9cc4ec!important;}
@@ -13476,33 +13476,33 @@ function HangmanStyles(){
 .hsTracks{display:flex;flex-direction:column;gap:10px;}
 .hsTrackCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:16px;}
 .hsTrackCard.eliminated{opacity:0.5;border-color:#3a2028;}
-.hsTrackCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 1px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
+.hsTrackCard.escapePending{border-color:#c8a552;box-shadow:0 0 0 1px #c8a552 inset;animation:hsPulse 1.1s ease-in-out infinite;}
 .hsFigureBox{flex:none;width:70px;height:80px;}
 .hsTrackInfo{flex:1;display:flex;flex-direction:column;gap:4px;}
 .hsTrackName{font-size:1.05rem;font-weight:800;color:#eaf4fb;}
 .hsTrackStatus{font-size:0.78rem;color:#9fb0c2;}
-.hsTrackStatus.warn{color:#f5c542;font-weight:700;}
+.hsTrackStatus.warn{color:#c8a552;font-weight:700;}
 .hsTrackStatus.out{color:#f87171;font-weight:700;}
 .hsTrackBtns{display:flex;gap:8px;flex:none;}
-.hsBtnSafe{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.hsBtnSafe{background:#101d18;border:1px solid #2f5c46;color:#8fbfa4;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
 .hsBtnFail{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
 .hsBtnNeutral{background:#141c26;border:1px solid #3a4a5e;color:#c3d2e0;border-radius:9px;padding:10px 14px;font-weight:700;font-size:0.85rem;cursor:pointer;}
-.hsBtnEscapeGood{background:#0d2a18;border:1px solid #1d6b3f;color:#86efac;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
+.hsBtnEscapeGood{background:#101d18;border:1px solid #2f5c46;color:#8fbfa4;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
 .hsBtnEscapeBad{background:#2a0c14;border:1px solid #c2455a;color:#f5a8b6;border-radius:9px;padding:10px 14px;font-weight:800;font-size:0.85rem;cursor:pointer;}
-.hsWinBanner{text-align:center;background:#0d2a18;border:1px solid #1d6b3f;border-radius:12px;padding:16px;color:#86efac;font-weight:800;font-size:1.15rem;}
+.hsWinBanner{text-align:center;background:#101d18;border:1px solid #2f5c46;border-radius:12px;padding:16px;color:#8fbfa4;font-weight:800;font-size:1.15rem;}
 .hsEliminationLog{background:#0b1118;border:1px solid #1d2935;border-radius:10px;padding:10px 13px;display:flex;flex-direction:column;gap:3px;}
 .hsEliminationLog div{font-size:0.82rem;color:#9fb0c2;}
 .hsBottomBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .hsBottomBar .primaryBtn{margin-left:auto;}
 .hsControls{display:flex;gap:8px;flex-wrap:wrap;}
-.hsDisplayHint{font-size:0.82rem;color:#86efac;}
+.hsDisplayHint{font-size:0.82rem;color:#8fbfa4;}
 .hsCourt{display:flex;flex-direction:column;gap:10px;}
-.hsCourtLabel{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#f0c49c;font-weight:800;}
+.hsCourtLabel{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#c7d4e2;font-weight:800;}
 .hsCourtTabs{display:flex;gap:8px;flex-wrap:wrap;}
 .hsAllocation{display:flex;flex-direction:column;gap:6px;}
 .hsAllocRow{display:flex;align-items:center;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:9px;padding:8px 12px;font-size:0.85rem;color:#9fb0c2;}
 .hsAllocRow.on{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
-.hsAllocRow strong{color:#f0c49c;}
+.hsAllocRow strong{color:#c7d4e2;}
 .hsPairBox{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .hsPairScorePanel{background:#12203a;border:1px solid #2E6E8E;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
 .hsPairScoreRow{display:flex;gap:8px;flex-wrap:wrap;}
@@ -13511,7 +13511,7 @@ function HangmanStyles(){
 .hsPairScoreCol{flex:1;display:flex;flex-direction:column;gap:8px;background:#0b1420;border:1px solid #1e3350;border-radius:10px;padding:10px;}
 .hsPairScoreColName{font-weight:800;color:#eaf4fb;font-size:0.9rem;text-align:center;margin-bottom:2px;}
 .hsPairScoreline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:1.1rem;color:#eaf4fb;}
-.hsPairScoreline strong{font-size:1.4rem;color:#f0c49c;}
+.hsPairScoreline strong{font-size:1.4rem;color:#c7d4e2;}
 .hsPairScoreline em{font-style:normal;font-size:0.8rem;color:#9fb0c2;margin-left:auto;}
 
 .hsDisplayPage{min-height:100vh;background:radial-gradient(circle at 50% 0%,#1a0d12 0%,#070d15 70%);display:flex;align-items:center;justify-content:center;padding:40px;}
@@ -13523,32 +13523,32 @@ function HangmanStyles(){
 .hsDisplayGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
 .hsRaceGrid{display:flex;flex-direction:column;gap:24px;width:100%;}
 .hsRaceCourt{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:24px;}
-.hsRaceCourt.winner{border-color:#1d6b3f;background:#0d1f16;}
-.hsRaceLabel{font-size:1.5rem;font-weight:800;color:#f0c49c;margin-bottom:12px;}
+.hsRaceCourt.winner{border-color:#2f5c46;background:#0d1f16;}
+.hsRaceLabel{font-size:1.5rem;font-weight:800;color:#c7d4e2;margin-bottom:12px;}
 .hsRaceChallenge{font-size:0.85rem;color:#dbeeff;background:#12203a;border:1px solid #2E6E8E;border-radius:10px;padding:7px 10px;margin-bottom:10px;}
 .hsRacePairScore{display:flex;align-items:baseline;justify-content:center;gap:10px;font-size:0.95rem;color:#eaf4fb;background:#0b1420;border:1px solid #2E6E8E;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-weight:700;}
-.hsRacePairScore strong{font-size:1.3rem;color:#f0c49c;}
+.hsRacePairScore strong{font-size:1.3rem;color:#c7d4e2;}
 .hsRaceEntities{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;}
 .hsRaceEntity{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;}
 .hsRaceEntity.eliminated{opacity:0.4;}
-.hsRaceEntity.escapePending{outline:2px solid #f5c542;border-radius:10px;animation:hsPulse 1.1s ease-in-out infinite;}
+.hsRaceEntity.escapePending{outline:2px solid #c8a552;border-radius:10px;animation:hsPulse 1.1s ease-in-out infinite;}
 .hsRaceEntityName{font-size:1.15rem;font-weight:700;color:#eaf4fb;}
 .hsRaceEntityStatus{font-size:0.9rem;color:#9fb0c2;}
-.hsRaceEntityStatus.warn{color:#f5c542;font-weight:700;}
+.hsRaceEntityStatus.warn{color:#c8a552;font-weight:700;}
 .hsRaceEntityStatus.out{color:#f87171;font-weight:700;}
 .hsDisplayCard{background:#0f1c2b;border:1px solid #21384e;border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;}
 .hsDisplayCard.onCourt{border-color:#2E6E8E;box-shadow:0 0 0 2px #2E6E8E inset;}
 .hsDisplayPairScore{display:flex;align-items:baseline;justify-content:center;gap:16px;font-size:1.6rem;color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;border-radius:16px;padding:14px 20px;}
-.hsDisplayPairScore strong{font-size:2.2rem;color:#f0c49c;}
+.hsDisplayPairScore strong{font-size:2.2rem;color:#c7d4e2;}
 .hsDisplayPairName{font-weight:700;}
 .hsDisplayCard.eliminated{opacity:0.4;}
-.hsDisplayCard.escapePending{border-color:#f5c542;box-shadow:0 0 0 2px #f5c542 inset;animation:hsPulse 1.1s ease-in-out infinite;}
-@keyframes hsPulse{0%,100%{box-shadow:0 0 0 2px #f5c542 inset;}50%{box-shadow:0 0 0 5px #f5c542 inset;}}
+.hsDisplayCard.escapePending{border-color:#c8a552;box-shadow:0 0 0 2px #c8a552 inset;animation:hsPulse 1.1s ease-in-out infinite;}
+@keyframes hsPulse{0%,100%{box-shadow:0 0 0 2px #c8a552 inset;}50%{box-shadow:0 0 0 5px #c8a552 inset;}}
 .hsDisplayName{font-size:1.3rem;font-weight:800;color:#eaf4fb;}
 .hsDisplayStatus{font-size:0.9rem;color:#9fb0c2;}
-.hsDisplayStatus.warn{color:#f5c542;font-weight:700;}
+.hsDisplayStatus.warn{color:#c8a552;font-weight:700;}
 .hsDisplayStatus.out{color:#f87171;font-weight:700;}
-.hsDisplayWinner{text-align:center;font-size:2rem;font-weight:800;color:#86efac;background:#0d2a18;border:1px solid #1d6b3f;border-radius:16px;padding:20px;}
+.hsDisplayWinner{text-align:center;font-size:2rem;font-weight:800;color:#8fbfa4;background:#101d18;border:1px solid #2f5c46;border-radius:16px;padding:20px;}
 @media (max-width:700px){
   .hsDisplayTop h1{font-size:2rem;}
   .hsDisplayGrid{grid-template-columns:repeat(2,1fr);}
@@ -13588,7 +13588,7 @@ function hangmanFigureParts(steps){
 }
 function HangmanFigure({steps=0,size=70}){
   const p=hangmanFigureParts(Math.max(0,Math.min(HANGMAN_MAX_STEPS,steps)));
-  const stroke=steps>=HANGMAN_MAX_STEPS?'#f87171':steps>=HANGMAN_ESCAPE_STEP?'#f5c542':'#8fd0ee';
+  const stroke=steps>=HANGMAN_MAX_STEPS?'#f87171':steps>=HANGMAN_ESCAPE_STEP?'#c8a552':'#8fd0ee';
   return <svg width={size} height={size*1.1} viewBox="0 0 70 80" fill="none">
     <line x1="6" y1="76" x2="46" y2="76" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>
     <line x1="14" y1="76" x2="14" y2="6" stroke="#4a5568" strokeWidth="3" strokeLinecap="round"/>
@@ -14150,7 +14150,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
           <button type="button" className={allocMode==='manual'?'hsModeBtn on':'hsModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
-          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>Unassigned: {unassigned.join(', ')}</p>}
           {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} className="hsPlayerRow">
             <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
             {teamMode&&<>
@@ -17276,7 +17276,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             {nslOrgTab==='teams'&&(
               <div className="nslPanel">
                 <h3>Auto Team Allocation Preview</h3>
-                <div className="nslTeamGrid">{nsslDetailedTeams().map((team,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>{team.name||`Team ${teamIdx+1}`}</strong>{team.players.length?team.players.map(name=><p key={name} style={name===team.captain?{color:'#ffd479',fontWeight:700}:undefined}>{name}{name===team.captain?' (C)':''}</p>):<p>Waiting for players</p>}</div>)}</div>
+                <div className="nslTeamGrid">{nsslDetailedTeams().map((team,teamIdx)=><div className="nslTeamCard" key={teamIdx}><strong>{team.name||`Team ${teamIdx+1}`}</strong>{team.players.length?team.players.map(name=><p key={name} style={name===team.captain?{color:'#d9c08a',fontWeight:700}:undefined}>{name}{name===team.captain?' (C)':''}</p>):<p>Waiting for players</p>}</div>)}</div>
                 <p className="overlayExplain">Captain (C) defaults to the highest-ranked player in each team.</p>
               </div>
             )}
@@ -17285,7 +17285,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               <div className="nslPanel nslScorePanel nslScorePanelV45">
                 <h3>NSSL Score Input</h3>
 
-                <div className="nslPanel" style={{background:'#0b1320',border:'1px solid #1d6b3f',marginBottom:'14px'}}>
+                <div className="nslPanel" style={{background:'#0b1320',border:'1px solid #2f5c46',marginBottom:'14px'}}>
                   <h3 style={{marginTop:0}}>📺 Court Devices &amp; Master Display</h3>
                   <p className="overlayExplain">Open one scoring screen per court on its own device, and the master leaderboard on the big screen. Keep <strong>this organiser screen</strong> open — it runs the shared league clock and rosters for every court.</p>
                   <div className="buttonRow" style={{flexWrap:'wrap',gap:'8px'}}>
@@ -17334,16 +17334,16 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     {(()=>{const live=nslCourtLive[idx+1];const ak=nsslPeriodKeyFor(nslActivePeriod);const ra=live&&live.periods&&live.periods[ak]?Number(live.periods[ak].a||0):0;const rb=live&&live.periods&&live.periods[ak]?Number(live.periods[ak].b||0):0;const mp=nsslMatchPointsWithPlayoffs(live&&live.periods,nsslCourtPlayoffMap(nslPlayoffs,idx+1));const lead=mp.a>mp.b?fixture.a.name:mp.b>mp.a?fixture.b.name:null;return <div style={{fontSize:'0.82rem',color:'#9fb0c2',margin:'2px 0 8px'}}>{live?`This round ${ra}–${rb} · rounds won ${mp.a}–${mp.b}${lead?` · ${lead} leads`:' · match level'}`:'Waiting for court device…'}</div>;})()}
                     {(()=>{const live=nslCourtLive[idx+1];const ak=nsslPeriodKeyFor(nslActivePeriod);const mp=nsslMatchPointsWithPlayoffs(live&&live.periods,nsslCourtPlayoffMap(nslPlayoffs,idx+1));return [['a',fixture.a],['b',fixture.b]].filter(([s,t])=>t&&t.name&&t.name!=='BYE').map(([side,team])=>{const roundScore=live&&live.periods&&live.periods[ak]?Number(live.periods[ak][side]||0):0;const total=live&&live.totals?Number(live.totals[side]||0):0;return <div className="nslTeamScoreBox" key={team.name}>
                       <div>
-                        <span>{team.name}{team.captain?<small style={{display:'block',color:'#ffd479',fontWeight:700}}>© {team.captain}</small>:null}</span>
+                        <span>{team.name}{team.captain?<small style={{display:'block',color:'#d9c08a',fontWeight:700}}>© {team.captain}</small>:null}</span>
                         <strong>{roundScore}</strong>
                       </div>
                       {team.players&&team.players.length>0&&<div style={{fontSize:'0.78rem',color:'#9fb0c2',margin:'2px 0 6px',gridColumn:'1 / -1'}}>{team.players.map(p=>p===team.captain?`${p} (C)`:p).join(' · ')}</div>}
                       <div style={{fontSize:'0.8rem',color:'#8aa0b6',gridColumn:'1 / -1'}}>{live?`This round · match pts ${side==='a'?mp.a:mp.b} · total ${total}`:'Waiting for court device…'}</div>
                     </div>;});})()}
-                    {(()=>{const court=idx+1;const ak=nsslPeriodKeyFor(nslActivePeriod);const plabel=nsslPeriodLabel(ak);const key=court+':'+ak;const po=nslPlayoffs[key];const pairs=po&&!po.winner?nsslPlayoffPairs(court):[];const pr=pairs.length?pairs[(po.rally||0)%pairs.length]:null;const decided=NSSL_PERIOD_KEYS.map(k=>{const q=nslPlayoffs[court+':'+k];return q&&q.winner?nsslPeriodLabel(k)+' '+(q.winner==='a'?q.aName:q.bName):null;}).filter(Boolean);return <div style={{marginTop:'8px',padding:'8px 10px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'10px'}}>{decided.length>0&&<div style={{color:'#86efac',fontSize:'0.8rem',fontWeight:700,marginBottom:'6px'}}>Round playoffs won · {decided.join(' · ')}</div>}{!po&&<button type="button" className="secondaryBtn" style={{width:'100%'}} onClick={()=>startNslPlayoff(court)}>▶ Playoff decider — {plabel} round (first to {nslPlayoffTarget})</button>}{po&&<div><div style={{color:'#bcd6f5',fontWeight:700,marginBottom:'4px'}}>{plabel} playoff · first to {po.target}: {po.aName} <strong style={{color:'#86efac'}}>{po.aPts}</strong> — <strong style={{color:'#86efac'}}>{po.bPts}</strong> {po.bName}</div>{!po.winner&&<div>{pr&&<div style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'2px 0 6px'}}>Rally {(po.rally||0)+1}: <strong>{pr.a||'—'}</strong> v <strong>{pr.b||'—'}</strong></div>}<div className="buttonRow" style={{flexWrap:'wrap',gap:'6px'}}><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'a')}>{po.aName} won</button><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'b')}>{po.bName} won</button><button type="button" className="secondaryBtn" onClick={()=>undoNslPlayoffPoint(court)}>Undo</button><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear</button></div></div>}{po.winner&&<div><div style={{color:'#86efac',fontWeight:800,margin:'4px 0'}}>🏆 {po.winner==='a'?po.aName:po.bName} win the {plabel} round {po.aPts}–{po.bPts} · +{po.awardMp} match {po.awardMp===1?'point':'points'}</div><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear {plabel} playoff</button></div>}</div>}</div>;})()}
+                    {(()=>{const court=idx+1;const ak=nsslPeriodKeyFor(nslActivePeriod);const plabel=nsslPeriodLabel(ak);const key=court+':'+ak;const po=nslPlayoffs[key];const pairs=po&&!po.winner?nsslPlayoffPairs(court):[];const pr=pairs.length?pairs[(po.rally||0)%pairs.length]:null;const decided=NSSL_PERIOD_KEYS.map(k=>{const q=nslPlayoffs[court+':'+k];return q&&q.winner?nsslPeriodLabel(k)+' '+(q.winner==='a'?q.aName:q.bName):null;}).filter(Boolean);return <div style={{marginTop:'8px',padding:'8px 10px',background:'#0c1a2e',border:'1px solid #25405f',borderRadius:'10px'}}>{decided.length>0&&<div style={{color:'#8fbfa4',fontSize:'0.8rem',fontWeight:700,marginBottom:'6px'}}>Round playoffs won · {decided.join(' · ')}</div>}{!po&&<button type="button" className="secondaryBtn" style={{width:'100%'}} onClick={()=>startNslPlayoff(court)}>▶ Playoff decider — {plabel} round (first to {nslPlayoffTarget})</button>}{po&&<div><div style={{color:'#bcd6f5',fontWeight:700,marginBottom:'4px'}}>{plabel} playoff · first to {po.target}: {po.aName} <strong style={{color:'#8fbfa4'}}>{po.aPts}</strong> — <strong style={{color:'#8fbfa4'}}>{po.bPts}</strong> {po.bName}</div>{!po.winner&&<div>{pr&&<div style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'2px 0 6px'}}>Rally {(po.rally||0)+1}: <strong>{pr.a||'—'}</strong> v <strong>{pr.b||'—'}</strong></div>}<div className="buttonRow" style={{flexWrap:'wrap',gap:'6px'}}><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'a')}>{po.aName} won</button><button type="button" className="primaryBtn" onClick={()=>nslPlayoffPoint(court,'b')}>{po.bName} won</button><button type="button" className="secondaryBtn" onClick={()=>undoNslPlayoffPoint(court)}>Undo</button><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear</button></div></div>}{po.winner&&<div><div style={{color:'#8fbfa4',fontWeight:800,margin:'4px 0'}}>🏆 {po.winner==='a'?po.aName:po.bName} win the {plabel} round {po.aPts}–{po.bPts} · +{po.awardMp} match {po.awardMp===1?'point':'points'}</div><button type="button" className="secondaryBtn dangerBtn" onClick={()=>clearNslPlayoff(court)}>Clear {plabel} playoff</button></div>}</div>}</div>;})()}
                   </div>)}
                 </div>
-                {(()=>{const semis=nsslDetailedFixtures();const two=semis.length===2&&semis.every(f=>f.a&&f.b&&f.a.name!=='BYE'&&f.b.name!=='BYE');return <div style={{marginTop:'14px',padding:'12px 14px',background:'#0f1822',border:'1px solid #223044',borderRadius:'12px'}}><div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'8px'}}><span style={{fontWeight:800,color:'#9cc4ec',fontSize:'1.05rem'}}>Knockout</span><span style={{color:'#8aa0b6',fontSize:'0.82rem'}}>Stage: {nslStage==='finals'?'Final & 3rd/4th play-off':'Semi-finals'}</span></div>{nslStage!=='finals'&&(two?<div><p style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'0 0 8px'}}>The winner of each semi is filled in automatically from the score (highlighted green). Tap a team only to override, then Generate.</p>{semis.map((f,ix)=>{const court=ix+1;const auto=nslCourtWinnerSide(court);const pick=nslSemiWinners[court]||auto;return <div key={court} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'4px 0'}}><span style={{color:'#9fb0c2',fontSize:'0.85rem',minWidth:'110px'}}>Court {court} semi</span><button type="button" className="secondaryBtn" style={pick==='a'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'a'}))}>{f.a.name}</button><span style={{color:'#6b8299'}}>v</span><button type="button" className="secondaryBtn" style={pick==='b'?{background:'#114d2c',borderColor:'#1d6b3f',color:'#bff0d0',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'b'}))}>{f.b.name}</button></div>;})}<button type="button" className="primaryBtn" style={{marginTop:'8px'}} onClick={generateNslFinals}>Generate Final & 3rd/4th Play-off</button></div>:<p style={{color:'#8aa0b6',fontSize:'0.85rem',margin:0}}>Finals need exactly two semi-final courts (4 teams). You currently have {semis.length} court{semis.length===1?'':'s'}.</p>)}{nslStage==='finals'&&<div>{(nslFinalsFixtures||[]).map((f,ix)=><div key={ix} style={{color:'#eaf4fb',fontSize:'0.9rem',margin:'2px 0'}}><strong style={{color:'#ffd479'}}>{f.label}</strong> · Court {f.court}: {f.a.name} v {f.b.name}</div>)}<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={backToNslSemis}>← Back to semi-finals</button></div>}</div>;})()}
+                {(()=>{const semis=nsslDetailedFixtures();const two=semis.length===2&&semis.every(f=>f.a&&f.b&&f.a.name!=='BYE'&&f.b.name!=='BYE');return <div style={{marginTop:'14px',padding:'12px 14px',background:'#0f1822',border:'1px solid #223044',borderRadius:'12px'}}><div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'8px'}}><span style={{fontWeight:800,color:'#9cc4ec',fontSize:'1.05rem'}}>Knockout</span><span style={{color:'#8aa0b6',fontSize:'0.82rem'}}>Stage: {nslStage==='finals'?'Final & 3rd/4th play-off':'Semi-finals'}</span></div>{nslStage!=='finals'&&(two?<div><p style={{color:'#c7d4e2',fontSize:'0.85rem',margin:'0 0 8px'}}>The winner of each semi is filled in automatically from the score (highlighted green). Tap a team only to override, then Generate.</p>{semis.map((f,ix)=>{const court=ix+1;const auto=nslCourtWinnerSide(court);const pick=nslSemiWinners[court]||auto;return <div key={court} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'4px 0'}}><span style={{color:'#9fb0c2',fontSize:'0.85rem',minWidth:'110px'}}>Court {court} semi</span><button type="button" className="secondaryBtn" style={pick==='a'?{background:'#114d2c',borderColor:'#2f5c46',color:'#a9cbb8',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'a'}))}>{f.a.name}</button><span style={{color:'#6b8299'}}>v</span><button type="button" className="secondaryBtn" style={pick==='b'?{background:'#114d2c',borderColor:'#2f5c46',color:'#a9cbb8',fontWeight:800}:undefined} onClick={()=>setNslSemiWinners(p=>({...p,[court]:'b'}))}>{f.b.name}</button></div>;})}<button type="button" className="primaryBtn" style={{marginTop:'8px'}} onClick={generateNslFinals}>Generate Final & 3rd/4th Play-off</button></div>:<p style={{color:'#8aa0b6',fontSize:'0.85rem',margin:0}}>Finals need exactly two semi-final courts (4 teams). You currently have {semis.length} court{semis.length===1?'':'s'}.</p>)}{nslStage==='finals'&&<div>{(nslFinalsFixtures||[]).map((f,ix)=><div key={ix} style={{color:'#eaf4fb',fontSize:'0.9rem',margin:'2px 0'}}><strong style={{color:'#d9c08a'}}>{f.label}</strong> · Court {f.court}: {f.a.name} v {f.b.name}</div>)}<button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={backToNslSemis}>← Back to semi-finals</button></div>}</div>;})()}
                 <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={resetNslScores}>Reset NSSL Scores</button><button type="button" className="secondaryBtn dangerBtn" style={nslEndMatchArmed?{background:'#5b1620',borderColor:'#a3333f',color:'#ffd0d0',fontWeight:800}:undefined} onClick={armEndMatch}>{nslEndMatchArmed?'⚠ Tap again to END MATCH':'End Match'}</button></div><p className="overlayExplain" style={{marginTop:'6px'}}>End Match double-taps to clear every court score, the playoff and the master display, and resets the clock to Period 1.</p>
               </div>
             )}
@@ -18533,7 +18533,7 @@ function PlayerPlans({players}){
 .playerPlansRoster{min-width:220px;max-width:280px;flex:0 0 auto;background:#0e141b;border:1px solid #2E6E8E;border-radius:12px;padding:10px;max-height:70vh;overflow:auto}
 .playerPlansRoster button{display:block;width:100%;text-align:left;background:transparent;border:none;color:#e2f1fc;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:0.95rem}
 .playerPlansRoster button.activePP{background:#2E6E8E;color:#fff;font-weight:700}
-.playerPlansRoster button.hasPlanPP{border-left:3px solid #4fb477}
+.playerPlansRoster button.hasPlanPP{border-left:3px solid #6fae8b}
 .playerPlansMain{flex:1 1 420px;min-width:300px}
 .ppMesoCard{background:#131b24;border:1px solid #2E6E8E55;border-radius:12px;padding:12px;margin-bottom:12px}
 .ppMesoHead{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
@@ -18541,7 +18541,7 @@ function PlayerPlans({players}){
 .ppMicroRow input{flex:1 1 120px}
 .ppPriorityRow{display:flex;gap:6px;flex-wrap:wrap}
 .ppPriorityRow input{flex:1 1 150px}
-.ppStatusBadge{font-size:0.75rem;padding:2px 8px;border-radius:20px;background:#4fb47733;color:#7fe0a0;border:1px solid #4fb477}
+.ppStatusBadge{font-size:0.75rem;padding:2px 8px;border-radius:20px;background:#6fae8b33;color:#7fe0a0;border:1px solid #6fae8b}
 .ppStatusBadge.archivedPP{background:#8884;color:#bbb;border-color:#888}
 `}</style>
     <div className="pageTop"><h1>Player Plans™</h1><p className="mutedText">Annual plan · mesocycles · microcycles — coach view (V0). {activeCount} active plan{activeCount===1?'':'s'}.</p></div>
@@ -19343,7 +19343,7 @@ function VisionPerceptionModule({setScreen}){
       <div><strong>Constraint Fading</strong><p>Constraints are scaffolding, not the building. Fade once the behaviour emerges.</p></div>
     </div>
     <div className="visionWarning"><strong>Important Coach Note</strong><p>The coloured racquet is not the cue. It is a guide to the cue. Once the player searches in the right area, attention must broaden to specifying information from the whole opponent-racquet scene.</p></div>
-    {sections.map(sec=><section key={sec} className="visionSection"><h2>{sec}</h2><div className="visionGrid">{VISION_ACTIVITIES.filter(a=>a.section===sec).map(a=><div key={a.title} className="visionCard"><div className="rldBadgeSm"><span className="rldDotSm" style={{background:'#22c55e'}}/> {a.rld}</div><h3>{a.title}</h3><p>{a.purpose}</p><div className="infoBox"><strong>Setup</strong><p>{a.setup}</p></div><div className="infoBox"><strong>Activity</strong><p>{a.task}</p></div><div className="infoBox"><strong>Rationale</strong><p>{a.rationale}</p></div><div className="visionFadeBox"><strong>When to fade</strong><p>{a.fade}</p></div><div className="visionRiskBox"><strong>What could go wrong?</strong><p>{a.risk}</p></div></div>)}</div></section>)}
+    {sections.map(sec=><section key={sec} className="visionSection"><h2>{sec}</h2><div className="visionGrid">{VISION_ACTIVITIES.filter(a=>a.section===sec).map(a=><div key={a.title} className="visionCard"><div className="rldBadgeSm"><span className="rldDotSm" style={{background:'#5c9c7a'}}/> {a.rld}</div><h3>{a.title}</h3><p>{a.purpose}</p><div className="infoBox"><strong>Setup</strong><p>{a.setup}</p></div><div className="infoBox"><strong>Activity</strong><p>{a.task}</p></div><div className="infoBox"><strong>Rationale</strong><p>{a.rationale}</p></div><div className="visionFadeBox"><strong>When to fade</strong><p>{a.fade}</p></div><div className="visionRiskBox"><strong>What could go wrong?</strong><p>{a.risk}</p></div></div>)}</div></section>)}
   </div>;
 }
 
@@ -19463,6 +19463,7 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   return <div className="page btsPage">
     <div className="pageTop"><div><h1>Poker</h1><p className="mutedText">Poker psychology applied to pressured squash performance.</p></div><div className="buttonRow">{typeof setSession==='function'&&<button className="primaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Poker (Blind Target)',category:'Blind Target',format:'Informational Pressure',duration:10,task:'Run the Poker module live. Deck '+deck+', '+mode+' delivery. Hidden targets — every rally might be match ball.',scoring:'Rally winner +1. First to reach a hidden declared target wins.',rationale:'Informational pressure: good decisions under incomplete information.',coach:'Debrief decisions, not scores. Do not pre-teach the inference layer.',playerFocus:'Compete to the last ball — every rally could already be match ball.',modifier,layers:['Informational Pressure',...(modifier.constraints||[])],rld:4}));}}>Add to Session</button>}<button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div></div>
     <div className="btsHero"><strong>Can you make good decisions when information is incomplete?</strong><span>Pressure is not the objective. Pressure is the consequence.</span></div>
+    <PokerTablesStyles/>
     <div className="ptChips" style={{margin:"10px 0"}}>
       <button type="button" className={!tables?"ptChip on":"ptChip"} onClick={()=>setTables(false)}>One court</button>
       <button type="button" className={tables?"ptChip on":"ptChip"} onClick={()=>setTables(true)}>Tables (multi-court)</button>
@@ -19507,14 +19508,15 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
       .btsScoreCard .nm{color:#eaf4fb;font-weight:700;}
       .btsScoreCard .pts{font-size:2.4rem;font-weight:800;color:#7db8ff;line-height:1;margin:6px 0;}
       .btsScoreCard .hint{font-size:0.72rem;color:#6b8299;}
-      .btsWinBanner{background:#0d2a18;border:1px solid #1d6b3f;color:#bff0d0;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:1.1rem;margin-top:10px;}
+      .btsWinBanner{background:#101d18;border:1px solid #2f5c46;color:#a9cbb8;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:1.1rem;margin-top:10px;}
       `}</style>
-      <h2>Live Match{mode==='assisted'?' · Assisted':''}</h2>
+      <h2>Quick Match{mode==='assisted'?' · Assisted':''}</h2>
+      <p className="mutedText" style={{marginTop:'-4px'}}>A fast generic game with one shared hidden target. For a specific game with its own rules and setup, open it from the list below.</p>
       {!started?
         <><p className="mutedText">The app draws a <strong>hidden target</strong> from the {deck==='custom'?'custom':deck} deck (× {mult}). First to reach it wins — the number stays secret until someone hits it. Tap the rally winner each point.</p>
         {competitors.length<2?<div className="hintBox">Add at least 2 present players (Players tab) to start a match.</div>:<button type="button" className="primaryBtn" onClick={startGame}>Start game · {competitors.length} players</button>}</>
         :
-        <><div className="btsScorerGrid">{competitors.map(n=><div role="button" tabIndex={0} key={n} className="btsScoreCard" onClick={()=>winRally(n)} style={winner===n?{borderColor:'#1d6b3f',background:'#0d2417'}:undefined}><div className="nm">{n}</div><div className="pts">{scores[n]||0}</div><div className="hint">tap = won rally</div></div>)}</div>
+        <><div className="btsScorerGrid">{competitors.map(n=><div role="button" tabIndex={0} key={n} className="btsScoreCard" onClick={()=>winRally(n)} style={winner===n?{borderColor:'#2f5c46',background:'#101d18'}:undefined}><div className="nm">{n}</div><div className="pts">{scores[n]||0}</div><div className="hint">tap = won rally</div></div>)}</div>
         {winner?<div className="btsWinBanner">🏆 Target was {target} — {winner} wins!</div>:<p className="mutedText" style={{marginTop:'10px'}}>Hidden target in play — every rally could be match ball.</p>}
         <div className="btsToggleRow" style={{marginTop:'10px'}}><button type="button" onClick={undoRally} disabled={!undoStack.length}>Undo</button><button type="button" onClick={newMatch}>New match · new hidden target</button>{projecting&&<span className="mutedText" style={{alignSelf:'center'}}>● reporting to Court Monitor</span>}</div></>}
     </div>
@@ -19954,8 +19956,8 @@ function PatternLabPlayerDisplay({payload={}}){
     <style>{`.plPatNote{font-family:'Consolas',monospace;font-size:1.5rem;line-height:1.7;color:#eaf4fb;font-weight:700;}
     .plSeamKey{color:#9fb3c4;font-size:1rem;line-height:1.5;margin:10px 0 0;}
     .plRunGrid{display:flex;flex-wrap:wrap;gap:10px;}.plRunGrid span{background:#13314a;border:1px solid #2E6E8E;color:#cfe6f5;border-radius:10px;padding:8px 14px;font-size:1.05rem;}
-    .claRationaleBox{background:#0c1f1a;border:1px solid #1d4a38;border-left:4px solid #34e0a0;border-radius:12px;padding:14px 16px;margin:12px 0 0;}
-    .claRationaleBox h2{color:#7fe8bf;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin:0 0 6px;}
+    .claRationaleBox{background:#0c1f1a;border:1px solid #1d4a38;border-left:4px solid #6fae8b;border-radius:12px;padding:14px 16px;margin:12px 0 0;}
+    .claRationaleBox h2{color:#86b8a4;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;font-weight:800;margin:0 0 6px;}
     .claRationaleBox p{color:#dbf2e8;line-height:1.5;margin:0;}`}</style>
     <div className="playerDisplayTop"><span>PATTERN LAB · LIVE</span><h1>{p.title||'Pattern'}</h1>{(p.rld||p.level)&&<p>{p.level?('Level '+p.level):''}{p.level&&p.rld?' · ':''}{p.rld?('RLD '+p.rld):''}</p>}</div>
     <div className="playerDisplayGrid"><section className="playerDisplayFocus"><h2>PATTERN</h2><p className="plPatNote">{p.notation}</p>{p.seamKey&&<p className="plSeamKey">{p.seamKey}</p>}</section></div>
@@ -20035,8 +20037,8 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
     .pdChip.on{background:#1f6b8e;border-color:#2E6E8E;color:#fff;font-weight:700;}
     .pdNote{font-size:0.74rem;color:#7a93a8;margin-top:9px;line-height:1.35;}
     .pdStepNum{min-width:34px;text-align:center;font-weight:800;color:#eaf4fb;font-size:1.1rem;}
-    .pdSummary{background:#0d1f17;border:1px solid #1d6b3f;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:5px;margin:8px 0 4px;}
-    .pdSummary strong{color:#bff0d0;}
+    .pdSummary{background:#0d1f17;border:1px solid #2f5c46;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:5px;margin:8px 0 4px;}
+    .pdSummary strong{color:#a9cbb8;}
     .pdSummary span{color:#cde7d6;font-size:0.85rem;}
     .pdSectionTitle{margin:14px 0 2px;color:#eaf4fb;}
     .pdSectionSub{color:#7a93a8;font-size:0.8rem;margin:0 0 4px;}
@@ -20046,21 +20048,21 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
     .pdLevGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 14px;}
     .pdPlayerRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px;border-top:1px solid #1b2733;cursor:pointer;}
     .pdPlayerRow .nm{color:#cde0ee;font-size:0.85rem;}
-    .pdSeamKey{display:block;color:#bff0d0;font-size:0.8rem;line-height:1.5;margin:8px 0 2px;}
-    .pdAddOk{background:#1f8e4f!important;border-color:#34e0a0!important;box-shadow:0 0 0 3px rgba(52,224,160,.55),0 0 18px rgba(52,224,160,.4)!important;transition:box-shadow .15s;}
+    .pdSeamKey{display:block;color:#a9cbb8;font-size:0.8rem;line-height:1.5;margin:8px 0 2px;}
+    .pdAddOk{background:#1f8e4f!important;border-color:#6fae8b!important;box-shadow:0 0 0 3px rgba(52,224,160,.55),0 0 18px rgba(52,224,160,.4)!important;transition:box-shadow .15s;}
     .pdAddErr{background:#8e2f2f!important;border-color:#e06b52!important;box-shadow:0 0 0 3px rgba(224,107,82,.55)!important;}
     .pdStepCode{display:block;color:#6b8299;font-family:'Consolas',monospace;font-size:0.78rem;font-style:normal;margin-top:3px;}
     .pdSteps{list-style:none;margin:0;padding:0;counter-reset:pdStep;}
     .pdSteps li{counter-increment:pdStep;display:grid;grid-template-columns:22px 74px 1fr;align-items:baseline;gap:8px;padding:7px 0;border-top:1px solid #1b2733;}
     .pdSteps li:first-child{border-top:none;}
     .pdSteps li::before{content:counter(pdStep);color:#6b8299;font-size:0.72rem;font-weight:700;}
-    .pdSteps li b{color:#bff0d0;font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+    .pdSteps li b{color:#a9cbb8;font-size:0.74rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
     .pdSteps li span{color:#cde0ee;font-size:0.88rem;line-height:1.45;}
     .pdScoreList{list-style:none;margin:0;padding:0;}
     .pdScoreList li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-top:1px solid #1b2733;}
     .pdScoreList li:first-child{border-top:none;}
     .pdScoreList li span{color:#cde0ee;font-size:0.88rem;line-height:1.4;}
-    .pdScoreList li b{color:#bff0d0;font-size:0.9rem;white-space:nowrap;}
+    .pdScoreList li b{color:#a9cbb8;font-size:0.9rem;white-space:nowrap;}
     @media(max-width:520px){.pdSteps li{grid-template-columns:18px 1fr;}.pdSteps li b{grid-column:2;}.pdSteps li span{grid-column:2;}}
     `}</style>
     <div className="pageTop"><button type="button" className="secondaryBtn" onClick={onBack}>‹ Library</button><button type="button" className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
@@ -20345,8 +20347,8 @@ const CLA_LEXICON_PEOPLE=[{"id":"nikolai-bernstein","n":"Nikolai Bernstein","dat
 const LEX_TILES=[
   {id:'Foundations',label:'Foundations',blurb:'Core concepts underpinning CLA.',color:'#4a9de0'},
   {id:'Key Researchers',label:'Key Researchers',blurb:'People who shaped the field.',color:'#c084fc'},
-  {id:'Coaching Concepts',label:'Coaching Concepts',blurb:'Practical coaching terminology.',color:'#4ade80'},
-  {id:'Skill Acquisition',label:'Skill Acquisition',blurb:'Learning and performance concepts.',color:'#fbbf24'},
+  {id:'Coaching Concepts',label:'Coaching Concepts',blurb:'Practical coaching terminology.',color:'#6fae8b'},
+  {id:'Skill Acquisition',label:'Skill Acquisition',blurb:'Learning and performance concepts.',color:'#c8a552'},
   {id:'Complex Systems',label:'Complex Systems',blurb:'System dynamics and emergent behaviour.',color:'#fb7185'},
 ];
 function lexTileColor(tile){const t=LEX_TILES.find(x=>x.id===tile);return t?t.color:'#8aa0b6';}
@@ -20382,7 +20384,7 @@ function LexiconStyles(){return <style>{`
 .lexTile{display:flex;flex-direction:column;align-items:flex-start;gap:3px;background:#0b1320;border:1px solid #223044;border-left:4px solid #2E6E8E;border-radius:13px;padding:16px 18px;cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;}
 .lexTile strong{color:#eaf4fb;font-size:1.12rem;font-weight:800;}
 .lexTile span{color:#8aa0b6;font-size:.85rem;}
-.lexTile em{color:#7fc8a0;font-size:.75rem;font-style:normal;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.lexTile em{color:#7bb096;font-size:.75rem;font-style:normal;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
 .lexList{display:flex;flex-direction:column;gap:8px;}
 .lexRow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0c1626;border:1px solid #1e2c3c;border-radius:11px;padding:12px 15px;cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;}
 .lexRow strong{color:#eaf4fb;font-size:1rem;font-weight:700;}
@@ -20390,27 +20392,27 @@ function LexiconStyles(){return <style>{`
 .lexRowTag{color:#6b8299;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
 .lexAzBar{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
 .lexAzBtn{background:#0f1c2c;border:1px solid #26384d;color:#9cc4ec;border-radius:8px;min-width:32px;padding:7px 4px;font-weight:800;font-size:.82rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.lexAzOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.lexAzOn{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .lexEntry{display:flex;flex-direction:column;gap:14px;}
 .lexEntryHead{border-left:4px solid #2E6E8E;padding-left:14px;}
 .lexEntryHead h1{color:#eaf4fb;font-size:1.72rem;margin:0 0 4px;line-height:1.2;}
 .lexEntryHead .lexAlias{color:#8aa0b6;font-size:.85rem;font-style:italic;}
-.lexEntryHead .lexCat{color:#7fc8a0;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;}
+.lexEntryHead .lexCat{color:#7bb096;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;}
 .lexDef{background:#0c1a2e;border:1px solid #25405f;border-radius:12px;padding:14px 16px;color:#eaf4fb;font-size:1.02rem;line-height:1.5;font-weight:600;}
 .lexSec h3{color:#9cc4ec;font-size:.76rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;margin:0 0 7px;}
 .lexSec p{color:#c7d4e2;font-size:.98rem;line-height:1.62;margin:0;}
 .lexSec ul{margin:0;padding-left:19px;color:#c7d4e2;font-size:.95rem;line-height:1.62;}
 .lexSec li{margin-bottom:5px;}
-.lexMyth{background:#1a1410;border:1px solid #4a3520;border-radius:12px;padding:14px 16px;}
-.lexMyth h3{color:#fbbf24;}
-.lexMyth p{color:#e8d9c0;}
-.lexSquash{background:#0b1f16;border:1px solid #1d6b3f;border-radius:12px;padding:14px 16px;}
-.lexSquash h3{color:#7fc8a0;}
+.lexMyth{background:#131a24;border:1px solid #3d4657;border-radius:12px;padding:14px 16px;}
+.lexMyth h3{color:#c8a552;}
+.lexMyth p{color:#c7d4e2;}
+.lexSquash{background:#101d18;border:1px solid #2f5c46;border-radius:12px;padding:14px 16px;}
+.lexSquash h3{color:#7bb096;}
 .lexRel{display:flex;flex-wrap:wrap;gap:7px;}
 .lexRelBtn{background:#0f1c2c;border:1px solid #26384d;color:#9cc4ec;border-radius:999px;padding:8px 14px;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .lexRefs{color:#7c8ea0;font-size:.79rem;line-height:1.6;}
 .lexRefs li{margin-bottom:6px;}
-.lexInApp{display:inline-block;background:#114d2c;border:1px solid #1d6b3f;color:#bff0d0;border-radius:999px;padding:3px 11px;font-size:.7rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-top:6px;}
+.lexInApp{display:inline-block;background:#114d2c;border:1px solid #2f5c46;color:#a9cbb8;border-radius:999px;padding:3px 11px;font-size:.7rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-top:6px;}
 .lexPerson h3{color:#9cc4ec;}
 .lexCount{color:#6b8299;font-size:.8rem;margin:0 0 4px;}
 `}</style>;}
@@ -20561,7 +20563,7 @@ function ParentStyles(){return <style>{`
 .parWrap{display:flex;flex-direction:column;gap:14px;}
 .parTabs{display:flex;flex-wrap:wrap;gap:8px;}
 .parTab{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:10px;padding:10px 15px;font-weight:700;font-size:.88rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.parTabOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.parTabOn{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .parSec{background:#0b1320;border:1px solid #223044;border-left:4px solid #2E6E8E;border-radius:13px;padding:16px 18px;}
 .parSec h3{color:#eaf4fb;font-size:1.12rem;margin:0 0 9px;font-weight:800;}
 .parSec p{color:#c7d4e2;font-size:.97rem;line-height:1.65;margin:0 0 9px;}
@@ -20570,11 +20572,11 @@ function ParentStyles(){return <style>{`
 .parQ h4{color:#9cc4ec;font-size:.98rem;margin:0 0 8px;font-weight:800;}
 .parQ p{color:#c7d4e2;font-size:.94rem;line-height:1.62;margin:0 0 8px;}
 .parQ p:last-child{margin-bottom:0;}
-.parScript{background:#0b1f16;border:1px solid #1d6b3f;border-radius:12px;padding:14px 16px;}
-.parScript h4{color:#7fc8a0;font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 8px;}
+.parScript{background:#101d18;border:1px solid #2f5c46;border-radius:12px;padding:14px 16px;}
+.parScript h4{color:#7bb096;font-size:.78rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 8px;}
 .parScript p{color:#dff3e6;font-size:1rem;line-height:1.6;margin:0;font-style:italic;}
 .parProg{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:14px 16px;}
-.parProg h4{color:#fbbf24;font-size:.8rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 9px;}
+.parProg h4{color:#c8a552;font-size:.8rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0 0 9px;}
 .parProg ul{margin:0;padding-left:19px;color:#c7d4e2;font-size:.94rem;line-height:1.6;}
 .parProg li{margin-bottom:6px;}
 .parLead{color:#9fb3c4;font-size:.95rem;line-height:1.6;margin:0;}
@@ -20688,10 +20690,10 @@ function BreakthroughStyles(){return <style>{`
 .bkPanel h4{color:#9cc4ec;font-size:.78rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin:0 0 9px;}
 .bkChips{display:flex;flex-wrap:wrap;gap:7px;}
 .bkChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:8px 13px;font-size:.85rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:left;}
-.bkChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.bkChipOn{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .bkInput{width:100%;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:.92rem;padding:11px 13px;outline:none;-webkit-appearance:none;appearance:none;}
-.bkEntry{background:#0c1626;border:1px solid #1e2c3c;border-left:3px solid #1d6b3f;border-radius:11px;padding:12px 14px;}
-.bkEntry .bkWhen{color:#7fc8a0;font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
+.bkEntry{background:#0c1626;border:1px solid #1e2c3c;border-left:3px solid #2f5c46;border-radius:11px;padding:12px 14px;}
+.bkEntry .bkWhen{color:#7bb096;font-size:.74rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;}
 .bkEntry strong{display:block;color:#eaf4fb;font-size:.97rem;margin:3px 0;}
 .bkEntry .bkCtx{color:#8aa0b6;font-size:.83rem;}
 .bkEntry .bkNote{color:#c7d4e2;font-size:.88rem;margin-top:5px;line-height:1.5;}
@@ -20778,24 +20780,24 @@ function CoachingParadigmsStyles(){return <style>{`
 .cpWrap{display:flex;flex-direction:column;gap:14px;}
 .cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
 .cpTab{background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:10px 15px;color:#dbe6f2;font-weight:700;font-size:.87rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.cpTab.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.cpTab.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .cpHero{background:#0c1a2e;border:1px solid #25405f;border-radius:14px;padding:18px 20px;}
 .cpHero h2{color:#eaf4fb;margin:0 0 8px;font-size:1.2rem;}
 .cpHero p{color:#c7d4e2;font-size:.97rem;line-height:1.6;margin:0 0 8px;}
 .cpHero p:last-child{margin-bottom:0;}
-.cpQ{color:#7fc8a0;font-size:1.05rem;font-weight:800;}
+.cpQ{color:#7bb096;font-size:1.05rem;font-weight:800;}
 .cpStack{display:flex;flex-direction:column;align-items:center;gap:0;margin:14px 0 4px;}
 .cpParallel{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 6px;align-items:flex-start;}
 .cpBranch{flex:1 1 280px;display:flex;flex-direction:column;align-items:center;gap:0;}
 .cpBranchHead{width:100%;text-align:center;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid #223044;}
-.cpBranchT{color:#e0a334;}
-.cpBranchE{color:#7fc8a0;}
+.cpBranchT{color:#c8a552;}
+.cpBranchE{color:#7bb096;}
 .cpBranchFoot{color:#8aa0b6;font-size:.8rem;text-align:center;margin-top:10px;line-height:1.5;}
 .cpNode{width:100%;max-width:460px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px 15px;text-align:center;}
 .cpNode strong{display:block;color:#eaf4fb;font-size:1rem;}
 .cpNode span{color:#8aa0b6;font-size:.8rem;}
-.cpNode.cpEco{border-color:#1d6b3f;background:#0b1f16;}
-.cpNode.cpTradNode{border-color:#7a5a2a;background:#1a1410;}
+.cpNode.cpEco{border-color:#2f5c46;background:#101d18;}
+.cpNode.cpTradNode{border-color:#7a5a2a;background:#131a24;}
 .cpArrow{color:#4a6b8a;font-size:1.3rem;line-height:1.5;}
 .cpDivide{color:#6b8299;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin:10px 0 6px;}
 .cpCard{background:#0f1822;border:1px solid #223044;border-radius:13px;padding:14px 16px;}
@@ -20803,8 +20805,8 @@ function CoachingParadigmsStyles(){return <style>{`
 .cpCard .cpDef{color:#c7d4e2;font-size:.92rem;line-height:1.55;margin:0 0 9px;}
 .cpCard .cpSub{color:#9cc4ec;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin:0 0 5px;}
 .cpCard .cpBody{color:#9fb6cf;font-size:.88rem;line-height:1.55;margin:0 0 9px;}
-.cpFair{background:#0b1f16;border:1px solid #1d6b3f;border-radius:10px;padding:10px 13px;}
-.cpFair .cpSub{color:#7fc8a0;}
+.cpFair{background:#101d18;border:1px solid #2f5c46;border-radius:10px;padding:10px 13px;}
+.cpFair .cpSub{color:#7bb096;}
 .cpFair .cpBody{color:#dff3e6;margin:0;}
 .cpCmp{background:#0f1822;border:1px solid #223044;border-radius:13px;overflow:hidden;}
 .cpCmpHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
@@ -20816,23 +20818,23 @@ function CoachingParadigmsStyles(){return <style>{`
 .cpGoal p{color:#dbe6f2;font-size:.9rem;line-height:1.5;margin:0;}
 .cpCols{display:flex;flex-wrap:wrap;gap:10px;}
 .cpCol{flex:1 1 240px;border-radius:10px;padding:11px 13px;}
-.cpColT{background:#1a1410;border:1px solid #4a3520;}
-.cpColE{background:#0b1f16;border:1px solid #1d6b3f;}
+.cpColT{background:#131a24;border:1px solid #3d4657;}
+.cpColE{background:#101d18;border:1px solid #2f5c46;}
 .cpCol .cpSub{margin-bottom:6px;}
-.cpColT .cpSub{color:#e0a334;}
-.cpColE .cpSub{color:#7fc8a0;}
+.cpColT .cpSub{color:#c8a552;}
+.cpColE .cpSub{color:#7bb096;}
 .cpCol p{font-size:.88rem;line-height:1.55;margin:0;}
-.cpColT p{color:#e8d9c0;}
+.cpColT p{color:#c7d4e2;}
 .cpColE p{color:#dff3e6;}
 .cpCol ul{margin:0;padding-left:17px;font-size:.85rem;line-height:1.5;}
-.cpColT ul{color:#e8d9c0;}
+.cpColT ul{color:#c7d4e2;}
 .cpColE ul{color:#dff3e6;}
 .cpClash{background:#0c1626;border:1px solid #1e2c3c;border-radius:10px;padding:11px 13px;margin:11px 0;}
-.cpClash .cpSub{color:#fbbf24;}
+.cpClash .cpSub{color:#c8a552;}
 .cpClash div{color:#c7d4e2;font-size:.88rem;line-height:1.55;margin-bottom:4px;}
 .cpClash b{color:#eaf4fb;}
-.cpRefl{background:#0c2418;border:1px solid #1d6b3f;border-radius:10px;padding:12px 14px;margin-top:11px;}
-.cpRefl .cpSub{color:#7fc8a0;}
+.cpRefl{background:#101d18;border:1px solid #2f5c46;border-radius:10px;padding:12px 14px;margin-top:11px;}
+.cpRefl .cpSub{color:#7bb096;}
 .cpRefl p{color:#dff3e6;font-size:.95rem;line-height:1.55;margin:0;font-style:italic;}
 .cpLead{color:#9fb6cf;font-size:.92rem;line-height:1.6;margin:0;}
 .cpLink{background:#0c1a2e;border:1px solid #25405f;border-radius:12px;padding:14px 16px;cursor:pointer;width:100%;text-align:left;-webkit-tap-highlight-color:transparent;}
@@ -20863,8 +20865,8 @@ function CoachingParadigms({setScreen}){
 
       <div className="cpHero">
         <h2>The organising principle — emergence</h2>
-        <p style={{color:'#bff0d0',fontWeight:700,fontSize:'1.02rem'}}>Skill is not transferred from coach to athlete. It emerges through the continuous interaction between the performer, the task and the environment.</p>
-        <p>A coach <em>can</em> install technique — a grip, a swing shape, a movement pattern. What cannot be installed is <strong style={{color:'#bff0d0'}}>skill</strong>: the functional movement that solves a live problem against a live opponent. Technique is a shape. Skill is a shape that fits the moment, and the moment is never the same twice.</p>
+        <p style={{color:'#a9cbb8',fontWeight:700,fontSize:'1.02rem'}}>Skill is not transferred from coach to athlete. It emerges through the continuous interaction between the performer, the task and the environment.</p>
+        <p>A coach <em>can</em> install technique — a grip, a swing shape, a movement pattern. What cannot be installed is <strong style={{color:'#a9cbb8'}}>skill</strong>: the functional movement that solves a live problem against a live opponent. Technique is a shape. Skill is a shape that fits the moment, and the moment is never the same twice.</p>
         <p>That is why this sentence is the organising principle rather than a slogan. Skill is unique to each player, assembled from their body, their history and what the situation offers. It cannot be handed over — only grown.</p>
       </div>
 
@@ -20886,11 +20888,11 @@ function CoachingParadigms({setScreen}){
       </div>
       <p className="cpLead">These are two columns, not one ladder. Traditional coaching is not an earlier step that ecological dynamics improved on — it is a parallel answer to the same question, still widely and successfully practised. Within the right-hand column there <em>is</em> a chain: ecological dynamics explains <em>why</em> learning happens, CLA explains <em>how</em> to design for it, and Checkerboard is one worked implementation.</p>
 
-      <div className="cpHero" style={{borderColor:'#1d6b3f'}}>
+      <div className="cpHero" style={{borderColor:'#2f5c46'}}>
         <h2>Why emergence is the whole argument</h2>
         <p>This is the concept the two paradigms cannot share, and everything else follows from it.</p>
         <p>When a player produces a shot nobody taught them, traditional coaching explains it as a learned technique being adjusted — the grooved pattern, flexed to fit. On that account nothing new happened; an existing thing was scaled.</p>
-        <p>Ecological dynamics says something genuinely new was assembled, out of that player, that task and that moment. It may never have existed before and may never recur in the same form. <strong style={{color:'#bff0d0'}}>That is the skill — and it belongs to that player alone,</strong> because their body, reach, speed and history are part of what built it.</p>
+        <p>Ecological dynamics says something genuinely new was assembled, out of that player, that task and that moment. It may never have existed before and may never recur in the same form. <strong style={{color:'#a9cbb8'}}>That is the skill — and it belongs to that player alone,</strong> because their body, reach, speed and history are part of what built it.</p>
         <p>Traditional coaching has no category for this. It does not recognise emergent behaviour and it does not train for it. That is not a criticism of any individual coach — it is what the paradigm's own explanation of skill allows it to see.</p>
       </div>
 
@@ -20944,12 +20946,12 @@ function CoachingParadigms({setScreen}){
 
     {tab==='ledger'&&<>
       <p className="cpLead">A comparison that only lists one side&rsquo;s strengths is advocacy, not education. This page exists so the module can be handed to a sceptical colleague without it reading as a rebuke. It is not a scorecard: the entries below are practical cautions, not a claim that the two explanations are equally well supported.</p>
-      <div className="cpCard" style={{borderLeft:'3px solid #e0a334'}}>
-        <div className="cpSub" style={{color:'#e0a334'}}>What traditional coaching gets right</div>
+      <div className="cpCard" style={{borderLeft:'3px solid #c8a552'}}>
+        <div className="cpSub" style={{color:'#c8a552'}}>What traditional coaching gets right</div>
         <ul className="cpList">{CP_TRAD_STRENGTHS.map((x,i)=><li key={i}>{x}</li>)}</ul>
       </div>
-      <div className="cpCard" style={{borderLeft:'3px solid #7fc8a0'}}>
-        <div className="cpSub" style={{color:'#7fc8a0'}}>Where the ecological case is weaker than its advocates say</div>
+      <div className="cpCard" style={{borderLeft:'3px solid #7bb096'}}>
+        <div className="cpSub" style={{color:'#7bb096'}}>Where the ecological case is weaker than its advocates say</div>
         <ul className="cpList">{CP_ECO_LIMITS.map((x,i)=><li key={i}>{x}</li>)}</ul>
       </div>
       <div className="cpHero">
@@ -20981,40 +20983,40 @@ function PokerTablesStyles(){return <style>{`
 .ptLabel{color:#9cc4ec;font-size:.73rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;}
 .ptChips{display:flex;flex-wrap:wrap;gap:7px;}
 .ptChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 13px;color:#dbe6f2;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.ptChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.ptChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .ptCourt{background:#0c1626;border:1px solid #1e2c3c;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
 .ptCourtHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;}
 .ptCourtHead strong{color:#eaf4fb;font-size:.95rem;}
-.ptVal{color:#e0a334;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
+.ptVal{color:#c8a552;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
 .ptNames{color:#9fb6cf;font-size:.84rem;margin-bottom:8px;}
-.ptWarn{color:#fbbf24;font-size:.83rem;line-height:1.5;background:#1a1410;border:1px solid #4a3520;border-radius:9px;padding:9px 12px;}
+.ptWarn{color:#c8a552;font-size:.83rem;line-height:1.5;background:#131a24;border:1px solid #3d4657;border-radius:9px;padding:9px 12px;}
 .ptLead{color:#9fb6cf;font-size:.87rem;line-height:1.55;margin:0;}
 .ptBoard{display:flex;flex-direction:column;gap:6px;}
 .ptRow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0c1626;border:1px solid #1e2c3c;border-radius:9px;padding:9px 12px;}
 .ptRow b{color:#eaf4fb;}
 .ptRow span{color:#8aa0b6;font-size:.82rem;}
-.ptPts{color:#bff0d0;font-weight:800;font-size:1.05rem;}
+.ptPts{color:#a9cbb8;font-weight:800;font-size:1.05rem;}
 .ptDisplay{min-height:100vh;background:#070d14;padding:22px;}
 .ptDispTop{text-align:center;margin-bottom:18px;}
-.ptDispTop span{color:#7fc8a0;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
+.ptDispTop span{color:#7bb096;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
 .ptDispTop h1{color:#eaf4fb;font-size:2.2rem;margin:5px 0 2px;}
 .ptDispTop p{color:#9fb3c4;margin:0;font-size:1rem;}
 .ptGrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:20px;}
 .ptCard{flex:1 1 250px;max-width:340px;background:#0c1626;border:2px solid #25405f;border-radius:16px;padding:15px;}
-.ptCard h2{color:#7fc8a0;font-size:.85rem;letter-spacing:.09em;text-transform:uppercase;margin:0 0 4px;}
-.ptCard .ptCardVal{color:#e0a334;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px;}
+.ptCard h2{color:#7bb096;font-size:.85rem;letter-spacing:.09em;text-transform:uppercase;margin:0 0 4px;}
+.ptCard .ptCardVal{color:#c8a552;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px;}
 .ptCard div.ptP{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#0f1c2c;border:1px solid #2c3c4e;border-radius:9px;padding:9px 12px;margin-bottom:6px;}
 .ptCard div.ptP b{color:#eaf4fb;font-size:1.05rem;}
-.ptCard div.ptP i{color:#7fc8a0;font-style:normal;font-weight:800;font-size:1.2rem;}
+.ptCard div.ptP i{color:#7bb096;font-style:normal;font-weight:800;font-size:1.2rem;}
 .ptLead2{color:#9fb3c4;text-align:center;font-size:.9rem;}
-.ptWin{background:#0c2418;border:2px solid #1d6b3f;border-radius:14px;padding:16px;text-align:center;margin-bottom:18px;}
-.ptWin strong{color:#bff0d0;font-size:1.5rem;display:block;}
-.ptWin span{color:#7fc8a0;font-size:.95rem;}
+.ptWin{background:#101d18;border:2px solid #2f5c46;border-radius:14px;padding:16px;text-align:center;margin-bottom:18px;}
+.ptWin strong{color:#a9cbb8;font-size:1.5rem;display:block;}
+.ptWin span{color:#7bb096;font-size:.95rem;}
 .ptScorer{min-height:100vh;background:#070d14;padding:18px;display:flex;flex-direction:column;gap:12px;}
-.ptTarget{background:#0c2418;border:2px solid #1d6b3f;border-radius:14px;padding:14px 16px;}
+.ptTarget{background:#101d18;border:2px solid #2f5c46;border-radius:14px;padding:14px 16px;}
 .ptTarget .ptTgtName{color:#eaf4fb;font-size:1.15rem;font-weight:800;}
-.ptTarget .ptTgtNum{color:#bff0d0;font-size:2.4rem;font-weight:800;line-height:1;}
-.ptTarget .ptTgtSub{color:#7fc8a0;font-size:.8rem;}
+.ptTarget .ptTgtNum{color:#a9cbb8;font-size:2.4rem;font-weight:800;line-height:1;}
+.ptTarget .ptTgtSub{color:#7bb096;font-size:.8rem;}
 .ptBig{background:#12203a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:12px;padding:16px;font-size:1.1rem;font-weight:800;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent;}
 `}</style>;}
 
@@ -21072,7 +21074,7 @@ function PokerCourtScorer({court,host}){
 
   return <div className="ptScorer"><PokerTablesStyles/>
     <div style={{textAlign:'center'}}>
-      <div style={{color:'#7fc8a0',fontSize:'.78rem',fontWeight:800,letterSpacing:'.12em'}}>COURT {court} · SCORING</div>
+      <div style={{color:'#7bb096',fontSize:'.78rem',fontWeight:800,letterSpacing:'.12em'}}>COURT {court} · SCORING</div>
       <div style={{color:'#eaf4fb',fontSize:'1.3rem',fontWeight:800}}>Poker — Round {round||'—'}</div>
       <div style={{color:'#9fb3c4',fontSize:'.85rem'}}>Worth {pokerRoundValue(court)} point{pokerRoundValue(court)===1?'':'s'} to the winner</div>
     </div>
@@ -21231,6 +21233,7 @@ function PokerTablesControl({deckRange,mult}){
             : 'Uneven tables left as they are. A player on the smaller table will tend to finish first regardless of how well they play.'}
         </p>
       </>}
+      <p className="ptWarn" style={{marginTop:'10px'}}>Tables runs the target race: every player chases their own hidden number and the first to reach it takes the round. It suits Blind Target, Mini, Live Drift, Blind Difference, Power Play and The Gambler. It does not suit Declare or Hold, where choosing to play past your target is the whole game, nor the King of Court games, which already run across a whole session.</p>
       <p className="ptLead" style={{marginTop:'10px'}}>Court 1 is the top table. A win there is worth {pokerRoundValue(1)}, Court 2 is worth {pokerRoundValue(2)}, and so on — so dropping down never becomes the easy way to score.</p>
     </div>
 
@@ -21248,7 +21251,7 @@ function PokerTablesControl({deckRange,mult}){
       <div className="ptLabel">Round {round||'—'}</div>
       {!round&&<p className="ptLead">Send each court its Scoring link, put the display on the projector, then start round 1. Every player draws their own hidden target.</p>}
       {round>0&&!roundOver&&<p className="ptLead">Live. The first player on any court to reach their own target takes the round — all courts stop the moment that happens.</p>}
-      {roundOver&&<p className="ptLead" style={{color:'#bff0d0'}}><strong>{winner}</strong> took round {round}. Rotate, then start the next round.</p>}
+      {roundOver&&<p className="ptLead" style={{color:'#a9cbb8'}}><strong>{winner}</strong> took round {round}. Rotate, then start the next round.</p>}
       <div style={{display:'flex',gap:'8px',marginTop:'10px',flexWrap:'wrap'}}>
         <button type="button" className="primaryBtn" onClick={startRound}>{round?'Start round '+(round+1):'Start round 1'}</button>
         <button type="button" className="secondaryBtn" disabled={!roundOver} onClick={rotate}>Rotate ladder</button>
@@ -21350,7 +21353,7 @@ function PokerGameRunner({game,deck,setDeck,deckRange,mult,setMult,mirror,setMir
         <div className="ptLabel">{eventGame?'Score the events':'Tap the rally winner'}</div>
         <div className="btsScorerGrid">{picked.map(n=><div key={n} role="button" tabIndex={0} className="btsScoreCard"
             onClick={()=>add(n,1)} onKeyDown={e=>{if(e.key==='Enter')add(n,1);}}
-            style={winner===n?{borderColor:'#1d6b3f',background:'#0d2417'}:undefined}>
+            style={winner===n?{borderColor:'#2f5c46',background:'#101d18'}:undefined}>
           <div className="nm">{n}</div><div className="pts">{scores[n]||0}</div>
           <div className="hint">{reveal===n&&!eventGame?'target '+targets[n]:'tap = won rally'}</div>
         </div>)}</div>
@@ -21514,7 +21517,7 @@ function SRStyles(){return <style>{`
 .srBlurb{background:#0d1722;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:10px;padding:11px 14px;color:#c5d6e6;margin-bottom:14px;line-height:1.45;}
 .srGameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;margin-bottom:16px;}
 .srGameCard{background:#0f1822;border:1px solid #223044;border-radius:11px;padding:12px 13px;color:#c5d6e6;cursor:pointer;text-align:left;}
-.srGameCard.on{background:#102a1c;border-color:#1d6b3f;}
+.srGameCard.on{background:#102a1c;border-color:#2f5c46;}
 .srGameCard strong{color:#eaf4fb;display:block;margin-bottom:4px;}
 .srGameCard span{font-size:0.8rem;color:#7c8ea0;line-height:1.35;}
 .srDetail{background:#0b1320;border:1px solid #213247;border-radius:14px;padding:16px;margin-bottom:16px;}
@@ -21529,7 +21532,7 @@ function SRStyles(){return <style>{`
 .srNum{font-size:2.6rem;font-weight:800;line-height:1;}
 .srBtnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .srBtn{background:#16466a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;}
-.srBtn.good{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.srBtn.good{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .srBtn.ghost{background:#0b1118;border-color:#2c3c4e;color:#9fb0c2;}
 .srPhase{display:inline-flex;gap:6px;align-items:center;background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:5px 12px;font-weight:700;font-size:0.85rem;}
 .srMuted{color:#7c8ea0;font-size:0.85rem;line-height:1.45;}
@@ -21546,7 +21549,7 @@ function SRStyles(){return <style>{`
 .srDispScore .s{text-align:center;}
 .srDispScore .s .n{font-size:4.5rem;font-weight:800;color:#7db8ff;line-height:1;}
 .srDispScore .s .who{color:#5e89b0;font-size:1.1rem;margin-top:6px;}
-.srDispBonus{text-align:center;font-size:1.3rem;color:#ffd479;}
+.srDispBonus{text-align:center;font-size:1.3rem;color:#d9c08a;}
 `}</style>;}
 
 function ServeReturnModule({setScreen,setSession,embedded=false}){
@@ -21613,7 +21616,7 @@ function ServeReturnModule({setScreen,setSession,embedded=false}){
         {tab==='first3'&&<div style={{margin:'4px 0 10px'}}><span className="srPhase">Phase · {phase}</span> <button type="button" className="srBtn ghost" onClick={nextPhase} style={{marginLeft:'8px'}}>Next phase →</button></div>}
         <div className="srObj">
           <div className="srObjBox"><div className="lbl">Objective</div><p>{game.task}</p></div>
-          <div className="srObjBox"><div className="lbl">Scoring</div><p>{game.scoring}{game.bonus?(' '):''}{game.bonus&&<strong style={{color:'#ffd479'}}> Bonus: {game.bonus}</strong>}</p></div>
+          <div className="srObjBox"><div className="lbl">Scoring</div><p>{game.scoring}{game.bonus?(' '):''}{game.bonus&&<strong style={{color:'#d9c08a'}}> Bonus: {game.bonus}</strong>}</p></div>
         </div>
 
         <div className="srScorer">
@@ -21624,7 +21627,7 @@ function ServeReturnModule({setScreen,setSession,embedded=false}){
           </div>
           <div className="srSide">
             <h4>Returner</h4>
-            <div className="srNum" style={{color:'#86efac'}}>{ret}</div>
+            <div className="srNum" style={{color:'#8fbfa4'}}>{ret}</div>
             <div className="srBtnRow">{(game&&game.buttons&&game.buttons.some(b=>b.who==='returner')?game.buttons.filter(b=>b.who==='returner'):[{label:'+1',pts:1},{label:'+2',pts:2},{label:'+3',pts:3}]).map((b,i)=><button key={i} type="button" className={'srBtn '+(b.pts<0?'ghost':'good')} onClick={()=>addRet(b.pts)}>{b.label}</button>)}</div>
           </div>
         </div>
@@ -21669,7 +21672,7 @@ function ServeReturnPlayerDisplay({payload={}}){
     </div>
     <div className="srDispScore">
       <div className="s"><div className="n">{payload.serverPts||0}</div><div className="who">Server</div></div>
-      <div className="s"><div className="n" style={{color:'#86efac'}}>{payload.returnerPts||0}</div><div className="who">Returner</div></div>
+      <div className="s"><div className="n" style={{color:'#8fbfa4'}}>{payload.returnerPts||0}</div><div className="who">Returner</div></div>
     </div>
     {g.bonus&&<div className="srDispBonus">Bonus available: {g.bonus}</div>}
   </div>;
@@ -21681,16 +21684,16 @@ function LobStyles(){return <style>{`
 .lobBoard{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0;}
 .lobMain{flex:2;min-width:280px;background:#0b1320;border:1px solid #213247;border-radius:14px;padding:16px;}
 .lobSide{flex:1;min-width:220px;background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px;}
-.lobLearner{font-size:1.4rem;font-weight:800;color:#ffd479;}
-.lobBig{font-size:3rem;font-weight:800;line-height:1;color:#86efac;}
+.lobLearner{font-size:1.4rem;font-weight:800;color:#d9c08a;}
+.lobBig{font-size:3rem;font-weight:800;line-height:1;color:#8fbfa4;}
 .lobAtt{font-size:1rem;color:#7c8ea0;margin-top:4px;}
 .lobBtnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .lobBtn{border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;border:1px solid #2c3c4e;background:#16466a;color:#eaf4fb;}
-.lobBtn.bucket{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;font-size:1.05rem;}
+.lobBtn.bucket{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;font-size:1.05rem;}
 .lobBtn.block{background:#2a0d12;border-color:#7a2233;color:#fca5b5;}
 .lobBtn.ghost{background:#0b1118;border-color:#2c3c4e;color:#9fb0c2;}
 .lobRow{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:8px;background:#0d1722;margin-bottom:6px;}
-.lobRow.on{background:#14331f;border:1px solid #1d6b3f;}
+.lobRow.on{background:#14331f;border:1px solid #2f5c46;}
 .lobRow b{color:#eaf4fb;}
 .lobMuted{color:#7c8ea0;font-size:0.85rem;line-height:1.5;}
 .lobChips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
@@ -21698,8 +21701,8 @@ function LobStyles(){return <style>{`
 /* player display */
 .lobDisp{min-height:100vh;background:radial-gradient(circle at 50% 0%,#11331f,#060c14 70%);color:#eaf4fb;padding:5vh 4vw;box-sizing:border-box;text-align:center;}
 .lobDisp h1{font-size:3rem;margin:6px 0;}
-.lobDisp .obj{font-size:1.7rem;color:#bff0d0;max-width:800px;margin:0 auto 3vh;line-height:1.4;}
-.lobDispScore{font-size:6rem;font-weight:800;color:#86efac;line-height:1;}
+.lobDisp .obj{font-size:1.7rem;color:#a9cbb8;max-width:800px;margin:0 auto 3vh;line-height:1.4;}
+.lobDispScore{font-size:6rem;font-weight:800;color:#8fbfa4;line-height:1;}
 .lobDispAtt{font-size:1.4rem;color:#9fb0c2;margin-top:6px;}
 .lobLead{max-width:560px;margin:3vh auto 0;}
 .lobLead .r{display:flex;justify-content:space-between;background:#0f1d30;border:1px solid #21384e;border-radius:10px;padding:10px 16px;margin-bottom:7px;font-size:1.2rem;}
@@ -21767,7 +21770,7 @@ function LobModule({setScreen,setSession,embedded=false}){
         <span className="lobChip">Bucket: back corner [8]</span>
       </div>
       <div className="lobChips" style={{marginTop:'4px'}}>
-        <span className="lobChip" style={{background:'#3a2f10',borderColor:'#7a6322',color:'#ffd479'}}>🎯 Learner: {learnerName}</span>
+        <span className="lobChip" style={{background:'#3a2f10',borderColor:'#7a6322',color:'#d9c08a'}}>🎯 Learner: {learnerName}</span>
         {shortLineNames.length>0&&<span className="lobChip">🧱 Short line: {shortLineNames.join(' · ')}</span>}
         <span className="lobChip">🪑 Bucket (sitting): {bucketSitName}</span>
         <span className="lobChip">🧺 Collector: {collectorName}</span>
@@ -21826,7 +21829,7 @@ function LobPlayerDisplay({payload={}}){
   const lb=payload.leaderboard||[];
   return <div className="lobDisp">
     <LobStyles/>
-    <div style={{letterSpacing:'0.14em',color:'#7fc8a0'}}>BUCKET LOB™</div>
+    <div style={{letterSpacing:'0.14em',color:'#7bb096'}}>BUCKET LOB™</div>
     <h1>{payload.learner||'Learner'}</h1>
     <div className="obj">{payload.objective||''}</div>
     <div className="lobDispScore">{payload.score||0}</div>
@@ -21842,7 +21845,7 @@ function cmOrdinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%1
 const LUDO_LOOP_LEN=24;
 const LUDO_HOME_STRETCH=6;
 const LUDO_FINISH=LUDO_LOOP_LEN+LUDO_HOME_STRETCH; // piece distance value meaning "Home"
-const LUDO_COLORS=['#2f9bff','#ff9d2e','#34e07a','#ff5fd0'];
+const LUDO_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0'];
 const LUDO_SAFE_SQUARES=[1,4,7,10,13,16,19,22];
 function ludoEntry(playerIdx){return 1+((playerIdx%4)*(LUDO_LOOP_LEN/4));}
 function ludoPieceSquare(playerIdx,d){
@@ -21934,7 +21937,7 @@ function LudoBoardGrid({roster,variant='coach'}){
 function LudoStyles(){return <style>{`
 .ludoCourt{display:flex;flex-direction:column;gap:12px;}
 .ludoObjective{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 14px;font-size:0.9rem;color:#cdd9e6;}
-.ludoObjective b{color:#ffd479;}
+.ludoObjective b{color:#d9c08a;}
 .ludoOnCourt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .ludoOnCourtLabel{font-size:0.8rem;color:#6b8299;text-transform:uppercase;letter-spacing:0.06em;}
 .ludoVs{color:#6b8299;font-weight:700;}
@@ -21943,7 +21946,7 @@ function LudoStyles(){return <style>{`
 .ludoPieceBtn{background:#0b1118;border:1.5px solid #3a5a8c;color:#eaf4fb;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer;font-size:0.85rem;}
 .ludoPieceBtn:disabled{opacity:0.35;cursor:not-allowed;}
 .ludoQueue{font-size:0.85rem;color:#9fb0c2;}
-.ludoWinBanner{background:#5f4d0f;border:1px solid #ffd400;color:#ffe9a8;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
+.ludoWinBanner{background:#3d4657;border:1px solid #c8a552;color:#e0d3b4;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
 .ludoLeaderboard{display:flex;flex-direction:column;gap:6px;}
 .ludoLbRow{display:flex;align-items:center;gap:10px;background:#0f1822;border:1px solid #223044;border-radius:9px;padding:8px 12px;flex-wrap:wrap;}
 .ludoLbRow.ludoLbOn{border-color:#2E6E8E;background:#12203a;}
@@ -21952,8 +21955,8 @@ function LudoStyles(){return <style>{`
 .ludoLbThreat{color:#ff8a80;font-weight:700;font-size:0.78rem;}
 .ludoPieces{display:flex;gap:4px;flex-wrap:wrap;}
 .ludoPieceChip{font-size:0.68rem;padding:2px 6px;border-radius:6px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
-.ludoPieceChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
-.ludoPieceChip.stretch{background:#3a2f0f;border-color:#ffd400;color:#ffe9a8;}
+.ludoPieceChip.home{background:#12592f;border-color:#6fae8b;color:#c8ffe0;}
+.ludoPieceChip.stretch{background:#3a2f0f;border-color:#c8a552;color:#e0d3b4;}
 .ludoBoardGrid{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);gap:clamp(3px,0.6vw,7px);aspect-ratio:1/1;margin:0 auto;box-sizing:border-box;}
 .ludoBoardGrid-coach{width:min(94vw,58vh,640px);}
 .ludoBoardGrid-display{width:min(96vw,80vh,1100px);}
@@ -21961,10 +21964,10 @@ function LudoStyles(){return <style>{`
 .ludoCornerName{font-size:clamp(0.68rem,1.8vw,1.15rem);font-weight:800;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
 .ludoCornerStart{font-size:clamp(0.58rem,1.2vw,0.85rem);color:#9fb0c2;margin-top:2px;}
 .ludoHomeCenter{display:flex;align-items:center;justify-content:center;gap:clamp(3px,0.6vw,8px);font-size:clamp(1.3rem,3vw,2.4rem);background:#1a2942;border-radius:8px;border:1px solid #3a5a8c;}
-.ludoHomeCount{font-size:clamp(0.85rem,1.8vw,1.4rem);font-weight:800;color:#ffe9a8;}
+.ludoHomeCount{font-size:clamp(0.85rem,1.8vw,1.4rem);font-weight:800;color:#e0d3b4;}
 .ludoRingCell{background:#1a2942;border:1.5px solid #3a5a8c;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;min-width:0;min-height:0;}
-.ludoRingCell.safe{background:#12592f;border-color:#38d074;}
-.ludoRingCell .ludoSafeMark{position:absolute;top:1px;left:2px;font-size:clamp(0.5rem,1vw,0.8rem);color:#8fe3ab;}
+.ludoRingCell.safe{background:#12592f;border-color:#6fae8b;}
+.ludoRingCell .ludoSafeMark{position:absolute;top:1px;left:2px;font-size:clamp(0.5rem,1vw,0.8rem);color:#8fbfa4;}
 .ludoRingCell .ludoTokens{display:flex;gap:1px;flex-wrap:wrap;justify-content:center;}
 .ludoRingCell .ludoTok{min-width:clamp(1rem,2.2vw,1.7rem);height:clamp(1rem,2.2vw,1.7rem);line-height:clamp(1rem,2.2vw,1.7rem);font-size:clamp(0.5rem,1vw,0.8rem);}
 .ludoControls{display:flex;gap:8px;flex-wrap:wrap;}
@@ -21972,13 +21975,13 @@ function LudoStyles(){return <style>{`
 .ludoEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
 .ludoEvent.ludoEventNew{color:#eaf4fb;background:#12203a;border:1px solid #2E6E8E;}
 .ludoGameInfo{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 18px;margin:12px 0;}
-.ludoPrinciple{color:#ffd479;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
+.ludoPrinciple{color:#d9c08a;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
 .ludoInfoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
 .ludoInfoGrid h4{margin:0 0 4px;color:#9cc4ec;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
 .ludoInfoGrid p,.ludoInfoGrid ol{margin:0;color:#cdd9e6;font-size:0.88rem;line-height:1.5;}
 .ludoInfoGrid ol{padding-left:18px;display:flex;flex-direction:column;gap:4px;}
 .ludoExample{background:#0b1118;border:1px dashed #2c4a6e;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
-.ludoExample h4{margin:0 0 6px;color:#8fe3ab;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ludoExample h4{margin:0 0 6px;color:#8fbfa4;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
 .ludoExample p{margin:0;color:#cdd9e6;font-size:0.86rem;line-height:1.5;}
 .ludoRationaleBox{border-top:1px solid #223044;margin-top:12px;padding-top:12px;}
 .ludoRationaleBox p{color:#9fb0c2;font-size:0.86rem;line-height:1.5;margin:0 0 8px;}
@@ -22005,25 +22008,25 @@ function LudoStyles(){return <style>{`
 .ludoAllocRow{display:flex;justify-content:space-between;gap:10px;background:#0b1118;border:1px solid #223044;border-radius:8px;padding:8px 12px;font-size:0.82rem;color:#9fb0c2;flex-wrap:wrap;}
 .ludoAllocRowOn{border-color:#2E6E8E;background:#12203a;color:#eaf4fb;}
 .ludoDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
-.ludoDisplayHint{font-size:0.8rem;color:#8fe3ab;}
+.ludoDisplayHint{font-size:0.8rem;color:#8fbfa4;}
 .ludoDisplayPage{padding:24px 16px;max-width:1200px;margin:0 auto;text-align:center;overflow-x:hidden;box-sizing:border-box;}
 .ludoDisplayHead{margin-bottom:18px;}
-.ludoDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
+.ludoDisplayLive{display:inline-block;background:#114d2c;color:#8fbfa4;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
 .ludoDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
 .ludoDisplayHead p{color:#9fb0c2;}
 .ludoRaceGrid{display:flex;flex-direction:column;gap:8px;max-width:640px;margin:0 auto;}
 .ludoRaceRow{display:flex;align-items:center;gap:10px;background:#0f1822;border:1px solid #223044;border-radius:10px;padding:10px 14px;}
-.ludoRaceRow.lead{border-color:#1d6b3f;background:#0d2417;}
+.ludoRaceRow.lead{border-color:#2f5c46;background:#101d18;}
 .ludoRaceName{flex:1;font-size:1.1rem;color:#eaf4fb;font-weight:700;}
 .ludoRaceCourt{font-size:0.8rem;color:#6b8299;}
-.ludoRaceHome{font-size:0.9rem;color:#8fe3ab;font-weight:800;}
+.ludoRaceHome{font-size:0.9rem;color:#8fbfa4;font-weight:800;}
 .ludoDisplayGrid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto;}
 .ludoDisplayRow{display:flex;align-items:center;gap:12px;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:14px 18px;flex-wrap:wrap;}
 .ludoDisplayRow.on{border-color:#2E6E8E;background:#12203a;}
 .ludoDisplayName{flex:1;font-size:1.3rem;font-weight:800;color:#eaf4fb;text-align:left;}
 .ludoDisplayPieces{display:flex;gap:6px;flex-wrap:wrap;}
 .ludoDisplayChip{font-size:0.8rem;padding:4px 9px;border-radius:8px;background:#1a2942;border:1px solid #3a5a8c;color:#9fb0c2;}
-.ludoDisplayChip.home{background:#12592f;border-color:#38d074;color:#c8ffe0;}
+.ludoDisplayChip.home{background:#12592f;border-color:#6fae8b;color:#c8ffe0;}
 .ludoDisplayThreat{color:#ff8a80;font-weight:700;font-size:0.85rem;}
 `}</style>;}
 
@@ -22457,7 +22460,7 @@ function LudoSquashGame({setSession,setScreen}={}){
           <button type="button" className={allocMode==='manual'?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
-          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>Unassigned: {unassigned.join(', ')}</p>}
           {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
             <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
             <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'ludoModeBtn ludoModeBtnOn':'ludoModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
@@ -22746,13 +22749,13 @@ function ncRules(settings){
 function NcStyles(){return <style>{`
 .ncCourt{display:flex;flex-direction:column;gap:12px;}
 .ncGameInfo{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 18px;margin:12px 0;}
-.ncPrinciple{color:#ffd479;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
+.ncPrinciple{color:#d9c08a;font-weight:700;font-size:0.95rem;margin:2px 0 12px;}
 .ncInfoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px;}
 .ncInfoGrid h4{margin:0 0 4px;color:#9cc4ec;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
 .ncInfoGrid p,.ncInfoGrid ol{margin:0;color:#cdd9e6;font-size:0.88rem;line-height:1.5;}
 .ncInfoGrid ol{padding-left:18px;display:flex;flex-direction:column;gap:4px;}
 .ncExample{background:#0b1118;border:1px dashed #2c4a6e;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
-.ncExample h4{margin:0 0 6px;color:#8fe3ab;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+.ncExample h4{margin:0 0 6px;color:#8fbfa4;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
 .ncExample p{margin:0;color:#cdd9e6;font-size:0.86rem;line-height:1.5;}
 .ncRationaleBox{border-top:1px solid #223044;margin-top:12px;padding-top:12px;}
 .ncRationaleBox p{color:#9fb0c2;font-size:0.86rem;line-height:1.5;margin:0 0 8px;}
@@ -22800,7 +22803,7 @@ function NcStyles(){return <style>{`
 .ncEditPanel{position:absolute;inset:0;background:#0b1118ee;border-radius:10px;display:flex;flex-direction:column;gap:3px;padding:5px;overflow-y:auto;z-index:5;}
 .ncEditOpt{background:#1a2942;border:1px solid #3a5a8c;color:#cdd9e6;border-radius:6px;padding:3px 5px;font-size:0.62rem;cursor:pointer;text-align:left;}
 .ncEditInput{background:#0f1822;border:1px solid #2c3c4e;border-radius:6px;color:#eaf4fb;padding:3px 5px;font-size:0.62rem;}
-.ncWinBanner{background:#5f4d0f;border:1px solid #ffd400;color:#ffe9a8;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
+.ncWinBanner{background:#3d4657;border:1px solid #c8a552;color:#e0d3b4;border-radius:10px;padding:12px 16px;font-weight:800;text-align:center;}
 .ncControls{display:flex;gap:8px;flex-wrap:wrap;}
 .ncEvents{display:flex;flex-direction:column;gap:4px;}
 .ncEvent{font-size:0.78rem;color:#9fb0c2;background:#0b1118;border-radius:6px;padding:5px 9px;}
@@ -22823,15 +22826,15 @@ function NcStyles(){return <style>{`
 .ncCourtTab{background:#0b1118;border:1px solid #223044;color:#9fb0c2;border-radius:8px;padding:7px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;}
 .ncCourtTabOn{background:#123040;border-color:#2E6E8E;color:#eaf4fb;}
 .ncDisplayBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;}
-.ncDisplayHint{font-size:0.8rem;color:#8fe3ab;}
+.ncDisplayHint{font-size:0.8rem;color:#8fbfa4;}
 .ncDisplayPage{padding:24px 16px;max-width:900px;margin:0 auto;text-align:center;overflow-x:hidden;box-sizing:border-box;}
 .ncDisplayHead{margin-bottom:18px;}
-.ncDisplayLive{display:inline-block;background:#114d2c;color:#8fe3ab;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
+.ncDisplayLive{display:inline-block;background:#114d2c;color:#8fbfa4;border-radius:999px;padding:4px 12px;font-weight:800;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;}
 .ncDisplayHead h1{font-size:2rem;color:#eaf4fb;margin:4px 0;}
 .ncDisplayHead p{color:#9fb0c2;}
 .ncRaceGrid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:1000px;margin:0 auto;}
 .ncRaceCourt{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:12px;width:280px;}
-.ncRaceCourt.winner{border-color:#ffd400;background:#241d08;}
+.ncRaceCourt.winner{border-color:#c8a552;background:#241d08;}
 .ncRaceLabel{font-size:0.85rem;font-weight:800;color:#9cc4ec;margin-bottom:8px;}
 `}</style>;}
 
@@ -23452,7 +23455,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
           <button type="button" className={allocMode==='manual'?'ncModeBtn ncModeBtnOn':'ncModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I'll allocate</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
-          {unassigned.length>0&&<p className="mutedText" style={{color:'#f5c542'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>Unassigned: {unassigned.join(', ')}</p>}
           {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
             <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
             <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'ncModeBtn ncModeBtnOn':'ncModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
@@ -23765,21 +23768,21 @@ function normalizeCourtPayload(row){
 
 function CMStyles(){return <style>{`
 .cmWrap{max-width:1100px;margin:0 auto;}
-.cmHero{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:16px;padding:18px 20px;margin-bottom:16px;text-align:center;}
-.cmHero .k{letter-spacing:0.14em;color:#7fc8a0;font-size:0.9rem;}
+.cmHero{background:linear-gradient(135deg,#101d18,#0b1320);border:1px solid #2f5c46;border-radius:16px;padding:18px 20px;margin-bottom:16px;text-align:center;}
+.cmHero .k{letter-spacing:0.14em;color:#7bb096;font-size:0.9rem;}
 .cmHero h2{margin:6px 0 2px;color:#eaf4fb;font-size:1.8rem;}
-.cmHero .lead{font-size:1.3rem;color:#ffd479;font-weight:800;margin-top:6px;}
+.cmHero .lead{font-size:1.3rem;color:#d9c08a;font-weight:800;margin-top:6px;}
 .cmRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
 .cmGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
 .cmCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:15px;}
-.cmCard.lead{border-color:#1d6b3f;background:#0d2417;}
+.cmCard.lead{border-color:#2f5c46;background:#101d18;}
 .cmCard.stale{opacity:0.5;}
 .cmCard .cnum{font-size:1.1rem;font-weight:800;color:#9cc4ec;}
 .cmCard .game{font-size:0.8rem;color:#6b8299;margin-top:2px;}
 .cmCard .head{font-size:2rem;font-weight:800;color:#eaf4fb;margin:8px 0 2px;}
-.cmCard .who{font-size:0.9rem;color:#86efac;}
+.cmCard .who{font-size:0.9rem;color:#8fbfa4;}
 .cmBar{height:10px;border-radius:6px;background:#1a2740;overflow:hidden;margin-top:10px;}
-.cmBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#34e07a);}
+.cmBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#6fae8b);}
 .cmRank{display:inline-block;background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:2px 10px;font-weight:800;font-size:0.8rem;}
 .cmWait{color:#6b8299;font-style:italic;margin-top:8px;}
 .cmLink{display:flex;gap:8px;align-items:center;margin-top:10px;}
@@ -23787,7 +23790,7 @@ function CMStyles(){return <style>{`
 .cmShareCard{background:#0b1320;border:1px dashed #2c4a6e;border-radius:12px;padding:12px 14px;margin-bottom:8px;}
 .cmShareCard .ct{font-weight:800;color:#9cc4ec;}
 .cmShareCard code{display:block;color:#7c8ea0;font-size:0.72rem;word-break:break-all;margin-top:4px;}
-.cmCourtBanner{position:sticky;top:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#0d2a18,#102338);border-bottom:2px solid #1d6b3f;color:#eaf4fb;padding:9px 14px;text-align:center;font-weight:800;letter-spacing:0.03em;font-size:1.05rem;}
+.cmCourtBanner{position:sticky;top:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#101d18,#102338);border-bottom:2px solid #2f5c46;color:#eaf4fb;padding:9px 14px;text-align:center;font-weight:800;letter-spacing:0.03em;font-size:1.05rem;}
 `}</style>;}
 
 function CourtMonitor({setScreen}){
@@ -23868,12 +23871,12 @@ function CourtMonitor({setScreen}){
 
       <div className="cmRow">
         <span className="mutedText">Courts:</span>
-        {[2,3,4,5,6].map(c=><button key={c} type="button" className={'lobBtn ghost'+(count===c?' bucket':'')} onClick={()=>setCount(c)} style={{borderRadius:'9px',padding:'8px 13px',fontWeight:700,cursor:'pointer',border:count===c?'1px solid #1d6b3f':'1px solid #2c3c4e',background:count===c?'#114d2c':'#0b1118',color:count===c?'#bff0d0':'#9fb0c2'}}>{c}</button>)}
-        <button type="button" className="cmLinkBtn" onClick={()=>setPushDisplay(p=>!p)} style={{marginLeft:'auto',background:pushDisplay?'#114d2c':'#16466a',border:pushDisplay?'1px solid #1d6b3f':'1px solid #2E6E8E'}}>{pushDisplay?'■ Pushing to Player Display':'▣ Push to Player Display'}</button>
+        {[2,3,4,5,6].map(c=><button key={c} type="button" className={'lobBtn ghost'+(count===c?' bucket':'')} onClick={()=>setCount(c)} style={{borderRadius:'9px',padding:'8px 13px',fontWeight:700,cursor:'pointer',border:count===c?'1px solid #2f5c46':'1px solid #2c3c4e',background:count===c?'#114d2c':'#0b1118',color:count===c?'#a9cbb8':'#9fb0c2'}}>{c}</button>)}
+        <button type="button" className="cmLinkBtn" onClick={()=>setPushDisplay(p=>!p)} style={{marginLeft:'auto',background:pushDisplay?'#114d2c':'#16466a',border:pushDisplay?'1px solid #2f5c46':'1px solid #2E6E8E'}}>{pushDisplay?'■ Pushing to Player Display':'▣ Push to Player Display'}</button>
         <button type="button" className="cmLinkBtn" onClick={()=>setShowLinks(s=>!s)}>{showLinks?'Hide':'Show'} court links</button>
       </div>
 
-      {pushDisplay&&<div className="cmShareCard" style={{borderColor:'#1d6b3f'}}>
+      {pushDisplay&&<div className="cmShareCard" style={{borderColor:'#2f5c46'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'8px',flexWrap:'wrap'}}>
           <span className="ct">📺 Big-screen leaderboard is live</span>
           <span style={{display:'flex',gap:'8px'}}>
@@ -23946,22 +23949,22 @@ function CourtStandingsPlayerDisplay({payload={}}){
 .csPdPage{padding:18px;max-width:1100px;margin:0 auto;}
 .csPdHead{text-align:center;margin-bottom:14px;}
 .csPdHead h1{margin:4px 0 2px;font-size:2.4rem;color:#eaf4fb;letter-spacing:0.02em;}
-.csPdHead p{color:#7fc8a0;font-size:1.1rem;margin:0;}
-.csPdLive{display:inline-block;color:#34e07a;font-weight:800;letter-spacing:0.12em;font-size:0.9rem;}
-.csPdLeader{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:14px 18px;text-align:center;color:#ffd479;font-weight:800;font-size:1.5rem;margin-bottom:16px;}
+.csPdHead p{color:#7bb096;font-size:1.1rem;margin:0;}
+.csPdLive{display:inline-block;color:#6fae8b;font-weight:800;letter-spacing:0.12em;font-size:0.9rem;}
+.csPdLeader{background:linear-gradient(135deg,#101d18,#0b1320);border:1px solid #2f5c46;border-radius:14px;padding:14px 18px;text-align:center;color:#d9c08a;font-weight:800;font-size:1.5rem;margin-bottom:16px;}
 .csPdWait{text-align:center;color:#6b8299;font-style:italic;font-size:1.2rem;margin-bottom:16px;}
 .csPdGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
 .csPdCard{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:16px;}
-.csPdCard.csPdTop{border-color:#1d6b3f;background:#0d2417;}
+.csPdCard.csPdTop{border-color:#2f5c46;background:#101d18;}
 .csPdCard.csPdStale{opacity:0.5;}
 .csPdRow{display:flex;justify-content:space-between;align-items:baseline;}
 .csPdCourt{font-size:1.25rem;font-weight:800;color:#9cc4ec;}
 .csPdRank{background:#15233a;border:1px solid #294063;color:#9cc4ec;border-radius:999px;padding:2px 12px;font-weight:800;font-size:0.9rem;}
 .csPdGame{font-size:0.95rem;color:#6b8299;margin-top:4px;}
 .csPdHeadline{font-size:2.3rem;font-weight:800;color:#eaf4fb;margin:6px 0 2px;}
-.csPdWho{font-size:1.05rem;color:#86efac;}
+.csPdWho{font-size:1.05rem;color:#8fbfa4;}
 .csPdBar{height:12px;border-radius:7px;background:#1a2740;overflow:hidden;margin-top:12px;}
-.csPdBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#34e07a);}
+.csPdBar i{display:block;height:100%;background:linear-gradient(90deg,#2f9bff,#6fae8b);}
 `}</style>
     <div className="csPdHead"><span className="csPdLive">● LIVE</span><h1>{displayTitle}</h1><p>{(payload.liveCount!=null?payload.liveCount:ranked.filter(c=>c.game&&!c.stale).length)} of {payload.count||courts.length} courts live</p></div>
     {leader?<div className="csPdLeader">👑 Court {leader.court} leading — {leader.headline||'—'}{leader.leaderName?` (${leader.leaderName})`:''}</div>:<div className="csPdWait">Waiting for courts to report…</div>}
@@ -24038,7 +24041,7 @@ function SnakesLaddersCourtScorer({court,host}){
 
 function SnakesLaddersRaceDisplay({host,courtCount}){
   useWakeLock();
-  const SL_COLORS=['#5b9bff','#f0a850','#5fd38d','#e069c0','#e0d050','#7d7bff','#6bd6d6','#ff8a80'];
+  const SL_COLORS=['#5b9bff','#c8a552','#6fae8b','#e069c0','#c8a552','#7d7bff','#6bd6d6','#ff8a80'];
   const [courts,setCourts]=useState([]); // array of payloads, one per court, index 0 = Court 1
   useEffect(()=>{
     let cancelled=false;
@@ -24079,7 +24082,7 @@ function SnakesLaddersRaceDisplay({host,courtCount}){
 .slDisplayBoardWrap{width:100%;max-width:100vw;overflow-x:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:2px;}
 .slDisplayBoard{display:grid !important;gap:6px !important;width:100%;min-width:${cols*46}px;box-sizing:border-box;}
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
-.slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#ffe9a8 !important;line-height:1.05 !important;}
+.slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
 .slDisplayBoard .slTok{font-size:1.3rem !important;min-width:2.3rem !important;height:2.3rem !important;line-height:2.3rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
 @media (max-width:640px){
@@ -24306,30 +24309,30 @@ function NsslCourtScorer({court,host}){
 .nsslScPage{padding:14px 14px calc(120px + env(safe-area-inset-bottom)) 14px;max-width:760px;margin:0 auto;box-sizing:border-box;}
 .nsslScTop{text-align:center;margin-bottom:10px;}
 .nsslScTop h1{margin:2px 0;color:#eaf4fb;font-size:1.7rem;}
-.nsslScTop p{color:#7fc8a0;margin:0;}
-.nsslScStage{display:inline-block;margin:4px auto 0;padding:3px 14px;border-radius:999px;background:#3a2c0a;border:1px solid #c9a24a;color:#ffd479;font-size:0.95rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;}
-.nsslScLive{color:#34e07a;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
-.nsslScClock{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:12px;text-align:center;margin-bottom:14px;}
-.nsslScClockPeriod{color:#7fc8a0;letter-spacing:0.12em;font-weight:800;font-size:0.95rem;}
-.nsslScClockTime{color:#ffd479;font-size:3rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;}
+.nsslScTop p{color:#7bb096;margin:0;}
+.nsslScStage{display:inline-block;margin:4px auto 0;padding:3px 14px;border-radius:999px;background:#141c26;border:1px solid #c8a552;color:#d9c08a;font-size:0.95rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;}
+.nsslScLive{color:#6fae8b;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
+.nsslScClock{background:linear-gradient(135deg,#101d18,#0b1320);border:1px solid #2f5c46;border-radius:14px;padding:12px;text-align:center;margin-bottom:14px;}
+.nsslScClockPeriod{color:#7bb096;letter-spacing:0.12em;font-weight:800;font-size:0.95rem;}
+.nsslScClockTime{color:#d9c08a;font-size:3rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;}
 .nsslScClockState{color:#9fb0c2;font-size:0.85rem;}
 .nsslScGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .nsslScTeam{background:#0f1822;border:1px solid #223044;border-radius:14px;padding:14px;text-align:center;transition:border-color .15s,opacity .15s;}
-.nsslScTeam.nsslScPP{border-color:#ffd400;box-shadow:0 0 0 1px rgba(255,212,0,0.3);}
+.nsslScTeam.nsslScPP{border-color:#c8a552;box-shadow:0 0 0 1px rgba(255,212,0,0.3);}
 .nsslScTeam.nsslScLocked{opacity:0.55;}
 .nsslScTeamHead strong{display:block;color:#eaf4fb;font-size:1.25rem;font-weight:800;}
-.nsslScCapt{display:inline-block;margin-top:3px;color:#ffd479;font-size:0.8rem;font-weight:700;}
+.nsslScCapt{display:inline-block;margin-top:3px;color:#d9c08a;font-size:0.8rem;font-weight:700;}
 .nsslScPlayers{display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:center;margin:8px 0;font-size:0.85rem;color:#9fb0c2;}
-.nsslScPlayers .nsslCaptName{color:#ffd479;font-weight:700;}
+.nsslScPlayers .nsslCaptName{color:#d9c08a;font-weight:700;}
 .nsslScScore{font-size:4rem;font-weight:800;color:#eaf4fb;line-height:1;}
 .nsslScThisPeriod{color:#7fb0e0;font-size:0.85rem;margin-bottom:10px;}
 .nsslScBtns{display:flex;gap:8px;}
 .nsslScMinus,.nsslScPlus{flex:1;border-radius:12px;padding:18px 0;font-size:1.5rem;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .nsslScMinus{background:#2a1620;border:1px solid #5e2233;color:#ff9db5;}
-.nsslScPlus{background:#114d2c;border:1px solid #1d6b3f;color:#bff0d0;}
+.nsslScPlus{background:#114d2c;border:1px solid #2f5c46;color:#a9cbb8;}
 .nsslScPlus:active,.nsslScMinus:active{transform:scale(0.97);}
 .nsslScPPBtn{margin-top:10px;border-radius:10px;padding:10px;font-weight:800;cursor:pointer;background:#15233a;border:1px solid #294063;color:#9cc4ec;}
-.nsslScPPBtn.nsslScPPOn{background:#5f4d0f;border-color:#ffd400;color:#ffe9a8;}
+.nsslScPPBtn.nsslScPPOn{background:#3d4657;border-color:#c8a552;color:#e0d3b4;}
 .nsslScPPBtn.nsslScPPDim{opacity:0.5;}
 .nsslScControls{display:flex;gap:10px;margin-top:14px;justify-content:center;}
 .nsslScCtl{background:#0f1822;border:1px solid #2c3c4e;color:#9fb0c2;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;}
@@ -24338,15 +24341,15 @@ function NsslCourtScorer({court,host}){
 .nsslScRoster{margin-top:12px;text-align:left;border-top:1px solid #223044;padding-top:8px;}
 .nsslScRosterHead{font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;color:#7fb0e0;margin-bottom:5px;}
 .nsslScRosterRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid #1c2a3c;margin-bottom:4px;cursor:pointer;background:#0b1320;}
-.nsslScRosterRow.on{background:#114d2c;border-color:#1d6b3f;}
-.nsslScRosterRow.on .rn{color:#bff0d0;font-weight:800;}
-.nsslScRosterRow.under .rt{color:#ffb84d;}
+.nsslScRosterRow.on{background:#114d2c;border-color:#2f5c46;}
+.nsslScRosterRow.on .rn{color:#a9cbb8;font-weight:800;}
+.nsslScRosterRow.under .rt{color:#d9c08a;}
 .nsslScRosterRow .rn{color:#cdd9e6;font-size:0.92rem;}
 .nsslScRosterRow .rt{color:#9fb0c2;font-variant-numeric:tabular-nums;font-size:0.85rem;font-weight:700;}
 .nsslScSubLine{margin-top:4px;font-size:0.82rem;color:#9fb0c2;font-weight:700;}
-.nsslScSubLine.hit{color:#ffb84d;}
+.nsslScSubLine.hit{color:#d9c08a;}
 .nsslScBanner{border-radius:12px;padding:10px 14px;margin-bottom:12px;font-weight:700;}
-.nsslScBanner.time{background:#3a2c0a;border:1px solid #8a6d18;color:#ffe9a8;}
+.nsslScBanner.time{background:#141c26;border:1px solid #4a5568;color:#e0d3b4;}
 .nsslScBanner.subs{background:#3a1620;border:1px solid #8a2740;color:#ffc2d1;}
 `}</style>
     <div className="nsslScTop"><span className="nsslScLive">● COURT {court}</span><h1>NSSL Court {court}</h1>{fixture&&fixture.label?<div className="nsslScStage">{fixture.label}</div>:null}<p>{status}</p></div>
@@ -24401,39 +24404,39 @@ function NsslMasterDisplay({host}){
 .nsslMaPage{padding:16px;max-width:1600px;margin:0 auto;}
 .nsslMaHead{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
 .nsslMaTitle h1{margin:0;color:#eaf4fb;font-size:2rem;}
-.nsslMaTitle span{color:#34e07a;font-weight:800;letter-spacing:0.12em;font-size:0.85rem;}
-.nsslMaClock{background:linear-gradient(135deg,#0d2a18,#0b1320);border:1px solid #1d6b3f;border-radius:14px;padding:10px 20px;text-align:center;min-width:200px;}
-.nsslMaClock .p{color:#7fc8a0;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
-.nsslMaClock .t{color:#ffd479;font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+.nsslMaTitle span{color:#6fae8b;font-weight:800;letter-spacing:0.12em;font-size:0.85rem;}
+.nsslMaClock{background:linear-gradient(135deg,#101d18,#0b1320);border:1px solid #2f5c46;border-radius:14px;padding:10px 20px;text-align:center;min-width:200px;}
+.nsslMaClock .p{color:#7bb096;font-weight:800;letter-spacing:0.1em;font-size:0.85rem;}
+.nsslMaClock .t{color:#d9c08a;font-size:2.4rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
 .nsslMaClock .s{color:#9fb0c2;font-size:0.78rem;}
 .nsslMaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-bottom:22px;}
 .nsslMaCourt{background:#0f1822;border:1px solid #223044;border-radius:16px;padding:22px 24px;}
-.nsslMaCourt.pp{border-color:#ffd400;}
+.nsslMaCourt.pp{border-color:#c8a552;}
 .nsslMaCourt.off{opacity:0.5;}
 .nsslMaCourtTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .nsslMaCourtTop b{color:#9cc4ec;font-size:1.4rem;}
-.nsslMaStageBadge{display:inline-block;margin-left:10px;padding:2px 12px;border-radius:999px;background:#3a2c0a;border:1px solid #c9a24a;color:#ffd479;font-size:0.85rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;vertical-align:middle;}
+.nsslMaStageBadge{display:inline-block;margin-left:10px;padding:2px 12px;border-radius:999px;background:#141c26;border:1px solid #c8a552;color:#d9c08a;font-size:0.85rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;vertical-align:middle;}
 .nsslMaCourtTop em{font-size:0.75rem;font-style:normal;color:#6b8299;}
 .nsslMaScoreRow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;}
 .nsslMaSide{text-align:center;}
 .nsslMaSide .nm{color:#eaf4fb;font-weight:800;font-size:clamp(1.15rem,2.2vw,1.8rem);}
-.nsslMaSide .cap{color:#ffd479;font-size:0.9rem;font-weight:700;}
+.nsslMaSide .cap{color:#d9c08a;font-size:0.9rem;font-weight:700;}
 .nsslMaSide .sc{color:#ffffff;font-size:clamp(3rem,7vw,5.5rem);font-weight:800;line-height:1;}
-.nsslMaSide.lead .sc{color:#86efac;}
-.nsslMaSide .oc{color:#7fc8a0;font-size:1rem;font-weight:700;margin-top:4px;}
+.nsslMaSide.lead .sc{color:#8fbfa4;}
+.nsslMaSide .oc{color:#7bb096;font-size:1rem;font-weight:700;margin-top:4px;}
 .nsslMaSide .sb{color:#9fb0c2;font-size:0.72rem;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums;}
-.nsslMaSide .sb.hit{color:#ffb84d;}
-.nsslMaUnder{margin-top:8px;text-align:center;background:#3a2c0a;border:1px solid #8a6d18;color:#ffe9a8;border-radius:8px;padding:5px 8px;font-size:0.78rem;font-weight:700;}
+.nsslMaSide .sb.hit{color:#d9c08a;}
+.nsslMaUnder{margin-top:8px;text-align:center;background:#141c26;border:1px solid #4a5568;color:#e0d3b4;border-radius:8px;padding:5px 8px;font-size:0.78rem;font-weight:700;}
 .nsslMaVs{color:#6b8299;font-weight:700;}
 .nsslMaPlayers{display:flex;flex-wrap:wrap;gap:2px 6px;justify-content:center;margin-top:4px;font-size:0.72rem;color:#7e91a6;}
-.nsslMaPPbadge{margin-top:8px;text-align:center;color:#ffe9a8;font-weight:700;font-size:0.82rem;}
+.nsslMaPPbadge{margin-top:8px;text-align:center;color:#e0d3b4;font-weight:700;font-size:0.82rem;}
 .nsslMaTblWrap h2{color:#9cc4ec;font-size:1.1rem;margin:0 0 6px;}
 .nsslMaTbl{width:100%;border-collapse:collapse;font-size:1.25rem;}
 .nsslMaTbl th{text-align:left;color:#7fb0e0;font-size:0.72rem;letter-spacing:0.05em;text-transform:uppercase;padding:5px 10px;border-bottom:1px solid #25405f;}
 .nsslMaTbl td{padding:7px 10px;border-bottom:1px solid #1a2c43;color:#eaf4fb;}
 .nsslMaTbl td.nm{font-weight:700;}
 .nsslMaTbl th:not(:nth-child(2)),.nsslMaTbl td:not(.nm){text-align:center;}
-.nsslMaTbl tr.lead td{background:#0d2417;color:#bff0d0;}
+.nsslMaTbl tr.lead td{background:#101d18;color:#a9cbb8;}
 .nsslMaTbl tr.lead td.nm::before{content:'👑 ';}
 .nsslMaWait{text-align:center;color:#6b8299;font-style:italic;padding:8px;}
 .nsslMaPlayoff{margin-top:8px;text-align:center;background:#0c1a2e;border:1px solid #25405f;color:#bcd6f5;border-radius:8px;padding:5px 8px;font-size:0.82rem;font-weight:700;}
@@ -24517,7 +24520,7 @@ function CourtTraceGamePlayerDisplay({payload}){
   const shotsShown=(localFilter==='all'?shotsForGame:shotsForGame.filter(s=>s.player===localFilter)).filter(()=>outcomeFilter==='all');
   const regularContactsShown=(localFilter==='all'?regularContacts:regularContacts.filter(d=>d.player===localFilter)).filter(()=>outcomeFilter==='all'||outcomeFilter==='Contact');
   const finalContactsShown=(localFilter==='all'?finalContacts:finalContacts.filter(d=>d.player===localFilter)).filter(d=>outcomeFilter==='all'||d.outcome===outcomeFilter);
-  const stroke={a:'#57b0dd',b:'#f1b84b'};
+  const stroke={a:'#57b0dd',b:'#c8a552'};
   const other=p=>p==='a'?'b':'a';
   const outcomeEntries=Object.entries(outcomesForGame).sort((a,b)=>b[1]-a[1]);
   return <div className="courtDisplayPage"><style>{`
@@ -24532,7 +24535,7 @@ function CourtTraceGamePlayerDisplay({payload}){
 .courtDisplayName{font-size:.95rem;font-weight:850;color:#cfe0ee}
 .courtDisplayNum{font-size:2.6rem;font-weight:1000;line-height:1;margin-top:4px}
 .courtDisplayVs{font-size:1.1rem;color:#5c7188;font-weight:900}
-.courtDisplayBanner{text-align:center;background:#0f3a24;border:1px solid #22c55e;border-radius:16px;padding:12px;margin-bottom:16px;font-size:1.05rem;font-weight:850}
+.courtDisplayBanner{text-align:center;background:#0f3a24;border:1px solid #5c9c7a;border-radius:16px;padding:12px;margin-bottom:16px;font-size:1.05rem;font-weight:850}
 .courtDisplayGamesRow{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .courtDisplayGameChip{background:#0b1624;border:1px solid #20364f;border-radius:999px;padding:8px 14px;font-weight:800;font-size:.9rem}
 .courtDisplayCard{background:#0b1624;border:1px solid #20364f;border-radius:14px;padding:11px 13px;margin-bottom:10px;font-size:.88rem}
@@ -24638,7 +24641,7 @@ function LiveMatchTapAnalysis({setScreen}){
       .lmcTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px;}
       .lmcTop h1{margin:0;font-size:1.7rem}.lmcMuted{color:#8ea8bd}.lmcCard{background:#0b1624!important;border:1px solid #1f3850;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
       .lmcMeta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.lmcMeta label{color:#9fb3c4;font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.lmcMeta input{width:100%;margin-top:5px;background:#07101a!important;color:#eaf4fb!important;border:1px solid #284057!important;border-radius:12px;padding:11px;font-size:1rem}
-      .lmcTabs,.lmcChips{display:flex;flex-wrap:wrap;gap:8px}.lmcTab,.lmcChip{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #284057;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}.lmcTab.on,.lmcChip.on{background:#2E6E8E!important;border-color:#61b6df;color:white!important}.lmcLayout{display:grid;grid-template-columns:.9fr 1.1fr;gap:12px}.lmcCourt{aspect-ratio:.7/1;min-height:420px;border:4px solid #d9f1ff;border-top-width:8px;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;background:#101d30}.lmcZone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);font-size:3rem;font-weight:1000;color:#eaf4fb;cursor:pointer}.lmcZone small{display:block;font-size:.82rem;color:#b5d0e6;margin-top:4px}.lmcZone.on{background:#2E6E8E!important}.lmcChain{display:flex;flex-wrap:wrap;gap:6px;min-height:38px;background:#07101a;border:1px solid #284057;border-radius:12px;padding:8px;margin:8px 0}.lmcPill{background:#123552;border:1px solid #2E6E8E;border-radius:999px;padding:7px 10px;color:#dcefff;font-size:.82rem}.lmcSave{width:100%;background:#24b36b!important;color:#03120a!important;border:1px solid #24b36b;border-radius:14px;padding:15px;font-weight:1000;font-size:1.05rem;cursor:pointer}.lmcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.lmcAction{background:#13283f!important;color:#eaf4fb!important;border:1px solid #31516b;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}.lmcOut{border-left:6px solid #2E6E8E;background:#07101a;border-radius:14px;padding:12px;margin-bottom:8px}.lmcOut.red{border-left-color:#ff647c}.lmcOut.yellow{border-left-color:#f1b84b}.lmcOut.green{border-left-color:#24b36b}.lmcOut .lab{color:#8ea8bd;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.lmcOut .txt{font-size:1.05rem;font-weight:900;margin-top:4px}.lmcTable{width:100%;border-collapse:collapse}.lmcTable td{border-bottom:1px solid #1d344a;padding:7px;color:#dcefff}.lmcLog{background:#07101a;border:1px solid #1f3850;border-radius:12px;padding:9px;margin-bottom:8px;font-size:.86rem}.lmcExport{white-space:pre-wrap;background:#06101b;border:1px solid #20384e;border-radius:12px;padding:10px;font-size:.78rem;color:#bcd5e9;max-height:220px;overflow:auto}@media(max-width:760px){.lmcLayout,.lmcMeta{grid-template-columns:1fr}.lmcCourt{min-height:360px}.lmcTop{flex-direction:column}.lmcChip{font-size:.86rem;padding:9px}.lmcZone{font-size:2.4rem}}
+      .lmcTabs,.lmcChips{display:flex;flex-wrap:wrap;gap:8px}.lmcTab,.lmcChip{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #284057;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer}.lmcTab.on,.lmcChip.on{background:#2E6E8E!important;border-color:#61b6df;color:white!important}.lmcLayout{display:grid;grid-template-columns:.9fr 1.1fr;gap:12px}.lmcCourt{aspect-ratio:.7/1;min-height:420px;border:4px solid #d9f1ff;border-top-width:8px;border-radius:10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden;background:#101d30}.lmcZone{display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.25);font-size:3rem;font-weight:1000;color:#eaf4fb;cursor:pointer}.lmcZone small{display:block;font-size:.82rem;color:#b5d0e6;margin-top:4px}.lmcZone.on{background:#2E6E8E!important}.lmcChain{display:flex;flex-wrap:wrap;gap:6px;min-height:38px;background:#07101a;border:1px solid #284057;border-radius:12px;padding:8px;margin:8px 0}.lmcPill{background:#123552;border:1px solid #2E6E8E;border-radius:999px;padding:7px 10px;color:#dcefff;font-size:.82rem}.lmcSave{width:100%;background:#4f8f6e!important;color:#03120a!important;border:1px solid #4f8f6e;border-radius:14px;padding:15px;font-weight:1000;font-size:1.05rem;cursor:pointer}.lmcActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.lmcAction{background:#13283f!important;color:#eaf4fb!important;border:1px solid #31516b;border-radius:12px;padding:12px;font-weight:900;cursor:pointer}.lmcOut{border-left:6px solid #2E6E8E;background:#07101a;border-radius:14px;padding:12px;margin-bottom:8px}.lmcOut.red{border-left-color:#ff647c}.lmcOut.yellow{border-left-color:#c8a552}.lmcOut.green{border-left-color:#4f8f6e}.lmcOut .lab{color:#8ea8bd;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.lmcOut .txt{font-size:1.05rem;font-weight:900;margin-top:4px}.lmcTable{width:100%;border-collapse:collapse}.lmcTable td{border-bottom:1px solid #1d344a;padding:7px;color:#dcefff}.lmcLog{background:#07101a;border:1px solid #1f3850;border-radius:12px;padding:9px;margin-bottom:8px;font-size:.86rem}.lmcExport{white-space:pre-wrap;background:#06101b;border:1px solid #20384e;border-radius:12px;padding:10px;font-size:.78rem;color:#bcd5e9;max-height:220px;overflow:auto}@media(max-width:760px){.lmcLayout,.lmcMeta{grid-template-columns:1fr}.lmcCourt{min-height:360px}.lmcTop{flex-direction:column}.lmcChip{font-size:.86rem;padding:9px}.lmcZone{font-size:2.4rem}}
     `}</style>
     <div className="lmcTop"><div><h1>Live Match Coaching</h1><p className="lmcMuted">Match analysis → problem stem chain → one positive instruction.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="lmcCard lmcMeta"><label>Player<input value={state.meta.player} onChange={e=>setMeta('player',e.target.value)} placeholder="Player"/></label><label>Opponent<input value={state.meta.opponent} onChange={e=>setMeta('opponent',e.target.value)} placeholder="Opponent"/></label><label>Date<input type="date" value={state.meta.date} onChange={e=>setMeta('date',e.target.value)}/></label></div>
@@ -24792,7 +24795,7 @@ function LiveMatchCoaching({setScreen}){
 }
 
 const lmfCss=`
-.lmfPage{min-height:100vh;background:#061020!important;color:#eaf4fb!important;padding:16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.lmfShell{max-width:1120px;margin:0 auto}.lmfShell.narrow{max-width:820px}.lmfTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.lmfTop h1{margin:0;font-size:1.7rem}.lmfTop p,.lmfMuted{color:#9fb3c4;line-height:1.35}.lmfTopBtns{display:flex;gap:8px;flex-wrap:wrap}.lmfCard{background:#0b1624!important;border:1px solid #20364f;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 16px 40px rgba(0,0,0,.26)}.lmfCard h2{margin:8px 0 10px;font-size:1.05rem}.lmfMenu{display:grid;gap:12px}.lmfBtn{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #2b4a66;border-radius:16px;padding:12px 14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px}.lmfBtn.on{background:#2563eb!important;border-color:#60a5fa!important}.lmfBtn.wide{width:100%;justify-content:flex-start;text-align:left;display:block}.lmfBtn strong{display:block;font-size:1.12rem}.lmfBtn em{display:block;color:#9fb3c4;font-style:normal;font-weight:700;margin-top:5px;line-height:1.3}.lmfStatus{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:12px;margin-bottom:12px}.lmfStatus b{font-size:1.1rem}.lmfStatus span{display:block;color:#9fb3c4}.lmfScore{display:flex;align-items:center;gap:6px}.lmfScore input{width:54px;background:#061020!important;color:#fff!important;border:1px solid #2b4a66!important;border-radius:10px;padding:9px;text-align:center;font-weight:900}.lmfCaptureGrid,.lmfGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.lmfButtons{display:grid;gap:8px;margin-bottom:14px}.lmfButtons.two{grid-template-columns:1fr 1fr}.lmfButtons.tags{grid-template-columns:repeat(2,minmax(0,1fr))}.lmfButtons.outcomes{grid-template-columns:repeat(3,minmax(0,1fr))}.lmfStep{display:flex;align-items:center;gap:9px;margin:10px 0}.lmfStep span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#2563eb;font-weight:1000}.lmfStep h2{margin:0}.lmfAdvice{border-radius:16px;padding:13px;margin-bottom:10px;font-size:1.05rem;font-weight:950;line-height:1.25}.lmfAdvice small{display:block;color:#9fb3c4;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.lmfAdvice.primary{background:#33121d;border-left:6px solid #fb7185}.lmfAdvice.good{background:#0f3322;border-left:6px solid #22c55e}.lmfAdvice.second{background:#102238;border-left:6px solid #60a5fa}.lmfEventPath{display:grid;gap:8px}.lmfEventPath span{background:#061020;border:1px solid #20364f;border-radius:12px;padding:10px;font-weight:900}.lmfActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.lmfLog{max-height:360px;overflow:auto}.lmfLogItem{background:#061020;border:1px solid #20364f;border-radius:12px;padding:10px;margin-bottom:8px;font-size:.9rem}.lmfLogItem span{color:#9fb3c4}.lmfRow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #20364f;padding:8px 0}.lmfPills{display:flex;flex-wrap:wrap;gap:8px}.lmfPills span{background:#102238;border:1px solid #2b4a66;border-radius:999px;padding:7px 10px;font-weight:800}.lmfZoneMap{position:relative;background:#fff;border:1px solid #20364f;border-radius:14px;overflow:hidden;margin:8px 0 10px;max-width:520px}.lmfZoneMap img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none}.lmfZoneTap{position:absolute;display:flex;align-items:center;justify-content:center;border:2px solid rgba(37,99,235,.95);background:rgba(37,99,235,.2);color:#061020;font-weight:1000;border-radius:12px;min-width:42px;min-height:34px;cursor:pointer}.lmfZoneTap.corridor{border-color:rgba(244,63,94,.95);background:rgba(244,63,94,.25);color:#7f1020}.lmfZoneTap.z1{left:40%;top:46%;width:18%;height:10%}.lmfZoneTap.z2{left:58%;top:46%;width:18%;height:10%}.lmfZoneTap.z4{left:40%;top:57%;width:18%;height:10%}.lmfZoneTap.z3{left:58%;top:57%;width:18%;height:10%}.lmfZoneTap.z1c{left:50%;top:46%;width:8%;height:10%}.lmfZoneTap.z2c{left:58%;top:46%;width:8%;height:10%}.lmfZoneTap.z4c{left:50%;top:57%;width:8%;height:10%}.lmfZoneTap.z3c{left:58%;top:57%;width:8%;height:10%}.lmfZoneSelected{background:#061020;border:1px solid #20364f;border-radius:12px;padding:9px;margin:8px 0 10px;color:#9fb3c4}.lmfZoneSelected b{color:#fff}
+.lmfPage{min-height:100vh;background:#061020!important;color:#eaf4fb!important;padding:16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.lmfShell{max-width:1120px;margin:0 auto}.lmfShell.narrow{max-width:820px}.lmfTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.lmfTop h1{margin:0;font-size:1.7rem}.lmfTop p,.lmfMuted{color:#9fb3c4;line-height:1.35}.lmfTopBtns{display:flex;gap:8px;flex-wrap:wrap}.lmfCard{background:#0b1624!important;border:1px solid #20364f;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 16px 40px rgba(0,0,0,.26)}.lmfCard h2{margin:8px 0 10px;font-size:1.05rem}.lmfMenu{display:grid;gap:12px}.lmfBtn{user-select:none;background:#102238!important;color:#eaf4fb!important;border:1px solid #2b4a66;border-radius:16px;padding:12px 14px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px}.lmfBtn.on{background:#2563eb!important;border-color:#60a5fa!important}.lmfBtn.wide{width:100%;justify-content:flex-start;text-align:left;display:block}.lmfBtn strong{display:block;font-size:1.12rem}.lmfBtn em{display:block;color:#9fb3c4;font-style:normal;font-weight:700;margin-top:5px;line-height:1.3}.lmfStatus{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:12px;margin-bottom:12px}.lmfStatus b{font-size:1.1rem}.lmfStatus span{display:block;color:#9fb3c4}.lmfScore{display:flex;align-items:center;gap:6px}.lmfScore input{width:54px;background:#061020!important;color:#fff!important;border:1px solid #2b4a66!important;border-radius:10px;padding:9px;text-align:center;font-weight:900}.lmfCaptureGrid,.lmfGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.lmfButtons{display:grid;gap:8px;margin-bottom:14px}.lmfButtons.two{grid-template-columns:1fr 1fr}.lmfButtons.tags{grid-template-columns:repeat(2,minmax(0,1fr))}.lmfButtons.outcomes{grid-template-columns:repeat(3,minmax(0,1fr))}.lmfStep{display:flex;align-items:center;gap:9px;margin:10px 0}.lmfStep span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#2563eb;font-weight:1000}.lmfStep h2{margin:0}.lmfAdvice{border-radius:16px;padding:13px;margin-bottom:10px;font-size:1.05rem;font-weight:950;line-height:1.25}.lmfAdvice small{display:block;color:#9fb3c4;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.lmfAdvice.primary{background:#33121d;border-left:6px solid #fb7185}.lmfAdvice.good{background:#0f3322;border-left:6px solid #5c9c7a}.lmfAdvice.second{background:#102238;border-left:6px solid #60a5fa}.lmfEventPath{display:grid;gap:8px}.lmfEventPath span{background:#061020;border:1px solid #20364f;border-radius:12px;padding:10px;font-weight:900}.lmfActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.lmfLog{max-height:360px;overflow:auto}.lmfLogItem{background:#061020;border:1px solid #20364f;border-radius:12px;padding:10px;margin-bottom:8px;font-size:.9rem}.lmfLogItem span{color:#9fb3c4}.lmfRow{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #20364f;padding:8px 0}.lmfPills{display:flex;flex-wrap:wrap;gap:8px}.lmfPills span{background:#102238;border:1px solid #2b4a66;border-radius:999px;padding:7px 10px;font-weight:800}.lmfZoneMap{position:relative;background:#fff;border:1px solid #20364f;border-radius:14px;overflow:hidden;margin:8px 0 10px;max-width:520px}.lmfZoneMap img{display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none}.lmfZoneTap{position:absolute;display:flex;align-items:center;justify-content:center;border:2px solid rgba(37,99,235,.95);background:rgba(37,99,235,.2);color:#061020;font-weight:1000;border-radius:12px;min-width:42px;min-height:34px;cursor:pointer}.lmfZoneTap.corridor{border-color:rgba(244,63,94,.95);background:rgba(244,63,94,.25);color:#7f1020}.lmfZoneTap.z1{left:40%;top:46%;width:18%;height:10%}.lmfZoneTap.z2{left:58%;top:46%;width:18%;height:10%}.lmfZoneTap.z4{left:40%;top:57%;width:18%;height:10%}.lmfZoneTap.z3{left:58%;top:57%;width:18%;height:10%}.lmfZoneTap.z1c{left:50%;top:46%;width:8%;height:10%}.lmfZoneTap.z2c{left:58%;top:46%;width:8%;height:10%}.lmfZoneTap.z4c{left:50%;top:57%;width:8%;height:10%}.lmfZoneTap.z3c{left:58%;top:57%;width:8%;height:10%}.lmfZoneSelected{background:#061020;border:1px solid #20364f;border-radius:12px;padding:9px;margin:8px 0 10px;color:#9fb3c4}.lmfZoneSelected b{color:#fff}
 .lmfNameBar{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:12px;margin-bottom:12px}.lmfNameBar label{color:#9fb3c4;font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.lmfNameBar input{display:block;width:100%;margin-top:5px;background:#061020!important;color:#fff!important;border:1px solid #2b4a66!important;border-radius:12px;padding:10px;font-size:1rem;font-weight:850}.lmfSimpleZoneMap{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:360px;max-width:520px;border:4px solid #dfe7f1;border-top-width:8px;border-radius:16px;background:#102238;overflow:hidden;margin:10px 0 12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}.lmfSimpleZone{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.26);color:#eaf4fb;font-weight:1000;cursor:pointer;user-select:none}.lmfSimpleZone b{font-size:2.4rem;line-height:1}.lmfSimpleZone span{font-size:.78rem;color:#9fb3c4;margin-top:4px}.lmfSimpleZone.on{background:#2563eb!important}.lmfSimpleCorridorBand{position:absolute;left:41%;right:41%;top:0;bottom:0;z-index:4;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;border-left:2px dashed #fb7185;border-right:2px dashed #fb7185;background:rgba(244,63,94,.22)}.lmfSimpleCorridorBand div{display:flex;align-items:center;justify-content:center;border:1px dashed rgba(251,113,133,.6);color:#ffe4e8;font-weight:1000;font-size:.9rem;cursor:pointer}.lmfSimpleCorridorBand div:hover{background:rgba(244,63,94,.38)}.lmfSimpleCourtLine{position:absolute;z-index:1;left:0;right:0;border-top:2px solid rgba(255,255,255,.45)}.lmfSimpleCourtLine.short{top:43%}.lmfSimpleCourtLine.half{top:50%;border-top-style:dashed}.lmfSimpleZone.z1{grid-column:1;grid-row:1}.lmfSimpleZone.z2{grid-column:2;grid-row:1}.lmfSimpleZone.z4{grid-column:1;grid-row:2}.lmfSimpleZone.z3{grid-column:2;grid-row:2}
 .lmfSimpleZoneMap.v226{display:block;position:relative;height:min(64vh,560px);max-width:460px;border:0;background:transparent;box-shadow:none;padding:0;overflow:visible;border-radius:12px;margin:10px auto 12px;touch-action:manipulation}
 .lmfSimpleZoneMap.v226 img{display:block;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none;position:relative;z-index:1}
@@ -24810,17 +24813,17 @@ const lmfCss=`
 .lmfSubGridRow{display:contents}
 .lmfSubCell{aspect-ratio:1;width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:6px;color:#eaf4fb;font-weight:900;font-size:.82rem;cursor:pointer;user-select:none;margin:auto}
 .lmfSubCell:active{background:rgba(255,255,255,.2)}
-.lmfSubCell.isT{background:rgba(251,191,36,.3);border-color:#fbbf24;color:#fff7d6}
+.lmfSubCell.isT{background:rgba(251,191,36,.3);border-color:#c8a552;color:#e6e9ee}
 .lmfSubCell.on{background:#2563eb!important;border-color:#60a5fa!important;color:#fff!important}
 .lmfSubGridLabel{text-align:center;font-size:.6rem;color:#9fb3c4;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
 @media(max-width:820px){.lmfSimpleZoneMap.v225{height:400px}.lmfSubCell{font-size:.72rem}}
 
 @media(max-width:820px){.lmfCaptureGrid,.lmfGrid{grid-template-columns:1fr}.lmfButtons.tags,.lmfButtons.outcomes{grid-template-columns:1fr}.lmfTop,.lmfStatus{flex-direction:column;align-items:stretch}.lmfActions,.lmfNameBar{grid-template-columns:1fr}.lmfSimpleZoneMap{height:320px}}
-.lmfCaptureGrid.v223{grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr)}.lmfQuestionCard{background:#0b1624!important;border:1px solid #20364f;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 16px 40px rgba(0,0,0,.26)}.lmfButtons.big .lmfBtn{min-height:72px;font-size:1.16rem}.lmfButtons.tags.v223{grid-template-columns:repeat(2,minmax(0,1fr))}.lmfProgress{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0 12px}.lmfProgress span{border:1px solid #20364f;background:#0b1624;border-radius:999px;padding:8px 8px;text-align:center;color:#9fb3c4;font-weight:900;font-size:.78rem}.lmfProgress span.done{background:#0f3322;border-color:#22c55e;color:#d8ffe9}.lmfProgress span.live{background:#33121d;border-color:#fb7185;color:#ffe4e8}.lmfNameBar.compact{grid-template-columns:1fr 1fr;padding:10px}.lmfSimpleZoneMap.v223{height:min(56vh,470px);max-width:620px;border-width:4px;border-top-width:10px;background:#0f213b}.lmfSimpleCorridorBand.v223{left:34%;right:34%;background:rgba(244,63,94,.25);border-left:3px dashed #fb7185;border-right:3px dashed #fb7185}.lmfSimpleCorridorBand.v223 div{font-size:1.05rem;color:#fff0f3}.lmfTZoneTap{position:absolute;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:24%;height:24%;border:3px solid #fbbf24;background:rgba(251,191,36,.34);display:flex;align-items:center;justify-content:center;color:#fff7d6;font-weight:1000;font-size:1.8rem;cursor:pointer;box-shadow:0 0 0 999px rgba(0,0,0,0)}.lmfTZoneTap::first-letter{transform:rotate(-45deg)}.lmfTZoneTap{line-height:1}.lmfSimpleZone.on{background:#2563eb!important}.lmfQuestionCard .lmfSimpleZone b{font-size:3rem}.lmfQuestionCard .lmfSimpleZone span{font-size:.9rem}.lmfQuestionCard .lmfStep h2{font-size:1.35rem}@media(max-width:820px){.lmfCaptureGrid.v223{grid-template-columns:1fr}.lmfButtons.tags.v223{grid-template-columns:1fr}.lmfProgress{grid-template-columns:1fr 1fr}.lmfSimpleZoneMap.v223{height:430px}.lmfSimpleCorridorBand.v223{left:32%;right:32%}.lmfTZoneTap{width:28%;height:20%}}
+.lmfCaptureGrid.v223{grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr)}.lmfQuestionCard{background:#0b1624!important;border:1px solid #20364f;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 16px 40px rgba(0,0,0,.26)}.lmfButtons.big .lmfBtn{min-height:72px;font-size:1.16rem}.lmfButtons.tags.v223{grid-template-columns:repeat(2,minmax(0,1fr))}.lmfProgress{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0 12px}.lmfProgress span{border:1px solid #20364f;background:#0b1624;border-radius:999px;padding:8px 8px;text-align:center;color:#9fb3c4;font-weight:900;font-size:.78rem}.lmfProgress span.done{background:#0f3322;border-color:#5c9c7a;color:#d8ffe9}.lmfProgress span.live{background:#33121d;border-color:#fb7185;color:#ffe4e8}.lmfNameBar.compact{grid-template-columns:1fr 1fr;padding:10px}.lmfSimpleZoneMap.v223{height:min(56vh,470px);max-width:620px;border-width:4px;border-top-width:10px;background:#0f213b}.lmfSimpleCorridorBand.v223{left:34%;right:34%;background:rgba(244,63,94,.25);border-left:3px dashed #fb7185;border-right:3px dashed #fb7185}.lmfSimpleCorridorBand.v223 div{font-size:1.05rem;color:#fff0f3}.lmfTZoneTap{position:absolute;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:24%;height:24%;border:3px solid #c8a552;background:rgba(251,191,36,.34);display:flex;align-items:center;justify-content:center;color:#e6e9ee;font-weight:1000;font-size:1.8rem;cursor:pointer;box-shadow:0 0 0 999px rgba(0,0,0,0)}.lmfTZoneTap::first-letter{transform:rotate(-45deg)}.lmfTZoneTap{line-height:1}.lmfSimpleZone.on{background:#2563eb!important}.lmfQuestionCard .lmfSimpleZone b{font-size:3rem}.lmfQuestionCard .lmfSimpleZone span{font-size:.9rem}.lmfQuestionCard .lmfStep h2{font-size:1.35rem}@media(max-width:820px){.lmfCaptureGrid.v223{grid-template-columns:1fr}.lmfButtons.tags.v223{grid-template-columns:1fr}.lmfProgress{grid-template-columns:1fr 1fr}.lmfSimpleZoneMap.v223{height:430px}.lmfSimpleCorridorBand.v223{left:32%;right:32%}.lmfTZoneTap{width:28%;height:20%}}
 .lmfSectionLabel{margin:14px 0 8px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:#8ea8bd;font-weight:900;border-top:1px solid #20364f;padding-top:12px}
 .lmfSectionLabel:first-of-type{border-top:none;padding-top:0;margin-top:4px}
 
-.lmfSimpleZoneMap.v224{height:min(52vh,430px);max-width:560px;border-width:4px;border-top-width:10px;background:#0f213b}.lmfSimpleCorridorBand.v224{position:absolute;z-index:4;left:32%;right:32%;top:0;bottom:0;display:flex;align-items:flex-start;justify-content:center;padding-top:18px;text-align:center;color:#fff0f3;font-weight:1000;font-size:1.05rem;background:rgba(244,63,94,.26);border-left:3px dashed #fb7185;border-right:3px dashed #fb7185;cursor:pointer}.lmfTZoneTap.v224{position:absolute;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);width:28%;height:16%;border:3px solid #fbbf24;border-radius:999px;background:rgba(251,191,36,.38);display:flex;align-items:center;justify-content:center;color:#fff7d6;font-weight:1000;font-size:1.8rem;cursor:pointer}.lmfButtons.outcomes.v224{grid-template-columns:1fr 1fr}.lmfButtons.outcomes.v224 .lmfBtn.wide{grid-column:1 / -1;text-align:center;justify-content:center}.lmfButtons.outcomes.v224 .lmfBtn.win{background:#0f3322!important;border-color:#2f7d52!important;color:#d8ffe9!important}
+.lmfSimpleZoneMap.v224{height:min(52vh,430px);max-width:560px;border-width:4px;border-top-width:10px;background:#0f213b}.lmfSimpleCorridorBand.v224{position:absolute;z-index:4;left:32%;right:32%;top:0;bottom:0;display:flex;align-items:flex-start;justify-content:center;padding-top:18px;text-align:center;color:#fff0f3;font-weight:1000;font-size:1.05rem;background:rgba(244,63,94,.26);border-left:3px dashed #fb7185;border-right:3px dashed #fb7185;cursor:pointer}.lmfTZoneTap.v224{position:absolute;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);width:28%;height:16%;border:3px solid #c8a552;border-radius:999px;background:rgba(251,191,36,.38);display:flex;align-items:center;justify-content:center;color:#e6e9ee;font-weight:1000;font-size:1.8rem;cursor:pointer}.lmfButtons.outcomes.v224{grid-template-columns:1fr 1fr}.lmfButtons.outcomes.v224 .lmfBtn.wide{grid-column:1 / -1;text-align:center;justify-content:center}.lmfButtons.outcomes.v224 .lmfBtn.win{background:#0f3322!important;border-color:#2f7d52!important;color:#d8ffe9!important}
 .lmfScoreboard{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:14px;margin-bottom:10px}
 .lmfScoreboard .lmfBtn.win{background:#0f3322!important;border-color:#2f7d52!important;color:#d8ffe9!important}
 .lmfServerRow{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
@@ -24831,7 +24834,7 @@ const lmfCss=`
 .lmfGameTag{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb3c4;font-weight:900}
 .lmfGamesRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .lmfGameChip{background:#0b1624;border:1px solid #20364f;border-radius:999px;padding:6px 12px;font-weight:800;font-size:.82rem}
-@media(max-width:820px){.lmfScoreboard{flex-direction:column}.lmfScoreNum{font-size:2rem}}.lmfLensBar{padding:12px}.lmfLensRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:5px 0}.lmfLensRow .lmfMiniLabel{margin:0;min-width:78px}.lmfToggleSet{display:flex;gap:8px;flex-wrap:wrap}.lmfToggleSet .lmfBtn{min-height:38px;padding:8px 16px}.lmfPlayerCard.protect{border-left:5px solid #2E6E8E}.lmfPlayerCard.exploit{border-left:5px solid #f1b84b}@media(max-width:820px){.lmfSimpleZoneMap.v224{height:390px}.lmfSimpleCorridorBand.v224{left:30%;right:30%}.lmfTZoneTap.v224{width:34%;height:16%}}
+@media(max-width:820px){.lmfScoreboard{flex-direction:column}.lmfScoreNum{font-size:2rem}}.lmfLensBar{padding:12px}.lmfLensRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:5px 0}.lmfLensRow .lmfMiniLabel{margin:0;min-width:78px}.lmfToggleSet{display:flex;gap:8px;flex-wrap:wrap}.lmfToggleSet .lmfBtn{min-height:38px;padding:8px 16px}.lmfPlayerCard.protect{border-left:5px solid #2E6E8E}.lmfPlayerCard.exploit{border-left:5px solid #c8a552}@media(max-width:820px){.lmfSimpleZoneMap.v224{height:390px}.lmfSimpleCorridorBand.v224{left:30%;right:30%}.lmfTZoneTap.v224{width:34%;height:16%}}
 .lmfPlayerGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.lmfPlayerCard{display:flex;flex-direction:column}.lmfPlayerHead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid #20364f;padding-bottom:9px;margin-bottom:2px}.lmfPlayerHead h2{margin:0;font-size:1.28rem}.lmfPlayerTotal{color:#9fb3c4;font-weight:800;font-size:.82rem;white-space:nowrap}.lmfMiniLabel{color:#8ea8bd;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;margin:14px 0 6px}.lmfDist{display:grid;gap:6px}.lmfDistRow{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px}.lmfDistLab{color:#cfe0ee;font-size:.8rem;font-weight:800}.lmfDistBar{position:relative;height:14px;background:#0b1828;border:1px solid #20364f;border-radius:999px;overflow:hidden}.lmfDistFill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:999px;min-width:2px}.lmfDistVal{text-align:right;font-weight:1000}@media(max-width:820px){.lmfPlayerGrid{grid-template-columns:1fr}.lmfDistRow{grid-template-columns:92px 1fr 24px}}
 
 `;
@@ -24841,7 +24844,7 @@ const DUAL_MATCHES_KEY='checkerboard_dual_trace_matches_v1';
 function dualMatchesLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_MATCHES_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
 function dualMatchesSave(x){try{localStorage.setItem(DUAL_MATCHES_KEY,JSON.stringify(x||[]));}catch{}}
 const DUAL_OUTCOMES=['Winner','Unforced error','Forced error','Out','Tin','Stroke','Let','No Let'];
-const OUTCOME_COLORS={'Winner':'#22c55e','Unforced error':'#ef4444','Forced error':'#f97316','Out':'#94a3b8','Tin':'#eab308','Stroke':'#38bdf8','Let':'#a78bfa'};
+const OUTCOME_COLORS={'Winner':'#5c9c7a','Unforced error':'#ef4444','Forced error':'#b07a3c','Out':'#94a3b8','Tin':'#b9982f','Stroke':'#38bdf8','Let':'#a78bfa'};
 function dualTraceLoad(){try{const x=JSON.parse(localStorage.getItem(DUAL_TRACE_KEY)||'[]');return Array.isArray(x)?x:[];}catch{return[];}}
 function dualTraceSave(x){try{localStorage.setItem(DUAL_TRACE_KEY,JSON.stringify(x||[]));}catch{}}
 function dualPts(path){return (path||[]).map(p=>(p.nx*1347)+','+(p.ny*1743)).join(' ');}
@@ -24852,8 +24855,8 @@ const dctCss=`
 .dctTitle h1{margin:0;font-size:1.4rem}.dctTitle p{margin:3px 0 0;color:#9fb3c4;font-size:.86rem;max-width:64ch;line-height:1.35}
 .dctActions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .dctBtn{appearance:none;background:#11243a;color:#eaf4fb;border:1px solid #2d4766;border-radius:999px;padding:9px 13px;font-weight:800;font-size:.82rem;cursor:pointer}
-.dctBtn.on{background:#2563eb;border-color:#60a5fa}.dctBtn.green{background:#0f3a24;border-color:#22c55e}.dctBtn.red{background:#3a1018;border-color:#fb7185}.dctBtn.back{background:#1b2f49;border-color:#4d6b90}.dctBtn:disabled{opacity:.45}
-.dctBtn.svrA.on{background:#123b4f;border-color:#57b0dd;color:#dff2fb}.dctBtn.svrB.on{background:#3a2a0c;border-color:#f1b84b;color:#ffe9bd}
+.dctBtn.on{background:#2563eb;border-color:#60a5fa}.dctBtn.green{background:#0f3a24;border-color:#5c9c7a}.dctBtn.red{background:#3a1018;border-color:#fb7185}.dctBtn.back{background:#1b2f49;border-color:#4d6b90}.dctBtn:disabled{opacity:.45}
+.dctBtn.svrA.on{background:#123b4f;border-color:#57b0dd;color:#dff2fb}.dctBtn.svrB.on{background:#3a2a0c;border-color:#c8a552;color:#ffe9bd}
 .dctSelRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#0b1624;border:1px solid #20364f;border-radius:14px;padding:10px 12px;margin-bottom:12px}
 .dctSelLabel{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb3c4;font-weight:900;margin-right:2px}
 .dctSelSep{width:1px;align-self:stretch;background:#20364f;margin:0 4px}
@@ -24958,7 +24961,7 @@ function DualCourtTraceModule({onBack,setScreen,seedNames}){
   useEffect(()=>{dualTraceSave(rallies);},[rallies]);
   useEffect(()=>{dualMatchesSave(matches);},[matches]);
   useEffect(()=>{const oO=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=oO;};},[]);
-  const stroke={a:'#57b0dd',b:'#f1b84b'};
+  const stroke={a:'#57b0dd',b:'#c8a552'};
   const other=p=>p==='a'?'b':'a';
   function rallyWinner(shotsArr,outcomeVal){
     if(!shotsArr||!shotsArr.length)return null;
@@ -25167,7 +25170,7 @@ function LiveMatchTraceModule({setScreen}){
     <style>{`
 .lmcTracePage{position:fixed!important;inset:0!important;z-index:9998!important;background:#061020!important;color:#eaf4fb!important;overflow:hidden!important;touch-action:none!important;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
 .lmcTraceTop{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:rgba(6,16,32,.96);border-bottom:1px solid rgba(255,255,255,.14);}
-.lmcTraceTitle h1{font-size:18px;line-height:1;margin:0;color:#eaf4fb!important}.lmcTraceTitle p{font-size:12px;margin:3px 0 0;color:#9fb0c2!important}.lmcTraceActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.lmcTraceBtn{appearance:none;-webkit-appearance:none;background:#11243a!important;color:#eaf4fb!important;border:1px solid #2d4766!important;border-radius:999px!important;padding:9px 11px!important;font-weight:800!important;font-size:12px!important;box-shadow:none!important}.lmcTraceBtn.green{background:#0f3a24!important;border-color:#22c55e!important}.lmcTraceBtn.red{background:#3a1018!important;border-color:#fb7185!important}.lmcTraceBtn.on{background:#2563eb!important;border-color:#60a5fa!important}.lmcTraceMain{position:absolute;left:0;right:0;top:52px;bottom:0;display:block;padding:6px;overflow:hidden;touch-action:none!important;}
+.lmcTraceTitle h1{font-size:18px;line-height:1;margin:0;color:#eaf4fb!important}.lmcTraceTitle p{font-size:12px;margin:3px 0 0;color:#9fb0c2!important}.lmcTraceActions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.lmcTraceBtn{appearance:none;-webkit-appearance:none;background:#11243a!important;color:#eaf4fb!important;border:1px solid #2d4766!important;border-radius:999px!important;padding:9px 11px!important;font-weight:800!important;font-size:12px!important;box-shadow:none!important}.lmcTraceBtn.green{background:#0f3a24!important;border-color:#5c9c7a!important}.lmcTraceBtn.red{background:#3a1018!important;border-color:#fb7185!important}.lmcTraceBtn.on{background:#2563eb!important;border-color:#60a5fa!important}.lmcTraceMain{position:absolute;left:0;right:0;top:52px;bottom:0;display:block;padding:6px;overflow:hidden;touch-action:none!important;}
 .lmfNameBar{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#0b1624;border:1px solid #20364f;border-radius:18px;padding:12px;margin-bottom:12px}.lmfNameBar label{color:#9fb3c4;font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.lmfNameBar input{display:block;width:100%;margin-top:5px;background:#061020!important;color:#fff!important;border:1px solid #2b4a66!important;border-radius:12px;padding:10px;font-size:1rem;font-weight:850}.lmfSimpleZoneMap{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:360px;max-width:520px;border:4px solid #dfe7f1;border-top-width:8px;border-radius:16px;background:#102238;overflow:hidden;margin:10px 0 12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}.lmfSimpleZone{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.26);color:#eaf4fb;font-weight:1000;cursor:pointer;user-select:none}.lmfSimpleZone b{font-size:2.4rem;line-height:1}.lmfSimpleZone span{font-size:.78rem;color:#9fb3c4;margin-top:4px}.lmfSimpleZone.on{background:#2563eb!important}.lmfSimpleCorridorBand{position:absolute;left:41%;right:41%;top:0;bottom:0;z-index:4;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;border-left:2px dashed #fb7185;border-right:2px dashed #fb7185;background:rgba(244,63,94,.22)}.lmfSimpleCorridorBand div{display:flex;align-items:center;justify-content:center;border:1px dashed rgba(251,113,133,.6);color:#ffe4e8;font-weight:1000;font-size:.9rem;cursor:pointer}.lmfSimpleCorridorBand div:hover{background:rgba(244,63,94,.38)}.lmfSimpleCourtLine{position:absolute;z-index:1;left:0;right:0;border-top:2px solid rgba(255,255,255,.45)}.lmfSimpleCourtLine.short{top:43%}.lmfSimpleCourtLine.half{top:50%;border-top-style:dashed}.lmfSimpleZone.z1{grid-column:1;grid-row:1}.lmfSimpleZone.z2{grid-column:2;grid-row:1}.lmfSimpleZone.z4{grid-column:1;grid-row:2}.lmfSimpleZone.z3{grid-column:2;grid-row:2}
 @media(max-width:820px){.lmcTraceTop{align-items:flex-start}.lmcTraceTitle h1{font-size:16px}.lmcTraceTitle p{display:none}.lmcTraceBtn{font-size:11px;padding:8px 9px!important}}
 .lmcTraceMapWrap{position:relative;width:100%;height:100%;min-height:0;background:#fff!important;border:1px solid rgba(255,255,255,.22);border-radius:10px;overflow:hidden;touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none!important;}
@@ -25291,38 +25294,38 @@ function RotationStyles(){return <style>{`
 .rotTab{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:11px;padding:9px 13px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .rotTab strong{font-size:.9rem;color:#eaf4fb;}
 .rotTab span{font-size:.72rem;color:#8aa0b6;}
-.rotTabOn{background:#114d2c;border-color:#1d6b3f;}
-.rotTabOn strong{color:#bff0d0;}
-.rotTabOn span{color:#7fc8a0;}
+.rotTabOn{background:#114d2c;border-color:#2f5c46;}
+.rotTabOn strong{color:#a9cbb8;}
+.rotTabOn span{color:#7bb096;}
 .rotPanel{background:#0b1320;border:1px solid #223044;border-radius:14px;padding:14px 16px;}
 .rotPanel h4{color:#9cc4ec;font-size:.8rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;margin:0 0 8px;}
 .rotPanel p{color:#c7d4e2;font-size:.88rem;margin:0 0 6px;line-height:1.5;}
 .rotChipRow{display:flex;flex-wrap:wrap;gap:8px;}
 .rotChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:8px 14px;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.rotChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.rotChipOn{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .rotBoard{display:flex;flex-direction:column;gap:10px;}
 .rotCourt{background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:12px 14px;}
 .rotCourtHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
 .rotCourtHead strong{color:#eaf4fb;font-size:.95rem;}
-.rotCourtHead span{color:#7fc8a0;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.rotCourtHead span{color:#7bb096;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
 .rotOnRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
 .rotPlayer{background:#0f1c2c;border:1px solid #2c3c4e;color:#eaf4fb;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.92rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.rotPlayerWin{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.rotPlayerWin{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .rotWait{color:#8aa0b6;font-size:.8rem;}
 .rotWait b{color:#c7d4e2;font-weight:700;}
 .rotBar{display:flex;flex-wrap:wrap;gap:8px;}
 .rotTimer{font-size:2rem;font-weight:800;color:#eaf4fb;letter-spacing:.04em;}
-.rotTimerLive{color:#7fc8a0;}
+.rotTimerLive{color:#7bb096;}
 .rotDisplayPage{min-height:100vh;background:#070d14;padding:20px;}
 .rotDisplayTop{text-align:center;margin-bottom:18px;}
-.rotDisplayTop span{color:#7fc8a0;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
+.rotDisplayTop span{color:#7bb096;font-size:.8rem;font-weight:800;letter-spacing:.14em;}
 .rotDisplayTop h1{color:#eaf4fb;font-size:2.1rem;margin:4px 0 2px;}
 .rotDisplayTop p{color:#9fb3c4;margin:0;font-size:1rem;}
 .rotDisplayGrid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;}
 .rotDisplayCourt{flex:1 1 260px;max-width:360px;background:#0c1626;border:2px solid #25405f;border-radius:16px;padding:16px;}
-.rotDisplayCourt h2{color:#7fc8a0;font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;}
+.rotDisplayCourt h2{color:#7bb096;font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 10px;}
 .rotDisplayOn{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
-.rotDisplayOn div{background:#114d2c;border:1px solid #1d6b3f;color:#eaf4fb;border-radius:10px;padding:11px 14px;font-size:1.25rem;font-weight:800;}
+.rotDisplayOn div{background:#114d2c;border:1px solid #2f5c46;color:#eaf4fb;border-radius:10px;padding:11px 14px;font-size:1.25rem;font-weight:800;}
 .rotDisplayNext{color:#9fb3c4;font-size:.95rem;}
 .rotDisplayNext b{color:#eaf4fb;}
 `}</style>;}
@@ -25507,16 +25510,16 @@ function tfShotLabel(id){const s=SHOT_BONUS_REGISTRY.find(x=>x.id===id);return s
 
 function TacticalFinishStyles(){return <style>{`
 .tfWrap{display:flex;flex-direction:column;gap:12px;}
-.tfSuite{background:#0f1822;border:1px solid #223044;border-left:3px solid #e0a334;border-radius:14px;padding:15px 17px;}
+.tfSuite{background:#0f1822;border:1px solid #223044;border-left:3px solid #c8a552;border-radius:14px;padding:15px 17px;}
 .tfSuiteHead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.tfSuiteHead .tfNo{color:#e0a334;font-weight:800;font-size:.78rem;letter-spacing:.06em;}
+.tfSuiteHead .tfNo{color:#c8a552;font-weight:800;font-size:.78rem;letter-spacing:.06em;}
 .tfSuiteHead h3{color:#eaf4fb;margin:0;font-size:1.08rem;}
 .tfSuiteHead span{color:#8aa0b6;font-size:.82rem;}
 .tfBlurb{color:#9fb6cf;font-size:.86rem;line-height:1.55;margin:8px 0 10px;}
 .tfLabel{color:#9cc4ec;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin:10px 0 7px;}
 .tfChips{display:flex;flex-wrap:wrap;gap:7px;}
 .tfChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 13px;color:#dbe6f2;font-weight:700;font-size:.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.tfChip.on{border-color:#34e07a;background:#0c2418;color:#bff0d0;}
+.tfChip.on{border-color:#6fae8b;background:#101d18;color:#a9cbb8;}
 .tfTask{color:#c7d4e2;font-size:.88rem;line-height:1.55;background:#0c1626;border:1px solid #1e2c3c;border-radius:10px;padding:11px 13px;margin-top:10px;}
 `}</style>;}
 
@@ -25605,7 +25608,7 @@ function TacticalFinishGames({setSession}){
       <div className="tfTask"><strong style={{color:'#9cc4ec'}}>Task:</strong> {task(su.id)}<br/><strong style={{color:'#9cc4ec'}}>Scoring:</strong> {scoring(su.id)}</div>
       {added!==su.id&&<button type="button" className="primaryBtn" style={{marginTop:'11px'}} onClick={()=>add(su.id)}>Add To Session</button>}
       {added===su.id&&<div style={{display:'flex',gap:'8px',marginTop:'11px',flexWrap:'wrap',alignItems:'center'}}>
-        <span style={{color:'#7fc8a0',fontWeight:800,fontSize:'.9rem'}}>Added ✓</span>
+        <span style={{color:'#7bb096',fontWeight:800,fontSize:'.9rem'}}>Added ✓</span>
         <button type="button" className="primaryBtn" onClick={()=>setAdded('')}>Configure Next Game</button>
         <button type="button" className="secondaryBtn" onClick={()=>add(su.id)}>Add Same Again</button>
       </div>}
@@ -25767,16 +25770,16 @@ button,select{-webkit-appearance:none;appearance:none;}
 .mePanel{background:#0b1320;border:1px solid #223044;border-radius:14px;overflow:hidden;transition:border-color .15s;}
 .mePanel.meOpen{border-color:#2a3d54;}
 .mePanelHead{display:flex;align-items:center;flex-wrap:wrap;gap:3px 12px;width:100%;text-align:left;background:transparent;border:none;border-left:3px solid transparent;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.mePanel.meOpen .mePanelHead{border-left-color:#1d6b3f;}
+.mePanel.meOpen .mePanelHead{border-left-color:#2f5c46;}
 .mePanelTitle{color:#eaf4fb;font-weight:800;font-size:1rem;flex:0 0 auto;}
 .mePanelSub{color:#8aa0b6;font-size:.79rem;font-weight:500;flex:1 1 100%;order:3;}
-.mePanelChevron{color:#7fc8a0;font-size:.85rem;margin-left:auto;flex:0 0 auto;}
+.mePanelChevron{color:#7bb096;font-size:.85rem;margin-left:auto;flex:0 0 auto;}
 .mePanelBody{padding:2px 16px 18px;display:flex;flex-direction:column;gap:16px;border-top:1px solid #16273a;}
 .meLogicGroup h4{color:#9cc4ec;font-size:.8rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;margin:0 0 8px;}
 .meChipRow{display:flex;flex-wrap:wrap;gap:8px;}
 .meChip{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:9px 15px;font-weight:700;font-size:.87rem;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,border-color .12s,color .12s;}
 .meChip:hover{border-color:#34506e;}
-.meChipOn{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.meChipOn{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .meAddOwnBtn{align-self:flex-start;background:transparent;border:1px dashed #2c3c4e;color:#9cc4ec;border-radius:10px;padding:9px 14px;font-weight:700;font-size:.84rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .meAddOwnBtn:hover{border-color:#34506e;color:#bcd6f0;}
 .meLogicEdit{display:flex;flex-direction:column;gap:10px;background:#0c1626;border:1px solid #1e2c3c;border-radius:12px;padding:14px;}
@@ -25797,20 +25800,20 @@ button,select{-webkit-appearance:none;appearance:none;}
 .modifierEngine .overlayFamilyEngine{display:flex;flex-direction:column;gap:12px;}
 .modifierEngine .overlayFamilyTabs{display:flex;flex-wrap:wrap;gap:8px;}
 .modifierEngine .overlayFamilyTabs button{background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:999px;padding:9px 15px;font-weight:700;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.modifierEngine .overlayFamilyTabs .activeFamilyTab{background:#114d2c;border-color:#1d6b3f;color:#bff0d0;}
+.modifierEngine .overlayFamilyTabs .activeFamilyTab{background:#114d2c;border-color:#2f5c46;color:#a9cbb8;}
 .modifierEngine .overlayExplain{color:#8aa0b6;font-size:.81rem;margin:0;}
 .modifierEngine .mentalOverlayChips,.modifierEngine .overlayFamilyChips{display:flex;flex-wrap:wrap;gap:8px;}
 .modifierEngine .mentalOverlayChips button,.modifierEngine .overlayFamilyChips button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:#0f1c2c;border:1px solid #26384d;color:#c7d4e2;border-radius:11px;padding:9px 13px;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent;}
 .modifierEngine .mentalOverlayChips button strong,.modifierEngine .overlayFamilyChips button strong{font-size:.87rem;font-weight:700;color:#eaf4fb;}
 .modifierEngine .mentalOverlayChips button span,.modifierEngine .overlayFamilyChips button span{font-size:.71rem;color:#8aa0b6;}
-.modifierEngine .mentalOverlayChips .selectedOverlay,.modifierEngine .overlayFamilyChips .selectedOverlay{background:#114d2c;border-color:#1d6b3f;}
-.modifierEngine .mentalOverlayChips .selectedOverlay strong,.modifierEngine .overlayFamilyChips .selectedOverlay strong{color:#bff0d0;}
-.modifierEngine .mentalOverlayChips .selectedOverlay span,.modifierEngine .overlayFamilyChips .selectedOverlay span{color:#7fc8a0;}
+.modifierEngine .mentalOverlayChips .selectedOverlay,.modifierEngine .overlayFamilyChips .selectedOverlay{background:#114d2c;border-color:#2f5c46;}
+.modifierEngine .mentalOverlayChips .selectedOverlay strong,.modifierEngine .overlayFamilyChips .selectedOverlay strong{color:#a9cbb8;}
+.modifierEngine .mentalOverlayChips .selectedOverlay span,.modifierEngine .overlayFamilyChips .selectedOverlay span{color:#7bb096;}
 .modifierEngine .overlayCustomAdd{display:flex;gap:8px;flex-wrap:wrap;}
 .modifierEngine .overlayCustomAdd input{flex:1 1 180px;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;font-size:.9rem;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none;}
 .modifierEngine .activeOverlayPanel{background:#0c1a2e;border:1px solid #25405f;border-radius:12px;padding:14px;}
 .modifierEngine .activeOverlayPanel h3{color:#9cc4ec;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;margin:0 0 10px;}
-.modifierEngine .activeOverlayRule{border-left:2px solid #1d6b3f;padding:2px 0 2px 12px;margin-bottom:10px;}
+.modifierEngine .activeOverlayRule{border-left:2px solid #2f5c46;padding:2px 0 2px 12px;margin-bottom:10px;}
 .modifierEngine .activeOverlayRule strong{color:#eaf4fb;font-size:.9rem;display:block;}
 .modifierEngine .activeOverlayRule p{color:#c7d4e2;font-size:.83rem;margin:3px 0 0;}
 .modifierEngine .meAppliesTo .meChipRow{margin-top:2px;}
@@ -25839,7 +25842,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen!=='home'&&screen!=='playerDisplay'&&<div style={{position:'fixed',right:'12px',bottom:'52px',zIndex:9999,display:'flex',flexDirection:'column',gap:'8px'}}>
   <button onClick={goBack} title="Back" style={{background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'1.05rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>‹</button>
   <button onClick={()=>go('home')} title="Home" style={{background:'#16466a',border:'1px solid #2E6E8E',color:'#eaf4fb',fontSize:'1.1rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>⌂</button>
-  <button onClick={()=>go('playerDisplay')} title="Player Display" style={{background:'#1f6b3f',border:'1px solid #2e9e5f',color:'#eaf4fb',fontSize:'1.05rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>▣</button>
+  <button onClick={()=>go('playerDisplay')} title="Player Display" style={{background:'#1f6b3f',border:'1px solid #3f7a5c',color:'#eaf4fb',fontSize:'1.05rem',fontWeight:700,width:'46px',height:'46px',borderRadius:'999px',boxShadow:'0 2px 10px rgba(0,0,0,0.45)',cursor:'pointer'}}>▣</button>
 </div>}
   <header className="hero" style={{position:'relative'}}>
   <img alt="Checkerboard" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHcAAACWCAYAAADkIRetAAAXsklEQVR42u2dW4wc6XXff+f7qqq758IZXvei1Wq1oS1LijeIESCKVrAWiBAHgm0ERhggQR7sJLBgAYbznAChFjEQA0GCGHmLgTh6iAKIyEPsDaK8BOs8OFjtUo4ki2Z2ueSK5PAy9+l71Xc5eajqmeF1yeluTvdOf8BgSIDsrvr+dS7/853zL5it2Zqt6VtymF+uh/z9Q26czh6f2Tp6ljvNVjst1nt44P7Or7+FTc7ifQTMFEGqWCOEsEXN/C351/+xpSCTCHRyiAH386Tpq6UNT5ERK2AtxNDeafcTgL9XPpxx37844uAKXZyL+DB9lhujRNXen65vJoC5unf9OkkAJ4f43QaRclMGv6fDchURATEfrG7WgOwmWMBX1jv4OXSAD21To053QqWo3O425zjG3PFF6iegVhmLqXIZOcqWO/XJ8p2+W6Cg7z6FnlD60kY3JshyZ+Ae1HJVpOXNfBazXuwR3HIRG21C5Z4nwiuZGUwHd8u5cQ1tJA3pzWfWkdYXsM9NkFs+LHDlkwBwDDGt2yIN1qYh1pIwh4kTdG8zyz2wW0aMqiFJjKYY1UyiIjNwR1xTOMTvFh6e9c9i7hA0iqBaUeRyH4MqUWcHNVMNblTFWIPNykS/5z1RFZulmDSZATytVCgqmDTharPLf1lZ473NJhvdPqkqn19s8PdfeYHXXzyNOv/JyNiOCrhRFZNavnt9lX/1wQrtqDQSCyah0+vxw+t3+c7Vm/zWz7zM7/61LxBjnAw+MgP3SYBN+OOba/yzyzf43Muf5vSJZba2d9jY2KRmDXWgn/f5vR9/gGjkd7/0GrFwuzF5FnMnNBs21rDZy/mXlz7ii2df5atf+TJ/+bW/wutfeZ3TZ86UR4bWogifWpjj3/75Fd5ZWcVk6W7iNQN3AldQBWv5H7fWWekXZIALERGIMaKqGJHqoKZ0wz5G/vD9j6brnPgouuUBPO9u7GBFuHFzhW6es7S0RKvVYmtrm24eyfuOfh5JRMmM4c/WtoiFw87c8oSDq0ozL3BFgXMFq2trXL16ja3NDTZ3+vzjXza89Qcn+dxnEjq9gBGl7YqyD0DkyLYpTrzlRsAY4USW0C8Kut0eNvVYa7EGOu2czzy3wOc+n7G8oBTOEySwlKakiUVVj2zGPB2Wi/D6qWWcc7iioNPt0um02dpu0Wx1+ebv3eVvfP0a//sHbeZr0OvlfPm5k0iWEuIsoZrcCxRBneNvv/w8X1ycY73bRYKn18uxxvMH/+Ik3/i1BX5wuUNiAt0851iW8I0vngUfMEc4p5oKy9WoNNKU3//Sz2O8Z6PTIe87Ti9F/u4/OMGv/8oS9TTQzwtavR6/8YWz/MyJZdR7zCyhmnzrjc7xpRdP88e/9GU+06ixk3e4eHmbr/2dn/Ar//R9mt0uMXh+8+c/xy++9AK3Wx3E2iM98zE15UcjQiwcr794mnd+7Wv8m/97mbd+eourP8mJIrzx8hleObbILzx3ijwEbvdzXliYm/HcaQLYF55GmvDNL57lxNwc1iiXN3cwGFwMrLS7nDh1nPV+QYzxSHcjTN29J0bQEFhILDUj+AiJGLreIUDXe0KMdH1gO3dHmudO5YOtClma8MrCHCicrNcQBCuCi0qrcIjAaj8/0iXI6fVaCq8uziECS7WMpOI8IrCVF1gR1vMCqqO/GbhTE3sBjbzYqLOYJNStZSFNiEAiQrNwRFW6PtB2/si65qm1XI1QSxNemKsDcLxWQ1WxIuQh0C48QGm9MrPcafPKALwy30CBE7UMK7LbfbGZ51gRNnP3yZj0Pkrglq5ZeXGuTsMa5tKE+TQhKlgjbOcFUZWOD/R9OJKJ1VTTQFVlLk04U69hRDhey1CU1BjyEOlVteWtwt1j7TNwp8U3i/Dp+TpR4VS9XsXcSMt5rrU69EOkWYF71NZ0T/lVrvmFRp2abZGIpRsCXR8QhGutDgtpQsd7Prs4R2ZtSZJnljst2CqLWcrxLGW1X5QAAqkRXAi4GNnIC/58q3XkxKOmf1ZIFYwwn1i63nOyVqsyZiEobBeOujHc6HTpFh45Qpx36sGVyhwb1mJFWEgTMmtRSkWhnSre9kJk84hx3uk/NKni7py1zCeWxBoWB5RIhJ735CGiFcBHCd1PzInYsSxhOUsRYLmWla5ZhBCVZtXiGo8YGTo8NZvqJ3Cvvs/T/ijlgNhyrcaZRh2vyrEsI7FmV1VoPc9pJBZrDCGWEB/0+/Zf74wKPfKL92/Z8K7SGOHLJxa422qTx8jxxNJ0jlRAveflesq8Rqz3kAz/TNeJ2Bm4D1/fN4uSmJRgRjOspUAyZ9AzltvNFp2YsdZsMp+l5Nbwbkh5zi4wrynHbO3A/cyqYIyhsI4WdqILBc/62gTQ8yD/wZ4RazNcdCMr+4oR3OI87bhFbATWwgrGWIJGLvUzziyfQsRQN/PDcC+MtXgtWLeWhvcTWwp6osvS8+cNly4NDcHbq6vyxpkzevHqVfOfCRgCDl/SmZEEciGmKUGAxNLNMooiJzUW2+9QDwWJSalHhzGWg5U0FAMEAg1jzUKSmNQmRlC7YBu2tpTZM4uL9mvPPae/+eqrT31jcuFCeKbgyptvjjp/CP/ojV+NKRZHMlJyIonFZQ2CK2BugaIosMaS+8hOXtDIGhRRSW05anIwcC0eqxeb2+2w1m/BnRzYAZrQ67Czw4WbN/nGxYuHzhI//nZ+5zf+HUnyCt5FdDQinH9han/Tm2RBY9RRTUhrRX92en1utTsU3vPju2tk1hCi8tLyMV47cxoR4VgtO7BblnJ+1J/sb19MVAsrJqZGXGqMt0iwItEaE5/qQ60Rgm59tBN/67Pf/nZ/FBrOj7VcPXfOyoULAeWv0qj/In1hVPMZny/64LUsMY2afibKZfpIKsRU2Sl6RKDe9PylpYzjWUojDFGt0tJHcGzxr+9+yDDbogppSmx3rv2nV75dnC93Wfd9qo7eLX/hC9WHx/co3OsUhUdkJOlDRMy4NA3ECjZNcVHJ0pS1To96Ymnljh83u/zs0iIvpEImhqGMIy+iERnFo+lBEpQfvPkm8bfPnq1x5UqoLu7AGs5PBpThKsIgAxkJvRtX9WTwuJ/IUm50+jSShFSEBMGj7OQFXe9pF45TjRo6TAvOqHSiS3kAmwd/A+CDUt7XPaRmoqPb40uXFMAHPiTEqShXDoa1l9IUFyPHspS5Sp/KirDRLwiq9EIo4+ekXLjCZpHfALKi2Wx8pgQ4rYzJHMTxm49xywoQfPwpzsVpUTRXILGGmjVkxnCylhFUSYyh4zytqtY8QZVmQwhc3mmtAsvr9Z05TlN/6V6B7qeO7I8H6803FeB2t3kb1U2MKWXgp2EJnKoy4tONOkbKmw2qrPdz5tPkgFRoDM+iiInOhz+9vbENHPdF2ugbGukZ0hOl5crILVfKPE4+++3/thNhBWuYhj4VAYjKqXrGQppwLEupGUuo+EXHeebshFSGVcEavMbt/7Wx0jt2snGs06vXGj7LXEaysAfuGPKac+cqRPUjjCEiU3NulhnDmUbGS3MNXpxrYAWOZymqSss5jDGT4IYUY+j6sP7ejdX85Jyth0aRRF2w+4YUxwRuRYdU9QoimGnqMBOhYS2LWcLPHV/kWGqZTy0uRu52+xPxqqcoohhDuyjutNvez5la8hCZXx0PuHve44Ph2fqzN4o5awmqnK7XqFlbioOKcKfXZzgeNEK3LMJGXqwAarUs6wiFiqAyBNf9eHArOhSCfogPgE7TO4DIrMFS9ladrNfwMZIZYbOf03OT0DBXZja3et0VgCBED+pEoukTW3s9CTp6y63oUMsV13HeY4Yt6zxzz0zNGqwIL843ALDG0A+xtN5Dd81q8IGr2+3bJNgYQhQvUYRoDHGYq/t4cCs69N7NnTsR1ks6NEW9SAp1WyZOz8/VqVlT3bhwq9PjkKfE1Bgj0Xv3o52ttaSe2FwqYKWI1hA39qx29JY7oENf/973mqA3y4x5ujrNUlPe5nKWsVzL6PuAV8XHw+2EimVbB3kI2xdXN7dO1mrWBx9FJIoh9jrDvYDqieLn2+e/aqvYfw1jMEicJnCFcgLBCPzCqeOcadR4vlHjtZPHD/sxVYyhF8LaDzc32vP1xAQhihMtJI/SPpjFDtYTHRy8wRvAn+zSoXtPo6Zj1a2lCJHnGnV+6dMv7I10Hmp9WRQjNJ277du+qJ9IGnleqFDG22SIZOopqNDbAzfyQRlvp6+xWygz590XXKhOQPmxokG9YgWICSAi0Yjbn0yNGdxLZxQgj3qVMGV06D6A98sFHvYjakQgKjc7nRVAgvhH0aADFTKeDKSKDnX74QYuFBgzVXRogpcheK4227dJMDFIRYPy+JACxpgst6JD319r3onoakWHZuAO65NFJHif/3B7Y61+Dw2SaPdiLozTLQvo+fPnza++9VYX5QbGgMgM3JHQoLj17tr69i4Ncns06O4zsVzgW7xtAKJwtWrfmoE7AhrU9WH10nqru0uDRGIhebTt4TLlpwIX3qieuLCPDs3W0DSocLfo+6JuE/DoIFM2QwL7xDx3Px0CM7V0aNIMFxHW+70VQEXQIBKjaLRmuAODp7fcig71fbhWng5N/JDb5DOzGLnR6d4CxOO1zJRLGiRDtrU+Hbjf/W4EaPXcDbzvVYRx5psPznEFH3h/u3mHBFsEiYAODgzsEDXlpwe3Iv8/urOzGuHOjA4NT4Oc870fbm2vLSzUbRBf0SCidFAzZHXqqcAVUD1/3nz9e9/LVbmBndGhoWiQNRQxbryzvrqzVLPWB4niJCJoT3ZpEM/GcsukypSPnX44VW2uE0qDOt6vfrTW7M4niYyaBh0A3JIOBdUrQ8T52UIUMWwX7hYeX7cJ4vcODFojAPYpqdAeHRL0A6JypF9OOzQNgrXeHg3ygooQbZ9o7qVB+qwsNwJ45RreH+D/z9ZuChMiN9rdFUD6+2mQeYAGPSO3/K1vKcDadnslhtCe0aED0yCD93p5Z+cudWyMEoS9vqnNEdCgpwZ3MIv6Py9fXzdwa0aHDp5MuRA6P1jfWF+o15OSBkk0Qux1R+OSnxpcBb577pz9xsWLLsL12enQQaBVxRj6Pmy8s7rePFmrmeAl4tBcRueSDxQzz1XjJVEHdGhmuU/FcUsXSNu7u6vNTq+WJOI9Wsbb0dGgoRKivfGS2TqIW94p3EpJgwZ9U2UyZUcUbw8GbjVe4kL4kBhndOgAiTIKd3v9wfiIeiE6KaLpE5v3xttndeRXraqfSiPXcH5kGhlHJlNGhRi43urcAkwox0dURKKUnYeHaLnfKvupbhX5LaLuzMqQT2u4YnA+/mR76y71xIYyidqlQeYwE6pqKE7++R9e2IxoSYeYJVVPGG0VYyhCaP3Zxubmcj2xub+XBq2NyCUfOKHSc+fMBQiofDSjQ0+ZhhpDP4T1d+5uNZdqNeOlbGfNJY9GRueSD54tD+iQ6Idls9zMcp/Q7SnG0PL+zs5Opz+fJCKhcsuGaGR0VjsUFQLQEGZ06Gk4bvUmla28uAWExIIgukuDmqMVYT8YuBUdKnR6xMcmhwYpdzr30qBCCh01DRrGLZezQ4XbLz42c80f7+sMIXKt3d5Pg3ZPg8yIX51wMHCr8ZKVbuvWnvjYDNvHJ8pgjEj0Plza3F5NFpKkokFqpIhG7umbOjxwB9P2r33nv2/viY/NLPexe1YdGLgQdt5d39hcqtXGSoOGi5VTLD52aMZrDL0Q195b3WgvJcnDaNAEuOV9dGgqxccOI1PeJyaWd/K8XkvYT4OS1uhOg0ZChSpaPqNDT7hR+8TEwt4U/Whba0YDbkWHcvTDctp+RoeeJFN5UEzMPUxM7JBjbkWHev3iOsX0iY8962VQQwiDKfp9YmL50GJiowe3okPvr/ZuT6X42LNPpiQ67360fr+YmNx/GnT4MXdAh77yR3/UmlbxsWeWTFVT9EUI2xc39omJOdHBFP0aoz00GDpOTrv42LOmQd19YmKeqm+qEjdhotwyA/Gxarxk1sL82BLGPWJiNkGEKBSxGBMNgqFfMfj2wO3Mpu0/xnAfEBMLJQ3SEYiJjYfnVtP2bsrFx8aeKT8gJranqSw9dFgxsfGAW9GhjtPrOD8TH3u05d4nJvZQGjRZMXdAh969s303wkx87FE+Wcw+MbF6cg8N6g4vJjYWcGfiY09Dg3SzFBOz5h4xMRleTGw8lstMfOxJaVDH+7WHiYmJjCeZGgm4g2l7jXwwo0OPoUEPiInJ/adBTCC4JR3yUa+gSmQ2XvIwGjQQEwMIIrvjI+M4MBgduBUdQuJVvMfMToceTE32iYkF8WWmjOg4M+XRgFuJj212ipv4MBMfe5DjCj5weZ+YmMDINJXHC+5MfOxjaFApJvbjfWJiSBlzbZe4MSYaNBJw94uPAddn4mP30aBHiIkVFQ1ioi23TKpKOqRcnVnuw2hQuHu/mJhIHq2ZCnArOkSc9VPdT4PEsF0Ut+8VE6ua0JvjA3aUllvSIdUrM/Gx+2nQvWJiCPosaNAoLTcCFDPxsQdTkvvExMIYxMTGC24lPrY9Ex+7nwY9VkzMMr7q1MjA3S8+BnITMR5Vh6qPquFhP58E5KMSHnV/UdVHkVD40Lq4trWx/BAxsbUxumQYuhNjj6DpuXNWLlxw/+T11zZZmEvo55STCI9YeTHd3ZIimFpqH1ltjQpZSthu9r+/vrq9VKuZ4GMpJlbLoxmzSx4ZuMDg4F66vvh9abb/T6/Xs30f6/0YMqchDVFt1L1OjZ9bWv56ltpj1cv1ZNqADTHm/+/O6lsuai7yYAdKVNSkidxutm51+j4sLifSHzTFGcZOgxjDphr2Ki41YBE4BsxXf08G39n85j/8zmKj/grOD+Z7pyUBVqyRwrmdT3/nv55b3ezsAOljgLKfPbNUdyYUYHq2iG3faLeSFdo/hT7gGFPsTUZ967999mztL2Ksu9Bq5Em+0OstLPjEzScSM4mauArc6T9gEHn9+ZPL79rMLGfWRinbencnB6Q6AfJBezF3RiQ4JyEaCUlOGDcNGge4/PsrVwJQvARWP0U/yfuJKxoitRhM1GR3Z2T6e5y7LoRWUfhUbAxSZsIiQf2A01YPfLAmxiguCb4wWcclbUKVKY91D5KxOC6IXfBLDtdNin7dZeI7SfCJJqSDcDD99Wcp7yGKiEYJPhrxJhjvhSiD+3OlAnrqvdOkk8eUwndwaxDGHXOTMQCrQNwEv7BKUT+NFLV2TANJLWY2d2XdxqJx2vucBy0yUSSolZzcFATjasZ5J8WumzZINFkeYkYRtslvgmfMHHeslgv468DxNWJjEZfMYYMUJqF8k7gxpnxyS448TVa8L6ZaREKImQnaNUWqSU+zdu6T3Nl+OVRd1gHQXoeY3cW7MoHy7FnuVIE72IAAsAVxq4U73cIMTFVBDEhVg7ZT1pkj1fVaQVRS1ASCCcb1s3Zej3lPVijaEAbqNAZ0be+hj9XejJ0KJWN7svcuXABZq37v26JujNpHNaIYRWXfJ8gE260CElX7QYIC6kMWrcm9JrkLKxQ3Ia+sUx+xJ8pUFTEeDvD+P+8HTH6y0fzlrV7RuNncqN+lM7/WtgstLeacp+ZCTPYXPCYtzqoiQWO42up0F5LEeHyMIjHJCe0SVH8fuI/blzG6mMNybeXNWWAOWIDsGEs6n0StJ5okqpM/d/T8Ql3UhMI72zWiLUuz3V6js1EWJ8K4qc5hWe7Hrq9+laT9/guZabezjdMurXfnbA+xkkYjMRqd8CKHgBaxpD/iJZhsJ1rZnZCflGs8tO81QPIq1P3LzMUe8/jjjWBjZmrllKNOcOwVQUOQYHri0qTXL7KiK206t1r0gOJZZMOTDK5UniP72QXqnSXqUlC3YSGNmhpNJ7w86cpXkHtT+GCLoh7pN9fobe0lU4cO7mG55UEWHQG/3qY4BfTrBFdvJzFONrCqiNTKEqO1hLrDhTWKrb3ixESUVuWQv1uqpMoCyXGwi5R8eBrKVwbUQmxD2Cgt1d/HYY80uPvjr9kH+DRVNXQfmGM/6ZkWcO8HGKa72KyMQfpgmsGd1GsZtnAzW7M13vX/AZ/XMvVD0OtMAAAAAElFTkSuQmCC" style={{position:'absolute',top:'50%',right:'28px',transform:'translateY(-50%)',height:'74px',width:'auto',filter:'drop-shadow(0 6px 12px rgba(0,0,0,.4))',pointerEvents:'none'}}/>
