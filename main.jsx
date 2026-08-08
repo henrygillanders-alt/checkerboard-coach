@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v565 Step-by-step previews. The Depth Cap / Egyptian \u00be-court task and scoring previews are rewritten as numbered steps in plain English, and the line is named in full at every reference \u2014 no more \u201cthat same line\u201d to decode courtside. New house standard going forward: module task and scoring previews follow the card format \u2014 numbered steps, short sentences, every court line named in full each time it appears. Also carries Traffic Light Zones, the Interleaved Run and 8-minute default rotations from v562\u2013v564. Builds on v564.';
+const APP_VERSION='v569 Poached Egg rationale. The model\u2019s tab gains a Why this model \u2014 CLA rationale block: education of attention and intention \u2014 the egg names what each region affords, Pressure Points constrain what players hunt for, and contact location stays a prior, not a rule. The shot decision is guided by the opponent\u2019s state and position; CLA is preserved because no shot type is ever dictated. Includes the guided question for contrasting rallies. Builds on v568.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -9409,7 +9409,7 @@ function TacticalPressureModule({onAddToSession}){
     </div>
 
     <div className="tpNavBar">
-      {[{id:'games',label:'Games',emoji:'🎮'},{id:'corridor',label:'The Corridor',emoji:'📐'},{id:'analysis',label:'Match Analysis Link',emoji:'🔍'},{id:'cpf',label:'Challenge Point',emoji:'🎯'}].map(s=>
+      {[{id:'games',label:'Games',emoji:'🎮'},{id:'corridor',label:'Poached Egg Model',emoji:'🍳'},{id:'analysis',label:'Match Analysis Link',emoji:'🔍'},{id:'cpf',label:'Challenge Point',emoji:'🎯'}].map(s=>
         <div key={s.id} role="button" tabIndex={0}
           className={activeSection===s.id?'tpNavActive':'tpNavBtn'}
           onClick={()=>{setActiveSection(s.id);setActiveGame(null);}}
@@ -9493,41 +9493,27 @@ function TacticalPressureModule({onAddToSession}){
     {/* ── THE CORRIDOR ── */}
     {activeSection==='corridor'&&<div className="tpCorridorSection">
       <div className="tpCorridorIntro">
-        <h2>The Central Corridor</h2>
-        <p>The corridor represents central control. It is a measurement tool — not a target zone. The objective is to force the opponent to contact the ball from <strong>outside</strong> the corridor.</p>
+        <h2>The Poached Egg Model</h2>
+        <p>The court reads as a poached egg on toast. The <strong>yolk</strong> over the T is attacking opportunity, the <strong>egg white</strong> around it is rally control and pressure play, and the <strong>toast</strong> — the corners — is defensive ground. It is a measurement tool, not a target zone: the objective is to force the opponent to contact the ball from the <strong>toast</strong>, and to make your own contacts from the yolk. Where the contact happens tells both players the smarter tactical decision.</p>
         <div className="tpCorridorPrinciple">
-          Contacts inside the corridor = opponent retains options.<br/>
-          Contacts outside the corridor = Pressure Point.
+          Contacts in the yolk or egg white = opponent retains options.<br/>
+          Contacts on the toast = Pressure Point.
         </div>
+        <CoachRationale label="Why this model — CLA rationale">
+          <p>CLA mechanism — education of attention and intention. The egg names what each court region typically affords: yolk contacts afford attack, egg-white contacts afford rally control and pressure, toast contacts afford defence or counterattack. Scoring Pressure Points for forcing toast contacts constrains what players hunt for — opponent displacement — without prescribing any shot.</p>
+          <p>Contact location is a prior, not a rule: the shot decision is guided by the opponent's state and position, and skilled players find attacking answers from the toast. The CLA rationale is preserved precisely because the model never dictates the shot type to play — it exists to make the exceptions visible and discussable.</p>
+          <p>Guided question after contrasting rallies: "where was their contact — and what did that make available to you?"</p>
+        </CoachRationale>
       </div>
 
-      <div className="tpCourtMap">
-        <div className="tpCourtLabel">Front Wall</div>
-        <div className="tpCourtFloor">
-          <div className="tpCourtLeft tpOutsideCorridor">
-            <span>Outside</span>
-            <small>Pressure Point</small>
-          </div>
-          <div className="tpCourtCorridor">
-            <div className="tpCorridorTop tpOutsideCorridor"><span>Outside</span></div>
-            <div className="tpCorridorMid tpInsideCorridor">
-              <span>Central Corridor</span>
-              <small>T and mid-court</small>
-              <div className="tpTMarker">T</div>
-            </div>
-            <div className="tpCorridorBot tpOutsideCorridor"><span>Outside</span></div>
-          </div>
-          <div className="tpCourtRight tpOutsideCorridor">
-            <span>Outside</span>
-            <small>Pressure Point</small>
-          </div>
-        </div>
-        <div className="tpCourtLabel">Back Wall</div>
+      <div className="tpCourtMap" style={{background:'transparent',border:'none'}}>
+        <TPCorridorCourtMap/>
+        <p className="mutedText" style={{textAlign:'center',fontSize:'0.84rem',margin:'8px auto 0',maxWidth:'520px'}}>The Poached Egg Model: the yolk is attacking opportunity, the egg white is rally control and pressure play, the toast is defensive ground — defend or counterattack. Force your opponent’s contacts onto the toast; make your own from the yolk.</p>
       </div>
 
       <div className="tpCorridorNotes">
         <div className="tpCorridorNoteCard tpNoteInside">
-          <strong>Inside Corridor — No Pressure Point</strong>
+          <strong>Yolk & Egg White — No Pressure Point</strong>
           <ul>
             <li>Opponent retains central control</li>
             <li>Multiple shot options available</li>
@@ -9536,7 +9522,7 @@ function TacticalPressureModule({onAddToSession}){
           </ul>
         </div>
         <div className="tpCorridorNoteCard tpNoteOutside">
-          <strong>Outside Corridor — Pressure Point Awarded</strong>
+          <strong>Toast — Pressure Point Awarded</strong>
           <ul>
             <li>Central control disrupted</li>
             <li>Shot options reduced</li>
@@ -11850,6 +11836,51 @@ function AroundTheBoardBuilder({onAddToSession}){
 // Unfolded schematic: centre strip = TIN / front wall (5,6 / 7,8) / floor (1,2 / 3,4) / back wall (BL,BR).
 // Left flank = LEFT SIDE WALL, three depth bands A/B/C (front→back) each split HI/LO.
 // Right flank = RIGHT SIDE WALL, mirrored (LO/HI column order reversed vs left).
+function TPCorridorCourtMap(){
+  /* Floor plan to true court proportions (6.4 m x 9.75 m), drawn with the same
+     tokens as CheckerboardCourtMap. Painted features placed to scale: short line
+     5.44 m from the front wall, half-court line to the back wall, 1.6 m service
+     boxes on the short line. The corridor is court-anchored: the central band
+     between the two service boxes, spanning the T. */
+  const SH='#1b2636',LN='#3a4a63',TX='#dbe6f2',MU='#8aa0b6';
+  const X0=40,X1=280,Y0=40,Y1=430;                 /* floor: 240 x 390 = 6.4 x 9.75 */
+  const px=m=>X0+(X1-X0)*(m/6.4), py=m=>Y0+(Y1-Y0)*(m/9.75);
+  const SHORT=py(5.44), BOXW=px(1.6)-X0, BOXD=py(5.44+1.6)-SHORT;
+  const CL=X0+BOXW, CR=X1-BOXW;                    /* corridor sides = inner box edges */
+  const CT=SHORT-BOXD, CB=SHORT+BOXD;              /* corridor depth: one box-depth either side of the short line */
+  const MID=(X0+X1)/2;
+  const out=(x,y,w,h)=>(<rect key={'o'+x+y} x={x} y={y} width={w} height={h} fill="#a35b5b" opacity="0.13"/>);
+  return <svg viewBox="0 0 320 470" style={{width:'100%',maxWidth:'440px',display:'block',margin:'0 auto'}} role="img"
+      aria-label="Court floor plan. Central corridor between the service boxes, spanning the T. Everything outside the corridor is a Pressure Point contact.">
+    <text x="160" y="16" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">FRONT WALL</text>
+    <rect x={X0} y={Y0} width={X1-X0} height={Y1-Y0} fill={SH} stroke={LN} strokeWidth="2"/>
+    {/* toast tint: the four corners, outside the egg */}
+    {out(X0,Y0,72,86)}{out(X1-72,Y0,72,86)}
+    {out(X0,Y1-86,72,86)}{out(X1-72,Y1-86,72,86)}
+    {/* painted lines, to scale */}
+    <line x1={X0} y1={SHORT} x2={X1} y2={SHORT} stroke={TX} strokeWidth="1.6"/>
+    <line x1={MID} y1={SHORT} x2={MID} y2={Y1} stroke={TX} strokeWidth="1.6"/>
+    <rect x={X0} y={SHORT} width={BOXW} height={BOXD} fill="none" stroke={TX} strokeWidth="1.6"/>
+    <rect x={X1-BOXW} y={SHORT} width={BOXW} height={BOXD} fill="none" stroke={TX} strokeWidth="1.6"/>
+    {/* the egg on toast: yolk = T (attack) · egg white = rally or pressure · toast = corners (defend) */}
+    <ellipse cx={MID} cy={SHORT-12} rx={(X1-X0)/2-14} ry={(Y1-Y0)/2-24} fill="#dbe6f2" opacity="0.10" stroke="#dbe6f2" strokeWidth="1.6" strokeDasharray="2 4"/>
+    <ellipse cx={MID} cy={SHORT} rx="56" ry="62" fill="#c8a552" opacity="0.28" stroke="#c8a552" strokeWidth="2"/>
+    <circle cx={MID} cy={SHORT} r="13" fill="#101d18" stroke="#6fae8b" strokeWidth="2"/>
+    <text x={MID} y={SHORT+4.5} textAnchor="middle" fill="#8fbfa4" fontSize="13" fontWeight="800">T</text>
+    <text x={MID} y={SHORT-34} textAnchor="middle" fill="#d9c08a" fontSize="10.5" fontWeight="800">Yolk — attack</text>
+    <text x={MID} y={SHORT-90} textAnchor="middle" fill="#dbe6f2" fontSize="10" fontWeight="800" opacity="0.85">Egg white — rally control · pressure</text>
+    <text x={X0+30} y={Y0+18} textAnchor="middle" fill="#a37b5b" fontSize="9" fontWeight="800">Toast</text>
+    <text x={X0+30} y={Y0+29} textAnchor="middle" fill={MU} fontSize="7">defend · counter</text>
+    <text x={X1-30} y={Y0+18} textAnchor="middle" fill="#a37b5b" fontSize="9" fontWeight="800">Toast</text>
+    <text x={X1-30} y={Y0+29} textAnchor="middle" fill={MU} fontSize="7">defend · counter</text>
+    <text x={X0+30} y={Y1-22} textAnchor="middle" fill="#a37b5b" fontSize="9" fontWeight="800">Toast</text>
+    <text x={X0+30} y={Y1-11} textAnchor="middle" fill={MU} fontSize="7">defend · rally</text>
+    <text x={X1-30} y={Y1-22} textAnchor="middle" fill="#a37b5b" fontSize="9" fontWeight="800">Toast</text>
+    <text x={X1-30} y={Y1-11} textAnchor="middle" fill={MU} fontSize="7">defend · rally</text>
+    <text x={X0-7} y={SHORT+3} textAnchor="end" fill={MU} fontSize="7.5">short line</text>
+    <text x="160" y="452" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">BACK WALL</text>
+  </svg>;
+}
 function CheckerboardCourtMap({width='100%',compact=false}){
   /* Rendered from ATB_FLOOR_ZONES / ATB_WALL_ZONES so the map cannot drift from the
      data model. Layout follows the original definitive reference: unfolded schematic,
