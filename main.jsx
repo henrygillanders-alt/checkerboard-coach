@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v559 Ratings explainer up front. The paragraph explaining how the Performance Ladder rates players now sits directly under the season table on the opening tab, as well as atop the full points breakdown in the Season tab \u2014 both drawn from one source so they can never drift apart. Builds on v558.';
+const APP_VERSION='v561 Interleave patterns. Session Builder gains an opt-in contextual-interference toggle: when two or more Pattern Lab rotations are in the session, the coach can show them in a shuffled order \u2014 reshuffled on demand, saved order and every other rotation untouched, reorder arrows paused while on. Blocked sequencing lets players anticipate instead of read; interleaving restores match uncertainty, so reps look messier on the night while retention and transfer improve (Battig 1979; Shea & Morgan 1979). Builds on v560.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5319,7 +5319,7 @@ function GhostingModule({setScreen}){
         <button type="button" className={mode==='sprint'?'primaryBtn':'secondaryBtn'} style={{flex:1}} onClick={()=>setMode('sprint')}>⚡ Repeat-Sprint</button>
       </div>
       {mode==='rally'?<>
-        <div className="claRationaleBox"><h2>Honest about RLD</h2><p>Ghosting is a <strong>movement and conditioning tool</strong>, not a game-reading one — with no ball or opponent it sits low on the RLD scale (1–2). This module makes it the least-un-CLA version possible: the blocks reproduce the <strong>real rally-length profile</strong> of the modern game (Murray et al., 2016) in a 5 : 10 : 4 : 1 short : medium : long : very-long mix, the called zone is <strong>never fully predictable</strong> (repetition without repetition), and every rep carries a <strong>visualise + produce-the-shot</strong> prompt so the movement stays coupled to imagined game information. Programme the same blocks into your Rox; use this as the shared clock and cue.</p></div>
+        <div className="claRationaleBox"><h2>Honest about RLD</h2><p>Ghosting is a <strong>movement and conditioning tool</strong>, not a game-reading one — with no ball or opponent it sits low on the RLD scale (1–2). This module makes it the most CLA version possible: the blocks reproduce the <strong>real rally-length profile</strong> of the modern game (Murray et al., 2016) in a 5 : 10 : 4 : 1 short : medium : long : very-long mix, the called zone is <strong>never fully predictable</strong> (repetition without repetition), and every rep carries a <strong>visualise + produce-the-shot</strong> prompt so the movement stays coupled to imagined game information. Programme the same blocks into your Rox; use this as the shared clock and cue.</p></div>
         <div className="infoBox" style={{marginTop:'8px'}}><strong>Tip:</strong> pair with the Mental Performance → Imagery (PETTLEP) guide — physical stance, real environment, real timing — to keep the visualisation functional.</div>
         <label className="fw" style={{display:'block',margin:'12px 0',fontWeight:600,color:'#cfe0ee'}}>Session length<select value={size} onChange={e=>setSize(e.target.value)} style={{width:'100%',marginTop:'5px',padding:'10px',borderRadius:'8px',background:'#0e2033',border:'1px solid #2a4a63',color:'#eaf4fb',fontSize:'15px',boxSizing:'border-box'}}>{Object.keys(GHOST_SESSIONS).map(k=><option key={k}>{k}</option>)}</select></label>
         <div style={{display:'flex',flexWrap:'wrap',gap:'8px',margin:'8px 0'}}>
@@ -6790,7 +6790,26 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
   </div>;
 }
 
-function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+/* Contextual interference: present the session's Pattern Lab rotations in a
+   shuffled order while leaving every other rotation, and the stored order,
+   untouched. Seeded so the order is stable until the coach reshuffles.
+   (Battig 1979; Shea & Morgan 1979 — interleaved practice: messier in-session,
+   better retention and transfer.) */
+function ciInterleaveOrder(session,seed){
+  const idx=session.map((_,i)=>i);
+  const pl=idx.filter(i=>session[i]&&session[i].format==='Pattern Lab');
+  if(pl.length<2)return idx;
+  let st=Math.imul((seed>>>0)||1,2654435761)>>>0;
+  st^=st>>>16;st=Math.imul(st,2246822519)>>>0;st^=st>>>13;st=st||1;
+  const rnd=()=>{st^=st<<13;st^=st>>>17;st^=st<<5;st>>>=0;return st/4294967296;};
+  rnd();
+  const shuffled=[...pl];
+  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  const out=idx.slice();
+  pl.forEach((pos,k)=>{out[pos]=shuffled[k];});
+  return out;
+}
+function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);const[ciInterleave,setCiInterleave]=useState(false);const[ciSeed,setCiSeed]=useState(1);const plCount=session.filter(g=>g&&g.format==='Pattern Lab').length;const displayCards=(ciInterleave?ciInterleaveOrder(session,ciSeed):session.map((_,i)=>i)).map(i=>({__i:i,card:session[i]}));function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
@@ -6832,11 +6851,16 @@ return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
 {showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
+{plCount>=2&&<div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',margin:'0 0 10px'}}>
+  <button type="button" className="secondaryBtn" style={ciInterleave?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} title="Plays your selected patterns in random order — closer to match unpredictability than running them in sequence." onClick={()=>{setCiSeed((Date.now()%2147483647)||1);setCiInterleave(v=>!v);}}>{ciInterleave?'■ Interleaving patterns':'▦ Interleave patterns'}</button>
+  {ciInterleave&&<button type="button" className="secondaryBtn" onClick={()=>setCiSeed((Date.now()%2147483647)||1)}>Reshuffle</button>}
+  {ciInterleave&&<span className="mutedText" style={{fontSize:'0.8rem'}}>Pattern Lab rotations only, shown shuffled — saved order untouched, arrows paused. Expect messier reps tonight; retention and transfer are what improve.</span>}
+</div>}
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
-{session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
+{displayCards.map(({__i:index,card:game})=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
 {editIndex===index?<div style={{padding:'2px'}}><div className="rotationTop"><div><strong>Editing Rotation {index+1}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" onClick={()=>setEditIndex(null)}>Close</button></div></div><UniversalGameEditor key={'edit-'+(game.id||index)} game={game} saveLabel="Save Changes" onAddToSession={g=>applyEdit(index,g)} onCancel={()=>setEditIndex(null)}/></div>:<>
-<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
+<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title={ciInterleave?"Paused while interleaving":"Move up"} disabled={ciInterleave||index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title={ciInterleave?"Paused while interleaving":"Move down"} disabled={ciInterleave||index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>}
 <div className="buttonRow" style={{marginTop:'12px',flexWrap:'wrap',gap:'8px'}}>
@@ -20308,7 +20332,7 @@ function SoloPracticeModule({setScreen}){
     <button type="button" className="gameCard" style={{width:'100%',textAlign:'left',cursor:'pointer',border:'1px solid #35557a',background:'linear-gradient(135deg,#12263b,#0d1b2a)'}} onClick={()=>setScreen&&setScreen('ghosting')}>
       <div className="categoryTag">Unopposed Movement</div>
       <h2 style={{margin:'4px 0'}}>🏃 Ghosting →</h2>
-      <p className="mutedText" style={{margin:0}}>Rally-band movement blocks (5:10:4:1) for your Rox / lights, honestly tagged RLD 1–2, with a visualise + produce-the-shot prompt. The unopposed movement tool, made the least-un-CLA way possible.</p>
+      <p className="mutedText" style={{margin:0}}>Rally-band movement blocks (5:10:4:1) for your Rox / lights, honestly tagged RLD 1–2, with a visualise + produce-the-shot prompt. The unopposed movement tool, made the most CLA way possible.</p>
     </button>
 
     <section className="soloSection">
