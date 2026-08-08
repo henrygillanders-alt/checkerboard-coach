@@ -224,7 +224,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v561 Interleave patterns. Session Builder gains an opt-in contextual-interference toggle: when two or more Pattern Lab rotations are in the session, the coach can show them in a shuffled order \u2014 reshuffled on demand, saved order and every other rotation untouched, reorder arrows paused while on. Blocked sequencing lets players anticipate instead of read; interleaving restores match uncertainty, so reps look messier on the night while retention and transfer improve (Battig 1979; Shea & Morgan 1979). Builds on v560.';
+const APP_VERSION='v563 Interleaved Run replaces the session shuffle. The v561 Session Builder toggle only reordered whole rotations \u2014 each pattern still ran as one blocked chunk, so it delivered little real contextual interference and it fought the coach\u2019s curated session order; it is removed. In its place, Pattern Lab gains Interleaved Run: pick 2\u20134 ready-made patterns, use the on-court caller for a fresh random pattern before every rally (never the same call twice running), and add the whole thing to the session as one card scored by each called pattern\u2019s own run-rules. Per-rally interleaving is where the retention effect actually lives (Battig 1979; Shea & Morgan 1979). Also carries Traffic Light Zones from v562. Builds on v562.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5516,6 +5516,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('trafficLight')}><h2>Traffic Light Zones</h2><span className="homeTileSubtitle">Front-wall height bands · purpose per band</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -5974,6 +5975,161 @@ const PRESS_CALL_MODES=[
   {id:'opponent',label:'Opponent-Called',desc:'The opponent calls "Press" on their rival mid-rally — tests composure and finishing under a clock the player did not choose to start.'}
 ];
 const PRESS_CALL_SHOT_LIMITS=['2','3','4','5'];
+/* ── TRAFFIC LIGHT ZONES ──────────────────────────────────────────────────────
+   Height-banded front-wall constraint module (Hirst, Squash — Crowood Sports
+   Guides; WSF coaching manual). Three bands, each with a stated tactical
+   purpose; three formats on one engine. Band boundaries are the painted tin
+   and service lines plus one coach-taped line — every check is a ball check
+   players can see. */
+const TL_BANDS=[
+ {id:'red',label:'Red',color:'#a35b5b',fill:'#1d1315',bounds:'from the taped line up to the out line',purpose:'Recovery and attacking',read:'Height that buys time — lobs and high drives that push your opponent deep and give you the T back.'},
+ {id:'amber',label:'Amber',color:'#c8a552',fill:'#1c1810',bounds:'from the service line up to the taped line',purpose:'Recovery, attacking and consolidating',read:'The working band — mid-height shots that hold length and keep or rebuild a neutral rally.'},
+ {id:'green',label:'Green',color:'#6fae8b',fill:'#101d18',bounds:'above the tin, up to the service line',purpose:'Attacking',read:'Low and short — kills, drops and low drives. Highest reward, least margin.'},
+];
+const TL_TAPE_RULE='Setup — one strip of tape: run a horizontal tape line across the front wall midway between the service line and the out line. With the tin and the service line already painted, that one strip marks all three bands. Walk it before you play: stand at the T and check every boundary is visible from there.';
+function TrafficLightWallDiagram(){
+  /* Data-driven from TL_BANDS: top of wall to tin. Heights are illustrative
+     proportions, not measurements — the lines, not the pixels, are the rule. */
+  const rows=[{band:TL_BANDS[0],y:16,h:64,line:'out line',ly:16},{band:TL_BANDS[1],y:80,h:56,line:'taped line',ly:80},{band:TL_BANDS[2],y:136,h:56,line:'service line',ly:136}];
+  return <svg viewBox="0 0 340 232" style={{width:'100%',maxWidth:'420px',display:'block'}} role="img" aria-label="Front wall split into red, amber and green height bands">
+    <rect x="10" y="16" width="240" height="200" fill="#0b1320" stroke="#223044"/>
+    {rows.map(r=><g key={r.band.id}>
+      <rect x="10" y={r.y} width="240" height={r.h} fill={r.band.fill}/>
+      <line x1="10" x2="250" y1={r.ly} y2={r.ly} stroke={r.line==='taped line'?'#d9c08a':'#8aa0b6'} strokeWidth={r.line==='taped line'?2.5:1.5} strokeDasharray={r.line==='taped line'?'7 5':undefined}/>
+      <text x="256" y={r.ly+4} fill="#8aa0b6" fontSize="10">{r.line}</text>
+      <text x="20" y={r.y+r.h/2+1} fill={r.band.color} fontSize="13" fontWeight="800">{r.band.label.toUpperCase()}</text>
+      <text x="20" y={r.y+r.h/2+15} fill="#8aa0b6" fontSize="9.5">{r.band.purpose}</text>
+    </g>)}
+    <rect x="10" y="192" width="240" height="24" fill="#131a24"/>
+    <line x1="10" x2="250" y1="192" y2="192" stroke="#8aa0b6" strokeWidth="1.5"/>
+    <text x="256" y="196" fill="#8aa0b6" fontSize="10">tin</text>
+    <text x="20" y="207" fill="#5f7387" fontSize="10" fontWeight="700">TIN — down</text>
+  </svg>;
+}
+function TrafficLightModule({setScreen,setSession}){
+  const [modeId,setModeId]=useState('solo');
+  const [bandId,setBandId]=useState('green');
+  const [combo,setCombo]=useState('single');
+  const [seconds,setSeconds]=useState(90);
+  const [pairShape,setPairShape]=useState('symmetric');
+  const [gameShape,setGameShape]=useState('symmetric');
+  const [added,setAdded]=useState('');
+  const band=TL_BANDS.find(b=>b.id===bandId)||TL_BANDS[2];
+  const MODES=[
+    {id:'solo',label:'Solo timed practice',sub:'One player, the clock, and a called band',rld:1},
+    {id:'pairs',label:'Constrained rallies',sub:'Pairs — band restriction on one or both players',rld:pairShape==='symmetric'?3:4},
+    {id:'game11',label:'Conditioned game to 11',sub:'Full game with the band as the standing rule',rld:gameShape==='symmetric'?4:5},
+  ];
+  const mode=MODES.find(m=>m.id===modeId)||MODES[0];
+  const comboText=combo==='single'?null:combo==='ggr'?'two Green shots then one Red shot, repeating in that cycle':'alternating one Green shot and one Red shot';
+  function ballCheck(b){return `Ball check: the shot counts as ${b.label} only if the ball first strikes the front wall ${b.bounds}.`;}
+  function buildTask(){
+    if(modeId==='solo'){
+      const target=combo==='single'?`every shot into the ${band.label} band`:comboText;
+      return `${TL_TAPE_RULE} Player A feeds themselves and hits continuously for ${seconds} seconds, aiming ${target}. ${combo==='single'?ballCheck(band):'Ball check: each shot counts only if the ball first strikes the front wall inside the band the cycle calls for; a miss does not advance the cycle.'} Any serve or feed restart is allowed — the clock does not stop.`;
+    }
+    if(modeId==='pairs'){
+      if(pairShape==='symmetric')return `${TL_TAPE_RULE} Player A and Player B rally normally, but every shot from both players must strike the front wall in the ${band.label} band. ${ballCheck(band)} A shot outside the band loses the rally on the spot.`;
+      return `${TL_TAPE_RULE} Player A and Player B rally normally. Player A is restricted: every Player A shot must strike the front wall in the ${band.label} band — ${ballCheck(band)} A Player A shot outside the band loses the rally on the spot. Player B is free and plays the whole wall.`;
+    }
+    if(gameShape==='symmetric')return `${TL_TAPE_RULE} Player A and Player B play a normal game to 11 (point-a-rally). Standing rule for both players: every shot must strike the front wall in the ${band.label} band. ${ballCheck(band)} A shot outside the band loses the rally.`;
+    return `${TL_TAPE_RULE} Player A and Player B play a normal game to 11 (point-a-rally). Standing rule: every Player A shot must strike the front wall in the ${band.label} band — ${ballCheck(band)} A Player A shot outside the band loses the rally. Player B is free.`;
+  }
+  function buildScoring(){
+    if(modeId==='solo')return combo==='single'?`1 point per shot that lands in the ${band.label} band inside ${seconds} seconds. Score = total successful landings.`:`1 point per shot that lands in the band the cycle calls for, inside ${seconds} seconds; the cycle only advances on a successful landing. Score = total successful landings.`;
+    if(modeId==='pairs')return pairShape==='symmetric'?`Normal rally scoring. Either player's shot striking the front wall outside the ${band.label} band = rally lost by the hitter, immediately.`:`Normal rally scoring. A Player A shot striking the front wall outside the ${band.label} band = rally lost by Player A, immediately. Player B has no band restriction.`;
+    return (gameShape==='symmetric'?`Game to 11, point-a-rally. Either player's shot outside the ${band.label} band = rally lost by the hitter.`:`Game to 11, point-a-rally. A Player A shot outside the ${band.label} band = rally lost by Player A. Player B is free.`);
+  }
+  function buildRationale(){
+    if(modeId==='solo')return `Education of intention: each band carries a stated tactical purpose (${band.label} — ${band.purpose.toLowerCase()}), so height stops being accidental and starts expressing intent. Source: Hirst, Squash (Crowood Sports Guides) / WSF coaching manual.`;
+    if(modeId==='pairs'&&pairShape==='asymmetric')return `Affordance amplification: Player B knows Player A's shots can only arrive in the ${band.label} band, and learns to read and exploit that certainty; Player A learns what the band's purpose (${band.purpose.toLowerCase()}) can and cannot buy under pressure. Source: Hirst (Crowood) / WSF.`;
+    return `Education of intention under live pressure: restricting the rally to the ${band.label} band forces both players to solve the rally with that band's tactical purpose (${band.purpose.toLowerCase()}) — height becomes a decision, not a habit. Source: Hirst (Crowood) / WSF.`;
+  }
+  function buildCoach(){
+    if(modeId==='solo')return 'Keep it a ball-check count, not a technique lesson. If quality dips, shrink the question to the target: "which band was that one?"';
+    if(modeId==='pairs'&&pairShape==='asymmetric')return 'Pause after Player B wins a rally by anticipating the band, and after one where Player A escaped anyway. One question: "knowing where the ball had to arrive — what did that let you do earlier?"';
+    return 'Pause after one rally won from the band and one lost from it. One question: "what did that height buy you — and what did it cost?"';
+  }
+  function playerFocus(){
+    if(modeId==='solo')return combo==='single'?`Same band, on purpose, every time.`:'Hold the cycle — the pattern is the point.';
+    if(modeId==='pairs'&&pairShape==='asymmetric')return 'Player B: you know where it must arrive — be there first.';
+    return `Solve the rally with what ${band.label} is for: ${band.purpose.toLowerCase()}.`;
+  }
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    const title=modeId==='solo'?`Traffic Light — Solo ${combo==='single'?band.label:'Combo'} (${seconds}s)`:modeId==='pairs'?`Traffic Light — ${pairShape==='symmetric'?'Both in '+band.label:band.label+' vs Free'}`:`Traffic Light — Game to 11 (${gameShape==='symmetric'?'both in '+band.label:band.label+' vs free'})`;
+    const card={id:Date.now()+Math.random(),title,category:'Traffic Light Zones',format:modeId==='solo'?'Solo Timed Practice':modeId==='pairs'?'Constrained Rally':'Conditioned Game',duration:modeId==='solo'?6:modeId==='pairs'?8:10,task:buildTask(),scoring:buildScoring(),rationale:buildRationale(),coach:buildCoach(),playerFocus:playerFocus(),layers:[],rld:mode.rld};
+    setSession(prev=>appendToSessionState(prev,card));
+    setAdded(title);
+  }
+  const STYLE=`
+.tlzPage{max-width:1000px;margin:0 auto;}
+.tlzPanel{background:#0b1320;border:1px solid #223044;border-radius:14px;padding:16px;margin-bottom:14px;}
+.tlzPanel h4{margin:0 0 10px;color:#d9c08a;font-size:0.98rem;}
+.tlzGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;align-items:start;}
+.tlzBandCard{border:1px solid #223044;border-left-width:4px;border-radius:10px;padding:10px 12px;background:#0c1626;margin-bottom:8px;}
+.tlzBandCard b{font-size:0.92rem;}
+.tlzBandCard p{margin:4px 0 0;color:#8aa0b6;font-size:0.84rem;line-height:1.45;}
+.tlzTape{background:#131a24;border:1px dashed #c8a552;border-radius:10px;padding:10px 12px;color:#d9c08a;font-size:0.86rem;line-height:1.5;}
+.tlzModeBtn{display:block;width:100%;text-align:left;background:#0d1722;border:1px solid #2a3a4f;border-radius:10px;padding:12px;color:#eaf4fb;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.tlzModeBtn span{display:block;font-weight:600;color:#8aa0b6;font-size:0.8rem;margin-top:3px;}
+.tlzModeBtn.on{border-color:#2f5c46;background:#101d18;}
+.tlzChips{display:flex;flex-wrap:wrap;gap:8px;}
+.tlzChip{background:#0d1722;border:1px solid #2a3a4f;border-radius:999px;padding:8px 14px;color:#eaf4fb;font-weight:700;font-size:0.85rem;cursor:pointer;}
+.tlzChip.on{background:#101d18;}
+.tlzLabel{color:#8aa0b6;font-size:0.74rem;text-transform:uppercase;letter-spacing:0.06em;font-weight:800;margin:12px 0 7px;}
+.tlzBox{background:#0c1626;border:1px solid #223044;border-radius:10px;padding:11px 13px;margin:9px 0;}
+.tlzBox strong{display:block;color:#8fbfa4;font-size:0.73rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.tlzBox p{margin:0;color:#eaf4fb;line-height:1.48;font-size:0.9rem;}
+.tlzAddRow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px;}
+.tlzAdded{color:#8fbfa4;font-weight:800;font-size:0.9rem;}`;
+  return <div className="page tlzPage">
+    <style>{STYLE}</style>
+    <div className="pageTop"><div><h1>Traffic Light Zones</h1><p className="mutedText">Front-wall height bands · each with a tactical purpose · solo, pairs & conditioned games</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+    <div className="tlzPanel">
+      <div className="tlzGrid">
+        <div><TrafficLightWallDiagram/><p className="mutedText" style={{fontSize:'0.8rem',marginTop:'6px'}}>Three bands, four lines — tin and service line are painted, the taped line you add, the out line closes the top.</p></div>
+        <div>
+          {TL_BANDS.map(b=><div key={b.id} className="tlzBandCard" style={{borderLeftColor:b.color}}><b style={{color:b.color}}>{b.label}</b> <span className="mutedText" style={{fontSize:'0.8rem'}}>— {b.purpose}</span><p>{b.read} <span style={{color:'#5f7387'}}>({b.bounds})</span></p></div>)}
+          <div className="tlzTape">{TL_TAPE_RULE}</div>
+        </div>
+      </div>
+    </div>
+    <div className="tlzPanel">
+      <h4>Format</h4>
+      {MODES.map(m=><button type="button" key={m.id} className={modeId===m.id?'tlzModeBtn on':'tlzModeBtn'} onClick={()=>setModeId(m.id)}>{m.label}<span>{m.sub}</span></button>)}
+      {modeId==='solo'&&<>
+        <div className="tlzLabel">Target</div>
+        <div className="tlzChips">
+          {TL_BANDS.map(b=><button type="button" key={b.id} className={combo==='single'&&bandId===b.id?'tlzChip on':'tlzChip'} style={combo==='single'&&bandId===b.id?{borderColor:b.color,color:b.color}:undefined} onClick={()=>{setCombo('single');setBandId(b.id);}}>{b.label}</button>)}
+          <button type="button" className={combo==='ggr'?'tlzChip on':'tlzChip'} style={combo==='ggr'?{borderColor:'#2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setCombo('ggr')}>2 Green + 1 Red</button>
+          <button type="button" className={combo==='alt'?'tlzChip on':'tlzChip'} style={combo==='alt'?{borderColor:'#2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setCombo('alt')}>Green / Red alternating</button>
+        </div>
+        <div className="tlzLabel">Clock</div>
+        <div className="tlzChips">{[60,90,120].map(t=><button type="button" key={t} className={seconds===t?'tlzChip on':'tlzChip'} style={seconds===t?{borderColor:'#2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSeconds(t)}>{t}s</button>)}</div>
+      </>}
+      {modeId!=='solo'&&<>
+        <div className="tlzLabel">Restriction</div>
+        <div className="tlzChips">
+          {[['symmetric','Both players restricted'],['asymmetric','Player A restricted · Player B free']].map(([id,label])=><button type="button" key={id} className={(modeId==='pairs'?pairShape:gameShape)===id?'tlzChip on':'tlzChip'} style={(modeId==='pairs'?pairShape:gameShape)===id?{borderColor:'#2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>modeId==='pairs'?setPairShape(id):setGameShape(id)}>{label}</button>)}
+        </div>
+        <div className="tlzLabel">Band</div>
+        <div className="tlzChips">{TL_BANDS.map(b=><button type="button" key={b.id} className={bandId===b.id?'tlzChip on':'tlzChip'} style={bandId===b.id?{borderColor:b.color,color:b.color}:undefined} onClick={()=>setBandId(b.id)}>{b.label}</button>)}</div>
+      </>}
+      <div style={{display:'flex',alignItems:'center',gap:'10px',marginTop:'14px'}}><RLDBadge level={mode.rld} size="lg"/><span className="mutedText" style={{fontSize:'0.82rem'}}>{modeId==='solo'?'Called target, closed execution.':modeId==='pairs'?(pairShape==='symmetric'?'Live rally, shared constraint.':'Live rally — Player B reads a known restriction.'):(gameShape==='symmetric'?'Full game under a standing rule.':'Full game — free player hunts the restricted one.')}</span></div>
+      <div className="tlzBox"><strong>Task</strong><p>{buildTask()}</p></div>
+      <div className="tlzBox"><strong>Scoring</strong><p>{buildScoring()}</p></div>
+      <div className="tlzBox"><strong>CLA Rationale</strong><p>{buildRationale()}</p></div>
+      <div className="tlzAddRow">
+        <button type="button" className="primaryBtn" onClick={addToSession}>Add To Session</button>
+        <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
+        {added&&<span className="tlzAdded">✓ Added — {added}</span>}
+      </div>
+    </div>
+  </div>;
+}
+/* ── END TRAFFIC LIGHT ZONES ── */
+
 function PressCallModule({setSession}){
   const [modeId,setModeId]=useState('self');
   const [shotLimit,setShotLimit]=useState('3');
@@ -6790,26 +6946,7 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
   </div>;
 }
 
-/* Contextual interference: present the session's Pattern Lab rotations in a
-   shuffled order while leaving every other rotation, and the stored order,
-   untouched. Seeded so the order is stable until the coach reshuffles.
-   (Battig 1979; Shea & Morgan 1979 — interleaved practice: messier in-session,
-   better retention and transfer.) */
-function ciInterleaveOrder(session,seed){
-  const idx=session.map((_,i)=>i);
-  const pl=idx.filter(i=>session[i]&&session[i].format==='Pattern Lab');
-  if(pl.length<2)return idx;
-  let st=Math.imul((seed>>>0)||1,2654435761)>>>0;
-  st^=st>>>16;st=Math.imul(st,2246822519)>>>0;st^=st>>>13;st=st||1;
-  const rnd=()=>{st^=st<<13;st^=st>>>17;st^=st<<5;st>>>=0;return st/4294967296;};
-  rnd();
-  const shuffled=[...pl];
-  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
-  const out=idx.slice();
-  pl.forEach((pos,k)=>{out[pos]=shuffled[k];});
-  return out;
-}
-function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);const[ciInterleave,setCiInterleave]=useState(false);const[ciSeed,setCiSeed]=useState(1);const plCount=session.filter(g=>g&&g.format==='Pattern Lab').length;const displayCards=(ciInterleave?ciInterleaveOrder(session,ciSeed):session.map((_,i)=>i)).map(i=>({__i:i,card:session[i]}));function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
+function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
@@ -6851,16 +6988,11 @@ return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
 {showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
-{plCount>=2&&<div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',margin:'0 0 10px'}}>
-  <button type="button" className="secondaryBtn" style={ciInterleave?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} title="Plays your selected patterns in random order — closer to match unpredictability than running them in sequence." onClick={()=>{setCiSeed((Date.now()%2147483647)||1);setCiInterleave(v=>!v);}}>{ciInterleave?'■ Interleaving patterns':'▦ Interleave patterns'}</button>
-  {ciInterleave&&<button type="button" className="secondaryBtn" onClick={()=>setCiSeed((Date.now()%2147483647)||1)}>Reshuffle</button>}
-  {ciInterleave&&<span className="mutedText" style={{fontSize:'0.8rem'}}>Pattern Lab rotations only, shown shuffled — saved order untouched, arrows paused. Expect messier reps tonight; retention and transfer are what improve.</span>}
-</div>}
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
-{displayCards.map(({__i:index,card:game})=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
+{session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
 {editIndex===index?<div style={{padding:'2px'}}><div className="rotationTop"><div><strong>Editing Rotation {index+1}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" onClick={()=>setEditIndex(null)}>Close</button></div></div><UniversalGameEditor key={'edit-'+(game.id||index)} game={game} saveLabel="Save Changes" onAddToSession={g=>applyEdit(index,g)} onCancel={()=>setEditIndex(null)}/></div>:<>
-<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title={ciInterleave?"Paused while interleaving":"Move up"} disabled={ciInterleave||index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title={ciInterleave?"Paused while interleaving":"Move down"} disabled={ciInterleave||index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
+<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(game).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(game).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(game).constraintText}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}</div>}
 <div className="buttonRow" style={{marginTop:'12px',flexWrap:'wrap',gap:'8px'}}>
@@ -20245,6 +20377,26 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const attacks=['All',...Array.from(new Set(PATTERN_LAB_READY_GAMES.map(g=>g.attack))).sort()];
   const visible=PATTERN_LAB_READY_GAMES.filter(g=>(levelFilter==='All'||String(g.level)===String(levelFilter))&&(attackFilter==='All'||g.attack===attackFilter));
   const [lastAdded,setLastAdded]=useState('');
+  const [ilSel,setIlSel]=useState([]);
+  const [ilCall,setIlCall]=useState(null);
+  const [ilAdded,setIlAdded]=useState(false);
+  function ilToggle(id){setIlAdded(false);setIlSel(prev=>prev.includes(id)?prev.filter(x=>x!==id):(prev.length>=4?prev:[...prev,id]));if(ilCall===id)setIlCall(null);}
+  function ilNext(){if(ilSel.length<2)return;const pool=ilSel.filter(id=>id!==ilCall);setIlCall(pool[Math.floor(Math.random()*pool.length)]);}
+  function ilAdd(){
+    if(typeof setSession!=='function'||ilSel.length<2)return;
+    const games=ilSel.map(id=>PATTERN_LAB_READY_GAMES.find(g=>g.id===id)).filter(Boolean);
+    const maxRld=Math.max(...games.map(g=>Number(g.rld)||3));
+    const list=games.map(g=>g.id+' \u2014 '+g.quick).join('   \u00b7   ');
+    const card={id:Date.now()+Math.random(),title:'Pattern Lab \u2014 Interleaved Run ('+ilSel.join(' \u00b7 ')+')',category:'Pattern Lab',format:'Pattern Lab',duration:10,rld:maxRld,layers:[],cbCode:'None',
+      task:'Before every rally the coach calls the next pattern, drawn at random from the selected set \u2014 never the same call twice in a row. Player A and Player B play that rally entirely under the called pattern\u2019s logic, then reset and wait for the fresh call. Patterns in the set: '+list+'.',
+      scoring:'Score each rally by the called pattern\u2019s own run-rules, exactly as if it were running alone \u2014 the only change is that the pattern can change every rally.',
+      rationale:'Contextual interference, framed ecologically: repeating one pattern in a block lets players anticipate instead of read \u2014 the sequence itself leaks the answer. Random per-rally calls restore the uncertainty a match presents, so reps look messier tonight while retention and transfer improve (Battig 1979; Shea & Morgan 1979).',
+      coach:'Expect scrappier reps than blocked practice \u2014 that is the effect working, not failing. After a mis-read rally, one question: \u201cwhat did the call change about your first move?\u201d',
+      playerFocus:'Read the call, not the rhythm.'};
+    setSession(prev=>appendToSessionState(prev,card));
+    setIlAdded(true);
+  }
+  const ilCalled=ilCall?PATTERN_LAB_READY_GAMES.find(g=>g.id===ilCall):null;
   function addGame(game,view=false,runRules=null,trigger='offT',quickOverride=null,modifier=null,scoreOverride=null,plConfig=null){
     const desc=patternLogicText(game,trigger)+(runRules&&runRules.length?('  ·  Run-rules — '+runRules.join(' · ')):'');
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
@@ -20289,7 +20441,20 @@ function TacticalIntentionsModule({setScreen,setSession}){
     <div className="currentSessionPanel"><strong>Current Session</strong><span>{sessionCount} rotation{sessionCount===1?'':'s'} saved</span>{lastAdded&&<em>Last added: {lastAdded}</em>}<button type="button" className="secondaryBtn" onClick={viewSession}>View Session</button></div>
     <div className="tiModeRow"><button className={mode==='ready'?'activeLayer':''} onClick={()=>setMode('ready')}>Plug & Play Library</button><button className={mode==='framework'?'activeLayer':''} onClick={()=>setMode('framework')}>5 Tactical Intentions</button><button className={mode==='advanced'?'activeLayer':''} onClick={()=>setMode('advanced')}>Configure</button><button onClick={()=>{const pool=visible.length?visible:PATTERN_LAB_READY_GAMES;const g=pool[Math.floor(Math.random()*pool.length)];setRandom(g);setSelected(g);setDetailOpen(true);}}>⚡ Random Pattern</button></div>
 
-    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div><div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);setDetailOpen(true);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{deriveQuick(game,'left')}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
+    {mode==='ready'&&<><div className="patternFilterBar"><label>Level <select value={levelFilter} onChange={e=>setLevelFilter(e.target.value)}><option>All</option><option value="1">Level I</option><option value="2">Level II</option><option value="3">Level III</option><option value="4">Level IV</option><option value="5">Level V</option></select></label><label>Attack <select value={attackFilter} onChange={e=>setAttackFilter(e.target.value)}>{attacks.map(a=><option key={a}>{a}</option>)}</select></label><span>{visible.length} ready-made games</span></div>
+    <div style={{background:'#0b1320',border:'1px solid #223044',borderLeft:'3px solid #2f5c46',borderRadius:'14px',padding:'14px 16px',margin:'12px 0'}}>
+      <strong style={{color:'#8fbfa4',fontSize:'0.78rem',textTransform:'uppercase',letterSpacing:'0.05em'}}>Interleaved Run — contextual interference</strong>
+      <p className="mutedText" style={{margin:'6px 0 8px',fontSize:'0.84rem'}}>Pick 2–4 patterns, then call a fresh one before every rally — blocked reps let players anticipate; random calls make them read. Expect messier reps tonight; retention and transfer are what improve.</p>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'7px'}}>{visible.map(g=><button type="button" key={'il'+g.id} onClick={()=>ilToggle(g.id)} style={{background:ilSel.includes(g.id)?'#101d18':'#0d1722',border:ilSel.includes(g.id)?'1px solid #2f5c46':'1px solid #2a3a4f',color:ilSel.includes(g.id)?'#8fbfa4':'#8aa0b6',borderRadius:'999px',padding:'6px 12px',fontWeight:700,fontSize:'0.8rem',cursor:'pointer'}}>{g.id}</button>)}</div>
+      {ilSel.length>0&&ilSel.length<2&&<p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.8rem'}}>Pick at least one more — an interleaved run needs 2–4 patterns.</p>}
+      {ilSel.length>=2&&<div style={{display:'flex',flexWrap:'wrap',gap:'10px',alignItems:'center',marginTop:'12px'}}>
+        <button type="button" className="primaryBtn" onClick={ilNext}>{ilCall?'Next pattern':'▶ Start calling'}</button>
+        {ilCalled&&<span style={{background:'#101d18',border:'1px solid #2f5c46',borderRadius:'10px',padding:'8px 14px',color:'#eaf4fb',fontWeight:800}}>{ilCalled.id}<span style={{display:'block',fontWeight:600,color:'#8aa0b6',fontSize:'0.78rem'}}>{ilCalled.quick}</span></span>}
+        <button type="button" className="secondaryBtn" onClick={ilAdd}>Add To Session as one card</button>
+        {ilAdded&&<span style={{color:'#8fbfa4',fontWeight:800}}>✓ Added</span>}
+      </div>}
+    </div>
+    <div className="tiReadyGrid patternLabGrid">{visible.map(game=><button key={game.id} className={selected.id===game.id?'tiReadyCard active':'tiReadyCard'} onClick={()=>{setSelected(game);setRandom(null);setDetailOpen(true);}}><strong>{game.id} · {game.title.replace(/^L\d-\d+\s*/,'')}</strong><span>{deriveQuick(game,'left')}</span><small>Level {game.level} · {game.attack} · RLD {game.rld}</small></button>)}</div></>}
 
     {mode==='framework'&&<div className="tiReadyGrid">{TACTICAL_INTENTION_GAMES.map(game=><button key={game.title} className="tiReadyCard" onClick={()=>{const match=PATTERN_LAB_READY_GAMES.find(p=>p.intention===game.title)||PATTERN_LAB_READY_GAMES[0];setSelected(match);setRandom(null);setMode('ready');setDetailOpen(true);}}><strong>{game.title}</strong><span>{deriveQuick(game,'left')}</span><small>Organising intention · RLD {game.rld}</small></button>)}</div>}
 
@@ -21475,6 +21640,7 @@ const SEARCH_DESTINATIONS=[
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Performance Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award \u00b7 in Players',kw:'performance season ladder annual award points table leaderboard promotion demotion ranking competitive year trophy attendance win share ranked game log challenge players',screen:'seasonLadder'},
+  {label:'Traffic Light Zones',sub:'Front-wall height bands \u00b7 red amber green \u00b7 solo, pairs & games',kw:'traffic light zones red amber green height bands front wall tape service line tin lob kill drop constraint conditioned game solo timed hirst wsf',screen:'trafficLight'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
@@ -26531,6 +26697,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='analogies'&&<AnalogyLibraryScreen setScreen={go}/>}
 {screen==='ghosting'&&<GhostingModule setScreen={go}/>}
 {screen==='rallyBand'&&<RallyBandModule setScreen={go}/>}
+{screen==='trafficLight'&&<TrafficLightModule setScreen={go} setSession={setSession}/>}
       {screen==='checkerboard'&&<CheckerboardSetup setScreen={go} setSession={setSession}/>}
       {screen==='liveMatchCoaching'&&<LiveMatchCoaching setScreen={go}/>}
       {screen==='blindTargetScore'&&<BlindTargetScoreModule setScreen={go} players={players} setSession={setSession}/>}
