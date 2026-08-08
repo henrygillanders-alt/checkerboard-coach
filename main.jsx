@@ -194,9 +194,15 @@ async function deleteLivePlayerRoom(roomId){
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
   try{
+    /* Abort after 6s: on flaky mobile signal a fetch can hang indefinitely,
+       which left court scorers frozen on "Connecting" with no retry. A timed-out
+       read resolves to null, the caller reports the wait, and the poll retries. */
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),6000);
     const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1&apikey=${encodeURIComponent(String(SUPABASE_ANON_KEY||'').trim())}`,{
-      headers:supabaseRestHeaders()
+      headers:supabaseRestHeaders(),signal:ctrl.signal
     });
+    clearTimeout(timer);
     if(!res.ok){console.warn('Live sync read failed',res.status,await res.text().catch(()=>''));return null;}
     const rows=await res.json();
     return rows?.[0]||null;
@@ -224,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v569 Poached Egg rationale. The model\u2019s tab gains a Why this model \u2014 CLA rationale block: education of attention and intention \u2014 the egg names what each region affords, Pressure Points constrain what players hunt for, and contact location stays a prior, not a rule. The shot decision is guided by the opponent\u2019s state and position; CLA is preserved because no shot type is ever dictated. Includes the guided question for contrasting rallies. Builds on v568.';
+const APP_VERSION='v572 Snakes & Ladders fixes. Two live-session faults: boards can no longer point past the finish \u2014 race boards regenerate when the board size changes, and every board is clamped at the point of use so a ladder\u2019s top caps at the final square whatever state it arrived from (the 14\u2192\u201118-on-a-15-board case). And scoring links no longer freeze on Connecting: live-sync reads now time out after 6 seconds instead of hanging on weak phone signal, and after a few tries the scorer says exactly what to check while it keeps retrying itself. Builds on v571.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -3328,7 +3334,7 @@ function PlugAndPlay({setScreen,setSession}){
     {
       id:'PP103',title:'Break The Middle',tags:['Length','Width','Pressure','Movement'],type:'Conditioned Game',players:'2–4',level:'Intermediate → Professional',
       develops:['Width creation','Opponent displacement','Court geometry'],
-      why:'Encourages players to move the opponent away from central control rather than simply hitting harder through the middle.',
+      why:'Encourages players to move the opponent away from central control rather than simply hitting harder through the middle. Poached Egg read: the corridor is the marking \u2014 a contact forced outside it is a contact on the toast, while you hold the yolk.',
       what:'Score bonuses for shots that force the opponent outside the central corridor or away from the T-zone.',
       score:'Win rally = 1. Bonus +1 when opponent is forced clearly outside central corridor.',
       coach:'Break the middle before trying to finish.',player:'Move them away from the centre.',load:'Break The Middle'
@@ -4528,7 +4534,7 @@ function perceptionPlaceholderCards(section){
       {id:'per-ex-src2',code:'EX-S2',module:'Exit Framework',phase:'Source Exit',title:'Source + Adjacent Restriction',category:'Perception',duration:8,format:'Conditioned Rally',rld:4,gate:'Opponent contact floor zone',task:'Player may not hit into the opponent source zone or its immediate adjacent floor zone. Coach may simplify by using only one side first. Back-court straight exchange exception still applies for 3→3 and 4→4.',scoring:'Win rally = 1. Playing into locked source/adjacent space = loss or -1. Bonus +1 for a clean tactical exit that moves opponent away from base.',rationale:'Increases the demand from simple recognition to bigger displacement. The player must see source and solve a reduced space problem.',coach:'Use this only after Source Lock is stable. If it kills rallies, return to L1.',playerFocus:'See source, then move them away.',layers:['Source Recognition','Space Manipulation'],cbCode:'None'},
       {id:'per-ex-src3',code:'EX-S3',module:'Exit Framework',phase:'Source Exit',title:'Escape Forward',category:'Perception',duration:8,format:'Live Rally',rld:4,gate:'Opponent contact floor zone',task:'Source zone remains locked, but front options are now encouraged. The player may exit into a front floor zone or use wall targets 5–8 when available. Back-court straight exchange exception remains.',scoring:'Normal rally score. +1 for a clean exit that creates front-court pressure. Source violation = loss or -1.',rationale:'Adds attacking opportunity without changing the perceptual problem. The player now decides whether to maintain pressure, move wider, or escape short.',coach:'Do not force short shots. The front option should emerge because the opponent source and recovery create it.',playerFocus:'Exit source, use front when it is open.',layers:['Front Court','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src4',code:'EX-S4',module:'Exit Framework',phase:'Source Exit',title:'Opposite Side Exit',category:'Perception',duration:8,format:'Conditioned Rally',rld:4,gate:'Opponent contact side',task:'If opponent hits from the left side, player must exit to the right side. If opponent hits from the right side, player must exit to the left side. Back-court straight exchanges 3→3 and 4→4 may be exempted by the coach.',scoring:'Win rally = 1. Successful side switch before winning rally = +1. Failing to switch side when required = loss or no bonus.',rationale:'A clearer version of diagonal/opposite-quadrant logic. It exaggerates displacement and makes source-to-space mapping simple.',coach:'Use left/right language with younger players before using zone numbers.',playerFocus:'They hit one side; you solve the other.',layers:['Width Change','Source Recognition'],cbCode:'None'},
-      {id:'per-ex-src5',code:'EX-S5',module:'Exit Framework',phase:'Source Exit',title:'Corridor Denial',category:'Perception',duration:8,format:'Tactical Pressure Rally',rld:5,gate:'Opponent contact location',task:'Source Exit rules apply. In addition, if the opponent contacts from the central corridor/T-zone, that counts against the player who fed them there unless the coach marks it as an unavoidable recovery.',scoring:'Win rally = 1. Opponent contact from central corridor = -1 against feeder. Clean exit away from corridor = +1.',rationale:'Links the game directly to match-analysis: opponent contact from central areas often means danger. The player learns not to feed strong central hitting positions.',coach:'Be fair: only penalise when the player had a genuine option to avoid feeding the corridor.',playerFocus:'Do not feed the middle hitter.',layers:['Opponent Off T','Source Recognition'],cbCode:'None'},
+      {id:'per-ex-src5',code:'EX-S5',module:'Exit Framework',phase:'Source Exit',title:'Corridor Denial',category:'Perception',duration:8,format:'Tactical Pressure Rally',rld:5,gate:'Opponent contact location',task:'Source Exit rules apply. In addition, if the opponent contacts from the central corridor/T-zone, that counts against the player who fed them there unless the coach marks it as an unavoidable recovery.',scoring:'Win rally = 1. Opponent contact from central corridor = -1 against feeder. Clean exit away from corridor = +1.',rationale:'Links the game directly to match-analysis: opponent contact from central areas often means danger. The player learns not to feed strong central hitting positions. Poached Egg read: the corridor is the marking \u2014 an opponent contacting from it is an opponent fed the yolk or egg white; a clean exit sends their contact toward the toast.',coach:'Be fair: only penalise when the player had a genuine option to avoid feeding the corridor.',playerFocus:'Do not feed the middle hitter.',layers:['Opponent Off T','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src6',code:'EX-S6',module:'Exit Framework',phase:'Source Exit',title:'Early Source Call',category:'Perception',duration:7,format:'Conditioned Rally',rld:4,gate:'Before / at opponent contact',task:'During controlled rallies, player calls the source zone as early as practical: “1, 2, 3 or 4”. The call is used only while learning, then reduced.',scoring:'Correct early source call = +1. Late or incorrect call = 0. Rally score still applies.',rationale:'Uses explicit questioning/calling to shape visual search, similar to the two-coloured racquet task.',coach:'Start with frequent calls, then ask randomly, then remove the call and keep the game rule.',playerFocus:'Call it early, then exit it.',layers:['Early Call','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src7',code:'EX-S7',module:'Exit Framework',phase:'Source Exit',title:'Recall Call',category:'Perception',duration:7,format:'Live Rally',rld:4,gate:'After rally',task:'The rally is not stopped. After selected rallies, coach asks: “Where did they hit from?” and “What options did you have?” Questions are random and faded over time.',scoring:'Correct recall = +1 optional. Incorrect recall = 0. Normal rally scoring continues.',rationale:'Preserves representative rally flow while checking whether source information was actually perceived.',coach:'Ask randomly, not every time. The uncertainty keeps attention tuned without making the game verbal.',playerFocus:'Play normally, but know the source.',layers:['Recall','Source Recognition'],cbCode:'None'},
       {id:'per-ex-tgt1',code:'EX-T1',module:'Exit Framework',phase:'Target Exit',title:'Target Lock',category:'Perception',duration:8,format:'Checkerboard Wall Target Rally',rld:4,gate:'Opponent wall target',task:'Player may not repeat the front-wall zone the opponent has just targeted. Use wall zones 5–8. Example: opponent hits to 7, zone 7 is locked for the next shot.',scoring:'Win rally = 1. Repeating locked wall target = loss or -1. Clean new target under pressure = +1 optional.',rationale:'Shifts attention from where the opponent stood to what tactical target they selected.',coach:'Use visible wall-zone language. This is target recognition, not technique.',playerFocus:'What wall zone did they use? Choose another.',layers:['Wall Target','Pattern Recognition'],cbCode:'None'},
@@ -9260,15 +9266,15 @@ const TP_GAMES=[
     purpose:'Recognise',
     purposeFull:'Learn to recognise when a shot has created genuine pressure.',
     rld:4,
-    task:'Force your opponent to contact the ball from outside the central corridor once. A Pressure Point is awarded when your shot causes the opponent to contact outside the corridor.',
+    task:'Force your opponent to contact the ball from the toast once. A Pressure Point is awarded when your shot causes the opponent to make contact on the toast \u2014 the corners outside the egg.',
     scoring:'Win Rally +1 · Pressure Point +1',
     coachMessage:'One Pressure Point shows the player can create pressure. The coaching question is: did you know you had created it, or did it happen by accident?',
     coachQuestions:[
-      'What shot moved the opponent outside the corridor?',
+      'What shot moved the opponent onto the toast?',
       'Did you know you had created pressure before they played the ball?',
       'What position did the pressure point put you in?',
     ],
-    characteristics:['Consequences matter','Player must track opponent position','Scoring rewards corridor awareness'],
+    characteristics:['Consequences matter','Player must track opponent position','Scoring rewards reading the egg'],
     rationale:'The simplest form of the game. The player must first learn to recognise when pressure exists before they can learn to sustain or convert it. Many players win rallies without ever creating genuine pressure — this game makes pressure visible and scoreable.',
   },
   {
@@ -9277,7 +9283,7 @@ const TP_GAMES=[
     purpose:'Sustain',
     purposeFull:'Learn that one good shot is not enough — pressure must be sustained.',
     rld:4,
-    task:'Force your opponent outside the corridor on two consecutive contacts. Both contacts must be outside the corridor. If the opponent returns to the corridor between contacts, the sequence resets.',
+    task:'Force your opponent onto the toast for two consecutive contacts. Both contacts must be on the toast. If the opponent gets back inside the egg between contacts, the sequence resets.',
     scoring:'Win Rally +1 · Double Pressure Point +2',
     coachMessage:'One good shot is not pressure. Pressure is created over consecutive shots. The second shot is harder than the first because the opponent is now aware and trying to recover.',
     coachQuestions:[
@@ -9294,7 +9300,7 @@ const TP_GAMES=[
     purpose:'Build',
     purposeFull:'Understand that pressure accumulates — three consecutive forced contacts creates maximum opportunity.',
     rld:5,
-    task:'Force your opponent outside the corridor on three consecutive contacts. The sequence must be unbroken. Each broken sequence resets to zero.',
+    task:'Force your opponent onto the toast for three consecutive contacts. The sequence must be unbroken. Each broken sequence resets to zero.',
     scoring:'Win Rally +1 · Triple Pressure Point +3',
     coachMessage:'Pressure often accumulates over several shots. By the third consecutive forced contact the opponent is typically out of position, low on recovery time, and under maximum tactical stress.',
     coachQuestions:[
@@ -9362,12 +9368,12 @@ const TP_GAMES=[
 ];
 
 const TP_CORRIDOR_ZONES=[
-  {id:'T',label:'T Position',inCorridor:true,desc:'Central control. Maximum options.'},
-  {id:'mid-front',label:'Mid Front',inCorridor:true,desc:'Slight pressure. Recovery possible.'},
-  {id:'mid-back',label:'Mid Back',inCorridor:true,desc:'Slight pressure. Recovery possible.'},
-  {id:'front-corner',label:'Front Corner',inCorridor:false,desc:'Outside corridor. Pressure point.'},
-  {id:'back-corner',label:'Back Corner',inCorridor:false,desc:'Outside corridor. Pressure point.'},
-  {id:'side-wall',label:'Side Wall',inCorridor:false,desc:'Outside corridor. Pressure point.'},
+  {id:'T',label:'T Position',inCorridor:true,desc:'The yolk. Central control \u2014 maximum options.'},
+  {id:'mid-front',label:'Mid Front',inCorridor:true,desc:'Egg white. Slight pressure \u2014 recovery possible.'},
+  {id:'mid-back',label:'Mid Back',inCorridor:true,desc:'Egg white. Slight pressure \u2014 recovery possible.'},
+  {id:'front-corner',label:'Front Corner',inCorridor:false,desc:'On the toast. Pressure Point.'},
+  {id:'back-corner',label:'Back Corner',inCorridor:false,desc:'On the toast. Pressure Point.'},
+  {id:'side-wall',label:'Side Wall',inCorridor:false,desc:'On the toast. Pressure Point.'},
 ];
 
 function TacticalPressureModule({onAddToSession}){
@@ -9546,15 +9552,15 @@ function TacticalPressureModule({onAddToSession}){
       <div className="tpAnalysisGrid">
         <div className="tpAnalysisCard tpAnalysisAnalysis">
           <strong>In Match Analysis</strong>
-          <p>The central corridor is used to assess central control during a match. Contacts made from inside the corridor are assessed negatively — the opponent retains options. Contacts made from outside the corridor are assessed positively — central control has been disrupted.</p>
+          <p>The Poached Egg Model is used to assess central control during a match. Contacts made from the yolk or egg white are assessed negatively — the opponent retains options. Contacts made on the toast are assessed positively — central control has been disrupted.</p>
         </div>
         <div className="tpAnalysisCard tpAnalysisPractice">
           <strong>In Practice Design</strong>
-          <p>The same corridor variable becomes a scoring mechanism. Players learn to recognise when they have created genuine pressure — not just when they have played a good shot. The Pressure Point reward system makes the corridor tactically significant in every rally.</p>
+          <p>The same egg variable becomes a scoring mechanism. Players learn to recognise when they have created genuine pressure — not just when they have played a good shot. The Pressure Point reward system makes the egg tactically significant in every rally.</p>
         </div>
         <div className="tpAnalysisCard tpAnalysisCore">
           <strong>Core Coaching Message</strong>
-          <p>Build pressure before finishing. The most common tactical error in competitive squash is attacking from a position of equal or poor pressure. Players who understand the corridor learn to wait for genuine opportunity rather than forcing winners from neutral positions.</p>
+          <p>Build pressure before finishing. The most common tactical error in competitive squash is attacking from a position of equal or poor pressure. Players who understand the egg learn to wait for genuine opportunity rather than forcing winners from neutral positions.</p>
         </div>
       </div>
 
@@ -9562,8 +9568,8 @@ function TacticalPressureModule({onAddToSession}){
         <strong>The Pressure Cycle</strong>
         <div className="tpFlowSteps">
           {[
-            {label:'Create',desc:'Force opponent outside corridor',color:'#b07a3c'},
-            {label:'Sustain',desc:'Prevent recovery — keep opponent outside',color:'#b9982f'},
+            {label:'Create',desc:'Force opponent onto the toast',color:'#b07a3c'},
+            {label:'Sustain',desc:'Prevent recovery \u2014 keep them off the egg',color:'#b9982f'},
             {label:'Build',desc:'Three consecutive forced contacts',color:'#8fbfa4'},
             {label:'Recognise',desc:'Identify when pressure has become opportunity',color:'#6fae8b'},
             {label:'Convert',desc:'Attack with conviction from a position of pressure',color:'#22d3ee'},
@@ -9663,11 +9669,11 @@ const PHYSICAL_PRESSURE_GAMES=[
   },
   {
     id:'pp4-live-call',code:'PP4',title:'Live Call Pressure',format:'1-2-1',theme:'Pressure → Opportunity → Competition',duration:'8–10 min',rld:4,
-    summary:'Coach remains central. Player returns controlled balls to the coach corridor. Coach randomly calls LIVE and the current rally becomes competitive.',
-    setup:'Coach stands in/near the T corridor with multiple balls. Player starts on T. Player sends controlled shots back into the coach corridor so the coach can reapply pressure without running.',
+    summary:'Coach remains central. Player returns controlled balls to the coach in the yolk. Coach randomly calls LIVE and the current rally becomes competitive.',
+    setup:'Coach stands in/near the yolk (the T) with multiple balls. Player starts on T. Player sends controlled shots back into the coach corridor so the coach can reapply pressure without running.',
     task:'During pressure phase, player survives, recovers and maintains control. When coach calls LIVE, the rally becomes fully competitive and the player plays to win.',
     scoring:'Only LIVE rallies score. Player +1 for winning LIVE. Coach +1 for winning LIVE. First to 5. If coach wins a LIVE rally, player performs chosen physical forfeit.',
-    coach:'Coach is the pressure generator, not the runner. If the player pulls the coach out of the corridor during pressure phase, reset and remind: controlled ball back to coach zone.',
+    coach:'Coach is the pressure generator, not the runner. If the player pulls the coach out of the yolk during pressure phase, reset and remind: controlled ball back to coach zone.',
     projection:{what:'Control the pressure phase. When LIVE is called, play to win.',score:'LIVE rallies only. First to 5. Coach win = forfeit.',focus:'Pressure → opportunity → competition.'},
     consequences:['5 ghost lunges','10 second ghost','3 split jumps + 2 front-corner lunges','Coach choice'],
     progressions:[{title:'Three Pressure Balls + LIVE',detail:'Coach feeds three pressure balls. Ball 4 is LIVE. Predictable entry version.'},{title:'Rear Court Pressure + LIVE',detail:'Coach pressure is mainly back left/back right. LIVE called randomly.'},{title:'Front Court Pressure + LIVE',detail:'Coach pressure is mainly front left/front right. LIVE called randomly.'},{title:'Transition Pressure + LIVE',detail:'Coach alternates front/back transitions. LIVE called randomly.'},{title:'Tactical LIVE',detail:'During pressure phase player may only drive or lift. On LIVE all shots become available.'},{title:'Continuous Pressure + LIVE',detail:'No fixed pattern. Coach applies continuous pressure. LIVE can occur at any time.'}]
@@ -11851,7 +11857,7 @@ function TPCorridorCourtMap(){
   const MID=(X0+X1)/2;
   const out=(x,y,w,h)=>(<rect key={'o'+x+y} x={x} y={y} width={w} height={h} fill="#a35b5b" opacity="0.13"/>);
   return <svg viewBox="0 0 320 470" style={{width:'100%',maxWidth:'440px',display:'block',margin:'0 auto'}} role="img"
-      aria-label="Court floor plan. Central corridor between the service boxes, spanning the T. Everything outside the corridor is a Pressure Point contact.">
+      aria-label="Court floor plan drawn as the Poached Egg Model. The yolk sits over the T, the egg white spans the playable middle, and the toast fills the four corners \u2014 contacts on the toast are Pressure Point contacts.">
     <text x="160" y="16" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">FRONT WALL</text>
     <rect x={X0} y={Y0} width={X1-X0} height={Y1-Y0} fill={SH} stroke={LN} strokeWidth="2"/>
     {/* toast tint: the four corners, outside the egg */}
@@ -12070,6 +12076,15 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}
 }
 
 
+function slClampBoard(b,size){
+  /* Boards can arrive from race mode, restores or live sync built for a
+     different size. Nothing may point past the finish: ladder tops cap at the
+     final square, unreachable feet/heads are dropped. */
+  const ladders={},snakes={};
+  Object.entries((b&&b.ladders)||{}).forEach(([f,t])=>{const foot=Number(f);if(foot>=2&&foot<size)ladders[foot]=Math.min(Number(t),size);});
+  Object.entries((b&&b.snakes)||{}).forEach(([h,t])=>{const head=Number(h);if(head>2&&head<=size)snakes[head]=Math.max(1,Math.min(Number(t),size));});
+  return {ladders,snakes};
+}
 function slGenerateBoard(size,snakeCount,ladderCount,drop,rise){
   const triggers=new Set();
   const ladders={},snakes={};
@@ -12111,7 +12126,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
-  const [board,setBoard]=useState(()=>seed?seed.board:fixedBoard?fixedBoard:slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  const [rawBoard,setBoard]=useState(()=>seed?seed.board:fixedBoard?fixedBoard:slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));
+  const board=useMemo(()=>slClampBoard(rawBoard,size),[rawBoard,size]);
   useEffect(()=>{ if(!seed&&fixedBoard)setBoard(fixedBoard); },[fixedBoard]);
   const [roster,setRoster]=useState(()=>seed?seed.roster:players.map(n=>({name:n,pos:1})));
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
@@ -12362,6 +12378,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     setSettings({...SL_DEFAULT_SETTINGS,bonuses:[]});setCompetitionMode('separate');setAllocMode('auto');setManualAssign({});
   }
   function startRace(){setRaceBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));}
+  useEffect(()=>{setRaceBoard(rb=>rb?slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise):rb);},[settings.size]);
   function resetRace(){setRaceBoard(null);setHandedOff(new Set());}
   async function copyRaceLink(){
     // Without this the courts never write and the display waits forever — every court
@@ -12679,7 +12696,7 @@ const DB_GAMES=[
    note:'Simplest earn engine — rewards taking the ball early.'},
   {id:'db5',title:'Break the T',tag:'Displacement',
    principle:'Move them off the T — bank a bounce.',
-   logic:'If the opponent contacts the ball OUTSIDE the T corridor, you earn +1 DB. Uses the same T-corridor idea already in the app.',
+   logic:'If the opponent contacts the ball OUTSIDE the T corridor, you earn +1 DB. Uses the same T-corridor marking already in the app \u2014 in Poached Egg terms, their contact has come off the egg, toast territory.',
    earn:['Opponent struck from outside the T corridor → +1 DB'],
    scoring:'Normal rally scoring.',
    note:'Mirror of T Reward — earn by displacing the opponent, not by holding.'},
@@ -24277,12 +24294,14 @@ function SnakesLaddersCourtScorer({court,host}){
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
   const [status,setStatus]=useState('Connecting…');
+  const slTries=useRef(0);
   useEffect(()=>{
     if(seedData)return;
     let cancelled=false;
     async function load(){
       const row=await readLivePlayerRoom(roomId);
       if(cancelled)return;
+      slTries.current+=1;
       const p=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;
       if(p){
         const roster=p.players||[];
@@ -24308,7 +24327,7 @@ function SnakesLaddersCourtScorer({court,host}){
         };
         setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
-      }else setStatus('Waiting for coach device to set up this court…');
+      }else setStatus(slTries.current<4?'Waiting for coach device to set up this court…':'Still trying — check this phone has signal, and that the Snakes & Ladders board is open and projecting on the coach device. This screen keeps retrying by itself.');
     }
     load();
     const id=setInterval(load,1500);
@@ -25476,7 +25495,7 @@ function LiveMatchTraceModule({setScreen}){
         <img src={LMC_TRACE_MAP_DATA_URL} alt="Checkerboard match-analysis mapping court" draggable={false}/>
         <canvas ref={heatRef} className="lmcTraceCanvas" style={{pointerEvents:'none'}}/>
         <canvas ref={drawRef} className="lmcTraceCanvas"/>
-        <div className="lmcTraceHelp"><span className="lmcTraceStatus">{status}</span><br/>Central corridor is auto-estimated from the traced path. Red heat = danger outcome.</div>
+        <div className="lmcTraceHelp"><span className="lmcTraceStatus">{status}</span><br/>Central corridor is auto-estimated from the traced path \u2014 the corridor is the marking, the Poached Egg is the meaning: contacts traced outside it are toast contacts. Red heat = danger outcome.</div>
       </div>
       <div className="lmcTraceSide">
         <div className="lmcTraceGrid"><div className="lmcTraceCard"><div className="lmcTraceLabel">Rallies</div><div className="lmcTraceValue">{rallies.length}</div></div><div className="lmcTraceCard"><div className="lmcTraceLabel">Corridor load</div><div className="lmcTraceValue">{corridorRate}%</div></div></div>
