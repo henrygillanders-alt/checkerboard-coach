@@ -29,8 +29,8 @@ function getNsslMasterFromUrl(){try{const p=new URLSearchParams(window.location.
 function buildNsslCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?nsslCourt=${n}&host=${encodeURIComponent(base)}`;}
 function buildNsslMasterLink(base){const b=window.location.origin+window.location.pathname;return `${b}?nsslMaster=${encodeURIComponent(base)}`;}
 function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
-function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
-function buildSlScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}`;}
+function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h,mirror:p.get('slMirror')==='1'};}catch{}return null;}
+function buildSlScoreLink(n,base,mirror){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}${mirror?'&slMirror=1':''}`;}
 function getSlRaceFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('slRace');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
 function buildSlRaceLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?slRace=${encodeURIComponent(base)}&n=${courtCount}`;}
 function getLudoScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('ludoScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v572 Snakes & Ladders fixes. Two live-session faults: boards can no longer point past the finish \u2014 race boards regenerate when the board size changes, and every board is clamped at the point of use so a ladder\u2019s top caps at the final square whatever state it arrived from (the 14\u2192\u201118-on-a-15-board case). And scoring links no longer freeze on Connecting: live-sync reads now time out after 6 seconds instead of hanging on weak phone signal, and after a few tries the scorer says exactly what to check while it keeps retrying itself. Builds on v571.';
+const APP_VERSION='v573 Single-court scoring links fixed. Root cause of the stalled Snakes & Ladders scoring link: with one court, the board wrote to the base live room while the link listened on the court room \u2014 a room nothing ever wrote. The single-court board now seeds the court room as well, the link carries a mirror flag so the phone\u2019s scoring keeps the Player Display live, handing off swaps the coach board to monitoring on one court just as on many, and a Take back control button appears beside the link. Recopy the scoring link after deploying to pick up the mirror. Builds on v572.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12121,7 +12121,7 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null}){
   const SL_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
@@ -12244,7 +12244,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,challengeSquares,
       courtLabel};
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,challengeSquares]);
+    if(alsoRoomId)writeLivePlayerRoom(alsoRoomId,'snakesladders',payload);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,challengeSquares,alsoRoomId]);
 
   return <div className="slCourt">
     <style>{`
@@ -12403,7 +12404,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   }
   async function copySLScoreLink(n){
     setProjecting(true);
-    const url=buildSlScoreLink(n,base);
+    const url=buildSlScoreLink(n,base,courts===1);
     setHandedOff(prev=>new Set(prev).add(n));
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
@@ -12554,9 +12555,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {usingAttendance&&<div className="slAllocation">{allocation.map((g,i)=><div key={i} className={i===active?'slAllocRow slAllocRowOn':'slAllocRow'}><strong>Court {i+1}</strong><span>{g.join(' · ')||'—'}</span></div>)}</div>}
 
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
-      {courts>1&&handedOff.has(i+1)
-        ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>Court {i+1} — scoring handed to a court device</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}-${competitionMode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null} fixedBoard={competitionMode==='race'?raceBoard:null}/>}
+      {handedOff.has(i+1)
+        ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>{courts>1?`Court ${i+1} — scoring handed to a court device`:'Scoring handed to the court device'}</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
+        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}-${competitionMode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null} alsoRoomId={courts===1?courtRoomId(base,1):null} fixedBoard={competitionMode==='race'?raceBoard:null}/>}
     </div>)}
     </>}
 
@@ -12588,7 +12589,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="slDisplayBar">
-      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'Copy Scoring link'}</button>}
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'Copy Scoring link'}</button>}{courts===1&&handedOff.has(1)&&<button type="button" className="secondaryBtn" onClick={()=>takeBackControl(1)}>Take back control</button>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));}}>Add to Session</button>}
       {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
@@ -24289,7 +24290,7 @@ function CourtStandingsPlayerDisplay({payload={}}){
   </div>;
 }
 
-function SnakesLaddersCourtScorer({court,host}){
+function SnakesLaddersCourtScorer({court,host,mirror}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
@@ -24343,7 +24344,7 @@ function SnakesLaddersCourtScorer({court,host}){
     <div className="slDisplayHead" style={{marginBottom:'6px'}}><span className="slDisplayLive">● SCORING — Court {court}</span><h1>Snakes &amp; Ladders</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court — the board updates live for anyone watching this court's Player Display.</p>
     <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
-    <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+    <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} alsoRoomId={mirror?host:null} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
 
@@ -26594,7 +26595,7 @@ if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={ns
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
 if(pokerScoreParam){return <PokerCourtScorer court={pokerScoreParam.court} host={pokerScoreParam.host}/>;}
 if(pokerTablesParam){return <PokerTablesDisplay host={pokerTablesParam.host} courtCount={pokerTablesParam.courtCount}/>;}
-if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host}/>;}
+if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host} mirror={slScoreParam.mirror}/>;}
 if(slRaceParam){return <SnakesLaddersRaceDisplay host={slRaceParam.host} courtCount={slRaceParam.courtCount}/>;}
 if(ludoScoreParam){return <LudoSquashCourtScorer court={ludoScoreParam.court} host={ludoScoreParam.host}/>;}
 if(ludoRaceParam){return <LudoSquashRaceDisplay host={ludoRaceParam.host} courtCount={ludoRaceParam.courtCount}/>;}
