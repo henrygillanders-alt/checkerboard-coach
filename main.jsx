@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v576 Earn Your Fate. New Snakes & Ladders fate rule alongside the classic: with Earn it selected, a challenge-armed fate never expires \u2014 a ladder climbs only with a rally win AND the challenge shown (win without it, or lose, and the ladder stays armed for next time), and a challenged snake pins even winners in place until they win and show the challenge \u2014 lose on it and it bites. Challenges now attach to snakes as well as ladders in this mode, the board events and leaderboard narrate armed fates, and pressure lands on every rally. Classic win-the-next-rally remains the default; existing saved setups are untouched. Builds on v575.';
+const APP_VERSION='v579 Every fate takes a challenge. The Snakes & Ladders challenge editor now lists a box for every snake head as well as every ladder foot, in both fate modes \u2014 a snake on 8 gets its challenge box on 8, a ladder on 12 gets its box on 12. A challenged snake now pins in any mode (win and show it to escape; lose and it bites), since that is the only meaning a snake challenge can carry; challenged ladders keep following the Fate rule. Builds on v578.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12141,6 +12141,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   // square numbers only mean something in the context of THIS randomly generated board).
   // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
   const [challengeSquares,setChallengeSquares]=useState(()=>seed?(seed.challengeSquares||{}):{});
+  const [challengeAll,setChallengeAll]=useState(()=>seed?(seed.challengeAll||''):'');
+  const chFor=(sq)=>challengeSquares[sq]||challengeAll||'';
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
   const [showChallengeEditor,setShowChallengeEditor]=useState(false);
@@ -12166,7 +12168,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(snakeEscaped)ev.push(`${W.name} shows the challenge and escapes the snake at ${W.pos}`);
 
     if(snakePinned){
-      ev.push(`${W.name} wins the rally but stays pinned on the snake at ${W.pos} — win and show "${challengeSquares[W.pos]||'the challenge'}" to escape`);
+      ev.push(`${W.name} wins the rally but stays pinned on the snake at ${W.pos} — win and show "${chFor(W.pos)||'the challenge'}" to escape`);
       reveal.add(W.pos);
     }else if(nextPending[wIdx]!=null){
       const top=nextPending[wIdx],fromSquare=W.pos;
@@ -12183,7 +12185,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
         W.pos=top;
         delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
         if(board.ladders[top]){
-          const nextTop=board.ladders[top],chText=challengeSquares[top];
+          const nextTop=board.ladders[top],chText=chFor(top);
           ev.push(settings.fateMode==='earned'&&chText?`${W.name} lands straight on another ladder at ${top} — armed: climbs to ${nextTop} once they win and show "${chText}"`:`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
           reveal.add(top);
           nextPending[wIdx]=nextTop;
@@ -12193,7 +12195,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     }else{
       const moved=applyMove(W.pos+1);
       if(board.ladders[moved]){
-        const top=board.ladders[moved],chText=challengeSquares[moved];
+        const top=board.ladders[moved],chText=chFor(moved);
         ev.push(settings.fateMode==='earned'&&chText?`${W.name} lands on a ladder at ${moved} — armed: climbs to ${top} once they win and show "${chText}"`:`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
         reveal.add(moved);
         W.pos=moved;
@@ -12207,7 +12209,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(extra>0){
       W.pos=applyMove(W.pos+extra);
       if(board.ladders[W.pos]&&nextPending[wIdx]==null){
-        const top=board.ladders[W.pos],chText=challengeSquares[W.pos];
+        const top=board.ladders[W.pos],chText=chFor(W.pos);
         ev.push(`${W.name} bonus +${extra} → lands on a ladder at ${W.pos}, pending`);
         reveal.add(W.pos);
         nextPending[wIdx]=top;
@@ -12253,7 +12255,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
-      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,challengeSquares,
+      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,challengeSquares,challengeAll,
       courtLabel};
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
     if(alsoRoomId)writeLivePlayerRoom(alsoRoomId,'snakesladders',payload);
@@ -12289,9 +12291,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const sc=settings.fateMode==='earned'&&board.snakes[roster[onA].pos]!=null&&challengeSquares[roster[onA].pos];if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:challengeSquares[roster[onA].pos],snake:true});else playRally(0);}}>{roster[onA].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>{const sc=board.snakes[roster[onA].pos]!=null&&chFor(roster[onA].pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}>{roster[onA].name} won</button>
       <span className="slVs">vs</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const sc=settings.fateMode==='earned'&&board.snakes[roster[onB].pos]!=null&&challengeSquares[roster[onB].pos];if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:challengeSquares[roster[onB].pos],snake:true});else playRally(1);}}>{roster[onB].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>{const sc=board.snakes[roster[onB].pos]!=null&&chFor(roster[onB].pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}>{roster[onB].name} won</button>
     </div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
     {queue.length<2&&<div className="slQueue">Needs at least 2 players on this court.</div>}
@@ -12301,9 +12303,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     {Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
       <button type="button" className="secondaryBtn" onClick={()=>setShowChallengeEditor(s=>!s)}>{showChallengeEditor?'− Hide':'⚡'} Challenge squares (optional — attach a squash challenge to a ladder)</button>
       {showChallengeEditor&&<div className="slChallengeEditorPanel">
-        <p className="mutedText" style={{margin:'0 0 8px'}}>Leave blank for no challenge — the climb then resolves purely on winning the next rally, same as before. Set text and landing that ladder requires demonstrating it too, confirmed by you when they win their next rally.</p>
-        {Object.keys(board.ladders).sort((a,b)=>Number(a)-Number(b)).map(sq=><div key={sq} className="slChallengeEditorRow"><span>Square {sq} → {board.ladders[sq]}</span><input type="text" value={challengeSquares[sq]||''} onChange={e=>setChallengeSquares(prev=>({...prev,[sq]:e.target.value}))} placeholder="e.g. Win via a straight drive"/></div>)}
-        {settings.fateMode==='earned'&&Object.keys(board.snakes).sort((a,b)=>Number(a)-Number(b)).map(sq=><div key={'s'+sq} className="slChallengeEditorRow"><span>Snake {sq} ↘ {board.snakes[sq]}</span><input type="text" value={challengeSquares[sq]||''} onChange={e=>setChallengeSquares(prev=>({...prev,[sq]:e.target.value}))} placeholder="e.g. Volley finish to escape"/></div>)}
+        <p className="mutedText" style={{margin:'0 0 8px'}}>Set one challenge for the whole board, or leave it blank and set squares individually below — a square's own text always wins. Every ladder foot and snake head has its own box. A challenged ladder follows the Fate rule above; a challenged snake pins the player who lands on it — in any mode — until they win and show the challenge, and it bites if they lose. Blank everywhere means fates resolve purely on winning the next rally, same as before.</p>
+        <div className="slChallengeEditorRow"><span>Whole board</span><input type="text" value={challengeAll} onChange={e=>setChallengeAll(e.target.value)} placeholder="e.g. Win with a volley — applies to every snake & ladder"/></div>
+        <div style={{display:'flex',gap:'7px',flexWrap:'wrap',margin:'6px 0 10px'}}>{['Win with a volley','Win via a straight drive','Finish with a drop'].map(t=><button type="button" key={t} style={{background:'#0b1118',border:'1px solid #2c3c4e',color:'#8aa0b6',borderRadius:'8px',padding:'5px 9px',fontWeight:700,fontSize:'0.8rem',cursor:'pointer'}} onClick={()=>setChallengeAll(t)}>{t}</button>)}</div>
+        {Object.keys(board.ladders).sort((a,b)=>Number(a)-Number(b)).map(sq=><div key={sq} className="slChallengeEditorRow"><span>Ladder — landing on {sq} climbs to {board.ladders[sq]}</span><input type="text" value={challengeSquares[sq]||''} onChange={e=>setChallengeSquares(prev=>({...prev,[sq]:e.target.value}))} placeholder="e.g. Win via a straight drive"/></div>)}
+        {Object.keys(board.snakes).sort((a,b)=>Number(a)-Number(b)).map(sq=><div key={'s'+sq} className="slChallengeEditorRow"><span>Snake — landing on {sq} slides to {board.snakes[sq]}</span><input type="text" value={challengeSquares[sq]||''} onChange={e=>setChallengeSquares(prev=>({...prev,[sq]:e.target.value}))} placeholder="e.g. Volley finish to escape"/></div>)}
       </div>}
     </div>}
 
@@ -12456,7 +12460,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{type:'snakesladders',size:settings.size,board:seedBoard,visible:settings.visible,revealed:[],
           players:names.map(nm=>({name:nm,pos:1})),
           onCourt:names.slice(0,2),queueNames:names.slice(2),winnerName:null,
-          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},courtLabel:label});
+          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},challengeAll:'',courtLabel:label});
       }
     }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
@@ -12564,7 +12568,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         <button type="button" className="secondaryBtn" style={settings.fateMode!=='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'winNext'}))}>Win the next rally</button>
         <button type="button" className="secondaryBtn" style={settings.fateMode==='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'earned'}))}>Earn it — fate stays armed</button>
       </div>
-      {settings.fateMode==='earned'&&<p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.82rem'}}>With a challenge attached, fates don't expire: a ladder climbs only with a win <b>and</b> the challenge shown — win without it, or lose, and the ladder stays armed. A challenged snake pins even winners in place until the challenge is shown with a win; lose on it and it bites. Pressure on every rally.</p>}
+      {settings.fateMode==='earned'&&<p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.82rem'}}>With a challenge attached, ladder fates don't expire: the climb comes only with a win <b>and</b> the challenge shown — win without it, or lose, and the ladder stays armed for next time. Pressure on every rally.</p>}
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
       <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
@@ -24384,7 +24388,8 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
           streak:p.streak||{holder:null,n:0},
           pending:pendingByIdx,
           pendingChallenge:pendingChallengeByIdx,
-          challengeSquares:p.challengeSquares||{}
+          challengeSquares:p.challengeSquares||{},
+          challengeAll:p.challengeAll||''
         };
         setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
