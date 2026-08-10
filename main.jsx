@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v581 Why the knock-back exists. The Earn Your Fate explainer now states the drop-back rule\u2019s purpose in the coach\u2019s own reasoning: losing on purpose to wait for an easier opponent always costs ground \u2014 a square lost and a rally spent re-landing \u2014 so the challenge must be met against whoever is on court. Same house principle as demotion must not pay. Builds on v580.';
+const APP_VERSION='v582 Referee phones update themselves. A Snakes & Ladders scoring link now keeps watching its court after connecting: when the coach sends a new setup \u2014 new race, new board, different players or changed challenges \u2014 the phone picks it up on its own if nothing has been scored yet, and if a game is already in progress it offers Load new game or Keep scoring this one rather than wiping live scoring. Referees keep the same link all night and no longer need telling to refresh. Builds on v581.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -24372,6 +24372,17 @@ function CourtStandingsPlayerDisplay({payload={}}){
   </div>;
 }
 
+function slSetupFingerprint(p){
+  /* Identifies the SETUP, not the progress: players, board shape, size and the
+     challenge set. Positions, scores and pending fates are deliberately excluded
+     so a live game is never mistaken for a new one. */
+  if(!p)return '';
+  const names=(p.players||[]).map(x=>x.name).join('|');
+  const lad=Object.entries((p.board&&p.board.ladders)||{}).map(([a,b])=>a+'>'+b).sort().join(',');
+  const sn=Object.entries((p.board&&p.board.snakes)||{}).map(([a,b])=>a+'>'+b).sort().join(',');
+  const ch=Object.entries(p.challengeSquares||{}).map(([a,b])=>a+'='+b).sort().join(',');
+  return [names,(p.settings&&p.settings.size)||p.size||'',lad,sn,ch,p.challengeAll||''].join('#');
+}
 function SnakesLaddersCourtScorer({court,host,mirror}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
@@ -24418,6 +24429,28 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
     return ()=>{cancelled=true;clearInterval(id);};
   },[roomId,seedData]);
 
+  /* After seeding, keep watching this court: a genuinely different setup from the
+     coach (new race, new board, new players, changed challenges) is picked up
+     without anyone remembering to refresh. A game already in progress is never
+     auto-swapped — it offers a choice instead, so live scoring is never lost. */
+  const [newSetup,setNewSetup]=useState(null);
+  useEffect(()=>{
+    if(!seedData)return;
+    let cancelled=false;
+    const mine=slSetupFingerprint({players:seedData.seed.roster,board:seedData.seed.board,settings:seedData.settings,challengeSquares:seedData.seed.challengeSquares,challengeAll:seedData.seed.challengeAll});
+    async function watch(){
+      const row=await readLivePlayerRoom(roomId);
+      if(cancelled||!row||!row.payload||row.payload.type!=='snakesladders')return;
+      const p=row.payload;
+      if(slSetupFingerprint(p)===mine){setNewSetup(null);return;}
+      const untouched=(p.players||[]).every(x=>Number(x.pos||1)<=1)&&!p.winnerName;
+      if(untouched){setSeedData(null);setNewSetup(null);}
+      else setNewSetup(true);
+    }
+    const id=setInterval(watch,4000);
+    return ()=>{cancelled=true;clearInterval(id);};
+  },[roomId,seedData]);
+
   if(!seedData){
     return <div className="playerDisplayPage slDisplayPage">
       <div className="slDisplayHead"><span className="slDisplayLive">● {status==='Live'?'LIVE':'CONNECTING'}</span><h1>Snakes &amp; Ladders — Court {court}</h1><p>{status}</p><p className="mutedText" style={{fontSize:'0.78rem'}}>Room: {roomId} · attempts: {slTries.current}</p></div>
@@ -24427,6 +24460,11 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
     <div className="slDisplayHead" style={{marginBottom:'6px'}}><span className="slDisplayLive">● SCORING — Court {court}</span><h1>Snakes &amp; Ladders</h1></div>
     <p className="mutedText">Tap the winner of each rally below. This device is now the scorer for this court — the board updates live for anyone watching this court's Player Display.</p>
     <button type="button" className="secondaryBtn" style={{marginBottom:'10px'}} onClick={async()=>{if(window.confirm('These aren\'t the right players? This clears this court\'s data so the coach device can set it up fresh.')){await deleteLivePlayerRoom(roomId);setSeedData(null);setStatus('Waiting for coach device to set up this court…');}}}>⚠ Not the right players? Clear this court</button>
+    {newSetup&&<div style={{background:'#131a24',border:'1px solid #c8a552',borderRadius:'10px',padding:'10px 13px',margin:'8px 0',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}}>
+      <span style={{color:'#d9c08a',fontWeight:700,flex:'1',minWidth:'200px'}}>The coach has set up a new game on this court. Loading it will replace the scoring on this screen.</span>
+      <button type="button" className="primaryBtn" onClick={()=>{setSeedData(null);setNewSetup(null);}}>Load new game</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setNewSetup(null)}>Keep scoring this one</button>
+    </div>}
     <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} alsoRoomId={mirror?host:null} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
   </div>;
 }
