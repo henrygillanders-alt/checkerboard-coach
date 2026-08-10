@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v582 Referee phones update themselves. A Snakes & Ladders scoring link now keeps watching its court after connecting: when the coach sends a new setup \u2014 new race, new board, different players or changed challenges \u2014 the phone picks it up on its own if nothing has been scored yet, and if a game is already in progress it offers Load new game or Keep scoring this one rather than wiping live scoring. Referees keep the same link all night and no longer need telling to refresh. Builds on v581.';
+const APP_VERSION='v583 Snakes & Ladders declutters when play starts. Once anyone has moved or a fate is armed, the setup furniture folds away \u2014 the challenge-squares editor and the empty bonus row leave the screen, so a live court shows scoring, the Next Up cards, the leaderboard, the board and the events and nothing else. A quiet Setup & challenges button brings it all back mid-game when the coach wants it, and everything reappears by itself for the next game. Builds on v582.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12146,6 +12146,10 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
   const [showChallengeEditor,setShowChallengeEditor]=useState(false);
+  const [showSetup,setShowSetup]=useState(false);
+  /* Live means someone has moved or won: setup furniture folds away so the coach
+     sees only scoring, Next Up, the board and events while play is on. */
+  const gameStarted=winner!=null||roster.some(p=>Number(p.pos||1)>1)||Object.keys(pending||{}).length>0;
   const [undoStack,setUndoStack]=useState([]);
 
   function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
@@ -12284,7 +12288,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 .slChallengeEditorRow span{font-size:0.82rem;color:#9fb0c2;min-width:120px;}
 .slChallengeEditorRow input{flex:1;min-width:180px;background:#141c26;border:1px solid #2c3c4e;border-radius:7px;padding:7px 10px;color:#eaf4fb;font-size:0.85rem;}
 `}</style>
-    {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow"><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
+    {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow" style={(gameStarted&&!showSetup&&(settings.bonuses||[]).length===0)?{display:'none'}:undefined}><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
     {awaitingConfirm&&<div className="slChallengeConfirm">
       <p>Did <strong>{roster[awaitingConfirm.idx].name}</strong> demonstrate the attached challenge: <em>"{awaitingConfirm.text}"</em>?</p>
       <div className="slChallengeConfirmBtns">
@@ -12318,7 +12322,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
-    {Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
+    {(!gameStarted||showSetup)&&Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
       <button type="button" className="secondaryBtn" onClick={()=>setShowChallengeEditor(s=>!s)}>{showChallengeEditor?'− Hide':'⚡'} Challenge squares (optional — attach a squash challenge to a ladder)</button>
       {showChallengeEditor&&<div className="slChallengeEditorPanel">
         <p className="mutedText" style={{margin:'0 0 8px'}}>Set one challenge for the whole board, or leave it blank and set squares individually below — a square's own text always wins. Every ladder foot and snake head has its own box. A challenged ladder follows the Fate rule above; a challenged snake pins the player who lands on it — in any mode — until they win and show the challenge, and it bites if they lose. Blank everywhere means fates resolve purely on winning the next rally, same as before.</p>
@@ -12329,6 +12333,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
+    {gameStarted&&<div style={{margin:'8px 0'}}><button type="button" className="secondaryBtn" style={{fontSize:'0.82rem',padding:'6px 11px'}} onClick={()=>setShowSetup(v=>!v)}>{showSetup?'− Hide setup':'⚙ Setup & challenges'}</button></div>}
     <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#c8a552',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
