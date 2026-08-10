@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v583 Snakes & Ladders declutters when play starts. Once anyone has moved or a fate is armed, the setup furniture folds away \u2014 the challenge-squares editor and the empty bonus row leave the screen, so a live court shows scoring, the Next Up cards, the leaderboard, the board and the events and nothing else. A quiet Setup & challenges button brings it all back mid-game when the coach wants it, and everything reappears by itself for the next game. Builds on v582.';
+const APP_VERSION='v588 Winning is never punished like losing. v587 sent a player back a square for winning without showing the ladder challenge \u2014 the same cost as losing, which equates good play with bad. In Earn it, winning without the challenge now holds the square with the ladder still armed, so a player who keeps winning keeps earning chances at it; only losing the rally, or throwing it, costs a square and disarms the ladder. Classic Win the next rally is unchanged. The v587 fix that always prompts on a challenged ladder \u2014 including challenges written after a player landed \u2014 stays. Builds on v587.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12146,10 +12146,6 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
   const [showChallengeEditor,setShowChallengeEditor]=useState(false);
-  const [showSetup,setShowSetup]=useState(false);
-  /* Live means someone has moved or won: setup furniture folds away so the coach
-     sees only scoring, Next Up, the board and events while play is on. */
-  const gameStarted=winner!=null||roster.some(p=>Number(p.pos||1)>1)||Object.keys(pending||{}).length>0;
   const [undoStack,setUndoStack]=useState([]);
 
   function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
@@ -12171,6 +12167,13 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const nextPendingChallenge={...pendingChallenge};
     if(snakeEscaped)ev.push(`${W.name} shows the challenge and escapes the snake at ${W.pos}`);
 
+    /* A challenge written after a player landed still applies: if the winner is
+       standing on a challenged ladder, arm it now rather than only at landing. */
+    if(nextPending[wIdx]==null&&board.ladders[W.pos]!=null&&chFor(W.pos)){
+      nextPending[wIdx]=board.ladders[W.pos];
+      nextPendingChallenge[wIdx]=chFor(W.pos);
+    }
+
     if(snakePinned){
       ev.push(`${W.name} wins the rally but stays pinned on the snake at ${W.pos} — win and show "${chFor(W.pos)||'the challenge'}" to escape`);
       reveal.add(W.pos);
@@ -12178,7 +12181,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       const top=nextPending[wIdx],fromSquare=W.pos;
       if(forfeitPending){
         if(settings.fateMode==='earned'&&nextPendingChallenge[wIdx]){
-          ev.push(`${W.name} wins the rally but the challenge wasn't shown — stays on ${fromSquare}, the ladder stays armed`);
+          /* Winning is never punished like losing (P4): the rally is won, the
+             player holds the square, and the ladder stays armed for another go. */
+          ev.push(`${W.name} wins the rally but the challenge wasn't shown — holds ${fromSquare}, the ladder stays armed`);
         }else{
           ev.push(`${W.name} won the rally but the challenge wasn't confirmed — ladder forfeited, stays on ${fromSquare}`);
           delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
@@ -12288,12 +12293,12 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 .slChallengeEditorRow span{font-size:0.82rem;color:#9fb0c2;min-width:120px;}
 .slChallengeEditorRow input{flex:1;min-width:180px;background:#141c26;border:1px solid #2c3c4e;border-radius:7px;padding:7px 10px;color:#eaf4fb;font-size:0.85rem;}
 `}</style>
-    {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow" style={(gameStarted&&!showSetup&&(settings.bonuses||[]).length===0)?{display:'none'}:undefined}><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
+    {(settings.bonuses||[]).length>0&&winner==null&&<div className="slBonusRow" style={(settings.bonuses||[]).length===0?{display:'none'}:undefined}><span className="slBonusLabel">Bonus this rally</span>{settings.bonuses.map((b,i)=><button key={b.label+i} type="button" className={activeBonuses.has(b.label)?'meChip meChipOn':'meChip'} onClick={()=>setActiveBonuses(prev=>{const n=new Set(prev);n.has(b.label)?n.delete(b.label):n.add(b.label);return n;})}>{b.label} +{b.squares}</button>)}</div>}
     {awaitingConfirm&&<div className="slChallengeConfirm">
       <p>Did <strong>{roster[awaitingConfirm.idx].name}</strong> demonstrate the attached challenge: <em>"{awaitingConfirm.text}"</em>?</p>
       <div className="slChallengeConfirmBtns">
         <button type="button" className="primaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakeEscaped:true}:{});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✓ Yes — escapes the snake':'✓ Yes — complete the climb'}</button>
-        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✗ Not yet — stays pinned':(settings.fateMode==='earned'?'✗ Not yet — ladder stays armed':'✗ No — forfeit the ladder')}</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✗ Not yet — stays pinned':(settings.fateMode==='earned'?'✗ Not yet — stays put, ladder still armed':'✗ No — forfeit the ladder')}</button>
       </div>
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div style={{display:'flex',gap:'10px',flexWrap:'wrap',margin:'8px 0'}}>
@@ -12313,16 +12318,16 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const sc=board.snakes[roster[onA].pos]!=null&&chFor(roster[onA].pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}>{roster[onA].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>{const P=roster[onA];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(lad)setAwaitingConfirm({slot:0,idx:onA,text:lad});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}>{roster[onA].name} won</button>
       <span className="slVs">vs</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const sc=board.snakes[roster[onB].pos]!=null&&chFor(roster[onB].pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}>{roster[onB].name} won</button>
+      <button type="button" className="primaryBtn" onClick={()=>{const P=roster[onB];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(lad)setAwaitingConfirm({slot:1,idx:onB,text:lad});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}>{roster[onB].name} won</button>
     </div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
     {queue.length<2&&<div className="slQueue">Needs at least 2 players on this court.</div>}
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
-    {(!gameStarted||showSetup)&&Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
+    {Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
       <button type="button" className="secondaryBtn" onClick={()=>setShowChallengeEditor(s=>!s)}>{showChallengeEditor?'− Hide':'⚡'} Challenge squares (optional — attach a squash challenge to a ladder)</button>
       {showChallengeEditor&&<div className="slChallengeEditorPanel">
         <p className="mutedText" style={{margin:'0 0 8px'}}>Set one challenge for the whole board, or leave it blank and set squares individually below — a square's own text always wins. Every ladder foot and snake head has its own box. A challenged ladder follows the Fate rule above; a challenged snake pins the player who lands on it — in any mode — until they win and show the challenge, and it bites if they lose. Blank everywhere means fates resolve purely on winning the next rally, same as before.</p>
@@ -12333,7 +12338,6 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
-    {gameStarted&&<div style={{margin:'8px 0'}}><button type="button" className="secondaryBtn" style={{fontSize:'0.82rem',padding:'6px 11px'}} onClick={()=>setShowSetup(v=>!v)}>{showSetup?'− Hide setup':'⚙ Setup & challenges'}</button></div>}
     <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#c8a552',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
@@ -12406,7 +12410,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
   const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
   const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{}); // playerName -> courtIndex (0-based)
-  function assignPlayerToCourt(name,ci){setManualAssign(prev=>({...prev,[name]:ci}));}
+  function assignPlayerToCourt(name,ci){setManualAssign(prev=>{const next={...prev};if(ci==null)delete next[name];else next[name]=ci;return next;});}
   const [raceBoard,setRaceBoard]=useState(null);
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
@@ -12591,7 +12595,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         <button type="button" className="secondaryBtn" style={settings.fateMode!=='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'winNext'}))}>Win the next rally</button>
         <button type="button" className="secondaryBtn" style={settings.fateMode==='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'earned'}))}>Earn it — fate stays armed</button>
       </div>
-      {settings.fateMode==='earned'&&<p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.82rem'}}>With a challenge attached, the climb comes only with a win <b>and</b> the challenge shown. Win without showing it and you stay on the ladder, still armed. Lose and you're knocked back one square — land on the ladder again to re-arm it. That knock-back is deliberate: losing on purpose to wait for an easier opponent always costs ground, so the challenge has to be met against whoever is on court. Pressure on every rally.</p>}
+      {settings.fateMode==='earned'&&<p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.82rem'}}>With a challenge attached, the climb comes only with a win <b>and</b> the challenge shown. Win without showing it and you hold your square with the ladder still armed — keep winning and you keep getting chances at it. Lose the rally, or throw it, and you're knocked back one square and must land on the ladder again to re-arm it. Winning never costs you ground; only losing does. That knock-back is deliberate: losing on purpose to wait for an easier opponent always costs ground, so the challenge has to be met against whoever is on court. Pressure on every rally.</p>}
       <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
       <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
       <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
@@ -12617,14 +12621,20 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       {usingAttendance&&<div style={{marginTop:'10px'}}>
         <strong>Court allocation:</strong>
         <div className="slModeStrip" style={{marginTop:'8px'}}>
-          <button type="button" className={allocMode==='auto'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('auto')}>Auto — ranked by level (top group → Court 1, next → Court 2…)</button>
-          <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>Manual — I’ll allocate</button>
+          <button type="button" className={allocMode==='auto'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('auto')}>{courtCount===1?'Everyone present plays':'Auto — ranked by level (top group → Court 1, next → Court 2…)'}</button>
+          <button type="button" className={allocMode==='manual'?'slModeBtn slModeBtnOn':'slModeBtn'} onClick={()=>setAllocMode('manual')}>{courtCount===1?'Pick who plays':'Manual — I’ll allocate'}</button>
         </div>
         {allocMode==='manual'&&<div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
-          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>Unassigned: {unassigned.join(', ')}</p>}
+          {unassigned.length>0&&<p className="mutedText" style={{color:'#c8a552'}}>{courtCount===1?'Sitting out: ':'Unassigned: '}{unassigned.join(', ')}</p>}
+          {courtCount===1&&<p className="mutedText" style={{fontSize:'0.82rem'}}>Everyone listed is marked present in the register — this only chooses who plays Snakes &amp; Ladders, so leaving someone out does not affect attendance.</p>}
           {presentsObj.map(p=>playerDisplayName(p)).map(name=><div key={name} style={{display:'flex',alignItems:'center',gap:'8px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'6px 10px'}}>
             <span style={{fontSize:'0.85rem',color:'#cdd9e6',flex:'1 1 auto'}}>{name}</span>
-            <div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
+            <div style={{display:'flex',gap:'4px'}}>{courtCount===1
+              ?<>
+                <button type="button" className={manualAssign[name]===0?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,0)}>Playing</button>
+                <button type="button" className={manualAssign[name]==null?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,null)}>Not playing</button>
+              </>
+              :Array.from({length:courtCount}).map((_,ci)=><button type="button" key={ci} className={manualAssign[name]===ci?'slModeBtn slModeBtnOn':'slModeBtn'} style={{minWidth:'0',flex:'none',padding:'6px 10px',fontSize:'0.8rem'}} onClick={()=>assignPlayerToCourt(name,ci)}>C{ci+1}</button>)}</div>
           </div>)}
         </div>}
       </div>}
@@ -26704,6 +26714,7 @@ function goBack(){
   });
 }
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
+const presentCount=useMemo(()=>(players||[]).filter(p=>p&&p.present).length,[players]);
 const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[]);}catch{return[]}});
 const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   try{
@@ -26835,6 +26846,7 @@ body .primaryBtn:hover{background:#264a6e !important;}
 body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~.secondaryBtn{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;box-shadow:none !important;}
 `}</style>
 <div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
+{presentCount>0&&<button type="button" title="Players marked present today — tap to open Players" onClick={()=>go('players')} style={{position:'fixed',right:'12px',bottom:'46px',zIndex:9000,background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4',borderRadius:'999px',padding:'5px 11px',fontSize:'0.78rem',fontWeight:800,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.35)'}}>{presentCount} present</button>}
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
   <div onClick={e=>e.stopPropagation()} style={{maxWidth:'620px',margin:'60px auto 0',width:'92%',background:'#0d1722',border:'1px solid #243140',borderRadius:'16px',padding:'14px',boxShadow:'0 20px 60px rgba(0,0,0,0.6)',maxHeight:'82vh',display:'flex',flexDirection:'column'}}>
     <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
