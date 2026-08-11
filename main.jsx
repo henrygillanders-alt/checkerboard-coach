@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v588 Winning is never punished like losing. v587 sent a player back a square for winning without showing the ladder challenge \u2014 the same cost as losing, which equates good play with bad. In Earn it, winning without the challenge now holds the square with the ladder still armed, so a player who keeps winning keeps earning chances at it; only losing the rally, or throwing it, costs a square and disarms the ladder. Classic Win the next rally is unchanged. The v587 fix that always prompts on a challenged ladder \u2014 including challenges written after a player landed \u2014 stays. Builds on v587.';
+const APP_VERSION='v591 Game Suggestions. A new place for the people who just played to say what would make a game better: pick the game (tonight\u2019s session titles autocomplete), write the idea, name optional, tagged Player or Coach. Suggestions list newest first, can be marked actioned or parked, and export to CSV so good ideas reach the build queue instead of the car park. Builds on v590.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -4899,6 +4899,97 @@ function formatPeakDate(baseDate,offset){
   d.setDate(d.getDate()+offset);
   return d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
 }
+
+/* ── GAME SUGGESTIONS ─────────────────────────────────────────────────────────
+   Coaches and players propose improvements to games they have just played.
+   Device-local, exportable, and deliberately simple: a note, who it is from,
+   and which game it is about. */
+const SUGGESTIONS_KEY='checkerboard_game_suggestions_v1';
+function loadSuggestions(){try{const v=JSON.parse(localStorage.getItem(SUGGESTIONS_KEY));return Array.isArray(v)?v:[];}catch{return [];}}
+function saveSuggestions(list){try{localStorage.setItem(SUGGESTIONS_KEY,JSON.stringify(list));}catch{}}
+function GameSuggestions({setScreen,session}){
+  const [items,setItems]=useState(()=>loadSuggestions());
+  const [game,setGame]=useState('');
+  const [author,setAuthor]=useState('');
+  const [role,setRole]=useState('Player');
+  const [text,setText]=useState('');
+  const [filter,setFilter]=useState('open');
+  const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
+  const sessionGames=useMemo(()=>Array.from(new Set(((session||[]).map(g=>g&&g.title).filter(Boolean)))),[session]);
+  function update(next){saveSuggestions(next);setItems(next);}
+  function add(){
+    const t=text.trim();
+    if(!t)return;
+    update([{id:makeLocalId(),at:new Date().toISOString(),game:game.trim()||'General',author:author.trim()||'Anonymous',role,text:t,status:'open'},...items]);
+    setText('');
+  }
+  function setStatus(id,status){update(items.map(it=>it.id===id?{...it,status}:it));}
+  function remove(id){if(window.confirm('Delete this suggestion?'))update(items.filter(it=>it.id!==id));}
+  function exportAll(){
+    const lines=['Date,Game,From,Role,Status,Suggestion'];
+    items.forEach(it=>lines.push([new Date(it.at).toLocaleDateString(),'"'+it.game.replace(/"/g,'""')+'"','"'+it.author.replace(/"/g,'""')+'"',it.role,it.status,'"'+it.text.replace(/"/g,'""')+'"'].join(',')));
+    const csv=lines.join('\n');
+    try{
+      const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='game-suggestions.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    }catch{window.prompt('Copy the suggestions CSV:',csv);}
+  }
+  const shown=items.filter(it=>filter==='all'?true:filter==='done'?it.status!=='open':it.status==='open');
+  return <div className="page" style={{maxWidth:'900px',margin:'0 auto'}}>
+    <style>{`
+.sugPanel{background:#0b1320;border:1px solid #223044;border-radius:14px;padding:16px;margin-bottom:14px;}
+.sugPanel h4{margin:0 0 10px;color:#d9c08a;font-size:0.98rem;}
+.sugInput{width:100%;background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;padding:10px 12px;font-size:0.92rem;margin-bottom:8px;}
+.sugRow{display:flex;gap:8px;flex-wrap:wrap;}
+.sugChip{background:#0d1722;border:1px solid #2a3a4f;color:#8aa0b6;border-radius:999px;padding:7px 13px;font-weight:700;font-size:0.83rem;cursor:pointer;}
+.sugChip.on{background:#101d18;border-color:#2f5c46;color:#8fbfa4;}
+.sugCard{background:#0c1626;border:1px solid #223044;border-radius:12px;padding:12px 14px;margin-bottom:9px;}
+.sugCard.done{opacity:0.55;}
+.sugMeta{color:#8aa0b6;font-size:0.78rem;margin-bottom:5px;}
+.sugMeta b{color:#d9c08a;}
+.sugText{color:#eaf4fb;line-height:1.5;font-size:0.92rem;margin:0 0 8px;}
+.sugMini{background:#0b1118;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:8px;padding:5px 10px;font-weight:700;font-size:0.79rem;cursor:pointer;}
+`}</style>
+    <div className="pageTop"><div><h1>Game Suggestions</h1><p className="mutedText">What would make this game better? Coaches and players, straight after playing.</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+
+    <div className="sugPanel">
+      <h4>Add a suggestion</h4>
+      <input className="sugInput" list="sugGameList" placeholder="Which game? (start typing, or pick from tonight's session)" value={game} onChange={e=>setGame(e.target.value)}/>
+      <datalist id="sugGameList">{sessionGames.map(g=><option key={g} value={g}/>)}</datalist>
+      <textarea className="sugInput" rows="3" placeholder="What would make it better? e.g. give the smaller court an extra invade turn" value={text} onChange={e=>setText(e.target.value)}/>
+      <div className="sugRow" style={{marginBottom:'8px'}}>
+        <input className="sugInput" list="sugWhoList" style={{flex:'1',minWidth:'160px',marginBottom:0}} placeholder="Your name (optional)" value={author} onChange={e=>setAuthor(e.target.value)}/>
+        <datalist id="sugWhoList">{roster.map(n=><option key={n} value={n}/>)}</datalist>
+        {['Player','Coach'].map(r=><button type="button" key={r} className={role===r?'sugChip on':'sugChip'} onClick={()=>setRole(r)}>{r}</button>)}
+      </div>
+      <button type="button" className="primaryBtn" disabled={!text.trim()} onClick={add}>Save suggestion</button>
+    </div>
+
+    <div className="sugPanel">
+      <h4>Suggestions ({shown.length})</h4>
+      <div className="sugRow" style={{marginBottom:'10px'}}>
+        {[['open','Open'],['done','Actioned / parked'],['all','All']].map(([id,label])=><button type="button" key={id} className={filter===id?'sugChip on':'sugChip'} onClick={()=>setFilter(id)}>{label}</button>)}
+        {items.length>0&&<button type="button" className="sugMini" onClick={exportAll}>Export CSV</button>}
+      </div>
+      {!shown.length&&<p className="mutedText">Nothing here yet. Ask the group at the end of a game — the best changes usually come from whoever just played it.</p>}
+      {shown.map(it=><div key={it.id} className={it.status==='open'?'sugCard':'sugCard done'}>
+        <div className="sugMeta"><b>{it.game}</b> · {it.author} ({it.role}) · {new Date(it.at).toLocaleDateString()}{it.status!=='open'?' · '+it.status:''}</div>
+        <p className="sugText">{it.text}</p>
+        <div className="sugRow">
+          {it.status==='open'
+            ?<>
+              <button type="button" className="sugMini" onClick={()=>setStatus(it.id,'actioned')}>Mark actioned</button>
+              <button type="button" className="sugMini" onClick={()=>setStatus(it.id,'parked')}>Park it</button>
+            </>
+            :<button type="button" className="sugMini" onClick={()=>setStatus(it.id,'open')}>Reopen</button>}
+          <button type="button" className="sugMini" onClick={()=>remove(it.id)}>Delete</button>
+        </div>
+      </div>)}
+    </div>
+  </div>;
+}
+/* ── END GAME SUGGESTIONS ── */
 function CoachRationale({label='Why this game — coach rationale',children}){
   const [open,setOpen]=useState(false);
   return <>
@@ -5523,6 +5614,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('trafficLight')}><h2>Traffic Light Zones</h2><span className="homeTileSubtitle">Front-wall height bands · purpose per band</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('gameSuggestions')}><h2>Game Suggestions</h2><span className="homeTileSubtitle">Coach & player ideas to improve a game</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -12121,7 +12213,40 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
+/* Court shapes: when the same game runs on several courts, each court's tokens
+   take a distinct silhouette so players can find their own court at a glance. */
+function slCourtShapeStyle(courtLabel){
+  const n=Number(String(courtLabel||'').replace(/\D/g,''))||0;
+  if(!n)return {borderRadius:'50%'};
+  const shapes=[
+    {borderRadius:'50%'},                                   /* 1 circle */
+    {borderRadius:'4px'},                                   /* 2 square */
+    {borderRadius:'4px',transform:'rotate(45deg)'},         /* 3 diamond */
+    {borderRadius:'50% 50% 12% 50%'},                       /* 4 teardrop */
+    {clipPath:'polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)',borderRadius:'2px'}, /* 5 pentagon */
+    {clipPath:'polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)',borderRadius:'2px'}, /* 6 hexagon */
+  ];
+  return shapes[(n-1)%shapes.length];
+}
+function slCourtShapeName(courtLabel){
+  const n=Number(String(courtLabel||'').replace(/\D/g,''))||0;
+  return n?['circles','squares','diamonds','teardrops','pentagons','hexagons'][(n-1)%6]:'circles';
+}
+/* Initials: first-name initial normally, but where two players on the same court
+   share it, both fall back to first+surname initials (Laya Sabry LS, Leo Ivlenkov LI). */
+function slInitialsMap(names){
+  const list=(names||[]).map(n=>String(n||'').trim());
+  const first=n=>(n[0]||'P').toUpperCase();
+  const both=n=>{const parts=n.split(/\s+/).filter(Boolean);return parts.length>1?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():first(n);};
+  const counts={};
+  list.forEach(n=>{const k=first(n);counts[k]=(counts[k]||0)+1;});
+  const map={};
+  list.forEach(n=>{map[n]=counts[first(n)]>1?both(n):first(n);});
+  return map;
+}
 function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null}){
+  const tokShape=slCourtShapeStyle(courtLabel);
+  const initialsMap=useMemo(()=>slInitialsMap((players||[]).map(n=>String(n))),[players]);
   const SL_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
@@ -12338,7 +12463,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#c8a552',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length],...tokShape}}><span style={tokShape.transform?{display:'block',transform:'rotate(-45deg)'}:undefined}>{initialsMap[p.name]||(p.name||'P')[0].toUpperCase()}</span></b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#c8a552',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     <div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -12350,7 +12475,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
           {ci.show&&ci.isLadder&&<span className="slMark">🪜→{ci.to}</span>}
           {ci.show&&ci.isSnake&&<span className="slMark">🐍→{ci.to}</span>}
           {n===size&&<span className="slMark">🏁</span>}
-          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length]}}>{(roster[i].name||'P')[0].toUpperCase()}</b>)}</span>}
+          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length],...tokShape}}><span style={tokShape.transform?{display:'block',transform:'rotate(-45deg)'}:undefined}>{initialsMap[roster[i].name]||(roster[i].name||'P')[0].toUpperCase()}</span></b>)}</span>}
         </div>;
       })}
     </div>
@@ -15679,6 +15804,29 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     };
   }
 
+  /* Uneven courts decide outcomes: on a smaller court each player is on for a
+     larger share of the rallies, so raw points are not comparable. Points are
+     scaled by (this court's players / largest court's players) — the same
+     equalisation the Lives format does with capacity. */
+  function getInvasionPointsBalance(sourceTeams=invasionTeams){
+    const list=(sourceTeams||[]).filter(t=>(t.players||[]).length>0);
+    if(!list.length)return {maxPlayers:0,rows:[],uneven:false};
+    const maxPlayers=Math.max(...list.map(t=>(t.players||[]).length));
+    const rows=list.map(team=>{
+      const players=(team.players||[]).length;
+      return {teamId:team.id,team:team.name,players,factor:players/maxPlayers,shortBy:maxPlayers-players};
+    });
+    return {maxPlayers,rows,uneven:rows.some(r=>r.players!==maxPlayers)};
+  }
+  function invasionPointsFactor(team){
+    const b=getInvasionPointsBalance();
+    const row=b.rows.find(r=>r.teamId===(team&&team.id));
+    return row?row.factor:1;
+  }
+  function invasionAdjustedTeamPoints(team){
+    return Math.round(calculateTeamPointsFromPlayers(team)*invasionPointsFactor(team)*10)/10;
+  }
+
   function getInvasionFairBaseTotal(){
     const fair=getInvasionFairRows(invasionTeams);
     return fair.rows.length?fair.baseCapacity:(Number(invasionStartingLives)||5);
@@ -15910,7 +16058,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         invasionCourtRound,
         invasionGameStarted:true,
         invasionCourtAssignmentMode,
-        showInvasionDashboard:invasionFormat==='lives'&&showInvasionDashboard,
+        showInvasionDashboard,
         ...overrides
       }));
     }catch{}
@@ -17090,7 +17238,8 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
                       {invasionFormat==='points'&&(
                         <div className="invasionPointControls">
-                          <strong>Team Points: {calculateTeamPointsFromPlayers(team)}</strong>
+                          <strong>Team Points: {calculateTeamPointsFromPlayers(team)}{invasionPointsFactor(team)!==1&&<span style={{color:'#d9c08a',fontWeight:800}}> → {invasionAdjustedTeamPoints(team)} adjusted</span>}</strong>
+                          {invasionPointsFactor(team)!==1&&<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>{team.players.length} on this court vs {getInvasionPointsBalance().maxPlayers} on the biggest — points count ×{invasionPointsFactor(team).toFixed(2)}, or give this court {(getInvasionPointsBalance().rows.find(r=>r.teamId===team.id)||{}).shortBy||0} extra invade turn(s) per round to even up the court time.</em>}
                           <div className="buttonRow">
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,1)}>+1</button>
                             <button type="button" className="secondaryBtn" onClick={()=>addInvasionTeamPoints(team.id,3)}>+3</button>
@@ -21789,6 +21938,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Performance Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award \u00b7 in Players',kw:'performance season ladder annual award points table leaderboard promotion demotion ranking competitive year trophy attendance win share ranked game log challenge players',screen:'seasonLadder'},
   {label:'Traffic Light Zones',sub:'Front-wall height bands \u00b7 red amber green \u00b7 solo, pairs & games',kw:'traffic light zones red amber green height bands front wall tape service line tin lob kill drop constraint conditioned game solo timed hirst wsf',screen:'trafficLight'},
+  {label:'Game Suggestions',sub:'Coach & player ideas to improve a game',kw:'game suggestions feedback ideas improve comment player voice review notes actioned parked export',screen:'gameSuggestions'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
@@ -26920,6 +27070,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='courtMonitor'&&<CourtMonitor setScreen={go}/>}
       {screen==='rotation'&&<RotationEngine setScreen={go} setSession={setSession}/>}
       {screen==='seasonLadder'&&<SeasonLadder setScreen={go}/>}
+{screen==='gameSuggestions'&&<GameSuggestions setScreen={go} session={session}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
       {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
