@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v591 Game Suggestions. A new place for the people who just played to say what would make a game better: pick the game (tonight\u2019s session titles autocomplete), write the idea, name optional, tagged Player or Coach. Suggestions list newest first, can be marked actioned or parked, and export to CSV so good ideas reach the build queue instead of the car park. Builds on v590.';
+const APP_VERSION='v593 One Suggestions tile. The new game-feedback page is folded into the existing Coach Suggestions module rather than sitting beside it: the tile is now simply Suggestions \u2014 players and coaches, improve games and activities \u2014 with two tabs inside, Propose a game or idea (the original coach form with CLA rationale and RLD) and Improve a game we played (quick feedback on tonight\u2019s games, actioned or parked, CSV export). Builds on v592.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -4125,7 +4125,8 @@ function WhyCLAScreen({setScreen}){
 .whyCLAClose{color:#9fb3c4;font-style:italic;margin-top:16px;text-align:center;line-height:1.6;font-size:1.02rem;padding:0 8px}
 `}</style>
     <div className="pageTop">
-      <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p></div>
+      <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p>
+      <button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={()=>setScreen&&setScreen('parents')}>For parents — Why We Coach This Way →</button></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
@@ -4907,7 +4908,7 @@ function formatPeakDate(baseDate,offset){
 const SUGGESTIONS_KEY='checkerboard_game_suggestions_v1';
 function loadSuggestions(){try{const v=JSON.parse(localStorage.getItem(SUGGESTIONS_KEY));return Array.isArray(v)?v:[];}catch{return [];}}
 function saveSuggestions(list){try{localStorage.setItem(SUGGESTIONS_KEY,JSON.stringify(list));}catch{}}
-function GameSuggestions({setScreen,session}){
+function GameSuggestions({setScreen,session,embedded=false}){
   const [items,setItems]=useState(()=>loadSuggestions());
   const [game,setGame]=useState('');
   const [author,setAuthor]=useState('');
@@ -4951,7 +4952,7 @@ function GameSuggestions({setScreen,session}){
 .sugText{color:#eaf4fb;line-height:1.5;font-size:0.92rem;margin:0 0 8px;}
 .sugMini{background:#0b1118;border:1px solid #2c3c4e;color:#8aa0b6;border-radius:8px;padding:5px 10px;font-weight:700;font-size:0.79rem;cursor:pointer;}
 `}</style>
-    <div className="pageTop"><div><h1>Game Suggestions</h1><p className="mutedText">What would make this game better? Coaches and players, straight after playing.</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>
+    {!embedded&&<div className="pageTop"><div><h1>Suggestions</h1><p className="mutedText">A portal for players and coaches to suggest improvements to games and activities.</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>}
 
     <div className="sugPanel">
       <h4>Add a suggestion</h4>
@@ -5095,6 +5096,7 @@ function CoachSuggestUnreadBadge(){
   return <span style={{position:'absolute',top:'8px',right:'10px',minWidth:'22px',height:'22px',padding:'0 6px',borderRadius:'11px',background:'#e5484d',color:'#fff',fontSize:'12px',fontWeight:700,display:'inline-flex',alignItems:'center',justifyContent:'center',boxShadow:'0 1px 4px rgba(0,0,0,.4)'}}>{count}</span>;
 }
 function CoachSuggestionsModule(){
+  const [sugTab,setSugTab]=useState('coach');
   const online=!!FIREBASE_CONFIG;
   const empty={type:'Game',title:'',description:'',cla:'',rld:4,by:''};
   const [items,setItems]=useState(()=>{if(online)return[];try{const s=localStorage.getItem(COACH_SUGGESTIONS_KEY);return s?JSON.parse(s):[];}catch{return[];}});
@@ -5169,7 +5171,13 @@ function CoachSuggestionsModule(){
   }
   return <div className="gameCard coachSuggest">
     <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea}.coachSuggest .thread{margin:8px 0;padding:8px 10px;background:#0b1a2a;border-radius:8px;border:1px solid #1d3547}.coachSuggest .msg{padding:5px 0;font-size:14px;color:#dce9f4;border-bottom:1px solid #16283a}.coachSuggest .msg:last-child{border-bottom:none}.coachSuggest .replyRow{display:flex;gap:8px;margin:8px 0}.coachSuggest .replyRow input{flex:1;padding:9px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:14px;box-sizing:border-box}`}</style>
-    <div className="categoryTag">Coach Suggestions</div>
+    <div className="categoryTag">Suggestions</div>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',margin:'0 0 12px'}}>
+      {[['coach','Propose a game or idea'],['feedback','Improve a game we played']].map(([id,label])=>
+        <button type="button" key={id} onClick={()=>setSugTab(id)} style={{background:sugTab===id?'#101d18':'#0d1722',border:sugTab===id?'1px solid #2f5c46':'1px solid #2a3a4f',color:sugTab===id?'#8fbfa4':'#8aa0b6',borderRadius:'9px',padding:'9px 14px',fontWeight:800,fontSize:'0.86rem',cursor:'pointer'}}>{label}</button>)}
+    </div>
+    {sugTab==='feedback'&&<GameSuggestions embedded/>}
+    <div style={sugTab==='feedback'?{display:'none'}:undefined}>
     <h2>{editId?'Edit Suggestion':'Suggest an Exercise, Activity or Game'}</h2>
     <div className="statusBox" style={{borderColor:online?'#3f7a5c':'#6b5a3a'}}>{online?'Shared with all coaches — suggestions and replies sync live across every device.':'On this device only. Once the shared database is connected, everything syncs across all coaches.'}</div>
     <label className="fw">Your name (so your replies are signed)<input type="text" value={me} onChange={e=>setMe(e.target.value)} placeholder="e.g. Henry"/></label>
@@ -5204,6 +5212,7 @@ function CoachSuggestionsModule(){
         <div className="replyRow"><input type="text" value={replyText[it.id]||''} onChange={e=>setReplyText(prev=>({...prev,[it.id]:e.target.value}))} placeholder="Write a reply…" onKeyDown={e=>{if(e.key==='Enter')postReply(it);}}/><button className="secondaryBtn" onClick={()=>postReply(it)}>Reply</button></div>
         <div className="buttonRow"><button className="secondaryBtn" onClick={()=>editItem(it)}>Edit</button><button className="secondaryBtn" onClick={()=>deleteItem(it.id)}>Delete</button></div>
       </div>;})}</div>}
+    </div>
   </div>;
 }
 
@@ -5614,7 +5623,6 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('trafficLight')}><h2>Traffic Light Zones</h2><span className="homeTileSubtitle">Front-wall height bands · purpose per band</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('gameSuggestions')}><h2>Game Suggestions</h2><span className="homeTileSubtitle">Coach & player ideas to improve a game</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('liveMatchCoaching')}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">Match analysis · between-game cue</span></button>
@@ -5626,22 +5634,19 @@ return <div className="homeGrid homeGridV99h52">
 
       <div className="moreSectionLabel">Pressure & Perception</div>
       <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
-      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('blindTargetScore')}><h2>Poker</h2><span className="homeTileSubtitle">Informational Pressure</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rallyBand')}><h2>Rally Band</h2><span className="homeTileSubtitle">Land the rally in its duration band</span></button>
-      <button className="homeCard perceptionHomeCard homeTitleOnly" onClick={()=>setScreen('perception')}><h2>PERCEPTION™</h2><span className="homeTileSubtitle">Seeing the Game Earlier</span></button>
       <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
 
       <div className="moreSectionLabel">Coach Education</div>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('paradigms')}><h2>Coaching Paradigms</h2><span className="homeTileSubtitle">Traditional vs ecological · where skill comes from</span></button>      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('parents')}><h2>Why We Coach This Way</h2><span className="homeTileSubtitle">Parent education · explain, defend and send home</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       <div className="moreSectionLabel">Diagnostics & Tools</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
       <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
       <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachSuggestions')}><CoachSuggestUnreadBadge/><h2>Coach Suggestions</h2><span className="homeTileSubtitle">Ideas · CLA rationale · RLD rating</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachSuggestions')}><CoachSuggestUnreadBadge/><h2>Suggestions</h2><span className="homeTileSubtitle">Players & coaches · improve games and activities</span></button>
       </>}
     </div>;
 }
@@ -21938,7 +21943,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Performance Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award \u00b7 in Players',kw:'performance season ladder annual award points table leaderboard promotion demotion ranking competitive year trophy attendance win share ranked game log challenge players',screen:'seasonLadder'},
   {label:'Traffic Light Zones',sub:'Front-wall height bands \u00b7 red amber green \u00b7 solo, pairs & games',kw:'traffic light zones red amber green height bands front wall tape service line tin lob kill drop constraint conditioned game solo timed hirst wsf',screen:'trafficLight'},
-  {label:'Game Suggestions',sub:'Coach & player ideas to improve a game',kw:'game suggestions feedback ideas improve comment player voice review notes actioned parked export',screen:'gameSuggestions'},
+  {label:'Suggestions',sub:'Players & coaches \u00b7 improve games and activities',kw:'suggestions coach game feedback ideas improve comment player voice review notes actioned parked export cla rationale rld propose',screen:'coachSuggestions'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
   {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
