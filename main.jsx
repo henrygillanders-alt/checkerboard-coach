@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v609 Unlimited DB is a conditioned game, not a bank. v606 quietly turned an Unlimited allowance into the economy\u2019s cap \u2014 a number the coach never chose. The allocation panel now states the difference plainly: Unlimited means that player may always take two bounces, a number is a bank they spend and earn back, and the economy games need a number. In an economy game, players set to Unlimited are named in a warning and start on the universal Starting DB rather than an invented figure. Builds on v608.';
+const APP_VERSION='v610 Coach writes the earn conditions. The three earn conditions shipped with each DB economy game are now a starting point rather than the whole vocabulary: add your own, delete any you do not use, and reset to the defaults whenever you want. Edits are kept per game between sessions, and the live condition still shows above the counters. The per-player allowance panel also moves below Bank & Spend, where the bank it feeds actually lives. Builds on v609.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -2584,7 +2584,6 @@ function DoubleBounceTool({setScreen,embedded=false}){
       <h2>Double Bounce Conditioned Games</h2>
       <p>Selected players may use two bounces before returning the ball. The second bounce is a developmental constraint rather than simply a way of making the game easier.</p>
     </section>
-    <DoubleBounceAllocation/>
     <section className="protocolGrid">
       <div className="protocolCard"><h3>Core Protocol</h3><p>Allow selected players to use two bounces before returning. The coach can apply this to one player, both players, a team, a rotation role or a specific game phase.</p></div>
       <div className="protocolCard warningCard"><h3>Important Principle</h3><p>Double bounce should not encourage passive holding unless the objective is deception, disguise, late contact manipulation or hold development.</p></div>
@@ -13244,6 +13243,16 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const [debtPenalty,setDebtPenalty]=useState(1);
   const [showSettings,setShowSettings]=useState(false);
   const [liveEarn,setLiveEarn]=useState(null); /* which earn-condition is live this game */
+  /* Earn conditions are the coach's to write: the three shipped with each game are
+     a starting point, not the vocabulary. Stored per game and kept between sessions. */
+  const [earnEdits,setEarnEdits]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_db_earn_conditions')||'{}');}catch{return {};}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_db_earn_conditions',JSON.stringify(earnEdits));}catch{}},[earnEdits]);
+  const [newEarn,setNewEarn]=useState('');
+  const earnList=(earnEdits[gameId]||game.earn||[]);
+  function saveEarnList(next){setEarnEdits(prev=>({...prev,[gameId]:next}));}
+  function addEarn(){const t=newEarn.trim();if(!t)return;saveEarnList([...earnList,t]);setNewEarn('');}
+  function removeEarn(t){saveEarnList(earnList.filter(x=>x!==t));if(liveEarn===t)setLiveEarn(null);}
+  function resetEarn(){setEarnEdits(prev=>{const n={...prev};delete n[gameId];return n;});setLiveEarn(null);}
   /* Players set to Unlimited have no bank the economy can deduct from. */
   const unlimitedPlayers=useMemo(()=>{
     try{const a=(JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations)||{};
@@ -13386,10 +13395,17 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
         <div><h4>Game logic</h4><p>{game.logic}</p></div>
         <div><h4>Earn DB</h4>
           <p className="mutedText" style={{margin:'0 0 6px',fontSize:'0.78rem'}}>Tap the one that is live — that is how a player wins a bounce back.</p>
-          <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>{game.earn.map((e,i)=>
+          <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>{earnList.map((e,i)=>
             <button type="button" key={i} onClick={()=>setLiveEarn(liveEarn===e?null:e)}
               style={{textAlign:'left',background:liveEarn===e?'#101d18':'#0d1722',border:liveEarn===e?'1px solid #2f5c46':'1px solid #2a3a4f',color:liveEarn===e?'#8fbfa4':'#8aa0b6',borderRadius:'9px',padding:'7px 11px',fontWeight:liveEarn===e?800:600,fontSize:'0.84rem',cursor:'pointer'}}>
-              {liveEarn===e?'◉ ':'○ '}{e}</button>)}</div>
+              {liveEarn===e?'◉ ':'○ '}{e}
+              <span onClick={ev=>{ev.stopPropagation();removeEarn(e);}} style={{float:'right',color:'#a35b5b',fontWeight:800}}>&times;</span></button>)}</div>
+          <div style={{display:'flex',gap:'6px',marginTop:'7px',flexWrap:'wrap'}}>
+            <input value={newEarn} onChange={e=>setNewEarn(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addEarn();}} placeholder="Add your own earn condition"
+              style={{flex:'1',minWidth:'170px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px',fontSize:'0.84rem'}}/>
+            <button type="button" className="secondaryBtn" style={{padding:'6px 11px',fontSize:'0.8rem'}} onClick={addEarn}>Add</button>
+            {earnEdits[gameId]&&<button type="button" className="secondaryBtn" style={{padding:'6px 11px',fontSize:'0.8rem'}} onClick={resetEarn}>Reset to defaults</button>}
+          </div>
         </div>
         <div><h4>Scoring</h4><p>{game.scoring}</p></div>
       </div>
@@ -15317,7 +15333,7 @@ function Games({setSession,setScreen,onClassChange}){
     {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
     {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
     {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
-    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/></div>}
+    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>}
     {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>}
     {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
     {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
