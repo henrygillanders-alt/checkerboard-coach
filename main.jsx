@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v606 Double bounce counters honour each player\u2019s allowance. The DB economy games started every player on one universal Starting DB, so an allocation set in the Double Bounce module was ignored and correcting a counter by hand was logged as that player spending a bounce. Counters now seed from each player\u2019s own allowance \u2014 No DB starts at 0, Unlimited starts at the cap \u2014 on setup and on reset, with the universal Starting DB acting only as the fallback for players who have not been given one. Builds on v605.';
+const APP_VERSION='v607 Pick the live earn-condition. The DB economy games listed their earn conditions as plain text with a note saying the coach picks one \u2014 with no way to actually pick. Each condition is now tap-to-select, the chosen one shows in a banner directly above the counters where bounces are awarded, and it clears when a different DB game is chosen. Builds on v606.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -13237,6 +13237,8 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const [losePointOnUse,setLosePointOnUse]=useState(false);
   const [debtPenalty,setDebtPenalty]=useState(1);
   const [showSettings,setShowSettings]=useState(false);
+  const [liveEarn,setLiveEarn]=useState(null); /* which earn-condition is live this game */
+  useEffect(()=>{setLiveEarn(null);},[gameId]);
 
   const [db,setDb]=useState({});
   const [golden,setGolden]=useState({});
@@ -13371,12 +13373,22 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
       <p className="dbPrinciple">{game.principle}</p>
       <div className="dbInfoGrid">
         <div><h4>Game logic</h4><p>{game.logic}</p></div>
-        <div><h4>Earn DB</h4><ul>{game.earn.map((e,i)=><li key={i}>{e}</li>)}</ul></div>
+        <div><h4>Earn DB</h4>
+          <p className="mutedText" style={{margin:'0 0 6px',fontSize:'0.78rem'}}>Tap the one that is live — that is how a player wins a bounce back.</p>
+          <div style={{display:'flex',flexDirection:'column',gap:'5px'}}>{game.earn.map((e,i)=>
+            <button type="button" key={i} onClick={()=>setLiveEarn(liveEarn===e?null:e)}
+              style={{textAlign:'left',background:liveEarn===e?'#101d18':'#0d1722',border:liveEarn===e?'1px solid #2f5c46':'1px solid #2a3a4f',color:liveEarn===e?'#8fbfa4':'#8aa0b6',borderRadius:'9px',padding:'7px 11px',fontWeight:liveEarn===e?800:600,fontSize:'0.84rem',cursor:'pointer'}}>
+              {liveEarn===e?'◉ ':'○ '}{e}</button>)}</div>
+        </div>
         <div><h4>Scoring</h4><p>{game.scoring}</p></div>
       </div>
       <p className="dbNote">{game.note}</p>
     </div>
 
+    {liveEarn&&<div style={{background:'#101d18',border:'1px solid #2f5c46',borderRadius:'10px',padding:'9px 13px',margin:'0 0 10px'}}>
+      <span style={{color:'#8aa0b6',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:800}}>Earn a bounce back by</span>
+      <div style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.95rem'}}>{liveEarn}</div>
+    </div>}
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Universal settings'}</button>
     {showSettings&&<div className="dbSettings">
       <label>Starting DB (players with their own allowance use that instead)<select value={startingDB} onChange={e=>setStartingDB(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
