@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v605 Double bounce allocated player by player. The Double Bounce tool opens with an allowance per player \u2014 No DB through to Unlimited \u2014 instead of a single setting for everyone, because an even allowance across unequal players removes the levelling the constraint exists to provide. It writes to the same store the DB Handicap panel uses, so every game and the player display read one source of truth. Builds on v604.';
+const APP_VERSION='v606 Double bounce counters honour each player\u2019s allowance. The DB economy games started every player on one universal Starting DB, so an allocation set in the Double Bounce module was ignored and correcting a counter by hand was logged as that player spending a bounce. Counters now seed from each player\u2019s own allowance \u2014 No DB starts at 0, Unlimited starts at the cap \u2014 on setup and on reset, with the universal Starting DB acting only as the fallback for players who have not been given one. Builds on v605.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -13209,6 +13209,20 @@ function DBSuiteStyles(){
 }
 
 
+/* A player's own DB allowance (Double Bounce module / DB Handicap panel) is the
+   source of truth for where their counter starts. 'No DB' means 0; 'Unlimited'
+   is capped at maxCap so the counter stays meaningful. */
+function dbAllowanceFor(name,fallback,maxCap){
+  try{
+    const a=(JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations)||{};
+    const v=a[name];
+    if(v==null)return Math.min(fallback,maxCap);
+    if(v==='No DB')return 0;
+    if(v==='Unlimited DB')return maxCap;
+    const n=parseInt(String(v),10);
+    return isFinite(n)?Math.min(n,maxCap):Math.min(fallback,maxCap);
+  }catch{return Math.min(fallback,maxCap);}
+}
 function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
   const [modifier,setModifier]=useState(emptyModifierConfig());
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
@@ -13238,7 +13252,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const namesKey=names.join('|');
   useEffect(()=>{
     const init={},g={},pt={},tc={};
-    names.forEach(n=>{init[n]=Math.min(startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});
+    names.forEach(n=>{init[n]=dbAllowanceFor(n,startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});
     setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);
   },[gameId,startingDB,maxCap,namesKey]);
 
@@ -13304,7 +13318,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   }
 
   function undo(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setDb(s.db);setGolden(s.golden);setPoints(s.points);setTcount(s.tcount);setRecovery(s.recovery);setLog(s.log);return prev.slice(0,-1);});}
-  function resetEconomy(){const init={},g={},pt={},tc={};names.forEach(n=>{init[n]=Math.min(startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);}
+  function resetEconomy(){const init={},g={},pt={},tc={};names.forEach(n=>{init[n]=dbAllowanceFor(n,startingDB,maxCap);g[n]='active';pt[n]=0;tc[n]=0;});setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);}
 
   useEffect(()=>{
     if(!projecting)return;
@@ -13365,7 +13379,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide settings':'⚙ Universal settings'}</button>
     {showSettings&&<div className="dbSettings">
-      <label>Starting DB<select value={startingDB} onChange={e=>setStartingDB(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
+      <label>Starting DB (players with their own allowance use that instead)<select value={startingDB} onChange={e=>setStartingDB(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
       <label>Max DB cap<select value={maxCap} onChange={e=>setMaxCap(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
       <label>Reward<select value={rewardValue} onChange={e=>setRewardValue(Number(e.target.value))}><option value={1}>+1</option><option value={2}>+2</option></select></label>
       <label>Cost<select value={costValue} onChange={e=>setCostValue(Number(e.target.value))}><option value={1}>−1</option><option value={2}>−2</option></select></label>
