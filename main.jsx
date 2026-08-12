@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v593 One Suggestions tile. The new game-feedback page is folded into the existing Coach Suggestions module rather than sitting beside it: the tile is now simply Suggestions \u2014 players and coaches, improve games and activities \u2014 with two tabs inside, Propose a game or idea (the original coach form with CLA rationale and RLD) and Improve a game we played (quick feedback on tonight\u2019s games, actioned or parked, CSV export). Builds on v592.';
+const APP_VERSION='v602 Invasion Lives no longer auto-credits the ladder. Lives are a shared team pot, so there is no individual record to credit and inferring one would score a player for a teammate\u2019s survival \u2014 the shared-totals trap. Only Points format, where each player\u2019s own points are recorded in the app, now feeds the Performance Ladder automatically; a Lives competition reaches the ladder only if the coach logs the finishing order by hand. Builds on v601.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -2131,8 +2131,118 @@ function emptyModifierConfig(){
     logic:{winCondition:'',survival:'',conversionWindow:'',bankReset:'',timeLimit:'',invasion:{ballOut:-1,balcony:-3,stopRule:'Stop when one player loses all lives',enabled:false}},
     constraints:[],
     scoring:{},
-    doubleBounce:{mode:'off',countFrom:5,byPlayer:'',showOnPlayerView:true}
+    doubleBounce:{mode:'off',countFrom:5,byPlayer:'',showOnPlayerView:true},
+    techConstraints:{}
   };
+}
+
+/* ── INDIVIDUAL TECHNICAL CONSTRAINTS ─────────────────────────────────────────
+   Persistent technical habits, addressed player by player, with a scoring
+   consequence every time the constraint is not maintained. Coach-editable, and
+   every application is written to the player's history so a pattern is visible
+   across a season rather than a single night. */
+const TECH_CONSTRAINT_KEY='checkerboard_tech_constraints_v1';
+const TECH_CONSTRAINT_LIBRARY=[
+  {id:'tc-string',label:'Strings to the front wall',cue:'Finish with the strings facing the front wall.',check:'Ball check \u2014 racket face visibly turned away at the finish.',penalty:1},
+  {id:'tc-ceiling',label:'Racket points to the ceiling',cue:'Racket head up before the ball arrives.',check:'Body check \u2014 racket head below the shoulder as the ball arrives.',penalty:1},
+  {id:'tc-nonplaying',label:'Active non-playing arm',cue:'Non-playing arm out and working, not tucked in.',check:'Body check \u2014 arm pinned to the side through the strike.',penalty:1},
+  {id:'tc-returnT',label:'Return to the T',cue:'Back to the T after every shot.',check:'Body check \u2014 still outside the T area when the opponent strikes.',penalty:1},
+  {id:'tc-headstill',label:'Head still through contact',cue:'Eyes and head steady through contact and follow-through.',check:'Body check \u2014 head pulls away before the follow-through finishes.',penalty:1},
+  {id:'tc-stayinshot',label:'Stay in the shot',cue:'Hold the shot; do not run out of it early.',check:'Body check \u2014 moving away before the follow-through completes.',penalty:1},
+];
+function loadTechConstraints(){
+  try{const v=JSON.parse(localStorage.getItem(TECH_CONSTRAINT_KEY));return Array.isArray(v)&&v.length?v:TECH_CONSTRAINT_LIBRARY;}catch{return TECH_CONSTRAINT_LIBRARY;}
+}
+function saveTechConstraints(list){try{localStorage.setItem(TECH_CONSTRAINT_KEY,JSON.stringify(list));}catch{}}
+/* Written to each player's Breakthrough-style history whenever a constraint is
+   applied, so the coach can see what a player has been carrying and for how long. */
+function recordTechConstraintUse(playerName,entry){
+  if(!playerName)return;
+  try{
+    const key='checkerboard_tech_constraint_history_v1';
+    const all=JSON.parse(localStorage.getItem(key))||{};
+    const list=Array.isArray(all[playerName])?all[playerName]:[];
+    list.unshift({at:new Date().toISOString(),...entry});
+    all[playerName]=list.slice(0,200);
+    localStorage.setItem(key,JSON.stringify(all));
+  }catch{}
+}
+function techConstraintHistory(playerName){
+  try{const all=JSON.parse(localStorage.getItem('checkerboard_tech_constraint_history_v1'))||{};return all[playerName]||[];}catch{return [];}
+}
+function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
+  const [library,setLibrary]=useState(()=>loadTechConstraints());
+  const [editing,setEditing]=useState(null);
+  const [draft,setDraft]=useState({label:'',cue:'',check:'',penalty:1});
+  const assigned=(value&&value.techConstraints)||{};
+  const players=presentPlayers.length?presentPlayers:Object.keys(assigned);
+  function setAssigned(next){onChange&&onChange({...(value||{}),techConstraints:next});}
+  function toggleFor(player,cid){
+    const cur=assigned[player]||{ids:[],penalty:null};
+    const ids=cur.ids.includes(cid)?cur.ids.filter(x=>x!==cid):[...cur.ids,cid];
+    const next={...assigned,[player]:{...cur,ids}};
+    if(!ids.length)delete next[player];
+    setAssigned(next);
+    if(!cur.ids.includes(cid)){
+      const c=library.find(x=>x.id===cid);
+      if(c)recordTechConstraintUse(player,{constraint:c.label,penalty:(assigned[player]&&assigned[player].penalty)||c.penalty,cue:c.cue});
+    }
+  }
+  function setPenalty(player,n){
+    const cur=assigned[player];if(!cur)return;
+    setAssigned({...assigned,[player]:{...cur,penalty:Math.max(0,Number(n)||0)}});
+  }
+  function saveDraft(){
+    const label=draft.label.trim();if(!label)return;
+    const next=editing?library.map(c=>c.id===editing?{...c,...draft,label}:c)
+                      :[...library,{id:'tc-'+makeLocalId(),...draft,label}];
+    setLibrary(next);saveTechConstraints(next);
+    setEditing(null);setDraft({label:'',cue:'',check:'',penalty:1});
+  }
+  function removeConstraint(cid){
+    if(!window.confirm('Remove this constraint from the library?'))return;
+    const next=library.filter(c=>c.id!==cid);setLibrary(next);saveTechConstraints(next);
+  }
+  return <div>
+    <p className="mutedText" style={{marginTop:0}}>For habits that persist across sessions. Give a player one or two, and every failure to maintain it costs them points in whatever game is running \u2014 the consequence arrives on every rally, not in a correction afterwards. Applications are saved to the player\u2019s history.</p>
+    {!players.length&&<p className="mutedText" style={{color:'#c8a552'}}>Mark players present to assign constraints.</p>}
+    {players.map(p=>{
+      const cur=assigned[p]||{ids:[],penalty:null};
+      const active=library.filter(c=>cur.ids.includes(c.id));
+      const pts=cur.penalty!=null?cur.penalty:(active[0]?active[0].penalty:1);
+      return <div key={p} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',marginBottom:'8px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'8px',flexWrap:'wrap'}}>
+          <strong style={{color:'#eaf4fb'}}>{p}</strong>
+          {active.length>0&&<label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Penalty
+            <input type="number" min="0" value={pts} onChange={e=>setPenalty(p,e.target.value)} style={{width:'56px',marginLeft:'6px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'7px',color:'#eaf4fb',padding:'4px 7px'}}/>
+            <span style={{marginLeft:'5px'}}>point(s) per breach</span></label>}
+        </div>
+        <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'7px'}}>
+          {library.map(c=><button type="button" key={c.id} onClick={()=>toggleFor(p,c.id)} title={c.check}
+            style={{background:cur.ids.includes(c.id)?'#101d18':'#0d1722',border:cur.ids.includes(c.id)?'1px solid #2f5c46':'1px solid #2a3a4f',color:cur.ids.includes(c.id)?'#8fbfa4':'#8aa0b6',borderRadius:'999px',padding:'6px 11px',fontWeight:700,fontSize:'0.79rem',cursor:'pointer'}}>{c.label}</button>)}
+        </div>
+        {active.map(c=><p key={c.id} style={{margin:'6px 0 0',color:'#8aa0b6',fontSize:'0.79rem'}}><b style={{color:'#d9c08a'}}>{c.label}:</b> {c.cue} <em>{c.check}</em></p>)}
+      </div>;
+    })}
+    <div style={{borderTop:'1px solid #223044',marginTop:'10px',paddingTop:'10px'}}>
+      <strong style={{color:'#d9c08a',fontSize:'0.85rem'}}>Constraint library</strong>
+      <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'7px 0'}}>
+        {library.map(c=><span key={c.id} style={{display:'inline-flex',gap:'5px',alignItems:'center',background:'#0d1722',border:'1px solid #2a3a4f',borderRadius:'999px',padding:'4px 9px'}}>
+          <span style={{color:'#8aa0b6',fontSize:'0.78rem'}}>{c.label} ({c.penalty})</span>
+          <button type="button" onClick={()=>{setEditing(c.id);setDraft({label:c.label,cue:c.cue,check:c.check,penalty:c.penalty});}} style={{background:'none',border:'none',color:'#8fbfa4',cursor:'pointer',fontWeight:800}}>edit</button>
+          <button type="button" onClick={()=>removeConstraint(c.id)} style={{background:'none',border:'none',color:'#a35b5b',cursor:'pointer',fontWeight:800}}>&times;</button>
+        </span>)}
+      </div>
+      <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
+        <input placeholder="Constraint (e.g. Racket up early)" value={draft.label} onChange={e=>setDraft({...draft,label:e.target.value})} style={{flex:'1',minWidth:'170px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
+        <input placeholder="Player cue" value={draft.cue} onChange={e=>setDraft({...draft,cue:e.target.value})} style={{flex:'1',minWidth:'150px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
+        <input placeholder="What the referee checks" value={draft.check} onChange={e=>setDraft({...draft,check:e.target.value})} style={{flex:'1',minWidth:'150px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
+        <input type="number" min="0" value={draft.penalty} onChange={e=>setDraft({...draft,penalty:Math.max(0,Number(e.target.value)||0)})} style={{width:'62px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
+        <button type="button" className="secondaryBtn" onClick={saveDraft}>{editing?'Save changes':'Add constraint'}</button>
+        {editing&&<button type="button" className="secondaryBtn" onClick={()=>{setEditing(null);setDraft({label:'',cue:'',check:'',penalty:1});}}>Cancel</button>}
+      </div>
+    </div>
+  </div>;
 }
 function MEPanel({title,subtitle,open,onToggle,children}){
   return <div className={open?'mePanel meOpen':'mePanel'}>
@@ -2187,7 +2297,7 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
   }
   const customConstraints=constraints.filter(c=>!standardConstraintNames.has(c));
   return <div className="modifierEngine">
-    {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · DB Handicap · Tin Height — same order on every game.</p></div>}
+    {title&&<div className="modifierEngineHead"><h2>{title}</h2><p className="mutedText">Game Logic · Constraints · Scoring · DB Handicap · Individual Technical Constraints · Tin Height — same order on every game.</p></div>}
 
     <MEPanel title="1. Game Logic" subtitle="What counts — eligibility and validity" open={open==='logic'} onToggle={()=>toggle('logic')}>
       {context==='Checkerboard'&&<div className="meLogicGroup">
@@ -2254,7 +2364,11 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <UniversalDBHandicapPanel/>
     </MEPanel>}
 
-    {!hideTinHeight&&<MEPanel title="5. Tin Height" subtitle="Per-player tin — a leveller between standards" open={open==='tin'} onToggle={()=>toggle('tin')}>
+    <MEPanel title="5. Individual Technical Constraints" subtitle="Persistent habits — a points consequence on every breach" open={open==='tech'} onToggle={()=>toggle('tech')}>
+      <UniversalTechConstraintPanel value={value} onChange={onChange} presentPlayers={presentPlayers}/>
+    </MEPanel>
+
+    {!hideTinHeight&&<MEPanel title="6. Tin Height" subtitle="Per-player tin — a leveller between standards" open={open==='tin'} onToggle={()=>toggle('tin')}>
       <UniversalTinHeightPanel/>
     </MEPanel>}
   </div>;
@@ -4126,7 +4240,11 @@ function WhyCLAScreen({setScreen}){
 `}</style>
     <div className="pageTop">
       <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p>
-      <button type="button" className="secondaryBtn" style={{marginTop:'8px'}} onClick={()=>setScreen&&setScreen('parents')}>For parents — Why We Coach This Way →</button></div>
+      <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'10px'}}>
+        <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('paradigms')}>Coaching Paradigms →</button>
+        <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('lexicon')}>CLA Lexicon™ →</button>
+        <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('parents')}>For parents — Why We Coach This Way →</button>
+      </div></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
 
@@ -5639,7 +5757,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
 
       <div className="moreSectionLabel">Coach Education</div>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('paradigms')}><h2>Coaching Paradigms</h2><span className="homeTileSubtitle">Traditional vs ecological · where skill comes from</span></button>      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('lexicon')}><h2>CLA Lexicon™</h2><span className="homeTileSubtitle">The language of ecological dynamics · 154 terms · plain English + squash examples</span></button>
+            
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       <div className="moreSectionLabel">Diagnostics & Tools</div>
@@ -12249,7 +12367,7 @@ function slInitialsMap(names){
   list.forEach(n=>{map[n]=counts[first(n)]>1?both(n):first(n);});
   return map;
 }
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false}){
   const tokShape=slCourtShapeStyle(courtLabel);
   const initialsMap=useMemo(()=>slInitialsMap((players||[]).map(n=>String(n))),[players]);
   const SL_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
@@ -12277,12 +12395,20 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
   const [showChallengeEditor,setShowChallengeEditor]=useState(false);
   const [undoStack,setUndoStack]=useState([]);
+  const [rallyWins,setRallyWins]=useState({});   /* every point won, per player */
 
   function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
   function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
-  function resetPositions(){setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
+  useEffect(()=>{
+    if(winner==null)return;
+    const names=roster.map(p=>p.name);
+    const key='sl|'+(courtLabel||'court')+'|'+names.join(',')+'|'+names.map(n=>rallyWins[n]||0).join('-');
+    ladderAutoRecordGame(key,'Snakes & Ladders'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:rallyWins[n]||0})));
+  },[winner]);
+
+  function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot,{forfeitPending=false,snakePinned=false,snakeEscaped=false}={}){
@@ -12292,6 +12418,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const wIdx=slot===0?A:B, lIdx=slot===0?B:A;
     const next=roster.map(p=>({...p}));
     const W=next[wIdx],L=next[lIdx];
+    setRallyWins(prev=>({...prev,[W.name]:(prev[W.name]||0)+1}));
     const ev=[],reveal=new Set(revealed);
     const nextPending={...pending};
     const nextPendingChallenge={...pendingChallenge};
@@ -12457,7 +12584,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
     {winner!=null&&<div className="slWinBanner">🏆 {roster[winner].name} reaches {size} and wins!</div>}
 
-    {Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
+    {!scoring&&Object.keys(board.ladders||{}).length>0&&<div className="slChallengeEditor">
       <button type="button" className="secondaryBtn" onClick={()=>setShowChallengeEditor(s=>!s)}>{showChallengeEditor?'− Hide':'⚡'} Challenge squares (optional — attach a squash challenge to a ladder)</button>
       {showChallengeEditor&&<div className="slChallengeEditorPanel">
         <p className="mutedText" style={{margin:'0 0 8px'}}>Set one challenge for the whole board, or leave it blank and set squares individually below — a square's own text always wins. Every ladder foot and snake head has its own box. A challenged ladder follows the Fate rule above; a challenged snake pins the player who lands on it — in any mode — until they win and show the challenge, and it bites if they lose. Blank everywhere means fates resolve purely on winning the next rally, same as before.</p>
@@ -12487,14 +12614,15 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 
     <div className="slControls">
       <button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45}}>↶ Undo last move</button>
-      <button type="button" className="secondaryBtn" onClick={resetPositions}>New Game (same board)</button>
-      <button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>
+      {!scoring&&<button type="button" className="secondaryBtn" onClick={resetPositions}>New Game (same board)</button>}
+      {!scoring&&<button type="button" className="secondaryBtn" onClick={newBoard}>New Board (reshuffle)</button>}
     </div>
     {events.length>0&&<div className="slEvents">{events.map((e,i)=><div key={i} className={i===0?'slEvent slEventNew':'slEvent'}>{e}</div>)}</div>}
   </div>;
 }
 
 function SnakesLaddersGame({setSession,setScreen}={}){
+  useWakeLock(); /* coach device is the source of the player view — never let it sleep */
   // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
   // only — the live board, court hand-offs and active court are never restored.
   const SL_SETUP_KEY='cbSnakesLaddersSetupV1';
@@ -14140,6 +14268,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   const newEntity=hangmanNewEntity;
   function buildEntities(){return hangmanBuildEntities(players,teamMode,teamOf);}
   const [entities,setEntities]=useState(()=>seed?seed.entities:buildEntities());
+  const [ladderWins,setLadderWins]=useState({});
   const [eliminationLog,setEliminationLog]=useState(()=>seed?(seed.eliminationLog||[]):[]);
   const [undoStack,setUndoStack]=useState([]);
   function pushUndo(){setUndoStack(prev=>[...prev.slice(-29),{entities,eliminationLog,queue}]);}
@@ -14167,6 +14296,14 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     });
   },[activeIds.join('|')]);
   const pairing=queue.slice(0,2);
+  useEffect(()=>{
+    const alive=entities.filter(e=>!e.eliminated);
+    if(entities.length<2||alive.length!==1)return;
+    const names=entities.map(e=>e.name);
+    const key='hs|'+(courtLabel||'court')+'|'+names.join(',')+'|'+names.map(n=>ladderWins[n]||0).join('-');
+    ladderAutoRecordGame(key,'Hangman Squash'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:ladderWins[n]||0})));
+  },[entities]);
+
   function nextPairing(){setQueue(prev=>[...prev.slice(2),...prev.slice(0,2)]);}
   const pairA=pairing[0]?entities.find(e=>e.id===pairing[0]):null;
   const pairB=pairing[1]?entities.find(e=>e.id===pairing[1]):null;
@@ -16015,6 +16152,21 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function stopInvasionPlayerDisplay(){
+    /* Points format only. Lives are a shared team pot, so there is no individual
+       record to credit — inferring one would score a player for a teammate's
+       survival, which is exactly the shared-totals trap. A Lives result reaches
+       the ladder only if the coach logs finishing order by hand. */
+    try{
+      if(invasionFormat==='points'){
+        const pts=invasionPlayerPoints||{};
+        const names=Object.keys(pts).filter(n=>n&&Number(pts[n])>0);
+        if(names.length>=2){
+          const key='invasion|points|'+names.sort().join(',')+'|'+names.map(n=>Number(pts[n])||0).join('-');
+          ladderAutoRecordGame(key,'Invasion \u2014 Points',names.map(n=>({player:n,wins:Number(pts[n])||0})));
+        }
+      }
+    }catch{}
+
     setInvasionGameStarted(false);
     setShowInvasionDashboard(false);
     setShowProjection(false);
@@ -19091,7 +19243,18 @@ function PlayerPlans({players}){
           </div>
 
           <div className="gameCard">
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2>Mesocycles</h2><button className="primaryBtn" onClick={addMesocycle}>+ Add Mesocycle</button></div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><h2>Technical constraints carried</h2>
+      {(()=>{const h=techConstraintHistory(selected);
+        if(!h.length)return <p className="mutedText">No individual technical constraints applied yet. Assign them in any game’s Universal Modifiers — panel 5.</p>;
+        const byC={};h.forEach(e=>{const k=e.constraint||'Constraint';(byC[k]=byC[k]||[]).push(e);});
+        return <div style={{marginBottom:'14px'}}>{Object.keys(byC).map(k=>{
+          const list=byC[k];const first=new Date(list[list.length-1].at),last=new Date(list[0].at);
+          return <div key={k} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'9px 12px',marginBottom:'7px'}}>
+            <strong style={{color:'#d9c08a'}}>{k}</strong>
+            <span style={{color:'#8aa0b6',fontSize:'0.8rem'}}> · applied {list.length}× · first {first.toLocaleDateString()}{list.length>1?' · most recent '+last.toLocaleDateString():''}</span>
+            {list[0].cue&&<p className="mutedText" style={{margin:'3px 0 0',fontSize:'0.8rem'}}>{list[0].cue}</p>}
+          </div>;})}</div>;})()}
+      <h2>Mesocycles</h2><button className="primaryBtn" onClick={addMesocycle}>+ Add Mesocycle</button></div>
             {plan.mesocycles.length===0&&<p className="mutedText">No mesocycles yet. A mesocycle is normally a 3–8 week block with its own purpose and up to three priorities.</p>}
             {plan.mesocycles.map(meso=><div className="ppMesoCard" key={meso.id}>
               <div className="ppMesoHead" onClick={()=>toggleMeso(meso.id)}>
@@ -22591,7 +22754,9 @@ function LudoStyles(){return <style>{`
 
 // ── Per-court engine ─────────────────────────────────────────────────────
 function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null}){
+  /* Auto-credit the Performance Ladder when a game finishes (see v598). */
   const [roster,setRoster]=useState(()=>seed?seed.roster:ludoDefaultRoster(players));
+  const [ladderWins,setLadderWins]=useState({});
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
   const [winner,setWinner]=useState(()=>seed?seed.winner:null);
   const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {attackerIdx:[{targetIdx,targetPieceIdx,atSquare}]}
@@ -22601,6 +22766,13 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
 
   function snapshot(){return {roster:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>({...pc}))})),queue:[...queue],winner,pending:JSON.parse(JSON.stringify(pending)),events:[...events]};}
   function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setPending(s.pending);setEvents(s.events);setPendingRally(null);return prev.slice(0,-1);});}
+  useEffect(()=>{
+    if(winner==null)return;
+    const names=roster.map(p=>p.name);
+    const key='ludo|'+(courtLabel||'court')+'|'+names.join(',')+'|'+names.map(n=>ladderWins[n]||0).join('-');
+    ladderAutoRecordGame(key,'Ludo Squash'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:ladderWins[n]||0})));
+  },[winner]);
+
   function resetGame(){setRoster(ludoDefaultRoster(players));setQueue(players.map((_,i)=>i));setWinner(null);setPending({});setEvents([]);setPendingRally(null);setUndoStack([]);}
 
   function startRally(slot){
@@ -22628,6 +22800,7 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       setPendingRally({wIdx,lIdx,stage:'choose'});
       return;
     }
+    if(roster[wIdx])setLadderWins(prev=>({...prev,[roster[wIdx].name]:(prev[roster[wIdx].name]||0)+1}));
     setUndoStack(prev=>[...prev.slice(-29),snapshot()]);
     const nextRoster=roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>({...pc}))}));
     const nextPending=JSON.parse(JSON.stringify(pending));
@@ -24635,7 +24808,7 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
       <button type="button" className="primaryBtn" onClick={()=>{setSeedData(null);setNewSetup(null);}}>Load new game</button>
       <button type="button" className="secondaryBtn" onClick={()=>setNewSetup(null)}>Keep scoring this one</button>
     </div>}
-    <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} alsoRoomId={mirror?host:null} courtLabel={seedData.courtLabel} seed={seedData.seed}/>
+    <SnakesLaddersCourt players={seedData.names} settings={seedData.settings} project={true} roomId={roomId} alsoRoomId={mirror?host:null} courtLabel={seedData.courtLabel} seed={seedData.seed} scoring/>
   </div>;
 }
 
@@ -25957,6 +26130,23 @@ function ladderAppendEvents(list){
   list.forEach(ev=>{store.events.push({id:makeLocalId(),at,sessionKey:ladderSessionKey(),...ev});});
   ladderSaveStore(store);
 }
+/* Automatic capture: a game scored in the app credits the ladder without anyone
+   remembering to log it. Recorded once per game via a dedupe key, using real
+   per-rally tallies (not board position, which ladders and snakes distort). */
+function ladderAutoRecordGame(key,gameName,tallies){
+  const rows=(tallies||[]).filter(r=>r&&r.player);
+  if(rows.length<2)return false;
+  const store=ladderLoadStore();
+  const done=Array.isArray(store.autoKeys)?store.autoKeys:[];
+  if(done.includes(key))return false;
+  const ranked=[...rows].sort((a,b)=>(b.wins-a.wins)||String(a.player).localeCompare(String(b.player)));
+  ladderAppendEvents([{type:'ranked',game:gameName||'Scored game',weight:1,auto:true,
+    entries:ranked.map((r,i)=>({player:r.player,rank:i+1,wins:Math.max(0,Number(r.wins)||0)}))}]);
+  const next=ladderLoadStore();
+  next.autoKeys=[...done,key].slice(-400);
+  ladderSaveStore(next);
+  return true;
+}
 function ladderCanonName(name,aliases){
   const raw=String(name||'').trim();
   if(!raw)return '';
@@ -26256,6 +26446,8 @@ function SeasonLadder({setScreen}){
   }
   function saveRanked(){
     if(entries.length<2)return;
+    /* Wins left blank (a tournament scored off-app) score on finishing place
+       alone — the engine skips the rally-share component when no wins exist. */
     ladderAppendEvents([{type:'ranked',game:gameName||'Ranked game',weight,entries:entries.map(e=>({player:e.player,rank:e.rank,wins:e.wins}))}]);
     setEntries([]);setGameName('');setWeight(1);
     setStore(ladderLoadStore());
@@ -26406,6 +26598,7 @@ function SeasonLadder({setScreen}){
       </div>
       <div className="ladPanel">
         <h4>Result</h4>
+        <p className="ladLead" style={{marginTop:0}}>For a tournament or competition that was not scored in the app, add the players in finishing order and leave the wins boxes empty — finishing place alone will count toward the ladder.</p>
         <input className="ladWinsInput" style={{width:'100%',marginBottom:'10px'}} placeholder="Game name — e.g. Snakes & Ladders, First to 25" value={gameName} onChange={e=>setGameName(e.target.value)}/>
         {!entries.length&&<p className="ladLead">Add players in finishing order — first added is 1st. Wins are optional but reward close finishes.</p>}
         {entries.map((e,i)=><div key={e.player} className="ladEntryRow">
