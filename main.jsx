@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v602 Invasion Lives no longer auto-credits the ladder. Lives are a shared team pot, so there is no individual record to credit and inferring one would score a player for a teammate\u2019s survival \u2014 the shared-totals trap. Only Points format, where each player\u2019s own points are recorded in the app, now feeds the Performance Ladder automatically; a Lives competition reaches the ladder only if the coach logs the finishing order by hand. Builds on v601.';
+const APP_VERSION='v603 Invasion Lives gets an individual record. Lives stay a shared team pot, but the live screen now carries a per-player rally recorder \u2014 Won / Lost beside each player, tallied as the game runs \u2014 and that record, never the team pot, is what credits the Performance Ladder when the game ends. Players who fought hard on a losing team are recorded honestly, and a passenger on a winning team is not. Points format continues to use each player\u2019s own scored points. Builds on v602.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -15433,6 +15433,26 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [invasionTeamPoints,setInvasionTeamPoints]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeamPoints||{}}catch{return{}}
   });
+  /* Lives format keeps a shared team pot, so individual credit needs its own
+     record: who won and lost the rallies, tapped as they happen. */
+  const [invasionRallyRecord,setInvasionRallyRecord]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem('checkerboard_invasion_rally_record'))||{};}catch{return {};}
+  });
+  useEffect(()=>{try{localStorage.setItem('checkerboard_invasion_rally_record',JSON.stringify(invasionRallyRecord));}catch{}},[invasionRallyRecord]);
+  function invasionRally(name,result){
+    if(!name)return;
+    setInvasionRallyRecord(prev=>{
+      const cur=prev[name]||{won:0,lost:0};
+      return {...prev,[name]:{won:cur.won+(result==='won'?1:0),lost:cur.lost+(result==='lost'?1:0)}};
+    });
+  }
+  function invasionUndoRally(name){
+    setInvasionRallyRecord(prev=>{
+      const cur=prev[name];if(!cur)return prev;
+      const last=cur.won>0||cur.lost>0?{...cur,won:Math.max(0,cur.won-(cur.won>0?1:0))}:cur;
+      return {...prev,[name]:last};
+    });
+  }
   const [invasionPlayerPoints,setInvasionPlayerPoints]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionPlayerPoints||{}}catch{return{}}
   });
@@ -16163,6 +16183,14 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         if(names.length>=2){
           const key='invasion|points|'+names.sort().join(',')+'|'+names.map(n=>Number(pts[n])||0).join('-');
           ladderAutoRecordGame(key,'Invasion \u2014 Points',names.map(n=>({player:n,wins:Number(pts[n])||0})));
+        }
+      }else{
+        /* Lives: credit only from the individual rally record, never the team pot. */
+        const rec=invasionRallyRecord||{};
+        const names=Object.keys(rec).filter(n=>n&&((rec[n].won||0)+(rec[n].lost||0))>0);
+        if(names.length>=2){
+          const key='invasion|lives|'+names.sort().join(',')+'|'+names.map(n=>(rec[n].won||0)+'/'+(rec[n].lost||0)).join('-');
+          ladderAutoRecordGame(key,'Invasion \u2014 Lives',names.map(n=>({player:n,wins:rec[n].won||0})));
         }
       }
     }catch{}
@@ -17500,6 +17528,24 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     {showInvasionDashboard?'Hide Dashboard':'Show Dashboard'}
                   </button>
                 </div>
+
+                {invasionFormat==='lives'&&(
+                  <div style={{background:'#0b1320',border:'1px solid #223044',borderLeft:'3px solid #2f5c46',borderRadius:'12px',padding:'12px 14px',margin:'10px 0'}}>
+                    <strong style={{color:'#d9c08a',fontSize:'0.95rem'}}>Individual record</strong>
+                    <p className="mutedText" style={{margin:'4px 0 9px',fontSize:'0.82rem'}}>Lives belong to the team, so tap each rally to keep an individual record. This is what credits the Performance Ladder when the game ends — the team pot never does.</p>
+                    {invasionTeams.map(team=>(team.players||[]).map(name=>{
+                      const r=invasionRallyRecord[name]||{won:0,lost:0};
+                      return <div key={name} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',background:'#0c1626',border:'1px solid #223044',borderRadius:'9px',padding:'7px 10px',marginBottom:'6px'}}>
+                        <span style={{flex:'1',minWidth:'120px',color:'#eaf4fb',fontWeight:700}}>{name}</span>
+                        <span style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.85rem'}}>{r.won}W</span>
+                        <span style={{color:'#a35b5b',fontWeight:800,fontSize:'0.85rem'}}>{r.lost}L</span>
+                        <button type="button" className="secondaryBtn" style={{padding:'5px 11px',fontSize:'0.8rem'}} onClick={()=>invasionRally(name,'won')}>Won</button>
+                        <button type="button" className="secondaryBtn" style={{padding:'5px 11px',fontSize:'0.8rem'}} onClick={()=>invasionRally(name,'lost')}>Lost</button>
+                      </div>;
+                    }))}
+                    <button type="button" className="secondaryBtn" style={{marginTop:'4px',fontSize:'0.8rem'}} onClick={()=>{if(window.confirm('Clear the individual rally record for this game?'))setInvasionRallyRecord({});}}>Clear record</button>
+                  </div>
+                )}
 
                 {invasionFormat==='lives'&&showInvasionDashboard&&(
                   <div className="invasionCourtDashboard">
