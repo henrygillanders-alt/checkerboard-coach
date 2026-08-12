@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v603 Invasion Lives gets an individual record. Lives stay a shared team pot, but the live screen now carries a per-player rally recorder \u2014 Won / Lost beside each player, tallied as the game runs \u2014 and that record, never the team pot, is what credits the Performance Ladder when the game ends. Players who fought hard on a losing team are recorded honestly, and a passenger on a winning team is not. Points format continues to use each player\u2019s own scored points. Builds on v602.';
+const APP_VERSION='v605 Double bounce allocated player by player. The Double Bounce tool opens with an allowance per player \u2014 No DB through to Unlimited \u2014 instead of a single setting for everyone, because an even allowance across unequal players removes the levelling the constraint exists to provide. It writes to the same store the DB Handicap panel uses, so every game and the player display read one source of truth. Builds on v604.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -2204,7 +2204,7 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
     const next=library.filter(c=>c.id!==cid);setLibrary(next);saveTechConstraints(next);
   }
   return <div>
-    <p className="mutedText" style={{marginTop:0}}>For habits that persist across sessions. Give a player one or two, and every failure to maintain it costs them points in whatever game is running \u2014 the consequence arrives on every rally, not in a correction afterwards. Applications are saved to the player\u2019s history.</p>
+    <p className="mutedText" style={{marginTop:0}}>For habits that persist across sessions. Give a player one or two, and every breach costs them points in whatever game is running — −1, −2, however much you set \u2014 the consequence arrives on every rally, not in a correction afterwards. Applications are saved to the player\u2019s history.</p>
     {!players.length&&<p className="mutedText" style={{color:'#c8a552'}}>Mark players present to assign constraints.</p>}
     {players.map(p=>{
       const cur=assigned[p]||{ids:[],penalty:null};
@@ -2213,22 +2213,23 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
       return <div key={p} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'10px 12px',marginBottom:'8px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'8px',flexWrap:'wrap'}}>
           <strong style={{color:'#eaf4fb'}}>{p}</strong>
-          {active.length>0&&<label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Penalty
-            <input type="number" min="0" value={pts} onChange={e=>setPenalty(p,e.target.value)} style={{width:'56px',marginLeft:'6px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'7px',color:'#eaf4fb',padding:'4px 7px'}}/>
-            <span style={{marginLeft:'5px'}}>point(s) per breach</span></label>}
+          {active.length>0&&<label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Deduction
+            <span style={{color:'#c98a8a',fontWeight:800,margin:'0 3px 0 6px'}}>−</span>
+            <input type="number" min="0" value={pts} onChange={e=>setPenalty(p,e.target.value)} style={{width:'52px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'7px',color:'#eaf4fb',padding:'4px 7px'}}/>
+            <span style={{marginLeft:'5px'}}>point{pts===1?'':'s'} per breach</span></label>}
         </div>
         <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'7px'}}>
           {library.map(c=><button type="button" key={c.id} onClick={()=>toggleFor(p,c.id)} title={c.check}
             style={{background:cur.ids.includes(c.id)?'#101d18':'#0d1722',border:cur.ids.includes(c.id)?'1px solid #2f5c46':'1px solid #2a3a4f',color:cur.ids.includes(c.id)?'#8fbfa4':'#8aa0b6',borderRadius:'999px',padding:'6px 11px',fontWeight:700,fontSize:'0.79rem',cursor:'pointer'}}>{c.label}</button>)}
         </div>
-        {active.map(c=><p key={c.id} style={{margin:'6px 0 0',color:'#8aa0b6',fontSize:'0.79rem'}}><b style={{color:'#d9c08a'}}>{c.label}:</b> {c.cue} <em>{c.check}</em></p>)}
+        {active.map(c=><p key={c.id} style={{margin:'6px 0 0',color:'#8aa0b6',fontSize:'0.79rem'}}><b style={{color:'#d9c08a'}}>{c.label}</b> <b style={{color:'#c98a8a'}}>−{pts}</b> — {c.cue} <em>{c.check}</em></p>)}
       </div>;
     })}
     <div style={{borderTop:'1px solid #223044',marginTop:'10px',paddingTop:'10px'}}>
       <strong style={{color:'#d9c08a',fontSize:'0.85rem'}}>Constraint library</strong>
       <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'7px 0'}}>
         {library.map(c=><span key={c.id} style={{display:'inline-flex',gap:'5px',alignItems:'center',background:'#0d1722',border:'1px solid #2a3a4f',borderRadius:'999px',padding:'4px 9px'}}>
-          <span style={{color:'#8aa0b6',fontSize:'0.78rem'}}>{c.label} ({c.penalty})</span>
+          <span style={{color:'#8aa0b6',fontSize:'0.78rem'}}>{c.label} <b style={{color:'#c98a8a'}}>−{c.penalty}</b></span>
           <button type="button" onClick={()=>{setEditing(c.id);setDraft({label:c.label,cue:c.cue,check:c.check,penalty:c.penalty});}} style={{background:'none',border:'none',color:'#8fbfa4',cursor:'pointer',fontWeight:800}}>edit</button>
           <button type="button" onClick={()=>removeConstraint(c.id)} style={{background:'none',border:'none',color:'#a35b5b',cursor:'pointer',fontWeight:800}}>&times;</button>
         </span>)}
@@ -2237,7 +2238,8 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
         <input placeholder="Constraint (e.g. Racket up early)" value={draft.label} onChange={e=>setDraft({...draft,label:e.target.value})} style={{flex:'1',minWidth:'170px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
         <input placeholder="Player cue" value={draft.cue} onChange={e=>setDraft({...draft,cue:e.target.value})} style={{flex:'1',minWidth:'150px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
         <input placeholder="What the referee checks" value={draft.check} onChange={e=>setDraft({...draft,check:e.target.value})} style={{flex:'1',minWidth:'150px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
-        <input type="number" min="0" value={draft.penalty} onChange={e=>setDraft({...draft,penalty:Math.max(0,Number(e.target.value)||0)})} style={{width:'62px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/>
+        <label style={{display:'inline-flex',alignItems:'center',gap:'4px',color:'#8aa0b6',fontSize:'0.8rem'}}>Deduction <b style={{color:'#c98a8a'}}>−</b>
+          <input type="number" min="0" value={draft.penalty} onChange={e=>setDraft({...draft,penalty:Math.max(0,Number(e.target.value)||0)})} style={{width:'56px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px'}}/></label>
         <button type="button" className="secondaryBtn" onClick={saveDraft}>{editing?'Save changes':'Add constraint'}</button>
         {editing&&<button type="button" className="secondaryBtn" onClick={()=>{setEditing(null);setDraft({label:'',cue:'',check:'',penalty:1});}}>Cancel</button>}
       </div>
@@ -2519,6 +2521,43 @@ function CoachInvaderSelectorReadOnly({teams}){
 }
 
 
+function DoubleBounceAllocation(){
+  /* Double bounce is a handicap, so it is set per player, not per game: a
+     returning junior may carry 3 DB while the strongest player carries none.
+     Shares the DB Handicap store so a game reads one source of truth. */
+  const [state,setState]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}');}catch{return {};}});
+  const allocations=state.allocations||{};
+  const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
+  function save(next){
+    const merged={enabled:true,playersText:'',allocations:next,source:'presentPlayers'};
+    try{localStorage.setItem(DB_HANDICAP_KEY,JSON.stringify(merged));}catch{}
+    setState(merged);
+  }
+  function setFor(name,value){
+    const next={...allocations};
+    if(!value||value==='No DB')delete next[name];else next[name]=value;
+    save(next);
+  }
+  return <section className="doubleBounceSection">
+    <h3>Who gets how many bounces</h3>
+    <p className="mutedText">Set each player's allowance individually — that is the point of the constraint, and an even allowance across unequal players removes the levelling it exists to provide. Applies to every double-bounce game and shows on the player display.</p>
+    {!present.length&&<p className="mutedText" style={{color:'#c8a552'}}>Mark players present to allocate bounces.</p>}
+    {present.map(name=>{
+      const cur=allocations[name]||'No DB';
+      return <div key={name} style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'8px 11px',marginBottom:'7px'}}>
+        <span style={{flex:'1',minWidth:'130px',color:'#eaf4fb',fontWeight:700}}>{name}</span>
+        <div style={{display:'flex',gap:'5px',flexWrap:'wrap'}}>
+          {UNIVERSAL_DB_OPTIONS.map(o=><button type="button" key={o} onClick={()=>setFor(name,o)}
+            style={{background:cur===o?'#101d18':'#0d1722',border:cur===o?'1px solid #2f5c46':'1px solid #2a3a4f',color:cur===o?'#8fbfa4':'#8aa0b6',borderRadius:'999px',padding:'5px 10px',fontWeight:700,fontSize:'0.78rem',cursor:'pointer'}}>{o}</button>)}
+        </div>
+      </div>;
+    })}
+    {present.length>0&&<div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'6px'}}>
+      <button type="button" className="secondaryBtn" onClick={()=>save({})}>Clear all</button>
+      <span className="mutedText" style={{fontSize:'0.8rem',alignSelf:'center'}}>{Object.keys(allocations).length?Object.entries(allocations).map(([n,v])=>n+': '+v).join(' \u00b7 '):'Nobody carrying a double bounce yet'}</span>
+    </div>}
+  </section>;
+}
 function DoubleBounceTool({setScreen}){
   const rationale=[
     ['Encourages a Move Mindset','Because players know they still have a realistic chance of retrieval after the first bounce, they continue moving, chase more balls and develop persistence behaviours. The player shifts from “I can’t get there” toward “I still have a chance.”'],
@@ -2534,6 +2573,7 @@ function DoubleBounceTool({setScreen}){
       <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>
+    <DoubleBounceAllocation/>
     <section className="doubleBounceHero">
       <span className="categoryTag">Major Tool</span>
       <h2>Double Bounce Conditioned Games</h2>
@@ -19297,6 +19337,7 @@ function PlayerPlans({players}){
           const list=byC[k];const first=new Date(list[list.length-1].at),last=new Date(list[0].at);
           return <div key={k} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'9px 12px',marginBottom:'7px'}}>
             <strong style={{color:'#d9c08a'}}>{k}</strong>
+            {list[0].penalty!=null&&<span style={{color:'#c98a8a',fontWeight:800}}> −{list[0].penalty}</span>}
             <span style={{color:'#8aa0b6',fontSize:'0.8rem'}}> · applied {list.length}× · first {first.toLocaleDateString()}{list.length>1?' · most recent '+last.toLocaleDateString():''}</span>
             {list[0].cue&&<p className="mutedText" style={{margin:'3px 0 0',fontSize:'0.8rem'}}>{list[0].cue}</p>}
           </div>;})}</div>;})()}
