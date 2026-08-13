@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v611 A standard library of earn conditions. The DB economy gains sixteen ready-made conditions grouped by what they train \u2014 finish quality, taking the ball early, moving the opponent, building the rally, holding the constraint \u2014 each stating whether it is a ball check or a body check, and each decided by a named shot from the shot registry, a painted line, or where the opponent is standing. Tap to add to the live game; your own written conditions still work alongside. Guidance for any coach picking the app up, rather than a blank box. Builds on v610.';
+const APP_VERSION='v615 Snakes & Ladders setup reads as four steps. Numbered headings now run down the setup screen \u2014 1 Who is playing, 2 The board, 3 Scoring extras, 4 Go live \u2014 each with a line saying what that step decides, so setting up courtside follows a sequence instead of a hunt. The controls have not moved and nothing is hidden; the headings sit between the existing blocks. Builds on v614.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12854,6 +12854,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <p className="mutedText">Randomising the board each game keeps the consequence-landscape fresh, preventing pattern learning and forcing genuine re-perception every session.</p>
     </div>}
 
+    <style>{`
+.slStepHd{display:flex;align-items:center;gap:9px;margin:16px 0 8px;}
+.slStepHd .n{background:#101d18;border:1px solid #2f5c46;color:#8fbfa4;border-radius:999px;min-width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;flex:none;}
+.slStepHd .t{color:#d9c08a;font-weight:800;font-size:0.98rem;}
+.slStepHd .h{color:#8aa0b6;font-size:0.79rem;font-weight:600;}
+`}</style>
+    <div className="slStepHd"><span className="n">1</span><span><span className="t">Who is playing</span> <span className="h">Players come from tonight’s register — set the courts, then choose who plays</span></span></div>
     <div className="slSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
       <div className="slSessionInfo">{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
       {usingAttendance
@@ -12867,6 +12874,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     </div>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
+    <div className="slStepHd"><span className="n">2</span><span><span className="t">The board</span> <span className="h">Length, how many snakes and ladders, and how far each moves a player</span></span></div>
     {showSettings&&<div className="slSettings">
       <div className="hsChipBlock">
         <div className="hsLabel">Rotation</div>
@@ -12979,6 +12987,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {competitionMode==='race'&&courts>1&&raceBoard&&<SnakesLaddersRaceDisplay host={base} courtCount={courtCount}/>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
+    <div className="slStepHd"><span className="n">3</span><span><span className="t">Scoring extras</span> <span className="h">Optional bonus squares — challenges are set on the board screen once play starts</span></span></div>
     {showBonuses&&<div className="slBonuses">
       <p className="mutedText">Pure Snakes &amp; Ladders by default. Add a bonus to award extra squares when a finish or constraint is met on a winning rally — the coach taps the bonus chip before the winner.</p>
       {(settings.bonuses||[]).map((b,i)=><div key={i} className="slBonusEdit"><span className="slBonusName">{b.label}</span><label>+<input type="number" min="0" max="9" value={b.squares} onChange={e=>setBonusSquares(i,e.target.value)}/> sq</label><button type="button" className="slBonusRemove" onClick={()=>removeBonus(i)}>✕</button></div>)}
@@ -12988,6 +12997,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
     <UniversalModifierEngine title="Universal Modifiers"/>
 
+    <div className="slStepHd"><span className="n">4</span><span><span className="t">Go live</span> <span className="h">Put the board on the wall, then hand a scoring link to each court referee</span></span></div>
     <div className="slDisplayBar">
       {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'Copy Scoring link'}</button>}{courts===1&&handedOff.has(1)&&<button type="button" className="secondaryBtn" onClick={()=>takeBackControl(1)}>Take back control</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={runSlLinkTest}>Test link connection</button>}{courts===1&&slDiag&&<span className="mutedText" style={{display:'block',width:'100%',fontSize:'0.84rem',marginTop:'6px'}}>{slDiag}</span>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));}}>Add to Session</button>}
@@ -13074,13 +13084,13 @@ const DB_GAMES=[
   {id:'db1',title:'Bank & Spend',tag:'Foundation',
    principle:'Spend a bounce to survive — earn it back through pressure.',
    logic:'Everyone starts on the set DB. Using a double bounce costs DB. Recover DB by producing the chosen tactical behaviour.',
-   earn:['Win the rally with a volley','Force opponent behind the short line','Force opponent off the T'],
+   earn:['Volley Finish (the volley ends the rally)','Force opponent behind the short line','Force opponent off the T'],
    scoring:'Normal rally scoring. DB is a separate currency.',
    note:'Coach picks which earn-condition is live; tap + when a player produces it.'},
   {id:'db2',title:'Steal the Bounce',tag:'Zero-sum',
    principle:'Win the right way and take a bounce off your opponent.',
    logic:'Using a DB costs 1. Win with a volley winner or a front-court attack and you STEAL 1 DB from your opponent.',
-   earn:['Volley winner → steal 1','Front-court attack winner → steal 1'],
+   earn:['Volley Finish → steal 1','Straight Drop or Straight Kill wins the rally → steal 1'],
    scoring:'Normal rally scoring. The steal moves 1 DB loser → winner.',
    note:'Refinement: a player can never be stolen below 0 — the steal only moves what is there.'},
   {id:'db3',title:'T Reward',tag:'Earned T',
@@ -13091,8 +13101,8 @@ const DB_GAMES=[
    note:'Refinement: reward is for T won through pressure, not for standing on the T.'},
   {id:'db4',title:'Volley Harvest',tag:'Volley',
    principle:'Only volleys pay.',
-   logic:'Only volleys earn DB. Clean volley = +1. Volley winner = +2. Using a DB = minus 1.',
-   earn:['Clean volley → +1 DB','Volley winner → +2 DB'],
+   logic:'Only volleys earn DB. 1) Volley Finish = +1 DB \u2014 the volley ends the rally, including where the opponent got a racket to it. 2) Clean Volley Winner = +2 DB \u2014 the opponent gets no racket on the ball in any way. 3) Using a double bounce = minus 1 DB. Both are ball checks both players can see.',
+   earn:['Volley Finish (volley ends the rally) → +1 DB','Clean Volley Winner (no racket on it) → +2 DB'],
    scoring:'Normal rally scoring.',
    note:'Simplest earn engine — rewards taking the ball early.'},
   {id:'db5',title:'Break the T',tag:'Displacement',
@@ -13110,13 +13120,13 @@ const DB_GAMES=[
   {id:'db7',title:'Pressure Debt',tag:'Loss-aversion',
    principle:'Survival costs you on the scoreboard.',
    logic:'Using a DB costs 1 DB AND a point penalty. Win the rally with a volley and you earn +1 point and +1 DB.',
-   earn:['Volley win → +1 point and +1 DB'],
+   earn:['Volley Finish → +1 point and +1 DB'],
    scoring:'Live point tracker. A DB spend applies the point penalty.',
    note:'Refinement: the point penalty is configurable (0 / 1 / 2) so spending stays a live option, not a trap.'},
   {id:'db9',title:'Court Currency',tag:'Promotion',
    principle:'Earn bounces here — spend them on the harder court.',
    logic:'Runs alongside monarch / king-of-court rotation. Volley a ball and win the rally within 3 shots of that volley → bank 1 DB. Banked DB travel WITH the player when promoted and are spent to survive on the harder court. Relegated players keep nothing — the bank resets.',
-   earn:['Volley, then win within 3 shots of it → +1 DB (banked)','Promoted → take your bank with you','Relegated → bank resets to 0'],
+   earn:['Volley taken, then the rally won within 3 shots of it → +1 DB (banked)','Promoted → take your bank with you','Relegated → bank resets to 0'],
    scoring:'Normal rally scoring on every court. The bank is the bridge between courts.',
    note:'The earn condition is the promotion skill itself — taking the ball early and converting fast — so the currency is earned by the behaviour the harder court will demand.'},
   {id:'db8',title:'Golden Bounce',tag:'Clutch',
@@ -13238,6 +13248,8 @@ const DB_EARN_LIBRARY=[
     {t:'Win the rally with a Straight Volley Drop',c:'Ball check — taken in the air, ends the rally.'},
     {t:'Win the rally with a Straight Kill',c:'Ball check — hard and low, no bounce for the opponent.'},
     {t:'Win the rally with a Nick',c:'Ball check — both players see it.'},
+    {t:'Clean Winner — opponent gets no racket on the ball',c:'Ball check — no contact at all, not a scrambled retrieval.'},
+    {t:'Clean Volley Winner — volley, no racket on it',c:'Ball check — taken in the air and untouched.'},
   ]},
   {group:'Taking the ball early',items:[
     {t:'Win the rally with a Straight Volley Drive',c:'Ball check — the winning shot was taken in the air.'},
@@ -13490,7 +13502,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
           <div className="dbActionStrip">
             {gameId==='db2'&&<button type="button" className="dbActionBtn" onClick={()=>onStealClick(n)}>{stealFrom===n?'Pick opponent…':'Steal +1'}</button>}
             {gameId==='db3'&&<button type="button" className="dbActionBtn" onClick={()=>tHold(n)}>T held ({tcount[n]||0}/2)</button>}
-            {gameId==='db4'&&<><button type="button" className="dbActionBtn" onClick={()=>reward(n,1)}>Clean volley +1</button><button type="button" className="dbActionBtn" onClick={()=>reward(n,2)}>Volley winner +2</button></>}
+            {gameId==='db4'&&<><button type="button" className="dbActionBtn" onClick={()=>reward(n,1)}>Volley Finish +1</button><button type="button" className="dbActionBtn" onClick={()=>reward(n,2)}>Clean Volley Winner +2</button></>}
             {gameId==='db6'&&!recovery&&<button type="button" className="dbActionBtn" onClick={()=>startRecovery(n)}>Spend → recovery</button>}
             {gameId==='db7'&&<><button type="button" className="dbActionBtn" onClick={()=>spendDebt(n)}>Spend (debt)</button><button type="button" className="dbActionBtn" onClick={()=>volleyPoint(n)}>Volley win +pt+DB</button></>}
             {gameId==='db8'&&golden[n]==='active'&&<><button type="button" className="dbActionBtn dbActionGood" onClick={()=>useGolden(n,true)}>Golden → WON</button><button type="button" className="dbActionBtn dbActionDanger" onClick={()=>useGolden(n,false)}>Golden → LOST</button></>}
