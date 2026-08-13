@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v610 Coach writes the earn conditions. The three earn conditions shipped with each DB economy game are now a starting point rather than the whole vocabulary: add your own, delete any you do not use, and reset to the defaults whenever you want. Edits are kept per game between sessions, and the live condition still shows above the counters. The per-player allowance panel also moves below Bank & Spend, where the bank it feeds actually lives. Builds on v609.';
+const APP_VERSION='v611 A standard library of earn conditions. The DB economy gains sixteen ready-made conditions grouped by what they train \u2014 finish quality, taking the ball early, moving the opponent, building the rally, holding the constraint \u2014 each stating whether it is a ball check or a body check, and each decided by a named shot from the shot registry, a painted line, or where the opponent is standing. Tap to add to the live game; your own written conditions still work alongside. Guidance for any coach picking the app up, rather than a blank box. Builds on v610.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -13228,6 +13228,38 @@ function dbAllowanceFor(name,fallback,maxCap){
     return isFinite(n)?Math.min(n,maxCap):Math.min(fallback,maxCap);
   }catch{return Math.min(fallback,maxCap);}
 }
+/* Standard earn conditions: a shared vocabulary so any coach picking up the app
+   sets the same thing the same way. Every entry is decided by something visible
+   on court — a named shot from SHOT_BONUS_REGISTRY, a painted line, or where the
+   opponent is standing — and each says which kind of check it is. */
+const DB_EARN_LIBRARY=[
+  {group:'Finish quality',items:[
+    {t:'Win the rally with a Straight Drop',c:'Ball check — the named shot ends the rally.'},
+    {t:'Win the rally with a Straight Volley Drop',c:'Ball check — taken in the air, ends the rally.'},
+    {t:'Win the rally with a Straight Kill',c:'Ball check — hard and low, no bounce for the opponent.'},
+    {t:'Win the rally with a Nick',c:'Ball check — both players see it.'},
+  ]},
+  {group:'Taking the ball early',items:[
+    {t:'Win the rally with a Straight Volley Drive',c:'Ball check — the winning shot was taken in the air.'},
+    {t:'Volley three consecutive balls in one rally',c:'Ball check — counted aloud by the off-court player.'},
+    {t:'Take the ball in front of the short line twice in a rally',c:'Ball check against the painted short line.'},
+  ]},
+  {group:'Moving the opponent',items:[
+    {t:'Force the opponent behind the back line of the service boxes',c:'Body check — the opponent plays from behind the painted line.'},
+    {t:'Force the opponent off the T for two shots running',c:'Body check — called by the off-court player or agreed by both.'},
+    {t:'Win the rally after playing to all four corners',c:'Ball check — four corners used before the finish.'},
+  ]},
+  {group:'Building the rally',items:[
+    {t:'Win the rally with a Penetrating Drive',c:'Ball check — the named shot ends the rally.'},
+    {t:'Play two Quality Lengths before attacking',c:'Ball check — both land behind the short line before the attack.'},
+    {t:'Win the rally with a Working Boast',c:'Ball check — the boast genuinely escapes the corner.'},
+    {t:'Win the rally with a Lob — From Front',c:'Ball check — high and deep from the front.'},
+  ]},
+  {group:'Holding the constraint',items:[
+    {t:'Hold your technical constraint for a whole rally',c:'Body check — the constraint you were given, maintained throughout.'},
+    {t:'Return to the T after every shot in one rally',c:'Body check against the painted T.'},
+  ]},
+];
 function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
   const [modifier,setModifier]=useState(emptyModifierConfig());
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
@@ -13248,6 +13280,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const [earnEdits,setEarnEdits]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_db_earn_conditions')||'{}');}catch{return {};}});
   useEffect(()=>{try{localStorage.setItem('checkerboard_db_earn_conditions',JSON.stringify(earnEdits));}catch{}},[earnEdits]);
   const [newEarn,setNewEarn]=useState('');
+  const [showEarnLib,setShowEarnLib]=useState(false);
   const earnList=(earnEdits[gameId]||game.earn||[]);
   function saveEarnList(next){setEarnEdits(prev=>({...prev,[gameId]:next}));}
   function addEarn(){const t=newEarn.trim();if(!t)return;saveEarnList([...earnList,t]);setNewEarn('');}
@@ -13405,7 +13438,19 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
               style={{flex:'1',minWidth:'170px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'7px 10px',fontSize:'0.84rem'}}/>
             <button type="button" className="secondaryBtn" style={{padding:'6px 11px',fontSize:'0.8rem'}} onClick={addEarn}>Add</button>
             {earnEdits[gameId]&&<button type="button" className="secondaryBtn" style={{padding:'6px 11px',fontSize:'0.8rem'}} onClick={resetEarn}>Reset to defaults</button>}
+            <button type="button" className="secondaryBtn" style={{padding:'6px 11px',fontSize:'0.8rem'}} onClick={()=>setShowEarnLib(v=>!v)}>{showEarnLib?'− Hide standard conditions':'+ Standard conditions'}</button>
           </div>
+          {showEarnLib&&<div style={{marginTop:'8px',borderTop:'1px solid #223044',paddingTop:'8px'}}>
+            <p className="mutedText" style={{margin:'0 0 7px',fontSize:'0.78rem'}}>A shared set so every coach sets the same thing the same way. Each is decided by a named shot, a painted line or where the opponent stands — tap to add.</p>
+            {DB_EARN_LIBRARY.map(sec=><div key={sec.group} style={{marginBottom:'8px'}}>
+              <div style={{color:'#d9c08a',fontWeight:800,fontSize:'0.78rem',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px'}}>{sec.group}</div>
+              {sec.items.map(it=><button type="button" key={it.t} disabled={earnList.includes(it.t)} onClick={()=>saveEarnList([...earnList,it.t])}
+                style={{display:'block',width:'100%',textAlign:'left',background:'#0d1722',border:'1px solid #2a3a4f',color:earnList.includes(it.t)?'#5f7387':'#8aa0b6',borderRadius:'8px',padding:'6px 10px',marginBottom:'4px',cursor:earnList.includes(it.t)?'default':'pointer',fontSize:'0.8rem'}}>
+                <span style={{fontWeight:700}}>{earnList.includes(it.t)?'✓ ':'+ '}{it.t}</span>
+                <span style={{display:'block',color:'#5f7387',fontSize:'0.74rem'}}>{it.c}</span>
+              </button>)}
+            </div>)}
+          </div>}
         </div>
         <div><h4>Scoring</h4><p>{game.scoring}</p></div>
       </div>
