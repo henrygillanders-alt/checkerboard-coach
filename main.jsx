@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v615 Snakes & Ladders setup reads as four steps. Numbered headings now run down the setup screen \u2014 1 Who is playing, 2 The board, 3 Scoring extras, 4 Go live \u2014 each with a line saying what that step decides, so setting up courtside follows a sequence instead of a hunt. The controls have not moved and nothing is hidden; the headings sit between the existing blocks. Builds on v614.';
+const APP_VERSION='v619 Snakes & Ladders challenges survive the handoff. Handing a court its scoring link wrote an empty challenge set into the room, so the court device played a standard game and never asked whether a challenge had been shown \u2014 challenges lived on the board screen, which the setup screen that seeds the room knew nothing about. The challenge now belongs to setup: step 3 carries one field with presets, applying to every snake and ladder; it seeds into every court, survives the handoff, and is remembered between sessions. Builds on v618.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -377,7 +377,10 @@ const PLAYER_ANIMALS=[
   {emoji:'🦉',name:'Owl',trait:'adaptable, solves problems, changes solution'},
   {emoji:'🐬',name:'Dolphin',trait:'creative, uses disguise and variety with purpose'},
   {emoji:'🦗',name:'Grasshopper',trait:'adaptable, quick learner, light mover'},
-  {emoji:'🦈',name:'Shark',trait:'predator, aggressive finisher, relentless'}
+  {emoji:'🦈',name:'Shark',trait:'predator, aggressive finisher, relentless'},
+  {emoji:'🐀',name:'Rat',trait:'resourceful, survives anything, finds a way out of trouble'},
+  {emoji:'🐦',name:'Starling',trait:'quick to change direction, reads the whole court, never isolated'},
+  {emoji:'🦅',name:'Hawk',trait:'watchful, waits above the rally, strikes the moment it drops short'}
 ];
 const ROLE_MODELS=[
   {name:'James Willstrop',trait:'touch'},
@@ -12275,7 +12278,30 @@ function appendToSessionState(prev,card){
   const base=Array.isArray(prev)?prev:(prev&&Array.isArray(prev.rotations)?prev.rotations:[]);
   /* House default: every rotation lands in the session at 8 minutes; the coach
      adjusts per card in Session Builder. */
-  return [...base,{...normaliseGameCard(card),duration:8}];
+  const next=normaliseGameCard(card);
+  /* Every module adds through here, so confirming here confirms everywhere —
+     including modules built later. */
+  try{window.dispatchEvent(new CustomEvent('cbSessionAdded',{detail:{title:next.title||'Game',count:base.length+1}}));}catch{}
+  return [...base,{...next,duration:8}];
+}
+function SessionAddToast(){
+  const [msg,setMsg]=useState(null);
+  useEffect(()=>{
+    function onAdd(e){
+      const d=(e&&e.detail)||{};
+      setMsg({title:d.title||'Game',count:d.count||0});
+      const t=setTimeout(()=>setMsg(null),2600);
+      return ()=>clearTimeout(t);
+    }
+    window.addEventListener('cbSessionAdded',onAdd);
+    return ()=>window.removeEventListener('cbSessionAdded',onAdd);
+  },[]);
+  if(!msg)return null;
+  return <div style={{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'86px',zIndex:9500,background:'#101d18',border:'1px solid #2f5c46',borderRadius:'12px',padding:'10px 16px',boxShadow:'0 4px 16px rgba(0,0,0,0.45)',maxWidth:'90vw'}}>
+    <span style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.92rem'}}>✓ Added to session</span>
+    <span style={{display:'block',color:'#eaf4fb',fontSize:'0.86rem'}}>{msg.title}</span>
+    <span style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>{msg.count} rotation{msg.count===1?'':'s'} in tonight’s session</span>
+  </div>;
 }
 
 function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}){
@@ -12412,7 +12438,7 @@ function slInitialsMap(names){
   list.forEach(n=>{map[n]=counts[first(n)]>1?both(n):first(n);});
   return map;
 }
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false,setupChallenge=''}){
   const tokShape=slCourtShapeStyle(courtLabel);
   const initialsMap=useMemo(()=>slInitialsMap((players||[]).map(n=>String(n))),[players]);
   const SL_COLORS=['#2f9bff','#c8a552','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
@@ -12434,7 +12460,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   // square numbers only mean something in the context of THIS randomly generated board).
   // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
   const [challengeSquares,setChallengeSquares]=useState(()=>seed?(seed.challengeSquares||{}):{});
-  const [challengeAll,setChallengeAll]=useState(()=>seed?(seed.challengeAll||''):'');
+  const [challengeAll,setChallengeAll]=useState(()=>seed?(seed.challengeAll||setupChallenge||''):(setupChallenge||''));
   const chFor=(sq)=>challengeSquares[sq]||challengeAll||'';
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
@@ -12714,6 +12740,8 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
   const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{}); // playerName -> courtIndex (0-based)
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>{const next={...prev};if(ci==null)delete next[name];else next[name]=ci;return next;});}
+  const [setupChallenge,setSetupChallenge]=useState(()=>{try{return localStorage.getItem('checkerboard_sl_setup_challenge')||'';}catch{return '';}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_sl_setup_challenge',setupChallenge);}catch{}},[setupChallenge]);
   const [raceBoard,setRaceBoard]=useState(null);
   const [copiedRaceLink,setCopiedRaceLink]=useState(false);
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
@@ -12784,13 +12812,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       const samePlayers=!!existing&&(existing.players||[]).length===names.length&&(existing.players||[]).every((p,i)=>p.name===names[i]);
       if(samePlayers){
         // Court already live with these players — keep their board and positions, refresh config.
-        await writeLivePlayerRoom(seedRoomId,'snakesladders',{...existing,settings,size:settings.size,courtLabel:label});
+        await writeLivePlayerRoom(seedRoomId,'snakesladders',{...existing,settings,size:settings.size,courtLabel:label,challengeAll:existing.challengeAll||setupChallenge||''});
       }else{
         const seedBoard=(competitionMode==='race'&&raceBoard)?slClampBoard(raceBoard,settings.size):slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise);
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{type:'snakesladders',size:settings.size,board:seedBoard,visible:settings.visible,revealed:[],
           players:names.map(nm=>({name:nm,pos:1})),
           onCourt:names.slice(0,2),queueNames:names.slice(2),winnerName:null,
-          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},challengeAll:'',courtLabel:label});
+          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},challengeAll:setupChallenge||'',courtLabel:label});
       }
     }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
@@ -12965,7 +12993,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {handedOff.has(i+1)
         ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>{courts>1?`Court ${i+1} — scoring handed to a court device`:'Scoring handed to the court device'}</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}-${competitionMode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} roomId={courts>1?courtRoomId(base,i+1):null} alsoRoomId={courts===1?courtRoomId(base,1):null} fixedBoard={competitionMode==='race'?raceBoard:null}/>}
+        : <SnakesLaddersCourt key={`c-${i}-${g.join('|')}-${settings.size}-${competitionMode}`} players={g} settings={settings} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} setupChallenge={setupChallenge} roomId={courts>1?courtRoomId(base,i+1):null} alsoRoomId={courts===1?courtRoomId(base,1):null} fixedBoard={competitionMode==='race'?raceBoard:null}/>}
     </div>)}
     </>}
 
@@ -12987,7 +13015,19 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {competitionMode==='race'&&courts>1&&raceBoard&&<SnakesLaddersRaceDisplay host={base} courtCount={courtCount}/>}
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
-    <div className="slStepHd"><span className="n">3</span><span><span className="t">Scoring extras</span> <span className="h">Optional bonus squares — challenges are set on the board screen once play starts</span></span></div>
+    <div className="slStepHd"><span className="n">3</span><span><span className="t">Challenge &amp; scoring extras</span> <span className="h">One challenge for every snake and ladder, plus optional bonus squares</span></span></div>
+    <div style={{background:'#0b1320',border:'1px solid #223044',borderRadius:'12px',padding:'12px 14px',marginBottom:'10px'}}>
+      <label style={{display:'block',color:'#d9c08a',fontWeight:800,fontSize:'0.86rem',marginBottom:'5px'}}>Challenge on every snake and ladder</label>
+      <p className="mutedText" style={{margin:'0 0 7px',fontSize:'0.8rem'}}>Landing on a ladder then means winning the rally <b>and</b> showing this; a snake pins you until you do. Leave blank for the standard game.</p>
+      <div style={{display:'flex',gap:'7px',flexWrap:'wrap'}}>
+        <input value={setupChallenge} onChange={e=>setSetupChallenge(e.target.value)} placeholder="e.g. Volley Finish" style={{flex:'1',minWidth:'180px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',padding:'9px 11px'}}/>
+        {setupChallenge&&<button type="button" className="secondaryBtn" onClick={()=>setSetupChallenge('')}>Clear</button>}
+      </div>
+      <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'7px'}}>
+        {['Volley Finish','Straight Drop wins it','Clean Winner','Hold your technical constraint'].map(p=>
+          <button type="button" key={p} onClick={()=>setSetupChallenge(p)} style={{background:setupChallenge===p?'#101d18':'#0d1722',border:setupChallenge===p?'1px solid #2f5c46':'1px solid #2a3a4f',color:setupChallenge===p?'#8fbfa4':'#8aa0b6',borderRadius:'999px',padding:'6px 11px',fontWeight:700,fontSize:'0.79rem',cursor:'pointer'}}>{p}</button>)}
+      </div>
+    </div>
     {showBonuses&&<div className="slBonuses">
       <p className="mutedText">Pure Snakes &amp; Ladders by default. Add a bonus to award extra squares when a finish or constraint is met on a winning rally — the coach taps the bonus chip before the winner.</p>
       {(settings.bonuses||[]).map((b,i)=><div key={i} className="slBonusEdit"><span className="slBonusName">{b.label}</span><label>+<input type="number" min="0" max="9" value={b.squares} onChange={e=>setBonusSquares(i,e.target.value)}/> sq</label><button type="button" className="slBonusRemove" onClick={()=>removeBonus(i)}>✕</button></div>)}
@@ -26950,6 +26990,7 @@ function RotationEngine({setScreen,setSession}){
     if(triggerId==='timer'){setSecs(minutes*60);setRunning(true);}
   }
   function startTimer(){setSecs(minutes*60);setRunning(true);}
+  const [addedFlash,setAddedFlash]=useState('');
   function addCard(){
     const trig=triggerId==='timer'?('every '+minutes+' minutes'):triggerId==='miniGame'?('when a player reaches '+target):'after every rally';
     setSession(prev=>appendToSessionState(prev,{
@@ -26965,6 +27006,8 @@ function RotationEngine({setScreen,setSession}){
       coach:fmt.question,
       playerFocus:'Watch the board and be ready before your rally.',
       layers:[],cbCode:'None'}));
+    setAddedFlash('Rotation — '+fmt.title);
+    setTimeout(()=>setAddedFlash(''),2500);
   }
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);}catch{window.prompt('Rotation board link:',url);}}
   const mm=String(Math.floor(secs/60)).padStart(2,'0'),ss=String(secs%60).padStart(2,'0');
@@ -27040,6 +27083,8 @@ function RotationEngine({setScreen,setSession}){
 
     <div className="rotBar">
       <button type="button" className="secondaryBtn" onClick={addCard}>Add To Session</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>
+      {addedFlash&&<span style={{color:'#8fbfa4',fontWeight:800,alignSelf:'center'}}>✓ Added — {addedFlash}</span>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Board live ✓ — copy link':'Copy Board Link'}</button>
     </div>
   </div>;
@@ -27394,6 +27439,7 @@ body .primaryBtn{background:#1f3a57 !important;border:1px solid #34557a !importa
 body .primaryBtn:hover{background:#264a6e !important;}
 body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~.secondaryBtn{background:#15233a !important;border:1px solid #294063 !important;color:#9cc4ec !important;box-shadow:none !important;}
 `}</style>
+<SessionAddToast/>
 <div className="versionStamp" title="Deployed build">{APP_VERSION.split(' ')[0]}</div>
 {presentCount>0&&<button type="button" title="Players marked present today — tap to open Players" onClick={()=>go('players')} style={{position:'fixed',right:'12px',bottom:'46px',zIndex:9000,background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4',borderRadius:'999px',padding:'5px 11px',fontSize:'0.78rem',fontWeight:800,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.35)'}}>{presentCount} present</button>}
 {searchOpen&&<div onClick={()=>setSearchOpen(false)} style={{position:'fixed',inset:0,zIndex:10000,background:'rgba(2,6,12,0.6)',backdropFilter:'blur(2px)'}}>
