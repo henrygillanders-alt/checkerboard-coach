@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v619 Snakes & Ladders challenges survive the handoff. Handing a court its scoring link wrote an empty challenge set into the room, so the court device played a standard game and never asked whether a challenge had been shown \u2014 challenges lived on the board screen, which the setup screen that seeds the room knew nothing about. The challenge now belongs to setup: step 3 carries one field with presets, applying to every snake and ladder; it seeds into every court, survives the handoff, and is remembered between sessions. Builds on v618.';
+const APP_VERSION='v621 One-tap start and a go-live bar that follows you. Snakes & Ladders setup now opens with Same as last time \u2014 courts, board and challenge in one line, with a Start with these button \u2014 so an unchanged week is a single tap. The player-display and scoring-link bar is sticky at the foot of the screen, so the buttons you need at the moment of starting are always under your thumb instead of at the end of a scroll. Builds on v620.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -12882,6 +12882,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <p className="mutedText">Randomising the board each game keeps the consequence-landscape fresh, preventing pattern learning and forcing genuine re-perception every session.</p>
     </div>}
 
+    {!!savedSetup.settings&&<div style={{background:'#0c1626',border:'1px solid #2f5c46',borderRadius:'12px',padding:'13px 15px',margin:'0 0 12px',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'12px',flexWrap:'wrap'}}>
+      <span>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.06em',fontWeight:800}}>Same as last time</span>
+        <span style={{display:'block',color:'#eaf4fb',fontWeight:700,fontSize:'0.92rem'}}>{courts} court{courts===1?'':'s'} · {settings.size} squares · {settings.snakeCount} snakes · {settings.ladderCount} ladders{setupChallenge?' · '+setupChallenge:' · no challenge'}</span>
+      </span>
+      <button type="button" className="primaryBtn" style={{flex:'none'}} onClick={()=>{setProjecting(true);const el=document.querySelector('.slDisplayBar');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});}}>Start with these</button>
+    </div>}
     <style>{`
 .slStepHd{display:flex;align-items:center;gap:9px;margin:16px 0 8px;}
 .slStepHd .n{background:#101d18;border:1px solid #2f5c46;color:#8fbfa4;border-radius:999px;min-width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;flex:none;}
@@ -12901,7 +12908,13 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <div className="slNameGrid">{Array.from({length:manualCount}).map((_,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={manualNames[i]||''} onChange={e=>setManualName(i,e.target.value)}/></label>)}</div>
     </div>}
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'− Hide board settings':'⚙ Board settings'}</button>
+    <button type="button" onClick={()=>setShowSettings(!showSettings)} style={{width:'100%',textAlign:'left',background:'#0c1626',border:'1px solid #2f5c46',borderRadius:'12px',padding:'13px 15px',marginBottom:'10px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
+      <span>
+        <span style={{display:'block',color:'#d9c08a',fontWeight:800,fontSize:'1rem'}}>Board settings</span>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.84rem'}}>{settings.size} squares · {settings.snakeCount} snakes · {settings.ladderCount} ladders{settings.exactFinish?' · exact finish':''}</span>
+      </span>
+      <span style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.86rem',flex:'none'}}>{showSettings?'Done':'Change'}</span>
+    </button>
     <div className="slStepHd"><span className="n">2</span><span><span className="t">The board</span> <span className="h">Length, how many snakes and ladders, and how far each moves a player</span></span></div>
     {showSettings&&<div className="slSettings">
       <div className="hsChipBlock">
@@ -13014,7 +13027,14 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     </div>}
     {competitionMode==='race'&&courts>1&&raceBoard&&<SnakesLaddersRaceDisplay host={base} courtCount={courtCount}/>}
 
-    <button type="button" className="meAddOwnBtn" onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
+    <button type="button" onClick={()=>setShowBonuses(!showBonuses)} style={{width:'100%',textAlign:'left',background:'#0c1626',border:'1px solid #223044',borderRadius:'12px',padding:'13px 15px',marginBottom:'10px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
+      <span>
+        <span style={{display:'block',color:'#d9c08a',fontWeight:800,fontSize:'1rem'}}>Rally modifiers</span>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.84rem'}}>{(settings.bonuses||[]).length?`${(settings.bonuses||[]).length} bonus square rule${(settings.bonuses||[]).length===1?'':'s'}`:'None — optional'}</span>
+      </span>
+      <span style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.86rem',flex:'none'}}>{showBonuses?'Done':'Change'}</span>
+    </button>
+    <button type="button" style={{display:'none'}} onClick={()=>setShowBonuses(!showBonuses)}>{showBonuses?'− Hide rally modifiers':`+ Rally modifiers (optional)${(settings.bonuses||[]).length?` · ${settings.bonuses.length} active`:''}`}</button>
     <div className="slStepHd"><span className="n">3</span><span><span className="t">Challenge &amp; scoring extras</span> <span className="h">One challenge for every snake and ladder, plus optional bonus squares</span></span></div>
     <div style={{background:'#0b1320',border:'1px solid #223044',borderRadius:'12px',padding:'12px 14px',marginBottom:'10px'}}>
       <label style={{display:'block',color:'#d9c08a',fontWeight:800,fontSize:'0.86rem',marginBottom:'5px'}}>Challenge on every snake and ladder</label>
@@ -13038,7 +13058,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <UniversalModifierEngine title="Universal Modifiers"/>
 
     <div className="slStepHd"><span className="n">4</span><span><span className="t">Go live</span> <span className="h">Put the board on the wall, then hand a scoring link to each court referee</span></span></div>
-    <div className="slDisplayBar">
+    <div className="slDisplayBar" style={{position:'sticky',bottom:'0',zIndex:60,background:'#0b1320',border:'1px solid #2f5c46',borderRadius:'12px',padding:'10px 12px',boxShadow:'0 -4px 14px rgba(0,0,0,0.35)'}}>
       {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>COPY PLAYER LINK</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'Copy Scoring link'}</button>}{courts===1&&handedOff.has(1)&&<button type="button" className="secondaryBtn" onClick={()=>takeBackControl(1)}>Take back control</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={runSlLinkTest}>Test link connection</button>}{courts===1&&slDiag&&<span className="mutedText" style={{display:'block',width:'100%',fontSize:'0.84rem',marginTop:'6px'}}>{slDiag}</span>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));}}>Add to Session</button>}
       {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
