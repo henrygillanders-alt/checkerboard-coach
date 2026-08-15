@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v621 One-tap start and a go-live bar that follows you. Snakes & Ladders setup now opens with Same as last time \u2014 courts, board and challenge in one line, with a Start with these button \u2014 so an unchanged week is a single tap. The player-display and scoring-link bar is sticky at the foot of the screen, so the buttons you need at the moment of starting are always under your thumb instead of at the end of a scroll. Builds on v620.';
+const APP_VERSION='v623 Central Hub Pressure is now adjustable and scoreable. PP5 carries a Run it panel: choose how many build shots make a cycle and how many minutes each player works, pick the stage, and tap what happened. Stage 1 scores a point per completed cycle; stage 2 only when the build is completed and the attacking shot wins; stage 3 only when the build and attack are followed by winning the live rally. Two players swap the working and hub roles with a clock each and their scores sit side by side. Builds on v622.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -10007,9 +10007,116 @@ const PHYSICAL_PRESSURE_GAMES=[
   }
 ];
 
-function PhysicalPressureGameDetail({game,onBack}){
+
+/* ── CENTRAL HUB PRESSURE RUNNER ──────────────────────────────────────────────
+   PP5 made adjustable and scoreable on court: choose how many build shots make a
+   cycle and how long each player works, then tap what happened. Two players swap
+   the worker and hub roles and their scores sit side by side.
+   Stage 1 — score = completed cycles.
+   Stage 2 — score = cycles completed AND finished with a winning attack.
+   Stage 3 — score = cycles completed, attack played, then the live rally won. */
+function PressureCycleRunner(){
+  const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
+  const [shots,setShots]=useState(3);
+  const [minutes,setMinutes]=useState(4);
+  const [stage,setStage]=useState(2);
+  const [worker,setWorker]=useState('');
+  const [hub,setHub]=useState('');
+  const [scores,setScores]=useState({});
+  const [left,setLeft]=useState(0);
+  const [running,setRunning]=useState(false);
+  useEffect(()=>{
+    if(!running)return;
+    const id=setInterval(()=>setLeft(v=>{ if(v<=1){clearInterval(id);setRunning(false);return 0;} return v-1; }),1000);
+    return ()=>clearInterval(id);
+  },[running]);
+  const names=present.length?present:['Player 1','Player 2'];
+  const w=worker||names[0];
+  const h=hub||names[1]||names[0];
+  const mmss=v=>String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0');
+  function start(){setLeft(minutes*60);setRunning(true);}
+  function score(n){setScores(prev=>({...prev,[w]:(prev[w]||0)+n}));}
+  function swap(){setWorker(h);setHub(w);setLeft(minutes*60);setRunning(false);}
+  const stageText=stage===1
+    ?'Score 1 for every completed cycle of '+shots+' controlled build shots. No attack.'
+    :stage===2
+    ?'Score 1 only when the '+shots+'-shot build is completed AND the next ball is an attacking shot that wins the rally.'
+    :'Score 1 only when the '+shots+'-shot build is completed, the attack is played, and the live rally that follows is won.';
+  return <div style={{background:'#0b1320',border:'1px solid #2f5c46',borderRadius:'14px',padding:'14px 16px',margin:'12px 0'}}>
+    <strong style={{color:'#d9c08a',fontSize:'1rem'}}>Run it</strong>
+    <p className="mutedText" style={{margin:'4px 0 10px',fontSize:'0.83rem'}}>Set the cycle and the clock, then tap what happened. Two players swap the worker and hub roles.</p>
+
+    <div style={{display:'flex',gap:'14px',flexWrap:'wrap',marginBottom:'10px'}}>
+      <div>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.05em',fontWeight:800,marginBottom:'4px'}}>Build shots per cycle</span>
+        <div style={{display:'flex',gap:'5px'}}>{[2,3,4,5,6].map(n=><button type="button" key={n} onClick={()=>setShots(n)} style={{background:shots===n?'#101d18':'#0d1722',border:shots===n?'1px solid #2f5c46':'1px solid #2a3a4f',color:shots===n?'#8fbfa4':'#8aa0b6',borderRadius:'8px',padding:'7px 12px',fontWeight:800,cursor:'pointer'}}>{n}</button>)}</div>
+      </div>
+      <div>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.05em',fontWeight:800,marginBottom:'4px'}}>Minutes per player</span>
+        <div style={{display:'flex',gap:'5px'}}>{[2,3,4,5,6].map(n=><button type="button" key={n} onClick={()=>{setMinutes(n);if(!running)setLeft(n*60);}} style={{background:minutes===n?'#101d18':'#0d1722',border:minutes===n?'1px solid #2f5c46':'1px solid #2a3a4f',color:minutes===n?'#8fbfa4':'#8aa0b6',borderRadius:'8px',padding:'7px 12px',fontWeight:800,cursor:'pointer'}}>{n}</button>)}</div>
+      </div>
+      <div>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.74rem',textTransform:'uppercase',letterSpacing:'0.05em',fontWeight:800,marginBottom:'4px'}}>Stage</span>
+        <div style={{display:'flex',gap:'5px'}}>{[1,2,3].map(n=><button type="button" key={n} onClick={()=>setStage(n)} style={{background:stage===n?'#101d18':'#0d1722',border:stage===n?'1px solid #2f5c46':'1px solid #2a3a4f',color:stage===n?'#8fbfa4':'#8aa0b6',borderRadius:'8px',padding:'7px 12px',fontWeight:800,cursor:'pointer'}}>{n}</button>)}</div>
+      </div>
+    </div>
+
+    <p style={{color:'#eaf4fb',fontSize:'0.88rem',background:'#0c1626',border:'1px solid #223044',borderRadius:'9px',padding:'9px 11px',margin:'0 0 10px'}}>{stageText}</p>
+
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center',marginBottom:'10px'}}>
+      <label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Working
+        <select value={w} onChange={e=>setWorker(e.target.value)} style={{marginLeft:'5px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'6px 9px'}}>{names.map(n=><option key={n} value={n}>{n}</option>)}</select>
+      </label>
+      <label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Hub at the T
+        <select value={h} onChange={e=>setHub(e.target.value)} style={{marginLeft:'5px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'8px',color:'#eaf4fb',padding:'6px 9px'}}>{names.map(n=><option key={n} value={n}>{n}</option>)}</select>
+      </label>
+      <button type="button" className="secondaryBtn" onClick={swap}>Swap roles</button>
+    </div>
+
+    <div style={{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap',marginBottom:'10px'}}>
+      <span style={{color:left<=10&&running?'#c98a8a':'#eaf4fb',fontWeight:800,fontSize:'1.8rem',fontVariantNumeric:'tabular-nums'}}>{mmss(left||minutes*60)}</span>
+      <button type="button" className="primaryBtn" onClick={()=>running?setRunning(false):start()}>{running?'Pause':'Start block'}</button>
+      <button type="button" className="secondaryBtn" onClick={()=>{setRunning(false);setLeft(minutes*60);}}>Reset clock</button>
+    </div>
+
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}}>
+      <button type="button" className="primaryBtn" onClick={()=>score(1)}>{stage===1?'Cycle completed +1':stage===2?'Cycle + winning attack +1':'Cycle + attack + rally won +1'}</button>
+      <button type="button" className="secondaryBtn" onClick={()=>score(-1)}>Undo</button>
+    </div>
+
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+      {names.map(n=><div key={n} style={{background:n===w?'#101d18':'#0c1626',border:n===w?'1px solid #2f5c46':'1px solid #223044',borderRadius:'10px',padding:'8px 13px',minWidth:'110px'}}>
+        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>{n}{n===w?' — working':n===h?' — hub':''}</span>
+        <span style={{display:'block',color:'#d9c08a',fontWeight:800,fontSize:'1.3rem'}}>{scores[n]||0}</span>
+      </div>)}
+      <button type="button" className="secondaryBtn" style={{alignSelf:'center'}} onClick={()=>{if(window.confirm('Clear both scores?'))setScores({});}}>Clear scores</button>
+    </div>
+  </div>;
+}
+function PhysicalPressureGameDetail({game,onBack,setSession,setScreen}){
+  function addToSession(){
+    if(typeof setSession!=='function')return;
+    setSession(prev=>appendToSessionState(prev,{
+      id:Date.now()+Math.random(),
+      title:game.code+' — '+game.title,
+      category:'Physical Pressure',
+      format:game.format||'Physical Pressure',
+      duration:8,
+      rld:Number(game.rld)||4,
+      task:(game.setup?'Setup: '+game.setup+' ':'')+(game.task||''),
+      scoring:game.scoring||'',
+      rationale:game.summary||'',
+      coach:game.coach||'',
+      playerFocus:(game.projection&&game.projection.focus)||game.theme||'',
+      layers:[],cbCode:'None'}));
+  }
   return <div className="pressureExerciseDetail">
-    <button type="button" className="secondaryBtn pressureBackBtn" onClick={onBack}>{'← All Physical Pressure'}</button>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center'}}>
+      <button type="button" className="secondaryBtn pressureBackBtn" onClick={onBack}>{'← All Physical Pressure'}</button>
+      {typeof setSession==='function'&&<button type="button" className="primaryBtn" onClick={addToSession}>Add To Session</button>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button>}
+    </div>
+    {game.id==='pp5-central-hub'&&<PressureCycleRunner/>}
     <div className="pressureExerciseHeader">
       <div className="pressureExerciseCodeLg">{game.code}</div>
       <div className="pressureExerciseHeaderText">
@@ -10063,7 +10170,7 @@ function PhysicalPressureGameDetail({game,onBack}){
 
 
 
-function PressureModule({setScreen}){
+function PressureModule({setScreen,setSession}){
   const [activeExercise,setActiveExercise]=useState(null);
   const [activeFocus,setActiveFocus]=useState(null);
   const [formatFilter,setFormatFilter]=useState('ALL');
@@ -10129,7 +10236,7 @@ function PressureModule({setScreen}){
           </div>)}
         </div>
       </div>
-      :<PhysicalPressureGameDetail game={game} onBack={()=>setActiveExercise(null)}/>
+      :<PhysicalPressureGameDetail game={game} onBack={()=>setActiveExercise(null)} setSession={setSession} setScreen={setScreen}/>
     }
   </div>;
 }
@@ -27514,7 +27621,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='whyCLA'&&<WhyCLAScreen setScreen={go}/>}
-      {screen==='pressure'&&<PressureModule setScreen={go}/>}
+      {screen==='pressure'&&<PressureModule setScreen={go} setSession={setSession}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
 {screen==='tools'&&<ToolsArchitecture setScreen={go}/>}
       {screen==='diagnosticIntervention'&&<DiagnosticIntervention setScreen={go}/>}
