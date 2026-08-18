@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v623 Central Hub Pressure is now adjustable and scoreable. PP5 carries a Run it panel: choose how many build shots make a cycle and how many minutes each player works, pick the stage, and tap what happened. Stage 1 scores a point per completed cycle; stage 2 only when the build is completed and the attacking shot wins; stage 3 only when the build and attack are followed by winning the live rally. Two players swap the working and hub roles with a clock each and their scores sit side by side. Builds on v622.';
+const APP_VERSION='v631 Four stray uses of drill corrected. Coach-facing text should not name an activity a drill when the app exists to argue against that framing \u2014 found and fixed the four places it slipped in as neutral description: a Common Game Errors constraint, the ATL/BTL nickname, and two search keywords. Left untouched: roughly eighty places where drill is used deliberately, naming the traditional paradigm in order to contrast CLA against it \u2014 removing those would blunt the argument the app is making, not strengthen it. Builds on v630.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -592,7 +592,7 @@ const cbText=options.cbRef==='None'?'':` Checkerboard reference: ${options.cbRef
 const atlCountRaw=options.atlCount||'All shots';
 const atlNum=atlCountRaw==='All shots'?null:(atlCountRaw.startsWith('0')?0:atlCountRaw.startsWith('1')?1:atlCountRaw.startsWith('2')?2:3);
 const atlText=atlNum===null
-  ? 'All shots must clear the ATL line — the classic ATL/BTL tape drill — except the compulsory BTL shot(s) above.'
+  ? 'All shots must clear the ATL line — the classic ATL/BTL tape line — except the compulsory BTL shot(s) above.'
   : atlNum===0
     ? 'No shots are required above the line this session — play low drives freely instead of defaulting to a lob.'
     : `Only ${atlNum} shot${atlNum===1?'':'s'} must clear the ATL line; the rest are free, so bring in low drives rather than defaulting to a lob.`;
@@ -10111,11 +10111,7 @@ function PhysicalPressureGameDetail({game,onBack,setSession,setScreen}){
       layers:[],cbCode:'None'}));
   }
   return <div className="pressureExerciseDetail">
-    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center'}}>
-      <button type="button" className="secondaryBtn pressureBackBtn" onClick={onBack}>{'← All Physical Pressure'}</button>
-      {typeof setSession==='function'&&<button type="button" className="primaryBtn" onClick={addToSession}>Add To Session</button>}
-      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button>}
-    </div>
+    <button type="button" className="secondaryBtn pressureBackBtn" onClick={onBack}>{'← All Physical Pressure'}</button>
     {game.id==='pp5-central-hub'&&<PressureCycleRunner/>}
     <div className="pressureExerciseHeader">
       <div className="pressureExerciseCodeLg">{game.code}</div>
@@ -10164,6 +10160,12 @@ function PhysicalPressureGameDetail({game,onBack,setSession,setScreen}){
         <div className="pressureFocusCard"><strong>HOW TO SCORE</strong><p>{game.projection.score}</p></div>
         <div className="pressureFocusCard"><strong>KEY FOCUS</strong><p>{game.projection.focus}</p></div>
       </div>
+    </div>
+    {/* House convention: Add To Session sits at the foot of a game page, after the
+        coach has read it — never competing with the content at the top. */}
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'14px'}}>
+      {typeof setSession==='function'&&<button type="button" className="primaryBtn" onClick={addToSession}>Add To Session</button>}
+      {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button>}
     </div>
   </div>;
 }
@@ -10293,7 +10295,7 @@ function ToolsArchitecture({setScreen}){
     'Flat Footed':{cause:'No reactive movement base — player waiting in static position.',constraint:'Split Step cue: coach calls or claps to trigger reactive step before each feed.',tool:'Rhythm tool: waltz tempo encourages continuous weight shifting.',activity:'Anticipation drill: player on toes throughout. Coach varies feed direction unpredictably.',progression:'Remove external cue. Add rally pace. Live competitive play.',levels:'Level 1–4'},
     'Not Reaching Ball':{cause:'Movement initiation delayed or movement direction wrong.',constraint:'Feed source constraint: coach feeds from different positions to force varied movement solutions.',tool:'Two Coloured Racquet: player must read feed side before moving.',activity:'Early call drill: player calls side before moving. No call = no move.',progression:'Reduce call requirement. Add movement recovery. Live rally.',levels:'Level 1–3'},
     'Slow First Move':{cause:'Reaction delay — player not reading information early enough.',constraint:'TAU-4 or TAU-5 feed tracking activity. Player must move before ball reaches halfway.',tool:'Visual constraint: Two Coloured Racquet colour call before movement.',activity:'Early move drill. Feed varies. Player must initiate movement before ball crosses service line.',progression:'Add direction variation. Reduce latency threshold. Live rally.',levels:'Level 1–4'},
-    'Poor Court Coverage':{cause:'Pattern-based movement — player moving to habitual positions rather than reading opponent.',constraint:'Random feed drill: no two consecutive feeds to same position.',tool:'Recovery cone: player must touch T between every shot.',activity:'Five-position drill. Coach feeds to five different positions in random order. Player recovers to T between each.',progression:'Increase feed pace. Add opponent. Live competitive game.',levels:'Level 2–5'},
+    'Poor Court Coverage':{cause:'Pattern-based movement — player moving to habitual positions rather than reading opponent.',constraint:'Varied feed: no two consecutive feeds to the same position.',tool:'Recovery cone: player must touch T between every shot.',activity:'Five-position drill. Coach feeds to five different positions in random order. Player recovers to T between each.',progression:'Increase feed pace. Add opponent. Live competitive game.',levels:'Level 2–5'},
     'Tight Grip':{cause:'Anxiety or over-effort response.',constraint:'Grip looseness cue: "Hold a baby bird — firm enough to hold it, gentle enough not to hurt it."',tool:'Waltz Rhythm Tool: slow waltz tempo reduces tension throughout movement.',activity:'Chip and talk: player maintains conversation while chipping. Talking prevents breath-holding and tension.',progression:'Add movement. Increase pace. Live rally with rhythm constraint.',levels:'All levels'},
     'Tense Shoulders':{cause:'Over-effort or anxiety. Often linked to grip tension.',constraint:'Blue Danube Waltz constraint: music shapes relaxed movement rhythm without instruction.',tool:'Drop-shoulder cue before every feed. "Shake hands — drop shoulders — play."',activity:'Rhythm warm-up: Blue Danube playing, players move and rally with no coaching input.',progression:'Fade music. Player learns to self-regulate. Live rally.',levels:'All levels'},
     'Rushing':{cause:'Temporal pressure response — player perceiving insufficient time.',constraint:'Blue Danube Tempo constraint: slow waltz rhythm forces reduction in movement pace.',tool:'Scaling: reduce feed pace or use larger ball to increase available time.',activity:'Slow-motion rally: all shots hit at 50% pace. Only gentle, deliberate contacts count.',progression:'Gradually increase pace. Add normal ball. Live rally.',levels:'Level 0–3'},
@@ -10856,7 +10858,162 @@ function InformationAnticipationBuilder({onAddToSession}){
   const cueValues={Ball:1,Racquet:2,Arm:3,Shoulder:4,Trunk:5,Hips:6};
   const directionOptions=['Straight','Crosscourt'];
   const freezeOptions=['Straight','Crosscourt','Drop','Boast'];
+  const SCAFFOLD_TXT='Scaffold for this stage: ball must first-bounce before the short line (further back does not work), tin raised, Blue or Red ball. A player who still needs it may take 1–2 phantom swings in the gap between bounces — optional from here on, not required. Loosen every setting toward normal as players succeed.';
   const activities=[
+    {
+      id:'hdlHold',
+      title:'The Hold — Phantom Swing',
+      level:'Hold & Deception · 1',
+      type:'holdDeception',
+      objective:'Fill the gap between the two bounces with something real to do, so waiting stops meaning freezing.',
+      task:'Unopposed, coach-fed. Ball must first-bounce before the short line — anywhere further back the hold does not work, so do not attempt it there. Player is organised — racket loaded, balanced — by the first bounce. Coach sets 1 or 2 phantom swings: the player takes that many full practice swings, in rhythm, while the ball is between its bounces, then strikes for real after the second bounce and the swing count is complete.',
+      scoring:'No formal score. Coach checks: did the phantom swing land in the gap between the bounces, and did the real strike still come after the second bounce?',
+      coach:'The phantom swing is the technique that makes the hold learnable — most players cannot simply "wait", but they can rehearse a rhythm. Increase to 2 swings once 1 feels easy; this is the on-ramp to every later stage.',
+      player:'One or two practice swings while the ball is in the air between bounces. Real shot only after the second bounce.'
+    },
+    {
+      id:'hdlDbDeception',
+      title:'DB for Deception',
+      level:'Hold & Deception · 2',
+      type:'holdDeception',
+      objective:'Hold a live opponent for the first time, using the phantom swing to make the wait real.',
+      task:'Ball must first-bounce before the short line — that is the hold zone; further back is not attempted. Tin is raised. Double bounce compulsory on rally shots (serve return may be taken on one bounce if a volley is not on). Striker completes 1 or 2 phantom swings (coach-set) in the gap between bounces, then strikes only after the second bounce. Completing the required swing count also lowers the tin back to normal for that rally, so a player who has genuinely held may finish with a normal shot; a player who has not held plays against the raised tin. Receiver must not commit — no first step, no racket turn — before contact.',
+      scoring:'Win the rally = 1. +1 if the receiver never committed before contact. +2 if the receiver moved the wrong way. +2 bonus for a winner struck after completing the swing count (the proof the hold was real). A shot struck before the second bounce, or before the swing count is met, loses the rally outright.',
+      coach:'Warm the ball first — a cold ball barely bounces and will be blamed for a failed hold that was really just a dead ball. Watch the receiver’s feet, not the striker’s racket. Increase the swing requirement before you increase the tin — the swing is what makes the tin fair.',
+      player:'Complete your swings, then strike after the second bounce. A winner that comes after the swings is worth more.'
+    },
+    {
+      id:'hdlTwoShot',
+      title:'Two-Shot Preparation',
+      level:'Hold & Deception · 3',
+      type:'holdDeception',
+      objective:'Stop the hold becoming a frozen, pre-decided shot. The same preparation must credibly produce either named option.',
+      task:SCAFFOLD_TXT+' Before the rally, the coach names two shots the preparation must cover — e.g. straight drive or crosscourt, straight drop or crosscourt, boast or straight drive. No large second backswing once the receiver moves — the change must come from the shared preparation, not a reset.',
+      scoring:'Win the rally = 1. +1 if the receiver never committed before contact. +2 if the receiver moved toward the option not played.',
+      coach:'If the receiver can call the shot from the backswing alone, the preparation is not doing its job — pick a closer pair of options or slow the exchange further.',
+      player:'Get ready to play either named shot from the same position. Decide which one late.'
+    },
+    {
+      id:'hdlReadOpponent',
+      title:'Read the Opponent',
+      level:'Hold & Deception · 4',
+      type:'holdDeception',
+      objective:'Connect the hold to a live decision — choose the eventual shot from what the opponent does, not in advance.',
+      task:SCAFFOLD_TXT+' Striker prepares by the first bounce as before, but the eventual shot is chosen from the opponent’s position — e.g. if they stay central, play away from them; if they move to the front early, play deep; if they cover straight, play crosscourt. Coach sets one guide per block, not a fixed rulebook.',
+      scoring:'Win the rally = 1. +1 for a shot that clearly answers where the opponent was, whether or not it wins.',
+      coach:'Cue: "prepare first, decide late." These are temporary attentional guides, not rules to memorise — change the guide across blocks so players keep reading rather than pattern-matching.',
+      player:'Get ready early, then look at your opponent before you decide where to play.'
+    },
+    {
+      id:'hdlSellDummy',
+      title:'Sell the Dummy',
+      level:'Hold & Deception · 5',
+      type:'holdDeception',
+      objective:'Misdirection: make the preparation credibly suggest a shot other than the one played.',
+      task:SCAFFOLD_TXT+' Coach sets a dummy pattern — e.g. show crosscourt, play straight; show drop, play deep; show power, play soft. The suggested shot must stay credible inside the normal preparation, not an exaggerated fake.',
+      scoring:'Win the rally = 1. +2 if the receiver makes a clear movement toward the false option before contact.',
+      coach:'The dummy fails if it is theatrical — a receiver who is not fooled by a normal-looking preparation was never going to be fooled by a bigger one either.',
+      player:'Make one shot look available. Play the other.'
+    },
+    {
+      id:'hdlThreeDoors',
+      title:'Three Doors',
+      level:'Hold & Deception · 6',
+      type:'holdDeception',
+      objective:'Widen concealment from two options to three, from the same preparation.',
+      task:SCAFFOLD_TXT+' The striker must keep three realistic options available — e.g. from the front: straight drop, crosscourt drive, straight drive. From the back: straight drive, crosscourt, boast.',
+      scoring:'Win the rally = 1. +1 deception bonus only when all three options were genuinely available — a pre-picked shot dressed up with racket movement does not qualify.',
+      coach:'This is the hardest concealment stage — expect it to look worse before it looks better. One preparation genuinely opening several target zones is the Checkerboard idea in miniature.',
+      player:'Hold a position that could send the ball to three different places.'
+    },
+    {
+      id:'hdlOneToken',
+      title:'One DB Token',
+      level:'Hold & Deception · 7',
+      type:'holdDeception',
+      objective:'Begin removing the double-bounce scaffold. Recognise which balls are worth holding rather than applying it to everything.',
+      task:'Normal squash, full court, normal tin, ball moving toward Yellow. Each player has three DB tokens per game. Before a ball’s first bounce, a player may call "DB" — the opponent must then allow the second bounce, and the caller uses the time to hold or deceive. A successful deception keeps the token; a failed attempt spends it.',
+      scoring:'Normal rally scoring. Token kept on a successful deception (receiver held or wrong-footed); token spent on a failed one.',
+      coach:'The question is no longer "can they hold" — it is "did they recognise this ball as worth holding." Ask after a spent token: was that ball ever going to give you time?',
+      player:'Only call DB on a ball you can genuinely get organised for. Spend tokens carefully — you only get three.'
+    },
+    {
+      id:'hdlEarnHold',
+      title:'Earn the Hold',
+      level:'Hold & Deception · 8',
+      type:'holdDeception',
+      objective:'Produce a genuine hold under completely normal bounce rules — no scaffold left at all.',
+      task:'Normal squash, full court, normal tin, Yellow ball. No compulsory double bounce, no tokens. A hold/deception bonus is available whenever the striker gets organised before the ball arrives, keeps at least two credible options, and the receiver visibly delays, freezes or moves the wrong way.',
+      scoring:'Win the rally = 1. +1 if the receiver was visibly held (did not move early). +2 if the receiver moved the wrong way. Clean winner following deception capped at +2 total to avoid score inflation.',
+      coach:'Preventing early movement is itself a successful hold — the receiver does not have to move wrong for it to count.',
+      player:'Get organised before the ball arrives. Keep more than one option alive as long as you can.'
+    },
+    {
+      id:'hdlHoldOrGo',
+      title:'Hold or Go',
+      level:'Hold & Deception · 9',
+      type:'holdDeception',
+      objective:'Learn when to hold and when to take the ball early instead — deception is one tool, not the only one.',
+      task:'Normal squash. On each ball, the striker chooses Hold (organise early, delay commitment) or Go (take it early, remove the opponent’s time). Bonus for choosing the solution that fits the moment — e.g. take early when the opponent is still recovering; hold or misdirect when they are set and watching; play a simple recovery shot when the ball is difficult, rather than forcing a hold.',
+      scoring:'Win the rally = 1. +1 when the chosen approach (hold or go) clearly matched the situation.',
+      coach:'This is the corrective stage for players who try to hold every ball. A forced hold on a bad ball is a worse choice than taking it early.',
+      player:'Decide fast: is this a ball to hold, or a ball to take early?'
+    },
+    {
+      id:'hdlDeceptionWindow',
+      title:'Deception Window',
+      level:'Hold & Deception · 10',
+      type:'holdDeception',
+      objective:'Make the opportunity to deceive rarer and more representative, so players learn to recognise it rather than expect it.',
+      task:'Normal squash. The deception bonus is only available inside a defined window — e.g. only after a loose length, only after a weak boast, only within four shots of gaining a clear positional advantage, tightening to within two shots as players succeed. Everything outside the window is normal squash with no bonus on offer.',
+      scoring:'Win the rally = 1. Deception bonus (as in Earn the Hold) only counts inside the current window.',
+      coach:'Narrow the window as the group improves — four shots, then two. The narrower the window, the closer this is to a real match.',
+      player:'Most balls are just squash. Recognise the ball that gives you a window, and use it.'
+    },
+    {
+      id:'hdlDeceptionHunt',
+      title:'Deception Hunt',
+      level:'Hold & Deception · 11',
+      type:'holdDeception',
+      objective:'Integrate the whole series into live matchplay, disguised inside an ordinary game.',
+      task:'Normal matchplay. Each player secretly receives one deception challenge for the game — e.g. hold and play behind the opponent, show short and play deep, wrong-foot without an exaggerated fake, create three options from the front. Each knows the other may be attempting something, but not what.',
+      scoring:'Normal match scoring, plus a private note from each player after the game on whether they landed their challenge and whether they read their opponent’s.',
+      coach:'This is the finish line for the series — nothing about it should look different from a normal match to anyone watching.',
+      player:'Play your normal game. Look for the moment to use your challenge — and watch for theirs.'
+    },
+    {
+      id:'hdlDontBeSold',
+      title:'Don\'t Be Sold',
+      level:'Hold & Deception · Reversal',
+      type:'holdDeception',
+      objective:'Flip the reward to the receiver — credit for reading through misdirection, not just for the striker’s disguise.',
+      task:'Run any live stage above (Sell the Dummy onward) with the scoring reversed: the receiver earns the bonus for retrieving the ball well after initially reading false information, rather than the striker earning it for selling the dummy.',
+      scoring:'Normal rally scoring, plus +2 to the receiver for a clean retrieval after a genuine early misread.',
+      coach:'Use this whenever a block risks becoming a passive feeding exercise for the striker — it keeps deception coupled to a receiver who is genuinely trying to solve it.',
+      player:'You will be sold false information. Stay able to change direction late and still get there.'
+    },
+    {
+      id:'hdlReflexRead',
+      title:'Reflex Read',
+      level:'Hold & Deception · 12',
+      type:'holdDeception',
+      objective:'Give the receiver the same isolated rehearsal the striker gets in The Hold — rehearsing the read alone before it is tested live.',
+      task:'Coach (or a feeding player) plays medium-paced, deceptive straight or crosscourt drives at random from the back of the court. Receiver stays on or just in front of the short line and attempts to intercept every ball, driving it straight. The receiver’s only job is the read — do not chase a missed ball into a rally.',
+      scoring:'Coach counts consecutive balls intercepted before one gets past. Receiver tries to beat their own best run.',
+      coach:'Citation: Wollstein & Abernethy (1988) found the window between the top of the ball’s bounce and racket contact is the period carrying most of a receiver’s usable information — this isolates exactly that window, with no rally pressure attached, so the read can be rehearsed on its own before it has to survive a live game.',
+      player:'Watch the racket, not the ball flight. Read it, then move.'
+    },
+    {
+      id:'hdlPatternBreak',
+      title:'Pattern Break',
+      level:'Hold & Deception · 13',
+      type:'holdDeception',
+      objective:'A different kind of deception — built over several rallies, not one preparation. Establish a pattern deliberately, then break it before the opponent can rely on it.',
+      task:'Normal rally play. Striker repeats one shot choice from a given position for an agreed number of rallies (coach sets 2 or 3), then deliberately plays a different shot from the same position on the next opportunity — the Route Breaker moment. Receiver is not told how many repeats to expect.',
+      scoring:'Win the rally = 1. +2 if the break happens after the receiver has visibly settled into expecting the repeated shot (early movement toward it on the break rally is the tell).',
+      coach:'This is pattern deception, not postural deception — a separate mechanism from every earlier stage in this series. The tell is the same principle throughout: watch what the receiver does, not how convincing the striker looked.',
+      player:'Repeat the shot until it is expected. Then, on your call, do not.'
+    },
     {
       id:'cueDiscovery',
       title:'Cue Discovery',
@@ -13441,8 +13598,28 @@ const DB_EARN_LIBRARY=[
 ];
 function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession}){
   const [modifier,setModifier]=useState(emptyModifierConfig());
-  const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
+  function readPresentNames(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
+  const [presents,setPresents]=useState(readPresentNames);
+  useEffect(()=>{
+    /* Attendance can change on the Players screen while this module stays mounted
+       (tab switch, or the coach fixing a mistake); re-read the register instead
+       of trusting a snapshot taken once when the screen first opened. */
+    function refresh(){setPresents(readPresentNames());}
+    const id=setInterval(refresh,4000);
+    window.addEventListener('focus',refresh);
+    document.addEventListener('visibilitychange',refresh);
+    return ()=>{clearInterval(id);window.removeEventListener('focus',refresh);document.removeEventListener('visibilitychange',refresh);};
+  },[]);
   const [names,setNames]=useState(()=>presents.length>=2?presents:['Player 1','Player 2']);
+  useEffect(()=>{
+    if(!presents.length)return;
+    setNames(prev=>{
+      const stale=prev.filter(n=>!presents.includes(n));
+      if(!stale.length)return prev;
+      const next=prev.filter(n=>presents.includes(n));
+      return next.length>=2?next:prev;
+    });
+  },[presents]);
   const [gameId,setGameId]=useState('db1');
   const game=DB_GAMES.find(g=>g.id===gameId)||DB_GAMES[0];
 
@@ -15600,7 +15777,8 @@ function Games({setSession,setScreen,onClassChange}){
 }
 
 function Players({players,setPlayers}){
-const[history,setHistory]=useState([]);
+const[history,setHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_players_undo_v1'))||[];}catch{return [];}});
+useEffect(()=>{try{localStorage.setItem('checkerboard_players_undo_v1',JSON.stringify(history.slice(-10)));}catch{}},[history]);
 const[showForm,setShowForm]=useState(false);
 const[editing,setEditing]=useState(null);
 const[form,setForm]=useState(EMPTY_PLAYER);
@@ -15619,7 +15797,14 @@ function savePlayer(){if(!form.name.trim())return;saveSnapshot();const clean={..
 function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({...EMPTY_PLAYER,...clean});setEditing(index);setShowForm(true);window.scrollTo(0,0);}
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
-function startNewAttendanceDate(nextDate=sessionDate){saveSnapshot();setSessionDate(nextDate);setPlayers(players.filter(p=>p.playerType!=='Guest Player').map(p=>({...p,present:false})));}
+function startNewAttendanceDate(nextDate=sessionDate){
+  /* Reset presence only. This button used to filter out every Guest Player —
+     silently deleting them from the roster instead of resetting them to
+     absent, with no warning and no way back. Never delete players here. */
+  saveSnapshot();
+  setSessionDate(nextDate);
+  setPlayers(players.map(p=>({...p,present:false})));
+}
 function saveAttendanceRecord(){
   const record={id:Date.now(),date:sessionDate,createdAt:new Date().toISOString(),players:players.map(p=>({name:p.name,playerType:p.playerType,category:p.category,level:p.level,juniorRanking:p.juniorRanking||p.ranking||'',present:!!p.present}))};
   setAttendanceHistory(prev=>[record,...prev.filter(r=>r.date!==sessionDate)].slice(0,200));
@@ -15656,7 +15841,7 @@ return <div className="page">
 <label className="secondaryBtn importPlayersLabel">Import Players<input type="file" accept=".json,application/json" onChange={importPlayersFile}/></label>
 <button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button>
 </div></div>
-<div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button></div></div>
+<div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button>{history.length>0&&<button className="secondaryBtn" onClick={undo} title={'Restores '+history[history.length-1].length+' players to how they were before the last change'}>↺ Undo last change ({history.length})</button>}</div></div>
 {lastRecord&&<div className="hintBox"><strong>Saved record for this date:</strong> {lastRecord.players.filter(p=>p.present).length} present · {lastRecord.players.filter(p=>!p.present).length} absent · saved {new Date(lastRecord.createdAt).toLocaleString()}</div>}
 {showForm&&<div className="formCard"><h3>{editing!==null?'Edit Player':'Add Player'}</h3>
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
@@ -21034,6 +21219,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
   const [crossLengthType,setCrossLengthType]=useState(()=>initialConfig?initialConfig.crossLengthType:'any');
   const [crossCap,setCrossCap]=useState(()=>initialConfig?initialConfig.crossCap:0);
   const [firstShotVolley,setFirstShotVolley]=useState(()=>initialConfig?initialConfig.firstShotVolley:'choice');
+  const [crossVolley,setCrossVolley]=useState(()=>initialConfig?(initialConfig.crossVolley||'choice'):'choice');
   const [firstShotType,setFirstShotType]=useState(()=>initialConfig?initialConfig.firstShotType:'choice');
   const crossableShots=(game.shots||[]).map((s,i)=>({...s,i})).filter(s=>s.crossable);
   const [crossPer,setCrossPer]=useState(()=>{const o={};crossableShots.forEach(s=>{o[s.i]=true;});return o;});
@@ -21058,19 +21244,20 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
   // Right straight only mirrors the whole card to the right; left and both keep the authored (left) side.
   const patternSide=direction==='rightStraight'?'right':'left';
   const firstShotVolleyLabel={volley:'volley only',novolley:'no volley (let it bounce)',choice:'player\'s choice'}[firstShotVolley];
+  const crossVolleyLabel={volley:'volley only',novolley:'no volley (let it bounce)',choice:'player\'s choice'}[crossVolley];
   const firstShotTypeLabel={crossDrop:'cross-court drop',straightDrop:'straight drop',boast:'2-wall boast',choice:'player\'s choice'}[firstShotType];
   const runRules=[
     serveSide,
     'Attack trigger: '+triggerLabel,
     'First attacking shot: '+firstShotVolleyLabel+' · '+firstShotTypeLabel,
-    (lengthType!=='any'?('Straight length: every length is a '+forcedLengthWord(lengthType)):'Straight length: lob or drive, player chooses')+(crossLengthType!=='any'?(' · Cross-court length: '+forcedLengthWord(crossLengthType)):''),
+    (lengthType!=='any'?('Straight length: every length is a '+forcedLengthWord(lengthType)):'Straight length: lob or drive, player chooses')+(crossLengthType!=='any'?(' · Cross-court length: '+forcedLengthWord(crossLengthType)):'')+(crossVolley!=='choice'?(' · Cross-court take-on: '+crossVolleyLabel):''),
     'Direction: '+dirLabel+(direction==='cross'?' (functional cross — must move them more than one step)':''),
     cycleLabel,
     tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
   ];
   function add(view){
     try{
-      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier,scoreRules.filter(r=>r.k&&r.k.trim()).map(r=>`${r.k} = ${r.v}`).join(' · '),{patternId:game.id,trigger,direction,lengthType,crossLengthType,crossCap,firstShotVolley,firstShotType,cycleMode,openAfter,tramline,scoreRules,modifier});
+      onAdd(game,view,runRules,trigger,deriveQuick(game,patternSide,lengthType,{volley:firstShotVolley,type:firstShotType}),modifier,scoreRules.filter(r=>r.k&&r.k.trim()).map(r=>`${r.k} = ${r.v}`).join(' · '),{patternId:game.id,trigger,direction,lengthType,crossLengthType,crossVolley,crossCap,firstShotVolley,firstShotType,cycleMode,openAfter,tramline,scoreRules,modifier});
       setAdded(true);
       setTimeout(()=>setAdded(false),2200);
     }catch(err){
@@ -21154,6 +21341,10 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
         <PdChip on={crossLengthType==='lob'} onClick={()=>setCrossLengthType('lob')}>Lob</PdChip>
         <PdChip on={crossLengthType==='working'} onClick={()=>setCrossLengthType('working')}>Working drive</PdChip>
         <PdChip on={crossLengthType==='penetrating'} onClick={()=>setCrossLengthType('penetrating')}>Penetrating drive</PdChip>
+        <span className="lab" style={{flexBasis:'100%',color:'#9fb3c4',fontSize:'0.74rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.04em',margin:'8px 0 2px'}}>Cross-court take-on</span>
+        <PdChip on={crossVolley==='volley'} onClick={()=>setCrossVolley('volley')}>Volley</PdChip>
+        <PdChip on={crossVolley==='novolley'} onClick={()=>setCrossVolley('novolley')}>No volley</PdChip>
+        <PdChip on={crossVolley==='choice'} onClick={()=>setCrossVolley('choice')}>Player's choice</PdChip>
       </PatternRunPanel>
 
       <PatternRunPanel title="First Attacking Shot" note="Constrain the first attacking shot — whether it must be taken early as a volley, and which shot is played.">
@@ -22476,7 +22667,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Traffic Light Zones',sub:'Front-wall height bands \u00b7 red amber green \u00b7 solo, pairs & games',kw:'traffic light zones red amber green height bands front wall tape service line tin lob kill drop constraint conditioned game solo timed hirst wsf',screen:'trafficLight'},
   {label:'Suggestions',sub:'Players & coaches \u00b7 improve games and activities',kw:'suggestions coach game feedback ideas improve comment player voice review notes actioned parked export cla rationale rld propose',screen:'coachSuggestions'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
-  {label:'Games Library',sub:'All games & activities',kw:'games library activities drills',screen:'games'},
+  {label:'Games Library',sub:'All games & activities',kw:'games library activities games',screen:'games'},
   {label:'Players / Attendance',sub:'Register & attendance',kw:'players attendance register seed',screen:'players'},
   {label:'Competition',sub:'King of court & formats',kw:'competition king court tournament invasion',screen:'competition'},
   {label:'RLD & Challenge Point',sub:'Scale · Assess an Activity (RPAT)',kw:'rld representative challenge point assess rpat level six questions fidelity krause',screen:'rld'},
@@ -22485,7 +22676,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Attack Straight',sub:'CLA Update · release decision',kw:'attack straight down the line cross court release direction change',screen:'games',classId:'claupdate'},
   {label:'Serve for Advantage',sub:'CLA Update · nested chain',kw:'serve advantage forced boast chain nested affordance two serves',screen:'games',classId:'claupdate'},
   {label:'Deep Touch',sub:'CLA Update · build from deep',kw:'deep touch front court constraint deception disguise finer touch',screen:'games',classId:'claupdate'},
-  {label:'Action Boundary',sub:'CLA Update · coach-led affordance read',kw:'action boundary short ball affordance read coach drill',screen:'games',classId:'claupdate'},
+  {label:'Action Boundary',sub:'CLA Update · coach-led affordance read',kw:'action boundary short ball affordance read coach',screen:'games',classId:'claupdate'},
   {label:'Analogy Library',sub:'External-focus cues per shot',kw:'analogy library external focus cue rainbow bucket water invariant degeneracy',screen:'analogies'},
   {label:'Role Constraint',sub:'CLA Update · asymmetric-role engine',kw:'role constraint asymmetric boast drive siege hold the front attacker defender pairing',screen:'games',classId:'roleconstraint'},
   {label:'Boast & Drive',sub:'Role Constraint · book preset',kw:'boast drive asymmetric role two walls straight behind short line',screen:'games',classId:'roleconstraint'},
