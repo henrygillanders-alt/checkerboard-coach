@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v632 Blue as the dominant accent. The canonical gold accent (used for headings, highlights and titles throughout the app) is now the app\'s existing muted blue \u2014 #2e6e8e base, #6eaac8 for text and labels \u2014 applied as a value swap everywhere gold appeared, since gold and sage were already used as consistent literal constants rather than one-off colours. Sage stays as the secondary on/positive-state accent so toggles and confirmations remain visually distinct from headings. No saturated colour introduced \u2014 same muted, dark-surface palette, different hue. Builds on v631.';
+const APP_VERSION='v634 The setup-page challenge now actually reaches the board. Root cause found: the court component captures its challenge once, when it first mounts \u2014 and because setup is one continuous scrollable page rather than gated steps, the board can already exist before a coach reaches step 3 and types a challenge. Nothing was reading the box afterward, so the game ran standard and the scoring screen never asked whether the constraint was met. The court now stays in sync with whatever is typed in setup for as long as nothing has actually happened yet \u2014 no moves, no winner, nothing pending \u2014 and stops syncing the instant the game goes live, so an edit can never overwrite a game already in progress. Builds on v633.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -10852,6 +10852,30 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
 }
 
 
+const HDL_SCORE_DEFAULTS={
+  hdlDbDeception:[{key:'win',label:'Win the rally',value:1},{key:'held',label:'Receiver never committed before contact',value:1},{key:'wrongWay',label:'Receiver moved the wrong way',value:2},{key:'swingWinner',label:'Winner struck after completing the swing count',value:2}],
+  hdlTwoShot:[{key:'win',label:'Win the rally',value:1},{key:'held',label:'Receiver never committed before contact',value:1},{key:'wrongOption',label:'Receiver moved toward the option not played',value:2}],
+  hdlReadOpponent:[{key:'win',label:'Win the rally',value:1},{key:'answered',label:'Shot clearly answers where the opponent was',value:1}],
+  hdlSellDummy:[{key:'win',label:'Win the rally',value:1},{key:'wrongMove',label:'Receiver moves toward the false option',value:2}],
+  hdlThreeDoors:[{key:'win',label:'Win the rally',value:1},{key:'allThree',label:'All three options were genuinely available',value:1}],
+  hdlEarnHold:[{key:'win',label:'Win the rally',value:1},{key:'held',label:'Receiver visibly held (did not move early)',value:1},{key:'wrongWay',label:'Receiver moved the wrong way',value:2},{key:'cap',label:'Cap on the total bonus for one rally',value:2}],
+  hdlHoldOrGo:[{key:'win',label:'Win the rally',value:1},{key:'matched',label:'Chosen approach matched the situation',value:1}],
+  hdlDeceptionWindow:[{key:'win',label:'Win the rally',value:1},{key:'held',label:'Receiver held inside the window',value:1},{key:'wrongWay',label:'Receiver moved the wrong way inside the window',value:2}],
+  hdlDontBeSold:[{key:'win',label:'Win the rally (either player)',value:1},{key:'retrieval',label:'Receiver retrieves after a genuine early misread',value:2}],
+  hdlPatternBreak:[{key:'win',label:'Win the rally',value:1},{key:'breakTell',label:'Break played after receiver visibly settled into the pattern',value:2}],
+  hdlOneToken:[{key:'tokens',label:'DB tokens per player, per game',value:3}]
+};
+function loadHdlScoring(){try{return JSON.parse(localStorage.getItem('checkerboard_hdl_scoring_v1'))||{};}catch{return {};}}
+function saveHdlScoring(all){try{localStorage.setItem('checkerboard_hdl_scoring_v1',JSON.stringify(all));}catch{}}
+function hdlValuesFor(activityId){
+  const defaults=HDL_SCORE_DEFAULTS[activityId];
+  if(!defaults)return null;
+  const overrides=(loadHdlScoring()[activityId])||{};
+  return defaults.map(f=>({...f,value:overrides[f.key]!=null?overrides[f.key]:f.value}));
+}
+function hdlFillTemplate(tpl,values){
+  return tpl.replace(/\{(\w+)\}/g,(_,k)=>{const f=values.find(v=>v.key===k);return f?f.value:'?';});
+}
 function InformationAnticipationBuilder({onAddToSession}){
   const cueOptions=['Ball','Racquet','Arm','Shoulder','Trunk','Hips'];
   const earlyMovementOptions=['Hips','Trunk','Shoulder','Arm','Racquet'];
@@ -10878,7 +10902,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Hold a live opponent for the first time, using the phantom swing to make the wait real.',
       task:'Ball must first-bounce before the short line — that is the hold zone; further back is not attempted. Tin is raised. Double bounce compulsory on rally shots (serve return may be taken on one bounce if a volley is not on). Striker completes 1 or 2 phantom swings (coach-set) in the gap between bounces, then strikes only after the second bounce. Completing the required swing count also lowers the tin back to normal for that rally, so a player who has genuinely held may finish with a normal shot; a player who has not held plays against the raised tin. Receiver must not commit — no first step, no racket turn — before contact.',
-      scoring:'Win the rally = 1. +1 if the receiver never committed before contact. +2 if the receiver moved the wrong way. +2 bonus for a winner struck after completing the swing count (the proof the hold was real). A shot struck before the second bounce, or before the swing count is met, loses the rally outright.',
+      scoring:'Win the rally = {win}. +{held} if the receiver never committed before contact. +{wrongWay} if the receiver moved the wrong way. +{swingWinner} bonus for a winner struck after completing the swing count (the proof the hold was real). A shot struck before the second bounce, or before the swing count is met, loses the rally outright.',
       coach:'Warm the ball first — a cold ball barely bounces and will be blamed for a failed hold that was really just a dead ball. Watch the receiver’s feet, not the striker’s racket. Increase the swing requirement before you increase the tin — the swing is what makes the tin fair.',
       player:'Complete your swings, then strike after the second bounce. A winner that comes after the swings is worth more.'
     },
@@ -10889,7 +10913,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Stop the hold becoming a frozen, pre-decided shot. The same preparation must credibly produce either named option.',
       task:SCAFFOLD_TXT+' Before the rally, the coach names two shots the preparation must cover — e.g. straight drive or crosscourt, straight drop or crosscourt, boast or straight drive. No large second backswing once the receiver moves — the change must come from the shared preparation, not a reset.',
-      scoring:'Win the rally = 1. +1 if the receiver never committed before contact. +2 if the receiver moved toward the option not played.',
+      scoring:'Win the rally = {win}. +{held} if the receiver never committed before contact. +{wrongOption} if the receiver moved toward the option not played.',
       coach:'If the receiver can call the shot from the backswing alone, the preparation is not doing its job — pick a closer pair of options or slow the exchange further.',
       player:'Get ready to play either named shot from the same position. Decide which one late.'
     },
@@ -10900,7 +10924,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Connect the hold to a live decision — choose the eventual shot from what the opponent does, not in advance.',
       task:SCAFFOLD_TXT+' Striker prepares by the first bounce as before, but the eventual shot is chosen from the opponent’s position — e.g. if they stay central, play away from them; if they move to the front early, play deep; if they cover straight, play crosscourt. Coach sets one guide per block, not a fixed rulebook.',
-      scoring:'Win the rally = 1. +1 for a shot that clearly answers where the opponent was, whether or not it wins.',
+      scoring:'Win the rally = {win}. +{answered} for a shot that clearly answers where the opponent was, whether or not it wins.',
       coach:'Cue: "prepare first, decide late." These are temporary attentional guides, not rules to memorise — change the guide across blocks so players keep reading rather than pattern-matching.',
       player:'Get ready early, then look at your opponent before you decide where to play.'
     },
@@ -10911,7 +10935,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Misdirection: make the preparation credibly suggest a shot other than the one played.',
       task:SCAFFOLD_TXT+' Coach sets a dummy pattern — e.g. show crosscourt, play straight; show drop, play deep; show power, play soft. The suggested shot must stay credible inside the normal preparation, not an exaggerated fake.',
-      scoring:'Win the rally = 1. +2 if the receiver makes a clear movement toward the false option before contact.',
+      scoring:'Win the rally = {win}. +{wrongMove} if the receiver makes a clear movement toward the false option before contact.',
       coach:'The dummy fails if it is theatrical — a receiver who is not fooled by a normal-looking preparation was never going to be fooled by a bigger one either.',
       player:'Make one shot look available. Play the other.'
     },
@@ -10922,7 +10946,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Widen concealment from two options to three, from the same preparation.',
       task:SCAFFOLD_TXT+' The striker must keep three realistic options available — e.g. from the front: straight drop, crosscourt drive, straight drive. From the back: straight drive, crosscourt, boast.',
-      scoring:'Win the rally = 1. +1 deception bonus only when all three options were genuinely available — a pre-picked shot dressed up with racket movement does not qualify.',
+      scoring:'Win the rally = {win}. +{allThree} deception bonus only when all three options were genuinely available — a pre-picked shot dressed up with racket movement does not qualify.',
       coach:'This is the hardest concealment stage — expect it to look worse before it looks better. One preparation genuinely opening several target zones is the Checkerboard idea in miniature.',
       player:'Hold a position that could send the ball to three different places.'
     },
@@ -10932,7 +10956,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       level:'Hold & Deception · 7',
       type:'holdDeception',
       objective:'Begin removing the double-bounce scaffold. Recognise which balls are worth holding rather than applying it to everything.',
-      task:'Normal squash, full court, normal tin, ball moving toward Yellow. Each player has three DB tokens per game. Before a ball’s first bounce, a player may call "DB" — the opponent must then allow the second bounce, and the caller uses the time to hold or deceive. A successful deception keeps the token; a failed attempt spends it.',
+      task:'Normal squash, full court, normal tin, ball moving toward Yellow. Each player has {tokens} DB tokens per game. Before a ball’s first bounce, a player may call "DB" — the opponent must then allow the second bounce, and the caller uses the time to hold or deceive. A successful deception keeps the token; a failed attempt spends it.',
       scoring:'Normal rally scoring. Token kept on a successful deception (receiver held or wrong-footed); token spent on a failed one.',
       coach:'The question is no longer "can they hold" — it is "did they recognise this ball as worth holding." Ask after a spent token: was that ball ever going to give you time?',
       player:'Only call DB on a ball you can genuinely get organised for. Spend tokens carefully — you only get three.'
@@ -10944,7 +10968,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Produce a genuine hold under completely normal bounce rules — no scaffold left at all.',
       task:'Normal squash, full court, normal tin, Yellow ball. No compulsory double bounce, no tokens. A hold/deception bonus is available whenever the striker gets organised before the ball arrives, keeps at least two credible options, and the receiver visibly delays, freezes or moves the wrong way.',
-      scoring:'Win the rally = 1. +1 if the receiver was visibly held (did not move early). +2 if the receiver moved the wrong way. Clean winner following deception capped at +2 total to avoid score inflation.',
+      scoring:'Win the rally = {win}. +{held} if the receiver was visibly held (did not move early). +{wrongWay} if the receiver moved the wrong way. Clean winner following deception capped at +{cap} total to avoid score inflation.',
       coach:'Preventing early movement is itself a successful hold — the receiver does not have to move wrong for it to count.',
       player:'Get organised before the ball arrives. Keep more than one option alive as long as you can.'
     },
@@ -10955,7 +10979,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Learn when to hold and when to take the ball early instead — deception is one tool, not the only one.',
       task:'Normal squash. On each ball, the striker chooses Hold (organise early, delay commitment) or Go (take it early, remove the opponent’s time). Bonus for choosing the solution that fits the moment — e.g. take early when the opponent is still recovering; hold or misdirect when they are set and watching; play a simple recovery shot when the ball is difficult, rather than forcing a hold.',
-      scoring:'Win the rally = 1. +1 when the chosen approach (hold or go) clearly matched the situation.',
+      scoring:'Win the rally = {win}. +{matched} when the chosen approach (hold or go) clearly matched the situation.',
       coach:'This is the corrective stage for players who try to hold every ball. A forced hold on a bad ball is a worse choice than taking it early.',
       player:'Decide fast: is this a ball to hold, or a ball to take early?'
     },
@@ -10966,7 +10990,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Make the opportunity to deceive rarer and more representative, so players learn to recognise it rather than expect it.',
       task:'Normal squash. The deception bonus is only available inside a defined window — e.g. only after a loose length, only after a weak boast, only within four shots of gaining a clear positional advantage, tightening to within two shots as players succeed. Everything outside the window is normal squash with no bonus on offer.',
-      scoring:'Win the rally = 1. Deception bonus (as in Earn the Hold) only counts inside the current window.',
+      scoring:'Win the rally = {win}. +{held} if the receiver was held, +{wrongWay} if they moved the wrong way — but only inside the current window.',
       coach:'Narrow the window as the group improves — four shots, then two. The narrower the window, the closer this is to a real match.',
       player:'Most balls are just squash. Recognise the ball that gives you a window, and use it.'
     },
@@ -10988,7 +11012,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'Flip the reward to the receiver — credit for reading through misdirection, not just for the striker’s disguise.',
       task:'Run any live stage above (Sell the Dummy onward) with the scoring reversed: the receiver earns the bonus for retrieving the ball well after initially reading false information, rather than the striker earning it for selling the dummy.',
-      scoring:'Normal rally scoring, plus +2 to the receiver for a clean retrieval after a genuine early misread.',
+      scoring:'Normal rally scoring ({win} per rally), plus +{retrieval} to the receiver for a clean retrieval after a genuine early misread.',
       coach:'Use this whenever a block risks becoming a passive feeding exercise for the striker — it keeps deception coupled to a receiver who is genuinely trying to solve it.',
       player:'You will be sold false information. Stay able to change direction late and still get there.'
     },
@@ -11010,7 +11034,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       type:'holdDeception',
       objective:'A different kind of deception — built over several rallies, not one preparation. Establish a pattern deliberately, then break it before the opponent can rely on it.',
       task:'Normal rally play. Striker repeats one shot choice from a given position for an agreed number of rallies (coach sets 2 or 3), then deliberately plays a different shot from the same position on the next opportunity — the Route Breaker moment. Receiver is not told how many repeats to expect.',
-      scoring:'Win the rally = 1. +2 if the break happens after the receiver has visibly settled into expecting the repeated shot (early movement toward it on the break rally is the tell).',
+      scoring:'Win the rally = {win}. +{breakTell} if the break happens after the receiver has visibly settled into expecting the repeated shot (early movement toward it on the break rally is the tell).',
       coach:'This is pattern deception, not postural deception — a separate mechanism from every earlier stage in this series. The tell is the same principle throughout: watch what the receiver does, not how convincing the striker looked.',
       player:'Repeat the shot until it is expected. Then, on your call, do not.'
     },
@@ -11075,7 +11099,24 @@ function InformationAnticipationBuilder({onAddToSession}){
 
   useEffect(()=>{localStorage.setItem(INFO_ANTICIPATION_KEY,JSON.stringify(records));},[records]);
 
-  const activity=activities.find(a=>a.id===selectedActivity)||activities[0];
+  const rawActivity=activities.find(a=>a.id===selectedActivity)||activities[0];
+  const hdlValues=hdlValuesFor(rawActivity.id);
+  const activity=hdlValues?{...rawActivity,scoring:hdlFillTemplate(rawActivity.scoring,hdlValues),task:hdlFillTemplate(rawActivity.task,hdlValues)}:rawActivity;
+  const [hdlEditTick,setHdlEditTick]=useState(0); // forces a re-render after an edit, since values live outside React state
+  function setHdlValue(key,val){
+    const all=loadHdlScoring();
+    const forId={...(all[rawActivity.id]||{})};
+    forId[key]=Math.max(0,Number(val)||0);
+    all[rawActivity.id]=forId;
+    saveHdlScoring(all);
+    setHdlEditTick(t=>t+1);
+  }
+  function resetHdlValues(){
+    const all=loadHdlScoring();
+    delete all[rawActivity.id];
+    saveHdlScoring(all);
+    setHdlEditTick(t=>t+1);
+  }
   const predictionOptions=activity.options||directionOptions;
   const predictionRecords=records.filter(r=>r.activityType==='prediction');
   const totalPredictions=predictionRecords.length;
@@ -11169,6 +11210,17 @@ function InformationAnticipationBuilder({onAddToSession}){
       <p><strong>Objective:</strong> {activity.objective}</p>
       <p><strong>Task:</strong> {activity.task}</p>
       <p><strong>Scoring:</strong> {activity.scoring}</p>
+      {hdlValues&&<div style={{background:'#0b1320',border:'1px solid #1f4a5e',borderRadius:'10px',padding:'10px 13px',margin:'6px 0 10px'}}>
+        <strong style={{color:'#6eaac8',fontSize:'0.82rem'}}>Adjust the points — coach’s call, not the app’s</strong>
+        <p style={{margin:'4px 0 8px',color:'#8aa0b6',fontSize:'0.79rem'}}>These numbers are a starting point. Change any of them for this group, tonight — the rule above updates to match.</p>
+        {hdlValues.map(f=><div key={f.key} style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
+          <span style={{flex:'1',color:'#eaf4fb',fontSize:'0.84rem'}}>{f.label}</span>
+          <button type="button" onClick={()=>setHdlValue(f.key,f.value-1)} style={{background:'#0d1722',border:'1px solid #2a3a4f',color:'#eaf4fb',borderRadius:'7px',width:'28px',height:'28px',fontWeight:800,cursor:'pointer'}}>−</button>
+          <span style={{minWidth:'22px',textAlign:'center',color:'#6eaac8',fontWeight:800}}>{f.value}</span>
+          <button type="button" onClick={()=>setHdlValue(f.key,f.value+1)} style={{background:'#0d1722',border:'1px solid #2a3a4f',color:'#eaf4fb',borderRadius:'7px',width:'28px',height:'28px',fontWeight:800,cursor:'pointer'}}>+</button>
+        </div>)}
+        <button type="button" className="secondaryBtn" style={{marginTop:'4px',fontSize:'0.8rem'}} onClick={resetHdlValues}>Reset to defaults</button>
+      </div>}
       <p><strong>Coach:</strong> {activity.coach}</p>
       <div className="playerInstructionBox"><strong>Player View</strong><p>{activity.player}</p></div>
       <div className="buttonRow"><button className="primaryBtn" onClick={addActivityToSession}>Add Activity To Session</button></div>
@@ -12725,6 +12777,17 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
   const [challengeSquares,setChallengeSquares]=useState(()=>seed?(seed.challengeSquares||{}):{});
   const [challengeAll,setChallengeAll]=useState(()=>seed?(seed.challengeAll||setupChallenge||''):(setupChallenge||''));
+  useEffect(()=>{
+    /* Setup is one continuous scrollable page, not a gated wizard — the board
+       can exist before the coach reaches the Challenge step. Keep this court's
+       challenge in sync with what is typed in setup for as long as nothing has
+       actually happened yet; stop the moment the game is live so an edit can
+       never overwrite progress. Scoring-link instances (seed) manage their own
+       config from the room and are never touched by this device's setup box. */
+    if(seed)return;
+    const untouched=roster.every(p=>Number(p.pos||1)<=1)&&winner==null&&Object.keys(pending).length===0;
+    if(untouched)setChallengeAll(setupChallenge||'');
+  },[setupChallenge]);
   const chFor=(sq)=>challengeSquares[sq]||challengeAll||'';
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
   const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
