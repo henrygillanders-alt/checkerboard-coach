@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v634 The setup-page challenge now actually reaches the board. Root cause found: the court component captures its challenge once, when it first mounts \u2014 and because setup is one continuous scrollable page rather than gated steps, the board can already exist before a coach reaches step 3 and types a challenge. Nothing was reading the box afterward, so the game ran standard and the scoring screen never asked whether the constraint was met. The court now stays in sync with whatever is typed in setup for as long as nothing has actually happened yet \u2014 no moves, no winner, nothing pending \u2014 and stops syncing the instant the game goes live, so an edit can never overwrite a game already in progress. Builds on v633.';
+const APP_VERSION='v635 Hold & Deception scoring now uses the real Scoring Logic control. v633 built its own hand-rolled plus/minus stepper instead of reusing PointStepper \u2014 the control the Universal Modifier Engine already uses everywhere else in the app for exactly this. Same violation the house principles warn against: a new engine where a proven one already existed. The editable values now render through the actual PointStepper component, inside the same mePanel styling every other game\'s Scoring Logic panel uses, so this looks and behaves identically to every other configurable game rather than being its own thing. Builds on v634.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -11210,16 +11210,13 @@ function InformationAnticipationBuilder({onAddToSession}){
       <p><strong>Objective:</strong> {activity.objective}</p>
       <p><strong>Task:</strong> {activity.task}</p>
       <p><strong>Scoring:</strong> {activity.scoring}</p>
-      {hdlValues&&<div style={{background:'#0b1320',border:'1px solid #1f4a5e',borderRadius:'10px',padding:'10px 13px',margin:'6px 0 10px'}}>
-        <strong style={{color:'#6eaac8',fontSize:'0.82rem'}}>Adjust the points — coach’s call, not the app’s</strong>
-        <p style={{margin:'4px 0 8px',color:'#8aa0b6',fontSize:'0.79rem'}}>These numbers are a starting point. Change any of them for this group, tonight — the rule above updates to match.</p>
-        {hdlValues.map(f=><div key={f.key} style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'}}>
-          <span style={{flex:'1',color:'#eaf4fb',fontSize:'0.84rem'}}>{f.label}</span>
-          <button type="button" onClick={()=>setHdlValue(f.key,f.value-1)} style={{background:'#0d1722',border:'1px solid #2a3a4f',color:'#eaf4fb',borderRadius:'7px',width:'28px',height:'28px',fontWeight:800,cursor:'pointer'}}>−</button>
-          <span style={{minWidth:'22px',textAlign:'center',color:'#6eaac8',fontWeight:800}}>{f.value}</span>
-          <button type="button" onClick={()=>setHdlValue(f.key,f.value+1)} style={{background:'#0d1722',border:'1px solid #2a3a4f',color:'#eaf4fb',borderRadius:'7px',width:'28px',height:'28px',fontWeight:800,cursor:'pointer'}}>+</button>
+      {hdlValues&&<div className="mePanel meOpen" style={{margin:'6px 0 10px'}}>
+        <div className="mePanelHead" style={{cursor:'default'}}><span className="mePanelTitle">Scoring Logic</span><span className="mePanelSub">Editable value for each active bonus — same control as every other game</span></div>
+        {hdlValues.map(f=><div key={f.key} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'8px 4px'}}>
+          <span style={{flex:'1',color:'#eaf4fb',fontSize:'0.88rem'}}>{f.label}</span>
+          <PointStepper value={f.value} onChange={v=>setHdlValue(f.key,v)} zeroLabel="0" sign="+"/>
         </div>)}
-        <button type="button" className="secondaryBtn" style={{marginTop:'4px',fontSize:'0.8rem'}} onClick={resetHdlValues}>Reset to defaults</button>
+        <button type="button" className="secondaryBtn" style={{marginTop:'6px',fontSize:'0.8rem'}} onClick={resetHdlValues}>Reset to defaults</button>
       </div>}
       <p><strong>Coach:</strong> {activity.coach}</p>
       <div className="playerInstructionBox"><strong>Player View</strong><p>{activity.player}</p></div>
