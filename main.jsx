@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v635 Hold & Deception scoring now uses the real Scoring Logic control. v633 built its own hand-rolled plus/minus stepper instead of reusing PointStepper \u2014 the control the Universal Modifier Engine already uses everywhere else in the app for exactly this. Same violation the house principles warn against: a new engine where a proven one already existed. The editable values now render through the actual PointStepper component, inside the same mePanel styling every other game\'s Scoring Logic panel uses, so this looks and behaves identically to every other configurable game rather than being its own thing. Builds on v634.';
+const APP_VERSION='v637 ABC, and Flynn\u2019s findings correctly placed. Level 0 Foundations gains a new Module 0 \u2014 ABC (Agility, Balance, Coordination): nine pre-racquet, mostly no-racquet cards drawn from Flynn\u2019s beginner acclimatisation bank, suited to very young beginners around age 4\u20136, sitting before Tau Development in the module order. Also: the Wollstein & Abernethy timing citation moves from Reflex Read to The Hold, where the phantom swing it validates actually happens; Sell the Dummy gains a coaching note on body occlusion \u2014 blocking the opponent\u2019s line of sight to contact \u2014 as a distinct, unscored spatial technique; and Innovation joins the canonical constraint vocabulary (ALL_LAYERS), scored +1 per shot the opponent fails to duplicate within 3 attempts, available as a Universal Modifier toggle on any game rather than built as its own standalone entry. Builds on v636.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -320,8 +320,8 @@ const ANIMAL_PAIRINGS=[
 {name:'Elephant + Golden Retriever',theme:'Calm Resilience'}
 ];
 
-const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact'];
-const PERCEPTION_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact'];
+const ALL_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','Innovation'];
+const PERCEPTION_LAYERS=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','Weak Side','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack','Quiet Eye','Opponent Information','Early Cue Search','Contact Sync','Early Read','Early Take','High Contact','Innovation'];
 const CB_CODES=[
   'None',
   '[5-1]','[5-2]','[5-3]','[5-4]',
@@ -755,6 +755,7 @@ const CONSTRAINT_BONUS_POINTS={
   'High Contact':'+1',
   'Double Bounce':'constraint only',
   'DB Handicap':'constraint only',
+  'Innovation':'+1 per shot the opponent fails to duplicate within 3 attempts',
   'No Repeat':'+1',
   'Straight + Cross':'+2',
   'Height Change':'+2',
@@ -8969,6 +8970,7 @@ function Level0Foundations({setScreen,setSession}){
 
   const modules=[
     {id:'home',label:'Overview',emoji:'🏠'},
+    {id:'abc',label:'ABC',emoji:'🤸'},
     {id:'tau',label:'Tau Development',emoji:'👁'},
     {id:'chipping',label:'Chipping System',emoji:'🎾'},
     {id:'spacing',label:'Spacing',emoji:'📐'},
@@ -8976,6 +8978,17 @@ function Level0Foundations({setScreen,setSession}){
     {id:'bluedanube',label:'Blue Danube',emoji:'🎵'},
   ];
 
+  const abcCards=[
+    {code:'ABC-1',title:'Two-Hand Catching',purpose:'Basic hand-eye coordination before any racquet is involved.',task:'Player throws a ball to themselves and catches it, alternating hands. Vary ball size across the set.',constraint:'Soft or foam ball. No racquet.',cue:'Watch the ball into your hands.',simplify:'Larger, softer ball. Lower throws.',progress:'Add a clap or spin before the catch.'},
+    {code:'ABC-2',title:'Bat-and-Ball Catching',purpose:'Bridge from hand-eye to racquet-eye coordination.',task:'Same as Two-Hand Catching, but the ball is caught on the racquet face rather than the hand.',constraint:'Foam ball, wide racquet face held flat.',cue:'Give with the racquet as the ball arrives.',simplify:'Bigger ball, bigger target (a bucket or cone).',progress:'Reduce ball size toward a squash ball.'},
+    {code:'ABC-3',title:'Keep It Up',purpose:'Sustained tracking and fine control under continuous demand.',task:'Player keeps a balloon, then a ball, in the air using hands, then a racquet.',constraint:'Balloon first, then foam ball.',cue:'Small taps, not big hits.',simplify:'Balloon only \u2014 it falls slowly and forgives timing errors.',progress:'Count consecutive taps; beat your own best.'},
+    {code:'ABC-4',title:'Double Bounce Catch',purpose:'Track two moving objects at once \u2014 divided attention.',task:'Player bounces two balls at the same time, one in each hand, then catches both.',constraint:'Two soft balls, same size to start.',cue:'Let your hands work independently \u2014 don\u2019t stare at just one ball.',simplify:'One ball only, until comfortable.',progress:'Use two different ball sizes or types together.'},
+    {code:'ABC-5',title:'Target Toss',purpose:'Depth judgement \u2014 knowing how far, not just where.',task:'Player throws or chips balls into a bucket or hoop placed at varying distances.',constraint:'Soft ball, a bucket or hoop as the target.',cue:'Look at the target, not the ball, before you release.',simplify:'Move the target closer.',progress:'Move the target further, or use a smaller target.'},
+    {code:'ABC-6',title:'Random Drop Sprint',purpose:'Reaction to an unpredictable release \u2014 an early anticipation foundation.',task:'Coach holds two balls and drops one at random. Player reacts and retrieves it before it bounces twice.',constraint:'Soft balls. Coach stands close, drops from waist height.',cue:'Watch the coach\u2019s hands, not the floor.',simplify:'Allow more bounces before the ball is \u201clost\u201d.',progress:'Progress to intercepting before the first bounce (a volley).'},
+    {code:'ABC-7',title:'Balance Wobble',purpose:'Stability as its own skill \u2014 needed before any shot can be reliable.',task:'Player stands on a wobble board or cushion and throws/catches a ball while balancing.',constraint:'Wobble board or a folded mat. Soft ball only.',cue:'Find your balance first, then add the throw.',simplify:'Stand on the floor; balance work only, no ball yet.',progress:'Add a racquet catch instead of a hand catch.'},
+    {code:'ABC-8',title:'Footwork Pattern Run',purpose:'Agility and footwork variety before it is asked to combine with a shot.',task:'Player runs a simple pattern \u2014 hoops, cones or lines on the floor \u2014 with feet only, no ball.',constraint:'Hoops or cones laid in a simple sequence.',cue:'Light feet, quick steps.',simplify:'Fewer, larger-spaced markers.',progress:'Add a ball carry, then a bounce-and-catch, while running the pattern.'},
+    {code:'ABC-9',title:'Restricted Rally',purpose:'Introduce a cooperative rally with a simple, named constraint \u2014 the first step toward squash itself.',task:'Two players rally cooperatively, restricted to forehand only, backhand only, or always crossing the court.',constraint:'Soft ball, cooperative (not competitive) rally.',cue:'Keep it going \u2014 how many in a row can you make?',simplify:'Player self-feeds and self-catches between each hit.',progress:'Remove the restriction; free cooperative rally.'},
+  ];
   const [tauTab,setTauTab]=useState('science');
 
   const tauCards=[
@@ -9086,6 +9099,19 @@ function Level0Foundations({setScreen,setSession}){
           {[{n:'1',q:'Can they see it?'},{n:'2',q:'Can they move to it?'},{n:'3',q:'Can they contact it?'},{n:'4',q:'Can they sustain it?'}].map(q=><div key={q.n} className="l0FourQCard"><span>{q.n}</span><strong>{q.q}</strong></div>)}
         </div>
         <div className="l0OnlyThen">Only then ask: How should they swing?</div>
+      </div>
+    </div>}
+
+    {activeModule==='abc'&&<div className="l0ModuleSection">
+      <div className="l0ModuleIntro">
+        <span className="categoryTag">Module 0 · Pre-Racquet</span>
+        <h2>ABC — Agility, Balance, Coordination</h2>
+        <p className="l0ModuleSub">Before Tau. Before a racquet.</p>
+        <p>General hand-eye and movement foundations, mostly without a racquet at all — the ground floor beneath Tau Development, best suited to very young or complete beginners (around age 4–6). Sourced from Flynn’s beginner acclimatisation bank (Flynn, 1996/2000, “Anticipation and Deception in Squash”).</p>
+        <div className="l0PrincipleCallout">"Before you coach the swing, or even the ball — check the hands and the feet."</div>
+      </div>
+      <div className="l0CardStack">
+        {abcCards.map(card=><CoachCard key={card.code} card={card} onAdd={addToSession}/>)}
       </div>
     </div>}
 
@@ -10892,7 +10918,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       objective:'Fill the gap between the two bounces with something real to do, so waiting stops meaning freezing.',
       task:'Unopposed, coach-fed. Ball must first-bounce before the short line — anywhere further back the hold does not work, so do not attempt it there. Player is organised — racket loaded, balanced — by the first bounce. Coach sets 1 or 2 phantom swings: the player takes that many full practice swings, in rhythm, while the ball is between its bounces, then strikes for real after the second bounce and the swing count is complete.',
       scoring:'No formal score. Coach checks: did the phantom swing land in the gap between the bounces, and did the real strike still come after the second bounce?',
-      coach:'The phantom swing is the technique that makes the hold learnable — most players cannot simply "wait", but they can rehearse a rhythm. Increase to 2 swings once 1 feels easy; this is the on-ramp to every later stage.',
+      coach:'Citation: Wollstein & Abernethy (1988) found the interval between the top of the ball\u2019s bounce and racket contact is a near-constant timing window \u2014 disrupting it (rather than simply pausing) is what defeats an opponent\u2019s anticipation. The phantom swing is that disruption technique: most players cannot simply "wait", but they can rehearse keeping the racket moving. Increase to 2 swings once 1 feels easy; this is the on-ramp to every later stage.',
       player:'One or two practice swings while the ball is in the air between bounces. Real shot only after the second bounce.'
     },
     {
@@ -10936,7 +10962,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       objective:'Misdirection: make the preparation credibly suggest a shot other than the one played.',
       task:SCAFFOLD_TXT+' Coach sets a dummy pattern — e.g. show crosscourt, play straight; show drop, play deep; show power, play soft. The suggested shot must stay credible inside the normal preparation, not an exaggerated fake.',
       scoring:'Win the rally = {win}. +{wrongMove} if the receiver makes a clear movement toward the false option before contact.',
-      coach:'The dummy fails if it is theatrical — a receiver who is not fooled by a normal-looking preparation was never going to be fooled by a bigger one either.',
+      coach:'The dummy fails if it is theatrical — a receiver who is not fooled by a normal-looking preparation was never going to be fooled by a bigger one either. A related, purely spatial technique: some players naturally use their own body to block the opponent’s line of sight to contact. This is not scored here — it is a body-position habit to notice and encourage, not a checkable rule — but it is worth naming to players as a second, entirely different way to hide information, distinct from everything else in this series.',
       player:'Make one shot look available. Play the other.'
     },
     {
@@ -11024,7 +11050,7 @@ function InformationAnticipationBuilder({onAddToSession}){
       objective:'Give the receiver the same isolated rehearsal the striker gets in The Hold — rehearsing the read alone before it is tested live.',
       task:'Coach (or a feeding player) plays medium-paced, deceptive straight or crosscourt drives at random from the back of the court. Receiver stays on or just in front of the short line and attempts to intercept every ball, driving it straight. The receiver’s only job is the read — do not chase a missed ball into a rally.',
       scoring:'Coach counts consecutive balls intercepted before one gets past. Receiver tries to beat their own best run.',
-      coach:'Citation: Wollstein & Abernethy (1988) found the window between the top of the ball’s bounce and racket contact is the period carrying most of a receiver’s usable information — this isolates exactly that window, with no rally pressure attached, so the read can be rehearsed on its own before it has to survive a live game.',
+      coach:'This isolates the same window The Hold trains from the other side — the top-of-bounce-to-contact interval that carries most of a receiver’s usable information — with no rally pressure attached, so the read can be rehearsed on its own before it has to survive a live game.',
       player:'Watch the racket, not the ball flight. Read it, then move.'
     },
     {
@@ -21219,7 +21245,7 @@ function patternLogicSteps(game,trigger='offT',side,lengthType,firstShot){
     return {...p,code,name:forced||p.name};
   };
   const line=(lead,p,label)=>{const q=applyLen(p,label);return {v:`${lead} ${q.code}${q.note?' - '+q.note:''}.`,hint:shotHint(q)};};
-  if(game.intention)steps.push({k:'Intention',v:`${game.intention}. That is what this card trains - the shots below narrow the space, they are not the answer.`});
+  if(game.intention)steps.push({k:'Intention',v:`${game.intention}. That is what this card trains. The shots named here give the player a real choice - the skill is making that choice, not playing any one shot.`});
   steps.push({k:'Serve',v:'The panel sets your side and direction.'});
   if(forced)steps.push({k:'Length',v:`Every length is a ${forced} - ${LENGTH_NOTE[lengthType].replace(/^Lengths must be [^:]*:\s*/,'')}`});
   steps.push({k:'Build',...line('Rally into',build.parts,build.shot.label)});
