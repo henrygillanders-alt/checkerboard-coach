@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v645 Mirrored Checkerboard codes reach the session. A challenge set up in Mirror mode recorded only the assigned side \u2014 the opposite-side code was computed and shown in the module but dropped on the way to the session card and player display, because only Optional challenge types printed a second code. A mirrored challenge now reads both sides, e.g. [8-4] + [8-4] \u2194 [7-3] + [7-3]. Builds on v644.';
+const APP_VERSION='v647 Checkerboard difficulty as a four-step ladder. Order and adjacency are separate constraints, so v646\u2019s single toggle was collapsing two different things: whether the codes must follow the listed order, and whether they must be back to back. Both are now set independently, presented easiest to hardest \u2014 any order with gaps, any order consecutive, in sequence with gaps, in sequence consecutive. The last is the original strict behaviour and remains the default; the other three carry the coach-set per-code and completion scoring. Builds on v646.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -7581,6 +7581,24 @@ const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court
 // white-screened v414-v419.
 const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +3  ·  Challenge finish = +2  ·  Clean winner = +2 and sits on top of all scoring.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
 
+/* Any-order (non-consecutive) challenges. A strict sequence resets the moment a
+   code is missed, which stalls rallies; letting the codes be met in any order,
+   scoring each as it lands, keeps the rally alive and lifts the pace. Coach sets
+   the per-code value and the all-codes bonus. */
+function cbOrderRuleText(anyOrder,consecutive,n){
+  const order=anyOrder?'in any order':'in the order listed';
+  const adj=consecutive?'on consecutive shots \u2014 back to back, with no other shot between them':'with gaps allowed \u2014 they do not have to be consecutive';
+  return 'Play the '+n+' listed codes '+order+', '+adj+'.';
+}
+function cbAnyOrderScoring(perCode,allBonus,sameRallyBonus,count,anyOrder,consecutive){
+  const n=count||3;
+  return cbOrderRuleText(anyOrder,consecutive,n)+
+    '  \u00b7  Each code completed = +'+perCode+
+    '  \u00b7  All '+n+' completed during the game = +'+allBonus+
+    (sameRallyBonus>0?('  \u00b7  All '+n+' completed inside a single rally = +'+sameRallyBonus):'')+
+    '  \u00b7  Win the rally = +1  \u00b7  Clean winner = +2 and sits on top of all scoring.'+
+    (consecutive?'  A broken run restarts the challenge.':'  A missed code costs nothing \u2014 keep playing and take them as they come.');
+}
 function cbIsOptional(type){return type==='Optional Single'||type==='Optional Pair'||type==='Optional Triple';}
 function cbBaseKind(type){
   if(type==='Single'||type==='Optional Single')return 'single';
@@ -7819,6 +7837,16 @@ function CheckerboardSetup({setScreen,setSession}){
   const [status,setStatus]=useState('');
   const [liveUrl,setLiveUrl]=useState('');
   const [seamAllowance,setSeamAllowance]=useState(()=>{try{return localStorage.getItem(CB_SEAM_KEY)==='1';}catch{return false;}});
+  /* Any-order mode and its scoring — kept with the other coach settings. */
+  const [anyOrder,setAnyOrder]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').on||false;}catch{return false;}});
+  const [aoPerCode,setAoPerCode]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').perCode??1;}catch{return 1;}});
+  const [aoAllBonus,setAoAllBonus]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').allBonus??1;}catch{return 1;}});
+  const [aoRallyBonus,setAoRallyBonus]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').rallyBonus??3;}catch{return 3;}});
+  /* Order and adjacency are independent: a challenge can be any-order or in-sequence,
+     and separately allow gaps or demand consecutive shots. Consecutive + in sequence
+     is the original strict behaviour; any order + gaps is the loosest. */
+  const [aoConsecutive,setAoConsecutive]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').consecutive??true;}catch{return true;}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive}));}catch{}},[anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive]);
 
   useEffect(()=>{try{localStorage.setItem(CB_SEAM_KEY,seamAllowance?'1':'0');}catch{}},[seamAllowance]);
 
@@ -7938,7 +7966,9 @@ function CheckerboardSetup({setScreen,setSession}){
       duration:8,
       task,
       description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
-      scoring:CB_FULL_SCORING,
+      scoring:(anyOrder||!aoConsecutive)
+        ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,cbBaseKind(group.type)==='triple'?3:cbBaseKind(group.type)==='pair'?2:1,anyOrder,aoConsecutive)
+        :CB_FULL_SCORING,
       coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'.',
       playerFocus:'Find the solution to the code within the live rally.'
     });
@@ -8048,6 +8078,29 @@ function CheckerboardSetup({setScreen,setSession}){
       <div className="cbsetField"><label>Set Level for all <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· then override any player below</span></label>
         <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className={bulkLevel===l?'cbsetChip on':'cbsetChip'} onClick={()=>setLevelAll(l)}>L{l}</button>)}</div>
         <p className="cbsetScopeNote">Sets every player, court and the group to the same level in one tap — the level carries across scopes. Switch to Per-Player and each player card still has its own level selector to override.</p></div>
+      <div className="cbsetField"><label>Difficulty — order and adjacency</label>
+        <div className="cbsetChips">
+          <button type="button" className={(anyOrder&&!aoConsecutive)?'cbsetChip on':'cbsetChip'} onClick={()=>{setAnyOrder(true);setAoConsecutive(false);}}>1 · Any order, gaps allowed</button>
+          <button type="button" className={(anyOrder&&aoConsecutive)?'cbsetChip on':'cbsetChip'} onClick={()=>{setAnyOrder(true);setAoConsecutive(true);}}>2 · Any order, consecutive</button>
+          <button type="button" className={(!anyOrder&&!aoConsecutive)?'cbsetChip on':'cbsetChip'} onClick={()=>{setAnyOrder(false);setAoConsecutive(false);}}>3 · In sequence, gaps allowed</button>
+          <button type="button" className={(!anyOrder&&aoConsecutive)?'cbsetChip on':'cbsetChip'} onClick={()=>{setAnyOrder(false);setAoConsecutive(true);}}>4 · In sequence, consecutive</button>
+        </div>
+        <p className="cbsetScopeNote">Easiest to hardest. <strong>Order</strong> is whether the codes must follow the listed order; <strong>adjacency</strong> is whether they must be back to back with no other shot between. {(anyOrder||!aoConsecutive)?'A missed code costs nothing here, so rallies keep going and the pace lifts.':'This is the strictest setting — a broken run restarts the challenge.'}</p>
+        {(anyOrder||!aoConsecutive)&&<div style={{marginTop:'8px'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Each code completed</span>
+            <PointStepper value={aoPerCode} onChange={setAoPerCode} min={0} max={5} zeroLabel="0" sign="+"/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All codes completed during the game</span>
+            <PointStepper value={aoAllBonus} onChange={setAoAllBonus} min={0} max={9} zeroLabel="0" sign="+"/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All codes inside a single rally</span>
+            <PointStepper value={aoRallyBonus} onChange={setAoRallyBonus} min={0} max={9} zeroLabel="Off" sign="+"/>
+          </div>
+        </div>}
+      </div>
       <div className="cbsetField"><label>Seam Allowance</label>
         <div className="cbsetChips">
           <button type="button" className={!seamAllowance?'cbsetChip on':'cbsetChip'} onClick={()=>setSeamAllowance(false)}>Off</button>
