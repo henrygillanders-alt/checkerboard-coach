@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v640 Clearer zone-movement wording. The two-shot stage previously read that the striker moves Zone 1 to Zone 3 \u201cto play that drop themselves\u201d, which could be read as taking another shot; it now reads that they move from Zone 1 to Zone 3 to the queue \u2014 the movement is how they rejoin, not a further shot. Builds on v639.';
+const APP_VERSION='v643 Road-test reporting, and past attendance you can finally see. Attendance records were being saved every session and never displayed anywhere \u2014 every record since the app began was invisible. Players now shows Past attendance: every saved session, newest first, expandable for who was present and absent, with a CSV export giving a player-by-date grid and a present-count per player. Suggestions gains a road-test mode: pick a game, say whether it worked, what happened and what you changed on the fly \u2014 the last being where the real findings come from. Reports are marked distinctly from ideas, and the panel shows how many of tonight\u2019s games have never been reported on, naming them. All of it lands in the cloud backup from v641. Builds on v642.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5082,26 +5082,63 @@ function GameSuggestions({setScreen,session,embedded=false}){
   const [role,setRole]=useState('Player');
   const [text,setText]=useState('');
   const [filter,setFilter]=useState('open');
+  /* Road-test mode: a report of actually running a game, not an idea for one.
+     Kept in the same store so it is covered by cloud backup. */
+  const [mode,setMode]=useState('idea');
+  const [worked,setWorked]=useState('');
+  const [changed,setChanged]=useState('');
+  const [verdict,setVerdict]=useState('worked');
   const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
   const sessionGames=useMemo(()=>Array.from(new Set(((session||[]).map(g=>g&&g.title).filter(Boolean)))),[session]);
   function update(next){saveSuggestions(next);setItems(next);}
   function add(){
+    if(mode==='roadtest'){
+      const g=game.trim();
+      if(!g)return;
+      update([{id:makeLocalId(),at:new Date().toISOString(),game:g,author:author.trim()||'Anonymous',role,
+        kind:'roadtest',verdict,worked:worked.trim(),changed:changed.trim(),
+        text:(worked.trim()||'(no notes)'),status:'open'},...items]);
+      setWorked('');setChanged('');
+      return;
+    }
     const t=text.trim();
     if(!t)return;
-    update([{id:makeLocalId(),at:new Date().toISOString(),game:game.trim()||'General',author:author.trim()||'Anonymous',role,text:t,status:'open'},...items]);
+    update([{id:makeLocalId(),at:new Date().toISOString(),game:game.trim()||'General',author:author.trim()||'Anonymous',role,kind:'idea',text:t,status:'open'},...items]);
     setText('');
   }
+  /* A game counts as road-tested once any report exists for it. */
+  const testedGames=useMemo(()=>{
+    const m={};
+    items.filter(it=>it.kind==='roadtest').forEach(it=>{
+      const key=String(it.game||'').trim().toLowerCase();
+      if(!key)return;
+      if(!m[key]||new Date(it.at)>new Date(m[key].at))m[key]=it;
+    });
+    return m;
+  },[items]);
   function setStatus(id,status){update(items.map(it=>it.id===id?{...it,status}:it));}
   function remove(id){if(window.confirm('Delete this suggestion?'))update(items.filter(it=>it.id!==id));}
   function exportAll(){
-    const lines=['Date,Game,From,Role,Status,Suggestion'];
-    items.forEach(it=>lines.push([new Date(it.at).toLocaleDateString(),'"'+it.game.replace(/"/g,'""')+'"','"'+it.author.replace(/"/g,'""')+'"',it.role,it.status,'"'+it.text.replace(/"/g,'""')+'"'].join(',')));
+    const lines=['Date,Type,Game,From,Role,Verdict,Status,Notes,Changed on the fly'];
+    items.forEach(it=>lines.push([
+      new Date(it.at).toLocaleDateString(),
+      it.kind==='roadtest'?'Road test':'Idea',
+      '"'+String(it.game||'').replace(/"/g,'""')+'"',
+      '"'+String(it.author||'').replace(/"/g,'""')+'"',
+      it.role||'',
+      it.verdict||'',
+      it.status||'',
+      '"'+String(it.text||'').replace(/"/g,'""')+'"',
+      '"'+String(it.changed||'').replace(/"/g,'""')+'"'
+    ].join(',')));
     const csv=lines.join('\n');
     try{
-      const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.download='game-suggestions.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);
+      const blob=new Blob([csv],{type:'text/csv'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download='game-reports.csv';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
       setTimeout(()=>URL.revokeObjectURL(url),2000);
-    }catch{window.prompt('Copy the suggestions CSV:',csv);}
+    }catch{window.prompt('Copy the reports CSV:',csv);}
   }
   const shown=items.filter(it=>filter==='all'?true:filter==='done'?it.status!=='open':it.status==='open');
   return <div className="page" style={{maxWidth:'900px',margin:'0 auto'}}>
@@ -5122,28 +5159,51 @@ function GameSuggestions({setScreen,session,embedded=false}){
     {!embedded&&<div className="pageTop"><div><h1>Suggestions</h1><p className="mutedText">A portal for players and coaches to suggest improvements to games and activities.</p></div><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button></div>}
 
     <div className="sugPanel">
-      <h4>Add a suggestion</h4>
+      <h4>{mode==='roadtest'?'Report a game you ran':'Add a suggestion'}</h4>
+      <div className="sugRow" style={{marginBottom:'10px'}}>
+        {[['idea','Suggest an improvement'],['roadtest','I ran this — here is what happened']].map(([id,label])=>
+          <button type="button" key={id} className={mode===id?'sugChip on':'sugChip'} onClick={()=>setMode(id)}>{label}</button>)}
+      </div>
       <input className="sugInput" list="sugGameList" placeholder="Which game? (start typing, or pick from tonight's session)" value={game} onChange={e=>setGame(e.target.value)}/>
       <datalist id="sugGameList">{sessionGames.map(g=><option key={g} value={g}/>)}</datalist>
-      <textarea className="sugInput" rows="3" placeholder="What would make it better? e.g. give the smaller court an extra invade turn" value={text} onChange={e=>setText(e.target.value)}/>
+      {mode==='roadtest'?<>
+        <div className="sugRow" style={{marginBottom:'8px'}}>
+          {[['worked','Worked'],['mixed','Mixed'],['failed','Did not work']].map(([id,label])=>
+            <button type="button" key={id} className={verdict===id?'sugChip on':'sugChip'} onClick={()=>setVerdict(id)}>{label}</button>)}
+        </div>
+        <textarea className="sugInput" rows="3" placeholder="What actually happened? What worked, what did not?" value={worked} onChange={e=>setWorked(e.target.value)}/>
+        <textarea className="sugInput" rows="2" placeholder="What did you change on the fly? (this is usually the most valuable part)" value={changed} onChange={e=>setChanged(e.target.value)}/>
+      </>:
+        <textarea className="sugInput" rows="3" placeholder="What would make it better? e.g. give the smaller court an extra invade turn" value={text} onChange={e=>setText(e.target.value)}/>}
       <div className="sugRow" style={{marginBottom:'8px'}}>
         <input className="sugInput" list="sugWhoList" style={{flex:'1',minWidth:'160px',marginBottom:0}} placeholder="Your name (optional)" value={author} onChange={e=>setAuthor(e.target.value)}/>
         <datalist id="sugWhoList">{roster.map(n=><option key={n} value={n}/>)}</datalist>
         {['Player','Coach'].map(r=><button type="button" key={r} className={role===r?'sugChip on':'sugChip'} onClick={()=>setRole(r)}>{r}</button>)}
       </div>
-      <button type="button" className="primaryBtn" disabled={!text.trim()} onClick={add}>Save suggestion</button>
+      <button type="button" className="primaryBtn" disabled={mode==='roadtest'?!game.trim():!text.trim()} onClick={add}>{mode==='roadtest'?'Save report':'Save suggestion'}</button>
     </div>
 
     <div className="sugPanel">
-      <h4>Suggestions ({shown.length})</h4>
+      {sessionGames.length>0&&(()=>{
+        const untested=sessionGames.filter(g=>!testedGames[String(g).trim().toLowerCase()]);
+        return <div style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'9px 12px',marginBottom:'10px'}}>
+          <strong style={{color:'#6eaac8',fontSize:'0.86rem'}}>Tonight’s session: {sessionGames.length-untested.length} of {sessionGames.length} road-tested</strong>
+          {untested.length>0&&<p style={{margin:'4px 0 0',color:'#8aa0b6',fontSize:'0.82rem'}}>Never reported on: {untested.join(', ')}</p>}
+        </div>;
+      })()}
+      <h4>Suggestions & reports ({shown.length})</h4>
       <div className="sugRow" style={{marginBottom:'10px'}}>
         {[['open','Open'],['done','Actioned / parked'],['all','All']].map(([id,label])=><button type="button" key={id} className={filter===id?'sugChip on':'sugChip'} onClick={()=>setFilter(id)}>{label}</button>)}
         {items.length>0&&<button type="button" className="sugMini" onClick={exportAll}>Export CSV</button>}
       </div>
       {!shown.length&&<p className="mutedText">Nothing here yet. Ask the group at the end of a game — the best changes usually come from whoever just played it.</p>}
       {shown.map(it=><div key={it.id} className={it.status==='open'?'sugCard':'sugCard done'}>
-        <div className="sugMeta"><b>{it.game}</b> · {it.author} ({it.role}) · {new Date(it.at).toLocaleDateString()}{it.status!=='open'?' · '+it.status:''}</div>
+        <div className="sugMeta">
+          {it.kind==='roadtest'&&<span style={{color:it.verdict==='worked'?'#8fbfa4':it.verdict==='failed'?'#c98a8a':'#6eaac8',fontWeight:800}}>{it.verdict==='worked'?'✓ Ran it — worked':it.verdict==='failed'?'✗ Ran it — did not work':'○ Ran it — mixed'} · </span>}
+          <b>{it.game}</b> · {it.author} ({it.role}) · {new Date(it.at).toLocaleDateString()}{it.status!=='open'?' · '+it.status:''}
+        </div>
         <p className="sugText">{it.text}</p>
+        {it.kind==='roadtest'&&it.changed&&<p className="sugText" style={{color:'#6eaac8',fontSize:'0.86rem'}}><strong>Changed on the fly:</strong> {it.changed}</p>}
         <div className="sugRow">
           {it.status==='open'
             ?<>
@@ -7600,7 +7660,20 @@ function cbTxSetLevel(row,level){
   const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
   return cbTxSetType({...row,level},d.type);
 }
-function cbTxTap(row,code){const r={...row};if(cbIsOptional(r.type)){if(r.optNext==='A'){r.optionA=code;r.optNext='B';}else{r.optionB=code;r.optNext='A';}}else{r.assigned=code;}r.hidden=false;r.revealed=true;return r;}
+function cbTxTap(row,code){
+  const r={...row};
+  if(cbIsOptional(r.type)){
+    if(r.optNext==='A'){r.optionA=code;r.optNext='B';}else{r.optionB=code;r.optNext='A';}
+  }else{
+    r.assigned=code;
+    /* In Mirror mode the alternate must follow the code actually entered. Without
+       this it kept showing the mirror of whatever was assigned previously \u2014 so
+       typing 8-4 + 8-4 left a stale, unrelated pair in the Mirror Alt box instead
+       of 7-3 + 7-3. */
+    if(r.mode==='Mirror'){r.optionA=code;r.optionB=cbMirrorCode(code);}
+  }
+  r.hidden=false;r.revealed=true;return r;
+}
 function cbTxMirror(row){const r={...row};if(cbIsOptional(r.type)){const a=r.optionA||cbRandomFrom(cbPoolFor(r.type));r.optionA=a;r.optionB=cbMirrorCode(a);r.optNext='A';}else{const a=r.assigned||cbRandomFrom(cbPoolFor(r.type));r.assigned=a;r.optionA=a;r.optionB=cbMirrorCode(a);}r.hidden=false;r.revealed=true;r.mode='Mirror';return r;}
 function cbTxUseMirror(row){const r={...row};if(r.optionB){const keep=r.optionA;r.assigned=r.optionB;r.optionA=r.optionB;r.optionB=keep;}return r;}
 function cbTxClear(row){return {...row,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
@@ -15874,6 +15947,29 @@ const[guestRanking,setGuestRanking]=useState('');
 const today=new Date().toISOString().slice(0,10);
 const[sessionDate,setSessionDate]=useState(()=>{try{return localStorage.getItem(ATTENDANCE_DATE_KEY)||today}catch{return today}});
 const[attendanceHistory,setAttendanceHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem(ATTENDANCE_HISTORY_KEY)||'[]')}catch{return[]}});
+const[showAttendanceHistory,setShowAttendanceHistory]=useState(false);
+const[openAttendanceRec,setOpenAttendanceRec]=useState(null);
+function exportAttendanceCsv(){
+  const names=[...new Set(attendanceHistory.flatMap(r=>r.players.map(p=>p.name)))].sort((a,b)=>a.localeCompare(b));
+  const dates=attendanceHistory.map(r=>r.date);
+  const lines=['Player,'+dates.join(',')+',Total present'];
+  names.forEach(n=>{
+    const cells=attendanceHistory.map(r=>{
+      const p=r.players.find(x=>x.name===n);
+      return p?(p.present?'P':'A'):'';
+    });
+    const total=cells.filter(c=>c==='P').length;
+    lines.push('"'+String(n).replace(/"/g,'""')+'",'+cells.join(',')+','+total);
+  });
+  const csv=lines.join('\n');
+  try{
+    const blob=new Blob([csv],{type:'text/csv'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='attendance-history.csv';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }catch{window.prompt('Copy the attendance CSV:',csv);}
+}
 useEffect(()=>{try{localStorage.setItem(ATTENDANCE_HISTORY_KEY,JSON.stringify(attendanceHistory));}catch{}},[attendanceHistory]);
 useEffect(()=>{try{localStorage.setItem(ATTENDANCE_DATE_KEY,sessionDate);}catch{}},[sessionDate]);
 function saveSnapshot(){setHistory([...history,players]);}
@@ -15929,6 +16025,36 @@ return <div className="page">
 </div></div>
 <div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button>{history.length>0&&<button className="secondaryBtn" onClick={undo} title={'Restores '+history[history.length-1].length+' players to how they were before the last change'}>↺ Undo last change ({history.length})</button>}</div></div>
 {lastRecord&&<div className="hintBox"><strong>Saved record for this date:</strong> {lastRecord.players.filter(p=>p.present).length} present · {lastRecord.players.filter(p=>!p.present).length} absent · saved {new Date(lastRecord.createdAt).toLocaleString()}</div>}
+
+{/* Saved attendance records were being written but never displayed anywhere —
+    every record saved was invisible. This shows them, newest first. */}
+{attendanceHistory.length>0&&<div className="mePanel meOpen" style={{margin:'12px 0'}}>
+  <div className="mePanelHead" style={{cursor:'pointer'}} onClick={()=>setShowAttendanceHistory(v=>!v)}>
+    <span className="mePanelTitle">Past attendance ({attendanceHistory.length} {attendanceHistory.length===1?'record':'records'})</span>
+    <span className="mePanelSub">{showAttendanceHistory?'Tap to hide':'Tap to see every session you have saved'}</span>
+  </div>
+  {showAttendanceHistory&&<div>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',margin:'0 0 10px'}}>
+      <button type="button" className="secondaryBtn" style={{fontSize:'0.8rem'}} onClick={exportAttendanceCsv}>Export all as CSV</button>
+    </div>
+    {attendanceHistory.map(rec=>{
+      const present=rec.players.filter(p=>p.present);
+      const absent=rec.players.filter(p=>!p.present);
+      const open=openAttendanceRec===rec.id;
+      return <div key={rec.id} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'9px 12px',marginBottom:'7px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'10px',flexWrap:'wrap',cursor:'pointer'}} onClick={()=>setOpenAttendanceRec(open?null:rec.id)}>
+          <strong style={{color:'#6eaac8'}}>{new Date(rec.date).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})}</strong>
+          <span style={{color:'#8aa0b6',fontSize:'0.82rem'}}>{present.length} present · {absent.length} absent · {open?'tap to close':'tap for names'}</span>
+        </div>
+        {open&&<div style={{marginTop:'7px'}}>
+          <p style={{margin:'0 0 4px',color:'#8fbfa4',fontSize:'0.84rem'}}><strong>Present:</strong> {present.length?present.map(p=>p.name).join(', '):'nobody'}</p>
+          {absent.length>0&&<p style={{margin:0,color:'#8aa0b6',fontSize:'0.84rem'}}><strong>Absent:</strong> {absent.map(p=>p.name).join(', ')}</p>}
+          <p style={{margin:'5px 0 0',color:'#5f7387',fontSize:'0.76rem'}}>Saved {new Date(rec.createdAt).toLocaleString()}</p>
+        </div>}
+      </div>;
+    })}
+  </div>}
+</div>}
 {showForm&&<div className="formCard"><h3>{editing!==null?'Edit Player':'Add Player'}</h3>
 <input placeholder="Player name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 <select value={form.playerType} onChange={e=>setForm({...form,playerType:e.target.value})}><option>Programme Player</option><option>Guest Player</option><option>Coach Player</option></select>
@@ -18793,6 +18919,120 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   );
 }
 
+
+/* ── CLOUD BACKUP ─────────────────────────────────────────────────────────────
+   Everything below is irreplaceable coaching history: a season of ladder points,
+   what each player has been working on, road-test reports, suggestions. It lived
+   only in this browser, where a cleared cache or a lost device destroyed it.
+   These records now mirror to the same Supabase table the live displays already
+   use, under a backup code the coach controls, and can be restored onto any
+   device. Local storage stays the working copy; the cloud is the safety net. */
+const CB_BACKUP_CODE_KEY='checkerboard_backup_code_v1';
+const CB_BACKUP_KEYS=[
+  {key:'checkerboard_season_ladder_v1',label:'Performance Ladder \u2014 season points'},
+  {key:'checkerboard_tech_constraint_history_v1',label:'Technical constraints \u2014 player history'},
+  {key:'checkerboard_tech_constraints_v1',label:'Technical constraints \u2014 library'},
+  {key:'checkerboard_game_suggestions_v1',label:'Suggestions & road-test reports'},
+  {key:'checkerboard_master_coach_suggestions_v1',label:'Coach suggestions'},
+  {key:'checkerboard_player_plans_v1',label:'Player plans'},
+  {key:'checkerboard_master_v54_players',label:'Players & attendance'},
+  {key:'checkerboard_universal_db_handicap_v97',label:'Double bounce allowances'},
+  {key:'checkerboard_hdl_scoring_v1',label:'Hold & Deception scoring settings'},
+  {key:'checkerboard_db_earn_conditions',label:'DB earn conditions'},
+];
+function cbBackupCode(){
+  try{
+    let c=localStorage.getItem(CB_BACKUP_CODE_KEY);
+    if(!c){c='cb-backup-'+Math.random().toString(36).slice(2,8);localStorage.setItem(CB_BACKUP_CODE_KEY,c);}
+    return c;
+  }catch{return 'cb-backup-local';}
+}
+function cbSetBackupCode(code){
+  const c=String(code||'').trim();
+  if(!c)return false;
+  try{localStorage.setItem(CB_BACKUP_CODE_KEY,c);return true;}catch{return false;}
+}
+function cbCollectBackup(){
+  const data={};
+  CB_BACKUP_KEYS.forEach(({key})=>{
+    try{const v=localStorage.getItem(key);if(v!=null)data[key]=v;}catch{}
+  });
+  return {savedAt:new Date().toISOString(),appVersion:APP_VERSION.split(' ')[0],data};
+}
+function cbBackupNow(){
+  /* Reuses the proven live-sync write path \u2014 no new infrastructure. */
+  const payload=cbCollectBackup();
+  return writeLivePlayerRoom(cbBackupCode(),'cbbackup',payload);
+}
+async function cbRestoreBackup(){
+  const row=await readLivePlayerRoom(cbBackupCode());
+  const p=row&&row.payload;
+  if(!p||!p.data)return null;
+  let restored=0;
+  Object.entries(p.data).forEach(([k,v])=>{
+    try{localStorage.setItem(k,v);restored++;}catch{}
+  });
+  return {restored,savedAt:p.savedAt,appVersion:p.appVersion};
+}
+function cbBackupSummary(){
+  return CB_BACKUP_KEYS.map(({key,label})=>{
+    let size=0,present=false;
+    try{const v=localStorage.getItem(key);if(v!=null){present=true;size=v.length;}}catch{}
+    return {key,label,present,size};
+  });
+}
+function CloudBackupPanel(){
+  const [code,setCode]=useState(cbBackupCode);
+  const [status,setStatus]=useState('');
+  const [busy,setBusy]=useState(false);
+  const [lastAuto,setLastAuto]=useState(()=>{try{return localStorage.getItem('checkerboard_backup_last')||'';}catch{return '';}});
+  const summary=cbBackupSummary();
+  const total=summary.reduce((n,r)=>n+r.size,0);
+  function backup(){
+    setBusy(true);setStatus('Backing up\u2026');
+    cbBackupNow().then(ok=>{
+      setBusy(false);
+      if(ok){
+        const now=new Date().toISOString();
+        try{localStorage.setItem('checkerboard_backup_last',now);}catch{}
+        setLastAuto(now);
+        setStatus('\u2713 Backed up \u2014 your records are safe on the cloud under this code.');
+      }else setStatus('\u2717 Backup failed \u2014 check this device has a connection, then try again.');
+    }).catch(()=>{setBusy(false);setStatus('\u2717 Backup failed \u2014 check this device has a connection, then try again.');});
+  }
+  function restore(){
+    if(!window.confirm('Restore from the cloud? This replaces the records on THIS device with the last backup saved under this code. Anything on this device that has not been backed up will be lost.'))return;
+    setBusy(true);setStatus('Restoring\u2026');
+    cbRestoreBackup().then(r=>{
+      setBusy(false);
+      if(r){setStatus('\u2713 Restored '+r.restored+' record sets from '+new Date(r.savedAt).toLocaleString()+' (saved on '+(r.appVersion||'an earlier version')+'). Reload the app to see them.');}
+      else setStatus('\u2717 Nothing found under this code. Check the code is exactly right.');
+    }).catch(()=>{setBusy(false);setStatus('\u2717 Restore failed \u2014 check this device has a connection.');});
+  }
+  return <div className="mePanel meOpen" style={{margin:'12px 0'}}>
+    <div className="mePanelHead" style={{cursor:'default'}}><span className="mePanelTitle">Cloud Backup</span><span className="mePanelSub">Your season, player history and road-test reports — kept safe off this device</span></div>
+    <p className="mutedText" style={{margin:'0 0 10px',fontSize:'0.84rem'}}>These records exist only on this device unless you back them up. A cleared browser or a lost iPad would take them with it. Backing up copies them to the cloud under your own code; restoring brings them onto any device that has the same code.</p>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center',marginBottom:'10px'}}>
+      <label style={{color:'#8aa0b6',fontSize:'0.8rem'}}>Backup code</label>
+      <input value={code} onChange={e=>setCode(e.target.value)} onBlur={()=>cbSetBackupCode(code)}
+        style={{flex:'1',minWidth:'200px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',padding:'8px 11px',fontFamily:'monospace'}}/>
+    </div>
+    <p className="mutedText" style={{margin:'0 0 10px',fontSize:'0.78rem'}}>Write this code down. It is the only way to reach your backup from another device.</p>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}}>
+      <button type="button" className="primaryBtn" disabled={busy} onClick={backup}>Back up now</button>
+      <button type="button" className="secondaryBtn" disabled={busy} onClick={restore}>Restore onto this device</button>
+    </div>
+    {status&&<p style={{margin:'0 0 10px',color:status.startsWith('\u2713')?'#8fbfa4':'#c98a8a',fontWeight:700,fontSize:'0.86rem'}}>{status}</p>}
+    {lastAuto&&<p className="mutedText" style={{margin:'0 0 10px',fontSize:'0.8rem'}}>Last backed up: {new Date(lastAuto).toLocaleString()}</p>}
+    <div style={{borderTop:'1px solid #223044',paddingTop:'8px'}}>
+      <strong style={{color:'#6eaac8',fontSize:'0.8rem'}}>What gets backed up ({Math.round(total/1024)} KB)</strong>
+      {summary.map(r=><div key={r.key} style={{display:'flex',justifyContent:'space-between',gap:'10px',padding:'3px 0',fontSize:'0.8rem'}}>
+        <span style={{color:r.present?'#eaf4fb':'#5f7387'}}>{r.label}</span>
+        <span style={{color:r.present?'#8fbfa4':'#5f7387'}}>{r.present?Math.max(1,Math.round(r.size/1024))+' KB':'nothing yet'}</span>
+      </div>)}
+    </div>
+  </div>;
+}
 function Storage({players,setPlayers,session,setSession}){
   const [backupText,setBackupText]=useState('');
   const [restoreText,setRestoreText]=useState('');
@@ -18873,6 +19113,8 @@ function Storage({players,setPlayers,session,setSession}){
 
   return <div className="page">
     <div className="pageTop"><h1>Storage & Retrieval</h1></div>
+
+    <CloudBackupPanel/>
 
     <div className="storageGrid">
       <div className="storageCard">
@@ -27724,6 +27966,24 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   return 'lives';
 });
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
+useEffect(()=>{
+  /* Automatic cloud backup. Coaching history is irreplaceable, so this does not
+     wait to be asked: once shortly after load, then every 10 minutes the app is
+     open. Silent by design — failures never interrupt a session; the Storage
+     screen shows the last successful backup time. */
+  let stopped=false;
+  function run(){
+    if(stopped)return;
+    try{
+      cbBackupNow().then(ok=>{
+        if(ok){try{localStorage.setItem('checkerboard_backup_last',new Date().toISOString());}catch{}}
+      }).catch(()=>{});
+    }catch{}
+  }
+  const first=setTimeout(run,20000);
+  const id=setInterval(run,600000);
+  return ()=>{stopped=true;clearTimeout(first);clearInterval(id);};
+},[]);
 useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[session]);
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
