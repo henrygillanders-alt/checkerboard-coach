@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v643 Road-test reporting, and past attendance you can finally see. Attendance records were being saved every session and never displayed anywhere \u2014 every record since the app began was invisible. Players now shows Past attendance: every saved session, newest first, expandable for who was present and absent, with a CSV export giving a player-by-date grid and a present-count per player. Suggestions gains a road-test mode: pick a game, say whether it worked, what happened and what you changed on the fly \u2014 the last being where the real findings come from. Reports are marked distinctly from ideas, and the panel shows how many of tonight\u2019s games have never been reported on, naming them. All of it lands in the cloud backup from v641. Builds on v642.';
+const APP_VERSION='v645 Mirrored Checkerboard codes reach the session. A challenge set up in Mirror mode recorded only the assigned side \u2014 the opposite-side code was computed and shown in the module but dropped on the way to the session card and player display, because only Optional challenge types printed a second code. A mirrored challenge now reads both sides, e.g. [8-4] + [8-4] \u2194 [7-3] + [7-3]. Builds on v644.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -8172,6 +8172,12 @@ function cbHasSeam(row,on){
 function cbCodeText(r,seam){
   if(!r)return '—';
   if(cbIsOptional(r.type))return (cbWithSeam(r.optionA,seam)||'—')+(r.optionB?' / '+cbWithSeam(r.optionB,seam):'');
+  /* Mirror mode carries the opposite-side code in optionB. It was being dropped
+     here because only Optional types printed both, so a mirrored challenge
+     reached the session card and player display showing one side only. */
+  if(r.mode==='Mirror'&&r.optionB&&r.optionB!==r.assigned){
+    return (cbWithSeam(r.assigned,seam)||'—')+' ↔ '+cbWithSeam(r.optionB,seam);
+  }
   return cbWithSeam(r.assigned,seam)||'—';
 }
 // Card/player-facing code: masks the code when the challenge is blind (hidden and not revealed),
@@ -11465,7 +11471,14 @@ const PENALTY_PRESETS=[
   {id:'wrongShot',label:'Wrong shot from the wrong position'}
 ];
 const PENALTY_POINT_OPTIONS=[0,1,2,3,4,5];
-function penaltyPointLabel(p){return p>0?('-'+p):'Off';}
+/* Some transgressions should not cost points — they should lose the rally
+   outright (e.g. two runners in the tramline when only one is allowed).
+   Value 6 on the stepper is that: one step past the heaviest deduction. */
+const PENALTY_FORFEIT=6;
+function penaltyPointLabel(p){return p>=PENALTY_FORFEIT?'Forfeit rally':(p>0?('-'+p):'Off');}
+function penaltyRuleText(label,points){
+  return points>=PENALTY_FORFEIT?(label+': rally forfeited'):(label+': -'+points);
+}
 function UniversalPenaltyPanel({onAddToSession,setScreen}){
   const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').enabled||false;}catch{return false;}});
   const [presetPoints,setPresetPoints]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').presetPoints||{};}catch{return {};}});
@@ -11477,8 +11490,8 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   function addCustom(){const l=customLabel.trim();if(!l)return;setCustomList(prev=>[...prev,{label:l,points:customPoints}]);setCustomLabel('');setCustomPoints(1);}
   function removeCustom(i){setCustomList(prev=>prev.filter((_,idx)=>idx!==i));}
   function activeRules(){
-    const fromPresets=PENALTY_PRESETS.filter(p=>presetPoints[p.id]>0).map(p=>`${p.label}: -${presetPoints[p.id]}`);
-    const fromCustom=customList.filter(c=>c.points>0).map(c=>`${c.label}: -${c.points}`);
+    const fromPresets=PENALTY_PRESETS.filter(p=>presetPoints[p.id]>0).map(p=>penaltyRuleText(p.label,presetPoints[p.id]));
+    const fromCustom=customList.filter(c=>c.points>0).map(c=>penaltyRuleText(c.label,c.points));
     return [...fromPresets,...fromCustom];
   }
   function clearAll(){setEnabled(false);setPresetPoints({});setCustomList([]);}
@@ -11489,17 +11502,17 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   const rules=activeRules();
   return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="All Games — deduct points for named faults" color="red" defaultOpen={false}>
     <div className="universalDbHeader">
-      <div><p>Punish specific faults by taking points off. Switch on the faults you want to penalise, set how many points come off, and add your own.</p></div>
+      <div><p>Punish specific faults by taking points off — or, for a rule that must not be broken at all, step past -5 to <strong>Forfeit rally</strong>, and the rally is lost outright when it happens.</p></div>
       <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Negative Scoring On':'Enable Negative Scoring'}</button>
     </div>
     {enabled&&<>
-      <div className="statusBox"><strong>Preset faults</strong><p>Set a deduction to switch a fault on. Leave it on Off to ignore it.</p></div>
+      <div className="statusBox"><strong>Preset faults</strong><p>Set a deduction to switch a fault on. Leave it on Off to ignore it. One step past -5 is Forfeit rally.</p></div>
       <div className="dbAllocationGrid">
-        {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={5} zeroLabel="Off" sign="-"/></div>)}
+        {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}{presetPoints[p.id]>=PENALTY_FORFEIT&&<em style={{display:'block',color:'#c98a8a',fontSize:'0.78rem'}}>Rally is forfeited on this fault</em>}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={PENALTY_FORFEIT} zeroLabel="Off" sign="-"/></div>)}
       </div>
       <div className="statusBox"><strong>Add your own fault</strong></div>
-      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. served short"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={5} sign="-"/><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
-      {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{c.label}: -{c.points}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
+      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. two runners in the tramline"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={PENALTY_FORFEIT} sign="-"/><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{penaltyRuleText(c.label,c.points)}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
       <div className="dbSummaryBox"><strong>Active penalties</strong><p>{rules.length?rules.join(' · '):'No penalties set yet.'}</p></div>
       <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();savePenalties();}} disabled={!rules.length}>Save Negative Scoring</button>{onAddToSession&&<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();savePenalties(); if(setScreen)setScreen('sessions');}} disabled={!rules.length}>Save + View Session</button>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearAll();}}>Clear</button></div>
     </>}
