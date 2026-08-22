@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v647 Checkerboard difficulty as a four-step ladder. Order and adjacency are separate constraints, so v646\u2019s single toggle was collapsing two different things: whether the codes must follow the listed order, and whether they must be back to back. Both are now set independently, presented easiest to hardest \u2014 any order with gaps, any order consecutive, in sequence with gaps, in sequence consecutive. The last is the original strict behaviour and remains the default; the other three carry the coach-set per-code and completion scoring. Builds on v646.';
+const APP_VERSION='v648 Checkerboard as a pool of codes plus a target. The challenge is no longer a fixed list where each code appears once: the codes entered form a pool, and the coach sets how many completions are required from it \u2014 repeats counting, so three completions can be two 8-4 and one 7-3, or two 7-3 and one 8-4, or any mix. The rule text names the pool and spells the repeats out. The four-rung order-and-adjacency ladder from v647 applies on top, unchanged. Builds on v647.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -7585,14 +7585,24 @@ const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 singl
    code is missed, which stalls rallies; letting the codes be met in any order,
    scoring each as it lands, keeps the rally alive and lifts the pace. Coach sets
    the per-code value and the all-codes bonus. */
-function cbOrderRuleText(anyOrder,consecutive,n){
+/* Split a challenge string like "[8-4] + [7-3]" into the pool of codes it allows. */
+function cbPoolCodes(codeText){
+  const out=(String(codeText||'').match(/\[\d-\d\](?:\s*\(SA\))?/g)||[]).map(c=>c.trim());
+  return [...new Set(out)];
+}
+function cbOrderRuleText(anyOrder,consecutive,target,pool){
+  const codes=(pool&&pool.length)?pool:[];
+  const list=codes.length?codes.join(' or '):'the listed codes';
   const order=anyOrder?'in any order':'in the order listed';
   const adj=consecutive?'on consecutive shots \u2014 back to back, with no other shot between them':'with gaps allowed \u2014 they do not have to be consecutive';
-  return 'Play the '+n+' listed codes '+order+', '+adj+'.';
+  const repeats=codes.length>1
+    ?(' Repeats count \u2014 e.g. two '+codes[0]+' and one '+codes[1]+', or two '+codes[1]+' and one '+codes[0]+'.')
+    :' Repeats count.';
+  return 'Complete '+target+' codes from: '+list+', '+order+', '+adj+'.'+repeats;
 }
-function cbAnyOrderScoring(perCode,allBonus,sameRallyBonus,count,anyOrder,consecutive){
+function cbAnyOrderScoring(perCode,allBonus,sameRallyBonus,count,anyOrder,consecutive,pool){
   const n=count||3;
-  return cbOrderRuleText(anyOrder,consecutive,n)+
+  return cbOrderRuleText(anyOrder,consecutive,n,pool)+
     '  \u00b7  Each code completed = +'+perCode+
     '  \u00b7  All '+n+' completed during the game = +'+allBonus+
     (sameRallyBonus>0?('  \u00b7  All '+n+' completed inside a single rally = +'+sameRallyBonus):'')+
@@ -7846,7 +7856,11 @@ function CheckerboardSetup({setScreen,setSession}){
      and separately allow gaps or demand consecutive shots. Consecutive + in sequence
      is the original strict behaviour; any order + gaps is the loosest. */
   const [aoConsecutive,setAoConsecutive]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').consecutive??true;}catch{return true;}});
-  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive}));}catch{}},[anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive]);
+  /* How many code-completions the player must produce, drawn from the pool of
+     codes in the challenge. Repeats count \u2014 three completions can be the same
+     code three times, or any mix. */
+  const [aoTarget,setAoTarget]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').target??3;}catch{return 3;}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget}));}catch{}},[anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget]);
 
   useEffect(()=>{try{localStorage.setItem(CB_SEAM_KEY,seamAllowance?'1':'0');}catch{}},[seamAllowance]);
 
@@ -7967,7 +7981,7 @@ function CheckerboardSetup({setScreen,setSession}){
       task,
       description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
       scoring:(anyOrder||!aoConsecutive)
-        ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,cbBaseKind(group.type)==='triple'?3:cbBaseKind(group.type)==='pair'?2:1,anyOrder,aoConsecutive)
+        ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
         :CB_FULL_SCORING,
       coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'.',
       playerFocus:'Find the solution to the code within the live rally.'
@@ -8088,15 +8102,19 @@ function CheckerboardSetup({setScreen,setSession}){
         <p className="cbsetScopeNote">Easiest to hardest. <strong>Order</strong> is whether the codes must follow the listed order; <strong>adjacency</strong> is whether they must be back to back with no other shot between. {(anyOrder||!aoConsecutive)?'A missed code costs nothing here, so rallies keep going and the pace lifts.':'This is the strictest setting — a broken run restarts the challenge.'}</p>
         {(anyOrder||!aoConsecutive)&&<div style={{marginTop:'8px'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>How many codes must be completed<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Drawn from the codes above — repeats count</em></span>
+            <PointStepper value={aoTarget} onChange={v=>setAoTarget(Math.max(1,v))} min={1} max={9} zeroLabel="1" sign=""/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
             <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Each code completed</span>
             <PointStepper value={aoPerCode} onChange={setAoPerCode} min={0} max={5} zeroLabel="0" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All codes completed during the game</span>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Target reached during the game</span>
             <PointStepper value={aoAllBonus} onChange={setAoAllBonus} min={0} max={9} zeroLabel="0" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All codes inside a single rally</span>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Target reached inside a single rally</span>
             <PointStepper value={aoRallyBonus} onChange={setAoRallyBonus} min={0} max={9} zeroLabel="Off" sign="+"/>
           </div>
         </div>}
