@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v664 The warm-up model\u2019s actual differentiator, stated. v663 contrasted these activities with static stretching, which is a straw man \u2014 few coaches stretch statically before a session now. The real difference is that dynamic movement preparation and sensorimotor recalibration happen at the same time here rather than as two separate blocks: the lunging, turning and reaching are produced by real ball flight in patterns the game uses, so the body is prepared and the system retuned in the same rally. Builds on v663.';
+const APP_VERSION='v665 Pre-competition warm-up, for when no court is available. Junior events rarely give a court before the match, and the usual answer \u2014 throwing and catching a tennis ball \u2014 calibrates the wrong relationship: hand to ball, with an object that flies differently, caught rather than struck. What has drifted is the racquet-to-ball relationship, and only a racquet and a squash ball retune it. The Warm Up module gains a second section: visualisation and ghosting run together so each movement carries a shot, then a hand-fed ball the player directs back to the coach with the racquet at catchable pace, then wall contact if any wall exists, and a countdown covering called-early and kept-waiting-an-hour. Builds on v664.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -9188,6 +9188,40 @@ function CoachCard({card,onAdd}){
    hitting. Cards use the same shape as Level 0 so they read identically. */
 function WarmUpActivities({setScreen,setSession}){
   const [added,setAdded]=useState('');
+  const [section,setSection]=useState('court');
+  /* Pre-competition: a court is often unavailable, especially at junior events.
+     The calibration problem does not go away because the court has — it gets
+     harder, and the usual answer (catching a tennis ball) does not address it. */
+  const preCards=[
+    {code:'PC-1',title:'Visualisation with ghosting — together, not separately',
+     purpose:'Rehearses the movement and the intention at the same time, so the ghosting is a rehearsal of playing rather than a fitness exercise done near a match.',
+     task:'Player ghosts to each corner in turn, and on every movement visualises the specific ball they are moving to and the shot they are playing — the flight, the height, the contact, the target. Movement at match tempo, not sprint tempo. Two or three minutes is enough.',
+     constraint:'Every ghost carries a shot with it. A ghost without a ball in mind is just footwork — the visualisation is what makes it a rehearsal.',
+     cue:'See the ball before you move to it, not after.',
+     simplify:'Walk the pattern and name the shot out loud on each corner.',
+     progress:'Have the player call the opponent’s shot they are responding to, so the movement answers something rather than being chosen.'},
+    {code:'PC-2',title:'Hand-fed racquet control',
+     purpose:'The nearest thing to real calibration when no court is available: the racquet, the ball and a real contact, so the racquet-to-ball relationship is retuned rather than the hand-to-ball one.',
+     task:'Coach hand-feeds a squash ball to the player from a couple of metres. The player uses the racquet to direct it back to the coach’s hands, controlled and at catchable pace. Work through forehand, backhand, higher and lower contact points, and gradually further from the body.',
+     constraint:'Racquet only — no catching. The ball must come back controlled enough for the coach to catch it: pace and direction both count.',
+     cue:'Send it back so it can be caught — control is the whole exercise.',
+     simplify:'Closer feeds, waist height, straight back to the coach.',
+     progress:'Feed wider and lower, then off the player’s weaker side, then vary it so the contact point is not known in advance.'},
+    {code:'PC-3',title:'Wall contact, if any wall is available',
+     purpose:'If any usable wall exists — a corridor, a hall, the back of the venue — a few minutes of real ball flight beats anything done without one.',
+     task:'Short, controlled rallies against the wall from close range: soft, repeated contacts, working up from a metre or two. Both sides. Aim for consistent contact rather than power or targets.',
+     constraint:'Controlled contact only. This is calibration, not practice — do not start working on shots.',
+     simplify:'Stand closer and let the ball bounce twice.',
+     cue:'Same contact every time — you are tuning, not training.',
+     progress:'Step back gradually as the feel returns.'},
+    {code:'PC-4',title:'The countdown — what to do and when',
+     purpose:'Junior events run to their own chaos: called early, kept waiting an hour, no court, no space. A structure the player owns beats a warm-up that depends on conditions being right.',
+     task:'30 minutes out: general movement, raise the heart rate, loosen. 15 minutes: ghosting with visualisation (PC-1). 5 minutes: hand-fed racquet control (PC-2), or wall contact if a wall exists (PC-3). Waiting to be called: keep moving gently and repeat the visualisation — do not sit down and go cold. Called early: go straight to PC-2, then use the on-court knock as the calibration. Kept waiting an hour: repeat the 15-minute and 5-minute blocks rather than warming up once and hoping it holds.',
+     constraint:'The last thing before going on should always involve the racquet and a ball if either is possible.',
+     cue:'Warm-up is not a thing you finish — it is a state you keep.',
+     simplify:'For younger players, give them the three blocks and let a parent keep the time.',
+     progress:'Have the player run their own countdown without prompting — that is the real outcome.'},
+  ];
   const cards=[
     {code:'WU-1',title:'ATL Game \u2014 Above the Line',
      purpose:'Starts the session with height, length and full movement — long rallies that let the eye, the arm and the feet retune together before anything is asked of them.',
@@ -9257,8 +9291,8 @@ function WarmUpActivities({setScreen,setSession}){
     if(typeof setSession!=='function')return;
     setSession(prev=>appendToSessionState(prev,{
       id:Date.now()+Math.random(),
-      title:'Warm Up \u2014 '+card.title,
-      category:'Warm Up',
+      title:(String(card.code||'').startsWith('PC')?'Pre-Competition \u2014 ':'Warm Up \u2014 ')+card.title,
+      category:String(card.code||'').startsWith('PC')?'Pre-Competition':'Warm Up',
       format:'Warm Up',
       duration:8,
       rld:2,
@@ -9284,8 +9318,18 @@ function WarmUpActivities({setScreen,setSession}){
       <p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.84rem'}}><strong style={{color:'#6eaac8'}}>Why the warm-up is longer than it looks.</strong> Ajemian, D’Ausilio, Moorman and Bizzi (<em>Journal of Motor Behavior</em>, 2010) ask whether a warm-up is merely warming muscles and tendons, or whether the sensorimotor network has to be recalibrated each time. They argue the latter: the system carries a high level of internal noise, so the relationship between what a player intends and what their body actually delivers drifts between sessions and has to be retuned. That is why expert players need <em>more</em> warm-up than beginners, not less.</p>
       <p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.84rem'}}><strong style={{color:'#6eaac8'}}>What is different here.</strong> Dynamic movement preparation is well established — few coaches are still stretching statically before a session. The difference in this model is that the dynamic work and the recalibration happen <em>at the same time</em>, rather than as two separate blocks: the lunging, turning and reaching are produced by real ball flight, in patterns the game actually uses, so the body is being prepared and the sensorimotor system retuned in the same rally. The calibration only happens against the thing you are calibrating for.</p>
     </div>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',margin:'0 0 12px'}}>
+      {[['court','Session warm-up — on court'],['pre','Pre-competition — court often unavailable']].map(([id,label])=>
+        <button type="button" key={id} onClick={()=>setSection(id)}
+          style={{background:section===id?'#101d18':'#0d1722',border:section===id?'1px solid #2f5c46':'1px solid #2a3a4f',color:section===id?'#8fbfa4':'#8aa0b6',borderRadius:'9px',padding:'9px 14px',fontWeight:800,fontSize:'0.86rem',cursor:'pointer'}}>{label}</button>)}
+    </div>
+    {section==='pre'&&<div style={{background:'#0b1320',border:'1px solid #1f4a5e',borderLeft:'3px solid #2e6e8e',borderRadius:'12px',padding:'12px 14px',margin:'0 0 14px'}}>
+      <strong style={{color:'#6eaac8',fontSize:'0.9rem'}}>Before a match, with no court</strong>
+      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>At junior events a court is often unavailable until the match itself. The calibration problem does not disappear with the court — it gets harder, because the player walks on cold to the one thing that matters.</p>
+      <p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.84rem'}}><strong style={{color:'#6eaac8'}}>Why not a tennis ball.</strong> The common answer is throwing and catching a tennis ball. It raises the heart rate and it feels like preparation, but it calibrates the wrong relationship: hand to ball, with an object that flies differently, caught rather than struck. What has drifted since the player last played is the racquet-to-ball relationship, and only a racquet and a squash ball can retune it. Hence the order here: visualise and ghost together, then a hand-fed ball the player controls <em>with the racquet</em>, then a wall if one exists.</p>
+    </div>}
     <div className="l0CardStack">
-      {cards.map(c=><CoachCard key={c.code} card={c} onAdd={()=>addToSession(c)}/>)}
+      {(section==='pre'?preCards:cards).map(c=><CoachCard key={c.code} card={c} onAdd={()=>addToSession(c)}/>)}
     </div>
     {added&&<p style={{color:'#8fbfa4',fontWeight:800,marginTop:'10px'}}>✓ Added — {added}</p>}
   </div>;
