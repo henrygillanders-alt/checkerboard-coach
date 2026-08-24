@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v662 Figure of Eight runs above the line throughout. Every shot in the eight \u2014 lengths, crosscourts and drops alike \u2014 must be above the line, not just the drops as v660 had it. The ball stays high and slow, which is what warms it and keeps the pattern alive, and it stops the warm-up becoming hard low hitting while the body is still cold. Applied across all three eight cards. Builds on v661.';
+const APP_VERSION='v663 Warm-up reframed around the body and calibration, not the ball. The ball can be warmed in a minute; the body and the sensorimotor calibration cannot. The module now cites Ajemian, D\u2019Ausilio, Moorman and Bizzi (Journal of Motor Behavior, 2010), who ask whether a warm-up merely warms muscles and tendons or whether the sensorimotor network has to be recalibrated each time, and argue the latter from the high internal noise the system carries \u2014 which is why expert players need more warm-up than beginners, not less, and why these activities use real ball flight and game-like movement rather than static stretching. Card purposes and progressions reworded from ball temperature to movement quality throughout. Builds on v662.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -9190,26 +9190,26 @@ function WarmUpActivities({setScreen,setSession}){
   const [added,setAdded]=useState('');
   const cards=[
     {code:'WU-1',title:'ATL Game \u2014 Above the Line',
-     purpose:'Warms the ball and the arm together, and starts the session with height and length rather than short, cold hitting.',
-     task:'Both players rally with every shot landing above the cut line on the front wall. Play it as a cooperative rally first, then as a game to 11 once the ball is warm.',
+     purpose:'Starts the session with height, length and full movement — long rallies that let the eye, the arm and the feet retune together before anything is asked of them.',
+     task:'Both players rally with every shot landing above the cut line on the front wall. Play it as a cooperative rally first — long rallies, nobody scoring — then competitively once players are moving and timing the ball well.',
      constraint:'Every shot above the cut line. A ball under the line concedes the rally once you are scoring.',
      cue:'High and deep \u2014 give the ball time to warm up.',
      simplify:'Cooperative only, no score. Count consecutive shots as a group target.',
      progress:'Score it to 11. Then allow one shot under the line per rally as the attack.'},
     {code:'WU-2',title:'Boast & Drive — 3 players, continuous',
-     purpose:'Continuous three-player rotation. Everybody moves every shot, so the ball and the legs warm together and nobody stands still.',
+     purpose:'Continuous three-player rotation. Everybody moves on every shot, so the legs and the timing recalibrate together and nobody stands still.',
      task:'Three players, continuous cycle. Player 1 boasts, then moves straight to the front. Player 2 drives, then moves diagonally to the back. Player 3 boasts, then moves straight to the front — and the cycle repeats. There is no queue: the movement after your shot is what puts you in position for your next one.',
      constraint:'Boast then move straight to the front. Drive then move diagonally to the back. Keep the cycle going — the movement is the exercise as much as the hitting.',
      cue:'Move the moment you have hit — do not watch your own shot.',
      simplify:'Walk the pattern once with no ball so everyone knows where they go, then add the ball at half pace.',
-     progress:'Lift the pace once the ball is warm, then run it competitively — every ball must land inside the tramline, a ball outside concedes. Then move to the drop and lob version.'},
+     progress:'Lift the pace once players are moving freely, then run it competitively — every ball must land inside the tramline, a ball outside concedes. Then move to the drop and lob version.'},
     {code:'WU-3',title:'Drop & Lob — 3 players, continuous',
      purpose:'Same three-player rotation, softer shots, and the movement reversed from Boast & Drive — so the legs learn both diagonals rather than grooving one.',
      task:'Three players, continuous cycle. Player 1 drops straight, then moves diagonally to the front. Player 2 lobs crosscourt, then moves straight to the back. Player 3 drops, then moves diagonally to the front — and the cycle repeats. The movement is the reverse of Boast & Drive: there you go straight to the front and diagonally to the back, here you go diagonally to the front and straight to the back.',
      constraint:'Drop straight then move diagonally to the front. Lob crosscourt then move straight to the back. Keep the rotation continuous.',
      cue:'Soft hands on the drop, height on the lob — give everyone time to get there.',
      simplify:'Walk it through without a ball first. Allow the ball to bounce twice while it is still cold.',
-     progress:'Tighten the drop and lower the lob as the ball warms, then run it competitively with every ball having to land inside the tramline.'},
+     progress:'Tighten the drop and lower the lob as touch returns, then run it competitively with every ball having to land inside the tramline.'},
     {code:'WU-6',title:'Figure of Eight — straight and cross',
      purpose:'Warms width and length together, on both sides, with both players travelling continuous curved paths through the middle — no stopping and reversing while the body is still cold.',
      task:'Two players, fixed roles, every shot above the line. One plays straight drives only, the other plays crosscourts only, strictly alternating: straight down one wall, crosscourt to the far corner, straight down that wall, crosscourt back. The ball traces a figure of eight and the players travel with it. When the ball dies, reverse the roles so the straight player becomes the crosscourt player.',
@@ -9232,11 +9232,11 @@ function WarmUpActivities({setScreen,setSession}){
      simplify:'Call the choice out loud as it is played until the group can read it. Or limit the swap to once per rally.',
      progress:'Give both players the choice, so either can swap the roles. By this point the warm-up is done — this is the handover into the session proper.'},
     {code:'WU-C',title:'Tramline Game — competitive, 11 lives',
-     purpose:'Turns the warm-up rotation into a real game once the ball is warm — same movement, but now every ball has a consequence. Lives keep everyone in it: nobody is knocked out on one mistake, and the first player to run out sets the moment every court changes.',
+     purpose:'Turns the warm-up rotation into a real game once players are moving well — same movement, but now every ball has a consequence. Lives keep everyone in it: nobody is knocked out on one mistake, and the first player to run out sets the moment every court changes.',
      task:'Run any of the rotations above competitively. Each player starts with 11 lives and loses one for a missed shot, a ball landing outside the tramline, or a ball out of court. The rotation carries straight on — no rally reset. As soon as any player on any court runs out of lives, the round ends and every court changes together — so the courts stay synchronised instead of drifting apart, and nobody is left waiting.',
      constraint:'Straight shots must land in the side channel. Crosscourts count in the side channel or in a band of the same width across the back — a crosscourt tight along the back is a good ball, a straight drive there is not. Keep the rotation and the movement pattern exactly as rehearsed.',
      cue:'Same movement, tighter target — do not let the width go just because it counts now.',
-     simplify:'Start with more lives, or count only balls out of court while the ball is still cold.',
+     simplify:'Start with more lives, or count only balls out of court until the group is moving freely.',
      progress:'Fewer lives — the rounds get shorter and the courts change more often. Then narrow the tramline. Then add the whistle switch from WU-5 while the lives are running.'},
     {code:'WU-4',title:'B&D into Drop & Lob — switch on the cycle',
      purpose:'Puts the two rotations together so players change shot type without changing rhythm — the first decision-making of the session.',
@@ -9276,11 +9276,12 @@ function WarmUpActivities({setScreen,setSession}){
       <div><h1>Warm Up Activities</h1><p className="mutedText">The first ten minutes — ball, body and eyes, with structure</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button>
     </div>
-    <p className="mutedText" style={{margin:'0 0 12px'}}>A cold ball barely bounces, so the first minutes are about warming it while the players move. Run every rotation the same way: <strong>cooperative first</strong> — keep it going, nobody scoring, everybody moving — then <strong>competitive</strong> once the ball is warm: 11 lives each, losing one for a miss, a ball outside the tramline, or a ball out of court. Same movement, real consequence — and lives keep everyone hitting rather than knocking anyone out.</p>
+    <p className="mutedText" style={{margin:'0 0 12px'}}>The ball can be warmed in a minute. The body and the calibration cannot. Run every rotation the same way: <strong>cooperative first</strong> — keep it going, nobody scoring, everybody moving — then <strong>competitive</strong> once players are moving well: 11 lives each, losing one for a miss, a ball outside the tramline, or a ball out of court. Same movement, real consequence — and lives keep everyone hitting rather than knocking anyone out.</p>
     <div style={{background:'#0b1320',border:'1px solid #1f4a5e',borderLeft:'3px solid #2e6e8e',borderRadius:'12px',padding:'12px 14px',margin:'0 0 14px'}}>
       <strong style={{color:'#6eaac8',fontSize:'0.9rem'}}>What belongs in this module</strong>
       <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>Movement that flows — continuous rotations, predictable paths, no sudden changes of direction while the body is still cold. That is the safety rule and the test for any new activity here: if it asks a player to stop dead and go the other way, it belongs later in the session, not in the warm-up.</p>
-      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>Competitive is welcome — lives, targets and tramlines all belong here. What these activities are <em>not</em> is representative practice: the RLD is deliberately low, because the objective is game-like movement and a warm ball, not decision-making under match pressure. The real session starts after this.</p>
+      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>Competitive is welcome — lives, targets and tramlines all belong here. What these activities are <em>not</em> is representative practice: the RLD is deliberately low, because the objective is game-like movement and recalibration, not decision-making under match pressure. The real session starts after this.</p>
+      <p className="mutedText" style={{margin:'8px 0 0',fontSize:'0.84rem'}}><strong style={{color:'#6eaac8'}}>Why the warm-up is longer than it looks.</strong> Ajemian, D’Ausilio, Moorman and Bizzi (<em>Journal of Motor Behavior</em>, 2010) ask whether a warm-up is merely warming muscles and tendons, or whether the sensorimotor network has to be recalibrated each time. They argue the latter: the system carries a high level of internal noise, so the relationship between what a player intends and what their body actually delivers drifts between sessions and has to be retuned. That is why expert players need <em>more</em> warm-up than beginners, not less — and why these activities use real ball flight and game-like movement rather than static stretching. The calibration only happens against the thing you are calibrating for.</p>
     </div>
     <div className="l0CardStack">
       {cards.map(c=><CoachCard key={c.code} card={c} onAdd={()=>addToSession(c)}/>)}
