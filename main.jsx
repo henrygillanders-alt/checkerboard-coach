@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v649 Player display gets numbered steps, and coaches can suggest app improvements. Pattern Lab cards now put the numbered action sequence on the player display \u2014 1) rally into the lengths, 2) when they are off the T attack into the boast, 3) answer into the counter drop, 4) resolve back into the lengths \u2014 instead of a one-line summary, so a player reading courtside can find their place at a glance; the intention, rationale and coach cue stay on the module screen where they belong. Suggestions gains a third tab, Improve the app, for coaches to report screens that are confusing, slow to read or missing something \u2014 filed by area and covered by the cloud backup. Builds on v648.';
+const APP_VERSION='v656 Lives set the moment every court changes. In the competitive warm-up, the first player on any court to run out of lives ends the round for everyone and all courts change together \u2014 so a multi-court warm-up stays synchronised instead of drifting apart, and nobody is left waiting on a finished court. Replaces the previous wording, where players who ran out kept hitting until some later end. Fewer lives now reads as a real dial: shorter rounds, courts changing more often. Builds on v655.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -1982,7 +1982,7 @@ const TACTICAL_OVERLAYS = [
   {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']},
   {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'A crosscourt only counts if it makes the opponent move more than 1 step \u2014 rather than being played by default or out of habit.', coach:'Ask: did that crosscourt move them more than a step? If not, it was non-functional.', pairings:['Route Breaker','Attack Only On Advantage']},
   {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
-  {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
+  {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line. Crosscourts also count if they land in a band of the same width across the back of the court: a crosscourt that finishes tight along the back is a good ball even though it is away from the side wall. Straight shots must still find the side channel \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
   {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']},
   {category:'Anticipation', title:'Pickup 1 · Before the Bounce', rule:'The player’s first movement to the ball must begin before it bounces on their side of the court.', coach:'Easiest tier of the early-information-pickup progression: commit before the bounce, not after it. Watch for movement started while the ball is still in the air.', pairings:['Pickup 2 · Before the Front Wall','Tracking']},
   {category:'Anticipation', title:'Pickup 2 · Before the Front Wall', rule:'The player must read the shot and start moving before the opponent’s ball reaches the front wall.', coach:'Tier 2: the read comes off ball flight earlier in its path. The player is moving while the ball is still travelling forward.', pairings:['Pickup 1 · Before the Bounce','Pickup 3 · On Contact']},
@@ -5905,6 +5905,7 @@ return <div className="homeGrid homeGridV99h52">
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('warmUp')}><h2>Warm Up Activities</h2><span className="homeTileSubtitle">First ten minutes · ball, body and eyes</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('trafficLight')}><h2>Traffic Light Zones</h2><span className="homeTileSubtitle">Front-wall height bands · purpose per band</span></button>
 
       <div className="moreSectionLabel">Live & Match Day</div>
@@ -9153,6 +9154,87 @@ function Level0Exploration(){
   return <Level0Foundations setScreen={()=>{}} setSession={null}/>;
 }
 
+
+/* ── WARM UP ACTIVITIES ───────────────────────────────────────────────────────
+   The first ten minutes of a session: getting the ball warm, the body moving and
+   the eyes working, with enough structure that it is practice rather than
+   hitting. Cards use the same shape as Level 0 so they read identically. */
+function WarmUpActivities({setScreen,setSession}){
+  const [added,setAdded]=useState('');
+  const cards=[
+    {code:'WU-1',title:'ATL Game \u2014 Above the Line',
+     purpose:'Warms the ball and the arm together, and starts the session with height and length rather than short, cold hitting.',
+     task:'Both players rally with every shot landing above the cut line on the front wall. Play it as a cooperative rally first, then as a game to 11 once the ball is warm.',
+     constraint:'Every shot above the cut line. A ball under the line concedes the rally once you are scoring.',
+     cue:'High and deep \u2014 give the ball time to warm up.',
+     simplify:'Cooperative only, no score. Count consecutive shots as a group target.',
+     progress:'Score it to 11. Then allow one shot under the line per rally as the attack.'},
+    {code:'WU-2',title:'Boast & Drive — 3 players, continuous',
+     purpose:'Continuous three-player rotation. Everybody moves every shot, so the ball and the legs warm together and nobody stands still.',
+     task:'Three players, continuous cycle. Player 1 boasts, then moves straight to the front. Player 2 drives, then moves diagonally to the back. Player 3 boasts, then moves straight to the front — and the cycle repeats. There is no queue: the movement after your shot is what puts you in position for your next one.',
+     constraint:'Boast then move straight to the front. Drive then move diagonally to the back. Keep the cycle going — the movement is the exercise as much as the hitting.',
+     cue:'Move the moment you have hit — do not watch your own shot.',
+     simplify:'Walk the pattern once with no ball so everyone knows where they go, then add the ball at half pace.',
+     progress:'Lift the pace once the ball is warm, then run it competitively — every ball must land inside the tramline, a ball outside concedes. Then move to the drop and lob version.'},
+    {code:'WU-3',title:'Drop & Lob — 3 players, continuous',
+     purpose:'Same three-player rotation, softer shots, and the movement reversed from Boast & Drive — so the legs learn both diagonals rather than grooving one.',
+     task:'Three players, continuous cycle. Player 1 drops straight, then moves diagonally to the front. Player 2 lobs crosscourt, then moves straight to the back. Player 3 drops, then moves diagonally to the front — and the cycle repeats. The movement is the reverse of Boast & Drive: there you go straight to the front and diagonally to the back, here you go diagonally to the front and straight to the back.',
+     constraint:'Drop straight then move diagonally to the front. Lob crosscourt then move straight to the back. Keep the rotation continuous.',
+     cue:'Soft hands on the drop, height on the lob — give everyone time to get there.',
+     simplify:'Walk it through without a ball first. Allow the ball to bounce twice while it is still cold.',
+     progress:'Tighten the drop and lower the lob as the ball warms, then run it competitively with every ball having to land inside the tramline.'},
+    {code:'WU-C',title:'Tramline Game — competitive, 11 lives',
+     purpose:'Turns the warm-up rotation into a real game once the ball is warm — same movement, but now every ball has a consequence. Lives keep everyone in it: nobody is knocked out on one mistake, and the first player to run out sets the moment every court changes.',
+     task:'Run any of the rotations above competitively. Each player starts with 11 lives and loses one for a missed shot, a ball landing outside the tramline, or a ball out of court. The rotation carries straight on — no rally reset. As soon as any player on any court runs out of lives, the round ends and every court changes together — so the courts stay synchronised instead of drifting apart, and nobody is left waiting.',
+     constraint:'Straight shots must land in the side channel. Crosscourts count in the side channel or in a band of the same width across the back — a crosscourt tight along the back is a good ball, a straight drive there is not. Keep the rotation and the movement pattern exactly as rehearsed.',
+     cue:'Same movement, tighter target — do not let the width go just because it counts now.',
+     simplify:'Start with more lives, or count only balls out of court while the ball is still cold.',
+     progress:'Fewer lives — the rounds get shorter and the courts change more often. Then narrow the tramline. Then add the whistle switch from WU-5 while the lives are running.'},
+    {code:'WU-4',title:'B&D into Drop & Lob — switch on the cycle',
+     purpose:'Puts the two rotations together so players change shot type without changing rhythm — the first decision-making of the session.',
+     task:'Start with the Boast & Drive rotation. Once the full cycle has been completed, switch straight into the Drop & Lob rotation without stopping. Complete that cycle, then switch back.',
+     constraint:'The switch happens on completion of the cycle — no pause between the two.',
+     cue:'Know which rotation you are in before the ball comes to you.',
+     simplify:'Call the switch out loud as it happens until the group is comfortable.',
+     progress:'Move to the whistle version, where the switch is unpredictable.'},
+    {code:'WU-5',title:'B&D into Drop & Lob — switch on the whistle',
+     purpose:'The same combination with the switch made unpredictable, so players are reading a signal rather than counting shots — warm-up that finishes with attention already switched on.',
+     task:'Start with the Boast & Drive rotation. On the coach’s whistle, the next shot switches the group into the Drop & Lob rotation. Whistle again to switch back. The whistle can come at any point in the cycle.',
+     constraint:'The switch takes effect on the next shot after the whistle — not the current one.',
+     cue:'Listen while you move — the signal will not wait for a convenient moment.',
+     simplify:'Only whistle at the end of a cycle to begin with, then start whistling mid-cycle.',
+     progress:'Shorten the gap between whistles, so the group changes more often.'},
+  ];
+  function addToSession(card){
+    if(typeof setSession!=='function')return;
+    setSession(prev=>appendToSessionState(prev,{
+      id:Date.now()+Math.random(),
+      title:'Warm Up \u2014 '+card.title,
+      category:'Warm Up',
+      format:'Warm Up',
+      duration:8,
+      rld:2,
+      task:'1) '+card.task+' 2) '+card.constraint,
+      scoring:'Cooperative first \u2014 no score, keep it going. Then competitive: 11 lives each, lose a life for a missed shot, a ball outside the tramline, or a ball out of court. Tramline: straight shots must find the side channel; crosscourts also count tight along the back.',
+      rationale:card.purpose,
+      coach:card.cue,
+      playerFocus:card.cue,
+      layers:[],cbCode:'None'}));
+    setAdded(card.title);
+    setTimeout(()=>setAdded(''),2200);
+  }
+  return <div className="page">
+    <div className="pageTop">
+      <div><h1>Warm Up Activities</h1><p className="mutedText">The first ten minutes — ball, body and eyes, with structure</p></div>
+      <button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button>
+    </div>
+    <p className="mutedText" style={{margin:'0 0 12px'}}>A cold ball barely bounces, so the first minutes are about warming it while the players move. Run every rotation the same way: <strong>cooperative first</strong> — keep it going, nobody scoring, everybody moving — then <strong>competitive</strong> once the ball is warm: 11 lives each, losing one for a miss, a ball outside the tramline, or a ball out of court. Same movement, real consequence — and lives keep everyone hitting rather than knocking anyone out.</p>
+    <div className="l0CardStack">
+      {cards.map(c=><CoachCard key={c.code} card={c} onAdd={()=>addToSession(c)}/>)}
+    </div>
+    {added&&<p style={{color:'#8fbfa4',fontWeight:800,marginTop:'10px'}}>✓ Added — {added}</p>}
+  </div>;
+}
 function Level0Foundations({setScreen,setSession}){
   const [activeModule,setActiveModule]=useState('home');
   const [audioPlaying,setAudioPlaying]=useState(false);
@@ -21732,7 +21814,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
     (lengthType!=='any'?('Straight length: every length is a '+forcedLengthWord(lengthType)):'Straight length: lob or drive, player chooses')+(crossLengthType!=='any'?(' · Cross-court length: '+forcedLengthWord(crossLengthType)):'')+(crossVolley!=='choice'?(' · Cross-court take-on: '+crossVolleyLabel):''),
     'Direction: '+dirLabel+(direction==='cross'?' (functional cross — must move them more than one step)':''),
     cycleLabel,
-    tramline?'Tramline: on — all balls must land inside the tramline':'Tramline: off'
+    tramline?'Tramline: on — straight shots must land in the side channel; crosscourts count in the side channel or in a band of the same width across the back':'Tramline: off'
   ];
   function add(view){
     try{
@@ -21844,7 +21926,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
         {cycleMode==='openAfter'&&<><PdChip on={false} onClick={()=>setOpenAfter(v=>Math.max(1,v-1))}>−</PdChip><span className="pdStepNum">{openAfter}</span><PdChip on={false} onClick={()=>setOpenAfter(v=>v+1)}>+</PdChip></>}
       </PatternRunPanel>
 
-      <PatternRunPanel title="Tramline" note="All balls must land inside the tramline.">
+      <PatternRunPanel title="Tramline" note="Straight shots must land in the side channel. Crosscourts count in the side channel or in a band of the same width across the back — a crosscourt tight along the back is a good ball.">
         <PdChip on={!tramline} onClick={()=>setTramline(false)}>Off</PdChip>
         <PdChip on={tramline} onClick={()=>setTramline(true)}>On</PdChip>
       </PatternRunPanel>
@@ -23147,6 +23229,7 @@ const SEARCH_DESTINATIONS=[
   {label:'CLA Lexicon',sub:'Coach education \u00b7 terms, researchers, plain English',kw:'cla lexicon glossary terms definitions language ecological dynamics affordance bernstein gibson constraints research coach education',screen:'lexicon'},
   {label:'Rotation Engine',sub:'Group formats \u00b7 winner stays, monarch, 2v1, tag team',kw:'rotation engine group formats winner stays on king of the court monarch ladder two v one 2v1 tag team queue rotate multi court six players board',screen:'rotation'},
   {label:'Performance Ladder',sub:'Season points \u00b7 promotion & demotion \u00b7 annual award \u00b7 in Players',kw:'performance season ladder annual award points table leaderboard promotion demotion ranking competitive year trophy attendance win share ranked game log challenge players',screen:'seasonLadder'},
+  {label:'Warm Up Activities',sub:'First ten minutes \u00b7 ATL game, boast & drive straight and diagonal',kw:'warm up warmup atl above the line boast and drive straight diagonal first ten minutes ball warm cold ball start of session',screen:'warmUp'},
   {label:'Traffic Light Zones',sub:'Front-wall height bands \u00b7 red amber green \u00b7 solo, pairs & games',kw:'traffic light zones red amber green height bands front wall tape service line tin lob kill drop constraint conditioned game solo timed hirst wsf',screen:'trafficLight'},
   {label:'Suggestions',sub:'Players & coaches \u00b7 improve games and activities',kw:'suggestions coach game feedback ideas improve comment player voice review notes actioned parked export cla rationale rld propose',screen:'coachSuggestions'},
   {label:'Session Builder',sub:'Plan & build a session',kw:'session plan builder rotation',screen:'sessions'},
@@ -28324,6 +28407,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='squadClock'&&<SquadClock setScreen={go}/>}
       {screen==='squadClockNet'&&<NetworkedSquadClock setScreen={go}/>}
       {screen==='level0'&&<Level0Foundations setScreen={go} setSession={setSession}/>}
+      {screen==='warmUp'&&<WarmUpActivities setScreen={go} setSession={setSession}/>}
       {screen==='games'&&<Games setSession={setSession} setScreen={go}/>} 
       {screen==='gamesLibrary'&&<GamesLibrary setSession={setSession} setScreen={go}/>}
       {screen==='plugPlay'&&<PlugAndPlay setScreen={go} setSession={setSession}/>}
