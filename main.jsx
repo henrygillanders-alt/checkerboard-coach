@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v648 Checkerboard as a pool of codes plus a target. The challenge is no longer a fixed list where each code appears once: the codes entered form a pool, and the coach sets how many completions are required from it \u2014 repeats counting, so three completions can be two 8-4 and one 7-3, or two 7-3 and one 8-4, or any mix. The rule text names the pool and spells the repeats out. The four-rung order-and-adjacency ladder from v647 applies on top, unchanged. Builds on v647.';
+const APP_VERSION='v649 Player display gets numbered steps, and coaches can suggest app improvements. Pattern Lab cards now put the numbered action sequence on the player display \u2014 1) rally into the lengths, 2) when they are off the T attack into the boast, 3) answer into the counter drop, 4) resolve back into the lengths \u2014 instead of a one-line summary, so a player reading courtside can find their place at a glance; the intention, rationale and coach cue stay on the module screen where they belong. Suggestions gains a third tab, Improve the app, for coaches to report screens that are confusing, slow to read or missing something \u2014 filed by area and covered by the cloud backup. Builds on v648.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5075,6 +5075,61 @@ function formatPeakDate(baseDate,offset){
 const SUGGESTIONS_KEY='checkerboard_game_suggestions_v1';
 function loadSuggestions(){try{const v=JSON.parse(localStorage.getItem(SUGGESTIONS_KEY));return Array.isArray(v)?v:[];}catch{return [];}}
 function saveSuggestions(list){try{localStorage.setItem(SUGGESTIONS_KEY,JSON.stringify(list));}catch{}}
+function AppSuggestions(){
+  /* Suggestions about the app itself — screens that are confusing, things that
+     are hard to find, features missing. Kept in the same store as game
+     suggestions so it is covered by the cloud backup. */
+  const [items,setItems]=useState(()=>loadSuggestions());
+  const [area,setArea]=useState('Player display');
+  const [text,setText]=useState('');
+  const [author,setAuthor]=useState('');
+  const [filter,setFilter]=useState('open');
+  const AREAS=['Player display','Session Builder','Games Library','Players & attendance','Competition','Performance Ladder','Scoring links','Something else'];
+  function update(next){saveSuggestions(next);setItems(next);}
+  function add(){
+    const t=text.trim();
+    if(!t)return;
+    update([{id:makeLocalId(),at:new Date().toISOString(),kind:'app',game:area,author:author.trim()||'Anonymous',role:'Coach',text:t,status:'open'},...items]);
+    setText('');
+  }
+  function setStatus(id,status){update(items.map(it=>it.id===id?{...it,status}:it));}
+  function remove(id){if(window.confirm('Delete this?'))update(items.filter(it=>it.id!==id));}
+  const appItems=items.filter(it=>it.kind==='app');
+  const shown=appItems.filter(it=>filter==='all'?true:filter==='done'?it.status!=='open':it.status==='open');
+  return <div>
+    <div className="sugPanel">
+      <h4>Improve the app</h4>
+      <p className="mutedText" style={{marginTop:0,fontSize:'0.84rem'}}>What is hard to use, hard to find, or missing? Screens that take too long to read count — if it slows you down courtside, it is worth saying.</p>
+      <div className="sugRow" style={{marginBottom:'8px'}}>
+        {AREAS.map(a=><button type="button" key={a} className={area===a?'sugChip on':'sugChip'} onClick={()=>setArea(a)}>{a}</button>)}
+      </div>
+      <textarea className="sugInput" rows="3" placeholder="What would make it better?" value={text} onChange={e=>setText(e.target.value)}/>
+      <input className="sugInput" placeholder="Your name (optional)" value={author} onChange={e=>setAuthor(e.target.value)}/>
+      <button type="button" className="primaryBtn" disabled={!text.trim()} onClick={add}>Save</button>
+    </div>
+    <div className="sugPanel">
+      <h4>App suggestions ({shown.length})</h4>
+      <div className="sugRow" style={{marginBottom:'10px'}}>
+        {[['open','Open'],['done','Actioned / parked'],['all','All']].map(([id,label])=>
+          <button type="button" key={id} className={filter===id?'sugChip on':'sugChip'} onClick={()=>setFilter(id)}>{label}</button>)}
+      </div>
+      {!shown.length&&<p className="mutedText">Nothing here yet.</p>}
+      {shown.map(it=><div key={it.id} className={it.status==='open'?'sugCard':'sugCard done'}>
+        <div className="sugMeta"><b>{it.game}</b> · {it.author} · {new Date(it.at).toLocaleDateString()}{it.status!=='open'?' · '+it.status:''}</div>
+        <p className="sugText">{it.text}</p>
+        <div className="sugRow">
+          {it.status==='open'
+            ?<>
+              <button type="button" className="sugMini" onClick={()=>setStatus(it.id,'actioned')}>Mark actioned</button>
+              <button type="button" className="sugMini" onClick={()=>setStatus(it.id,'parked')}>Park it</button>
+            </>
+            :<button type="button" className="sugMini" onClick={()=>setStatus(it.id,'open')}>Reopen</button>}
+          <button type="button" className="sugMini" onClick={()=>remove(it.id)}>Delete</button>
+        </div>
+      </div>)}
+    </div>
+  </div>;
+}
 function GameSuggestions({setScreen,session,embedded=false}){
   const [items,setItems]=useState(()=>loadSuggestions());
   const [game,setGame]=useState('');
@@ -5400,10 +5455,11 @@ function CoachSuggestionsModule(){
     <style>{`.coachSuggest label.fw{display:block;margin:12px 0;font-weight:600;color:#cfe0ee}.coachSuggest label.fw input,.coachSuggest label.fw textarea,.coachSuggest .atlOptionsGrid input{width:100%;margin-top:5px;padding:10px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:15px;box-sizing:border-box;font-family:inherit}.coachSuggest .suggestionType{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;margin-right:8px;border-radius:10px;background:#1c3a52;color:#9fd0ea}.coachSuggest .thread{margin:8px 0;padding:8px 10px;background:#0b1a2a;border-radius:8px;border:1px solid #1d3547}.coachSuggest .msg{padding:5px 0;font-size:14px;color:#dce9f4;border-bottom:1px solid #16283a}.coachSuggest .msg:last-child{border-bottom:none}.coachSuggest .replyRow{display:flex;gap:8px;margin:8px 0}.coachSuggest .replyRow input{flex:1;padding:9px;border-radius:8px;background:#0e2033;border:1px solid #2a4a63;color:#eaf4fb;font-size:14px;box-sizing:border-box}`}</style>
     <div className="categoryTag">Suggestions</div>
     <div style={{display:'flex',gap:'8px',flexWrap:'wrap',margin:'0 0 12px'}}>
-      {[['coach','Propose a game or idea'],['feedback','Improve a game we played']].map(([id,label])=>
+      {[['coach','Propose a game or idea'],['feedback','Improve a game we played'],['app','Improve the app']].map(([id,label])=>
         <button type="button" key={id} onClick={()=>setSugTab(id)} style={{background:sugTab===id?'#101d18':'#0d1722',border:sugTab===id?'1px solid #2f5c46':'1px solid #2a3a4f',color:sugTab===id?'#8fbfa4':'#8aa0b6',borderRadius:'9px',padding:'9px 14px',fontWeight:800,fontSize:'0.86rem',cursor:'pointer'}}>{label}</button>)}
     </div>
     {sugTab==='feedback'&&<GameSuggestions embedded/>}
+    {sugTab==='app'&&<AppSuggestions/>}
     <div style={sugTab==='feedback'?{display:'none'}:undefined}>
     <h2>{editId?'Edit Suggestion':'Suggest an Exercise, Activity or Game'}</h2>
     <div className="statusBox" style={{borderColor:online?'#3f7a5c':'#6b5a3a'}}>{online?'Shared with all coaches — suggestions and replies sync live across every device.':'On this device only. Once the shared database is connected, everything syncs across all coaches.'}</div>
@@ -21599,6 +21655,17 @@ function patternCrossRule(game){
 // Plain-text versions for session cards, search results and the live display,
 // which take a string rather than a node.
 function patternLogicText(game,trigger){return patternLogicSteps(game,trigger).map(s=>`${s.k}: ${s.v}`).join(' ');}
+/* Player-facing version: the actions only, numbered, no intention or rationale.
+   A player on court has seconds to read this — coach content belongs on the
+   module screen, not on the wall. Renders as "1) ... 2) ..." which the player
+   display already turns into separate steps. */
+function patternPlayerText(game,trigger,side,lengthType,firstShot){
+  const skip={Intention:1,Serve:1,Length:1,Repeat:1};
+  const steps=patternLogicSteps(game,trigger,side,lengthType,firstShot)
+    .filter(s=>!skip[s.k])
+    .map(s=>String(s.v).replace(/\s+/g,' ').trim());
+  return steps.map((v,i)=>`${i+1}) ${v}`).join(' ');
+}
 function patternScoreText(){return PATTERN_SCORE_RULES.map(r=>`${r.k} = ${r.v}`).join(' · ');}
 
 function PatternLabPlayerDisplay({payload={}}){
@@ -21838,7 +21905,11 @@ function TacticalIntentionsModule({setScreen,setSession}){
     const modLayers=modifier?[...(modifier.gameLogic||[]),...(modifier.constraints||[])]:[];
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
     const split=splitPatternLogic(game.logic,trigger);
-    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,task:quickOverride||game.quick,description:desc,rationale:split.description,scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'+(split.focus?(' '+split.focus):'')});
+    const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,
+      /* The player display reads the task. Give it the numbered action sequence
+         rather than a one-line summary, so a player on court sees 1) 2) 3) 4)
+         and can find their place at a glance. Coach detail stays in description. */
+      task:quickOverride||patternPlayerText(game,trigger)||game.quick,description:desc,rationale:split.description,scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'+(split.focus?(' '+split.focus):'')});
     card.plConfig=plConfig;
     if(editing&&editing.cardId){
       card.id=editing.cardId;
