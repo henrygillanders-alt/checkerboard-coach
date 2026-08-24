@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v658 Warm Up Activities no longer renders blank. The shared coaching-card renderer was defined inside Level 0 Foundations, so the Warm Up screen could not see it: opening the module threw a reference error and showed nothing at all. The renderer now sits at module scope where both screens can use it. The screen-level render is now covered by a test that navigates into the module rather than only booting the home screen, which is what let this reach a deploy. Builds on v657.';
+const APP_VERSION='v662 Figure of Eight runs above the line throughout. Every shot in the eight \u2014 lengths, crosscourts and drops alike \u2014 must be above the line, not just the drops as v660 had it. The ball stays high and slow, which is what warms it and keeps the pattern alive, and it stops the warm-up becoming hard low hitting while the body is still cold. Applied across all three eight cards. Builds on v661.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -9210,6 +9210,27 @@ function WarmUpActivities({setScreen,setSession}){
      cue:'Soft hands on the drop, height on the lob — give everyone time to get there.',
      simplify:'Walk it through without a ball first. Allow the ball to bounce twice while it is still cold.',
      progress:'Tighten the drop and lower the lob as the ball warms, then run it competitively with every ball having to land inside the tramline.'},
+    {code:'WU-6',title:'Figure of Eight — straight and cross',
+     purpose:'Warms width and length together, on both sides, with both players travelling continuous curved paths through the middle — no stopping and reversing while the body is still cold.',
+     task:'Two players, fixed roles, every shot above the line. One plays straight drives only, the other plays crosscourts only, strictly alternating: straight down one wall, crosscourt to the far corner, straight down that wall, crosscourt back. The ball traces a figure of eight and the players travel with it. When the ball dies, reverse the roles so the straight player becomes the crosscourt player.',
+     constraint:'Every shot above the line — the ball stays high and slow, which is what warms it and keeps the pattern alive. Fixed roles: one player straight every time, the other crosscourt every time, one shot each, strictly alternating.',
+     cue:'Travel through the middle, do not cut the corner — the shape is the exercise.',
+     simplify:'Let the ball bounce twice while it is cold. Slow the pace until the pattern holds.',
+     progress:'Require the crosscourt to finish in the back band so the eight stays intact, then volley the crosscourt when it is on — same path, more pace.'},
+    {code:'WU-7',title:'Figure of Eight — with drops',
+     purpose:'Adds the front court to the eight without breaking its flow: the same two roles, the same continuous travel, but now the pattern runs the full length of the court.',
+     task:'Run the Figure of Eight as normal, then feed drops into it and resume. The order: 1) straight length, 2) crosscourt, 3) straight length, 4) crosscourt — the eight is running. 5) The straight player plays a straight drop. 6) The crosscourt player retrieves it and plays a crosscourt drop. 7) The straight player resumes length, 8) the crosscourt player crosscourts, and the eight is running again. Repeat, dropping in when the coach calls it or on an agreed count.',
+     constraint:'Every shot above the line, drops included — the drop keeps the rally alive rather than killing it. Roles stay fixed throughout: the straight player drops straight, the crosscourt player drops crosscourt.',
+     cue:'Same shape, longer court — travel to the front, do not lunge at it.',
+     simplify:'Call the drop in advance so nobody is surprised by it while the body is cold.',
+     progress:'Let either player choose when to drop, so the other has to read it. Then reverse roles when the ball dies, as in the plain eight.'},
+    {code:'WU-8',title:'Figure of Eight — choice, roles swap live',
+     purpose:'The last step before the session proper: a real choice appears, roles change inside the rally, and the changes of direction build gently rather than arriving all at once.',
+     task:'Run the eight with drops as in WU-7, but the straight player now has a choice on their shot: play the straight drop and the pattern carries on as before, or play a crosscourt instead — and if they crosscourt, the roles reverse there and then. The player who was crosscourt becomes the straight player, and the eight runs the other way round. The other player has to read which it is rather than being told.',
+     constraint:'Every shot above the line, throughout. Only the straight player holds the choice, and taking the crosscourt is what swaps the roles — nothing else does.',
+     cue:'Read the shot, not the player — you will not be told which is coming.',
+     simplify:'Call the choice out loud as it is played until the group can read it. Or limit the swap to once per rally.',
+     progress:'Give both players the choice, so either can swap the roles. By this point the warm-up is done — this is the handover into the session proper.'},
     {code:'WU-C',title:'Tramline Game — competitive, 11 lives',
      purpose:'Turns the warm-up rotation into a real game once the ball is warm — same movement, but now every ball has a consequence. Lives keep everyone in it: nobody is knocked out on one mistake, and the first player to run out sets the moment every court changes.',
      task:'Run any of the rotations above competitively. Each player starts with 11 lives and loses one for a missed shot, a ball landing outside the tramline, or a ball out of court. The rotation carries straight on — no rally reset. As soon as any player on any court runs out of lives, the round ends and every court changes together — so the courts stay synchronised instead of drifting apart, and nobody is left waiting.',
