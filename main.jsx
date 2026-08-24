@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v656 Lives set the moment every court changes. In the competitive warm-up, the first player on any court to run out of lives ends the round for everyone and all courts change together \u2014 so a multi-court warm-up stays synchronised instead of drifting apart, and nobody is left waiting on a finished court. Replaces the previous wording, where players who ran out kept hitting until some later end. Fewer lives now reads as a real dial: shorter rounds, courts changing more often. Builds on v655.';
+const APP_VERSION='v658 Warm Up Activities no longer renders blank. The shared coaching-card renderer was defined inside Level 0 Foundations, so the Warm Up screen could not see it: opening the module threw a reference error and showed nothing at all. The renderer now sits at module scope where both screens can use it. The screen-level render is now covered by a test that navigates into the module rather than only booting the home screen, which is what let this reach a deploy. Builds on v657.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -9155,6 +9155,33 @@ function Level0Exploration(){
 }
 
 
+/* Shared coaching-card renderer: used by Warm Up Activities and Level 0
+   Foundations. Previously nested inside Level 0, which meant Warm Up could not
+   see it — the screen threw "CoachCard is not defined" and rendered blank. */
+function CoachCard({card,onAdd}){
+  const [expanded,setExpanded]=useState(false);
+  return <div className={'l0CoachCard'+(expanded?' l0CoachCardOpen':'')}>
+    <button type="button" className="l0CoachCardHeader" onClick={()=>setExpanded(!expanded)}>
+      <span className="l0CoachCardCode">{card.code}</span>
+      <strong>{card.title}</strong>
+      <span className="l0CoachCardChevron">{expanded?'▲':'▼'}</span>
+    </button>
+    {expanded&&<div className="l0CoachCardBody">
+      <div className="l0CoachCardPurpose"><strong>Purpose</strong><p>{card.purpose}</p></div>
+      <div className="l0CoachCardTask"><strong>Task</strong><p>{card.task}</p></div>
+      {card.constraint&&<div className="l0CoachCardSection"><strong>Constraint</strong><p>{card.constraint}</p></div>}
+      {card.goal&&<div className="l0CoachCardSection"><strong>Goal</strong><p>{card.goal}</p></div>}
+      {card.variations&&<div className="l0CoachCardSection"><strong>Variations</strong><p>{card.variations}</p></div>}
+      {card.coachCue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.coachCue}{'"'}</blockquote></div>}
+      {card.avoid&&<div className="l0CoachCardAvoid"><strong>Avoid</strong><p>{card.avoid}</p></div>}
+      {!card.coachCue&&card.cue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.cue}{'"'}</blockquote></div>}
+      {card.simplify&&<div className="l0CoachCardSection simplifySection"><strong>Simplify</strong><p>{card.simplify}</p></div>}
+      {card.progress&&<div className="l0CoachCardSection progressSection"><strong>Progress</strong><p>{card.progress}</p></div>}
+      {onAdd&&<button type="button" className="primaryBtn l0AddBtn" onClick={()=>onAdd(card)}>Add to Session</button>}
+    </div>}
+  </div>;
+}
+
 /* ── WARM UP ACTIVITIES ───────────────────────────────────────────────────────
    The first ten minutes of a session: getting the ball warm, the body moving and
    the eyes working, with enough structure that it is practice rather than
@@ -9229,6 +9256,11 @@ function WarmUpActivities({setScreen,setSession}){
       <button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>HOME</button>
     </div>
     <p className="mutedText" style={{margin:'0 0 12px'}}>A cold ball barely bounces, so the first minutes are about warming it while the players move. Run every rotation the same way: <strong>cooperative first</strong> — keep it going, nobody scoring, everybody moving — then <strong>competitive</strong> once the ball is warm: 11 lives each, losing one for a miss, a ball outside the tramline, or a ball out of court. Same movement, real consequence — and lives keep everyone hitting rather than knocking anyone out.</p>
+    <div style={{background:'#0b1320',border:'1px solid #1f4a5e',borderLeft:'3px solid #2e6e8e',borderRadius:'12px',padding:'12px 14px',margin:'0 0 14px'}}>
+      <strong style={{color:'#6eaac8',fontSize:'0.9rem'}}>What belongs in this module</strong>
+      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>Movement that flows — continuous rotations, predictable paths, no sudden changes of direction while the body is still cold. That is the safety rule and the test for any new activity here: if it asks a player to stop dead and go the other way, it belongs later in the session, not in the warm-up.</p>
+      <p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.84rem'}}>Competitive is welcome — lives, targets and tramlines all belong here. What these activities are <em>not</em> is representative practice: the RLD is deliberately low, because the objective is game-like movement and a warm ball, not decision-making under match pressure. The real session starts after this.</p>
+    </div>
     <div className="l0CardStack">
       {cards.map(c=><CoachCard key={c.code} card={c} onAdd={()=>addToSession(c)}/>)}
     </div>
@@ -9321,29 +9353,6 @@ function Level0Foundations({setScreen,setSession}){
     {code:'BD-3',title:'Waltz Rhythm — Rally',purpose:'Relaxed, rhythmic rally play.',task:'Cooperative rally with Blue Danube playing. Both players aim to maintain a waltz-tempo rhythm across the rally.',constraint:'Music constraint active throughout rally.',cue:'Stay with the music.',simplify:'Zone targets to keep pace manageable.',progress:'Competitive rally with rhythm constraint.'},
   ];
 
-  function CoachCard({card,onAdd}){
-    const [expanded,setExpanded]=useState(false);
-    return <div className={'l0CoachCard'+(expanded?' l0CoachCardOpen':'')}>
-      <button type="button" className="l0CoachCardHeader" onClick={()=>setExpanded(!expanded)}>
-        <span className="l0CoachCardCode">{card.code}</span>
-        <strong>{card.title}</strong>
-        <span className="l0CoachCardChevron">{expanded?'▲':'▼'}</span>
-      </button>
-      {expanded&&<div className="l0CoachCardBody">
-        <div className="l0CoachCardPurpose"><strong>Purpose</strong><p>{card.purpose}</p></div>
-        <div className="l0CoachCardTask"><strong>Task</strong><p>{card.task}</p></div>
-        {card.constraint&&<div className="l0CoachCardSection"><strong>Constraint</strong><p>{card.constraint}</p></div>}
-        {card.goal&&<div className="l0CoachCardSection"><strong>Goal</strong><p>{card.goal}</p></div>}
-        {card.variations&&<div className="l0CoachCardSection"><strong>Variations</strong><p>{card.variations}</p></div>}
-        {card.coachCue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.coachCue}{'"'}</blockquote></div>}
-        {card.avoid&&<div className="l0CoachCardAvoid"><strong>Avoid</strong><p>{card.avoid}</p></div>}
-        {!card.coachCue&&card.cue&&<div className="l0CoachCardCue"><strong>Coach Cue</strong><blockquote>{'"'}{card.cue}{'"'}</blockquote></div>}
-        {card.simplify&&<div className="l0CoachCardSection simplifySection"><strong>Simplify</strong><p>{card.simplify}</p></div>}
-        {card.progress&&<div className="l0CoachCardSection progressSection"><strong>Progress</strong><p>{card.progress}</p></div>}
-        {onAdd&&<button type="button" className="primaryBtn l0AddBtn" onClick={()=>onAdd(card)}>Add to Session</button>}
-      </div>}
-    </div>;
-  }
 
   function addToSession(card){
     if(setSession) setSession(prev=>[...(prev||[]),{
