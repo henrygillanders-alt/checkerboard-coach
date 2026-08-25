@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v665 Pre-competition warm-up, for when no court is available. Junior events rarely give a court before the match, and the usual answer \u2014 throwing and catching a tennis ball \u2014 calibrates the wrong relationship: hand to ball, with an object that flies differently, caught rather than struck. What has drifted is the racquet-to-ball relationship, and only a racquet and a squash ball retune it. The Warm Up module gains a second section: visualisation and ghosting run together so each movement carries a shot, then a hand-fed ball the player directs back to the coach with the racquet at catchable pace, then wall contact if any wall exists, and a countdown covering called-early and kept-waiting-an-hour. Builds on v664.';
+const APP_VERSION='v666 Round robin results now reach the Performance Ladder. Scores entered in a round robin were recorded in the standings and went no further \u2014 a whole tournament left no trace on the ladder, because auto-recording existed for the five court games and not for the competition module. Each player is now recorded on their match wins from the standings, ranked accordingly, with a dedupe key carrying every player\u2019s win count so a tournament is counted once at its current state and updated results do not double-count. Builds on v665.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -17467,6 +17467,25 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       setRrResults(prev=>({...prev,[rrKey(roundIndex,matchIndex)]:winner}));
     }
   }
+
+  /* Round robin results were being recorded in the standings and going no
+     further \u2014 a whole tournament left no trace on the Performance Ladder.
+     Record it whenever results change: the dedupe key carries every player's
+     win count, so an updated result replaces nothing and simply records the
+     tournament again at its current state, and a finished tournament is only
+     ever counted once. */
+  function recordRoundRobinToLadder(){
+    try{
+      const table=getRoundRobinStandings().filter(r=>r&&r.name&&r.played>0);
+      if(table.length<2)return;
+      const key='rr|'+table.map(r=>r.name).sort().join(',')+'|'+table.map(r=>r.name+':'+r.wins).sort().join('-');
+      ladderAutoRecordGame(key,'Round Robin',table.map(r=>({player:r.name,wins:r.wins})));
+    }catch{}
+  }
+  useEffect(()=>{
+    const t=setTimeout(recordRoundRobinToLadder,1200);
+    return ()=>clearTimeout(t);
+  },[rrResults,competitionMatchScores]);
 
   function getRoundRobinStandings(){
     const table={};
