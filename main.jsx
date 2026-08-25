@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v666 Round robin results now reach the Performance Ladder. Scores entered in a round robin were recorded in the standings and went no further \u2014 a whole tournament left no trace on the ladder, because auto-recording existed for the five court games and not for the competition module. Each player is now recorded on their match wins from the standings, ranked accordingly, with a dedupe key carrying every player\u2019s win count so a tournament is counted once at its current state and updated results do not double-count. Builds on v665.';
+const APP_VERSION='v667 Box round robins reach the ladder too. v666 recorded the flat round robin only; the box format \u2014 the one junior events actually use \u2014 keeps its results in a separate structure the flat standings never see, so a boxed tournament still left no trace. Each box is now recorded as its own result, group stage and finals separately, because players in different boxes have not played each other and should not be ranked against one another. Builds on v666.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -17476,16 +17476,37 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
      ever counted once. */
   function recordRoundRobinToLadder(){
     try{
+      /* Flat round robin. */
       const table=getRoundRobinStandings().filter(r=>r&&r.name&&r.played>0);
-      if(table.length<2)return;
-      const key='rr|'+table.map(r=>r.name).sort().join(',')+'|'+table.map(r=>r.name+':'+r.wins).sort().join('-');
-      ladderAutoRecordGame(key,'Round Robin',table.map(r=>({player:r.name,wins:r.wins})));
+      if(table.length>=2){
+        const key='rr|'+table.map(r=>r.name).sort().join(',')+'|'+table.map(r=>r.name+':'+r.wins).sort().join('-');
+        ladderAutoRecordGame(key,'Round Robin',table.map(r=>({player:r.name,wins:r.wins})));
+      }
+      /* Box round robin \u2014 a separate structure the flat standings never see.
+         Each box is recorded as its own result, since players in different
+         boxes have not played each other and should not be ranked against
+         one another. */
+      (rrBoxes||[]).forEach((box,bidx)=>{
+        const fixtures=(rrBoxFixtures||[])[bidx];
+        const rows=getBoxStandings(box,fixtures,rrBoxResults||{},bidx,'group').filter(r=>r&&r.name&&r.played>0);
+        if(rows.length<2)return;
+        const key='rrbox|'+bidx+'|'+rows.map(r=>r.name).sort().join(',')+'|'+rows.map(r=>r.name+':'+r.wins).sort().join('-');
+        ladderAutoRecordGame(key,'Round Robin \u2014 '+(box.name||('Box '+(bidx+1))),rows.map(r=>({player:r.name,wins:r.wins})));
+      });
+      /* Finals boxes, where they have been played. */
+      (rrFinalBoxes||[]).forEach((box,bidx)=>{
+        const fixtures=(rrFinalFixtures||[])[bidx];
+        const rows=getBoxStandings(box,fixtures,rrFinalResults||{},bidx,'final').filter(r=>r&&r.name&&r.played>0);
+        if(rows.length<2)return;
+        const key='rrfinal|'+bidx+'|'+rows.map(r=>r.name).sort().join(',')+'|'+rows.map(r=>r.name+':'+r.wins).sort().join('-');
+        ladderAutoRecordGame(key,'Round Robin Final \u2014 '+(box.name||('Box '+(bidx+1))),rows.map(r=>({player:r.name,wins:r.wins})));
+      });
     }catch{}
   }
   useEffect(()=>{
     const t=setTimeout(recordRoundRobinToLadder,1200);
     return ()=>clearTimeout(t);
-  },[rrResults,competitionMatchScores]);
+  },[rrResults,rrBoxResults,rrFinalResults,competitionMatchScores]);
 
   function getRoundRobinStandings(){
     const table={};
