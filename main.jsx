@@ -230,7 +230,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v672 Patience \u2192 Urgency, a mode inside Rally Band. Two timed phases per rally: Patience (blue) where an early ending costs the player who hit the last ball (error 2, winner 1 to the opponent, editable), then Urgency (red, two beeps) with a finishing window (winner 2); three beeps and no finish, both lose 1. Condition on both or one player, fixed or random (blind) transition, per-player patience, survive bonus for the conditioned player. Rule text generated from the live settings. Last-ball responsibility only; no judgement calls. Builds on v671. v671 Live Match Coaching: the No cause, clean error tag (set by the skip button) had no advice or exploit entry, so three clean errors locked the pattern and showed nothing; both entries added. Found on court on v670. v670 Live Match Coaching advice fix. Two-tag causes (joined with a plus) never matched an advice entry and counted as their own cause, so the same fault logged many times never locked; each tag is now counted on its own and advice is looked up by the first tag. Seven tappable cause tags had no advice or exploit entry at all (Loose Boast, Loose Mid-court, Loose Lob, Forced Loose Return, Tight Ball, High Quality Shot, Deception Hold); all seven now have both. Builds on v669. v669 Backhand Half Finish, a Pressure overlay in the Modifier Engine. Bonus (default +1, editable) when the rally-winning ball bounces in the opponent\u2019s backhand half; right-handed opponent left half, left-handed opponent right half, half-court line counts. Score only, no shot constraint, so the route to that half stays open to the player. Cited: Vu\u010dkovi\u0107 et al. (2013, JSSM 12, 66-73), verified. Pressing Length: Pressure overlay, +1 for a straight drive whose first bounce is behind the service box back line and whose second bounce comes before the back wall; volleyed or one-bounce returns score nothing. From Murray et al. (2018, J Sports Sci 36, 1415-1422) and the 2019 Frontiers follow-up, both verified. Jones et al. (2018) IJSSC review and the Alaaeldien and Akl EMG paper reviewed; the review pointed to Murray, the EMG paper contributes nothing. Live Match Coaching: Between Game Report gains a Short ball line per player, short winners against Loose Drop and Loose Boast events, from three events up; nothing new to capture. Logic follows Ghani, Ibrahim, Zainuddin and Button (2016) who found the drop was both the top winner and top unforced-error source in elite women; reviewed, not cited as evidence. Weak Side (layer), Weak Side Access (TC04), Weak Side Return (rt4) and the Weak-side finish completion option are removed: each asked a player or coach to judge where the opponent is weak, which cannot be self-officiated, and the backhand half now carries that intention on a painted line. The Shot Bonus Rally Weak-Side Amplifier is renamed Stroke-Side Amplifier: it doubles the hitter\u2019s own backhand or forehand target shots, a different mechanism that stacks with Backhand Half Finish. v668 Controllables card in Pre-Performance Preparation. A player names what is theirs to control (shot choice, movement, breathing, plan, effort, attention after an error) and what is not (referee, opponent, court, draw, crowd, luck), then checks each nervous feeling against the first list. Mechanism from Jones (1995) control model of competitive anxiety, supported by Jones and Hanton (1996); both verified before writing. Builds on v667.';
+const APP_VERSION='v674 Patience \u2192 Urgency: individual release times. With the condition on both players and patience set per player, each player is released at their own time and the rally passes through a split phase: two beeps at the first release, that player may finish (a winner scores the finish value, an error gives the held player the normal point), the other is still held (ending it is an early ending, scored as before); two beeps at the second release and the shared urgency window begins, with the held player collecting the survive bonus if it is on. In v672 and v673 the per-player numbers appeared in the rule text but the single signal fired at Player A\u2019s time for both, so the written rule and the clock disagreed. Random (blind) mode stays single-signal; the finishing window is shared. Twenty-six behavioural tests on the scoring, and a timed component test through patience, split and urgency. No Repeat, Diversity overlay: the title carried a bracketed (NR) that did not match its points key, so it ran constraint-only by accident, and its rule relied on an undefined term (shot family). The rule now names five shots the opponent can see (straight drive, crosscourt drive, boast, drop, lob), the opponent counts and calls it, and a repeat loses the rally; it is deliberately constraint-only, a cost on a choice rather than a bonus. Run limits above one wait for the road test. Also fixed: the Technical Constraints intro rendered a literal \\u2014 and \\u2019 in the browser (escape sequences in JSX text), present since before v672. v673 Patience \u2192 Urgency fixes. The settings card was clipped by the fixed-height player display page, so the Show player rule and Start rally buttons sat below the fold with no scroll; the page now scrolls in this mode, using the same override the substitutions scorer uses. Tapping Rally over now stops the clock, so the phase and time scored are the ones the rally actually ended in rather than the ones reached while the coach tapped who hit the last ball; a let restarts the clock from the same point, and the window can no longer expire and auto-score while the ending panel is open. v672 Patience \u2192 Urgency, a mode inside Rally Band. Two timed phases per rally: Patience (blue) where an early ending costs the player who hit the last ball (error 2, winner 1 to the opponent, editable), then Urgency (red, two beeps) with a finishing window (winner 2); three beeps and no finish, both lose 1. Condition on both or one player, fixed or random (blind) transition, per-player patience, survive bonus for the conditioned player. Rule text generated from the live settings. Last-ball responsibility only; no judgement calls. Builds on v671. v671 Live Match Coaching: the No cause, clean error tag (set by the skip button) had no advice or exploit entry, so three clean errors locked the pattern and showed nothing; both entries added. Found on court on v670. v670 Live Match Coaching advice fix. Two-tag causes (joined with a plus) never matched an advice entry and counted as their own cause, so the same fault logged many times never locked; each tag is now counted on its own and advice is looked up by the first tag. Seven tappable cause tags had no advice or exploit entry at all (Loose Boast, Loose Mid-court, Loose Lob, Forced Loose Return, Tight Ball, High Quality Shot, Deception Hold); all seven now have both. Builds on v669. v669 Backhand Half Finish, a Pressure overlay in the Modifier Engine. Bonus (default +1, editable) when the rally-winning ball bounces in the opponent\u2019s backhand half; right-handed opponent left half, left-handed opponent right half, half-court line counts. Score only, no shot constraint, so the route to that half stays open to the player. Cited: Vu\u010dkovi\u0107 et al. (2013, JSSM 12, 66-73), verified. Pressing Length: Pressure overlay, +1 for a straight drive whose first bounce is behind the service box back line and whose second bounce comes before the back wall; volleyed or one-bounce returns score nothing. From Murray et al. (2018, J Sports Sci 36, 1415-1422) and the 2019 Frontiers follow-up, both verified. Jones et al. (2018) IJSSC review and the Alaaeldien and Akl EMG paper reviewed; the review pointed to Murray, the EMG paper contributes nothing. Live Match Coaching: Between Game Report gains a Short ball line per player, short winners against Loose Drop and Loose Boast events, from three events up; nothing new to capture. Logic follows Ghani, Ibrahim, Zainuddin and Button (2016) who found the drop was both the top winner and top unforced-error source in elite women; reviewed, not cited as evidence. Weak Side (layer), Weak Side Access (TC04), Weak Side Return (rt4) and the Weak-side finish completion option are removed: each asked a player or coach to judge where the opponent is weak, which cannot be self-officiated, and the backhand half now carries that intention on a painted line. The Shot Bonus Rally Weak-Side Amplifier is renamed Stroke-Side Amplifier: it doubles the hitter\u2019s own backhand or forehand target shots, a different mechanism that stacks with Backhand Half Finish. v668 Controllables card in Pre-Performance Preparation. A player names what is theirs to control (shot choice, movement, breathing, plan, effort, attention after an error) and what is not (referee, opponent, court, draw, crowd, luck), then checks each nervous feeling against the first list. Mechanism from Jones (1995) control model of competitive anxiety, supported by Jones and Hanton (1996); both verified before writing. Builds on v667.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -757,7 +757,7 @@ const CONSTRAINT_BONUS_POINTS={
   'Double Bounce':'constraint only',
   'DB Handicap':'constraint only',
   'Innovation':'+1 per shot the opponent fails to duplicate within 3 attempts',
-  'No Repeat':'+1',
+  'No Repeat':'diversity constraint',
   'Straight + Cross':'+2',
   'Height Change':'+2',
   'Front + Back':'+2',
@@ -2049,7 +2049,7 @@ const MENTAL_PERFORMANCE_OVERLAYS = [
 ]
 
 const DIVERSITY_OVERLAYS=[
-  {category:'Diversity Constraints',title:'No Repeat (NR)',rule:'Player may not use the same shot family twice consecutively before earning the bonus.',coach:'Prevents dominant attractor states from becoming the default answer. Watch whether the player can access a second functional solution under pressure.',pairings:['Tactical Intentions','Checkerboard','Pressure Games','Shots']},
+  {category:'Diversity Constraints',title:'No Repeat',rule:'Five shots: straight drive, crosscourt drive, boast, drop, lob. Straight or crosscourt, hit or volleyed, a drop is a drop and a lob is a lob. Play the same one twice in a row in a rally and the opponent calls it: that rally is lost. The opponent counts; the call is made before the next shot is played.',coach:'A cost on a choice, not a bonus: the player has to find a second solution from the same position or concede. Prevents one attractor becoming the default answer. Both players count each other, so it runs without a referee. If the five names prove hard to agree on court, that is the finding to bring back, before any limit other than one is built.',pairings:['Tactical Intentions','Checkerboard','Pressure Games','Shots']},
   {category:'Diversity Constraints',title:'Straight + Cross',rule:'Player must use one straight route and one crosscourt route before attack bonus is live.',coach:'Forces width exploration while preserving tactical purpose. The player should stretch then exploit, not alternate mechanically.',pairings:['Width Before Attack','Around The Board','Checkerboard Pair Challenge']},
   {category:'Diversity Constraints',title:'Height Change',rule:'Player must use one drive/working length and one lob/lofted solution before attack bonus is live.',coach:'Develops vertical variability and stops hard-flat hitting from becoming the only route to pressure.',pairings:['Pressure Before Attack','Shots','Quality Length Before Attack']},
   {category:'Diversity Constraints',title:'Front + Back',rule:'Player must use one front-court action and one rear-court action before attack bonus is live.',coach:'Creates depth change and encourages players to manipulate recovery, not just hit to favourite zones.',pairings:['Front–Back Manipulation','Double Bounce','Opponent Off T']},
@@ -2101,11 +2101,19 @@ const RALLY_BAND_WEIGHTS={short:5,medium:10,long:4,very:1};
 // ── PATIENCE → URGENCY — two timed phases per rally; last-ball responsibility (see brief §8) ──
 const PU_DEFAULT_CFG={patA:15,patB:15,samePat:true,urg:8,randomOn:false,patMin:12,patMax:18,cond:'both',surviveBonus:true,pts:{earlyError:2,earlyWinner:1,finish:2,noFinish:-1,normal:1}};
 function puOther(p){return p==='A'?'B':'A';}
-// Score a rally ending. phase: 'patience' | 'urgency' | 'expired'. last: player who hit the last ball. kind: 'error' | 'unreturned'.
-// Returns {A:delta,B:delta,note}. Pure so it can be tested.
-function puScore(cfg,phase,last,kind){
+// Score a rally ending. phase: 'patience' | 'split' | 'urgency' | 'expired'. last: player who hit the last ball. kind: 'error' | 'unreturned'.
+// held: in the split phase (per-player release times), the player not yet released. Returns {A:delta,B:delta,note}. Pure so it can be tested.
+// One player held, the other free: the held player ending it is an early ending; the free player winning scores winPts; the free player erring gives the held player the normal point.
+function puAsym(pts,P,last,kind,winPts,winWord){
+  const d={A:0,B:0};
+  if(last===P){const v=kind==='error'?pts.earlyError:pts.earlyWinner;d[puOther(P)]+=v;return {...d,note:P+' ended it early by '+(kind==='error'?'an error':'a winner')+': '+puOther(P)+' +'+v+'.'};}
+  if(kind==='unreturned'){d[last]+=winPts;return {...d,note:last+' '+winWord+' '+P+': +'+winPts+'.'};}
+  d[P]+=pts.normal;return {...d,note:last+' erred: '+P+' +'+pts.normal+'.'};
+}
+function puScore(cfg,phase,last,kind,held){
   const pts=cfg.pts;const d={A:0,B:0};const other=puOther(last);
   const loser=kind==='error'?last:other;const winner=puOther(loser);
+  if(phase==='split'){const P=held||'A';return puAsym(pts,P,last,kind,pts.finish,'finished it while '+P+' was still held, beating');}
   if(phase==='expired'){
     if(cfg.cond==='both'){d.A+=pts.noFinish;d.B+=pts.noFinish;return {...d,note:'Time up with no finish: both '+pts.noFinish+'.'};}
     const P=cfg.cond;d[P]+=pts.noFinish;d[puOther(P)]+=pts.normal;return {...d,note:'Time up: '+P+' did not finish ('+pts.noFinish+'), '+puOther(P)+' held out (+'+pts.normal+').'};
@@ -2116,16 +2124,26 @@ function puScore(cfg,phase,last,kind){
     const v=kind==='error'?pts.earlyError:pts.earlyWinner;d[other]+=v;
     return {...d,note:last+' ended it early by '+(kind==='error'?'an error':'a winner')+': '+other+' +'+v+'.'};
   }
-  const P=cfg.cond;
-  if(last===P){const v=kind==='error'?pts.earlyError:pts.earlyWinner;d[puOther(P)]+=v;return {...d,note:P+' ended it early by '+(kind==='error'?'an error':'a winner')+': '+puOther(P)+' +'+v+'.'};}
-  if(kind==='unreturned'){d[last]+=pts.earlyError;return {...d,note:last+' beat '+P+' before the signal: +'+pts.earlyError+'.'};}
-  d[P]+=pts.normal;return {...d,note:last+' erred: '+P+' +'+pts.normal+'.'};
+  return puAsym(pts,cfg.cond,last,kind,pts.earlyError,'beat');
 }
+// Per-player release times (variant: Individual Rally Bands). Only in Both mode, fixed transition, patience set per player; otherwise both release together.
+function puPerPlayer(cfg){return cfg.cond==='both'&&!cfg.randomOn&&!cfg.samePat;}
+function puReleases(cfg,resolved){return puPerPlayer(cfg)?{A:cfg.patA,B:cfg.patB}:{A:resolved,B:resolved};}
 function puPatienceFor(cfg,player){return cfg.samePat?cfg.patA:(player==='A'?cfg.patA:cfg.patB);}
 function puResolvePatience(cfg){if(cfg.randomOn){const lo=Math.min(cfg.patMin,cfg.patMax),hi=Math.max(cfg.patMin,cfg.patMax);return lo+Math.floor(Math.random()*(hi-lo+1));}return cfg.cond==='both'?cfg.patA:puPatienceFor(cfg,cfg.cond);}
 function puRuleText(cfg,nameA,nameB){
   const pts=cfg.pts;const nm=p=>p==='A'?nameA:nameB;const pat=cfg.randomOn?('somewhere between '+Math.min(cfg.patMin,cfg.patMax)+' and '+Math.max(cfg.patMin,cfg.patMax)+' seconds; the players do not know when'):(cfg.samePat||cfg.cond!=='both'?puResolvePatienceLabel(cfg):nameA+' '+cfg.patA+' seconds, '+nameB+' '+cfg.patB+' seconds');
   const lines=[];
+  if(puPerPlayer(cfg)){
+    const first=cfg.patA<=cfg.patB?'A':'B',second=puOther(first);
+    lines.push('1. Patience phase. Each player has their own release time: '+nameA+' at '+cfg.patA+' seconds, '+nameB+' at '+cfg.patB+' seconds. The screen is blue. Until your own release, keep the rally alive and keep competing: move the opponent, hold the T, build the position. Do not finish it.');
+    lines.push('2. Before either release, the player who hit the last ball is responsible. An error (tin, out, not up) gives the opponent '+pts.earlyError+'. A ball the opponent could not return, including a double bounce, gives the opponent '+pts.earlyWinner+'.');
+    lines.push('3. Two beeps at '+Math.min(cfg.patA,cfg.patB)+' seconds: '+nm(first)+' is released and may finish. '+nm(second)+' is still held and must keep the ball in without finishing. A winner by '+nm(first)+' scores '+pts.finish+'. An error by '+nm(first)+' gives '+nm(second)+' '+pts.normal+'. If '+nm(second)+' ends the rally, an error gives '+nm(first)+' '+pts.earlyError+' and a winner gives '+nm(first)+' '+pts.earlyWinner+'.'+(cfg.surviveBonus?' If '+nm(second)+' reaches their own release, '+nm(second)+' scores '+pts.normal+'.':''));
+    lines.push('4. Two beeps at '+Math.max(cfg.patA,cfg.patB)+' seconds and the screen turns red: both players are released. '+cfg.urg+' seconds to end it. Whoever wins the rally inside the window scores '+pts.finish+'.');
+    lines.push('5. Three beeps means time is up. Stop playing. Both players score '+pts.noFinish+'.');
+    lines.push('6. A let is a let: replay, no points.');
+    return lines;
+  }
   lines.push('1. Patience phase, '+pat+'. The screen is blue. Keep the rally alive and keep competing: move the opponent, hold the T, build the position. Do not finish it.');
   if(cfg.cond==='both'){
     lines.push('2. If the rally ends before the signal, the player who hit the last ball is responsible. An error (tin, out, not up) gives the opponent '+pts.earlyError+'. A ball the opponent could not return, including a double bounce, gives the opponent '+pts.earlyWinner+'.');
@@ -2253,7 +2271,7 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
     const next=library.filter(c=>c.id!==cid);setLibrary(next);saveTechConstraints(next);
   }
   return <div>
-    <p className="mutedText" style={{marginTop:0}}>For habits that persist across sessions. Give a player one or two, and every breach costs them points in whatever game is running — −1, −2, however much you set \u2014 the consequence arrives on every rally, not in a correction afterwards. Applications are saved to the player\u2019s history.</p>
+    <p className="mutedText" style={{marginTop:0}}>For habits that persist across sessions. Give a player one or two, and every breach costs them points in whatever game is running — −1, −2, however much you set — the consequence arrives on every rally, not in a correction afterwards. Applications are saved to the player’s history.</p>
     {!players.length&&<p className="mutedText" style={{color:'#2e6e8e'}}>Mark players present to assign constraints.</p>}
     {players.map(p=>{
       const cur=assigned[p]||{ids:[],penalty:null};
@@ -5657,15 +5675,22 @@ function PatienceUrgencyPanel({setScreen,onBack}){
   const [asking,setAsking]=useState(false);
   const [showRule,setShowRule]=useState(false);
   useEffect(()=>{try{localStorage.setItem('checkerboard_pu_cfg_v1',JSON.stringify(cfg));}catch(e){}},[cfg]);
-  const live=rally&&(rally.phase==='patience'||rally.phase==='urgency');
-  useEffect(()=>{if(!live)return;const id=setInterval(()=>setNow(Date.now()),200);return ()=>clearInterval(id);},[live]);
-  const elapsed=rally?Math.max(0,(now-rally.startTs)/1000):0;
+  const live=rally&&(rally.phase==='patience'||rally.phase==='split'||rally.phase==='urgency');
+  const frozen=rally&&rally.frozenAt!=null;
+  useEffect(()=>{if(!live||frozen)return;const id=setInterval(()=>setNow(Date.now()),200);return ()=>clearInterval(id);},[live,frozen]);
+  const elapsed=rally?(frozen?rally.frozenAt:Math.max(0,(now-rally.startTs)/1000)):0;
   useEffect(()=>{
-    if(!rally)return;
-    if(rally.phase==='patience'&&elapsed>=rally.patience){
+    if(!rally||frozen)return;
+    const rel=rally.releases||{A:rally.patience,B:rally.patience};const firstAt=Math.min(rel.A,rel.B);
+    if(rally.phase==='patience'&&rel.A!==rel.B&&elapsed>=firstAt){
+      scBeep(2);
+      const free=rel.A<rel.B?'A':'B';
+      setRally(r=>({...r,phase:'split',free:free,held:puOther(free)}));
+    }else if((rally.phase==='patience'||rally.phase==='split')&&elapsed>=rally.patience){
       scBeep(2);
       let d={A:0,B:0};let note='';
-      if(cfg.cond!=='both'&&cfg.surviveBonus){d[cfg.cond]+=cfg.pts.normal;note=(cfg.cond==='A'?names.A:names.B)+' reached the signal: +'+cfg.pts.normal+'. ';}
+      const survivor=rally.phase==='split'?rally.held:(cfg.cond!=='both'?cfg.cond:null);
+      if(survivor&&cfg.surviveBonus){d[survivor]+=cfg.pts.normal;note=(survivor==='A'?names.A:names.B)+' reached '+(rally.phase==='split'?'their release':'the signal')+': +'+cfg.pts.normal+'. ';}
       if(d.A||d.B)setScores(sc=>({A:sc.A+d.A,B:sc.B+d.B}));
       setRally(r=>({...r,phase:'urgency',surviveNote:note}));
     }else if(rally.phase==='urgency'&&elapsed>=rally.patience+cfg.urg){
@@ -5674,18 +5699,22 @@ function PatienceUrgencyPanel({setScreen,onBack}){
       setScores(sc=>({A:sc.A+res.A,B:sc.B+res.B}));
       setRally(r=>({...r,phase:'over',result:{...res,phaseLabel:'TIME UP',dur:Math.round(elapsed)}}));
     }
-  },[elapsed,rally,cfg,names]);
+  },[elapsed,rally,cfg,names,frozen]);
+  // The clock stops the moment the coach taps Rally over, so the phase and time scored are the ones the rally actually ended in, not the ones reached while tapping. A let restarts it from the same point.
+  function freezeRally(){const at=Math.max(0,(Date.now()-rally.startTs)/1000);setRally(r=>({...r,frozenAt:at}));setAsking(true);}
+  function letReplay(){setRally(r=>({...r,startTs:Date.now()-(r.frozenAt||0)*1000,frozenAt:null}));setNow(Date.now());setAsking(false);}
   function setPts(k,v){setCfg(c=>({...c,pts:{...c.pts,[k]:v}}));}
-  function newRally(){scUnlock();setAsking(false);const pat=puResolvePatience(cfg);setRally({startTs:Date.now(),patience:pat,phase:'patience',result:null});setNow(Date.now());}
+  function newRally(){scUnlock();setAsking(false);const pat=puResolvePatience(cfg);const rel=puReleases(cfg,pat);setRally({startTs:Date.now(),patience:Math.max(rel.A,rel.B),releases:rel,phase:'patience',result:null,frozenAt:null});setNow(Date.now());}
   function endRally(last,kind){
-    const ph=rally.phase;const res=puScore(cfg,ph,last,kind);
+    const ph=rally.phase;const res=puScore(cfg,ph,last,kind,rally.held);
     setScores(sc=>({A:sc.A+res.A,B:sc.B+res.B}));
-    setRally(r=>({...r,phase:'over',result:{...res,phaseLabel:ph==='patience'?'ENDED EARLY':'FINISHED IN WINDOW',dur:Math.round(elapsed)}}));
+    const label=ph==='patience'?'ENDED EARLY':ph==='split'?(res[rally.free]>0&&kind==='unreturned'&&last===rally.free?'FINISHED BY THE RELEASED PLAYER':'ENDED IN THE SPLIT'):'FINISHED IN WINDOW';
+    setRally(r=>({...r,phase:'over',result:{...res,phaseLabel:label,dur:Math.round(elapsed)}}));
     setAsking(false);scBeep(1);
   }
   function resetScores(){setScores({A:0,B:0});setRally(null);setAsking(false);}
   const nm=p=>p==='A'?names.A:names.B;
-  const isRed=rally&&rally.phase==='urgency';
+  const isRed=rally&&rally.phase==='urgency';const isSplit=rally&&rally.phase==='split';
   const bigColor=isRed?'#ff7a7a':'#6db3e6';
   const remaining=rally&&rally.phase==='urgency'?Math.max(0,Math.ceil(rally.patience+cfg.urg-elapsed)):0;
   const Seg=({options,value,onChange})=><div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>{options.map(o=><button key={o.v} type="button" onClick={()=>onChange(o.v)} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid '+(value===o.v?'#6db3e6':'#2c3c4e'),background:value===o.v?'#12263b':'#0d1620',color:value===o.v?'#eaf4fb':'#6f8296',fontWeight:700}}>{o.l}</button>)}</div>;
@@ -5704,7 +5733,7 @@ function PatienceUrgencyPanel({setScreen,onBack}){
       {!cfg.randomOn&&!cfg.samePat&&cfg.cond==='both'&&<Row label={'Patience seconds · '+names.B}><PointStepper value={cfg.patB} min={3} max={60} sign="" onChange={v=>setCfg(c=>({...c,patB:v}))}/></Row>}
       {cfg.randomOn&&<><Row label="Random from (s)"><PointStepper value={cfg.patMin} min={3} max={60} sign="" onChange={v=>setCfg(c=>({...c,patMin:v}))}/></Row><Row label="Random to (s)"><PointStepper value={cfg.patMax} min={3} max={60} sign="" onChange={v=>setCfg(c=>({...c,patMax:v}))}/></Row></>}
       <Row label="Urgency window seconds"><PointStepper value={cfg.urg} min={2} max={30} sign="" onChange={v=>setCfg(c=>({...c,urg:v}))}/></Row>
-      {cfg.cond!=='both'&&<Row label={'Bonus for '+nm(cfg.cond)+' reaching the signal'}><Seg value={cfg.surviveBonus?'y':'n'} onChange={v=>setCfg(c=>({...c,surviveBonus:v==='y'}))} options={[{v:'y',l:'On'},{v:'n',l:'Off'}]}/></Row>}
+      {(cfg.cond!=='both'||puPerPlayer(cfg))&&<Row label={cfg.cond!=='both'?'Bonus for '+nm(cfg.cond)+' reaching the signal':'Bonus for the held player reaching their own release'}><Seg value={cfg.surviveBonus?'y':'n'} onChange={v=>setCfg(c=>({...c,surviveBonus:v==='y'}))} options={[{v:'y',l:'On'},{v:'n',l:'Off'}]}/></Row>}
       <div style={{color:'#8fb2cf',fontSize:'12px',letterSpacing:'.08em',marginTop:'10px'}}>SCORING</div>
       <Row label="Early ending by error: opponent gets"><PointStepper value={cfg.pts.earlyError} min={0} max={5} onChange={v=>setPts('earlyError',v)}/></Row>
       <Row label="Early ending by winner: opponent gets"><PointStepper value={cfg.pts.earlyWinner} min={0} max={5} onChange={v=>setPts('earlyWinner',v)}/></Row>
@@ -5720,19 +5749,29 @@ function PatienceUrgencyPanel({setScreen,onBack}){
     {rally.phase==='patience'&&<>
       <div style={{fontSize:'clamp(2rem,10vw,4rem)',fontWeight:900,color:bigColor,margin:'6px 0 0'}}>PATIENCE</div>
       <div style={{fontSize:'clamp(4rem,24vw,13rem)',fontWeight:900,lineHeight:1,color:bigColor,margin:'8px 0'}}>{Math.floor(elapsed)}s</div>
-      <div style={{fontSize:'1.05rem',color:'#cfe0ee',marginBottom:'12px'}}>{cfg.randomOn?'Signal is coming. Keep competing.':'Signal at '+rally.patience+'s. Keep competing, do not finish.'}</div>
+      <div style={{fontSize:'1.05rem',color:'#cfe0ee',marginBottom:'12px'}}>{cfg.randomOn?'Signal is coming. Keep competing.':(rally.releases&&rally.releases.A!==rally.releases.B?names.A+' released at '+rally.releases.A+'s, '+names.B+' at '+rally.releases.B+'s. Keep competing, do not finish.':'Signal at '+rally.patience+'s. Keep competing, do not finish.')}</div>
+    </>}
+    {isSplit&&<>
+      <div style={{display:'flex',gap:'10px',justifyContent:'center',margin:'6px 0'}}>
+        {['A','B'].map(p=>{const isFree=p===rally.free;return <div key={p} style={{flex:'1 1 0',maxWidth:'300px',padding:'12px',borderRadius:'14px',background:isFree?'#3a1416':'#0e2238',border:'1px solid '+(isFree?'#a35b5b':'#2e6e8e')}}>
+          <div style={{fontSize:'1.1rem',fontWeight:800,color:'#eaf4fb'}}>{nm(p)}</div>
+          <div style={{fontSize:'clamp(1.6rem,8vw,3rem)',fontWeight:900,color:isFree?'#ff7a7a':'#6db3e6'}}>{isFree?'GO':'HOLD'}</div>
+          <div style={{fontSize:'.95rem',color:'#cfe0ee'}}>{isFree?'Finish it: +'+cfg.pts.finish:'Released in '+Math.max(0,Math.ceil(rally.patience-elapsed))+'s. Keep the ball in.'}</div>
+        </div>;})}
+      </div>
+      <div style={{fontSize:'clamp(3rem,18vw,9rem)',fontWeight:900,lineHeight:1,color:'#eaf4fb',margin:'8px 0'}}>{Math.floor(elapsed)}s</div>
     </>}
     {rally.phase==='urgency'&&<>
       <div style={{fontSize:'clamp(2rem,10vw,4rem)',fontWeight:900,color:bigColor,margin:'6px 0 0'}}>GO · FINISH IT</div>
       <div style={{fontSize:'clamp(4rem,24vw,13rem)',fontWeight:900,lineHeight:1,color:bigColor,margin:'8px 0'}}>{remaining}</div>
       <div style={{fontSize:'1.05rem',color:'#ffd9d9',marginBottom:'12px'}}>{rally.surviveNote||''}Winner inside the window: +{cfg.pts.finish}.</div>
     </>}
-    {live&&!asking&&<button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={()=>setAsking(true)}>■ Rally over</button>}
+    {live&&!asking&&<button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={freezeRally}>■ Rally over</button>}
     {live&&asking&&<div className="gameCard" style={{maxWidth:'480px',margin:'10px auto'}}>
       <h2>Who hit the last ball?</h2>
       <p className="mutedText">Then how it ended. Error is tin, out or not up. Unreturned includes a double bounce.</p>
       {['A','B'].map(p=><div key={p} style={{display:'flex',gap:'8px',justifyContent:'center',margin:'6px 0'}}><button type="button" className="secondaryBtn" onClick={()=>endRally(p,'error')}>{nm(p)} · error</button><button type="button" className="primaryBtn" onClick={()=>endRally(p,'unreturned')}>{nm(p)} · unreturned</button></div>)}
-      <button type="button" className="secondaryBtn" onClick={()=>setAsking(false)}>Let · replay</button>
+      <button type="button" className="secondaryBtn" onClick={letReplay}>Let · replay</button>
     </div>}
     {rally.phase==='over'&&rally.result&&<>
       <div style={{fontSize:'1.6rem',fontWeight:800,color:rally.result.phaseLabel==='FINISHED IN WINDOW'?'#86b8a4':'#ff7a7a',marginTop:'10px'}}>{rally.result.phaseLabel}</div>
@@ -5768,7 +5807,10 @@ function RallyBandModule({setScreen}){
   function reset(){setBand(null);setResult(null);setTiming(false);setTally({inBand:0,total:0});}
   const elapsed=timing?Math.round((now-startTs)/1000):0;
   const running=timing||result;
-  return <div className="playerDisplayPage">
+  return <div className={'playerDisplayPage'+(mode==='pu'?' puScPage':'')}>
+    {mode==='pu'&&<style>{`
+.playerDisplayPage.puScPage{overflow-y:auto !important;-webkit-overflow-scrolling:touch;height:auto;min-height:100vh;min-height:100dvh;max-height:none !important;padding-bottom:calc(120px + env(safe-area-inset-bottom));box-sizing:border-box;}
+`}</style>}
     <div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('home')}>← Coach App</button>{tally.total>0&&<button className="secondaryBtn" onClick={reset}>Reset tally</button>}</div>
     {mode==='pu'?<PatienceUrgencyPanel setScreen={setScreen} onBack={()=>setMode('band')}/>:!running?<div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
       <div className="categoryTag">Rally Band</div>
