@@ -28,6 +28,13 @@ function getNsslCourtFromUrl(){try{const p=new URLSearchParams(window.location.s
 function getNsslMasterFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('nsslMaster');if(h)return {host:h};}catch{}return null;}
 function buildNsslCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?nsslCourt=${n}&host=${encodeURIComponent(base)}`;}
 function buildNsslMasterLink(base){const b=window.location.origin+window.location.pathname;return `${b}?nsslMaster=${encodeURIComponent(base)}`;}
+// Patience → Urgency: one coach device holds the clock and the allocation; each court has its own device that follows the clock and scores its own court; a board reads every court.
+function puClockRoomId(base){return `${base}__puclock`;}
+function puCourtRoomId(base,n){return `${base}__pucourt${n}`;}
+function getPuCourtFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('puCourt');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
+function getPuBoardFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('puBoard');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
+function buildPuCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?puCourt=${n}&host=${encodeURIComponent(base)}`;}
+function buildPuBoardLink(base,courtCount){const b=window.location.origin+window.location.pathname;return `${b}?puBoard=${encodeURIComponent(base)}&n=${courtCount}`;}
 function buildCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?court=${n}&host=${encodeURIComponent(base)}`;}
 function getSlScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('slScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h,mirror:p.get('slMirror')==='1'};}catch{}return null;}
 function buildSlScoreLink(n,base,mirror){const b=window.location.origin+window.location.pathname;return `${b}?slScore=${n}&host=${encodeURIComponent(base)}${mirror?'&slMirror=1':''}`;}
@@ -230,7 +237,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v678 Patience \u2192 Urgency for a group. The mode assumed two named players; most sessions have three or more on a court. Players on court is now a squad (present players by default, or add names), with two court slots, a queue and a rotation rule when there are three or more: winner stays on, loser stays on, or both rotate off. Scores follow each player through the rotation and show as a leaderboard. With more than two players the rule text names roles, the holder and the challenger (Player 1 and Player 2 when both rotate off), so it stays true as players change, and the one-player condition attaches to the role. A time-up changes nothing in the rotation. Two players behaves exactly as before. v677 Patience \u2192 Urgency: conditions during patience. Six self-officiating conditions the coach can switch on (up to two) to stop the hold turning into cooperative hitting: no repeat, not back where it came from, two lengths then change, alternate the back corners, short every third, no boast and no drop. Each names a shot or a landing zone both players can see, the opponent calls a breach before the next shot, and a breach counts as an early ending by error using the scoring already on the card; the condition lifts at the signal (or at your own release in the split game). The rule text and the live patience screen show the active conditions. Earn the Attack now opens with Not back where it came from switched on. Single-player rule line 2 reworded. v676 Checkerboard strict-sequence scoring, configurable. In mode 4 (in sequence, consecutive) a pair or triple paid only on completion could be denied by an opponent losing the rally on purpose. Two coach settings, both off or unchanged by default: credit per square, banked the moment each square of the run lands and kept if the rally is lost; and the win-after bonus paid from the moment the challenge has commenced (first square landed) rather than only from completion. Both are rewards on the challenger\u2019s play, so nothing requires a judgement of intent (P4). The card\u2019s HOW TO SCORE is generated from the live values (cbStrictScoring) instead of the fixed CB_FULL_SCORING paragraph. Player View for the Checkerboard session card: each player\u2019s line now says what their level means (triple, finish within 4 shots of completing or the complete-bonus is lost) instead of a bare L4, and the card carries an Order line stating the order and adjacency rule and seam setting, so the display shows the specific constraints rather than the general paragraph. v675 Patience \u2192 Urgency games. The eight games from the design (Shared Patience, Patience and Pounce, The Patient Player, Hunter and Survivor, Earn the Attack, Individual Rally Bands, Blind Transition, Shrinking Urgency) now exist as games: a preset row at the top of the Patience \u2192 Urgency settings sets everything up in one tap (any manual edit clears the game name so the label never lies), and a Games Library class under Pressure & Consequence lists all eight as cards with task, why, coach note, player focus and RLD, each with Run on the clock (opens Rally Band with the preset applied) and Add to session; all eight are in search. Until now the games existed only as settings a coach had to know. Back button, Rally Band: a dealt band returns to the band setup, a live or finished Patience \u2192 Urgency rally returns to its settings, the settings return to the band setup; only the band setup goes back to the previous screen. Written into the brief as a design principle (P21) because it keeps recurring. v674 Patience \u2192 Urgency: individual release times. With the condition on both players and patience set per player, each player is released at their own time and the rally passes through a split phase: two beeps at the first release, that player may finish (a winner scores the finish value, an error gives the held player the normal point), the other is still held (ending it is an early ending, scored as before); two beeps at the second release and the shared urgency window begins, with the held player collecting the survive bonus if it is on. In v672 and v673 the per-player numbers appeared in the rule text but the single signal fired at Player A\u2019s time for both, so the written rule and the clock disagreed. Random (blind) mode stays single-signal; the finishing window is shared. Twenty-six behavioural tests on the scoring, and a timed component test through patience, split and urgency. No Repeat, Diversity overlay: the title carried a bracketed (NR) that did not match its points key, so it ran constraint-only by accident, and its rule relied on an undefined term (shot family). The rule now names five shots the opponent can see (straight drive, crosscourt drive, boast, drop, lob), the opponent counts and calls it, and a repeat loses the rally; it is deliberately constraint-only, a cost on a choice rather than a bonus. Run limits above one wait for the road test. Also fixed: the Technical Constraints intro rendered a literal \\u2014 and \\u2019 in the browser (escape sequences in JSX text), present since before v672. v673 Patience \u2192 Urgency fixes. The settings card was clipped by the fixed-height player display page, so the Show player rule and Start rally buttons sat below the fold with no scroll; the page now scrolls in this mode, using the same override the substitutions scorer uses. Tapping Rally over now stops the clock, so the phase and time scored are the ones the rally actually ended in rather than the ones reached while the coach tapped who hit the last ball; a let restarts the clock from the same point, and the window can no longer expire and auto-score while the ending panel is open. v672 Patience \u2192 Urgency, a mode inside Rally Band. Two timed phases per rally: Patience (blue) where an early ending costs the player who hit the last ball (error 2, winner 1 to the opponent, editable), then Urgency (red, two beeps) with a finishing window (winner 2); three beeps and no finish, both lose 1. Condition on both or one player, fixed or random (blind) transition, per-player patience, survive bonus for the conditioned player. Rule text generated from the live settings. Last-ball responsibility only; no judgement calls. Builds on v671. v671 Live Match Coaching: the No cause, clean error tag (set by the skip button) had no advice or exploit entry, so three clean errors locked the pattern and showed nothing; both entries added. Found on court on v670. v670 Live Match Coaching advice fix. Two-tag causes (joined with a plus) never matched an advice entry and counted as their own cause, so the same fault logged many times never locked; each tag is now counted on its own and advice is looked up by the first tag. Seven tappable cause tags had no advice or exploit entry at all (Loose Boast, Loose Mid-court, Loose Lob, Forced Loose Return, Tight Ball, High Quality Shot, Deception Hold); all seven now have both. Builds on v669. v669 Backhand Half Finish, a Pressure overlay in the Modifier Engine. Bonus (default +1, editable) when the rally-winning ball bounces in the opponent\u2019s backhand half; right-handed opponent left half, left-handed opponent right half, half-court line counts. Score only, no shot constraint, so the route to that half stays open to the player. Cited: Vu\u010dkovi\u0107 et al. (2013, JSSM 12, 66-73), verified. Pressing Length: Pressure overlay, +1 for a straight drive whose first bounce is behind the service box back line and whose second bounce comes before the back wall; volleyed or one-bounce returns score nothing. From Murray et al. (2018, J Sports Sci 36, 1415-1422) and the 2019 Frontiers follow-up, both verified. Jones et al. (2018) IJSSC review and the Alaaeldien and Akl EMG paper reviewed; the review pointed to Murray, the EMG paper contributes nothing. Live Match Coaching: Between Game Report gains a Short ball line per player, short winners against Loose Drop and Loose Boast events, from three events up; nothing new to capture. Logic follows Ghani, Ibrahim, Zainuddin and Button (2016) who found the drop was both the top winner and top unforced-error source in elite women; reviewed, not cited as evidence. Weak Side (layer), Weak Side Access (TC04), Weak Side Return (rt4) and the Weak-side finish completion option are removed: each asked a player or coach to judge where the opponent is weak, which cannot be self-officiated, and the backhand half now carries that intention on a painted line. The Shot Bonus Rally Weak-Side Amplifier is renamed Stroke-Side Amplifier: it doubles the hitter\u2019s own backhand or forehand target shots, a different mechanism that stacks with Backhand Half Finish. v668 Controllables card in Pre-Performance Preparation. A player names what is theirs to control (shot choice, movement, breathing, plan, effort, attention after an error) and what is not (referee, opponent, court, draw, crowd, luck), then checks each nervous feeling against the first list. Mechanism from Jones (1995) control model of competitive anxiety, supported by Jones and Hanton (1996); both verified before writing. Builds on v667.';
+const APP_VERSION='v681 Patience \u2192 Urgency, a device per court. The coach\u2019s device holds the game, the allocation and the clock and starts every rally; with two or more courts it shows a Court devices box with a link per court and a board link. Open a court\u2019s link on that court\u2019s phone: it follows the coach\u2019s clock (offset-corrected), beeps at the signal alongside the whistle, records its own endings, applies winner stays on to its own queue, and reports players, phase and scores back. The coach\u2019s settings show every court\u2019s status; the board link puts all courts and a combined leaderboard on a wall screen. Same live-room mechanism as the substitutions scorer. v680 Patience \u2192 Urgency across courts 1 to 6. Players are a roster (present players or names added) allocated to courts by level, top group to Court 1 as the other games do, or by hand. Each court has its own two slots, queue and rotation; one clock and one signal serve them all. With several courts the Rally over tap does not stop the clock (the other courts are still playing); it takes a snapshot of that court\u2019s phase and time, the who-hit-last panel records that court, the tabs show which courts are recorded, the survive bonus and time-up scoring apply per court, and the rally is over when every court is recorded or the clock runs out. One court behaves as before, clock freeze included. v679 Patience \u2192 Urgency player display link. A Player display link button in the settings copies the live-room link (the same mechanism Tin War and the rotation board use); the court screen shows the game name, the phase in colour as the clock runs, who is on court and who is next, the rule laid out one numbered step per row in large type, any patience condition, and the scores. It is written on settings and phase changes, not every tick. Pinned by the coach: a step-by-step player display is part of any game, not an afterthought. v678 Patience \u2192 Urgency for a group. The mode assumed two named players; most sessions have three or more on a court. Players on court is now a squad (present players by default, or add names), with two court slots, a queue and a rotation rule when there are three or more: winner stays on, loser stays on, or both rotate off. Scores follow each player through the rotation and show as a leaderboard. With more than two players the rule text names roles, the holder and the challenger (Player 1 and Player 2 when both rotate off), so it stays true as players change, and the one-player condition attaches to the role. A time-up changes nothing in the rotation. Two players behaves exactly as before. v677 Patience \u2192 Urgency: conditions during patience. Six self-officiating conditions the coach can switch on (up to two) to stop the hold turning into cooperative hitting: no repeat, not back where it came from, two lengths then change, alternate the back corners, short every third, no boast and no drop. Each names a shot or a landing zone both players can see, the opponent calls a breach before the next shot, and a breach counts as an early ending by error using the scoring already on the card; the condition lifts at the signal (or at your own release in the split game). The rule text and the live patience screen show the active conditions. Earn the Attack now opens with Not back where it came from switched on. Single-player rule line 2 reworded. v676 Checkerboard strict-sequence scoring, configurable. In mode 4 (in sequence, consecutive) a pair or triple paid only on completion could be denied by an opponent losing the rally on purpose. Two coach settings, both off or unchanged by default: credit per square, banked the moment each square of the run lands and kept if the rally is lost; and the win-after bonus paid from the moment the challenge has commenced (first square landed) rather than only from completion. Both are rewards on the challenger\u2019s play, so nothing requires a judgement of intent (P4). The card\u2019s HOW TO SCORE is generated from the live values (cbStrictScoring) instead of the fixed CB_FULL_SCORING paragraph. Player View for the Checkerboard session card: each player\u2019s line now says what their level means (triple, finish within 4 shots of completing or the complete-bonus is lost) instead of a bare L4, and the card carries an Order line stating the order and adjacency rule and seam setting, so the display shows the specific constraints rather than the general paragraph. v675 Patience \u2192 Urgency games. The eight games from the design (Shared Patience, Patience and Pounce, The Patient Player, Hunter and Survivor, Earn the Attack, Individual Rally Bands, Blind Transition, Shrinking Urgency) now exist as games: a preset row at the top of the Patience \u2192 Urgency settings sets everything up in one tap (any manual edit clears the game name so the label never lies), and a Games Library class under Pressure & Consequence lists all eight as cards with task, why, coach note, player focus and RLD, each with Run on the clock (opens Rally Band with the preset applied) and Add to session; all eight are in search. Until now the games existed only as settings a coach had to know. Back button, Rally Band: a dealt band returns to the band setup, a live or finished Patience \u2192 Urgency rally returns to its settings, the settings return to the band setup; only the band setup goes back to the previous screen. Written into the brief as a design principle (P21) because it keeps recurring. v674 Patience \u2192 Urgency: individual release times. With the condition on both players and patience set per player, each player is released at their own time and the rally passes through a split phase: two beeps at the first release, that player may finish (a winner scores the finish value, an error gives the held player the normal point), the other is still held (ending it is an early ending, scored as before); two beeps at the second release and the shared urgency window begins, with the held player collecting the survive bonus if it is on. In v672 and v673 the per-player numbers appeared in the rule text but the single signal fired at Player A\u2019s time for both, so the written rule and the clock disagreed. Random (blind) mode stays single-signal; the finishing window is shared. Twenty-six behavioural tests on the scoring, and a timed component test through patience, split and urgency. No Repeat, Diversity overlay: the title carried a bracketed (NR) that did not match its points key, so it ran constraint-only by accident, and its rule relied on an undefined term (shot family). The rule now names five shots the opponent can see (straight drive, crosscourt drive, boast, drop, lob), the opponent counts and calls it, and a repeat loses the rally; it is deliberately constraint-only, a cost on a choice rather than a bonus. Run limits above one wait for the road test. Also fixed: the Technical Constraints intro rendered a literal \\u2014 and \\u2019 in the browser (escape sequences in JSX text), present since before v672. v673 Patience \u2192 Urgency fixes. The settings card was clipped by the fixed-height player display page, so the Show player rule and Start rally buttons sat below the fold with no scroll; the page now scrolls in this mode, using the same override the substitutions scorer uses. Tapping Rally over now stops the clock, so the phase and time scored are the ones the rally actually ended in rather than the ones reached while the coach tapped who hit the last ball; a let restarts the clock from the same point, and the window can no longer expire and auto-score while the ending panel is open. v672 Patience \u2192 Urgency, a mode inside Rally Band. Two timed phases per rally: Patience (blue) where an early ending costs the player who hit the last ball (error 2, winner 1 to the opponent, editable), then Urgency (red, two beeps) with a finishing window (winner 2); three beeps and no finish, both lose 1. Condition on both or one player, fixed or random (blind) transition, per-player patience, survive bonus for the conditioned player. Rule text generated from the live settings. Last-ball responsibility only; no judgement calls. Builds on v671. v671 Live Match Coaching: the No cause, clean error tag (set by the skip button) had no advice or exploit entry, so three clean errors locked the pattern and showed nothing; both entries added. Found on court on v670. v670 Live Match Coaching advice fix. Two-tag causes (joined with a plus) never matched an advice entry and counted as their own cause, so the same fault logged many times never locked; each tag is now counted on its own and advice is looked up by the first tag. Seven tappable cause tags had no advice or exploit entry at all (Loose Boast, Loose Mid-court, Loose Lob, Forced Loose Return, Tight Ball, High Quality Shot, Deception Hold); all seven now have both. Builds on v669. v669 Backhand Half Finish, a Pressure overlay in the Modifier Engine. Bonus (default +1, editable) when the rally-winning ball bounces in the opponent\u2019s backhand half; right-handed opponent left half, left-handed opponent right half, half-court line counts. Score only, no shot constraint, so the route to that half stays open to the player. Cited: Vu\u010dkovi\u0107 et al. (2013, JSSM 12, 66-73), verified. Pressing Length: Pressure overlay, +1 for a straight drive whose first bounce is behind the service box back line and whose second bounce comes before the back wall; volleyed or one-bounce returns score nothing. From Murray et al. (2018, J Sports Sci 36, 1415-1422) and the 2019 Frontiers follow-up, both verified. Jones et al. (2018) IJSSC review and the Alaaeldien and Akl EMG paper reviewed; the review pointed to Murray, the EMG paper contributes nothing. Live Match Coaching: Between Game Report gains a Short ball line per player, short winners against Loose Drop and Loose Boast events, from three events up; nothing new to capture. Logic follows Ghani, Ibrahim, Zainuddin and Button (2016) who found the drop was both the top winner and top unforced-error source in elite women; reviewed, not cited as evidence. Weak Side (layer), Weak Side Access (TC04), Weak Side Return (rt4) and the Weak-side finish completion option are removed: each asked a player or coach to judge where the opponent is weak, which cannot be self-officiated, and the backhand half now carries that intention on a painted line. The Shot Bonus Rally Weak-Side Amplifier is renamed Stroke-Side Amplifier: it doubles the hitter\u2019s own backhand or forehand target shots, a different mechanism that stacks with Backhand Half Finish. v668 Controllables card in Pre-Performance Preparation. A player names what is theirs to control (shot choice, movement, breathing, plan, effort, attention after an error) and what is not (referee, opponent, court, draw, crowd, luck), then checks each nervous feeling against the first list. Mechanism from Jones (1995) control model of competitive anxiety, supported by Jones and Hanton (1996); both verified before writing. Builds on v667.';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
@@ -5711,38 +5718,82 @@ function CustomConstraintLibrary({setScreen}){
 }
 
 
-function PatienceUrgencyPanel({setScreen,onBack}){
-  const [cfg,setCfgRaw]=useState(()=>{try{
+function PatienceUrgencyPanel({setScreen,onBack,follow}){
+  // follow = {host,court}: this device is a court device. Settings, allocation, rotation rule and the clock come from the coach's device; this device scores its own court and reports back.
+  const [feed,setFeed]=useState(null);const [feedStatus,setFeedStatus]=useState('');
+  const offsetRef=useRef(0);
+  useEffect(()=>{
+    if(!follow)return;let cancelled=false;
+    async function load(){const row=await readLivePlayerRoom(puClockRoomId(follow.host));if(cancelled)return;if(row&&row.payload&&row.payload.type==='puclock'){const p=row.payload;if(p.sentAt)offsetRef.current=Date.now()-p.sentAt;setFeed(p);setFeedStatus('Following the coach\u2019s clock');}else setFeedStatus('Waiting for the coach\u2019s device\u2026');}
+    load();const id=setInterval(load,1200);return ()=>{cancelled=true;clearInterval(id);};
+  },[follow&&follow.host]);
+  const [cfgLocal,setCfgRaw]=useState(()=>{try{
     const open=localStorage.getItem(PU_PRESET_OPEN_KEY);if(open){localStorage.removeItem(PU_PRESET_OPEN_KEY);const p=PU_PRESETS.find(x=>x.id===open);if(p){try{localStorage.setItem('checkerboard_pu_preset_v1',open);}catch(e){}return puPresetCfg(p);}}
     const c=JSON.parse(localStorage.getItem('checkerboard_pu_cfg_v1')||'null');return c?{...PU_DEFAULT_CFG,...c,pts:{...PU_DEFAULT_CFG.pts,...(c.pts||{})}}:PU_DEFAULT_CFG;}catch(e){return PU_DEFAULT_CFG;}});
-  const [preset,setPreset]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_preset_v1')||'';}catch(e){return '';}});
+  const [presetLocal,setPreset]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_preset_v1')||'';}catch(e){return '';}});
+  const cfg=follow&&feed&&feed.cfg?{...PU_DEFAULT_CFG,...feed.cfg,pts:{...PU_DEFAULT_CFG.pts,...(feed.cfg.pts||{})}}:cfgLocal;
+  const preset=follow?(feed&&feed.preset||''):presetLocal;
   // Any manual edit clears the preset name, so the label never claims a game the settings no longer match.
-  function setCfg(fn){setCfgRaw(fn);setPreset('');try{localStorage.setItem('checkerboard_pu_preset_v1','');}catch(e){}}
+  function setCfg(fn){if(follow)return;setCfgRaw(fn);setPreset('');try{localStorage.setItem('checkerboard_pu_preset_v1','');}catch(e){}}
   function applyPreset(id){const p=PU_PRESETS.find(x=>x.id===id);if(!p)return;setCfgRaw(puPresetCfg(p));setPreset(id);try{localStorage.setItem('checkerboard_pu_preset_v1',id);}catch(e){}}
-  // Squad and rotation. Two players: fixed names, as before. Three or more: two court slots (A = the holder, B = the challenger), a queue, a rotation rule and a per-player score that follows each player through the rotation. The rule text uses the role names so it stays true as players change.
-  const [squad,setSquad]=useState(()=>{try{const sv=JSON.parse(localStorage.getItem('checkerboard_pu_squad_v1')||'null');if(sv&&sv.length>=2)return sv;}catch(e){}const pr=cbReadPresents();return pr.length>=2?pr:['Player A','Player B'];});
-  const [rot,setRot]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_rot_v1')||'winner';}catch(e){return 'winner';}});
-  const [court,setCourt]=useState(()=>({A:0,B:1}));// indexes into squad
-  const [queue,setQueue]=useState(()=>squad.slice(2).map((_,i)=>i+2));
+  // Roster, courts and rotation. The roster is the present players (or names added). Courts 1 to 6: with one court everyone is on it; with more, players are allocated by level (top group to Court 1, as the other games do) or by hand. Each court has two slots (A = the holder, B = the challenger), its own queue and rotation; scores follow each player by name. One clock and one signal serve every court.
+  const [roster,setRoster]=useState(()=>{try{const sv=JSON.parse(localStorage.getItem('checkerboard_pu_squad_v1')||'null');if(sv&&sv.length>=2)return sv;}catch(e){}const pr=cbReadPresents();return pr.length>=2?pr:['Player A','Player B'];});
+  const [rotLocal,setRot]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_rot_v1')||'winner';}catch(e){return 'winner';}});
+  const rot=follow?(feed&&feed.rot||'winner'):rotLocal;
+  const [courtCount,setCourtCount]=useState(()=>{try{return Math.max(1,Math.min(6,Number(localStorage.getItem('checkerboard_pu_courts_v1'))||1));}catch(e){return 1;}});
+  const [allocMode,setAllocMode]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_alloc_v1')||'auto';}catch(e){return 'auto';}});
+  const [manualAssign,setManualAssign]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_pu_assign_v1')||'{}')||{};}catch(e){return {};}});
+  const [activeCourt,setActiveCourt]=useState(0);
   const [addName,setAddName]=useState('');
-  useEffect(()=>{try{localStorage.setItem('checkerboard_pu_squad_v1',JSON.stringify(squad));localStorage.setItem('checkerboard_pu_rot_v1',rot);}catch(e){}},[squad,rot]);
-  const multi=squad.length>2;
-  const names={A:squad[court.A]||'Player A',B:squad[court.B]||'Player B'};
+  useEffect(()=>{try{localStorage.setItem('checkerboard_pu_squad_v1',JSON.stringify(roster));localStorage.setItem('checkerboard_pu_rot_v1',rot);localStorage.setItem('checkerboard_pu_courts_v1',String(courtCount));localStorage.setItem('checkerboard_pu_alloc_v1',allocMode);localStorage.setItem('checkerboard_pu_assign_v1',JSON.stringify(manualAssign));}catch(e){}},[roster,rot,courtCount,allocMode,manualAssign]);
+  const rosterObjs=useMemo(()=>{let reg=[];try{reg=JSON.parse(localStorage.getItem(PLAYER_KEY))||[];}catch(e){}return roster.map(n=>reg.find(p=>p&&playerDisplayName(p)===n)||{name:n});},[roster]);
+  const allocation=useMemo(()=>{
+    if(follow){const g=feed&&feed.allocation&&feed.allocation[follow.court-1];return [g?g.slice():[]];}
+    if(courtCount<=1)return [roster.slice()];
+    if(allocMode==='manual'){const g=Array.from({length:courtCount},()=>[]);roster.forEach(n=>{const ci=manualAssign[n];if(ci!=null&&ci<courtCount)g[ci].push(n);});return g;}
+    return rankedBlockCourtAllocation(rosterObjs,courtCount);
+  },[roster,rosterObjs,courtCount,allocMode,manualAssign,follow,feed&&JSON.stringify(feed.allocation)]);
+  const unassigned=courtCount>1&&allocMode==='manual'?roster.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount):[];
+  const allocKey=allocation.map(g=>g.join(',')).join('|');
+  // Per-court slots and queue, as indexes into that court's group. Rebuilt whenever the allocation changes.
+  const [courts,setCourts]=useState(()=>allocation.map(g=>({court:{A:0,B:1},queue:g.slice(2).map((_,i)=>i+2)})));
+  useEffect(()=>{setCourts(allocation.map(g=>({court:{A:0,B:1},queue:g.slice(2).map((_,i)=>i+2)})));setActiveCourt(a=>Math.min(a,allocation.length-1));setRally(null);setAsking(false);},[allocKey]);
+  const ac=Math.min(activeCourt,allocation.length-1);
+  const groupOf=ci=>allocation[ci]||[];
+  const cs=ci=>courts[ci]||{court:{A:0,B:1},queue:[]};
+  const namesOf=ci=>{const g=groupOf(ci),c=cs(ci).court;return {A:g[c.A]||'Player A',B:g[c.B]||'Player B'};};
+  const multiOf=ci=>groupOf(ci).length>2;
+  const playable=ci=>groupOf(ci).length>=2;
+  const squad=groupOf(ac);const court=cs(ac).court;const queue=cs(ac).queue;const multi=multiOf(ac);const names=namesOf(ac);
   const roleA=rot==='fixed'?'Player 1':'the holder',roleB=rot==='fixed'?'Player 2':'the challenger';
   const [scores,setScoresRaw]=useState({});// keyed by player name
   const sc=p=>scores[names[p]]||0;
-  function setScores(fn){setScoresRaw(prev=>{const cur={A:prev[names.A]||0,B:prev[names.B]||0};const nx=fn(cur);return {...prev,[names.A]:nx.A,[names.B]:nx.B};});}
-  function setSquadSafe(list){const l=list.filter(Boolean);if(l.length<2)return;setSquad(l);setCourt({A:0,B:1});setQueue(l.slice(2).map((_,i)=>i+2));setRally(null);setAsking(false);}
-  // Rotation after a decided rally. No winner (time up) means no change.
-  function rotate(winnerSlot){
-    if(!multi||!winnerSlot||!queue.length)return;
-    const loserSlot=puOther(winnerSlot);const q=queue.slice();const nc={...court};
+  function addScores(ci,d){const n=namesOf(ci);if(!d.A&&!d.B)return;setScoresRaw(prev=>({...prev,[n.A]:(prev[n.A]||0)+(d.A||0),[n.B]:(prev[n.B]||0)+(d.B||0)}));}
+  function setSquadSafe(list){const l=list.filter(Boolean);if(l.length<2)return;setRoster(l);}
+  // Rotation on one court after a decided rally. No winner (time up) means no change.
+  function rotateCourt(ci,winnerSlot){
+    if(!multiOf(ci)||!winnerSlot)return;
+    const st=cs(ci);if(!st.queue.length)return;
+    const loserSlot=puOther(winnerSlot);const q=st.queue.slice();const nc={...st.court};
     if(rot==='winner'){const out=nc[loserSlot];nc.A=nc[winnerSlot];nc.B=q.shift();q.push(out);}
     else if(rot==='loser'){const out=nc[winnerSlot];nc.A=nc[loserSlot];nc.B=q.shift();q.push(out);}
     else{q.push(nc.A,nc.B);nc.A=q.shift();nc.B=q.shift();}
-    setCourt(nc);setQueue(q);
+    setCourts(prev=>prev.map((x,i)=>i===ci?{court:nc,queue:q}:x));
   }
   const [rally,setRally]=useState(null); // {startTs,patience,phase,result}
+  const rallyRef=useRef(rally);rallyRef.current=rally;
+  const epochRef=useRef(null);
+  useEffect(()=>{
+    if(!follow||!feed)return;
+    const e=feed.epoch||null;
+    if(e===epochRef.current)return;
+    epochRef.current=e;
+    // Apply this court's pending rotation from the rally just finished before the new one starts.
+    const prev=rallyRef.current;if(prev&&prev.results&&prev.results[0])rotateCourt(0,prev.results[0].winner);
+    if(!e||!feed.rally){setRally(null);setAsking(false);return;}
+    scUnlock();setAsking(false);
+    setRally({startTs:feed.rally.startTs+offsetRef.current,patience:feed.rally.patience,releases:feed.rally.releases,phase:'patience',result:null,results:{},ends:{},frozenAt:null,epoch:e});setNow(Date.now());
+  },[follow,feed&&feed.epoch,feed&&feed.rally&&feed.rally.startTs]);
   const [now,setNow]=useState(0);
   const [asking,setAsking]=useState(false);
   const [showRule,setShowRule]=useState(false);
@@ -5762,32 +5813,54 @@ function PatienceUrgencyPanel({setScreen,onBack}){
       setRally(r=>({...r,phase:'split',free:free,held:puOther(free)}));
     }else if((rally.phase==='patience'||rally.phase==='split')&&elapsed>=rally.patience){
       scBeep(2);
-      let d={A:0,B:0};let note='';
+      let note='';
       const survivor=rally.phase==='split'?rally.held:(cfg.cond!=='both'?cfg.cond:null);
-      if(survivor&&cfg.surviveBonus){d[survivor]+=cfg.pts.normal;note=(survivor==='A'?names.A:names.B)+' reached '+(rally.phase==='split'?'their release':'the signal')+': +'+cfg.pts.normal+'. ';}
-      if(d.A||d.B)setScores(sc=>({A:sc.A+d.A,B:sc.B+d.B}));
+      if(survivor&&cfg.surviveBonus){
+        allocation.forEach((g,ci)=>{if(!playable(ci)||(rally.results||{})[ci])return;const d={A:0,B:0};d[survivor]+=cfg.pts.normal;addScores(ci,d);});
+        note=(survivor==='A'?names.A:names.B)+' reached '+(rally.phase==='split'?'their release':'the signal')+': +'+cfg.pts.normal+'. ';
+      }
       setRally(r=>({...r,phase:'urgency',surviveNote:note}));
     }else if(rally.phase==='urgency'&&elapsed>=rally.patience+cfg.urg){
       scBeep(3);
-      const res=puScore(cfg,'expired','A','unreturned');
-      setScores(sc=>({A:sc.A+res.A,B:sc.B+res.B}));
-      setRally(r=>({...r,phase:'over',result:{...res,phaseLabel:'TIME UP',dur:Math.round(elapsed)}}));
+      const results={...(rally.results||{})};
+      allocation.forEach((g,ci)=>{if(!playable(ci)||results[ci])return;const res=puScore(cfg,'expired','A','unreturned');addScores(ci,res);results[ci]={...res,phaseLabel:'TIME UP',dur:Math.round(elapsed)};});
+      setRally(r=>({...r,phase:'over',results,result:results[ac]||null}));
     }
-  },[elapsed,rally,cfg,squad,court,frozen]);
+  },[elapsed,rally,cfg,allocKey,courts,frozen]);
   // The clock stops the moment the coach taps Rally over, so the phase and time scored are the ones the rally actually ended in, not the ones reached while tapping. A let restarts it from the same point.
-  function freezeRally(){const at=Math.max(0,(Date.now()-rally.startTs)/1000);setRally(r=>({...r,frozenAt:at}));setAsking(true);}
-  function letReplay(){setRally(r=>({...r,startTs:Date.now()-(r.frozenAt||0)*1000,frozenAt:null}));setNow(Date.now());setAsking(false);}
+  // One court: the clock stops. Several courts on one clock: the other courts are still playing, so the tap takes a snapshot of this court's phase and time instead, and the clock runs on.
+  const snap=rally&&rally.ends?rally.ends[ac]:null;
+  function freezeRally(){
+    const at=Math.max(0,(Date.now()-rally.startTs)/1000);
+    if(allocation.length<=1)setRally(r=>({...r,frozenAt:at}));
+    else setRally(r=>({...r,ends:{...(r.ends||{}),[ac]:{phase:r.phase,elapsed:at,held:r.held,free:r.free}}}));
+    setAsking(true);
+  }
+  function letReplay(){
+    if(allocation.length<=1)setRally(r=>({...r,startTs:Date.now()-(r.frozenAt||0)*1000,frozenAt:null}));
+    else setRally(r=>{const e={...(r.ends||{})};delete e[ac];return {...r,ends:e};});
+    setNow(Date.now());setAsking(false);
+  }
   function setPts(k,v){setCfg(c=>({...c,pts:{...c.pts,[k]:v}}));}
-  function newRally(){scUnlock();setAsking(false);if(rally&&rally.result)rotate(rally.result.winner);const pat=puResolvePatience(cfg);const rel=puReleases(cfg,pat);setRally({startTs:Date.now(),patience:Math.max(rel.A,rel.B),releases:rel,phase:'patience',result:null,frozenAt:null});setNow(Date.now());}
+  function newRally(){
+    scUnlock();setAsking(false);
+    if(rally&&rally.results){Object.entries(rally.results).forEach(([ci,res])=>rotateCourt(Number(ci),res.winner));}
+    const pat=puResolvePatience(cfg);const rel=puReleases(cfg,pat);
+    setRally({startTs:Date.now(),patience:Math.max(rel.A,rel.B),releases:rel,phase:'patience',result:null,results:{},ends:{},frozenAt:null,epoch:Date.now()});setNow(Date.now());
+  }
   function endRally(last,kind){
-    const ph=rally.phase;const res=puScore(cfg,ph,last,kind,rally.held);
+    const e=snap||{phase:rally.phase,elapsed:elapsed,held:rally.held,free:rally.free};
+    const ph=e.phase;const res=puScore(cfg,ph,last,kind,e.held);
     const loser=kind==='error'?last:puOther(last);res.winner=puOther(loser);
-    setScores(sc=>({A:sc.A+res.A,B:sc.B+res.B}));
-    const label=ph==='patience'?'ENDED EARLY':ph==='split'?(res[rally.free]>0&&kind==='unreturned'&&last===rally.free?'FINISHED BY THE RELEASED PLAYER':'ENDED IN THE SPLIT'):'FINISHED IN WINDOW';
-    setRally(r=>({...r,phase:'over',result:{...res,phaseLabel:label,dur:Math.round(elapsed)}}));
+    addScores(ac,res);
+    const label=ph==='patience'?'ENDED EARLY':ph==='split'?(res[e.free]>0&&kind==='unreturned'&&last===e.free?'FINISHED BY THE RELEASED PLAYER':'ENDED IN THE SPLIT'):'FINISHED IN WINDOW';
+    const results={...(rally.results||{}),[ac]:{...res,phaseLabel:label,dur:Math.round(e.elapsed)}};
+    const allDone=allocation.every((g,ci)=>!playable(ci)||results[ci]);
+    setRally(r=>{const ends={...(r.ends||{})};delete ends[ac];return {...r,results,ends,phase:allDone?'over':r.phase,result:results[ac]};});
     setAsking(false);scBeep(1);
   }
   function resetScores(){setScoresRaw({});setRally(null);setAsking(false);}
+  const activeResult=rally&&rally.results?rally.results[ac]:null;
   const nm=p=>p==='A'?names.A:names.B;
   const isRed=rally&&rally.phase==='urgency';const isSplit=rally&&rally.phase==='split';
   const bigColor=isRed?'#ff7a7a':'#6db3e6';
@@ -5795,27 +5868,87 @@ function PatienceUrgencyPanel({setScreen,onBack}){
   const Seg=({options,value,onChange})=><div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>{options.map(o=><button key={o.v} type="button" onClick={()=>onChange(o.v)} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid '+(value===o.v?'#6db3e6':'#2c3c4e'),background:value===o.v?'#12263b':'#0d1620',color:value===o.v?'#eaf4fb':'#6f8296',fontWeight:700}}>{o.l}</button>)}</div>;
   const Row=({label,children})=><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',padding:'8px 0',borderBottom:'1px solid #1d2a38'}}><span style={{color:'#cfe0ee'}}>{label}</span><span>{children}</span></div>;
   const ruleLines=puRuleText(cfg,multi?roleA:names.A,multi?roleB:names.B);
+  // Player display link: pushes the rule, step by step, plus who is on court and the scores, to the live room. Written on setting and phase changes only, not every tick.
+  const [projecting,setProjecting]=useState(false);
+  const [linkNote,setLinkNote]=useState('');
+  const phaseKey=rally?rally.phase+(rally.free||''):'idle';
+  const presetTitle=preset?(PU_PRESETS.find(p=>p.id===preset)||{}).title:'';
+  useEffect(()=>{
+    if(!projecting)return;
+    const conds=(cfg.constraints||[]).map(id=>PU_PATIENCE_CONSTRAINTS.find(c=>c.id===id)).filter(Boolean).map(c=>({title:c.title,rule:c.rule}));
+    const payload={type:'pu',title:presetTitle||'Patience \u2192 Urgency',lines:ruleLines,conditions:conds,
+      courtNo:allocation.length>1?ac+1:0,court:{A:names.A,B:names.B,roleA:multi?roleA:'',roleB:multi?roleB:''},next:multi?queue.map(i=>squad[i]):[],
+      scores:Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([name,score])=>({name,score})),
+      phase:rally?rally.phase:'idle',free:rally&&rally.free?names[rally.free]:'',held:rally&&rally.held?names[rally.held]:'',
+      patience:rally?rally.patience:null,urg:cfg.urg,result:activeResult?{label:activeResult.phaseLabel,note:activeResult.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)}:null};
+    writeLivePlayerRoom(getPersistentLiveRoomId(),'pu',payload);
+  },[projecting,phaseKey,ruleLines.join('|'),scores,courts,allocKey,ac,presetTitle,cfg.urg]);
+  // Coach device with several courts: publish settings, allocation, rotation rule and the rally clock so court devices follow. sentAt lets each device correct for its own clock.
+  const puBase=getPersistentLiveRoomId()+'-pu';
+  const clockKey=JSON.stringify({c:cfg,a:allocation,r:rot,e:rally&&rally.epoch,s:rally&&rally.startTs,p:rally&&rally.patience,rel:rally&&rally.releases,pr:preset});
+  useEffect(()=>{
+    if(follow||courtCount<=1)return;
+    const h=setTimeout(()=>{writeLivePlayerRoom(puClockRoomId(puBase),'puclock',{type:'puclock',cfg,preset,allocation,rot,epoch:rally&&rally.epoch||null,rally:rally?{startTs:rally.startTs,patience:rally.patience,releases:rally.releases}:null,sentAt:Date.now()});},250);
+    return ()=>clearTimeout(h);
+  },[clockKey,follow,courtCount]);
+  // Court device: report this court (players, phase, scores) so the coach's board and the wall board can read it.
+  useEffect(()=>{
+    if(!follow)return;
+    const h=setTimeout(()=>{writeLivePlayerRoom(puCourtRoomId(follow.host,follow.court),'pucourt',{type:'pucourt',court:follow.court,A:names.A,B:names.B,next:queue.map(i=>squad[i]),phase:rally?rally.phase:'idle',result:activeResult?{label:activeResult.phaseLabel,note:activeResult.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)}:null,scores:Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([name,score])=>({name,score}))});},250);
+    return ()=>clearTimeout(h);
+  },[follow,names.A,names.B,rally&&rally.phase,activeResult,scores,queue.join(',')]);
+  const [board,setBoard]=useState({});
+  useEffect(()=>{
+    if(follow||courtCount<=1)return;let cancelled=false;
+    async function load(){const out={};await Promise.all(Array.from({length:courtCount},(_,i)=>i+1).map(async c=>{try{const row=await readLivePlayerRoom(puCourtRoomId(puBase,c));if(row&&row.payload&&row.payload.type==='pucourt')out[c]=row.payload;}catch(e){}}));if(!cancelled)setBoard(out);}
+    load();const id=setInterval(load,2500);return ()=>{cancelled=true;clearInterval(id);};
+  },[follow,courtCount,puBase]);
+  const [copied,setCopied]=useState('');
+  async function copyText(label,text){try{await navigator.clipboard.writeText(text);setCopied(label);}catch(e){window.prompt(label+':',text);}setTimeout(()=>setCopied(''),1500);}
+  async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);setLinkNote('Link copied. Open it on the court screen; it follows the settings and the clock.');}catch(e){window.prompt('Player display link:',url);}setTimeout(()=>setLinkNote(''),4000);}
   if(!rally)return <div className="gameCard" style={{maxWidth:'640px',margin:'0 auto'}}>
     <div className="categoryTag">Rally Band · Patience → Urgency</div>
     <h2>Patience → Urgency ⏳⚡</h2>
     <div className="claRationaleBox"><h2>Build, then change intention</h2><p>Two timed phases in every rally. <strong>Patience</strong> (blue): keep the rally alive and keep competing, but do not finish it; whoever hits the last ball of an early ending is responsible, and an error costs more than a mistimed winner. <strong>Urgency</strong> (red, two beeps): the task has changed and the rally must be finished inside the window; three beeps and nobody has, both lose. The signal is the constraint: the same loose ball affords nothing before it and everything after it, so players learn to read one picture two ways instead of playing every rally at one tempo. Sustain the contest, not just the ball: stack Working Length, Pressing Length or a Checkerboard code on the patience phase if the hold goes passive.</p></div>
     <div style={{margin:'8px 0'}}>
-      <div style={{margin:'6px 0 10px'}}>
+      {!follow&&<div style={{margin:'6px 0 10px'}}>
         <div style={{color:'#9fb6cf',fontSize:'.74rem',textTransform:'uppercase',letterSpacing:'.05em',fontWeight:800,marginBottom:'6px'}}>Game</div>
         <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>{PU_PRESETS.map(p=><button key={p.id} type="button" className={preset===p.id?'primaryBtn':'secondaryBtn'} style={{padding:'6px 10px',fontSize:'.85rem'}} onClick={()=>applyPreset(p.id)}>{p.title}</button>)}</div>
         <div className="mutedText" style={{marginTop:'6px'}}>{preset?PU_PRESETS.find(p=>p.id===preset).sub+'. Adjust anything below; the player rule follows the settings.':'Tap a game to set it up, or build your own below.'}</div>
-      </div>
+      </div>}
       <div style={{padding:'8px 0',borderBottom:'1px solid #1d2a38'}}>
-        <div style={{color:'#cfe0ee',marginBottom:'4px'}}>Players on court <span className="mutedText" style={{fontSize:'.8rem'}}>· tap a name to remove · two names is a fixed pair, three or more rotate</span></div>
-        <div style={{display:'flex',flexWrap:'wrap',gap:'6px',alignItems:'center'}}>
-          {squad.map((n,i)=><button key={n+i} type="button" className="secondaryBtn" style={{padding:'6px 10px',fontSize:'.85rem'}} onClick={()=>setSquadSafe(squad.filter((_,j)=>j!==i))}>{n} ×</button>)}
-          <input value={addName} placeholder="Add name" onChange={e=>setAddName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&addName.trim()){setSquadSafe([...squad,addName.trim()]);setAddName('');}}} style={{width:'110px'}}/>
-          <button type="button" className="secondaryBtn" onClick={()=>{if(addName.trim()){setSquadSafe([...squad,addName.trim()]);setAddName('');}}}>Add</button>
+        {follow&&<div style={{padding:'10px',borderRadius:'12px',background:'#0d1620',border:'1px solid #2c3c4e',marginBottom:'8px'}}><div style={{color:'#eaf4fb',fontWeight:800}}>Court {follow.court} device</div><div className="mutedText">{feedStatus||'Connecting…'} · settings and the clock come from the coach’s device · {squad.length?squad.join(', '):'no players allocated to this court yet'}{multi?' · '+(rot==='winner'?'winner stays on':rot==='loser'?'loser stays on':'both rotate off'):''}</div></div>}
+        {!follow&&<div style={{color:'#cfe0ee',marginBottom:'4px'}}>Players <span className="mutedText" style={{fontSize:'.8rem'}}>· tap a name to remove</span></div>}
+        {!follow&&<div style={{display:'flex',flexWrap:'wrap',gap:'6px',alignItems:'center'}}>
+          {roster.map((n,i)=><button key={n+i} type="button" className="secondaryBtn" style={{padding:'6px 10px',fontSize:'.85rem'}} onClick={()=>setSquadSafe(roster.filter((_,j)=>j!==i))}>{n} ×</button>)}
+          <input value={addName} placeholder="Add name" onChange={e=>setAddName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&addName.trim()){setSquadSafe([...roster,addName.trim()]);setAddName('');}}} style={{width:'110px'}}/>
+          <button type="button" className="secondaryBtn" onClick={()=>{if(addName.trim()){setSquadSafe([...roster,addName.trim()]);setAddName('');}}}>Add</button>
           <button type="button" className="secondaryBtn" onClick={()=>{const pr=cbReadPresents();if(pr.length>=2)setSquadSafe(pr);}}>Use present players</button>
-        </div>
-        {multi&&<div style={{marginTop:'8px'}}><Seg value={rot} onChange={setRot} options={[{v:'winner',l:'Winner stays on'},{v:'loser',l:'Loser stays on'},{v:'fixed',l:'Both rotate off'}]}/>
+        </div>}
+        {!follow&&<div style={{marginTop:'10px',color:'#cfe0ee'}}>Courts</div>}
+        {!follow&&<div style={{display:'flex',flexWrap:'wrap',gap:'6px',alignItems:'center',marginTop:'4px'}}>
+          <Seg value={courtCount} onChange={v=>{setCourtCount(v);setActiveCourt(0);}} options={[1,2,3,4,5,6].map(n=>({v:n,l:String(n)}))}/>
+          {courtCount>1&&<Seg value={allocMode} onChange={setAllocMode} options={[{v:'auto',l:'By level'},{v:'manual',l:'By hand'}]}/>}
+        </div>}
+        {courtCount>1&&allocMode==='auto'&&<div className="mutedText" style={{marginTop:'4px'}}>Top group to Court 1, next to Court 2, using the levels in the player list.</div>}
+        {courtCount>1&&allocMode==='manual'&&<div style={{marginTop:'6px'}}>
+          {roster.map(n=><div key={n} style={{display:'flex',alignItems:'center',gap:'8px',padding:'3px 0'}}><span style={{color:'#eaf4fb',minWidth:'110px'}}>{n}</span><div style={{display:'flex',gap:'4px'}}>{Array.from({length:courtCount}).map((_,ci)=><button key={ci} type="button" className={manualAssign[n]===ci?'primaryBtn':'secondaryBtn'} style={{padding:'4px 9px',fontSize:'.8rem'}} onClick={()=>setManualAssign(m=>({...m,[n]:ci}))}>C{ci+1}</button>)}</div></div>)}
+          {unassigned.length>0&&<div className="mutedText">Unassigned: {unassigned.join(', ')}</div>}
+        </div>}
+        {!follow&&<div style={{marginTop:'8px'}}>{allocation.map((g,ci)=><div key={ci} className="mutedText" style={{color:playable(ci)?'#cfe0ee':'#a35b5b'}}>{allocation.length>1?'Court '+(ci+1)+': ':''}{g.length?g.join(', '):'nobody'}{!playable(ci)?' · needs two players':g.length>2?' · rotating':''}</div>)}</div>}
+        {!follow&&courtCount>1&&<div style={{marginTop:'10px',padding:'10px',borderRadius:'12px',background:'#0d1620',border:'1px solid #2c3c4e'}}>
+          <div style={{color:'#eaf4fb',fontWeight:800}}>Court devices</div>
+          <div className="mutedText" style={{margin:'4px 0 8px'}}>Each court runs on its own phone. Open its link there; it follows this clock and scores its own court. Blow the whistle at the signal; every device beeps too. Winner stays on is applied on each court. This device starts every rally.</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'6px'}}>
+            {Array.from({length:courtCount}).map((_,i)=><button key={i} type="button" className="secondaryBtn" onClick={()=>copyText('Court '+(i+1),buildPuCourtLink(i+1,puBase))}>{copied==='Court '+(i+1)?'Copied ✓':'Court '+(i+1)+' link'}</button>)}
+            <button type="button" className="secondaryBtn" onClick={()=>copyText('Board',buildPuBoardLink(puBase,courtCount))}>{copied==='Board'?'Copied ✓':'Board link (all courts)'}</button>
+          </div>
+          {Object.keys(board).length>0&&<div style={{marginTop:'8px'}}>{Array.from({length:courtCount}).map((_,i)=>{const b=board[i+1];return <div key={i} className="mutedText" style={{color:b?'#cfe0ee':'#6f8296'}}>Court {i+1}: {b?b.A+' v '+b.B+' · '+b.phase+(b.scores&&b.scores.length?' · '+b.scores.map(s=>s.name+' '+s.score).join(', '):''):'not connected'}</div>;})}</div>}
+        </div>}
+        {allocation.some((g,ci)=>multiOf(ci))&&!follow&&<div style={{marginTop:'8px'}}><Seg value={rot} onChange={setRot} options={[{v:'winner',l:'Winner stays on'},{v:'loser',l:'Loser stays on'},{v:'fixed',l:'Both rotate off'}]}/>
           <div className="mutedText" style={{marginTop:'4px'}}>{rot==='winner'?'The winner holds the court; the loser joins the back of the queue. A time-up changes nothing.':rot==='loser'?'The loser stays on to face a fresh challenger; the winner rotates off. A time-up changes nothing.':'Both come off after every decided rally and the next two come on.'}</div></div>}
       </div>
+      {follow&&<div className="mutedText" style={{margin:'6px 0'}}>Game: {preset?(PU_PRESETS.find(p=>p.id===preset)||{}).title:'custom'} · read-only on a court device.</div>}
       <Row label="Condition on"><Seg value={cfg.cond} onChange={v=>setCfg(c=>({...c,cond:v}))} options={[{v:'both',l:'Both'},{v:'A',l:multi?(rot==='fixed'?'Player 1':'Holder'):names.A},{v:'B',l:multi?(rot==='fixed'?'Player 2':'Challenger'):names.B}]}/></Row>
       <Row label="Transition"><Seg value={cfg.randomOn?'random':'fixed'} onChange={v=>setCfg(c=>({...c,randomOn:v==='random'}))} options={[{v:'fixed',l:'Fixed'},{v:'random',l:'Random (blind)'}]}/></Row>
       {!cfg.randomOn&&cfg.cond==='both'&&<Row label="Patience, same for both"><Seg value={cfg.samePat?'y':'n'} onChange={v=>setCfg(c=>({...c,samePat:v==='y'}))} options={[{v:'y',l:'Yes'},{v:'n',l:'Per player'}]}/></Row>}
@@ -5836,12 +5969,14 @@ function PatienceUrgencyPanel({setScreen,onBack}){
       <Row label="Time up, no finish: each conditioned player gets"><PointStepper value={cfg.pts.noFinish} min={-3} max={0} sign="" onChange={v=>setPts('noFinish',v)}/></Row>
     </div>
     <div style={{margin:'10px 0'}}><button type="button" className="secondaryBtn" onClick={()=>setShowRule(x=>!x)}>{showRule?'Hide':'Show'} player rule</button>{showRule&&<div className="claRationaleBox" style={{marginTop:'8px'}}>{ruleLines.map((l,i)=><p key={i}>{l}</p>)}</div>}</div>
-    <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}><button type="button" className="primaryBtn" onClick={newRally}>▶ Start rally</button>{onBack&&<button type="button" className="secondaryBtn" onClick={onBack}>Back to Rally Band</button>}</div>
+    <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>{follow?<span className="mutedText">The coach’s device starts each rally. {feedStatus}</span>:<button type="button" className="primaryBtn" onClick={newRally} disabled={!allocation.some((g,ci)=>playable(ci))}>▶ Start rally</button>}<button type="button" className="secondaryBtn" onClick={copyPlayerLink}>{projecting?'📺 Player display live · copy link again':'📺 Player display link'}</button>{onBack&&<button type="button" className="secondaryBtn" onClick={onBack}>Back to Rally Band</button>}</div>
+    {linkNote&&<div className="statusBox" style={{marginTop:'8px'}}>{linkNote}</div>}
     {Object.keys(scores).length?<div style={{marginTop:'10px',color:'#cfe0ee'}}>Score: {Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([n,v])=>n+' '+v).join(' · ')} <button type="button" className="secondaryBtn" onClick={resetScores}>Reset</button></div>:null}
-    {multi&&<div className="mutedText" style={{marginTop:'6px'}}>On court now: {names.A}{rot!=='fixed'?' (holder)':''} v {names.B}{rot!=='fixed'?' (challenger)':''}{queue.length?' · next up: '+queue.map(i=>squad[i]).join(', '):''}</div>}
+    {allocation.map((g,ci)=>multiOf(ci)?<div key={ci} className="mutedText" style={{marginTop:'6px'}}>{allocation.length>1?'Court '+(ci+1)+' now: ':'On court now: '}{namesOf(ci).A}{rot!=='fixed'?' (holder)':''} v {namesOf(ci).B}{rot!=='fixed'?' (challenger)':''}{cs(ci).queue.length?' · next up: '+cs(ci).queue.map(i=>g[i]).join(', '):''}</div>:null)}
   </div>;
   return <div style={{textAlign:'center',padding:'12px',minHeight:'70vh',background:isRed?'#3a1416':'#0e2238',borderRadius:'16px',transition:'background .3s'}}>
-    <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>{names.A} {sc('A')} · {names.B} {sc('B')}{multi&&queue.length?' · next: '+squad[queue[0]]:''}</div>
+    {allocation.length>1&&<div style={{display:'flex',gap:'6px',justifyContent:'center',flexWrap:'wrap',marginBottom:'6px'}}>{allocation.map((g,ci)=>{const done=rally.results&&rally.results[ci];const open=rally.ends&&rally.ends[ci];return <button key={ci} type="button" className={ci===ac?'primaryBtn':'secondaryBtn'} style={{padding:'6px 12px',fontSize:'.9rem',opacity:playable(ci)?1:.4}} disabled={!playable(ci)} onClick={()=>{setActiveCourt(ci);setAsking(!!(rally.ends&&rally.ends[ci]));}}>Court {ci+1}{done?' ✓':open?' …':''}</button>;})}</div>}
+    <div style={{fontSize:'13px',color:'#8fb2cf',letterSpacing:'.08em'}}>{allocation.length>1?'Court '+(ac+1)+' · ':''}{names.A} {sc('A')} · {names.B} {sc('B')}{multi&&queue.length?' · next: '+squad[queue[0]]:''}</div>
     {rally.phase==='patience'&&<>
       <div style={{fontSize:'clamp(2rem,10vw,4rem)',fontWeight:900,color:bigColor,margin:'6px 0 0'}}>PATIENCE</div>
       <div style={{fontSize:'clamp(4rem,24vw,13rem)',fontWeight:900,lineHeight:1,color:bigColor,margin:'8px 0'}}>{Math.floor(elapsed)}s</div>
@@ -5863,19 +5998,74 @@ function PatienceUrgencyPanel({setScreen,onBack}){
       <div style={{fontSize:'clamp(4rem,24vw,13rem)',fontWeight:900,lineHeight:1,color:bigColor,margin:'8px 0'}}>{remaining}</div>
       <div style={{fontSize:'1.05rem',color:'#ffd9d9',marginBottom:'12px'}}>{rally.surviveNote||''}Winner inside the window: +{cfg.pts.finish}.</div>
     </>}
-    {live&&!asking&&<button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={freezeRally}>■ Rally over</button>}
+    {live&&!asking&&!activeResult&&<button type="button" className="primaryBtn" style={{padding:'16px 28px',fontSize:'1.2rem'}} onClick={freezeRally}>■ Rally over{allocation.length>1?' on Court '+(ac+1):''}</button>}
+    {live&&!asking&&activeResult&&<div style={{margin:'10px auto',color:'#cfe0ee'}}><div style={{fontSize:'1.3rem',fontWeight:800,color:activeResult.phaseLabel==='FINISHED IN WINDOW'?'#86b8a4':'#ff7a7a'}}>Court {ac+1}: {activeResult.phaseLabel}</div><div>{activeResult.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)} · {activeResult.dur}s</div><div className="mutedText" style={{marginTop:'6px'}}>Other courts are still playing. Tap a court above to record it, or wait for the clock.</div></div>}
     {live&&asking&&<div className="gameCard" style={{maxWidth:'480px',margin:'10px auto'}}>
-      <h2>Who hit the last ball?</h2>
+      <h2>Who hit the last ball?{allocation.length>1?' · Court '+(ac+1):''}</h2>
+      {snap&&<p className="mutedText">Ended at {Math.round(snap.elapsed)}s in the {snap.phase} phase.</p>}
       <p className="mutedText">Then how it ended. Error is tin, out or not up. Unreturned includes a double bounce.</p>
       {['A','B'].map(p=><div key={p} style={{display:'flex',gap:'8px',justifyContent:'center',margin:'6px 0'}}><button type="button" className="secondaryBtn" onClick={()=>endRally(p,'error')}>{nm(p)} · error</button><button type="button" className="primaryBtn" onClick={()=>endRally(p,'unreturned')}>{nm(p)} · unreturned</button></div>)}
       <button type="button" className="secondaryBtn" onClick={letReplay}>Let · replay</button>
     </div>}
-    {rally.phase==='over'&&rally.result&&<>
-      <div style={{fontSize:'1.6rem',fontWeight:800,color:rally.result.phaseLabel==='FINISHED IN WINDOW'?'#86b8a4':'#ff7a7a',marginTop:'10px'}}>{rally.result.phaseLabel}</div>
-      <div style={{fontSize:'1.1rem',color:'#cfe0ee',marginTop:'6px'}}>{rally.result.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)} · {rally.result.dur}s</div>
-      {multi&&rally.result.winner&&queue.length>0&&<div style={{fontSize:'1rem',color:'#8fb2cf',marginTop:'6px'}}>{rot==='winner'?nm(rally.result.winner)+' holds the court. '+squad[queue[0]]+' comes on.':rot==='loser'?nm(puOther(rally.result.winner))+' stays on. '+squad[queue[0]]+' comes on.':'Both off. '+squad[queue[0]]+(queue[1]!=null?' and '+squad[queue[1]]:'')+' come on.'}</div>}
-      <div className="buttonRow sessionActionButtons" style={{marginTop:'14px',justifyContent:'center'}}><button type="button" className="primaryBtn" onClick={newRally}>▶ Next rally</button><button type="button" className="secondaryBtn" onClick={()=>setRally(null)}>Settings</button></div>
+    {rally.phase==='over'&&rally.results&&<>
+      {allocation.map((g,ci)=>{const r=rally.results[ci];if(!r)return null;const n=namesOf(ci);const q=cs(ci).queue;const mu=multiOf(ci);return <div key={ci} style={{marginTop:'10px'}}>
+        <div style={{fontSize:allocation.length>1?'1.25rem':'1.6rem',fontWeight:800,color:r.phaseLabel==='FINISHED IN WINDOW'?'#86b8a4':'#ff7a7a'}}>{allocation.length>1?'Court '+(ci+1)+' · ':''}{r.phaseLabel}</div>
+        <div style={{fontSize:'1.05rem',color:'#cfe0ee',marginTop:'4px'}}>{r.note.replace(/\bA\b/g,n.A).replace(/\bB\b/g,n.B)} · {r.dur}s</div>
+        {mu&&r.winner&&q.length>0&&<div style={{fontSize:'.95rem',color:'#8fb2cf',marginTop:'4px'}}>{rot==='winner'?n[r.winner]+' holds the court. '+g[q[0]]+' comes on.':rot==='loser'?n[puOther(r.winner)]+' stays on. '+g[q[0]]+' comes on.':'Both off. '+g[q[0]]+(q[1]!=null?' and '+g[q[1]]:'')+' come on.'}</div>}
+      </div>;})}
+      <div className="buttonRow sessionActionButtons" style={{marginTop:'14px',justifyContent:'center'}}>{follow?<span className="mutedText">Waiting for the coach to start the next rally…</span>:<button type="button" className="primaryBtn" onClick={newRally}>▶ Next rally</button>}<button type="button" className="secondaryBtn" onClick={()=>setRally(null)}>Settings</button></div>
     </>}
+  </div>;
+}
+// Court-screen view of a Patience → Urgency game: the rule laid out one step per row, the phase in colour, who is on court, and the scores.
+function PatienceUrgencyPlayerDisplay({payload={}}){
+  const p=payload;const live=p.phase&&p.phase!=='idle';
+  const red=p.phase==='urgency';const split=p.phase==='split';const over=p.phase==='over';
+  const bg=red?'#3a1416':split?'#1f1a2e':'#0e2238';
+  const banner=p.phase==='patience'?'PATIENCE':split?(p.free+' GO \u00b7 '+p.held+' HOLD'):red?'GO \u00b7 FINISH IT':over?(p.result&&p.result.label)||'RALLY OVER':'';
+  return <div className="playerDisplayPage puScPage" style={{background:bg,transition:'background .3s'}}>
+    <style>{`.playerDisplayPage.puScPage{overflow-y:auto !important;height:auto;min-height:100vh;min-height:100dvh;max-height:none !important;padding:16px 16px calc(80px + env(safe-area-inset-bottom));box-sizing:border-box;}
+.puDispStep{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.12);}
+.puDispStep b{flex:0 0 40px;font-size:1.6rem;line-height:1;color:#6db3e6;}
+.puDispStep p{margin:0;font-size:clamp(1.05rem,2.4vw,1.45rem);line-height:1.4;color:#eaf4fb;}`}</style>
+    <div style={{maxWidth:'900px',margin:'0 auto'}}>
+      <div style={{fontSize:'.8rem',letterSpacing:'.12em',color:'#8fb2cf',textTransform:'uppercase'}}>Rally Band · Patience → Urgency</div>
+      <h1 style={{margin:'4px 0 10px',color:'#eaf4fb',fontSize:'clamp(1.6rem,4vw,2.4rem)'}}>{p.title||'Patience \u2192 Urgency'}</h1>
+      {live&&<div style={{textAlign:'center',padding:'14px',borderRadius:'16px',background:'rgba(0,0,0,.25)',margin:'8px 0 14px'}}>
+        <div style={{fontSize:'clamp(1.8rem,7vw,3.6rem)',fontWeight:900,color:red||split?'#ff7a7a':'#6db3e6'}}>{banner}</div>
+        {over&&p.result&&<div style={{fontSize:'1.1rem',color:'#cfe0ee',marginTop:'6px'}}>{p.result.note}</div>}
+      </div>}
+      <div style={{display:'flex',flexWrap:'wrap',gap:'8px 20px',color:'#cfe0ee',fontSize:'1.05rem',margin:'6px 0 10px'}}>
+        <span><strong style={{color:'#eaf4fb'}}>{p.court&&p.court.A}</strong>{p.court&&p.court.roleA?' ('+p.court.roleA.replace(/^the /,'')+')':''} v <strong style={{color:'#eaf4fb'}}>{p.court&&p.court.B}</strong>{p.court&&p.court.roleB?' ('+p.court.roleB.replace(/^the /,'')+')':''}</span>
+        {p.next&&p.next.length>0&&<span>Next up: {p.next.join(', ')}</span>}
+      </div>
+      {(p.lines||[]).map((l,i)=><div key={i} className="puDispStep"><b>{i+1}</b><p>{l.replace(/^\d+\.\s*/,'')}</p></div>)}
+      {p.scores&&p.scores.length>0&&<div style={{marginTop:'16px'}}>
+        <div style={{fontSize:'.8rem',letterSpacing:'.12em',color:'#8fb2cf',textTransform:'uppercase',marginBottom:'6px'}}>Scores</div>
+        <div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>{p.scores.map(s=><span key={s.name} style={{padding:'8px 14px',borderRadius:'12px',background:'rgba(255,255,255,.08)',color:'#eaf4fb',fontSize:'1.2rem',fontWeight:800}}>{s.name} {s.score}</span>)}</div>
+      </div>}
+    </div>
+  </div>;
+}
+// Board for a wall screen: every court's players, phase and scores, read from the court devices.
+function PatienceUrgencyBoard({host,courtCount}){
+  useWakeLock();
+  const [rows,setRows]=useState([]);
+  useEffect(()=>{let cancelled=false;
+    async function load(){const r=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(puCourtRoomId(host,i+1))));if(cancelled)return;setRows(r.map(x=>x&&x.payload&&x.payload.type==='pucourt'?x.payload:null));}
+    load();const id=setInterval(load,1500);return ()=>{cancelled=true;clearInterval(id);};
+  },[host,courtCount]);
+  const all=rows.flatMap(r=>r&&r.scores||[]).sort((a,b)=>b.score-a.score);
+  return <div className="playerDisplayPage puScPage" style={{background:'#0e2238'}}>
+    <style>{`.playerDisplayPage.puScPage{overflow-y:auto !important;height:auto;min-height:100vh;min-height:100dvh;max-height:none !important;padding:16px;box-sizing:border-box;}`}</style>
+    <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+      <div style={{fontSize:'.8rem',letterSpacing:'.12em',color:'#8fb2cf',textTransform:'uppercase'}}>Rally Band · Patience → Urgency · {courtCount} courts</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:'12px',margin:'12px 0'}}>{rows.map((r,i)=>{const red=r&&r.phase==='urgency';return <div key={i} style={{padding:'14px',borderRadius:'14px',background:red?'#3a1416':'rgba(0,0,0,.25)',border:'1px solid '+(red?'#a35b5b':'#2e6e8e')}}>
+        <div style={{color:'#8fb2cf',fontSize:'.9rem'}}>Court {i+1}</div>
+        {r?<><div style={{color:'#eaf4fb',fontSize:'1.3rem',fontWeight:800}}>{r.A} v {r.B}</div><div style={{color:red?'#ff7a7a':'#6db3e6',fontWeight:800,textTransform:'uppercase'}}>{r.phase==='idle'?'waiting':r.phase}</div>{r.result&&<div style={{color:'#cfe0ee',marginTop:'4px'}}>{r.result.label}: {r.result.note}</div>}{r.next&&r.next.length>0&&<div className="mutedText">Next: {r.next.join(', ')}</div>}</>:<div className="mutedText">not connected</div>}
+      </div>;})}</div>
+      {all.length>0&&<div><div style={{fontSize:'.8rem',letterSpacing:'.12em',color:'#8fb2cf',textTransform:'uppercase',marginBottom:'6px'}}>Scores</div><div style={{display:'flex',flexWrap:'wrap',gap:'8px'}}>{all.map(s=><span key={s.name} style={{padding:'8px 14px',borderRadius:'12px',background:'rgba(255,255,255,.08)',color:'#eaf4fb',fontSize:'1.2rem',fontWeight:800}}>{s.name} {s.score}</span>)}</div></div>}
+    </div>
   </div>;
 }
 // Games Library class: the eight Patience → Urgency games as cards. Run opens Rally Band with the preset applied; Add puts the card in the session.
@@ -26079,6 +26269,8 @@ function normalizeCourtPayload(row){
     if(p.winnerName){pct=1;headline='Winner: '+p.winnerName;}
   }else if(t==='tinwar'){
     game='Tin War';headline=(p.game&&p.game.title)||'';pct=null;
+  }else if(t==='pu'){
+    game='Patience \u2192 Urgency';headline=p.title||'';players=(p.scores||[]).map(x=>({name:x.name,score:x.score}));leaderName=players.length&&players[0].score>0?players[0].name:'';pct=null;
   }else if(t==='disruption'&&p.battle){
     game='Court Battle';const cs=p.battle.courts||[];const best=cs.reduce((m,c)=>Math.max(m,c.best||0),0);
     headline=best+' streak';target=p.battle.target;pct=p.battle.target?best/p.battle.target:null;
@@ -28646,6 +28838,8 @@ useEffect(()=>{
 const[backStack,setBackStack]=useState([]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
+const puCourtParam=useMemo(()=>getPuCourtFromUrl(),[]);
+const puBoardParam=useMemo(()=>getPuBoardFromUrl(),[]);
 const pokerScoreParam=useMemo(()=>getPokerScoreFromUrl(),[]);
 const pokerTablesParam=useMemo(()=>getPokerTablesFromUrl(),[]);
 const slScoreParam=useMemo(()=>getSlScoreFromUrl(),[]);
@@ -28715,6 +28909,8 @@ useEffect(()=>{localStorage.setItem(SESSION_KEY,JSON.stringify(session));},[sess
 useEffect(()=>{try{localStorage.setItem('checkerboardInvasionFormat',lastInvasionFormat);}catch{}},[lastInvasionFormat]);
 if(nsslCourtParam){return <NsslCourtScorer court={nsslCourtParam.court} host={nsslCourtParam.host}/>;}
 if(nsslMasterParam){return <NsslMasterDisplay host={nsslMasterParam.host}/>;}
+if(puCourtParam){return <div className="playerDisplayPage puScPage"><style>{`.playerDisplayPage.puScPage{overflow-y:auto !important;-webkit-overflow-scrolling:touch;height:auto;min-height:100vh;min-height:100dvh;max-height:none !important;padding-bottom:calc(120px + env(safe-area-inset-bottom));box-sizing:border-box;}`}</style><PatienceUrgencyPanel follow={puCourtParam}/></div>;}
+if(puBoardParam){return <PatienceUrgencyBoard host={puBoardParam.host} courtCount={puBoardParam.courtCount}/>;}
 if(pokerScoreParam){return <PokerCourtScorer court={pokerScoreParam.court} host={pokerScoreParam.host}/>;}
 if(pokerTablesParam){return <PokerTablesDisplay host={pokerTablesParam.host} courtCount={pokerTablesParam.courtCount}/>;}
 if(slScoreParam){return <SnakesLaddersCourtScorer court={slScoreParam.court} host={slScoreParam.host} mirror={slScoreParam.mirror}/>;}
@@ -28745,6 +28941,7 @@ if(screen==='playerDisplay'&&livePayload?.type==='ludosquash'){return <LudoSquas
 if(screen==='playerDisplay'&&livePayload?.type==='noughtscrosses'){return <NoughtsCrossesPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='doublebounce'){return <DoubleBounceSuitePlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='tinwar'){return <TinWarPlayerDisplay payload={livePayload}/>;}
+if(screen==='playerDisplay'&&livePayload?.type==='pu'){return <PatienceUrgencyPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='disruption'){return <DisruptionPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='servereturn'){return <ServeReturnPlayerDisplay payload={livePayload}/>;}
 if(screen==='playerDisplay'&&livePayload?.type==='bucketlob'){return <LobPlayerDisplay payload={livePayload}/>;}
