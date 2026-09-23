@@ -1,3 +1,4 @@
+// v746: Match Analysis app URL wired into the Home tile (deployed 23 Sep)
 // v745 Match Analysis split: LMC suite moved to matchanalysis_v1.jsx (see APP_VERSION)
 // v539 Player Display step-renderer + design principle (see APP_VERSION)
 // v538 Player Display brevity pass
@@ -264,11 +265,11 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v745 Match Analysis Split';
+const APP_VERSION='v746 Match Analysis Link';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
-const MATCH_ANALYSIS_APP_URL='';
+const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
