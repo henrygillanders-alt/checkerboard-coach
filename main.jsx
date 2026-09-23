@@ -1,3 +1,5 @@
+// v748: Crosscourt Licence anti-gaming line restored on the family card (see APP_VERSION)
+// v747: Master Game Library — one registry for every Games Library family (see APP_VERSION)
 // v746: Match Analysis app URL wired into the Home tile (deployed 23 Sep)
 // v745 Match Analysis split: LMC suite moved to matchanalysis_v1.jsx (see APP_VERSION)
 // v539 Player Display step-renderer + design principle (see APP_VERSION)
@@ -265,7 +267,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v746 Match Analysis Link';
+const APP_VERSION='v748 Crosscourt Licence Anti-gaming';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -737,7 +739,7 @@ return[
 ...perceptionGames(),
 {id:'length-before-attack',title:'Length Before Attack',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Player must create length pressure before attacking short.',rationale:'Encourages patient pressure construction rather than rushed attacks.',coach:'Watch whether players attack only after the opponent is displaced, late or off balance.',layers:['Quality Length Before Attack'],cbCode:'None'},
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
-{id:'crosscourt-licence',title:'Crosscourt Licence',category:'Classic Conditioned',duration:10,format:'1v1',task:'Play a normal rally with one rule: you may only attack \u2014 go short, volley-kill, or take the ball in to finish \u2014 off a ball that came CROSSCOURT. A straight ball may not be attacked; you must answer it straight or with a length, and wait. Only when your opponent hits crosscourt is the attack unlocked \u2014 and a tight crosscourt dying into the back is still hard to do anything with, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court, so the unlock is self-officiating. Win any rally: 1 point. Win a rally with an attack off a crosscourt: +2.',rationale:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional \u2014 tight and dying into the back \u2014 or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on. It builds the discipline to only crosscourt with purpose, and the alertness to pounce when the opponent does not.',coach:'Watch the crosscourts, not the attacks: a player who keeps feeding attackable crosscourts is the one to coach \u2014 ask what made that crosscourt loose (height, width, pace) rather than telling them to stop. If nobody attacks, the crosscourts are already tight (good) or nobody is crossing at all (make a minimum number of crosscourts per rally the constraint). Add a reducing tin as an optional constraint so the crosscourt attack must also be precise. Debrief: which of your crosscourts got punished, and where did it land?',playerFocus:'Only attack off a crosscourt. Crosscourt only when it is tight \u2014 a loose one hands over the attack.',scoring:'Rally win 1. Win with an attack played off an opponent crosscourt: +2. Attacking off a straight ball does not count \u2014 the rally plays on.',layers:['Decision Making','Shot Selection','Attacking Conversion']},
+...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
 {id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
 {id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Clean Winner'],cbCode:'None'}
@@ -7928,9 +7930,11 @@ function TimeSpaceLabFamily({onAdd,label='Add To Session'}){
   </>;
 }
 
-function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
-  const[cc,setCc]=React.useState({toll:1,attackVolley:3,attackWinner:3,tin:'service line',lunge1:1,lunge2:2,lunge3:3,functional:2});
-  const games=[
+// Cross Court Friend or Foe — one definition, read by the family screen and by
+// standardGames() (Session Builder's All Games list and search). v747: Crosscourt
+// Licence moved in from Classic Games as game 5.
+const CCFF_DEFAULTS={toll:1,attackVolley:3,attackWinner:3,tin:'service line',lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2};
+const CCFF_GAMES=[
     {id:'ccff-toll',key:'toll',title:'1 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
      rule:(v)=>'Play above the line. Every time you volley your opponent’s crosscourt, you score +'+v.toll+'. That is the whole game: a crosscourt loose enough to volley is a crosscourt that hands you the point. Everyone saw whether it was volleyed, so it calls itself.',
@@ -7958,8 +7962,20 @@ function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
      coach:'This game is about position and decision as much as the shot: a player who needs two steps was caught out by a good cross (fine) or read it late (coach that). The recycle keeps it honest — no reward for a scrappy prolonged scramble. Debrief: were you already moving when they crossed, and what told you it was coming?',
      focus:'One step to the loose cross, then finish fast. Sooner is worth more.',
      score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+'; recycles after.',
-     stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'}]}
-  ];
+     stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'}]},
+    {id:'ccff-licence',key:'licence',title:'5 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
+     from:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional — tight and dying into the back — or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on.',
+     rule:(v)=>'Play a normal rally with one rule: you may only attack — go short, volley-kill, or take the ball in to finish — off a ball that came CROSSCOURT. A straight ball may not be attacked; you must answer it straight or with a length, and wait. Only when your opponent hits crosscourt is the attack unlocked — and a tight crosscourt dying into the back is still hard to do anything with, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court, so the unlock is self-officiating. Win any rally: 1 point. Win a rally with an attack off a crosscourt: +'+v.licence+'.',
+     coach:'Watch the crosscourts, not the attacks: a player who keeps feeding attackable crosscourts is the one to coach — ask what made that crosscourt loose (height, width, pace) rather than telling them to stop. If nobody attacks, the crosscourts are already tight (good) or nobody is crossing at all (make a minimum number of crosscourts per rally the constraint). Add a reducing tin as an optional constraint so the crosscourt attack must also be precise. Debrief: which of your crosscourts got punished, and where did it land?',
+     focus:'Only attack off a crosscourt. Crosscourt only when it is tight — a loose one hands over the attack.',
+     score:(v)=>'Rally win 1. Win with an attack played off an opponent crosscourt: +'+v.licence+'. Attacking off a straight ball does not count — the rally plays on.',
+     anti:'No bonus if the attacked ball did not come crosscourt, or if the attack was off a straight ball.',
+     stepper:[{k:'licence',label:'Crosscourt-attack bonus',min:1,max:4,sign:'+'}]}
+];
+function ccffCard(g,v){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
+function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
+  const[cc,setCc]=React.useState(CCFF_DEFAULTS);
+  const games=CCFF_GAMES;
   return <>
   <div className="gameCard">
     <div className="categoryTag">Cross Court Friend or Foe</div><h2>🎯 Cross Court Friend or Foe</h2>
@@ -7971,11 +7987,12 @@ function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
     <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
     <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
     <div className="infoBox"><strong>How to play</strong><p>{g.rule(v)}</p></div>
+    {g.anti&&<div className="infoBox"><strong>Anti-gaming</strong><p>{g.anti}</p></div>}
     <div style={{display:'flex',alignItems:'center',gap:'10px',margin:'6px 0',flexWrap:'wrap'}}>{g.stepper.map(st=>st.type==='select'
       ? <label key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><select value={v[st.k]} onChange={e=>setCc(prev=>({...prev,[st.k]:e.target.value}))}>{st.options.map(o=><option key={o} value={o}>{o}</option>)}</select></label>
       : <span key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><PointStepper value={v[st.k]} min={st.min} max={st.max} sign={st.sign} onChange={val=>setCc(prev=>({...prev,[st.k]:val}))}/></span>)}</div>
     <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
-    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd({id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:8,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),layers:['Decision Making','Shot Selection','Attacking Conversion']});}}>{label}</button>
+    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(ccffCard(g,v));}}>{label}</button>
   </div>;})}
   </>;
 }
@@ -8038,186 +8055,6 @@ function MovementLabFamily({onAdd,label='Add To Session'}){
 <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd({id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Movement Lab',format:'Conditioned game — movement',duration:g.dur,rld:g.rld,task:g.rule(bVal),rationale:'Movement Lab: score the moment recovery succeeds or fails, on a visible cue.',coach:g.coach,playerFocus:g.focus,scoring:g.score(bVal),layers:g.layers});}}>{label}</button>
 </div>;})}
   </>;
-}
-
-function GameSelector({onAddToSession,addButtonText='Add To Session',setScreen}){
-const[category,setCategory]=useState(null);
-const[atl,setAtl]=useState(DEFAULT_ATL);
-const[bf,setBf]=useState({shots:3,mode:'passes',bonusMode:'decay',bonus:3,openBonus:5,firstStrike:2});
-const[eb,setEb]=useState({stage:1,bonus:2,target:'both'});
-const[er,setEr]=useState({stage:1,seqBonus:false,bonus:2,target:'both'});
-function bfCard(){
-  const decay=bf.bonusMode==='decay';
-  const bonusText=(decay
-    ?'The bonus pot opens at +'+bf.openBonus+' and drops by 1 after every failed break, never below +1 \u2014 so the first attack of the rally is worth the most ('+bf.openBonus+', then '+(bf.openBonus-1)+', then '+Math.max(1,bf.openBonus-2)+'\u2026). Whoever converts takes whatever the pot holds at that moment.'
-    :'Every converted break is worth +'+bf.bonus+', whenever it comes.')
-    +' One exception, the first-strike rule: a winner on the breaking shot itself \u2014 including a ball the defender declines to retrieve \u2014 scores +'+bf.firstStrike+' only, not the full bonus. The big money starts on shot 2, when the defender has engaged. So refusing to return the break still loses '+(1+bf.firstStrike)+', and the full pot can only be won from a live exchange \u2014 conceding is never the cheap way out, and one unanswered kill never takes the lot.';
-  const failText=bf.mode==='strict'
-    ?'If your window passes without a finish, you lose the rally \u2014 the break is a commitment, not a probe.'
-    :bf.mode==='passes'
-    ?'If your window passes without a finish, play on: the rally reverts to above the line and the next break belongs to your opponent \u2014 a failed attack concedes the initiative, exactly as in a match. It stays theirs until they use it; after their window the right passes back. Play continues until the rally is won.'
-    :'If your window passes without a finish, play on: the rally reverts to above the line and either player may take the next break. Play continues until the rally is won.';
-  return {id:'atl-break-finish',title:'Break & Finish',category:'ATL / BTL',format:'Conditioned game \u2014 player-triggered attack windows',duration:8,rld:4,
-    task:'Both players play above the line: every shot strikes the front wall above the service line. At any moment a player may break below the line to attack \u2014 and from that first below-the-line shot they have '+bf.shots+' of their own shots to finish the rally (the breaking shot is shot 1). Win any rally: 1 point. Finish inside a window: the bonus on top. '+bonusText+' '+failText+' After any break the rally is open until the window resolves: the defender may reply anywhere. The opponent counts the breaker\u2019s shots aloud \u2014 that count is the officiating, and calling the pot before each break (\u201cthis one\u2019s worth 4\u201d) keeps the stakes public.',
-    rationale:'Time Bands with the clock replaced by the player\u2019s own decision, extended to whole-rally strategy: the rally becomes a sequence of priced attacks until someone converts. The first-strike rule came from a road test: defenders were declining to retrieve the break shot because engaging risked the full pot while conceding cost one point \u2014 pricing the instant winner at a small fixed bonus rebalances the equation so retrieving is the better bet. '+(decay?'The decaying pot rewards attacking early \u2014 hesitate and the same attack buys less \u2014 ':'')+(bf.mode==='passes'?'and because a failed break hands the next chance to the opponent, a cheap probe is never free: wasting your window gives them a protected attack at the pot. ':'')+'What it trains is the timing of commitment: reading when the attack is on, converting inside a budget, and defending well enough to make the opponent\u2019s windows fail.',
-    coach:'Watch the pot decisions, not just the shots: who attacks at '+(decay?bf.openBonus:bf.bonus)+' and who waits until the pot is small \u2014 that is their match personality in one number. The attack-shy player needs praise for early breaks even when they fail; the impulsive one is priced by '+(bf.mode==='strict'?'the lost rally':bf.mode==='passes'?'handing the initiative away':'the shrinking pot')+'. As conversion improves, shrink the window by one shot. Count-aloud is the officiating; the pot call before each break keeps everyone honest about what was at stake.',
-    playerFocus:'Hold the height until the ball you want. Then finish inside your budget \u2014 and remember what this attack is worth.',
-    scoring:'Rally win 1. Winner on the breaking shot itself (incl. a ball the defender lets go): +'+bf.firstStrike+'. Converted from shot 2 onward: '+(decay?'+ the pot ('+bf.openBonus+' for the rally\u2019s first break, \u22121 per failed break, floor 1)':'+'+bf.bonus)+'. '+(bf.mode==='strict'?'Window passed, no finish: rally lost.':bf.mode==='passes'?'Window passed: play on above the line, next break is the opponent\u2019s.':'Window passed: play on above the line, break open to both.'),
-    layers:['Decision Making','Attacking Conversion','Temporal Constraint','Self-Officiating']};
-}
-const[selectedGame,setSelectedGame]=useState(null);
-useBackIntercept(!!selectedGame,()=>{setSelectedGame(null);return true;});
-const[manualLayers,setManualLayers]=useState([]);const[atlHistory,setAtlHistory]=useState([]);const[showConditions,setShowConditions]=useState(false);
-const cats=['ATL / BTL','Perception','Time & Space Lab','Movement Lab','Cross Court Friend or Foe','Peak Week','Classic Conditioned','Checkerboard','Volley & Intercept','Information & Anticipation','Double Bounce','Technical','Invasion','Matchplay'];
-const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
-const composedAtl=useMemo(()=>({...builtAtl,layers:[...new Set([...(builtAtl.layers||[]),...manualLayers])]}),[builtAtl,manualLayers]);
-const games=standardGames();
-function saveAtlSnapshot(){setAtlHistory(prev=>[...prev,{atl:clone(atl),manualLayers:clone(manualLayers)}]);}
-function setAtlOption(key,value){saveAtlSnapshot();setAtl(prev=>({...prev,[key]:value}));}
-function toggleManualLayer(layer){saveAtlSnapshot();setManualLayers(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
-function clearAtlOverlays(){saveAtlSnapshot();setManualLayers([]);}
-function resetAtlBuilder(){saveAtlSnapshot();setAtl(DEFAULT_ATL);setManualLayers([]);}
-function undoAtl(){const last=atlHistory[atlHistory.length-1];if(!last)return;setAtl(last.atl);setManualLayers(last.manualLayers);setAtlHistory(atlHistory.slice(0,-1));}
-function addGame(game){onAddToSession({...clone(game),id:Date.now()+Math.random()});}
-const filtered=games.filter(game=>game.category===category);
-function ebCard(){
-  const stage=eb.stage, bonus=eb.bonus;
-  const belowCount=stage===1?1:stage===2?2:stage===3?2:3;
-  const consecutive=stage>=3;
-  const unlock='a deep drive that lands in '+(EARN_BELOW_TARGETS[eb.target]||EARN_BELOW_TARGETS['both'])+', a pressure-building ball into the back';
-  const stageName=stage===1?'Stage 1 — one below':stage===2?'Stage 2 — two below':stage===3?'Stage 3 — two below, consecutive':'Stage 4 — three below';
-  const belowText=stage===1
-    ?'you may play one shot below the line, and only after '+unlock+' — earn the attack with depth first.'
-    :stage===2
-    ?'you may play two shots below the line in the rally, each one unlocked by '+unlock+' first.'
-    :stage===3
-    ?'you may play two shots below the line back to back — the first is unlocked by '+unlock+', then a second below may follow immediately.'
-    :'you may play three shots below the line, unlocked by '+unlock+', tightening the vice one more turn.';
-  return {id:'atl-earn-the-below',title:'Earn the Below',category:'ATL / BTL',format:'Conditioned game — earned attack, four-stage progression',duration:10,rld:4,
-    task:'Both players stay above the line by default. To attack, you must earn it: '+belowText+' A below shot played without the unlock first does not count — replay above the line. '+(consecutive?'The consecutive below shots must follow each other directly. ':'')+'Win any rally: 1 point. Finish the rally on a below shot that was properly earned: +'+bonus+' bonus. The unlock is visible — the ball landed in the tramline behind the service box or it did not — so both players can call it. Progression: run '+stageName+'; move to the next stage when the group earns the attack cleanly and rarely wastes a below.',
-    rationale:'From a coach road test: players were attacking below the line without first moving the opponent — attacking from nothing. This game makes the attack something you earn with depth. A deep tramline drive pushes the opponent to the back and buys the space; only then is the short ball or penetrating drive on. Each stage tightens the vice: create pressure and movement into the back before going short, then keep earning every extra attacking shot.',
-    coach:'Watch what unlocks the below shot, not just the below shot itself: a soft ball that dribbles into the zone without moving anyone is the thing to catch — if players game the unlock that way, add "and past the opponent" to the tramline condition. Start every group at Stage 1 and only progress when the earned attack looks natural. If nobody attacks at all, the depth is not pressuring — check the drive is genuinely deep and tight, not just in the zone. Debrief: what did your deep drive do to the opponent before you went short?',
-    playerFocus:'Earn the short ball. Deep and tight first, then attack.',
-    scoring:'Rally win 1. Rally finished on a properly earned below shot: +'+bonus+'. Below shot without the unlock: does not count, replay above the line.',
-    layers:['Decision Making','Attacking Conversion','Spatial Constraint','Temporal Constraint']};
-}
-function erCard(){
-  const stage=er.stage, maxBelow=stage===1?1:stage===2?2:stage>=3?3:1;
-  const target=(EARN_BELOW_TARGETS[er.target]||EARN_BELOW_TARGETS['both']);
-  const reducing=stage>=4;
-  const mustWin=stage>=5;
-  const seq=er.seqBonus&&maxBelow>=2;
-  const stageLine=stage===1?'Stage 1 — one below, then reload':stage===2?'Stage 2 — up to two consecutive below':stage===3?'Stage 3 — up to three consecutive below':stage===4?'Stage 4 — reducing target (advanced)':'Stage 5 — must win below (very advanced)';
-  const loop='Land a deep drive in '+target+' and your next shot may go below the line to attack. If you don\u2019t go short, you must earn it again — and you can reload as many times as you like in the rally: drive deep to the target, and the attack is on again.';
-  const belowAllow=maxBelow===1?'After earning, you may play one shot below the line.':'After earning, you may play up to '+maxBelow+' consecutive shots below the line.';
-  const reduceLine=reducing?' Advanced: the target shrinks each time you reload, so re-earning gets harder the longer the rally runs.':'';
-  const winLine=mustWin?' Very advanced: you can only win the rally with a below-the-line shot — a rally won above the line does not score.':'';
-  const scoreLine=mustWin
-    ?'Win the rally with a below shot: 1 point (a rally won above the line does not score).'
-    :'Win any rally: 1 point.'+(seq?' Sequence bonus: finishing on your 1st below shot +1, 2nd +2, 3rd +3 — the longer you hold the attack before finishing, the more it is worth.':' Finish the rally on an earned below shot: +'+er.bonus+' bonus.');
-  return {id:'atl-earn-reload',title:'Earn & Reload',category:'ATL / BTL',format:'ATL / BTL conditioned game \u2014 earned attack with a re-earn loop, five-stage progression',duration:10,rld:4,
-    task:'This is an ATL / BTL game: both players stay above the line by default. '+loop+' '+belowAllow+' A below shot played without earning it first does not count — replay above the line.'+reduceLine+winLine+' '+scoreLine+' The unlock is visible — the ball landed in the target or it did not — so both players can call it. Running '+stageLine+'.',
-    rationale:'Trains players to construct an attack rather than force one: build pressure with depth into the back, take the short ball only when it is earned, and reload to the back when it is not. The re-earn loop keeps the rally honest — every attack is paid for with a deep, pressuring drive, and a player who goes short too early simply loses the point. At the higher stages it becomes highly tactical: create space at the back to reload a fresh below sequence, and hold the attack for the bigger finish.',
-    coach:'Start every group at Stage 1 and climb only when the earned attack looks natural. Watch the reload decisions, not just the attacks: a player who drives deep to reload after one below has understood the game. If nobody attacks, the depth is not pressuring — check the drive is genuinely deep and tight. The sequence bonus (Stages 2\u20133) rewards building the attack; turn it off for a simpler game. Debrief: when did you choose to reload instead of attack, and why?',
-    playerFocus:'Earn the short ball with depth. Reload to the back if it is not on.',
-    scoring:scoreLine,
-    layers:['Decision Making','Attacking Conversion','Spatial Constraint','Temporal Constraint']};
-}
-const conditionsBaseGame=category==='ATL / BTL'?'ATL / BTL':category==='Checkerboard'?'Checkerboard':category==='Invasion'?'Invasion':category==='Double Bounce'?'Double Bounce':category||'Selected Game';
-return <div>
-<div className="gameMenuGrid">{cats.map(cat=><button key={cat} className={category===cat?'gameMenu activeGameMenu':'gameMenu'} onClick={()=>{setCategory(cat);setSelectedGame(null);setShowConditions(false);}}>{cat}</button>)}</div>
-{category&&<div className="conditionsAttachBar"><div><strong>Base game:</strong> {conditionsBaseGame}<br/><span className="mutedText">Design the base game, then add tactical, behaviour or handicap constraints from this same page.</span></div><button className="primaryBtn" onClick={()=>setShowConditions(v=>!v)}>{showConditions?'Hide Conditions':'Add Game Constraints'}</button></div>}
-{showConditions&&category&&<GameConstraintsEngine embedded initialBaseGame={conditionsBaseGame} onClose={()=>setShowConditions(false)} onAddToSession={addGame}/>} 
-{!category&&<div className="placeholder">Choose a game category. No game opens by default.</div>}
-{category==='Perception'&&<PerceptionModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
-{category==='Peak Week'&&<PeakWeekModule embedded onAddToSession={addGame} setScreen={setScreen}/>}
-{category==='Information & Anticipation'&&<InformationAnticipationBuilder onAddToSession={addGame}/>}
-{category==='Time & Space Lab'&&<TimeSpaceLabFamily onAdd={addGame} label={addButtonText}/>}
-{category==='Movement Lab'&&<MovementLabFamily onAdd={addGame} label={addButtonText}/>}
-{category==='Cross Court Friend or Foe'&&<CrossCourtFriendOrFoeFamily onAdd={addGame} label={addButtonText}/>}
-{category&&category!=='Saved Cards'&&<UniversalModifierEngine title="Universal Modifiers"/>}
-{category==='Double Bounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><DoubleBounceTool setScreen={()=>{}}/></div>}
-{category==='ATL / BTL'&&<div className="gameCard">
-<div className="categoryTag">ATL / BTL</div><h2>🔁 Earn & Reload</h2>
-<p className="mutedText" style={{marginTop:'-4px'}}>Earn the attack with depth, then reload to the back if the short ball isn\u2019t on — as many times as you like. Five-stage progression.</p>
-<div className="atlOptionsGrid">
-<label>Stage<select value={er.stage} onChange={e=>setEr(x=>({...x,stage:Number(e.target.value)}))}><option value={1}>1 — one below, reload</option><option value={2}>2 — two consecutive</option><option value={3}>3 — three consecutive</option><option value={4}>4 — reducing target (adv.)</option><option value={5}>5 — must win below (adv.)</option></select></label>
-<label>Unlock target<select value={er.target} onChange={e=>setEr(x=>({...x,target:e.target.value}))}><option value="3/3">Zone 3/3 — back right</option><option value="4/4">Zone 4/4 — back left</option><option value="both">Either back corner (3/3 or 4/4)</option></select></label>
-<label>Finish bonus<select value={er.seqBonus?'seq':String(er.bonus)} onChange={e=>{const v=e.target.value;if(v==='seq')setEr(x=>({...x,seqBonus:true}));else setEr(x=>({...x,seqBonus:false,bonus:Number(v)}));}}><option value="2">+2 flat</option><option value="3">+3 flat</option><option value="seq">Sequence: 1st+1, 2nd+2, 3rd+3</option></select></label>
-</div>
-<div className="infoBox"><strong>Task / Rules</strong><p>{erCard().task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{erCard().rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{erCard().coach}</p></div>
-<div className="chips">{erCard().layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(erCard());}}>{addButtonText}</button>
-</div>}
-{category==='ATL / BTL'&&<div className="gameCard">
-<div className="categoryTag">ATL / BTL</div><h2>🎯 Earn the Below</h2>
-<p className="mutedText" style={{marginTop:'-4px'}}>Attack below the line only after you earn it with a deep tramline drive. A four-stage progression that tightens the vice.</p>
-{!compact&&<><div className="atlOptionsGrid">
-<label>Stage<select value={eb.stage} onChange={e=>setEb(x=>({...x,stage:Number(e.target.value)}))}><option value={1}>1 — one below</option><option value={2}>2 — two below</option><option value={3}>3 — two below, consecutive</option><option value={4}>4 — three below</option></select></label>
-<label>Finish bonus<select value={eb.bonus} onChange={e=>setEb(x=>({...x,bonus:Number(e.target.value)}))}>{[1,2,3,4,5].map(n=><option key={n} value={n}>+{n}</option>)}</select></label>
-<label>Unlock target<select value={eb.target} onChange={e=>setEb(x=>({...x,target:e.target.value}))}><option value="3/3">Zone 3/3 — back right</option><option value="4/4">Zone 4/4 — back left</option><option value="both">Either back corner (3/3 or 4/4)</option></select></label>
-</div>
-<div className="infoBox"><strong>Task / Rules</strong><p>{ebCard().task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{ebCard().rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{ebCard().coach}</p></div>
-<div className="chips">{ebCard().layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div></>}
-<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(ebCard());}}>{addButtonText}</button>
-</div>}
-{category==='ATL / BTL'&&<div className="gameCard">
-<div className="categoryTag">ATL / BTL</div><h2>⚡ Break & Finish</h2>
-<p className="mutedText" style={{marginTop:'-4px'}}>Above the line until a player chooses to attack; the attack must convert inside a shot budget. Time Bands, but the trigger is the player’s decision.</p>
-{!compact&&<><div className="atlOptionsGrid">
-<label>Finish within<select value={bf.shots} onChange={e=>setBf(b=>({...b,shots:Number(e.target.value)}))}>{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n} shot{n>1?'s':''}</option>)}</select></label>
-<label>Bonus<select value={bf.bonusMode} onChange={e=>setBf(b=>({...b,bonusMode:e.target.value}))}><option value="decay">Decaying pot — first attack worth most</option><option value="fixed">Fixed — same every time</option></select></label>
-{bf.bonusMode==='decay'?<label>Pot opens at<select value={bf.openBonus} onChange={e=>setBf(b=>({...b,openBonus:Number(e.target.value)}))}>{[3,4,5,6,7].map(n=><option key={n} value={n}>+{n}, then −1 per failed break</option>)}</select></label>
-:<label>Bonus for finishing inside it<select value={bf.bonus} onChange={e=>setBf(b=>({...b,bonus:Number(e.target.value)}))}>{[1,2,3,4,5].map(n=><option key={n} value={n}>+{n}</option>)}</select></label>}
-<label>Winner on the breaking shot itself<select value={bf.firstStrike} onChange={e=>setBf(b=>({...b,firstStrike:Number(e.target.value)}))}>{[1,2,3].map(n=><option key={n} value={n}>+{n} — full bonus starts on shot 2</option>)}</select></label>
-<label>Window passes, no finish<select value={bf.mode} onChange={e=>setBf(b=>({...b,mode:e.target.value}))}><option value="passes">Play on — initiative passes to the opponent</option><option value="open">Play on — break open to both</option><option value="lost">Rally lost — the break commits you</option></select></label>
-</div>
-<div className="infoBox"><strong>Task / Rules</strong><p>{bfCard().task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{bfCard().rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{bfCard().coach}</p></div>
-<div className="chips">{bfCard().layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div></>}
-<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(bfCard());}}>{addButtonText}</button>
-</div>}
-{category==='ATL / BTL'&&<div className="gameCard">
-<div className="categoryTag">ATL / BTL</div><h2>ATL / BTL Full Structure Builder</h2>
-<div className="atlOptionsGrid">
-<label>BTL Count<select value={atl.btlCount} onChange={e=>setAtlOption('btlCount',e.target.value)}>{ATL_LISTS.btlCount.map(option=><option key={option}>{option}</option>)}</select></label>
-<label>ATL Count<select value={atl.atlCount} onChange={e=>setAtlOption('atlCount',e.target.value)}>{ATL_LISTS.atlCount.map(option=><option key={option}>{option}</option>)}</select></label>
-<label>Side<select value={atl.side} onChange={e=>setAtlOption('side',e.target.value)}>{ATL_LISTS.side.map(option=><option key={option}>{option}</option>)}</select></label>
-<label>Consecutive<select value={atl.consecutive} onChange={e=>setAtlOption('consecutive',e.target.value)}>{ATL_LISTS.consecutive.map(option=><option key={option}>{option}</option>)}</select></label>
-<label>CB Ref<select value={atl.cbRef} onChange={e=>setAtlOption('cbRef',e.target.value)}>{ATL_LISTS.cbRef.map(option=><option key={option}>{option}</option>)}</select></label>
-{atl.btlCount!=='0 BTL shots'&&<label>BTL Shot 1<select value={atl.shot1} onChange={e=>setAtlOption('shot1',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-{atl.btlCount!=='0 BTL shots'&&<label>Shot 1 Method<select value={atl.method1} onChange={e=>setAtlOption('method1',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
-{(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>BTL Shot 2<select value={atl.shot2} onChange={e=>setAtlOption('shot2',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-{(atl.btlCount==='2 BTL shots'||atl.btlCount==='3 BTL shots')&&<label>Shot 2 Method<select value={atl.method2} onChange={e=>setAtlOption('method2',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
-{atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
-{atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
-</div>
-<div className="infoBox"><strong>Task / Rules</strong><p>{composedAtl.task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{composedAtl.rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{composedAtl.coach}</p></div>
-<div className="chips">{composedAtl.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<div className="technicalScoringBox alwaysVisibleScoring"><strong>Universal Overlays</strong><OverlayFamilyTabs selectedOverlays={manualLayers} onToggle={toggleManualLayer} context="Session Builder ATL / BTL" /><div className="buttonRow"><button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo ATL Change</button><button className="secondaryBtn" onClick={clearAtlOverlays}>Clear Overlays</button><button className="secondaryBtn" onClick={resetAtlBuilder}>Reset ATL / BTL</button></div></div>
-<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(composedAtl);}}>{addButtonText}</button>
-</div>}
-{category==='Checkerboard'&&<CheckerboardEngine onAddToSession={addGame}/>}{category&&category!=='ATL / BTL'&&category!=='Checkerboard'&&category!=='Perception'&&category!=='Peak Week'&&<div className="gameList">
-{filtered.map((game,index)=><button className="gameRow" key={index} onClick={()=>setSelectedGame(game)}><strong>{game.title}</strong><span>{game.task}</span></button>)}
-{filtered.length===0&&<div className="placeholder">{category} games will be built next. Current working categories: ATL / BTL, Classic Conditioned, Checkerboard, Volley & Intercept, Tactical Pressure, Invasion.</div>}
-</div>}
-{selectedGame&&<div className="gameCard">
-<div className="categoryTag">{selectedGame.category}</div><h2>{selectedGame.title}</h2>
-<div className="infoBox"><strong>Task / Rules</strong><p>{selectedGame.task}</p></div>
-<div className="infoBox"><strong>Rationale</strong><p>{selectedGame.rationale}</p></div>
-<div className="infoBox"><strong>Coach Help</strong><p>{selectedGame.coach}</p></div>
-<div className="chips">{selectedGame.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-<button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();addGame(selectedGame);}}>{addButtonText}</button>
-</div>}
-
-</div>;
 }
 
 function SessionAllGamesLibrary({onAddToSession,setScreen}){
@@ -9885,7 +9722,6 @@ function ClassicConditionedBuilder({onAddToSession}){
     {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Volley Finish','Opponent Off T']},
     {title:'Double Bounce Pressure',problem:'Adapted Rules',shortRationale:'Balances mixed standards while preserving live rally information.',level:'Mixed Standard',task:'Weaker player may use allocated double bounces. Stronger player has fewer or none. Winner can lose one double bounce after each rally won if coach wants progressive balancing.',rationale:'Balances mixed ability groups without removing perception, movement or rally pressure.',coach:'Use double bounce as a player-specific constraint, not a permanent advantage.',playerFocus:'Use the extra bounce to organise better decisions, not simply to wait passively.',scoring:'Normal rally scoring · optional: winner loses one double bounce after each rally won',antiGaming:'Players should not intentionally wait for a second bounce if they could safely play the first bounce unless that is the learning purpose.',suggestedOverlays:['Double Bounce']},
     {title:'Blind Finish Progression',problem:'Blind / Hidden Conditions',shortRationale:'Creates hidden tactical intention while preserving live rally decision-making.',level:'Levels 3–5',task:'Before the rally, player secretly receives a finish condition: front wall finish, floor finish, volley finish, opposite side finish or clean winner.',rationale:'Creates tactical intention while preserving live decision-making and secrecy.',coach:'The hidden condition should shape the player’s perception, not force a bad shot.',playerFocus:'Hold the hidden intention while still responding to the live rally.',scoring:'Win rally = 1 · Achieve hidden finish = +2 · Win after hidden finish condition = +3 · Clean winner = +2',antiGaming:'If the hidden condition is impossible in the rally, player should continue normal rally rather than force it.',suggestedOverlays:['Blind Finish','Clean Winner','Volley Finish']},
-    {title:'Crosscourt Licence',problem:'Pressure Construction',shortRationale:'You may only attack off a crosscourt — so a loose crosscourt hands the attack to the opponent, and crosscourts must be functional or not played.',level:'Levels 3–5',task:'Play a normal rally. You may only attack — go short, volley-kill or take the ball in to finish — off a ball that came CROSSCOURT. A straight ball may not be attacked: answer it straight or with length and wait. A tight crosscourt dying in the back is still hard to punish, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court.',rationale:'Trains both halves of one of the most punished match patterns: the hitter learns a loose crosscourt hands over the attack, so crosscourts must be tight and functional; the attacker learns to recognise and punish the loose crosscourt rather than force an attack off a straight ball that is not on.',coach:'Watch the crosscourts, not the attacks: the player feeding attackable crosscourts is the one to coach — ask what made it loose (height, width, pace). Add a reducing tin as an optional constraint so the attack must also be precise. Debrief: which of your crosscourts got punished, and where did it land?',playerFocus:'Only attack off a crosscourt. Crosscourt only when it is tight — a loose one hands over the attack.',scoring:'Win rally = 1 · Win with an attack off an opponent crosscourt = +2 · Attacking off a straight ball does not count (rally plays on)',antiGaming:'No bonus if the attacked ball did not come crosscourt, or if the attack was off a straight ball.',suggestedOverlays:['Clean Winner']}
   ];
 
   const problems=[
@@ -17308,6 +17144,117 @@ function HangmanSquashRaceDisplay({host,courtCount}){
   </div>;
 }
 
+// ── MASTER GAME LIBRARY (v747) ──────────────────────────────────────────────
+// The ONE list of Games Library families. The home grid, each heading, the class
+// screen, the search index and the stale-class guard all read from here — there is no
+// other list to keep in step. A family that belongs under more than one heading carries
+// every heading in `groups` and is still one entry, one render: it cannot drift or go
+// missing in one place and not the other (the coach's multi-home principle, 18 Sep).
+// To add a family: one entry here. `render` gets {setSession,setScreen,addAndGo,addStay,
+// saveCard,setActiveClassId}; `route` sends the tile to its own app screen instead.
+// Order within a heading follows the order of this list.
+const GAME_LIBRARY_GROUPS=[
+  {id:'board',title:'The Board — Spatial',emoji:'🎯'},
+  {id:'pressure',title:'Pressure & Consequence',emoji:'⏱️'},
+  {id:'formats',title:'Play & Score — Formats',emoji:'🎲'},
+  {id:'perception',title:'Perception & Decision',emoji:'👁️'},
+  {id:'fault',title:'Punish the Fault',emoji:'⚠️'},
+  {id:'cla',title:'CLA Update — Book Builds',emoji:'📚'},
+  {id:'technique',title:'Technique, Phases & Movement',emoji:'🎾'},
+  {id:'tools',title:'Coach Tools',emoji:'🛠️'}
+];
+const GAME_LIBRARY=[
+  {id:'atb',label:'Around The Board',category:'Around The Board',groups:['board'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>},
+  {id:'atl',label:'ATL / BTL',category:'ATL / BTL',groups:['board'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>},
+  {id:'length',label:'Length Games',category:'Length Games',groups:['board'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><LengthGamesBuilder key="length-engine" onAddToSession={addAndGo} setScreen={setScreen}/>},
+  {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept',groups:['board'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><StandardGamesByCategory category="Volley & Intercept" onAdd={addAndGo}/>},
+  {id:'breakout',label:'Breakout Squash',category:'Breakout Squash',groups:['board'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><BreakoutSquash setSession={setSession}/>},
+  {id:'shotclock',label:'Shot Clock',category:'Shot Clock',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ShotClockBuilder key="shotclock-engine" onAddToSession={addAndGo} setScreen={setScreen}/>},
+  {id:'fusion',label:'Spatial + Temporal',category:'Spatial + Temporal',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><FusionBuilder key="fusion-engine" onAddToSession={addAndGo} setScreen={setScreen}/>},
+  {id:'tinwar',label:'Tin War',category:'Tin War',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>},
+  {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>},
+  {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TacticalPressureModule onAddToSession={addAndGo}/>},
+  {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ShotBonusRally setSession={setSession}/>},
+  {id:'tacticalfinish',label:'Tactical Finish',category:'Tactical Finish',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TacticalFinishGames setSession={setSession}/>},
+  {id:'patienceurgency',label:'Patience → Urgency',category:'Patience → Urgency',groups:['pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><PatienceUrgencyGames setSession={setSession} setScreen={setScreen}/>},
+  {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders',groups:['formats'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><SnakesLaddersGame key="snakesladders-engine" setSession={setSession} setScreen={setScreen}/>},
+  {id:'ludosquash',label:'Ludo Squash',category:'Ludo Squash',groups:['formats'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><LudoSquashGame key="ludosquash-engine" setSession={setSession} setScreen={setScreen}/>},
+  {id:'noughtscrosses',label:'Noughts & Crosses Squash',category:'Noughts & Crosses Squash',groups:['formats'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><NoughtsCrossesGame key="noughtscrosses-engine" setSession={setSession} setScreen={setScreen}/>},
+  {id:'blindtarget',label:'Poker',category:'Blind Target',groups:['formats'],route:'blindTargetScore'},
+  {id:'hangman',label:'Hangman Squash',category:'Hangman Squash',groups:['formats'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><HangmanSquashGame key="hangman-engine" setSession={setSession} setScreen={setScreen}/>},
+  {id:'information',label:'Information & Anticipation',category:'Information & Anticipation',groups:['perception'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><InformationAnticipationBuilder onAddToSession={addAndGo}/>},
+  {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions',groups:['perception'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>},
+  {id:'presscall',label:'Press Call',category:'Press Call',groups:['perception'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><PressCallModule setSession={setSession}/>},
+  {id:'timespacelab',label:'Time & Space Lab',category:'Time & Space Lab',groups:['perception'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TimeSpaceLabFamily onAdd={addAndGo}/>},
+  {id:'claupdate',label:'CLA Update — New Games',category:'CLA Update',groups:['cla'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CLAUpdateGames setSession={setSession}/>},
+  {id:'roleconstraint',label:'Role Constraint',category:'Role Constraint',groups:['cla'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><RoleConstraintEngine setSession={setSession}/>},
+  {id:'courtgeometry',label:'Court Geometry',category:'Court Geometry',groups:['cla'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CourtGeometryModule setSession={setSession}/>},
+  {id:'technical',label:'Technical',category:'Technical',groups:['technique'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>},
+  {id:'serveReturn',label:'Serve & Return',category:'Serve & Return',groups:['technique'],route:'serveReturn'},
+  {id:'classic',label:'Classic Games',category:'Classic Conditioned',groups:['technique'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>},
+  {id:'classicconstraint',label:'Classic Constraint Games',category:'Classic Constraint',groups:['technique'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ClassicConstraintBuilder key="classicconstraint-engine" onAddToSession={addAndGo}/>},
+  {id:'powerplay',label:'Power Play',category:'Power Play',groups:['technique'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>},
+  {id:'rotations',label:'Rotations',category:'Rotations',groups:['technique'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>},
+  {id:'movementlab',label:'Movement Lab',category:'Movement Lab',groups:['technique','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><MovementLabFamily onAdd={addAndGo}/>},
+  {id:'crosscourtfof',label:'Cross Court Friend or Foe',category:'Cross Court Friend or Foe',groups:['technique','perception','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo}/>},
+  {id:'errors',label:'Common Game Errors',category:'Common Game Errors',groups:['tools','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CommonGameErrors setSession={setSession}/>},
+  {id:'custom',label:'Game Builder',category:'Custom',groups:['tools'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>},
+  {id:'saved',label:'Saved Cards',category:'Saved Cards',groups:['tools']}
+];
+function gameLibraryGroups(){return GAME_LIBRARY_GROUPS.map(g=>({...g,ids:GAME_LIBRARY.filter(e=>e.groups.includes(g.id)).map(e=>e.id)}));}
+
+// Families whose games live as flat cards in standardGames() (Volley & Intercept).
+function StandardGamesByCategory({category,onAdd}){
+  const games=useMemo(()=>standardGames().filter(g=>g.category===category),[category]);
+  const[sel,setSel]=useState(null);
+  useBackIntercept(!!sel,()=>{setSel(null);return true;});
+  const g=games.find(x=>x.id===sel);
+  if(g)return <div className="gameCard">
+    <div className="categoryTag">{g.category}</div><h2>{g.title}</h2>
+    <div className="infoBox"><strong>Task / Rules</strong><p>{g.task}</p></div>
+    <div className="infoBox"><strong>Rationale</strong><p>{g.rationale}</p></div>
+    <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
+    <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd({...clone(g),id:Date.now()+Math.random()});}}>Add To Session</button><button type="button" className="secondaryBtn" onClick={()=>setSel(null)}>← All {category} games</button></div>
+  </div>;
+  return <div className="gameOptionList">
+    {games.map(x=><button type="button" key={x.id} className="gameOption" onClick={()=>setSel(x.id)}><span>{x.title}</span><small>{x.task}</small></button>)}
+    {games.length===0&&<div className="placeholder">No games in this section yet.</div>}
+  </div>;
+}
+
 function Games({setSession,setScreen,onClassChange}){
   const [activeClassId,setActiveClassId]=useState(()=>localStorage.getItem(GAME_LIBRARY_CLASS_KEY)||null);
   const [openGroup,setOpenGroup]=useState(null);
@@ -17336,56 +17283,12 @@ function Games({setSession,setScreen,onClassChange}){
     else localStorage.removeItem(GAME_LIBRARY_DRAFT_KEY);
   },[logicCard]);
 
-  const gameClasses=[
-    {id:'atl',label:'ATL / BTL',category:'ATL / BTL'},
-    {id:'length',label:'Length Games',category:'Length Games'},
-    {id:'shotclock',label:'Shot Clock',category:'Shot Clock'},
-    {id:'fusion',label:'Spatial + Temporal',category:'Spatial + Temporal'},
-    {id:'atb',label:'Around The Board',category:'Around The Board'},
-    {id:'powerplay',label:'Power Play',category:'Power Play'},
-    {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure'},
-    {id:'tacticalIntentions',label:'Pattern Lab',category:'Tactical Intentions'},
-    {id:'classic',label:'Classic Games',category:'Classic Conditioned'},
-    {id:'classicconstraint',label:'Classic Constraint Games',category:'Classic Constraint'},
-    {id:'snakesladders',label:'Snakes & Ladders',category:'Snakes & Ladders'},
-    {id:'ludosquash',label:'Ludo Squash',category:'Ludo Squash'},
-    {id:'noughtscrosses',label:'Noughts & Crosses Squash',category:'Noughts & Crosses Squash'},
-    {id:'blindtarget',label:'Poker',category:'Blind Target'},
-    {id:'serveReturn',label:'Serve & Return',category:'Serve & Return'},
-    {id:'technical',label:'Technical',category:'Technical'},
-    {id:'volley',label:'Volley & Intercept',category:'Volley & Intercept'},
-    {id:'information',label:'Information & Anticipation',category:'Information & Anticipation'},
-    {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce'},
-    {id:'tinwar',label:'Tin War',category:'Tin War'},
-    {id:'rotations',label:'Rotations',category:'Rotations'},
-    {id:'errors',label:'Common Game Errors',category:'Common Game Errors'},
-    {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally'},
-    {id:'tacticalfinish',label:'Tactical Finish',category:'Tactical Finish'},
-    {id:'breakout',label:'Breakout Squash',category:'Breakout Squash'},
-    {id:'presscall',label:'Press Call',category:'Press Call'},
-    {id:'patienceurgency',label:'Patience → Urgency',category:'Patience → Urgency'},
-    {id:'timespacelab',label:'Time & Space Lab',category:'Time & Space Lab'},
-    {id:'movementlab',label:'Movement Lab',category:'Movement Lab'},
-    {id:'crosscourtfof',label:'Cross Court Friend or Foe',category:'Cross Court Friend or Foe'},
-    {id:'hangman',label:'Hangman Squash',category:'Hangman Squash'},
-    {id:'claupdate',label:'CLA Update — New Games',category:'CLA Update'},
-    {id:'roleconstraint',label:'Role Constraint',category:'Role Constraint'},
-    {id:'courtgeometry',label:'Court Geometry',category:'Court Geometry'},
-    {id:'custom',label:'Game Builder',category:'Custom'},
-    {id:'saved',label:'Saved Cards',category:'Saved Cards'}
-  ];
+  const gameClasses=GAME_LIBRARY;
 
-  const GAME_GROUPS=[
-    {title:'The Board — Spatial',emoji:'🎯',ids:['atb','atl','length','volley','breakout']},
-    {title:'Pressure & Consequence',emoji:'⏱️',ids:['shotclock','fusion','tinwar','doubleBounce','tacticalpressure','shotbonus','tacticalfinish','patienceurgency']},
-    {title:'Play & Score — Formats',emoji:'🎲',ids:['snakesladders','ludosquash','noughtscrosses','blindtarget','hangman']},
-    {title:'Perception & Decision',emoji:'👁️',ids:['information','tacticalIntentions','presscall','timespacelab']},
-    {title:'CLA Update — Book Builds',emoji:'📚',ids:['claupdate','roleconstraint','courtgeometry']},
-    {title:'Technique, Phases & Movement',emoji:'🎾',ids:['technical','serveReturn','classic','classicconstraint','powerplay','rotations','movementlab','crosscourtfof']},
-    {title:'Coach Tools',emoji:'🛠️',ids:['errors','custom','saved']}
-  ];
+  const GAME_GROUPS=gameLibraryGroups();
 
   const activeClass=gameClasses.find(item=>item.id===activeClassId);
+  useEffect(()=>{if(activeClassId&&(!activeClass||activeClass.route))setActiveClassId(null);},[activeClassId]);
   const activeCategory=activeClass?.category||null;
   const visibleCards=activeClassId==='saved'?savedCards:savedCards.filter(card=>card.category===activeCategory);
 
@@ -17466,7 +17369,7 @@ function Games({setSession,setScreen,onClassChange}){
           </button>
           {isOpen&&<div className="gameGroupBody"><div className="gameClassGrid">
             {items.map(gc=>
-              <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.id==='blindtarget'?setScreen('blindTargetScore'):gc.id==='serveReturn'?setScreen('serveReturn'):selectClass(gc.id)}>
+              <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)}>
                 {gc.label}
               </button>
             )}
@@ -17484,44 +17387,8 @@ function Games({setSession,setScreen,onClassChange}){
 
     {editingCard&&<UniversalGameEditor key="editor" game={editingCard} onSaveCard={saveCard} onAddToSession={addAndGo} onCancel={()=>setEditingCard(null)}/>}
 
-    {activeClassId==='atl'&&<ATLBTLDirectBuilder key="atl-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
-    {activeClassId==='length'&&<LengthGamesBuilder key="length-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
-    {activeClassId==='shotclock'&&<ShotClockBuilder key="shotclock-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
-    {activeClassId==='fusion'&&<FusionBuilder key="fusion-engine" onAddToSession={addAndGo} setScreen={setScreen}/>}
-    {activeClassId==='atb'&&<AroundTheBoardBuilder key="atb-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='powerplay'&&<PowerPlayBuilder key="powerplay-engine" onAddToSession={addStay}/>}
-    {activeClassId==='tacticalpressure'&&<TacticalPressureModule onAddToSession={addAndGo}/>}
-    {activeClassId==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={setScreen} setSession={setSession}/>}
-    {activeClassId==='classic'&&<ClassicConditionedBuilder key="classic-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='classicconstraint'&&<ClassicConstraintBuilder key="classicconstraint-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='snakesladders'&&<SnakesLaddersGame key="snakesladders-engine" setSession={setSession} setScreen={setScreen}/>}
-    {activeClassId==='ludosquash'&&<LudoSquashGame key="ludosquash-engine" setSession={setSession} setScreen={setScreen}/>}
-    {activeClassId==='noughtscrosses'&&<NoughtsCrossesGame key="noughtscrosses-engine" setSession={setSession} setScreen={setScreen}/>}
-    {activeClassId==='technical'&&<TechnicalFocusBuilder key="technical-engine" onAddToSession={addAndGo}/>}
-    {activeClassId==='custom'&&<UniversalGameEditor key="custom-builder" game={emptyUniversalGame('Custom Coach Game')} onAddToSession={addAndGo} onSaveCard={saveCard} onCancel={()=>setActiveClassId(null)}/>}
-    {activeClassId==='information'&&<InformationAnticipationBuilder onAddToSession={addAndGo}/>}
-    {activeClassId==='doubleBounce'&&<div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>}
-    {activeClassId==='tinwar'&&<div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>}
-    {activeClassId==='rotations'&&<div className="gameCard"><div className="categoryTag">Rotations</div><h2>Rotational Affordance Games</h2><p className="mutedText">Rotations have moved from the Home screen into the Games Library, alongside the other game classes.</p><RotationalAffordanceGames setScreen={setScreen} setSession={setSession}/></div>}
-    {activeClassId==='errors'&&<CommonGameErrors setSession={setSession}/>}
-    {activeClassId==='shotbonus'&&<ShotBonusRally setSession={setSession}/>}
-    {activeClassId==='breakout'&&<BreakoutSquash setSession={setSession}/>}
-    {activeClassId==='presscall'&&<PressCallModule setSession={setSession}/>}
-    {activeClassId==='patienceurgency'&&<PatienceUrgencyGames setSession={setSession} setScreen={setScreen}/>}
-    {activeClassId==='timespacelab'&&<TimeSpaceLabFamily onAdd={addAndGo}/>}
-    {activeClassId==='movementlab'&&<MovementLabFamily onAdd={addAndGo}/>}
-    {activeClassId==='crosscourtfof'&&<CrossCourtFriendOrFoeFamily onAdd={addAndGo}/>}
-    {activeClassId==='claupdate'&&<CLAUpdateGames setSession={setSession}/>}
-    {activeClassId==='tacticalfinish'&&<TacticalFinishGames setSession={setSession}/>}
-    {activeClassId==='roleconstraint'&&<RoleConstraintEngine setSession={setSession}/>}
-    {activeClassId==='courtgeometry'&&<CourtGeometryModule setSession={setSession}/>}
-    {activeClassId==='hangman'&&<HangmanSquashGame key="hangman-engine" setSession={setSession} setScreen={setScreen}/>}
+    {activeClass&&activeClass.render&&<React.Fragment key={activeClass.id}>{activeClass.render({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})}</React.Fragment>}
 
-    {activeClassId&&!['powerplay','atb','saved'].includes(activeClassId)&&null}
-
-    {activeClassId&&!['checkerboard','atl','atb','powerplay','tacticalpressure','tacticalIntentions','classic','technical','custom','doubleBounce','tinwar','rotations','errors','shotbonus','breakout','presscall','patienceurgency','claupdate','roleconstraint','courtgeometry','classicconstraint','length','shotclock','fusion','snakesladders','ludosquash','noughtscrosses','serveReturn','blindtarget','volley','information','hangman','saved','timespacelab','movementlab'].includes(activeClassId)&&
-      <div className="placeholder">{activeClass?.label} games will be restored as the next functional class. Use + New Game Card to create coach cards now.</div>
-    }
 
     {message&&<div className="statusBox">{message}</div>}
 
@@ -24740,7 +24607,9 @@ function buildSearchIndex(){
   pushGames(typeof PATTERN_LAB_READY_GAMES!=='undefined'&&PATTERN_LAB_READY_GAMES,'Pattern Lab',{screen:'tacticalIntentions'});
   pushGames(typeof TP_GAMES!=='undefined'&&TP_GAMES,'Tactical Pressure',{screen:'games',classId:'tacticalpressure'});
   pushGames(typeof DISRUPTION_ROTATIONS!=='undefined'&&DISRUPTION_ROTATIONS,'Disruption Rotations',{screen:'games',classId:'rotations'});
-  try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games'});});}catch{}
+  const libCat={};try{GAME_LIBRARY.forEach(e=>{if(!e.route)libCat[e.category]=e.id;});}catch{}
+  try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games',...(libCat[g.category]?{classId:libCat[g.category]}:{})});});}catch{}
+  try{GAME_LIBRARY.forEach(e=>{const heads=GAME_LIBRARY_GROUPS.filter(gr=>e.groups.includes(gr.id)).map(gr=>gr.title);idx.push({label:e.label,sub:'Games Library · '+heads.join(' · '),kw:e.label+' '+e.category+' '+heads.join(' '),...(e.route?{screen:e.route}:{screen:'games',classId:e.id})});});}catch{}
   const pushOv=(arr,fam)=>{try{(arr||[]).forEach(o=>{if(o&&o.title)idx.push({label:o.title,sub:'Modifier Engine · '+fam,kw:o.title+' '+(o.rule||'')+' '+(o.category||''),screen:'technical'});});}catch{}};
   pushOv(typeof TECHNICAL_OVERLAYS!=='undefined'&&TECHNICAL_OVERLAYS,'Technical');
   pushOv(typeof TACTICAL_OVERLAYS!=='undefined'&&TACTICAL_OVERLAYS,'Tactical');
