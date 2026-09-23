@@ -1,3 +1,4 @@
+// v749: Stranded rebuilt on a taped line; Home tiles in graded blues (see APP_VERSION)
 // v748: Crosscourt Licence anti-gaming line restored on the family card (see APP_VERSION)
 // v747: Master Game Library — one registry for every Games Library family (see APP_VERSION)
 // v746: Match Analysis app URL wired into the Home tile (deployed 23 Sep)
@@ -267,7 +268,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v748 Crosscourt Licence Anti-gaming';
+const APP_VERSION='v749 Stranded Tape and Blue Tiles';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -6471,6 +6472,27 @@ function AnalogyLibraryScreen({setScreen}){
   </div>;
 }
 
+// Home tiles shaded as a graded run of blues, top to bottom, by position — so a tile
+// added or moved takes its place in the grade with no colour to pick. The primary five
+// grade on their own; the More Stuff tiles grade from the top again. Brand cards, the
+// Checkerboard tile (its board pattern is the brand) and the More Stuff toggle keep
+// their own looks. v749, coach request.
+const HOME_BLUE_LIGHT=[46,110,142], HOME_BLUE_DEEP=[17,46,72];
+function homeGradedTileCss(){
+  const mix=(t)=>HOME_BLUE_LIGHT.map((c,i)=>Math.round(c+(HOME_BLUE_DEEP[i]-c)*t));
+  const hex=(rgb)=>'#'+rgb.map(n=>n.toString(16).padStart(2,'0')).join('');
+  const deeper=(rgb)=>hex(rgb.map(n=>Math.round(n*0.62)));
+  const sel=(n)=>'.homeGridV99h52>button:nth-of-type('+n+'):not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard)';
+  const rule=(n,t)=>{const c=mix(t);return sel(n)+'{background:linear-gradient(135deg,'+hex(c)+','+deeper(c)+')!important}';};
+  const out=['.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard){background:linear-gradient(135deg,'+hex(HOME_BLUE_DEEP)+','+deeper(HOME_BLUE_DEEP)+')!important;border:1px solid rgba(110,170,200,.45)!important;color:#eaf4fb!important;box-shadow:0 6px 18px rgba(0,0,0,.3)!important}',
+    '.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard) h2{color:#eaf4fb!important}',
+    '.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard) .homeTileSubtitle{color:#e2edf6!important}'];
+  for(let n=3;n<=7;n++)out.push(rule(n,(n-3)/4));            // Players … Sessions
+  const MORE_FIRST=9,MORE_COUNT=26;                            // Player Plans … Suggestions
+  for(let k=0;k<MORE_COUNT;k++)out.push(rule(MORE_FIRST+k,k/(MORE_COUNT-1)));
+  return out.join('\n');
+}
+
 function Home({setScreen}){
 const [showMore,setShowMore]=useState(()=>{try{return localStorage.getItem(MORE_OPEN_KEY)==='1';}catch{return false;}});
   useEffect(()=>{try{localStorage.setItem(MORE_OPEN_KEY,showMore?'1':'0');}catch{}},[showMore]);
@@ -6488,7 +6510,8 @@ return <div className="homeGrid homeGridV99h52">
 .playerPlansHomeCard h2{color:#eaf4fb !important;}
 .moreStuffCard{border:1px dashed #3f6a93 !important;background:#0c1826 !important;}
 .moreStuffCard h2{color:#9cc4ec !important;}
-.moreSectionLabel{grid-column:1/-1;color:#7f9bb5;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;margin:14px 4px 2px}`}</style>
+.moreSectionLabel{grid-column:1/-1;color:#7f9bb5;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px;margin:14px 4px 2px}
+${homeGradedTileCss()}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
       {/* ── FOUNDATIONS — always on Home ── */}
@@ -8033,13 +8056,13 @@ function MovementLabFamily({onAdd,label='Add To Session'}){
 {id:'ml-offt',key:'offt',title:'6 · Off the T',rld:4,tag:'Relentless pressure',
  rule:(b)=>'Play normal rallies. If you win a rally in which your opponent never got back to the T (the middle) between your last two shots, you score +'+b+'. It rewards keeping them under so much pressure they never get back to the middle. Your opponent agrees they didn’t make it back — they’d rather say they did.',
  coach:'The T, the middle of the court, is the home every player wants to get back to between shots. This game rewards you for not letting them. Take the ball early and hit again before they’ve got back. If nobody scores, the rallies are too slow — put a short time limit on getting the ball back. Debrief: what kept them away from the middle — how hard you hit it, or where you put it?',
- focus:'Don’t let them home. Win while they’re still stranded off the T and it’s worth more.',
+ focus:'Don’t let them home. Win while they’re still away from the T and it’s worth more.',
  score:(b)=>'+'+b+' when you win a rally in which the opponent never recovered to the T, opponent-confirmed.',layers:['Movement Economy','Attacking Conversion'],dur:10,def:1,max:3},
-{id:'ml-stranded',key:'stranded',title:'7 · Stranded',rld:4,tag:'Front-corner mirror of Pinned',
- rule:(b)=>'Play normal rallies. Win a rally with your opponent stuck in a front corner — both feet in front of the short line — and unable to recover, +'+b+'. The front-court twin of Pinned: you’ve dragged them in and beaten them before they got out. Both feet in front of the short line and the dead ball are the ruling.',
- coach:'Pinned traps them at the back; Stranded traps them at the front. Together they teach that both ends of the court are places you can trap and beat someone. Rewards the counter-drop and the quick straight kill once they’re in deep. Debrief: was it the shot that stranded them, or the one that opened the front in the first place?',
- focus:'Drag them in, then beat them before they escape. A front-corner trap that wins is yours.',
- score:(b)=>'+'+b+' when you win with the opponent stuck in a front corner (both feet in front of the short line).',layers:['Movement Economy','Attacking Conversion'],dur:10,def:1,max:3},
+{id:'ml-stranded',key:'stranded',title:'7 · Stranded',rld:4,tag:'Front-court trap — striker scores',
+ rule:(b)=>'Before you start, tape a line across the court about halfway between the front wall and the short line. Play normal rallies. If you win the rally while your opponent has both feet in front of the taped line, +'+b+' to you — you brought them right up to the front and beat them before they got out. Both feet in front of the taped line and the dead ball are the whole ruling.',
+ coach:'Tape the line before the first rally, about halfway between the front wall and the short line — the short line itself is too far back to mean stranded. If nobody ever scores, move the tape back toward the short line; if it pays too easily, move it toward the front wall. Rewards the counter-drop and the quick straight kill once the opponent is up at the front. Debrief: was it the shot that stranded them, or the one that brought them forward in the first place?',
+ focus:'Bring them right up to the front, then beat them there. Both feet in front of the tape is your point.',
+ score:(b)=>'+'+b+' when you win the rally with the opponent’s both feet in front of the taped line (about halfway between the front wall and the short line).',layers:['Movement Economy','Attacking Conversion'],dur:10,def:1,max:3},
 {id:'ml-recovery',key:'recovery',title:'8 · Recovery Race',rld:3,tag:'Rewards your own recovery',
  rule:(b)=>'The positive drill of the family. Play normal rallies; +'+b+' each time you get back to the T before your opponent strikes the ball. Every other game here pays the opponent’s failure to recover — this one pays your success at it, directly. Your opponent confirms you made the T in time.',
  coach:'Run this when you want to train the habit itself rather than punish its absence — it’s the cleanest movement conditioner in the set and the gentlest to score. Watch the recovery path, not just the arrival: the shortest way back to the T is rarely a straight line. Debrief: which of your shots made recovery easiest, and why?',
