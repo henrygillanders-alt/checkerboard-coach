@@ -1,3 +1,12 @@
+// v758: parent pages may also name that approach to explain CLA versus traditional coaching (P26)
+// v757: P26 refined — coach education may name that approach to explain what it is and why CLA rejects it
+// v756: practice language — the banned word removed from every screen (coach: P26)
+// v755: Checkerboard page shows "Why this level" under each level picker
+// v754: retired Checkerboard Builder deleted; five-level ladder (CB_LEVEL_DEFAULTS) untouched
+// v753: Chipping games single-sourced across Level 0 and Perception, each home keeps its own purpose
+// v752: Length Before Attack no longer carries the Quality Length Before Attack layer (+2 stacking)
+// v751: King of Court Power Play games moved from Plug & Play to the Power Play module; Move Before Front Wall out of Serve & Return
+// v750: Length Before Attack single-sourced with a progressive pin line; Length That Pins shares it
 // v749: Stranded rebuilt on a taped line; Home tiles in graded blues (see APP_VERSION)
 // v748: Crosscourt Licence anti-gaming line restored on the family card (see APP_VERSION)
 // v747: Master Game Library — one registry for every Games Library family (see APP_VERSION)
@@ -268,7 +277,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v749 Stranded Tape and Blue Tiles';
+const APP_VERSION='v758 Practice Language for Parents';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -714,9 +723,9 @@ const CLASSIC_CONSTRAINT_GAMES=[
 {id:"CCG36",title:"Front & Back Game (Front Player Cross-Court Shots Only)",category:'Classic Constraint',theme:"Front & Back Roles",rld:3,rldScore:19,level:"Levels 3–5",players:'2',type:"Conditioned Game",tags:["Classic Constraint"],shortRationale:"Restricting the front player to cross-court replies invites varied widths depending on whether they are attacking or defending.",task:"The front player returns using only CROSS-COURT shots to the back.",description:"One player in each half. The back player may play any shot to land in the front court (boast to start). The front player returns using only CROSS-COURT shots to the back.",what:"One player in each half. The back player may play any shot to land in the front court (boast to start). The front player returns using only CROSS-COURT shots to the back.",rationale:"Restricting the front player to cross-court replies invites varied widths depending on whether they are attacking or defending.",why:"Restricting the front player to cross-court replies invites varied widths depending on whether they are attacking or defending.",coach:"(Front) use a variety of cross-courts depending on attack or defence. (Back) can you volley the cross to take time away? Front player trains attacking and defensive cross-courts from the front; back player reads the cross and intercepts. Rotate roles.",playerFocus:"(Front) use a variety of cross-courts depending on attack or defence.",player:"(Front) use a variety of cross-courts depending on attack or defence.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Front & Back Roles","RLD 3"],load:"Front & Back Game (Front Player Cross-Court Shots Only)",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"Both conditioned (opposing roles)",courtArea:"Whole court, split front/back",difficulty:"Advanced",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG37",title:"Front & Back Game (Back Player Boasts Only)",category:'Classic Constraint',theme:"Front & Back Roles",rld:3,rldScore:19,level:"Levels 3–5",players:'2',type:"Conditioned Game",tags:["Classic Constraint"],shortRationale:"A boast-only feed invites the back player to vary angle and height and the front player to attack or re-length off a dying ball.",task:"The back player may only play BOASTS to land in the front court.",description:"One player in each half. The back player may only play BOASTS to land in the front court. The front player returns using any shot to the back.",what:"One player in each half. The back player may only play BOASTS to land in the front court. The front player returns using any shot to the back.",rationale:"A boast-only feed invites the back player to vary angle and height and the front player to attack or re-length off a dying ball.",why:"A boast-only feed invites the back player to vary angle and height and the front player to attack or re-length off a dying ball.",coach:"(Back) think about using different angles for your boasts. (Front) how early can you reach the boast and what's your best reply? Back player trains boast angles and disguise from both corners; front player trains retrieval of the boast and quality length back. Rotate roles.",playerFocus:"(Back) think about using different angles for your boasts.",player:"(Back) think about using different angles for your boasts.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Front & Back Roles","RLD 3"],load:"Front & Back Game (Back Player Boasts Only)",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"Both conditioned (opposing roles)",courtArea:"Whole court, split front/back",difficulty:"Advanced",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG38",title:"Length Game",category:'Classic Constraint',theme:"Length & Width",rld:4,rldScore:26,level:"Levels 1–3",players:'2',type:"Conditioned Game",tags:["Classic Constraint"],shortRationale:"Rewarding only length invites players to contest the back corners and to hold the T, building the base discipline of the sport.",task:"Play a game where every ball must land behind the short line.",description:"Play a game where every ball must land behind the short line.",what:"Play a game where every ball must land behind the short line.",rationale:"Rewarding only length invites players to contest the back corners and to hold the T, building the base discipline of the sport.",why:"Rewarding only length invites players to contest the back corners and to hold the T, building the base discipline of the sport.",coach:"Reach the back corners to put your opponent under pressure. Straight or cross — which keeps you in control? Get back to the T. Both conditioned. The foundational length game — trains straight and cross-court depth, back-corner control and T recovery; suits all levels.",playerFocus:"Reach the back corners to put your opponent under pressure.",player:"Reach the back corners to put your opponent under pressure.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Length & Width","RLD 4"],load:"Length Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"Both conditioned",courtArea:"Whole court",difficulty:"Beginner",rldDims:{coupling:5,pa:4,decision:4,repr:4,effort:4,transfer:5},source:"Off The Wall Squash CIC, 2018"},
-{id:"CCG39",title:"1 Player Length Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",task:"One player may only play shots to the BACK of the court.",description:"One player may only play shots to the BACK of the court. The other player plays freely.",what:"One player may only play shots to the BACK of the court. The other player plays freely.",rationale:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",why:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",coach:"(Conditioned) accurate length and drives to the back are everything here. (Free) can you use the front to pull them out of position? Conditioned player drills accurate, repeatable length under a free opponent's pressure; the free player uses the front to open the court. Best for a developing player against a stronger one.",playerFocus:"(Conditioned) accurate length and drives to the back are everything here.",player:"(Conditioned) accurate length and drives to the back are everything here.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Length Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
-{id:"CCG40",title:"1 Player Alleys Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:18,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",task:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls).",description:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls). The other player plays freely.",what:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls). The other player plays freely.",rationale:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",why:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",coach:"(Free) tight length to the back can force them to boast. (Conditioned) how tight to the wall can you stay while under pressure? Conditioned player drills tight straight hitting on both walls; the free player uses the middle and boasts to expose the restriction. Best for a developing player against a stronger one.",playerFocus:"(Free) tight length to the back can force them to boast.",player:"(Free) tight length to the back can force them to boast.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Alleys Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:2,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
-{id:"CCG41",title:"1 Player Short Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:18,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",task:"One player may only play their shots to the FRONT half of the court, in front of the short line.",description:"One player may only play their shots to the FRONT half of the court, in front of the short line. The other player plays freely.",what:"One player may only play their shots to the FRONT half of the court, in front of the short line. The other player plays freely.",rationale:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",why:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",coach:"(Free) tight length to the back will force weak short shots. (Conditioned) which short shot wins from here — drop, kill or angle? Conditioned player drills front-court touch, angles and finishing while defending a full-court opponent; the free player lengthens to expose the missing depth. Best for a developing player against a stronger one.",playerFocus:"(Free) tight length to the back will force weak short shots.",player:"(Free) tight length to the back will force weak short shots.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Short Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:2,transfer:3},source:"Off The Wall Squash CIC, 2018"},
+{id:"CCG39",title:"1 Player Length Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",task:"One player may only play shots to the BACK of the court.",description:"One player may only play shots to the BACK of the court. The other player plays freely.",what:"One player may only play shots to the BACK of the court. The other player plays freely.",rationale:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",why:"Restricting one player to length invites relentless depth and T discipline while they solve the free player's short game.",coach:"(Conditioned) accurate length and drives to the back are everything here. (Free) can you use the front to pull them out of position? Conditioned player practises accurate, repeatable length under a free opponent's pressure; the free player uses the front to open the court. Best for a developing player against a stronger one.",playerFocus:"(Conditioned) accurate length and drives to the back are everything here.",player:"(Conditioned) accurate length and drives to the back are everything here.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Length Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
+{id:"CCG40",title:"1 Player Alleys Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:18,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",task:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls).",description:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls). The other player plays freely.",what:"One player may only play into the ALLEYS on both sides of the court (straight, tight to the side walls). The other player plays freely.",rationale:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",why:"Confining one player to the alleys invites disciplined straight length and rewards width accuracy under pressure.",coach:"(Free) tight length to the back can force them to boast. (Conditioned) how tight to the wall can you stay while under pressure? Conditioned player practises tight straight hitting on both walls; the free player uses the middle and boasts to expose the restriction. Best for a developing player against a stronger one.",playerFocus:"(Free) tight length to the back can force them to boast.",player:"(Free) tight length to the back can force them to boast.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Alleys Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:2,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
+{id:"CCG41",title:"1 Player Short Only Game",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:18,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",task:"One player may only play their shots to the FRONT half of the court, in front of the short line.",description:"One player may only play their shots to the FRONT half of the court, in front of the short line. The other player plays freely.",what:"One player may only play their shots to the FRONT half of the court, in front of the short line. The other player plays freely.",rationale:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",why:"Restricting one player to the front invites creative short play and forces them to defend length with movement, not with a length reply.",coach:"(Free) tight length to the back will force weak short shots. (Conditioned) which short shot wins from here — drop, kill or angle? Conditioned player practises front-court touch, angles and finishing while defending a full-court opponent; the free player lengthens to expose the missing depth. Best for a developing player against a stronger one.",playerFocus:"(Free) tight length to the back will force weak short shots.",player:"(Free) tight length to the back will force weak short shots.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Short Only Game",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:2,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG42",title:"1 Player Loses a Quarter Game (Front Left)",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Closing one target corner invites the conditioned player to find alternative winning lines and improves their shot discrimination under pressure.",task:"One player may not play any shot into the FRONT-LEFT quarter.",description:"One player may not play any shot into the FRONT-LEFT quarter. The other player plays freely.",what:"One player may not play any shot into the FRONT-LEFT quarter. The other player plays freely.",rationale:"Closing one target corner invites the conditioned player to find alternative winning lines and improves their shot discrimination under pressure.",why:"Closing one target corner invites the conditioned player to find alternative winning lines and improves their shot discrimination under pressure.",coach:"(Free) tight drives to the back-right corner will force a boast. (Conditioned) what are your options when the front-left is closed? Conditioned player must adapt shot selection to avoid one corner; the free player attacks toward that corner to squeeze them. Best for a developing player against a stronger one.",playerFocus:"(Free) tight drives to the back-right corner will force a boast.",player:"(Free) tight drives to the back-right corner will force a boast.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Loses a Quarter Game (Front Left)",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court (one quarter denied)",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG43",title:"1 Player Loses a Quarter Game (Front Right)",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Closing one target corner invites alternative winning lines and sharper shot discrimination.",task:"One player may not play any shot into the FRONT-RIGHT quarter.",description:"One player may not play any shot into the FRONT-RIGHT quarter. The other player plays freely.",what:"One player may not play any shot into the FRONT-RIGHT quarter. The other player plays freely.",rationale:"Closing one target corner invites alternative winning lines and sharper shot discrimination.",why:"Closing one target corner invites alternative winning lines and sharper shot discrimination.",coach:"(Free) tight drives to the back-left corner will force a boast. (Conditioned) what wins when the front-right is closed? Conditioned player must adapt to avoid one corner; the free player attacks that corner to pressure them. Best for a developing player against a stronger one.",playerFocus:"(Free) tight drives to the back-left corner will force a boast.",player:"(Free) tight drives to the back-left corner will force a boast.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Loses a Quarter Game (Front Right)",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court (one quarter denied)",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG44",title:"1 Player Loses a Quarter Game (Back Left)",category:'Classic Constraint',theme:"Court-Area / Spatial",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"1-Player Conditioned Game",tags:["Classic Constraint"],shortRationale:"Closing a back corner invites the conditioned player to construct length on the open side and to defend the targeted corner with movement.",task:"One player may not play any shot into the BACK-LEFT quarter.",description:"One player may not play any shot into the BACK-LEFT quarter. The other player plays freely.",what:"One player may not play any shot into the BACK-LEFT quarter. The other player plays freely.",rationale:"Closing a back corner invites the conditioned player to construct length on the open side and to defend the targeted corner with movement.",why:"Closing a back corner invites the conditioned player to construct length on the open side and to defend the targeted corner with movement.",coach:"(Free) drives and lobs into the closed corner will force weak returns. (Conditioned) how do you build length with one back corner gone? Conditioned player loses a deep target and must build differently; the free player drives and lobs toward that corner to force weak returns. Best for a developing player against a stronger one.",playerFocus:"(Free) drives and lobs into the closed corner will force weak returns.",player:"(Free) drives and lobs into the closed corner will force weak returns.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Court-Area / Spatial","RLD 3"],load:"1 Player Loses a Quarter Game (Back Left)",layers:[],cbCode:'None',format:'Conditioned Game',duration:8,players_desc:"One conditioned",courtArea:"Whole court (one quarter denied)",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
@@ -738,7 +747,7 @@ const CLASSIC_CONSTRAINT_GAMES=[
 function standardGames(){
 return[
 ...perceptionGames(),
-{id:'length-before-attack',title:'Length Before Attack',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Player must create length pressure before attacking short.',rationale:'Encourages patient pressure construction rather than rushed attacks.',coach:'Watch whether players attack only after the opponent is displaced, late or off balance.',layers:['Quality Length Before Attack'],cbCode:'None'},
+lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
 {id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
@@ -3177,7 +3186,7 @@ function MentalSkillsPlaceholder({setScreen}){
       </div>
       <div className="mentalPhilosophyBox" style={{marginTop:'12px'}}>
         <h2>Using it on court</h2>
-        <p>Tie it straight to ghosting: <strong>“see the ball, see the opponent, feel the shot — at real speed.”</strong> Keep reps short and vivid (a few good ones beat long dull ones), and always pair imagery with physical practice — the two together beat either alone. Afterwards, ask the player what they saw and felt; vividness and control both improve with practice. This is exactly what lifts a low-RLD movement drill like ghosting toward transfer: the movement stays coupled to imagined game information instead of becoming empty pattern.</p>
+        <p>Tie it straight to ghosting: <strong>“see the ball, see the opponent, feel the shot — at real speed.”</strong> Keep reps short and vivid (a few good ones beat long dull ones), and always pair imagery with physical practice — the two together beat either alone. Afterwards, ask the player what they saw and felt; vividness and control both improve with practice. This is exactly what lifts a low-RLD movement activity like ghosting toward transfer: the movement stays coupled to imagined game information instead of becoming empty pattern.</p>
       </div>
     </div>}
     {!activeAnimal&&section==='breathing'&&<div className="mentalContentPanel"><h2>🫁 Breathing & Regulation</h2><p className="mutedText">Breathing is a tool selected when useful. The aim is agency, not dependency on a ritual.</p><div className="mentalGrid"><div className="mentalCard"><h3>😌 Calm Breath</h3><p><strong>Use:</strong> anxiety, rushing, panic, over-arousal.</p><p><strong>Protocol:</strong> inhale 4 seconds → exhale 6–8 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 30 seconds.</p><p><strong>Animals:</strong> Elephant + Golden Retriever.</p><p><strong>Coach observes:</strong> slower tempo, reduced rushing, calmer reset.</p></div><div className="mentalCard"><h3>🎯 Centre Breath</h3><p><strong>Use:</strong> refocus, distraction, overthinking, between rallies.</p><p><strong>Protocol:</strong> inhale 3 seconds → hold 3 seconds → exhale 3 seconds → repeat 3 cycles.</p><p><strong>Total time:</strong> approximately 20–30 seconds.</p><p><strong>Animals:</strong> Eagle + Wolf.</p><p><strong>Coach observes:</strong> breath, cue, eyes up, ready posture.</p></div><div className="mentalCard"><h3>⚡ Activate Breath</h3><p><strong>Use:</strong> flat, passive or under-aroused players.</p><p><strong>Protocol:</strong> inhale 1 second → forceful exhale 1 second → repeat 2–3 times.</p><p><strong>Total time:</strong> approximately 4–6 seconds.</p><p><strong>Animals:</strong> Lion + Cheetah.</p><p><strong>Coach observes:</strong> stronger posture, faster first movement, commitment.</p></div><div className="mentalCard"><h3>🦁 Attack Breath</h3><p><strong>Use:</strong> immediately before an attacking opportunity.</p><p><strong>Protocol:</strong> recognise opportunity → 1-second inhale → 1-second forceful exhale → attack.</p><p><strong>Total time:</strong> 1–2 seconds, single repetition.</p><p><strong>Animals:</strong> Lion + Eagle.</p><p><strong>Coach observes:</strong> attack linked to information, not a blind rush.</p></div></div></div>}
@@ -3601,9 +3610,56 @@ function ShotsModule({setScreen}){
 }
 
 
+// King of Court Power Play games (3–8 players, winner stays). v751: moved out of Plug &
+// Play into their natural home, the Power Play module (coach, 23 Sep) — too involved for
+// an off-the-shelf emergency game. Text verbatim from the Plug & Play cards.
+const PP_KOC_GAMES=[
+  {
+    id:'PPA01',title:'Open Power Play',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
+    develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
+    why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
+    what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
+    score:'Win rally = +1. Successful Power Play (win the rally) = +3 (1 rally point + 2 PP bonus). Failed Power Play = 0. Each player receives 2 tokens per rotation (coach configurable).',
+    coach:'Watch when players choose to activate. Early activation under pressure is different to activation from a position of control. The timing decision is your coaching point.',
+    player:'Announce Power Play before the rally. Win it for +3. Lose it for 0. Choose your moment.',
+    load:'Open Power Play'
+  },
+  {
+    id:'PPA02',title:'Blind Power Play',tags:['Power Play','Decision Making','Anticipation'],type:'King of Court · Blind Power Play',players:'3–8',level:'Junior Elite → Professional',
+    develops:['Tactical judgement','Opportunity recognition','Risk management','Decision making under uncertainty'],
+    why:'Unlike Open Power Play, the challenge is not public pressure but selecting the perfect moment to gamble without anyone knowing. Opponents must also remain alert — they cannot see the Power Play but they can feel it in the rally outcome.',
+    what:'King of Court. Winner stays. Loser rotates. Before any rally a player secretly activates a token. Opponent does not know. Power Play applies to that rally only. Token consumed after the rally regardless of outcome.',
+    score:'Win rally = +1. Successful Blind Power Play (win the rally) = +3. Failed Blind Power Play = 0. Each player receives 3 tokens per rotation (coach configurable).',
+    coach:'Post-session debrief: when did each player activate? Was it the right moment? Blind PP reveals tactical timing judgement without the pressure of public declaration.',
+    player:'Secretly activate before a rally. Win it for +3. No-one knows when your token is active.',
+    load:'Blind Power Play'
+  },
+  {
+    id:'PPA03',title:'Pressure Power Play',tags:['Power Play','Pressure','Movement'],type:'King of Court · Pressure Power Play',players:'3–8',level:'Intermediate → Professional',
+    develops:['Competitive resilience','Confidence','Momentum management','Commitment under pressure'],
+    why:'The player publicly commits to winning three consecutive rallies across opponents. The sequence continues across rotations — making it a true test of sustained performance under pressure and against different opponents.',
+    what:'King of Court. Winner stays. Loser rotates. Player announces "Pressure Power Play". Objective: win 3 consecutive rallies. Sequence continues across opponents — e.g. beat P1, beat P2, beat Player C. Lose any rally before three consecutive wins and the sequence ends, token consumed, no bonus.',
+    score:'Each rally win = +1. Complete three consecutive wins = +6 bonus. Total available = 9 points. Each player receives 2 tokens per rotation (coach configurable).',
+    coach:'Three consecutive wins across different opponents is genuinely difficult. Watch for players who activate when they have momentum vs players who activate defensively. The public commitment is the pressure tool.',
+    player:'Announce Pressure Power Play. Win 3 rallies in a row — across any opponents. Rally 1 = +1, Rally 2 = +1, Rally 3 = +1 + 6 bonus = 9 total.',
+    load:'Pressure Power Play'
+  },
+  {
+    id:'PPA04',title:'Power Play Duel™',tags:['Power Play','Pressure','T-Zone'],type:'King of Court · Duel',players:'3–8',level:'Intermediate → Professional',
+    develops:['Attacker vs disruptor mentality','Pressure vs break resistance','Momentum management','Competitive investment'],
+    why:'Creates a genuine attacker-versus-defender battle. Normal rotation pauses. Both players remain fully invested — the PP player hunting maximum reward, the disruptor hunting a break. Both roles require different tactical thinking.',
+    what:'King of Court. Winner stays. Loser rotates. Player announces "Power Play Duel". The two players on court lock together. Normal rotation pauses. They play exactly 3 consecutive rallies. After the third rally, normal King of Court rotation resumes regardless of outcome.',
+    score:'PP Player wins all 3 rallies: +1+1+1 = 3 rally points + 3 completion bonus = 6 total. Disruptor wins 2 consecutive rallies during the duel: +2 disruptor bonus. Partial: PP player keeps rally points earned. Token consumed. Each player receives 2 tokens per rotation (coach configurable).',
+    coach:'Example 1: PP wins all 3 — PP Player 6, Disruptor 0. Example 2: PP wins R1, Disruptor wins R2+R3 — PP Player 1, Disruptor 2. Example 3: Disruptor wins R1, PP wins R2, Disruptor wins R3 — no consecutive disruption — PP Player 1, Disruptor 0.',
+    player:'Announce Power Play Duel. You and your opponent play 3 rallies. Win all 3 for +6. Opponent earns a bonus if they win 2 in a row against you.',
+    load:'Power Play Duel™'
+  }
+];
+function ppKocCard(game){return {title:game.title,category:'Power Play',task:`${game.type} · ${game.players} · ${game.level}`,rationale:game.why,coach:game.coach,playerFocus:game.player,scoring:game.score,whatToDo:game.what,antiGaming:'Keep the constraint tied to the learning purpose. Remove or reduce it if players start exploiting it.',suggestedOverlays:game.tags.filter(t=>['Pressure','Length','Volleys','T-Zone','Double Bounce','Movement'].includes(t))};}
+
 function PlugAndPlay({setScreen,setSession}){
   const [active,setActive]=useState('Classic Constraint');
-  const outcomes=['Classic Constraint','Pressure','Length','Volleys','Movement','T-Zone','Double Bounce','Power Play'];
+  const outcomes=['Classic Constraint','Pressure','Length','Volleys','Movement','T-Zone','Double Bounce'];
   const games=[
     ...CLASSIC_CONSTRAINT_GAMES,
     {
@@ -3615,46 +3671,6 @@ function PlugAndPlay({setScreen,setSession}){
       coach:'Watch the quality of the receiver length. Does the receiver use length to push the server deep and reduce ATL angles? Does the server attack from poor positions? The constraint reveals decision quality under role pressure.',
       player:'Server: play ATL every shot. You have unlimited double bounce. Receiver: play freely — anywhere on the court.',
       load:'Server ATL — Receiver Anywhere'
-    },
-    {
-      id:'PPA01',title:'Open Power Play',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
-      develops:['Opportunity recognition','Momentum awareness','Risk management','Confidence'],
-      why:'The player must decide when conditions are favourable enough to commit a valuable resource. Declaring Power Play publicly raises the stakes and develops pressure tolerance and commitment. The opponent knows — which forces both players to raise their game.',
-      what:'King of Court. Winner stays. Loser rotates. Before any rally a player may announce "Power Play". Power Play applies to that rally only. Token is consumed whether the rally is won or lost.',
-      score:'Win rally = +1. Successful Power Play (win the rally) = +3 (1 rally point + 2 PP bonus). Failed Power Play = 0. Each player receives 2 tokens per rotation (coach configurable).',
-      coach:'Watch when players choose to activate. Early activation under pressure is different to activation from a position of control. The timing decision is your coaching point.',
-      player:'Announce Power Play before the rally. Win it for +3. Lose it for 0. Choose your moment.',
-      load:'Open Power Play'
-    },
-    {
-      id:'PPA02',title:'Blind Power Play',tags:['Power Play','Decision Making','Anticipation'],type:'King of Court · Blind Power Play',players:'3–8',level:'Junior Elite → Professional',
-      develops:['Tactical judgement','Opportunity recognition','Risk management','Decision making under uncertainty'],
-      why:'Unlike Open Power Play, the challenge is not public pressure but selecting the perfect moment to gamble without anyone knowing. Opponents must also remain alert — they cannot see the Power Play but they can feel it in the rally outcome.',
-      what:'King of Court. Winner stays. Loser rotates. Before any rally a player secretly activates a token. Opponent does not know. Power Play applies to that rally only. Token consumed after the rally regardless of outcome.',
-      score:'Win rally = +1. Successful Blind Power Play (win the rally) = +3. Failed Blind Power Play = 0. Each player receives 3 tokens per rotation (coach configurable).',
-      coach:'Post-session debrief: when did each player activate? Was it the right moment? Blind PP reveals tactical timing judgement without the pressure of public declaration.',
-      player:'Secretly activate before a rally. Win it for +3. No-one knows when your token is active.',
-      load:'Blind Power Play'
-    },
-    {
-      id:'PPA03',title:'Pressure Power Play',tags:['Power Play','Pressure','Movement'],type:'King of Court · Pressure Power Play',players:'3–8',level:'Intermediate → Professional',
-      develops:['Competitive resilience','Confidence','Momentum management','Commitment under pressure'],
-      why:'The player publicly commits to winning three consecutive rallies across opponents. The sequence continues across rotations — making it a true test of sustained performance under pressure and against different opponents.',
-      what:'King of Court. Winner stays. Loser rotates. Player announces "Pressure Power Play". Objective: win 3 consecutive rallies. Sequence continues across opponents — e.g. beat P1, beat P2, beat Player C. Lose any rally before three consecutive wins and the sequence ends, token consumed, no bonus.',
-      score:'Each rally win = +1. Complete three consecutive wins = +6 bonus. Total available = 9 points. Each player receives 2 tokens per rotation (coach configurable).',
-      coach:'Three consecutive wins across different opponents is genuinely difficult. Watch for players who activate when they have momentum vs players who activate defensively. The public commitment is the pressure tool.',
-      player:'Announce Pressure Power Play. Win 3 rallies in a row — across any opponents. Rally 1 = +1, Rally 2 = +1, Rally 3 = +1 + 6 bonus = 9 total.',
-      load:'Pressure Power Play'
-    },
-    {
-      id:'PPA04',title:'Power Play Duel™',tags:['Power Play','Pressure','T-Zone'],type:'King of Court · Duel',players:'3–8',level:'Intermediate → Professional',
-      develops:['Attacker vs disruptor mentality','Pressure vs break resistance','Momentum management','Competitive investment'],
-      why:'Creates a genuine attacker-versus-defender battle. Normal rotation pauses. Both players remain fully invested — the PP player hunting maximum reward, the disruptor hunting a break. Both roles require different tactical thinking.',
-      what:'King of Court. Winner stays. Loser rotates. Player announces "Power Play Duel". The two players on court lock together. Normal rotation pauses. They play exactly 3 consecutive rallies. After the third rally, normal King of Court rotation resumes regardless of outcome.',
-      score:'PP Player wins all 3 rallies: +1+1+1 = 3 rally points + 3 completion bonus = 6 total. Disruptor wins 2 consecutive rallies during the duel: +2 disruptor bonus. Partial: PP player keeps rally points earned. Token consumed. Each player receives 2 tokens per rotation (coach configurable).',
-      coach:'Example 1: PP wins all 3 — PP Player 6, Disruptor 0. Example 2: PP wins R1, Disruptor wins R2+R3 — PP Player 1, Disruptor 2. Example 3: Disruptor wins R1, PP wins R2, Disruptor wins R3 — no consecutive disruption — PP Player 1, Disruptor 0.',
-      player:'Announce Power Play Duel. You and your opponent play 3 rallies. Win all 3 for +6. Opponent earns a bonus if they win 2 in a row against you.',
-      load:'Power Play Duel™'
     },
     {
       id:'PP001',title:'Build Pressure Before Attack',tags:['Pressure','Length','Decision Making'],type:'Plug & Play Pressure',players:'2–4',level:'Intermediate → Professional',
@@ -3683,7 +3699,7 @@ function PlugAndPlay({setScreen,setSession}){
     {
       id:'PP101',title:'Length Before Attack',tags:['Length','Pressure','Decision Making'],type:'Length Overlay',players:'2–4',level:'Junior Beginner → Professional',
       develops:['Rally construction','Depth control','Attack selection'],
-      why:'Creates a simple structure for players who attack too early. It makes length a tactical requirement rather than a technical drill.',
+      why:'Creates a simple structure for players who attack too early. It makes length a tactical requirement rather than isolated technical practice.',
       what:'Player must hit three quality length shots before any short attack can score a bonus.',
       score:'Win rally = 1. Bonus +1 if player completes the length requirement then wins with an attack.',
       coach:'Use length to create the attack.',player:'Length first, attack second.',load:'Length Before Attack'
@@ -3862,34 +3878,7 @@ function PlugAndPlay({setScreen,setSession}){
 
     <div className="universalFamilyTabs plugPlayTabs">{outcomes.map(o=><button key={o} className={active===o?'activeFamilyTab':''}  onClick={()=>setActive(o)}>{o}</button>)}</div>
 
-    {active==='Power Play'
-      ?<div className="ppPlugPlaySection">
-        <div className="ppPlugPlayIntro">
-          <span className="ppEngineTag" style={{marginBottom:'10px',display:'inline-block'}}>⚡ Power Play</span>
-          <h2>Power Play Games</h2>
-          <p className="mutedText">Tactical decision-making games built around the question: <em>"When should I commit?"</em> All games use King of Court format. Select a game to add to session.</p>
-        </div>
-        <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard ppPlugCard" key={game.id}>
-          <div className="plugPlayCardTop">
-            <span className="categoryTag">{game.id} · {game.type}</span>
-            <span className="plugLevel">{game.level}</span>
-          </div>
-          <h2>{game.title}</h2>
-          <div className="ppPlugCardBody">
-            <div className="ppPlugSection"><strong>Why Use It</strong><p>{game.why}</p></div>
-            <div className="ppPlugSection"><strong>What To Do</strong><p>{game.what}</p></div>
-            <div className="ppPlugSection ppPlugScoring"><strong>Scoring</strong><p>{game.score}</p></div>
-            <div className="ppPlugSection ppPlugCoach"><strong>Coach Note</strong><p>{game.coach}</p></div>
-            <div className="ppPlugSection ppPlugPlayer"><strong>Player Instruction</strong><p>{game.player}</p></div>
-          </div>
-          <button className="primaryBtn ppPlugAddBtn" onClick={()=>loadGame(game)}>Add to Session</button>
-        </div>)}</div>
-        <div className="ppPlugPlayBuilderLink">
-          <p className="mutedText">Want to customise a Power Play game?</p>
-          <button className="secondaryBtn" onClick={()=>setScreen('gamesLibrary')}>Open Power Play Builder in Games Library</button>
-        </div>
-      </div>
-      :<>
+    <>
         <div className="plugPlayOutcomeBar"><strong>{active}</strong><span>{filtered.length} ready-to-run games</span></div>
         <div className="plugPlayGrid">{filtered.map(game=><div className="gameCard plugPlayCard" key={game.id}>
           <div className="plugPlayCardTop"><span className="categoryTag">{game.id} · {game.type}</span><span className="plugLevel">{game.level}</span></div>
@@ -3906,7 +3895,6 @@ function PlugAndPlay({setScreen,setSession}){
       <button className="primaryBtn" onClick={()=>loadGame(game)}>Load Game</button>
     </div>)}</div>
       </>
-    }
   </div>;
 }
 
@@ -4879,7 +4867,7 @@ function perceptionGames(){
     {id:'per-er1',code:'ER1',module:'Early Read',phase:'Synchronisation',title:'Contact Sync',category:'Perception',duration:6,format:'Cooperative Rally',rld:2,gate:'Opponent contact',task:'Players rally. P1 lands from the split as the opponent strikes the ball. The split must be non-directional: no pre-lean left or right.',scoring:'Count clean grounded splits at opponent contact. Late, airborne, flat-footed or pre-lean = no score.',rationale:'Synchronises visual pickup with body organisation. The player learns to be grounded and loaded at the instant information becomes available.',coach:'Watch the opponent contact sound. Feet should be grounded, balanced and ready to push immediately after contact.',playerFocus:'Land loaded as they strike.',layers:['Quiet Eye','Opponent Information'],cbCode:'None'},
     {id:'per-er2',code:'ER2',module:'Early Read',phase:'Synchronisation',title:'ATL Contact Sync',category:'Perception',duration:6,format:'ATL',rld:2,gate:'Opponent contact',task:'Play ATL with all shots above the high-tin line. P1 lands from the split as opponent strikes.',scoring:'Clean split at contact = 1. Late or pre-lean = 0.',rationale:'The high-tin line slows the information problem down without removing the opponent. This gives the player time to organise perception and movement.',coach:'Keep the rally alive and the task simple. Do not coach technique; coach timing and organisation.',playerFocus:'High line gives time: organise at contact.',layers:['Quiet Eye','Early Cue Search'],cbCode:'None'},
     {id:'per-er3',code:'ER3',module:'Early Read',phase:'Synchronisation',title:'Two Choice Sync',category:'Perception',duration:7,format:'Back Corner Feed',rld:3,gate:'Opponent contact',task:'P2 plays from a back corner with a real straight or crosscourt choice. P1 starts around the T and lands from split as P2 strikes. No directional commitment before contact.',scoring:'Clean non-directional split = 1. Pre-lean, late split or guessed lean = 0.',rationale:'Adds genuine unresolved choice while keeping the focus on organisation rather than prediction.',coach:'The split must prepare both options. If the split already points one way, commitment has happened too early.',playerFocus:'Ready for both, not leaning to one.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
-    {id:'per-er4',code:'ER4',module:'Early Read',phase:'Synchronisation',title:'Back Wall Boast Sync',category:'Perception',duration:7,format:'Recovery Read',rld:3,gate:'P2 contact',task:'P1 plays a back wall boast, creating a loose short ball. P2 may play straight or cross. P1 recovers and lands from the split as P2 strikes.',scoring:'Clean grounded split at P2 contact = 1. Late, flat or pre-lean = 0.',rationale:'A foundation recovery-read game: poor length creates urgency, forcing the player to recover, organise and read to stay in the rally.',coach:'This is not a trick shot drill. It represents the common problem of leaving a loose ball and needing anticipation to survive.',playerFocus:'Recover first, land loaded on their hit.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
+    {id:'per-er4',code:'ER4',module:'Early Read',phase:'Synchronisation',title:'Back Wall Boast Sync',category:'Perception',duration:7,format:'Recovery Read',rld:3,gate:'P2 contact',task:'P1 plays a back wall boast, creating a loose short ball. P2 may play straight or cross. P1 recovers and lands from the split as P2 strikes.',scoring:'Clean grounded split at P2 contact = 1. Late, flat or pre-lean = 0.',rationale:'A foundation recovery-read game: poor length creates urgency, forcing the player to recover, organise and read to stay in the rally.',coach:'This is not trick-shot practice. It represents the common problem of leaving a loose ball and needing anticipation to survive.',playerFocus:'Recover first, land loaded on their hit.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
     {id:'per-er5',code:'ER5',module:'Early Read',phase:'Early Commitment',title:'Beat Bounce',category:'Perception',duration:7,format:'Rear Court Read',rld:3,gate:'Before bounce',task:'P2 plays from a back corner with a real straight or cross choice. P1 lands from split at contact and initiates directional movement before the ball bounces.',scoring:'Early and correct = 1. Wrong-foot = -1 or no score. No-commit before bounce = 0.',rationale:'The player begins directional movement before certainty. Earliness only counts when it is correct.',coach:'Separate split from commitment: first organise, then move directionally before bounce.',playerFocus:'Split, read, commit before bounce.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
     {id:'per-er6',code:'ER6',module:'Early Read',phase:'Early Commitment',title:'Beat Bounce ATL',category:'Perception',duration:7,format:'ATL',rld:3,gate:'Before bounce',task:'ATL rally above the high-tin line. P1 must make directional movement before bounce while maintaining rally control.',scoring:'Correct directional movement before bounce = 1. Wrong-foot/no-commit = 0.',rationale:'Combines early commitment with a slower, more forgiving rally shape.',coach:'Use this when players need more time to learn the read without losing the live task.',playerFocus:'Move before bounce without guessing.',layers:['Early Cue Search','Quality Length Before Attack'],cbCode:'None'},
     {id:'per-er7',code:'ER7',module:'Early Read',phase:'Early Commitment',title:'Back Wall Boast Read',category:'Perception',duration:8,format:'Recovery Read',rld:3,gate:'Before bounce',task:'P1 plays a back wall boast. P2 plays straight or cross. P1 recovers, lands from the split at P2 contact and commits direction before bounce.',scoring:'Early correct read = 1. Wrong-foot = 0 or -1. No-commit = 0. Optional bonus for staying in rally after the read.',rationale:'The clearest early-stage anticipation problem: a loose short ball creates urgency and the player must recover, organise and commit.',coach:'Do not remove the pressure. The value is the urgency created by the loose ball.',playerFocus:'Recover, read, commit early.',layers:['Opponent Information','Early Cue Search'],cbCode:'None'},
@@ -4896,6 +4884,39 @@ function perceptionGames(){
   ];
 }
 
+// ── CHIPPING GAMES (v753) — one game, two homes ─────────────────────────────────
+// Coach, 23 Sep: chipping with different balls solves a movement-coordination problem
+// (Level 0 Foundations) AND is a tau / time-to-contact perception exercise (PERCEPTION™
+// Tracking). Both homes are deliberate. The GAME — what players do, the balls, goal,
+// variations, how to simplify and progress — is written once here and read by both.
+// The PURPOSE stays with each home: Level 0 keeps its own purpose and cue, Perception
+// its own rationale, coach help and player focus. Level 0's other chipping games
+// (Continuous, Volley Chip and Move, etc.) stay Level 0 only: by the time a player is
+// doing those, tau should be largely established.
+const CHIPPING_GAMES={
+  stationary:{title:'Stationary Chipping',
+    task:'Chip the ball to the wall again and again from close range, without moving between contacts. Start with any wall route that gives a controllable rebound; once the run holds, chip into a wall target on the front or side wall.',
+    setup:'Any ball — start with a large or foam ball if needed.',
+    goal:'Longest run of clean consecutive contacts — a personal best. No technical rating.',
+    variations:'Forehand · Backhand · Front wall · Side wall',
+    simplify:'Larger ball, closer to the wall.',
+    progress:'Add the wall target, then set consecutive targets: 5, then 10, then 20.'},
+  chipMove:{title:'Chip and Move',
+    task:'Chip, move to where the rebound is going, then chip again. The ball’s path sets the next movement problem: chip first, then move — never move and then chip.',
+    setup:'Move between every contact.',
+    goal:'Longest run of chip-and-moves with a controlled contact each time.',
+    simplify:'Softer chips so the rebound comes slowly. Large ball.',
+    progress:'Set a target number of consecutive chip-and-moves.'},
+  ballSize:{title:'Variable Ball Size',
+    task:'Chip or strike with different ball sizes in the same session, mixed at random, so no single timing works for every ball. Each ball bounces, travels and arrives differently — recalibrate on every one.',
+    setup:'Mix foam, red dot and orange dot balls at random.',
+    goal:'Controlled contacts by ball type — note which ball the errors come with.',
+    simplify:'Stay with one ball (start with foam) until contact is reliable, then mix.',
+    progress:'Bring the yellow ball in briefly.'}
+};
+function chippingLevel0(key,own){const g=CHIPPING_GAMES[key];return {title:g.title,task:g.task,constraint:g.setup,goal:g.goal,variations:g.variations,simplify:g.simplify,progress:g.progress,...own};}
+function chippingPerception(key,own){const g=CHIPPING_GAMES[key];return {title:g.title,category:'Perception',task:g.task+' '+g.setup,scoring:g.goal,variations:g.variations,simplify:g.simplify,progress:g.progress,...own};}
+
 function perceptionPlaceholderCards(section){
   const all={
     'exit-framework':[
@@ -4911,7 +4932,7 @@ function perceptionPlaceholderCards(section){
       {id:'per-ex-tgt3',code:'EX-T3',module:'Exit Framework',phase:'Target Exit',title:'Opposite Wall Bonus',category:'Perception',duration:8,format:'Checkerboard Wall Target Rally',rld:4,gate:'Opponent wall target',task:'Player may not repeat the opponent wall target. Bonus is awarded for moving to the opposite wall-side target when tactically available.',scoring:'Win rally = 1. Opposite wall-side target = +1. Repeat locked target = loss or -1.',rationale:'Encourages width and height change from target information.',coach:'Bonus only when the shot is playable. Do not reward reckless opposite targets.',playerFocus:'See their target, change the picture.',layers:['Wall Target','Width Change'],cbCode:'None'},
       {id:'per-ex-tgt4',code:'EX-T4',module:'Exit Framework',phase:'Target Exit',title:'Floor Escape Added',category:'Perception',duration:8,format:'Checkerboard Mixed Rally',rld:5,gate:'Opponent wall target and floor outcome',task:'Target Exit applies, but the player can use floor zones 1–4 as escape solutions. This links wall target recognition to where the next ball can be played.',scoring:'Win rally = 1. Clean wall-to-floor exit = +1. Locked target repeat = loss or -1.',rationale:'Connects target information to real spatial action instead of treating wall zones as isolated labels.',coach:'Ask occasionally: “what did their wall target open?”',playerFocus:'Wall target tells you the next space.',layers:['Wall Target','Floor Zones'],cbCode:'None'},
       {id:'per-ex-tgt5',code:'EX-T5',module:'Exit Framework',phase:'Target Exit',title:'Early Target Call',category:'Perception',duration:7,format:'Controlled Checkerboard Rally',rld:4,gate:'Before rebound / early ball flight',task:'Player calls the opponent wall target early: 5, 6, 7 or 8. The call is then faded as target recognition stabilises.',scoring:'Correct early call = +1. Incorrect or late call = 0. Rally score still applies.',rationale:'Uses explicit cueing to shape visual search toward the front-wall target and early flight.',coach:'Start frequent, then random, then remove the call.',playerFocus:'Call the wall target early.',layers:['Early Call','Wall Target'],cbCode:'None'},
-      {id:'per-ex-tgt6',code:'EX-T6',module:'Exit Framework',phase:'Target Exit',title:'Target Recall Call',category:'Perception',duration:7,format:'Live Rally',rld:4,gate:'After rally',task:'After selected rallies, coach asks: “What wall zone did they use?” and “What did it open?” Rally flow is never interrupted.',scoring:'Correct recall = +1 optional. Normal rally score continues.',rationale:'Checks whether target information is being perceived without turning the rally into a stop-start drill.',coach:'Ask randomly and briefly. Fade the question once behaviour is stable.',playerFocus:'Know their target after the rally.',layers:['Recall','Wall Target'],cbCode:'None'},
+      {id:'per-ex-tgt6',code:'EX-T6',module:'Exit Framework',phase:'Target Exit',title:'Target Recall Call',category:'Perception',duration:7,format:'Live Rally',rld:4,gate:'After rally',task:'After selected rallies, coach asks: “What wall zone did they use?” and “What did it open?” Rally flow is never interrupted.',scoring:'Correct recall = +1 optional. Normal rally score continues.',rationale:'Checks whether target information is being perceived without turning the rally into a stop-start routine.',coach:'Ask randomly and briefly. Fade the question once behaviour is stable.',playerFocus:'Know their target after the rally.',layers:['Recall','Wall Target'],cbCode:'None'},
       {id:'per-ex-pair1',code:'EX-P1',module:'Exit Framework',phase:'Pair Exit',title:'Exit the Pair',category:'Perception',duration:8,format:'Checkerboard Pair Rally',rld:5,gate:'Opponent active Checkerboard pair',task:'Player may not return into the active Checkerboard pair the opponent has just created. Example: opponent creates 7–2; zones 7 and 2 are locked. Player may play to 4 or create another valid pair that excludes 7 and 2.',scoring:'Win rally = 1. Playing into active pair = loss or -1. Clean exit pair = +2 optional.',rationale:'Moves from single-source recognition to relational pattern recognition. The player now reads the structure the opponent created.',coach:'Keep the pair visible on the coach screen. Ask “what pair did they create?” only when needed, then fade.',playerFocus:'See the pair. Exit the pair.',layers:['Checkerboard Pair','Pattern Recognition'],cbCode:'[7-2]'},
       {id:'per-ex-pair2',code:'EX-P2',module:'Exit Framework',phase:'Pair Exit',title:'Continue the Chain',category:'Perception',duration:8,format:'Checkerboard Pair Rally',rld:5,gate:'Opponent pair / previous chain',task:'Player exits the active pair but must build a connected next pattern rather than a random escape. Example: after 4 → 7–2, player may return to 4 or start a new valid pair excluding 7–2.',scoring:'Win rally = 1. Valid chain continuation = +1. Active pair repeat = loss or -1.',rationale:'Develops sequencing and tactical memory while preserving the exit rule.',coach:'This is advanced. Use only after Exit the Pair is understood.',playerFocus:'Exit, but keep the pattern alive.',layers:['Checkerboard Pair','Sequencing'],cbCode:'[7-2]'},
       {id:'per-ex-pair3',code:'EX-P3',module:'Exit Framework',phase:'Pair Exit',title:'Triple Lock',category:'Perception',duration:8,format:'Checkerboard Triple Rally',rld:5,gate:'Opponent active triple',task:'When opponent creates a triple, all three zones are locked for the next shot. Player must solve outside the triple.',scoring:'Win rally = 1. Valid triple exit = +2. Playing into locked triple = loss or -1.',rationale:'High challenge-point version: the player must recognise and hold a larger pattern under rally pressure.',coach:'Use with performance players only or slow the rally with ATL/high-tin constraints.',playerFocus:'Three zones are closed. Find the exit.',layers:['Checkerboard Triple','Pattern Recognition'],cbCode:'Triple'},
@@ -4920,7 +4941,7 @@ function perceptionPlaceholderCards(section){
     ],
     'quiet-eye':[
       {id:'per-qe1',code:'QE1',module:'Quiet Eye',phase:'Contact Point',title:'Contact Point Quiet Eye',category:'Perception',duration:6,format:'Cooperative Rally',rld:2,gate:'Contact',task:'P1 and P2 rally cooperatively. P1 keeps head quiet and holds gaze around the contact area through impact before tracking the ball away.',scoring:'1 point for quiet head + stable gaze through contact. Rushed head pull or early look-up = 0.',rationale:'Builds visual attention around the moment of contact without overloading decision-making.',coach:'Do not ask for perfect technique. Ask whether gaze and head stay quiet through the strike.',playerFocus:'See contact, then release.',layers:['Quiet Eye','Head Stability']},
-      {id:'per-qe2',code:'QE2',module:'Quiet Eye',phase:'Opponent Contact',title:'Opponent Contact Quiet Eye',category:'Perception',duration:7,format:'Live Rally',rld:3,gate:'Opponent contact',task:'P1 watches P2 preparation and contact, then lands from the split as P2 strikes. The task is to stabilise attention on the opponent-ball interaction.',scoring:'Clean watch + grounded split at P2 contact = 1. Looking away early or late split = 0.',rationale:'Links quiet eye to opponent information pickup rather than treating gaze as an isolated visual drill.',coach:'Use short reminders only: “watch the hit” or “quiet head at their contact”.',playerFocus:'Watch their hit, land loaded.',layers:['Quiet Eye','Opponent Information']},
+      {id:'per-qe2',code:'QE2',module:'Quiet Eye',phase:'Opponent Contact',title:'Opponent Contact Quiet Eye',category:'Perception',duration:7,format:'Live Rally',rld:3,gate:'Opponent contact',task:'P1 watches P2 preparation and contact, then lands from the split as P2 strikes. The task is to stabilise attention on the opponent-ball interaction.',scoring:'Clean watch + grounded split at P2 contact = 1. Looking away early or late split = 0.',rationale:'Links quiet eye to opponent information pickup rather than treating gaze as an isolated visual task.',coach:'Use short reminders only: “watch the hit” or “quiet head at their contact”.',playerFocus:'Watch their hit, land loaded.',layers:['Quiet Eye','Opponent Information']},
       {id:'per-qe3',code:'QE3',module:'Quiet Eye',phase:'Front Wall',title:'Front Wall Quiet Eye',category:'Perception',duration:6,format:'ATL / Length Rally',rld:2,gate:'Front wall contact',task:'P1 tracks the ball to front wall contact, then picks up the rebound early without head flicking or guessing.',scoring:'Stable tracking to wall + clean rebound pickup = 1. Losing ball or head flick = 0.',rationale:'Develops the front-wall information pickup needed for length, boasts, counter-drops and early movement.',coach:'Use when players miss the rebound line or move after the ball has already passed them.',playerFocus:'Track to wall, pick up rebound.',layers:['Tracking','Quiet Eye']},
       {id:'per-qe4',code:'QE4',module:'Quiet Eye',phase:'Head Stability',title:'Quiet Head Rally',category:'Perception',duration:7,format:'Cooperative / Conditioned',rld:3,gate:'Every strike',task:'P1 and P2 rally with one focus: head stays quiet through contact and recovery. Pace is reduced if the head becomes unstable.',scoring:'Longest rally with quiet head. Reset count when head pulls away early or body spins out.',rationale:'Head stability supports perception, spacing and timing. The constraint makes visual control observable.',coach:'Keep instruction external: “keep the picture steady” rather than body-part correction unless necessary.',playerFocus:'Keep the picture steady.',layers:['Head Stability','Quiet Eye']},
       {id:'per-qe5',code:'QE5',module:'Quiet Eye',phase:'Pressure',title:'Quiet Eye Under Pressure',category:'Perception',duration:8,format:'Pressure Rally',rld:4,gate:'Contact under pressure',task:'P1 plays under time or physical pressure. Bonus is awarded only when P1 maintains quiet head and contact gaze before playing the next shot.',scoring:'Normal rally score plus quiet-eye bonus. Coach tracks breakdowns under fatigue or rush.',rationale:'Quiet eye only transfers if it survives pressure, pace and fatigue.',coach:'Look for the moment attention collapses: contact, recovery, or opponent contact.',playerFocus:'Under pressure, keep the picture steady.',layers:['Pressure','Quiet Eye']},
@@ -4928,12 +4949,12 @@ function perceptionPlaceholderCards(section){
       {id:'per-qe7',code:'QE7',module:'Quiet Eye',phase:'Advance Cues',title:'Call the Shot',category:'Perception',duration:8,format:'Live Rally / Feed + Rally',rld:3,gate:'Before ball crosses front wall',task:'1) Player 1 settles their eyes on Player 2\u2019s shoulder area before the strike and holds until after contact. 2) Player 1 calls "short/long" and "straight/cross" BEFORE the ball reaches the front wall. 3) Work in blocks of 10 calls. Progression: Player 2 disguises their usual tells.',scoring:'Count correct calls per block of 10. Rising accuracy across blocks is the win.',rationale:'Settling the eyes early and calling before the front wall trains advance-cue reading \u2014 without ever prescribing where to look.',coach:'Never answer "what should I look at?" \u2014 ask "what did you see?" One block of 10, brief pause, next block. Add the disguise progression once accuracy is consistently above chance.',playerFocus:'Settle the eyes early \u2014 call it before the front wall.',layers:['Quiet Eye','Opponent Information','Advance Cues']}
     ],
     tracking:[
-      {id:'per-tr1',code:'TR1',module:'Tracking',phase:'Chipping',title:'Stationary Chipping',category:'Perception',duration:6,format:'Solo / Pairs',rld:0,gate:'Ball bounce',task:'P1 chips the ball repeatedly from short distance to a wall, using any wall route that creates a controllable rebound. Start with large ball if needed.',scoring:'Longest sequence of clean contacts. No technical rating.',rationale:'Builds basic ball tracking, rebound reading and time-to-contact without pressure.',coach:'This is not a technique drill. It is a perception-control task: see the rebound and organise contact.',playerFocus:'See the rebound early.',layers:['Tracking','Level 0']},
-      {id:'per-tr2',code:'TR2',module:'Tracking',phase:'Chipping',title:'Chip and Move',category:'Perception',duration:7,format:'Solo / Pairs',rld:1,gate:'Rebound line',task:'P1 chips, moves to the new ball line, then chips again. The movement follows the ball: chip first, then move.',scoring:'Sequence count with controlled move to next contact.',rationale:'Connects visual tracking to foot adjustment and spacing.',coach:'Avoid “move then chip”. The learning is tracking the rebound and adjusting after each contact.',playerFocus:'Chip, see, move.',layers:['Tracking','Spacing']},
+      chippingPerception('stationary',{id:'per-tr1',code:'TR1',module:'Tracking',phase:'Chipping',duration:6,format:'Solo / Pairs',rld:0,gate:'Ball bounce',rationale:'Builds basic ball tracking, rebound reading and time-to-contact without pressure.',coach:'This is not technique practice. It is a perception-control task: see the rebound and organise contact.',playerFocus:'See the rebound early.',layers:['Tracking','Level 0']}),
+      chippingPerception('chipMove',{id:'per-tr2',code:'TR2',module:'Tracking',phase:'Chipping',duration:7,format:'Solo / Pairs',rld:1,gate:'Rebound line',rationale:'Connects visual tracking to foot adjustment and spacing.',coach:'Avoid “move then chip”. The learning is tracking the rebound and adjusting after each contact.',playerFocus:'Chip, see, move.',layers:['Tracking','Spacing']}),
       {id:'per-tr3',code:'TR3',module:'Tracking',phase:'Feed Progression',title:'Self Feed Tracking',category:'Perception',duration:6,format:'Self Feed',rld:1,gate:'Self feed bounce',task:'P1 self-feeds, lets the ball bounce, tracks flight and plays a controlled shot to a simple target space.',scoring:'Clean contacts into target space out of 10.',rationale:'Introduces ball flight and bounce tracking with the lowest anxiety and most control.',coach:'Use for players who need ownership and confidence before coach-fed tasks.',playerFocus:'Track your own feed to contact.',layers:['Tracking','Control']},
       {id:'per-tr4',code:'TR4',module:'Tracking',phase:'Feed Progression',title:'Hand Feed Tracking',category:'Perception',duration:7,format:'Coach / Pairs Hand Feed',rld:1,gate:'Feed release',task:'P2 hand-feeds in front of P1. P1 tracks the feed, organises spacing and plays after the bounce.',scoring:'Clean read and contact out of 10. Progress by varying height, pace and distance.',rationale:'Bridges self-feed to external information while keeping the problem gentle.',coach:'Be patient. Difficulty may be perceptual-developmental, not lack of effort.',playerFocus:'Track from release to bounce.',layers:['Tracking','Time-to-Contact']},
       {id:'per-tr5',code:'TR5',module:'Tracking',phase:'Feed Progression',title:'Racquet Feed Tracking',category:'Perception',duration:7,format:'Racquet Feed',rld:2,gate:'P2 contact',task:'P2 racquet-feeds. P1 watches P2 contact, tracks flight and plays after bounce. Progress from predictable to variable feeds.',scoring:'Clean tracking and contact out of 10.',rationale:'Adds realistic ball speed, sound and flight while still controlling complexity.',coach:'Let P1 succeed before reducing time or increasing variation.',playerFocus:'Watch contact, track flight.',layers:['Tracking','Opponent Contact']},
-      {id:'per-tr6',code:'TR6',module:'Tracking',phase:'Ball Variability',title:'Variable Ball Size',category:'Perception',duration:8,format:'Variable Equipment',rld:2,gate:'Ball flight',task:'Repeat tracking games using large ball, standard ball and mixed ball sizes. P1 must recalibrate bounce, speed and contact time.',scoring:'Controlled contacts by ball type. Track where errors appear.',rationale:'Variable ball size develops adaptable time-to-contact perception rather than a fixed response.',coach:'Mix ball size only after the player has basic success with one ball.',playerFocus:'Every ball gives a different picture.',layers:['Tracking','Variability']},
+      chippingPerception('ballSize',{id:'per-tr6',code:'TR6',module:'Tracking',phase:'Ball Variability',duration:8,format:'Variable Equipment',rld:2,gate:'Ball flight',rationale:'Variable ball size develops adaptable time-to-contact perception rather than a fixed response.',coach:'Mix ball size only after the player has basic success with one ball.',playerFocus:'Every ball gives a different picture.',layers:['Tracking','Variability']}),
       {id:'per-tr7',code:'TR7',module:'Tracking',phase:'Time-to-Contact',title:'Tau Catch-Strike',category:'Perception',duration:7,format:'Coach / Pairs',rld:2,gate:'Closing ball',task:'P2 feeds balls with varied pace and height. P1 must time the strike so contact occurs in a comfortable window, not too early or too late.',scoring:'Comfortable contact window out of 10. Optional: call early/late after contact.',rationale:'Develops time-to-contact calibration: judging when the ball will arrive, not just where it is.',coach:'Do not over-explain tau. Use “arrive with the ball, not after it”.',playerFocus:'Arrive with the ball.',layers:['Time-to-Contact','Tracking']},
       {id:'per-tr8',code:'TR8',module:'Tracking',phase:'Transfer',title:'Moving Interception Tracking',category:'Perception',duration:8,format:'Live Feed',rld:3,gate:'Rebound / flight',task:'P1 starts on or near the T. P2 feeds varied lines. P1 tracks early and moves to intercept without guessing.',scoring:'Early balanced contact = 1. Late lunge/no contact = 0.',rationale:'Transfers tracking into movement and interception.',coach:'The aim is not speed. The aim is seeing the line early enough to arrive balanced.',playerFocus:'See early, arrive balanced.',layers:['Tracking','Interception']}
     ],
@@ -5183,7 +5204,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <CoachRationale label="Why these games — coach rationale">
           <p>{currentSection.rationale||currentSection.subtitle}</p>
           {currentSection.focus&&<p><strong>Progression:</strong> {currentSection.focus}</p>}
-          <p className="mutedText">These are perception-action games, not technique drills: the skill being trained is earlier, better information pickup and the movement organisation that follows from it. Each game below carries its own rationale and scoring.</p>
+          <p className="mutedText">These are perception-action games, not technique practice: the skill being trained is earlier, better information pickup and the movement organisation that follows from it. Each game below carries its own rationale and scoring.</p>
         </CoachRationale>
         <div className="perceptionPhaseButtons">{phases.map(ph=><button key={ph} className={phase===ph?'activePerceptionPhase':''} onClick={()=>{setPhase(ph);setSelected(null);}}>{ph}</button>)}</div>
         {section!=='early-read'&&<div className="perceptionBuildNote"><strong>Complete section</strong><p>This section now sits inside PERCEPTION™ so Quiet Eye, Tracking, Interception and Deception share the same perception-action framework.</p></div>}
@@ -5200,6 +5221,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <div className="infoBox"><strong>KEY FOCUS</strong><p>{activeCustom.playerFocus||active.playerFocus||'See earlier, organise better.'}</p></div>
         <div className="infoBox"><strong>RATIONALE</strong><p>{activeCustom.rationale||active.rationale}</p></div>
         <div className="infoBox"><strong>COACH HELP</strong><p>{activeCustom.coach||active.coach}</p></div>
+        {(active.variations||active.simplify||active.progress)&&<div className="infoBox"><strong>HOW TO ADAPT</strong><p>{[active.variations&&('Variations: '+active.variations),active.simplify&&('Simplify: '+active.simplify),active.progress&&('Progress: '+active.progress)].filter(Boolean).join(' · ')}</p></div>}
         <div className="cbBox"><strong>Checkerboard Code</strong><select value={activeCbCode} onChange={e=>updatePerceptionCb(active,e.target.value)}>{CB_CODES.map(code=><option key={code}>{code}</option>)}</select></div>
 
         <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green" defaultOpen={true}>
@@ -6621,7 +6643,7 @@ function GamesLibrary({setScreen,setSession}){
 // Standalone games-library module (kept OUT of the Universal Modifier Engine).
 // 2-tier shot training: Tier 1 rewards repetition of the target shot wherever it
 // occurs in a live opposed rally (exploring/stabilising the shot under varying
-// conditions — not fixed-pattern drilling); Tier 2 adds a tactical-appropriateness
+// conditions — not fixed-pattern repetition); Tier 2 adds a tactical-appropriateness
 // gate so the bonus only counts when the shot is taken at a sound moment, with
 // optional behavioural-tag add-ons layered on top.
 const SHOT_BONUS_REGISTRY=[
@@ -6659,7 +6681,7 @@ function ShotBonusRally({setSession}){
   // value (e.g. Nick worth more than a straight drop) rather than one global setting.
   const [shotPoints,setShotPoints]=useState({'straight-drop':{rep:1,finish:1}});
   // CLA Update — Stroke-Side Amplifier (Fitzpatrick et al.): amplify the affordance of
-  // the chosen stroke side (backhand or forehand) inside live, opposed play rather than fed-ball drilling. Optional
+  // the chosen stroke side (backhand or forehand) inside live, opposed play rather than fed-ball practice. Optional
   // decay removes the amplifier mid-block so the invited behaviour has to stand alone.
   const [weakSide,setWeakSide]=useState('off');
   const [weakDecay,setWeakDecay]=useState(false);
@@ -7380,7 +7402,7 @@ function CLAUpdateGames({setSession}){
     attackstraight:`${g.gqA} Ask it after both won AND lost releases \u2014 the timing read is the skill. Do not coach when to release; let punished-early and never-released rallies do the teaching.`,
     serveadv:`Server: ${g.gqA} Receiver: ${g.gqB} The receiver's question matters as much \u2014 recognising when a boast was genuinely forced versus chosen is its own perceptual skill.`,
     deeptouch:`${g.gqA} ${g.gqB} Watch Player A's length play for emerging disguise \u2014 the same preparation producing drive, drop and boast is the goal behaviour.`,
-    actionboundary:'Judge each read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed. After contrasting decisions ask: "What made that one attackable \u2014 and what made the last one not?" One question per pause; the drill is the read, not the debrief.'
+    actionboundary:'Judge each read against THIS player\u2019s position, speed and fatigue in the moment \u2014 affordances are personal, not fixed. After contrasting decisions ask: "What made that one attackable \u2014 and what made the last one not?" One question per pause; the task is the read, not the debrief.'
   };
   const playerFocusText={depthcap:'No back corners \u2014 find another way to hurt them.',attackstraight:'Cross until the moment is real \u2014 then go straight.',serveadv:'Serve to take something away, then take the short ball.',deeptouch:'Build it from deep \u2014 hide the short ball in your length.',actionboundary:'Read what THIS ball, in THIS moment, is offering you.'};
   const rationaleText={
@@ -7395,7 +7417,7 @@ function CLAUpdateGames({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const titles={depthcap:dcSym?'Egyptian \u00be Court \u2014 Classic (Symmetric)':'Depth Cap \u2014 Back-Quarter Denial',attackstraight:'Attack Straight \u2014 Release Decision',serveadv:`Serve for Advantage \u2014 Nested Chain (${saServes}-Serve)`,deeptouch:'Deep Touch \u2014 Build From Deep',actionboundary:abScored?'Action Boundary \u2014 Scored (Off-T Bonus)':'Action Boundary \u2014 Coach-Led Read'};
-    const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:abScored?'Injected Short Ball + Called Rules':'Coach-Led Drill'};
+    const formats={depthcap:'Asymmetric Zone Constraint',attackstraight:'Directional Restriction + Release',serveadv:'Serve Phase + Sequence Chain',deeptouch:'Shot-Type + Zone Constraint',actionboundary:abScored?'Injected Short Ball + Called Rules':'Coach-Led Game'};
     const card={id:Date.now()+Math.random(),title:titles[gameId],category:'CLA Update',format:formats[gameId],duration:9,task:cardTask(),rationale:cardRationale(),coach:coachText[gameId],playerFocus:playerFocusText[gameId],scoring:cardScoring(),layers:gameId==='depthcap'?['Space Manipulation','Decision Making']:gameId==='attackstraight'?['Decision Making','Direction Change']:gameId==='serveadv'?['Serve Phase','Nested Affordances']:gameId==='deeptouch'?['Deception & Disguise','Space Manipulation']:['Affordance Perception'],rld:gameId==='actionboundary'?3:4};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
@@ -7772,6 +7794,7 @@ function CommonGameErrors({setSession}){
     {id:'cge-boast',tag:'Boasting good length',title:'Don’t Boast Good Length',error:'Boasting a ball you could have driven, handing over the front court.',cost:'Volunteers the front, brings the opponent forward onto an easy attacking ball, and gives up the T.',train:'Boast only what you genuinely can’t drive. Drive or lob the good ball and keep them deep.',format:'Conditioned game',duration:9,rld:4,task:'The player may only boast off a genuinely difficult ball (deep in the corner, off the back wall). Boasting a driveable good-length ball is the error. Drive or lob the good ball instead.',rationale:'Re-couples the boast to its function — an escape from a ball you cannot drive — rather than a default reset that gives away the front court and the T.',coach:'“Only boast what you can’t drive — stop handing them the front.” Name it from the analysis if it’s a repeat tendency.',playerFocus:'Boast the trouble ball; drive the good one.',layers:['Tactical: Shot Selection'],scoringOptions:['Boast off a genuine trouble ball = fine; boast off a driveable ball = loss of point.','Win the rally = 1; −1 if you boasted a ball you could have driven and gave up the front.','Coach call only: each unnecessary boast = a point to the opponent.']}
   ];
   const [sel,setSel]=useState(null);
+  const [pinStage,setPinStage]=useState(1);
   const [scoreIdx,setScoreIdx]=useState(0);
   const [customScore,setCustomScore]=useState('');
   const [overlays,setOverlays]=useState([]);
@@ -7780,9 +7803,10 @@ function CommonGameErrors({setSession}){
   const [penaltyDefault,setPenaltyDefault]=useState(1);
   const [penaltyByPlayer,setPenaltyByPlayer]=useState({});
   const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
-  const e=errors.find(x=>x.id===sel);
+  const e0=errors.find(x=>x.id===sel);
+  const e=e0&&e0.id==='cge-length'?{...e0,...lengthThatPinsText(pinStage)}:e0;
   useBackIntercept(!!sel,()=>{setSel(null);return true;});
-  function openErr(id){setSel(id);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');setEnfMode('penalty');setPenaltyDefault(1);setPenaltyByPlayer({});}
+  function openErr(id){setSel(id);setPinStage(1);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');setEnfMode('penalty');setPenaltyDefault(1);setPenaltyByPlayer({});}
   function toggleOverlay(layer){setOverlays(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
   function addToSession(){
     if(!e||typeof setSession!=='function')return;
@@ -7862,6 +7886,7 @@ function CommonGameErrors({setSession}){
           <div className="train"><span className="l">Train instead</span><p>{e.train}</p></div>
         </div>
         <div className="cgeBox"><strong>The activity</strong><p>{e.task}</p></div>
+        {e.id==='cge-length'&&<PinLineControls value={{line:pinStage}} onChange={v=>setPinStage(v.line)}/>}
         <div className="cgeBox"><strong>Why it works</strong><p>{e.rationale}</p></div>
         <div className="cgeBox"><strong>Coach · between-games cue</strong><p>{e.coach}</p></div>
         <div className="cgeBox"><strong>Player focus</strong><p>{e.playerFocus}</p></div>
@@ -8064,7 +8089,7 @@ function MovementLabFamily({onAdd,label='Add To Session'}){
  focus:'Bring them right up to the front, then beat them there. Both feet in front of the tape is your point.',
  score:(b)=>'+'+b+' when you win the rally with the opponent’s both feet in front of the taped line (about halfway between the front wall and the short line).',layers:['Movement Economy','Attacking Conversion'],dur:10,def:1,max:3},
 {id:'ml-recovery',key:'recovery',title:'8 · Recovery Race',rld:3,tag:'Rewards your own recovery',
- rule:(b)=>'The positive drill of the family. Play normal rallies; +'+b+' each time you get back to the T before your opponent strikes the ball. Every other game here pays the opponent’s failure to recover — this one pays your success at it, directly. Your opponent confirms you made the T in time.',
+ rule:(b)=>'The positive game of the family. Play normal rallies; +'+b+' each time you get back to the T before your opponent strikes the ball. Every other game here pays the opponent’s failure to recover — this one pays your success at it, directly. Your opponent confirms you made the T in time.',
  coach:'Run this when you want to train the habit itself rather than punish its absence — it’s the cleanest movement conditioner in the set and the gentlest to score. Watch the recovery path, not just the arrival: the shortest way back to the T is rarely a straight line. Debrief: which of your shots made recovery easiest, and why?',
  focus:'Hit, then beat them home. On the T before they strike is the receipt.',
  score:(b)=>'+'+b+' each time you recover to the T before the opponent’s contact, opponent-confirmed.',layers:['Movement Economy','Composure Under Pressure'],dur:8,def:1,max:3},
@@ -8213,47 +8238,6 @@ const CHECKERBOARD_CHALLENGES=[
   {id:'clean-conversion',label:'Clean Conversion',type:'Conversion',baseCode:'[6-4] + [8-1]',description:'Complete challenge then win with clean winner bonus available.'}
 ];
 
-const CHECKERBOARD_PAIR_OPTIONS=[
-  '[5-4] + [8-1]',
-  '[6-4] + [8-1]',
-  '[6-3] + [7-2]',
-  '[5-3] + [7-2]',
-  '[5-4] + [6-3]',
-  '[8-1] + [7-2]',
-  '[5-1] + [6-2]',
-  '[5-2] + [6-1]',
-  '[7-3] + [8-4]',
-  '[7-4] + [8-3]',
-  '[5-4] + [7-2]',
-  '[6-3] + [8-1]',
-  '[6-3] + [5-4]',
-  '[7-2] + [8-1]',
-  'Custom'
-];
-
-const CHECKERBOARD_TRIPLE_OPTIONS=[
-  '[6-4] + [8-1] + [5-3]',
-  '[5-3] + [7-2] + [8-1]',
-  '[6-3] + [8-1] + [5-4]',
-  '[7-2] + [5-4] + [6-3]'
-];
-
-const BLIND_OPTIONS=[
-  'None',
-  'Blind finish: front wall zone',
-  'Blind finish: floor zone',
-  'Blind pair from cards',
-  'Blind triple from cards'
-];
-
-
-const CHECKERBOARD_LEVELS=[
-  {level:1,label:'Level 1 — Single',challenge:'single',window:'No window',tZone:false,description:'Single challenge. Challenge is banked once completed.'},
-  {level:2,label:'Level 2 — Pair',challenge:'pair',window:'No window',tZone:false,description:'Pair challenge. Challenge is banked once completed.'},
-  {level:3,label:'Level 3 — Triple',challenge:'triple',window:'No window',tZone:false,description:'Triple challenge. T Challenge is selectable as an overlay.'},
-  {level:4,label:'Level 4 — Triple + 4-shot window',challenge:'triple',window:'4-shot window',tZone:false,description:'Triple challenge with 4-shot window. T Challenge is selectable as an overlay.'},
-  {level:5,label:'Level 5 — Triple + 2-shot window',challenge:'triple',window:'2-shot window',tZone:false,description:'Triple challenge with 2-shot window. T Challenge is selectable as an overlay.'}
-];
 const COMPLETION_CONSTRAINTS=['Clean winner','Volley finish','Volley finish in front of short line','Opposite side finish'];
 const GAME_LOGIC_COMPLETION=['Single','Pair','Triple','Sequence'];
 const GAME_LOGIC_FINISH_MODE=['Open','Blind'];
@@ -8269,164 +8253,6 @@ function CustomGameLogicAdder({selected=[],onToggle,standard=COMPLETION_CONSTRAI
     {show&&<div className="overlayCustomAdd"><input value={text} onChange={e=>setText(e.target.value)} placeholder="New game-logic rule (e.g. Must finish straight)" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();add();}}}/><button type="button" className="meChip meChipOn" onClick={add}>+ Add</button></div>}
   </div>;
 }
-const DELIVERY_MODES=['Open','Blind'];
-
-function buildCheckerboardGame(config){
-  const level=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
-  const sequence=config.customSequence&&config.customSequence.trim()!==''?config.customSequence:config.sequence;
-  const completion=config.completionConstraints||[];
-  const layers=[...new Set(config.layers||[])];
-  
-  if(level.tZone&&!layers.includes('Opponent Off T')) layers.push('Opponent Off T');
-  if(level.window==='4-shot window'&&!layers.includes('4-Shot Window')) layers.push('4-Shot Window');
-  if(level.window==='2-shot window'&&!layers.includes('2-Shot Window')) layers.push('2-Shot Window');
-  if(completion.includes('Clean winner')&&!layers.includes('Clean Winner')) layers.push('Clean Winner');
-  if(completion.includes('Volley finish')&&!layers.includes('Volley Finish')) layers.push('Volley Finish');
-  if(config.deliveryMode==='Blind'&&!layers.includes('Blind Finish')) layers.push('Blind Finish');
-  const challengeName=level.challenge==='single'?'Single challenge':level.challenge==='pair'?'Pair challenge':'Triple challenge';
-  const taskParts=[
-    `${level.label}: ${level.description}`,
-    `${challengeName}: ${sequence}.`,
-    config.deliveryMode==='Blind'?'Delivery: blind mode. Use the checkerboard challenge deck and/or finish challenge deck. Player reveals, acknowledges, then the card closes ready for the next player.':'Delivery: open challenge.',
-    completion.length?`Completion constraint: ${completion.join(' · ')}.`:'',
-    level.tZone?'T-zone prevention applies automatically at this level.':'',
-    level.window!=='No window'?`Conversion window: ${level.window}. Challenge resets if not converted inside the window.`:'Levels 1–3: challenge is banked once completed.'
-  ].filter(Boolean);
-  const scoring=['Win rally = 1',level.challenge==='single'?'Complete single = +1':level.challenge==='pair'?'Complete pair = +2':'Complete triple = +3','Win after completing challenge = +3'];
-  if(completion.includes('Clean winner')) scoring.push('Clean winner = +2 and sits on top of all scoring');
-  function buildCheckerboardRationale(){
-    const parts=[];
-    if(level.challenge==='single')parts.push('A single challenge keeps the perceptual problem simple: the player is searching for one affordance, not holding a relational pattern in mind — appropriate early in the progression before the demand on working memory increases.');
-    else if(level.challenge==='pair')parts.push('A pair challenge requires the player to hold two connected zones as one relational unit rather than two isolated targets — the tactical structure itself becomes the information the player must perceive and complete.');
-    else parts.push('A triple challenge raises the perceptual and memory load further: three zones must be held as a single connected structure and recognised live, under real rally pressure, before it can be completed.');
-    if(level.tZone)parts.push('T-zone prevention is active automatically at this level, so the player cannot solve the challenge from a position of comfort — the constraint forces genuine movement and recovery, not just shot selection.');
-    if(level.window==='4-shot window')parts.push('The 4-shot conversion window gives the player time to search for and build the challenge without collapsing the rally into a single forced moment, while still demanding conversion rather than open-ended repetition.');
-    else if(level.window==='2-shot window')parts.push('The 2-shot conversion window tightens the timeframe considerably — the affordance has to be recognised and converted almost immediately, closer to the urgency of live match tactics.');
-    else parts.push('With no conversion window, the challenge is banked as soon as it is completed rather than needing to be converted within a shot count — appropriate while the player is still learning to recognise the pattern itself.');
-    if(config.deliveryMode==='Blind')parts.push('Blind delivery removes advance knowledge of the target sequence, so the player must adapt shot selection in the moment the card is revealed rather than pre-planning a route to a known pattern.');
-    if(completion.includes('Clean winner'))parts.push('The clean-winner completion constraint means the challenge only counts if it also ends the rally outright — rewarding a genuinely decisive shot rather than merely landing in the right zone.');
-    if(completion.includes('Volley finish'))parts.push('The volley-finish completion constraint ties the challenge to taking the ball early and in the air — connecting the tactical pattern to a specific technical execution demand rather than treating them separately.');
-    return parts.join(' ');
-  }
-  return {id:Date.now()+Math.random(),title:`Checkerboard · ${level.label}`,category:'Checkerboard',duration:Number(config.duration)||8,format:config.format||'King of Court',task:taskParts.join(' '),rationale:buildCheckerboardRationale(),coach:'Coach the recognition of the affordance, not just the code. At Levels 4–5, remind players that the challenge resets if they do not convert within the shot window.',layers,cbCode:sequence,scoring:scoring.join(' · ')};
-}
-
-function CheckerboardEngine({onAddToSession}){
-  const[config,setConfig]=useState({level:2,sequence:'[5-4] + [8-1]',customSequence:'',showCustomSequence:false,deliveryMode:'Open',blindChallengeCard:'',blindChallengeFace:'closed',blindFinishCard:'',blindFinishFace:'closed',completionConstraints:[],format:'King of Court',duration:8,layers:[]});
-  const [checkerboardModifierScores,setCheckerboardModifierScores]=useState({});
-  const [cbDbAssign,setCbDbAssign]=useState('Both Players');
-  const [cbDbPlayer,setCbDbPlayer]=useState('');
-  const [cbDbAmount,setCbDbAmount]=useState('No DB');
-  const levelInfo=CHECKERBOARD_LEVELS.find(item=>item.level===Number(config.level))||CHECKERBOARD_LEVELS[1];
-  const sequenceOptions=levelInfo.challenge==='single'?CB_CODES.filter(code=>code!=='None'&&!code.includes('+')):levelInfo.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS:CHECKERBOARD_TRIPLE_OPTIONS;
-  const built=buildCheckerboardGame(config);
-  function update(field,value){setConfig(prev=>({...prev,[field]:value}));}
-  function setLevel(value){
-    const next=CHECKERBOARD_LEVELS.find(item=>item.level===Number(value));
-    const nextSeq=next.challenge==='single'?'[6-3]':next.challenge==='pair'?CHECKERBOARD_PAIR_OPTIONS[0]:CHECKERBOARD_TRIPLE_OPTIONS[0];
-    setConfig(prev=>({...prev,level:Number(value),sequence:nextSeq,customSequence:'',showCustomSequence:false}));
-  }
-  const [showCustomLogic,setShowCustomLogic]=useState(false);
-  const [customLogicText,setCustomLogicText]=useState('');
-  function addCustomLogic(){const n=customLogicText.trim();if(!n)return;setConfig(prev=>{const cur=prev.completionConstraints||[];return cur.includes(n)?prev:{...prev,completionConstraints:[...cur,n]};});setCustomLogicText('');}
-  function toggleCompletion(item){setConfig(prev=>{const current=prev.completionConstraints||[];return {...prev,completionConstraints:current.includes(item)?current.filter(x=>x!==item):[...current,item]};});}
-  function toggleLayer(layer){setConfig(prev=>{const current=prev.layers||[];return {...prev,layers:current.includes(layer)?current.filter(item=>item!==layer):[...current,layer]};});}
-  function updateCheckerboardModifierScore(layer,value){setCheckerboardModifierScores(prev=>({...prev,[layer]:value}));}
-  const checkerboardScoringLayers=editableModifierLayers([...(built.layers||[]),...(config.completionConstraints||[])]);
-  
-  function generateBlindChallengeCard(){
-    let card='';
-    if(config.deliveryMode!=='Blind') card='Blind mode is off.';
-    else if(levelInfo.challenge==='single'){
-      const singles=CB_CODES.filter(code=>code!=='None'&&!code.includes('+'));
-      card=singles[Math.floor(Math.random()*singles.length)];
-    }else if(levelInfo.challenge==='pair'){
-      card=CHECKERBOARD_PAIR_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_PAIR_OPTIONS.length)];
-    }else{
-      card=CHECKERBOARD_TRIPLE_OPTIONS[Math.floor(Math.random()*CHECKERBOARD_TRIPLE_OPTIONS.length)];
-    }
-    setConfig(prev=>({...prev,blindChallengeCard:card,blindChallengeFace:'closed'}));
-  }
-
-  function revealBlindChallengeCard(){
-    if(!config.blindChallengeCard){generateBlindChallengeCard();}
-    setConfig(prev=>({...prev,blindChallengeFace:'revealed'}));
-  }
-
-  function acknowledgeBlindChallengeCard(){
-    setConfig(prev=>({...prev,blindChallengeCard:'',blindChallengeFace:'closed'}));
-  }
-
-  function generateBlindFinishCard(){
-    const finishDeck=[
-      'Clean winner',
-      'Volley finish',
-      'Opposite side finish',
-      'Front wall finish',
-      'Floor finish',
-      'Opponent moving forward',
-      'Opponent off balance',
-      'Opponent off T'
-    ];
-    const card=finishDeck[Math.floor(Math.random()*finishDeck.length)];
-    setConfig(prev=>({...prev,blindFinishCard:card,blindFinishFace:'closed'}));
-  }
-
-  function revealBlindFinishCard(){
-    if(!config.blindFinishCard){generateBlindFinishCard();}
-    setConfig(prev=>({...prev,blindFinishFace:'revealed'}));
-  }
-
-  function acknowledgeBlindFinishCard(){
-    setConfig(prev=>({...prev,blindFinishCard:'',blindFinishFace:'closed'}));
-  }
-
-return <div className="checkerboardEngine">
-    <h2>Checkerboard Builder</h2>
-    <p className="engineIntro">Select a base game then open the layers you need.</p>
-
-    {/* BASE GAME — always visible */}
-    <div className="baseGamePanel">
-      <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">What players do</span></div>
-      <div className="levelSystemBox">{CHECKERBOARD_LEVELS.map(item=><button key={item.level} className={Number(config.level)===item.level?'levelBtn activeLevel':'levelBtn'} onClick={()=>setLevel(item.level)}><strong>{item.label}</strong><span>{item.description}</span></button>)}</div>
-      <div className="engineGrid">
-        <label>Level<select value={config.level} onChange={e=>setLevel(e.target.value)}>{CHECKERBOARD_LEVELS.map(item=><option key={item.level} value={item.level}>{item.label}</option>)}</select></label>
-        <label>Delivery Mode<select value={config.deliveryMode} onChange={e=>update('deliveryMode',e.target.value)}>{DELIVERY_MODES.map(item=><option key={item}>{item}</option>)}</select></label>
-        <label>Format<select value={config.format} onChange={e=>update('format',e.target.value)}><option>King of Court</option><option>Winner Stays On</option><option>Pairs</option><option>Team Courts</option><option>Rally Game</option></select></label>
-        <label>Duration<input type="number" min="1" value={config.duration} onChange={e=>update('duration',e.target.value)}/></label>
-      </div>
-      <div className="engineGrid"><label>Sequence Code<select value={config.sequence} onChange={e=>update('sequence',e.target.value)}>{sequenceOptions.map(code=><option key={code}>{code}</option>)}</select></label></div>
-      <div className="customSeqToggle">
-        {!config.showCustomSequence&&<button className="secondaryBtn" onClick={()=>update('showCustomSequence',true)}>+ Custom Sequence</button>}
-        {config.showCustomSequence&&<div className="customSeqBox"><strong>Custom Checkerboard Sequence</strong><input value={config.customSequence} onChange={e=>update('customSequence',e.target.value)} placeholder="[6-4] + [8-1] + [5-3]" /><div className="buttonRow"><button className="secondaryBtn" onClick={()=>{update('customSequence','');update('showCustomSequence',false);}}>Remove Custom Sequence</button></div></div>}
-      </div>
-    </div>
-
-    {/* GAME LOGIC */}
-    <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
-      <div className="quickLayers">{getFinishRules().map(item=><button key={item} className={(config.completionConstraints||[]).includes(item)?'activeLayer':''} onClick={()=>toggleCompletion(item)}>{(config.completionConstraints||[]).includes(item)?'✓ ':'+ '}{item}</button>)}{(config.completionConstraints||[]).filter(c=>!getFinishRules().includes(c)).map(c=><button key={c} className="activeLayer" onClick={()=>toggleCompletion(c)}>{c} ✕</button>)}</div>
-      <button type="button" className="meAddOwnBtn" onClick={()=>setShowCustomLogic(!showCustomLogic)}>{showCustomLogic?'− Hide custom game logic':'+ Add your own game logic'}</button>
-      {showCustomLogic&&<div className="overlayCustomAdd"><input value={customLogicText} onChange={e=>setCustomLogicText(e.target.value)} placeholder="New game-logic rule (e.g. Must finish straight)" onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addCustomLogic();}}}/><button type="button" className="meChip meChipOn" onClick={addCustomLogic}>+ Add</button></div>}
-    </CollapsibleLayer>
-    <CollapsibleLayer num="2" title="Constraints" subtitle="Shape behaviour without changing rules" color="blue">
-      <OverlayFamilyTabs selectedOverlays={config.layers||[]} onToggle={toggleLayer} context="Checkerboard"/>
-      <p className="mutedText" style={{marginTop:'10px',fontSize:'.82rem'}}>Blind &amp; per-player challenge allocation has moved to the dedicated <strong>Checkerboard</strong> page (Home screen).</p>
-    </CollapsibleLayer>
-    <CollapsibleLayer num="3" title="Scoring Logic" subtitle="How points are awarded" color="gold">
-      <div className="infoBox"><strong>Default Scoring</strong><p>{built.scoring}</p></div>
-      <div className="modifierScoringPanel alwaysVisibleModifierScoring"><h3>Modifier Scoring</h3><p>Set bonus values for active checkerboard modifying constraints. Use “constraint only” when the rule shapes behaviour but should not add points.</p>{checkerboardScoringLayers.length===0?<div className="modifierScoreEmpty">No active modifiers yet. Add Game Logic or Constraints, then set points here.</div>:<div className="modifierScoreGrid">{checkerboardScoringLayers.map(layer=><label key={layer}><span>{layer}</span><select value={checkerboardModifierScores[layer]||defaultModifierScore(layer)} onChange={e=>updateCheckerboardModifierScore(layer,e.target.value)}>{MODIFIER_SCORE_CHOICES.map(choice=><option key={choice}>{choice}</option>)}</select></label>)}</div>}</div>
-    <UniversalPenaltyPanel/></CollapsibleLayer>
-
-    {/* DB HANDICAP */}
-    <UniversalDBHandicapPanel/>
-    <UniversalTinHeightPanel/>
-    <UniversalTechConstraintsLayer/>
-    
-
-    <div className="gameCard previewCard"><div className="categoryTag">Checkerboard Preview</div><h2>{built.title}</h2><div className="infoBox"><strong>Task / Rules</strong><p>{built.task}</p></div><div className="infoBox"><strong>Scoring</strong><p>{built.scoring}</p></div><div className="infoBox"><strong>Rationale</strong><p>{built.rationale}</p></div><div className="infoBox"><strong>Coach Help</strong><p>{built.coach}</p></div><div className="chips">{built.layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
-    <button className="primaryBtn" onClick={()=>onAddToSession({...built,modifierScores:{...Object.fromEntries(checkerboardScoringLayers.map(layer=>[layer,defaultModifierScore(layer)])),...checkerboardModifierScores},dbHandicap:cbDbAmount!=='No DB'?cbDbAssign+': '+cbDbAmount:'No DB'})}>Add Checkerboard To Session</button></div>
-  </div>;
-}
 
 // ── v225 PER-PLAYER CHECKERBOARD ALLOCATION ──────────────────────────────────
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
@@ -8440,7 +8266,7 @@ const CB_SEAM_KEY='checkerboard_seam_allowance_v1';
 const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court','Per-Court']];
 // The complete Checkerboard scoring system, stated in full on any session card so a
 // coach reads the whole rule set and applies the line that fits each player. Numbers
-// match buildCheckerboardGame exactly - this is the flagship scoring and must never
+// match the five-level ladder in CB_LEVEL_DEFAULTS - this is the flagship scoring and must never
 // be reduced to a one-liner. Defined here at top level, before CheckerboardSetup and
 // its addToSession use it - a const does not hoist, and out-of-order placement is what
 // white-screened v414-v419.
@@ -8538,6 +8364,20 @@ function cbNormalizeCode(code){
 // Checkerboard is a Level 1-5 metric first; the challenge type can then be tuned to
 // match. Level is the primary control and sets the default type and conversion
 // window; the type buttons remain so codes can be hand-matched to the level.
+// Why each rung of the ladder exists — coach-education text carried over verbatim from the
+// retired Checkerboard Builder (deleted v754). Shown on the Checkerboard page under each
+// level picker as "Why this level" (v755, coach request) via cbLevelWhy().
+const CB_LEVEL_RATIONALE={
+  single:'A single challenge keeps the perceptual problem simple: the player is searching for one affordance, not holding a relational pattern in mind — appropriate early in the progression before the demand on working memory increases.',
+  pair:'A pair challenge requires the player to hold two connected zones as one relational unit rather than two isolated targets — the tactical structure itself becomes the information the player must perceive and complete.',
+  triple:'A triple challenge raises the perceptual and memory load further: three zones must be held as a single connected structure and recognised live, under real rally pressure, before it can be completed.',
+  window4:'The 4-shot conversion window gives the player time to search for and build the challenge without collapsing the rally into a single forced moment, while still demanding conversion rather than open-ended repetition.',
+  window2:'The 2-shot conversion window tightens the timeframe considerably — the affordance has to be recognised and converted almost immediately, closer to the urgency of live match tactics.',
+  noWindow:'With no conversion window, the challenge is banked as soon as it is completed rather than needing to be converted within a shot count — appropriate while the player is still learning to recognise the pattern itself.',
+  blind:'Blind delivery removes advance knowledge of the target sequence, so the player must adapt shot selection in the moment the card is revealed rather than pre-planning a route to a known pattern.',
+  cleanWinner:'The clean-winner completion constraint means the challenge only counts if it also ends the rally outright — rewarding a genuinely decisive shot rather than merely landing in the right zone.',
+  volleyFinish:'The volley-finish completion constraint ties the challenge to taking the ball early and in the air — connecting the tactical pattern to a specific technical execution demand rather than treating them separately.'
+};
 const CB_LEVEL_DEFAULTS={
   1:{type:'Single',  window:'No window',    bonus:1},
   2:{type:'Pair',    window:'No window',    bonus:2},
@@ -8545,6 +8385,16 @@ const CB_LEVEL_DEFAULTS={
   4:{type:'Triple',  window:'4-shot window',bonus:3},
   5:{type:'Triple',  window:'2-shot window',bonus:3}
 };
+// Why this level: follows what is actually set on the row — the challenge type (a coach can
+// hand-tune it away from the level default), the level's conversion window, and blind mode.
+function cbLevelWhy(row){
+  const d=CB_LEVEL_DEFAULTS[row.level||1]||CB_LEVEL_DEFAULTS[1];
+  const t=String(row.type||d.type).replace(/^Optional /,'').toLowerCase();
+  const parts=[CB_LEVEL_RATIONALE[t]||CB_LEVEL_RATIONALE.single,
+    d.window==='4-shot window'?CB_LEVEL_RATIONALE.window4:d.window==='2-shot window'?CB_LEVEL_RATIONALE.window2:CB_LEVEL_RATIONALE.noWindow];
+  if(/Blind/.test(row.mode||''))parts.push(CB_LEVEL_RATIONALE.blind);
+  return parts.join(' ');
+}
 function cbLevelScoring(level){
   const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
   const complete=`complete = +${d.bonus}`;
@@ -8639,6 +8489,7 @@ const CB_SET_CSS=`
 .cbsetLinkBox span{color:#cfe6f4;font-weight:700;font-size:.84rem;}
 .cbsetLinkBox .u{color:#6b8299;font-size:.72rem;word-break:break-all;flex:1;min-width:120px;}
 .cbsetScopeNote{color:#9fb4c6;font-size:.8rem;margin:6px 0 12px;background:#0a141d;border-left:3px solid #2E6E8E;padding:8px 12px;border-radius:0 8px 8px 0;}
+.cbsetWhy{margin:-6px 0 12px;}.cbsetWhy summary{color:#9cc4ec;font-size:.8rem;font-weight:700;cursor:pointer;padding:4px 0;}.cbsetWhy p{color:#c5d6e6;font-size:.82rem;line-height:1.45;margin:6px 0 0;}
 .cbsetCourtCtrl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
 .cbsetCourtCtrl label{color:#7c92a6;font-size:.8rem;}
 .cbsetAssignList{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
@@ -8892,7 +8743,8 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     return <>
       <div className="cbsetField"><label>Level <span style={{color:'#7fa9c9',fontWeight:400,textTransform:'none',letterSpacing:0}}>· sets the challenge and scoring</span></label>
         <div className="cbsetChips">{[1,2,3,4,5].map(l=><button type="button" key={l} className={(row.level||1)===l?'cbsetChip on':'cbsetChip'} onClick={()=>api.setLevel(l)}>L{l}</button>)}</div>
-        <p className="cbsetScopeNote">{cbLevelScoring(row.level||1)}</p></div>
+        <p className="cbsetScopeNote">{cbLevelScoring(row.level||1)}</p>
+        <details className="cbsetWhy"><summary>Why this level</summary><p>{cbLevelWhy(row)}</p></details></div>
       <div className="cbsetField"><label>Challenge Type</label>
         <div className="cbsetChips">{CB_CHALLENGE_TYPES.map(t=><button type="button" key={t} className={row.type===t?'cbsetChip on':'cbsetChip'} onClick={()=>api.setType(t)}>{t}</button>)}</div></div>
       <div className="cbsetField"><label>Allocation Mode</label>
@@ -9726,7 +9578,56 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
 
 
 
+// ── PIN LINE (v750) ──────────────────────────────────────────────────────────
+// Shared by Length Before Attack (Classic Games → also the All Games list) and Length
+// That Pins (Common Game Errors). A length "pins" when the opponent has BOTH FEET behind
+// the line at the moment they strike — the feet decide, no judgement. The line is a
+// PROGRESSION, not a measurement (coach, 23 Sep): each stage asks the length to bury the
+// opponent deeper, so the same game stays a hard problem as the group improves.
+const PIN_LINES=[
+  {stage:1,label:'Stage 1 · back of the service box',where:'behind the back line of the service box',setup:'No tape needed — the painted line at the back of the service box is the line.'},
+  {stage:2,label:'Stage 2 · tape a quarter of the way back',where:'behind the tape',setup:'Tape a line across the court a quarter of the way from the back of the service box to the back wall.'},
+  {stage:3,label:'Stage 3 · tape halfway back',where:'behind the tape',setup:'Tape a line across the court halfway between the back of the service box and the back wall.'},
+  {stage:4,label:'Stage 4 · tape three-quarters back',where:'behind the tape',setup:'Tape a line across the court three-quarters of the way from the back of the service box to the back wall.'}
+];
+const PIN_LINE_COACH='The line is a progression, not a measurement: each stage asks the length to bury the opponent deeper. When the group earns it comfortably, move the line back a stage; if nobody earns it, move it forward a stage.';
+function pinLine(stage){return PIN_LINES[Math.min(PIN_LINES.length,Math.max(1,Number(stage)||1))-1];}
+function PinLineControls({value,onChange,bonuses=[]}){
+  return <div className="infoBox"><strong>Pin line</strong>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',margin:'6px 0'}}>
+      <select value={value.line} onChange={e=>onChange({...value,line:Number(e.target.value)})}>{PIN_LINES.map(p=><option key={p.stage} value={p.stage}>{p.label}</option>)}</select>
+      {bonuses.map(([k,label,min,max])=><span key={k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{label}</span><PointStepper value={value[k]} min={min} max={max} onChange={v=>onChange({...value,[k]:v})}/></span>)}
+    </div>
+    <p className="mutedText" style={{fontSize:'0.82rem',margin:0}}>{PIN_LINE_COACH}</p>
+  </div>;
+}
+
+// Length Before Attack — ONE definition (v750). Classic Games renders it with the pin
+// line and bonus steppers; standardGames() spreads it at defaults for the All Games list.
+// Plug & Play PP101 is its deliberate quick-games second home and is not generated here.
+// No 'Quality Length Before Attack' layer: the game IS that constraint, and the layer's own
+// +2 would stack on the card's attack bonus (coach, 23 Sep, v752).
+const LBA_DEFAULTS={line:1,attack:3,clean:2};
+function lengthBeforeAttackGame(v=LBA_DEFAULTS){
+  const p=pinLine(v.line);
+  return {title:'Length Before Attack',problem:'Neutralise vs Attack',shortRationale:'Prevents rushed attacking before pressure has been created.',level:'Levels 2–5',pinLine:true,
+    task:'Before you start: '+p.setup+' Your length must pin the opponent before an attack can earn the bonus. A length pins when your opponent has both feet '+p.where+' at the moment they strike the ball — volley or not. Your very next shot after a pin may attack for the bonus. The feet decide: the opponent confirms where they were standing.',
+    rationale:'Encourages patient pressure construction rather than premature front-court attacks. The pin is read from where the opponent’s feet are when they strike, so earning the attack needs no judgement call.',
+    coach:'Watch the opponent’s feet at contact, not where the ball lands — that is what decides the pin, and it trains the attacker to watch the opponent too. '+PIN_LINE_COACH,
+    playerFocus:'Pin them first — both feet '+p.where+' when they hit — then attack with your next shot.',
+    scoring:'Win rally = 1 · Win with the attack straight after a pin = +'+v.attack+(v.clean?' · Clean winner = +'+v.clean:''),
+    antiGaming:'If a player attacks without a pin on the shot before, only the rally point is available.',
+    suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']};
+}
+function lengthBeforeAttackCard(v=LBA_DEFAULTS){const g=lengthBeforeAttackGame(v);return {id:'length-before-attack',title:g.title,category:'Classic Conditioned',duration:8,format:'King of Court',task:g.task,rationale:g.rationale,coach:g.coach,playerFocus:g.playerFocus,scoring:g.scoring,antiGaming:g.antiGaming,layers:[],cbCode:'None'};}
+function lengthThatPinsText(stage){
+  const p=pinLine(stage);
+  return {task:'Before you start: '+p.setup+' Length game scored by effect: a drive counts as good length only if the opponent cannot volley it and has to take it with both feet '+p.where+'. A ball the opponent volleys or attacks from short scores nothing for the hitter.',
+    scoringOptions:['Each drive the opponent must take with both feet '+p.where+', no volley = 1; a length they volley or attack = 0.','Win the rally = 1; −1 if you lost it off your own short or floated length.','First to a target number of “pinning” lengths (uncuttable, deep) wins the game.']};
+}
+
 function ClassicConditionedBuilder({onAddToSession}){
+  const [lba,setLba]=useState(LBA_DEFAULTS);
   const [selectedProblem,setSelectedProblem]=useState(null);
   const [selectedGame,setSelectedGame]=useState(null);
   const [scoringChoices,setScoringChoices]=useState({});
@@ -9739,7 +9640,7 @@ function ClassicConditionedBuilder({onAddToSession}){
     {title:'Return to Sender',problem:'Opponent Awareness',shortRationale:'Discourages repeatedly hitting back to opponent position.',level:'Levels 2–5',task:'Players only receive bonus points if the winning shot is played away from the opponent recovery line/body-line rather than back towards the opponent.',rationale:'Develops perception of opponent positioning before target selection.',coach:'Reward recognition of opponent position rather than pure shot quality.',playerFocus:'Notice where the opponent is recovering and avoid sending the ball back into that space.',scoring:'Win rally = 1 · Win away from opponent recovery line = +3 · Clean winner = +2',antiGaming:'No bonus if the direction change is accidental or unclear.',suggestedOverlays:['Opponent Off T','Clean Winner']},
     {title:'Opposite Side Finish',problem:'Opponent Awareness',shortRationale:'Encourages players to finish away from opponent body-line and recovery direction.',level:'Levels 3–5',task:'Bonus applies when the finishing shot is played to the opposite side of the opponent’s body line or recovery direction.',rationale:'Links finishing choice to opponent orientation rather than a fixed target.',coach:'Use body-line and recovery direction as the reference, not simply left/right court side.',playerFocus:'Read the opponent’s recovery direction before choosing the finish.',scoring:'Win rally = 1 · Opposite side finish = +3 · Clean winner = +2',antiGaming:'If body-line reference is unclear, no bonus.',suggestedOverlays:['Opponent Off T','Clean Winner']},
     {title:'Server Above The Line',problem:'Neutralise vs Attack',shortRationale:'Develops recognition of neutralising versus attacking situations.',level:'Levels 2–5',task:'Server must strike above the line. Receiver may use double bounces initially to stabilise rallies and recognise when to neutralise versus when to attack.',rationale:'Helps players distinguish survival/neutral phases from genuine attacking opportunities.',coach:'Observe whether players attack from neutral positions or only after creating advantage.',playerFocus:'Recognise when you are under pressure versus when the rally has shifted in your favour.',scoring:'Win rally = 1 · Correct attack recognition = +3',antiGaming:'Do not reward random attacking from neutral or defensive positions.',suggestedOverlays:['Quality Length Before Attack','Double Bounce','Opponent Off T']},
-    {title:'Length Before Attack',problem:'Neutralise vs Attack',shortRationale:'Prevents rushed attacking before pressure has been created.',level:'Levels 2–5',task:'Player must create length pressure before attacking short. Attack bonus opens only after the opponent is delayed, displaced or unable to recover normally.',rationale:'Encourages patient pressure construction rather than premature front-court attacks.',coach:'Watch whether the attack is invited by opponent state or forced without advantage.',playerFocus:'Build length pressure first, then attack when the opponent is delayed or displaced.',scoring:'Win rally = 1 · Win after length-created advantage = +3 · Clean winner = +2',antiGaming:'If a player hits short before any pressure is created, only the rally point is available.',suggestedOverlays:['Quality Length Before Attack','Opponent Off T','4-Shot Window','Clean Winner']},
+    lengthBeforeAttackGame(lba),
     {title:'T-Zone Denial',problem:'T-Zone Games',shortRationale:'Rewards displacement before attack.',level:'Levels 2–5',task:'Bonus unlocks when the opponent is outside the marked T-zone before the finishing shot.',rationale:'Connects tactical pressure with recovery denial.',coach:'Use a clearly marked T-zone. Award only when the opponent is clearly outside it.',playerFocus:'Move opponent away from central recovery before attacking.',scoring:'Win rally = 1 · Opponent outside T-zone finish = +3 · Clean winner = +2',antiGaming:'Opponent cannot intentionally stop recovering to manipulate the constraint.',suggestedOverlays:['Opponent Off T','4-Shot Window','Clean Winner']},
     {title:'Central Control Volley Finish',problem:'T-Zone Games',shortRationale:'Encourages earned volley interception from central control.',level:'Levels 3–5',task:'Bonus only applies when the winning shot is a volley played from central control.',rationale:'Encourages players to earn intercepting opportunities through pressure and positioning.',coach:'The volley should be earned, not hunted recklessly.',playerFocus:'Use central pressure to create an intercepting opportunity.',scoring:'Win rally = 1 · Volley finish from central control = +3 · Clean winner = +2',antiGaming:'Do not award bonus for speculative/unsafe volley attempts that ignore rally information.',suggestedOverlays:['Volley Finish','Opponent Off T','Clean Winner']},
     {title:'Route Breaker',problem:'Pressure Construction',shortRationale:'Develops route disruption before finishing.',level:'Levels 3–5',task:'Player must alter opponent movement route before the bonus is unlocked.',rationale:'Encourages tactical disruption instead of repetitive pattern hitting.',coach:'Confirm that the opponent movement route was genuinely changed.',playerFocus:'Create a movement problem before attempting to finish the rally.',scoring:'Win rally = 1 · Route broken before finish = +3 · Clean winner = +2',antiGaming:'No bonus if opponent movement route was unchanged.',suggestedOverlays:['Volley Finish','Opponent Off T']},
@@ -9807,6 +9708,8 @@ function ClassicConditionedBuilder({onAddToSession}){
       <div className="infoBox"><strong>Coach Focus</strong><p>{game.coach}</p></div>
       <div className="infoBox"><strong>Player Focus</strong><p>{game.playerFocus}</p></div>
       <div className="infoBox"><strong>Scoring</strong><p>{game.scoring}</p></div>
+      {game.antiGaming&&game.pinLine&&<div className="infoBox"><strong>Anti-gaming</strong><p>{game.antiGaming}</p></div>}
+      {game.pinLine&&<PinLineControls value={lba} onChange={setLba} bonuses={[['attack','Attack bonus',1,5],['clean','Clean winner',0,4]]}/>}
 
       <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
         <div className="quickLayers">{getFinishRules().map(item=><button key={item} className={(selectedOverlays[overlayKey(game)]||[]).includes(item)?'activeLayer':''} onClick={()=>toggleGameOverlay(game,item)}>{(selectedOverlays[overlayKey(game)]||[]).includes(item)?'✓ ':'+ '}{item}</button>)}</div>
@@ -10353,7 +10256,7 @@ function Level0Foundations({setScreen,setSession}){
 
   const tauCards=[
     {code:'TAU-1',title:'Large Ball Tracking',purpose:'Develop basic ball awareness and tracking.',task:'Player watches and tracks a foam or large ball. No striking required initially.',constraint:'Foam ball. Coach rolls or bounces the ball slowly.',cue:'Watch the ball all the way until it stops.',simplify:'Reduce speed. Larger ball.',progress:'Add a simple tap or catch on arrival.'},
-    {code:'TAU-2',title:'Variable Ball Size',purpose:'Prevent fixed timing solution. Develop adaptive tracking.',task:'Chip or strike using different ball sizes within the same session.',constraint:'Mix foam, red dot and orange dot balls randomly.',cue:'See the ball clearly before you move.',simplify:'Start with foam only.',progress:'Introduce yellow ball briefly.'},
+    chippingLevel0('ballSize',{code:'TAU-2',purpose:'Prevent fixed timing solution. Develop adaptive tracking.',cue:'See the ball clearly before you move.'}),
     {code:'TAU-3',title:'Self-Feed Tracking',purpose:'Player controls timing. Easiest perceptual environment.',task:'Player self-drops and strikes. Full control over when the ball arrives.',constraint:'Red or orange dot. Player drops from waist height.',cue:'Watch it bounce, then strike.',simplify:'Larger ball. Drop from lower height.',progress:'Vary drop height to change bounce.'},
     {code:'TAU-4',title:'Coach Hand-Feed Tracking',purpose:'Introduce trajectory variation from an external source.',task:'Coach feeds underarm. Player adapts to slightly unpredictable arrival.',constraint:'Red or orange dot. Underarm feed at medium pace.',cue:'Track the ball from the coach hand.',simplify:'Slower feed. Lower trajectory.',progress:'Vary pace and height of feed.'},
     {code:'TAU-5',title:'Front Wall Tracking',purpose:'Introduce wall rebound timing.',task:'Ball fed to front wall, rebounds to player who strikes.',constraint:'Orange or green dot. Medium pace feed.',cue:'See the ball hit the wall, then move.',simplify:'Slow feed. Player stands close.',progress:'Add recovery movement after strike.'},
@@ -10362,10 +10265,10 @@ function Level0Foundations({setScreen,setSession}){
   ];
 
   const chippingCards=[
-    {code:'0A',title:'Stationary Chipping',purpose:'Ball control, consistency, confidence.',task:'Player repeatedly chips the ball into a wall target. No movement required.',constraint:'Any ball. Side wall or front wall target.',goal:'Personal best consecutive contacts.',variations:'Forehand · Backhand · Front wall · Side wall',cue:'Watch the ball hit the wall.',simplify:'Larger ball, closer to wall.',progress:'Set consecutive targets: 5 then 10 then 20.'},
+    chippingLevel0('stationary',{code:'0A',purpose:'Ball control, consistency, confidence.',cue:'Watch the ball hit the wall.'}),
     {code:'0B',title:'Consecutive Success',purpose:'Build repeatability and focus.',task:'Chip into the same target zone repeatedly.',constraint:'Set a clear target zone on the wall.',goal:'Reach 5 · 10 · 20 · 50 consecutive successful contacts.',cue:'Same spot. Every time.',simplify:'Reduce the target count.',progress:'Increase the target. Add backhand alternation.'},
     {code:'0C',title:'Progressive Distance',purpose:'Force regulation, distance calibration, trajectory awareness.',task:'Chip to wall target. Move further away after reaching the success target.',constraint:'Mark distances on the floor.',goal:'Reach the maximum manageable distance.',cue:'Same swing — more pace.',simplify:'Return to closer distance.',progress:'Add consecutive success requirement at each distance.'},
-    {code:'0D',title:'Chip and Move',purpose:'Integrate movement and contact.',task:'Chip. Move to a new position. Chip again. The ball trajectory creates the next movement problem.',constraint:'Player must move between each contact.',cue:'Move as soon as you strike.',simplify:'Slow feed. Large ball.',progress:'Set a target number of consecutive chip-and-moves.'},
+    chippingLevel0('chipMove',{code:'0D',purpose:'Integrate movement and contact.',cue:'Move as soon as you strike.'}),
     {code:'0E',title:'Continuous Chip and Move',purpose:'Continuous perception-action coupling.',task:'Maintain a continuous chip and move sequence without stopping.',constraint:'No stationary striking allowed.',goal:'Longest unbroken sequence.',cue:'Keep moving.',simplify:'Reduce the target. Allow one stationary contact.',progress:'Smaller target zone. Increase court area used.'},
     {code:'0F',title:'Volley Chip and Move',purpose:'Earlier interception, racket preparation, spatial awareness.',task:'Maintain control using volleys where appropriate.',constraint:'Forehand only then Backhand only then Alternating then Free play.',cue:'Take it before it bounces where you can.',simplify:'Allow bounces. Large ball.',progress:'Random forehand and backhand volley target.'},
     {code:'0G',title:'Arrive and Strike',purpose:'Spacing development. Perception-driven movement.',task:'Feed. Move. Find the ball with a final lunge. Strike.',constraint:'Feed varies to force genuine movement. Player may not pre-position.',coachCue:'Find the ball with your lunge.',avoid:'Move away from the ball · Give yourself more room',simplify:'Slow feed. Large ball. Short distance.',progress:'Forehand then Backhand then Random side then Live rally entry.'},
@@ -11643,37 +11546,37 @@ function ToolsArchitecture({setScreen}){
   const qfInterventions={
     'Late Preparation':{cause:'Information pickup delay — player is watching the ball too late or from a poor position.',constraint:'Two Coloured Racquet. Player must call the colour as the ball leaves the opponent racquet.',tool:'Visual Tracking Task — TAU-4 or TAU-5 feed source activity.',activity:'Coach feeds to alternate sides. Player must call the feed side before moving. No move without a call.',progression:'Reduce call to a hand signal. Then fade the call. Add rally pressure.',levels:'All levels'},
     'Racquet Not Ready':{cause:'Sequential movement pattern — player organises movement before racquet preparation.',constraint:'Racquet must be at backswing height when the player arrives. Check position on arrival, not at contact.',tool:'Arrival constraint: place a target cone at the ideal arrival position. Racquet must be ready when foot hits the cone.',activity:'Coach feeds. Player must tap cone with foot AND have racquet ready simultaneously.',progression:'Remove cone. Add movement recovery. Add rally context.',levels:'Level 1–4'},
-    'Watching Ball Too Late':{cause:'Attention on body movement rather than information sources.',constraint:'Two Coloured Racquet — player calls colour of hitting face before player strikes.',tool:'Quiet Eye Task. Player tracks ball from opponent racquet through the flight path.',activity:'Stand-and-watch drill. Player does not move or strike — only tracks and calls each ball.',progression:'Add a strike. Add movement. Add rally.',levels:'All levels'},
+    'Watching Ball Too Late':{cause:'Attention on body movement rather than information sources.',constraint:'Two Coloured Racquet — player calls colour of hitting face before player strikes.',tool:'Quiet Eye Task. Player tracks ball from opponent racquet through the flight path.',activity:'Stand-and-watch task. Player does not move or strike — only tracks and calls each ball.',progression:'Add a strike. Add movement. Add rally.',levels:'All levels'},
     'No Split Step':{cause:'Pre-programmed movement — player decides direction before reading opponent.',constraint:'Stop-and-start constraint: player must pause at T between every shot.',tool:'Rhythm cue: coach claps or calls "T" each time player should split step.',activity:'Feed and recover. Coach feeds. Player strikes, recovers to T, pauses visibly, then moves to next feed.',progression:'Reduce pause. Use rhythm cue only. Fade to natural movement.',levels:'Level 1–3'},
     'Poor Contact Distance':{cause:'Player has not learned functional spacing through movement experience.',constraint:'Arrive and Strike (0G). Player must lunge to the ball — contact made on lunge arrival.',tool:'Lunge Gate: place a cone at ideal contact distance. Player must arrive with lunge reaching the cone.',activity:'Coach feeds. Player moves and lunges to each ball. Coach observes contact position.',progression:'Remove cone. Add directional variation. Add live rally entry.',levels:'Level 0–2'},
     'Too Close to Ball':{cause:'Player stops movement too early or positions body too close to expected contact point.',constraint:'Extend the feed. Coach feeds slightly wider and deeper to force a longer movement arc.',tool:'Ball size reduction: smaller ball creates a smaller contact zone and requires more precise arrival.',activity:'Feed to extended positions. Player must fully extend lunge to reach the ball.',progression:'Vary feed distance. Add backhand. Add live feeds.',levels:'Level 0–3'},
-    'Too Far from Ball':{cause:'Player overshoots or positions body outside functional contact distance.',constraint:'Reduce feed distance. Coach feeds to tighter positions to reduce movement arc required.',tool:'Target marker: place a small cone at ideal contact distance. Player aims to arrive with lunge at the marker.',activity:'Short feed drill. Player must make clean contact without overextending.',progression:'Vary positions. Add movement. Add live rally.',levels:'Level 0–3'},
+    'Too Far from Ball':{cause:'Player overshoots or positions body outside functional contact distance.',constraint:'Reduce feed distance. Coach feeds to tighter positions to reduce movement arc required.',tool:'Target marker: place a small cone at ideal contact distance. Player aims to arrive with lunge at the marker.',activity:'Short feed task. Player must make clean contact without overextending.',progression:'Vary positions. Add movement. Add live rally.',levels:'Level 0–3'},
     'No Lunge':{cause:'Movement pattern does not include a final arrival step.',constraint:'Arrive and Strike (0G): feed requires a lunge to reach. Cannot be reached without lunging.',tool:'Coach cue: "Find the ball with your lunge." Avoid "Move away from the ball."',activity:'Wide feeds to both sides. Player must lunge to reach every ball.',progression:'Add alternating sides. Increase feed distance. Live rally entry.',levels:'Level 0–2'},
     'Falling Away After Strike':{cause:'Player unweighting from strike position — often linked to poor lunge mechanics.',constraint:'Side-Wall Ball Return Tool: player releases a ball from the non-playing hand after follow-through. Ball should roll straight back, not away from wall.',tool:'Second Racquet Counterbalance: player holds an object in non-playing hand to balance the swing.',activity:'Strike and hold: player must hold the strike position for one second after contact.',progression:'Reduce hold time. Add movement recovery. Live rally.',levels:'Level 0–3'},
-    'Poor Recovery to T':{cause:'Player stays watching their shot rather than moving immediately.',constraint:'Recovery cone: place a cone at the T. Player must touch the cone after every shot.',tool:'Elastic Band analogy: player imagines an elastic band connecting them to the T that pulls them back immediately.',activity:'Feed and touch drill. Player strikes and must touch T cone before next feed arrives.',progression:'Remove cone. Add faster feeds. Live rally recovery.',levels:'Level 1–4'},
-    'Non-Playing Arm Crossing':{cause:'Sequential movement pattern — non-playing arm pulled into body through swing.',constraint:'Second Racquet Counterbalance: object in non-playing hand prevents crossing.',tool:'Eagle Wings analogy: non-playing arm spreads outward like a wing at contact.',activity:'Static swing drill with second racquet. Feed ball with constraint active.',progression:'Fade second racquet. Use analogy cue only. Live rally.',levels:'Level 0–3'},
+    'Poor Recovery to T':{cause:'Player stays watching their shot rather than moving immediately.',constraint:'Recovery cone: place a cone at the T. Player must touch the cone after every shot.',tool:'Elastic Band analogy: player imagines an elastic band connecting them to the T that pulls them back immediately.',activity:'Feed and touch task. Player strikes and must touch T cone before next feed arrives.',progression:'Remove cone. Add faster feeds. Live rally recovery.',levels:'Level 1–4'},
+    'Non-Playing Arm Crossing':{cause:'Sequential movement pattern — non-playing arm pulled into body through swing.',constraint:'Second Racquet Counterbalance: object in non-playing hand prevents crossing.',tool:'Eagle Wings analogy: non-playing arm spreads outward like a wing at contact.',activity:'Static swing task with second racquet. Feed ball with constraint active.',progression:'Fade second racquet. Use analogy cue only. Live rally.',levels:'Level 0–3'},
     'Rotational Instability':{cause:'Insufficient non-playing arm counterbalance and weak lunge base.',constraint:'Strike and hold: player holds balanced position after each strike for one count.',tool:'Eagle Wings analogy. Second Racquet Counterbalance.',activity:'Wide lunge feeds. Player must arrive, strike, and hold balanced position.',progression:'Add movement. Reduce hold. Live rally constraint.',levels:'Level 0–3'},
     'Wrist Breakdown':{cause:'Grip weakness or sequential wrist action at contact.',constraint:'Happy Smiley Face: draw a face on the palm. Player must maintain face visibility at follow-through.',tool:'Hand to Forearm Tape: immediate haptic feedback when wrist collapses.',activity:'Wall chipping with smiley face visible. Check face position at follow-through.',progression:'Remove visual cue. Use tape only. Fade tape. Live rally.',levels:'Level 0–2'},
-    'Excessive Backswing':{cause:'Over-preparation habit or timing compensation for late preparation.',constraint:'Wall Swing Constraint: player stands close to side wall. Excessive backswing contacts the wall.',tool:'Compact swing cue: "Racquet to cheek height — no higher."',activity:'Side-wall proximity drill. Feed ball with wall close behind player.',progression:'Increase feed pace. Move away from wall gradually. Live rally.',levels:'Level 0–4'},
-    'Flat-Footed Striking':{cause:'Weight not transferring through the strike. Static base at contact.',constraint:'Forward weight transfer constraint: player must step through the shot. Foot must land before contact.',tool:'Skimming Stones analogy: throwing action requires forward weight transfer.',activity:'Step-and-strike drill. Coach feeds. Player must step forward onto lunge foot before contact.',progression:'Add movement. Increase feed pace. Live rally.',levels:'Level 1–4'},
+    'Excessive Backswing':{cause:'Over-preparation habit or timing compensation for late preparation.',constraint:'Wall Swing Constraint: player stands close to side wall. Excessive backswing contacts the wall.',tool:'Compact swing cue: "Racquet to cheek height — no higher."',activity:'Side-wall proximity task. Feed ball with wall close behind player.',progression:'Increase feed pace. Move away from wall gradually. Live rally.',levels:'Level 0–4'},
+    'Flat-Footed Striking':{cause:'Weight not transferring through the strike. Static base at contact.',constraint:'Forward weight transfer constraint: player must step through the shot. Foot must land before contact.',tool:'Skimming Stones analogy: throwing action requires forward weight transfer.',activity:'Step-and-strike task. Coach feeds. Player must step forward onto lunge foot before contact.',progression:'Add movement. Increase feed pace. Live rally.',levels:'Level 1–4'},
     'Over-Hitting':{cause:'Force regulation issue — player using maximum force regardless of court position or tactical need.',constraint:'Scoring constraint: points only count for shots landing in target zone. Hitting hard loses the point.',tool:'Scaling down: reduce court size or introduce a low target zone on the front wall.',activity:'Target zone game. All shots must land in a defined zone. Hard shots that miss lose a point.',progression:'Increase zone difficulty. Add opponent. Live competitive game.',levels:'Level 1–5'},
     'Wristy Contact':{cause:'Wrist leading the swing rather than elbow-led preparation.',constraint:'Hand to Forearm Tape: immediate feedback when wrist breaks through impact zone.',tool:'Happy Smiley Face on palm. Whip analogy: handle leads, tip follows.',activity:'Wall chipping with tape and smiley face. Focus on elbow-led preparation.',progression:'Remove tape. Add feeds. Live rally.',levels:'Level 0–3'},
-    'Flat Footed':{cause:'No reactive movement base — player waiting in static position.',constraint:'Split Step cue: coach calls or claps to trigger reactive step before each feed.',tool:'Rhythm tool: waltz tempo encourages continuous weight shifting.',activity:'Anticipation drill: player on toes throughout. Coach varies feed direction unpredictably.',progression:'Remove external cue. Add rally pace. Live competitive play.',levels:'Level 1–4'},
-    'Not Reaching Ball':{cause:'Movement initiation delayed or movement direction wrong.',constraint:'Feed source constraint: coach feeds from different positions to force varied movement solutions.',tool:'Two Coloured Racquet: player must read feed side before moving.',activity:'Early call drill: player calls side before moving. No call = no move.',progression:'Reduce call requirement. Add movement recovery. Live rally.',levels:'Level 1–3'},
-    'Slow First Move':{cause:'Reaction delay — player not reading information early enough.',constraint:'TAU-4 or TAU-5 feed tracking activity. Player must move before ball reaches halfway.',tool:'Visual constraint: Two Coloured Racquet colour call before movement.',activity:'Early move drill. Feed varies. Player must initiate movement before ball crosses service line.',progression:'Add direction variation. Reduce latency threshold. Live rally.',levels:'Level 1–4'},
-    'Poor Court Coverage':{cause:'Pattern-based movement — player moving to habitual positions rather than reading opponent.',constraint:'Varied feed: no two consecutive feeds to the same position.',tool:'Recovery cone: player must touch T between every shot.',activity:'Five-position drill. Coach feeds to five different positions in random order. Player recovers to T between each.',progression:'Increase feed pace. Add opponent. Live competitive game.',levels:'Level 2–5'},
+    'Flat Footed':{cause:'No reactive movement base — player waiting in static position.',constraint:'Split Step cue: coach calls or claps to trigger reactive step before each feed.',tool:'Rhythm tool: waltz tempo encourages continuous weight shifting.',activity:'Anticipation task: player on toes throughout. Coach varies feed direction unpredictably.',progression:'Remove external cue. Add rally pace. Live competitive play.',levels:'Level 1–4'},
+    'Not Reaching Ball':{cause:'Movement initiation delayed or movement direction wrong.',constraint:'Feed source constraint: coach feeds from different positions to force varied movement solutions.',tool:'Two Coloured Racquet: player must read feed side before moving.',activity:'Early call task: player calls side before moving. No call = no move.',progression:'Reduce call requirement. Add movement recovery. Live rally.',levels:'Level 1–3'},
+    'Slow First Move':{cause:'Reaction delay — player not reading information early enough.',constraint:'TAU-4 or TAU-5 feed tracking activity. Player must move before ball reaches halfway.',tool:'Visual constraint: Two Coloured Racquet colour call before movement.',activity:'Early move task. Feed varies. Player must initiate movement before ball crosses service line.',progression:'Add direction variation. Reduce latency threshold. Live rally.',levels:'Level 1–4'},
+    'Poor Court Coverage':{cause:'Pattern-based movement — player moving to habitual positions rather than reading opponent.',constraint:'Varied feed: no two consecutive feeds to the same position.',tool:'Recovery cone: player must touch T between every shot.',activity:'Five-position task. Coach feeds to five different positions in random order. Player recovers to T between each.',progression:'Increase feed pace. Add opponent. Live competitive game.',levels:'Level 2–5'},
     'Tight Grip':{cause:'Anxiety or over-effort response.',constraint:'Grip looseness cue: "Hold a baby bird — firm enough to hold it, gentle enough not to hurt it."',tool:'Waltz Rhythm Tool: slow waltz tempo reduces tension throughout movement.',activity:'Chip and talk: player maintains conversation while chipping. Talking prevents breath-holding and tension.',progression:'Add movement. Increase pace. Live rally with rhythm constraint.',levels:'All levels'},
     'Tense Shoulders':{cause:'Over-effort or anxiety. Often linked to grip tension.',constraint:'Blue Danube Waltz constraint: music shapes relaxed movement rhythm without instruction.',tool:'Drop-shoulder cue before every feed. "Shake hands — drop shoulders — play."',activity:'Rhythm warm-up: Blue Danube playing, players move and rally with no coaching input.',progression:'Fade music. Player learns to self-regulate. Live rally.',levels:'All levels'},
     'Rushing':{cause:'Temporal pressure response — player perceiving insufficient time.',constraint:'Blue Danube Tempo constraint: slow waltz rhythm forces reduction in movement pace.',tool:'Scaling: reduce feed pace or use larger ball to increase available time.',activity:'Slow-motion rally: all shots hit at 50% pace. Only gentle, deliberate contacts count.',progression:'Gradually increase pace. Add normal ball. Live rally.',levels:'Level 0–3'},
-    'Loss of Flow':{cause:'Disrupted perception-action coupling — often after error or pressure.',constraint:'Waltz Rhythm Tool: re-establish movement rhythm through music constraint.',tool:'Reset routine: one breath, one bounce of ball, return to movement.',activity:'Rhythm reset drill: three cooperative rallies at walking pace to re-establish coupling.',progression:'Return to competitive pace. Monitor for loss of flow under pressure.',levels:'All levels'},
-    'Visual Tracking Issues':{cause:'Information pickup from incorrect source or insufficient time to track.',constraint:'TAU-1 Large Ball Tracking: player tracks large ball with no striking requirement.',tool:'Feed source constraint: begin with self-drop, progress to coach feed, wall rebound.',activity:'Watch-and-point drill: player points at ball throughout flight without striking. Coach observes gaze.',progression:'Add strike. Reduce ball size. Add movement. Live rally.',levels:'Level 0–2'},
-    'Misjudged Bounce':{cause:'Incomplete perceptual attunement to ball flight and wall rebound.',constraint:'TAU-5 Front Wall Tracking: player practices wall rebound prediction before adding movement.',tool:'Variable ball constraint: mix ball sizes to prevent fixed bounce timing solution.',activity:'Bounce prediction drill: player calls "now" when they expect ball to bounce. Coach compares to actual bounce.',progression:'Add movement. Reduce ball size. Live rally.',levels:'Level 0–2'},
-    'Poor Anticipation':{cause:'Player reading ball rather than opponent information sources.',constraint:'Two Coloured Racquet: player must read feed side from opponent body, not ball.',tool:'Quiet Eye Task: coach guides attention to shoulder and trunk cues.',activity:'Screen drill: ball hidden briefly at start of feed. Player must move based on body cues only.',progression:'Increase screen time. Add deception. Live competitive rally.',levels:'Level 2–5'},
-    'Late Information Pickup':{cause:'Attention fixated on ball arrival rather than earlier body cues.',constraint:'Two Coloured Racquet: call colour before ball leaves opponent racquet.',tool:'Information & Anticipation module: opponent cue source activities.',activity:'Shoulder-first drill: player reads opponent shoulder turn as the primary movement cue.',progression:'Add trunk and hip cues. Live competitive rally.',levels:'Level 2–5'},
-    'Hitting to Opponent':{cause:'Habitual cross-court hitting or lack of court awareness.',constraint:'Scoring constraint: points only for shots that move opponent. Hitting to opponent scores zero.',tool:'Court awareness task: player must verbalise opponent position before striking.',activity:'Call-and-hit drill: player calls "opponent left" or "opponent right" before every shot.',progression:'Add scoring. Make tactical decision implicit. Live competitive game.',levels:'Level 2–5'},
+    'Loss of Flow':{cause:'Disrupted perception-action coupling — often after error or pressure.',constraint:'Waltz Rhythm Tool: re-establish movement rhythm through music constraint.',tool:'Reset routine: one breath, one bounce of ball, return to movement.',activity:'Rhythm reset task: three cooperative rallies at walking pace to re-establish coupling.',progression:'Return to competitive pace. Monitor for loss of flow under pressure.',levels:'All levels'},
+    'Visual Tracking Issues':{cause:'Information pickup from incorrect source or insufficient time to track.',constraint:'TAU-1 Large Ball Tracking: player tracks large ball with no striking requirement.',tool:'Feed source constraint: begin with self-drop, progress to coach feed, wall rebound.',activity:'Watch-and-point task: player points at ball throughout flight without striking. Coach observes gaze.',progression:'Add strike. Reduce ball size. Add movement. Live rally.',levels:'Level 0–2'},
+    'Misjudged Bounce':{cause:'Incomplete perceptual attunement to ball flight and wall rebound.',constraint:'TAU-5 Front Wall Tracking: player practices wall rebound prediction before adding movement.',tool:'Variable ball constraint: mix ball sizes to prevent fixed bounce timing solution.',activity:'Bounce prediction task: player calls "now" when they expect ball to bounce. Coach compares to actual bounce.',progression:'Add movement. Reduce ball size. Live rally.',levels:'Level 0–2'},
+    'Poor Anticipation':{cause:'Player reading ball rather than opponent information sources.',constraint:'Two Coloured Racquet: player must read feed side from opponent body, not ball.',tool:'Quiet Eye Task: coach guides attention to shoulder and trunk cues.',activity:'Screen task: ball hidden briefly at start of feed. Player must move based on body cues only.',progression:'Increase screen time. Add deception. Live competitive rally.',levels:'Level 2–5'},
+    'Late Information Pickup':{cause:'Attention fixated on ball arrival rather than earlier body cues.',constraint:'Two Coloured Racquet: call colour before ball leaves opponent racquet.',tool:'Information & Anticipation module: opponent cue source activities.',activity:'Shoulder-first task: player reads opponent shoulder turn as the primary movement cue.',progression:'Add trunk and hip cues. Live competitive rally.',levels:'Level 2–5'},
+    'Hitting to Opponent':{cause:'Habitual cross-court hitting or lack of court awareness.',constraint:'Scoring constraint: points only for shots that move opponent. Hitting to opponent scores zero.',tool:'Court awareness task: player must verbalise opponent position before striking.',activity:'Call-and-hit task: player calls "opponent left" or "opponent right" before every shot.',progression:'Add scoring. Make tactical decision implicit. Live competitive game.',levels:'Level 2–5'},
     'No Length':{cause:'Force regulation issue or tactical habit of early attack.',constraint:'Length Before Attack constraint: all shots must pass the service box before an attack is valid.',tool:'Target zone: mark short-line area. Points only for shots landing past the line.',activity:'Length game: points awarded only for shots landing in back quarter of court.',progression:'Add opponent pressure. Live conditioned game. Remove constraint.',levels:'Level 2–4'},
     'No Variation':{cause:'Predictable pattern formation — player locked into a single tactical solution.',constraint:'Route Breaker constraint: no two consecutive shots to the same position.',tool:'Checkerboard challenge: player must complete a pair challenge before each attack.',activity:'Checkerboard Pair Challenge game. Player earns right to attack only after completing the pair.',progression:'Add Triple Challenge. Increase pace. Live competitive game.',levels:'Level 2–5'},
-    'Poor Court Awareness':{cause:'Attention focused on ball and own action — insufficient opponent and court awareness.',constraint:'Call-and-move: player must call opponent position before every shot.',tool:'Checkerboard system: spatial awareness built into task design.',activity:'Two-touch awareness drill: after each shot player looks to opponent T position before next ball.',progression:'Add movement. Reduce call requirement. Live competitive game.',levels:'Level 2–5'},
+    'Poor Court Awareness':{cause:'Attention focused on ball and own action — insufficient opponent and court awareness.',constraint:'Call-and-move: player must call opponent position before every shot.',tool:'Checkerboard system: spatial awareness built into task design.',activity:'Two-touch awareness task: after each shot player looks to opponent T position before next ball.',progression:'Add movement. Reduce call requirement. Live competitive game.',levels:'Level 2–5'},
   };
 
   // ── TOOL LIBRARY DATA ───────────────────────────────────────────
@@ -13160,7 +13063,7 @@ function PowerPlayBuilder({onAddToSession}){
       {['presets','builder','scoring','history'].map(t=><button key={t} type="button"
         className={ppTab===t?'ppTabActive':'ppTabInactive'}
         onClick={()=>setPpTab(t)}>
-        {t==='presets'?'Plug & Play':t==='builder'?'Custom Builder':t==='scoring'?'Scoring Builder':'History Log'}
+        {t==='presets'?'Presets':t==='builder'?'Custom Builder':t==='scoring'?'Scoring Builder':'History Log'}
       </button>)}
     </div>
 
@@ -13202,6 +13105,22 @@ function PowerPlayBuilder({onAddToSession}){
           </button>
         </div>
       </div>)}
+    </div>}
+
+    {ppTab==='presets'&&<div className="ppKocSection">
+      <h3 style={{margin:'18px 0 4px'}}>King of Court Power Play</h3>
+      <p className="mutedText" style={{marginTop:0}}>Winner stays, loser rotates, 3–8 players. The same token decisions, played across a rotation.</p>
+      <div className="ppPresetGrid">{PP_KOC_GAMES.map(game=><div key={game.id} className="ppPresetCard">
+        <div className="ppPresetTopRow"><span className="ppEngineTag">{game.type}</span><span className="ppLevelTag">{game.level}</span></div>
+        <h3>{game.title}</h3>
+        <p className="ppPresetRationale">{game.why}</p>
+        <div className="ppPresetMeta"><span>Players: {game.players}</span></div>
+        <div className="ppPresetScoring"><strong>What To Do</strong><p>{game.what}</p></div>
+        <div className="ppPresetScoring"><strong>Scoring</strong><p>{game.score}</p></div>
+        <div className="ppPresetCoachNote"><strong>Coach Note</strong><p>{game.coach}</p></div>
+        <div className="ppPresetPlayerNote"><strong>Player Instructions</strong><p>{game.player}</p></div>
+        <div className="ppPresetActions"><button type="button" className="primaryBtn" onClick={()=>{onAddToSession(ppKocCard(game));setPpStatus(`${game.title} added to session.`);}}>Add to Session</button></div>
+      </div>)}</div>
     </div>}
 
     {/* ── CUSTOM BUILDER ── */}
@@ -24676,7 +24595,6 @@ const SR_GAMES={
     {id:'f5',title:'First 3 Winner',task:'Rally ends after the third shot — high pressure.',scoring:'Winner of the exchange = 1 point.',bonus:''},
   ],
   read:[
-    {id:'rr1',title:'Move Before Front Wall',task:'Returner must initiate movement before the serve contacts the front wall.',scoring:'1 point.',bonus:''},
     {id:'rr2',title:'Read Body Cue',task:'Returner calls the serve side before the bounce.',scoring:'1 point.',bonus:''},
     {id:'rr3',title:'Read Racquet Cue',task:'Returner predicts serve width from racquet preparation.',scoring:'1 point.',bonus:''},
     {id:'rr4',title:'Disguise Detection',task:'Server disguises; the returner reads it.',scoring:'2 points.',bonus:''},
@@ -25925,7 +25843,7 @@ function ncRules(settings){
       ['Plan ahead','which square do I need, and can I win it this rally?'],
       ['Block awareness','recognising when an opponent is one square from a line and needing to respond.'],
       ['Calculated risk','nominating the best attacking square versus the square that denies the opponent.'],
-      ['Representative pressure','the challenge (when switched on) ties shot execution directly to a visible tactical outcome, not an isolated drill.']
+      ['Representative pressure','the challenge (when switched on) ties shot execution directly to a visible tactical outcome, not isolated practice.']
     ],
     note:'Coach should avoid over-instructing technique here \u2014 the challenge should guide behaviour, not a running commentary on shot mechanics. If a player is one square from winning, let the opponent work out for themselves that they need to block it.'
   };
