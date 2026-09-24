@@ -1,3 +1,4 @@
+// v759: stray Time Givers panel removed from the Diagnostics principles grid; one-line principle card instead
 // v758: parent pages may also name that approach to explain CLA versus traditional coaching (P26)
 // v757: P26 refined — coach education may name that approach to explain what it is and why CLA rejects it
 // v756: practice language — the banned word removed from every screen (coach: P26)
@@ -277,7 +278,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v758 Practice Language for Parents';
+const APP_VERSION='v759 Principles Grid Fix';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -22249,37 +22250,7 @@ function DiagnosticIntervention({setScreen}){
       <h2>Checkerboard Coaching Principles</h2>
       <div className="stageHintGrid">
         <div><strong>Game-Based First</strong><span>Learning has taken place when the behaviour appears in open rally or game situations.</span></div>
-          <section className="shotsTimePanel">
-            <div className="shotsTimeHeader">
-              <span className="timeBadge take">🟢 TIME TAKER</span>
-              <span className="timeBadge give">🔴 TIME GIVER</span>
-            </div>
-            <h3>Time Givers vs Time Takers</h3>
-            <p><strong>Core question:</strong> Did this action give the opponent time or take time away?</p>
-            <div className="shotsTimeGrid">
-              <div>
-                <h4>Time Takers</h4>
-                <ul>
-                  <li>Penetrating drive</li>
-                  <li>Volley return of serve</li>
-                  <li>Early intercept</li>
-                  <li>Effective working length</li>
-                </ul>
-              </div>
-              <div>
-                <h4>Time Givers</h4>
-                <ul>
-                  <li>Non-functional crosscourt</li>
-                  <li>Letting volley opportunities pass</li>
-                  <li>Floating length</li>
-                  <li>Late preparation or unnecessary retreat</li>
-                </ul>
-              </div>
-            </div>
-            <p className="shotsCallout">Coach lens: don't only ask if the shot looked good. Ask whether it changed the opponent's available time.</p>
-          </section>
-
-
+        <div><strong>Time Givers vs Time Takers</strong><span>Did this action give the opponent time or take time away? Full lists in Shots → How Shots Are Learned.</span></div>
         <div><strong>Intention Not Action</strong><span>Describe the purpose, ball outcome and tactical effect before body mechanics.</span></div>
         <div><strong>External Focus</strong><span>Use target, space, opponent information and trajectory before body-part cues.</span><InfoButton id="wulf"/></div>
       </div>
