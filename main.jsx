@@ -1,3 +1,4 @@
+// v760: Between-Rally Reset — switch-on constraint on the Player Display for any game
 // v759: stray Time Givers panel removed from the Diagnostics principles grid; one-line principle card instead
 // v758: parent pages may also name that approach to explain CLA versus traditional coaching (P26)
 // v757: P26 refined — coach education may name that approach to explain what it is and why CLA rejects it
@@ -278,7 +279,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v759 Principles Grid Fix';
+const APP_VERSION='v760 Between-Rally Reset';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1265,11 +1266,84 @@ function SquadClock({setScreen}){
     </div>}
   </div>;
 }
+// ── BETWEEN-RALLY RESET (v760) ──────────────────────────────────────────────────
+// A switch-on constraint for ANY game on the Player Display (coach, 18 Sep; built for
+// courtside use 25 Sep). After each rally the player runs RESET → BREATHE → PICK UP
+// INFORMATION → GO inside a fixed window before the next serve. No technical talk: one
+// breath, then one EXTERNAL cue (P25), then play. It trains the reset by making players do
+// it every rally, not by explaining it. Built on CLA logic, NOT on Gupta/Egoyan 2022
+// (rejected source, v668). The setting is remembered on this device and overlays whatever
+// game is on the display until switched off.
+const RALLY_RESET_KEY='checkerboard_rally_reset_v1';
+const RALLY_RESET_CUES=['See the ball early','Find space','Get opponent off the T','See what’s available'];
+const RALLY_RESET_DEFAULT={on:false,seconds:6,cue:RALLY_RESET_CUES[0]};
+function loadRallyReset(){try{const v=JSON.parse(localStorage.getItem(RALLY_RESET_KEY)||'null');if(v&&typeof v==='object'){const seconds=Math.min(8,Math.max(5,Number(v.seconds)||6));const cue=RALLY_RESET_CUES.includes(v.cue)?v.cue:RALLY_RESET_CUES[0];return {on:!!v.on,seconds,cue};}}catch(e){}return {...RALLY_RESET_DEFAULT};}
+function saveRallyReset(v){try{localStorage.setItem(RALLY_RESET_KEY,JSON.stringify(v));}catch(e){}}
+// Phase plan for a window of n seconds: 1 s reset, one breath (n−3 s, at least 2), 2 s to pick up information, then GO.
+function rallyResetPhase(left,n,cue){
+  const breathe=Math.max(2,n-3);
+  const t=n-left; // seconds elapsed
+  if(left<=0)return {key:'go',label:'GO',big:'GO',sub:'Serve when ready.'};
+  if(t<1)return {key:'reset',label:'RESET',big:'Walk back',sub:'Let the last rally go.'};
+  if(t<1+breathe)return {key:'breathe',label:'BREATHE',big:'One slow breath',sub:'In through the nose, long breath out.'};
+  return {key:'info',label:'PICK UP INFORMATION',big:cue,sub:'Then play.'};
+}
+function RallyResetPanel({cfg,setCfg}){
+  const [left,setLeft]=useState(null); // null = idle; number = seconds to GO; 0 = GO showing
+  useEffect(()=>{
+    if(left===null)return;
+    if(left<=0){scBeep(1);const id=setTimeout(()=>setLeft(null),1600);return ()=>clearTimeout(id);}
+    const id=setTimeout(()=>setLeft(l=>l===null?null:l-1),1000);return ()=>clearTimeout(id);
+  },[left]);
+  function upd(p){const v={...cfg,...p};setCfg(v);saveRallyReset(v);if(p.on===false)setLeft(null);}
+  function start(){scUnlock();setLeft(cfg.seconds);}
+  const ph=left===null?null:rallyResetPhase(left,cfg.seconds,cfg.cue);
+  const col={reset:'#9fb4c6',breathe:'#6eaac8',info:'#86b8a4',go:'#eaf4fb'};
+  return <div className="rrPanel">
+    <div className="rrHead">
+      <strong>Between-Rally Reset</strong>
+      <button type="button" className={cfg.on?'rrToggle rrOn':'rrToggle'} onClick={()=>upd({on:!cfg.on})}>{cfg.on?'On':'Off'}</button>
+    </div>
+    {cfg.on&&<>
+      <div className="rrSettings">
+        <span className="rrLbl">Window</span>
+        <PointStepper value={cfg.seconds} min={5} max={8} sign="" onChange={v=>upd({seconds:v})}/>
+        <span className="rrLbl">seconds</span>
+        <select value={cfg.cue} onChange={e=>upd({cue:e.target.value})}>{RALLY_RESET_CUES.map(c=><option key={c} value={c}>{c}</option>)}</select>
+      </div>
+      {ph?<button type="button" className="rrRun" style={{borderColor:col[ph.key]}} onClick={()=>setLeft(null)}>
+          <span className="rrPhase" style={{color:col[ph.key]}}>{ph.label}{left>0?' · '+left:''}</span>
+          <span className="rrBig" style={{color:col[ph.key]}}>{ph.big}</span>
+          <span className="rrSub">{ph.sub}</span>
+        </button>
+        :<button type="button" className="rrStart" onClick={start}>Rally over — Reset</button>}
+      <p className="rrNote">After every rally: reset, one breath, pick up information, go. No technical talk.</p>
+    </>}
+  </div>;
+}
+const RALLY_RESET_CSS=`
+.rrPanel{background:#0d1b2a;border:1px solid #2a3a4f;border-radius:14px;padding:12px 16px;margin:12px 0 4px;}
+.rrHead{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.rrHead strong{color:#cfe0ee;font-size:1rem;letter-spacing:.02em;}
+.rrToggle{min-width:72px;min-height:40px;border-radius:999px;border:1px solid #2a3a4f;background:#16233a;color:#9fb4c6;font-weight:800;}
+.rrToggle.rrOn{background:#1d4a38;border-color:#6fae8b;color:#eafff5;}
+.rrSettings{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.rrLbl{color:#9fb4c6;font-size:.85rem;font-weight:700;}
+.rrSettings select{min-height:40px;}
+.rrStart{width:100%;min-height:64px;border-radius:14px;border:1px solid #2e6e8e;background:#12263b;color:#eaf4fb;font-size:1.3rem;font-weight:800;}
+.rrRun{width:100%;min-height:150px;border-radius:14px;border:2px solid #2e6e8e;background:#0a141d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px;}
+.rrPhase{font-size:.9rem;font-weight:800;letter-spacing:.1em;}
+.rrBig{font-size:2.4rem;font-weight:800;line-height:1.15;text-align:center;}
+.rrSub{color:#9fb4c6;font-size:1rem;}
+.rrNote{color:#7f9bb5;font-size:.82rem;margin:8px 0 0;}`;
+
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
+  const [resetCfg,setResetCfg]=useState(loadRallyReset);
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText,rldLevel,rationale}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
-  const constraints=layers.length?layers:((constraintText&&constraintText!=='No extra constraints selected.')?[constraintText]:[]);
+  const baseConstraints=layers.length?layers:((constraintText&&constraintText!=='No extra constraints selected.')?[constraintText]:[]);
+  const constraints=resetCfg.on?[...baseConstraints,'Between-rally reset · '+resetCfg.cue]:baseConstraints;
   const CLA_BOX_STYLE=`
 .claRationaleBox{background:#0c1f1a!important;border:1px solid #1d4a38!important;border-left:4px solid #6fae8b!important;border-radius:12px!important;padding:14px 16px!important;margin:10px 0!important;}
 .claRationaleBox h2{color:#86b8a4!important;font-size:0.78rem!important;text-transform:uppercase!important;letter-spacing:0.05em!important;font-weight:800!important;margin:0 0 6px!important;}
@@ -1298,7 +1372,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
 .pdCard .pdcList li:first-child{border-top:none!important;}
 .pdCard .pdcNum{flex:0 0 auto!important;min-width:1.4em!important;color:#7fa9c9!important;font-size:0.8em!important;font-weight:800!important;}`;
   return <div className="playerDisplayShell pdCard">
-    <style>{CLA_BOX_STYLE}</style>
+    <style>{CLA_BOX_STYLE+RALLY_RESET_CSS}</style>
     <div className="playerDisplayTop">
       <span>PLAYER DISPLAY</span>
       <h1>{title}</h1>
@@ -1312,6 +1386,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
         {chosen.tcr?<RallyClock tcr={chosen.tcr}/>:<RotationTimer durationMin={chosen.duration} resetKey={String(chosen.id||'')+'-'+selectedIndex}/>}
         {hasSession&&<button className="secondaryBtn" disabled={selectedIndex>=session.length-1} onClick={()=>onSelect&&onSelect(selectedIndex+1)}>Next ▶</button>}
       </div>}
+      {chosen&&<RallyResetPanel cfg={resetCfg} setCfg={setResetCfg}/>}
     </div>
     <div className="playerDisplayGlance">
       <div className="pdGlanceFocus">
