@@ -1,3 +1,5 @@
+// v763: every dropdown starts dark (no browser-white select boxes anywhere)
+// v762: Between-Rally Reset added to the 12 builder screens that assemble their own modifier layers
 // v761: Between-Rally Reset added as panel 7 of Universal Modifiers (same setting as the Player Display)
 // v760: Between-Rally Reset — switch-on constraint on the Player Display for any game
 // v759: stray Time Givers panel removed from the Diagnostics principles grid; one-line principle card instead
@@ -280,7 +282,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v761 Reset in Universal Modifiers';
+const APP_VERSION='v763 No White Dropdowns';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1330,7 +1332,7 @@ const RALLY_RESET_CSS=`
 .rrToggle.rrOn{background:#1d4a38;border-color:#6fae8b;color:#eafff5;}
 .rrSettings{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;}
 .rrLbl{color:#9fb4c6;font-size:.85rem;font-weight:700;}
-.rrSettings select{min-height:40px;}
+.rrSettings select{min-height:40px;background:#0e2033;color:#eaf4fb;border:1px solid #2a4a63;border-radius:8px;padding:8px 12px;font:inherit;}
 .rrStart{width:100%;min-height:64px;border-radius:14px;border:1px solid #2e6e8e;background:#12263b;color:#eaf4fb;font-size:1.3rem;font-weight:800;}
 .rrRun{width:100%;min-height:150px;border-radius:14px;border:2px solid #2e6e8e;background:#0a141d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px;}
 .rrPhase{font-size:.9rem;font-weight:800;letter-spacing:.1em;}
@@ -2540,6 +2542,11 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
 }
 // Universal Modifiers → 7. Between-Rally Reset (v761). Where a coach switches the reset on as
 // a constraint for the game being set up. Same stored setting as the Player Display panel.
+// Same panel, as a layer for the builder screens that assemble their own layer stack
+// (they don't use UniversalModifierEngine) — v762.
+function UniversalRallyResetLayer({num='7'}){
+  return <CollapsibleLayer num={num} title="Between-Rally Reset" subtitle="Switch-on constraint — one breath, one cue, then play" color="blue" defaultOpen={false}><UniversalRallyResetPanel/></CollapsibleLayer>;
+}
 function UniversalRallyResetPanel(){
   const [cfg,setCfg]=useState(loadRallyReset);
   useEffect(()=>{const f=()=>setCfg(loadRallyReset());window.addEventListener('cb-rally-reset',f);return ()=>window.removeEventListener('cb-rally-reset',f);},[]);
@@ -5365,6 +5372,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <UniversalDBHandicapPanel/>
         <UniversalTinHeightPanel/>
         <UniversalTechConstraintsLayer/>
+        <UniversalRallyResetLayer/>
         
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
@@ -9261,6 +9269,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
+    <UniversalRallyResetLayer/>
     
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
@@ -9336,6 +9345,7 @@ function ShotClockBuilder({onAddToSession,setScreen}){
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
+    <UniversalRallyResetLayer/>
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
@@ -9416,6 +9426,7 @@ function FusionBuilder({onAddToSession,setScreen}){
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
+    <UniversalRallyResetLayer/>
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
@@ -9655,6 +9666,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
+    <UniversalRallyResetLayer/>
     
 
     <div className="buttonRow">
@@ -9824,6 +9836,7 @@ function ClassicConditionedBuilder({onAddToSession}){
       <UniversalDBHandicapPanel/>
       <UniversalTinHeightPanel/>
       <UniversalTechConstraintsLayer/>
+      <UniversalRallyResetLayer/>
       
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
@@ -10120,6 +10133,7 @@ function TechnicalFocusBuilder({onAddToSession}){
       <UniversalDBHandicapPanel/>
       <UniversalTinHeightPanel/>
       <UniversalTechConstraintsLayer/>
+      <UniversalRallyResetLayer/>
       
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
@@ -12217,6 +12231,7 @@ function CustomGameBuilder({onAddToSession}){
     <UniversalDBHandicapPanel/>
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
+    <UniversalRallyResetLayer/>
     
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
@@ -13806,6 +13821,7 @@ function AroundTheBoardBuilder({onAddToSession}){
           <UniversalDBHandicapPanel/>
           <UniversalTinHeightPanel/>
           <UniversalTechConstraintsLayer/>
+          <UniversalRallyResetLayer/>
           
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
@@ -16110,6 +16126,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
       <p className="mutedText">Allocate a double-bounce allowance per present player (Unlimited or 1–5).</p>
       <div className="drDbGrid">{names.map(n=><div className="drDbCard" key={n}><strong>{n}</strong><select value={db[n]||'Unlimited'} onChange={e=>setDbFor(n,e.target.value)}>{['Unlimited','1','2','3','4','5'].map(v=><option key={v}>{v}</option>)}</select></div>)}</div>
     </CollapsibleLayer>
+    <UniversalRallyResetLayer num="5"/>
 
     {usingDefaults&&<div className="drSpecial"><span className="mutedText">Fewer than 2 present players found — using default names (edit below, or mark players Present):</span><div className="drBtnRow">{names.map((n,i)=><input key={i} value={n} onChange={e=>setName(i,e.target.value)} style={{background:'#0b1118',border:'1px solid #2c3c4e',color:'#eaf2f9',borderRadius:'8px',padding:'8px 10px'}}/>)}</div></div>}
 
@@ -24820,6 +24837,7 @@ function ServeReturnModule({setScreen,setSession,embedded=false}){
           <label className="srObjBox"><div className="lbl">Returner DB</div><select value={retDb} onChange={e=>setRetDb(e.target.value)} style={{width:'100%',background:'#0b1118',color:'#eaf4fb',border:'1px solid #2c3c4e',borderRadius:'8px',padding:'8px'}}>{['Unlimited','1 bounce','2 bounce','3 bounce'].map(o=><option key={o}>{o}</option>)}</select></label>
         </div>
       </CollapsibleLayer>
+      <UniversalRallyResetLayer num="5"/>
     </div>
   </div>;
 }
@@ -24985,6 +25003,7 @@ function LobModule({setScreen,setSession,embedded=false}){
       <CollapsibleLayer num="4" title="DB Handicap" subtitle="Skill leveller" color="purple" defaultOpen={false}>
         <p className="lobMuted">Level the field by handicapping stronger players: fewer attempts, a smaller bucket, an extra guard, or a higher guard wall on their turn. Keep the challenge point near 70% success for everyone.</p>
       </CollapsibleLayer>
+      <UniversalRallyResetLayer num="5"/>
     </div>
   </div>;
 }
@@ -28874,6 +28893,12 @@ return <div>
    color/background rule elsewhere in the app still wins — this only fixes the
    underlying chrome, never overrides an existing look. */
 button,select{-webkit-appearance:none;appearance:none;}
+/* v763: no white boxes (coach). A dropdown with no look of its own used to fall back to the
+   browser's white box. Every select now starts dark, with a chevron so it still reads as a
+   dropdown. Plain element selector = lowest specificity: any class-based select style wins. */
+select{background-color:#0e2033;background-image:url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%239cc4ec' stroke-width='2'/></svg>\");background-repeat:no-repeat;background-position:right 12px center;color:#eaf4fb;border:1px solid #2a4a63;border-radius:8px;padding:8px 34px 8px 12px;min-height:40px;font:inherit;}
+select:focus{outline:2px solid #6eaac8;outline-offset:1px;}
+select option{background:#0e2033;color:#eaf4fb;}
 
 /* ── Universal Modifier Engine — one clean panel look everywhere (Design Principles 1, 2, 2a).
    These classes are unique to the shared engine (UniversalModifierEngine + CollapsibleLayer +
