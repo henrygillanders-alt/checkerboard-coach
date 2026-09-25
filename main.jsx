@@ -1,3 +1,4 @@
+// v761: Between-Rally Reset added as panel 7 of Universal Modifiers (same setting as the Player Display)
 // v760: Between-Rally Reset — switch-on constraint on the Player Display for any game
 // v759: stray Time Givers panel removed from the Diagnostics principles grid; one-line principle card instead
 // v758: parent pages may also name that approach to explain CLA versus traditional coaching (P26)
@@ -279,7 +280,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v760 Between-Rally Reset';
+const APP_VERSION='v761 Reset in Universal Modifiers';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1278,7 +1279,7 @@ const RALLY_RESET_KEY='checkerboard_rally_reset_v1';
 const RALLY_RESET_CUES=['See the ball early','Find space','Get opponent off the T','See what’s available'];
 const RALLY_RESET_DEFAULT={on:false,seconds:6,cue:RALLY_RESET_CUES[0]};
 function loadRallyReset(){try{const v=JSON.parse(localStorage.getItem(RALLY_RESET_KEY)||'null');if(v&&typeof v==='object'){const seconds=Math.min(8,Math.max(5,Number(v.seconds)||6));const cue=RALLY_RESET_CUES.includes(v.cue)?v.cue:RALLY_RESET_CUES[0];return {on:!!v.on,seconds,cue};}}catch(e){}return {...RALLY_RESET_DEFAULT};}
-function saveRallyReset(v){try{localStorage.setItem(RALLY_RESET_KEY,JSON.stringify(v));}catch(e){}}
+function saveRallyReset(v){try{localStorage.setItem(RALLY_RESET_KEY,JSON.stringify(v));}catch(e){}try{window.dispatchEvent(new CustomEvent('cb-rally-reset'));}catch(e){}}
 // Phase plan for a window of n seconds: 1 s reset, one breath (n−3 s, at least 2), 2 s to pick up information, then GO.
 function rallyResetPhase(left,n,cue){
   const breathe=Math.max(2,n-3);
@@ -1339,6 +1340,7 @@ const RALLY_RESET_CSS=`
 
 function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   const [resetCfg,setResetCfg]=useState(loadRallyReset);
+  useEffect(()=>{const f=()=>setResetCfg(loadRallyReset());window.addEventListener('cb-rally-reset',f);return ()=>window.removeEventListener('cb-rally-reset',f);},[]);
   const chosen=game || (Array.isArray(session)&&session.length?session[Math.min(selectedIndex,session.length-1)]:null);
   const {title,what,score,focus,layers,dbText,constraintText,rldLevel,rationale}=getPlayerDisplayFields(chosen);
   const hasSession=Array.isArray(session)&&session.length>0&&!game;
@@ -2536,6 +2538,25 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
     </div>
   </div>;
 }
+// Universal Modifiers → 7. Between-Rally Reset (v761). Where a coach switches the reset on as
+// a constraint for the game being set up. Same stored setting as the Player Display panel.
+function UniversalRallyResetPanel(){
+  const [cfg,setCfg]=useState(loadRallyReset);
+  useEffect(()=>{const f=()=>setCfg(loadRallyReset());window.addEventListener('cb-rally-reset',f);return ()=>window.removeEventListener('cb-rally-reset',f);},[]);
+  function upd(p){const v={...cfg,...p};setCfg(v);saveRallyReset(v);}
+  return <div className="rrPanel"><style>{RALLY_RESET_CSS}</style>
+    <div className="rrHead"><strong>Between-Rally Reset</strong>
+      <button type="button" className={cfg.on?'rrToggle rrOn':'rrToggle'} onClick={()=>upd({on:!cfg.on})}>{cfg.on?'On':'Off'}</button></div>
+    <p className="rrNote">After every rally: reset, one breath, pick up information, go — inside a fixed window before the next serve. No technical talk.</p>
+    {cfg.on&&<div className="rrSettings">
+      <span className="rrLbl">Window</span>
+      <PointStepper value={cfg.seconds} min={5} max={8} sign="" onChange={v=>upd({seconds:v})}/>
+      <span className="rrLbl">seconds</span>
+      <select value={cfg.cue} onChange={e=>upd({cue:e.target.value})}>{RALLY_RESET_CUES.map(c=><option key={c} value={c}>{c}</option>)}</select>
+    </div>}
+    {cfg.on&&<p className="rrNote">Players run it on the Player Display: “Rally over — Reset” under the game card.</p>}
+  </div>;
+}
 function MEPanel({title,subtitle,open,onToggle,children}){
   return <div className={open?'mePanel meOpen':'mePanel'}>
     <button type="button" className="mePanelHead" onClick={onToggle}>
@@ -2664,6 +2685,9 @@ function UniversalModifierEngine({value,onChange,title='Universal Modifier Engin
       <UniversalTinHeightPanel/>
       <UniversalTechConstraintsLayer/>
     </MEPanel>}
+    <MEPanel title="7. Between-Rally Reset" subtitle="Switch-on constraint — one breath, one cue, then play" open={open==='reset'} onToggle={()=>toggle('reset')}>
+      <UniversalRallyResetPanel/>
+    </MEPanel>
   </div>;
 }
 
