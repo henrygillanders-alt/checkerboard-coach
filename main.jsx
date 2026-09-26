@@ -1,3 +1,6 @@
+// v766: not volleyed / not attacked is not proof a crosscourt was good — the test is whether it moved the opponent (coach)
+// v765: Crosscourt Licence debrief asks about racquet–ball contact (coach)
+// v764: Crosscourt Choice family (earn it, cross away not at, choose it) + links to existing stages 3–4
 // v763: every dropdown starts dark (no browser-white select boxes anywhere)
 // v762: Between-Rally Reset added to the 12 builder screens that assemble their own modifier layers
 // v761: Between-Rally Reset added as panel 7 of Universal Modifiers (same setting as the Player Display)
@@ -282,7 +285,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v763 No White Dropdowns';
+const APP_VERSION='v766 Crosscourt Test Is Movement';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -755,6 +758,7 @@ return[
 lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
+...CXC_GAMES.map(g=>cxcCard(g,CXC_DEFAULTS)),
 {id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
 {id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Clean Winner'],cbCode:'None'}
@@ -8094,14 +8098,14 @@ const CCFF_GAMES=[
     {id:'ccff-toll',key:'toll',title:'1 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
      rule:(v)=>'Play above the line. Every time you volley your opponent’s crosscourt, you score +'+v.toll+'. That is the whole game: a crosscourt loose enough to volley is a crosscourt that hands you the point. Everyone saw whether it was volleyed, so it calls itself.',
-     coach:'Watch the feeder, not the volleyer: the player whose crosscourts keep getting volleyed is the one to coach — ask what made the cross loose (too straight, too central, too high, no width). If nobody volleys, the crosscourts are already tight (good) — move to The Functional Cross to reward them. Debrief: where did your volleyed crosscourts land, and what would have taken them past the T?',
+     coach:'Watch the feeder, not the volleyer: the player whose crosscourts keep getting volleyed is the one to coach — ask what made the cross loose (too straight, too central, too high, no width). A crosscourt that isn’t volleyed isn’t automatically good: a low crosscourt from the front can still be taken easily off the bounce and sent down a straight length, leaving the crosscourt player with no chance. The test is whether it made the opponent move. When crosscourts are beating the volley and moving the opponent, move to The Functional Cross to reward them. Debrief: when your crosscourt was volleyed, where was racquet–ball contact? When it wasn’t volleyed, did it make your opponent move?',
      focus:'Volley every loose crosscourt. If you can reach it, it was loose.',
      score:(v)=>'Rally win 1. +'+v.toll+' each time you volley the opponent’s crosscourt.',
      stepper:[{k:'toll',label:'Volley bonus',min:1,max:3,sign:'+'}]},
     {id:'ccff-attack',key:'attack',title:'2 · Volley Attack',rld:3,tag:'Attack the loose crosscourt, progressively',
      from:'Once players intercept loose crosscourts, the next step is finishing them — and tightening the target so the finish must be precise. This is your volley-kill and reducing-tin progression in one game.',
      rule:(v)=>'Play above the line. Volley a crosscourt short and win the rally with it: +'+v.attackVolley+'. Any crosscourt winner (volleyed or not): +'+v.attackWinner+'. Play as many as you like. The tin is set to '+v.tin+' — lower it round by round (service line → three-quarter → full front wall) so the volley-kill has to get tighter each time. Everyone sees the volley, the winner and the tin height, so it self-officiates.',
-     coach:'Run it as a ladder: start at the service-line tin, drop it as the group converts cleanly, finish at full front wall where only a real kill counts. If nobody attacks, the crosscourts are already tight — good — or the tin is too low for the group; raise it. Debrief: which loose crosscourt did you attack, and was the tin height fair for that ball?',
+     coach:'Run it as a ladder: start at the service-line tin, drop it as the group converts cleanly, finish at full front wall where only a real kill counts. If nobody attacks, don’t assume the crosscourts are tight — check whether they are making the opponent move; one taken easily off the bounce and sent down a straight length is still loose. If they are moving the opponent, good; if they aren’t and still nobody attacks, the tin is too low for the group — raise it. Debrief: which loose crosscourt did you attack, and was the tin height fair for that ball?',
      focus:'Volley the loose cross and kill it. Lower tin, tighter kill.',
      score:(v)=>'Rally win 1. Volley-short winner off a crosscourt +'+v.attackVolley+'. Any crosscourt winner +'+v.attackWinner+'. Tin: '+v.tin+'.',
      stepper:[{k:'attackVolley',label:'Volley-kill bonus',min:1,max:5,sign:'+'},{k:'attackWinner',label:'Cross-winner bonus',min:1,max:5,sign:'+'},{k:'tin',label:'Tin height',type:'select',options:['service line','three-quarter','full front wall']}]},
@@ -8122,13 +8126,76 @@ const CCFF_GAMES=[
     {id:'ccff-licence',key:'licence',title:'5 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
      from:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional — tight and dying into the back — or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on.',
      rule:(v)=>'Play a normal rally with one rule: you may only attack — go short, volley-kill, or take the ball in to finish — off a ball that came CROSSCOURT. A straight ball may not be attacked; you must answer it straight or with a length, and wait. Only when your opponent hits crosscourt is the attack unlocked — and a tight crosscourt dying into the back is still hard to do anything with, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court, so the unlock is self-officiating. Win any rally: 1 point. Win a rally with an attack off a crosscourt: +'+v.licence+'.',
-     coach:'Watch the crosscourts, not the attacks: a player who keeps feeding attackable crosscourts is the one to coach — ask what made that crosscourt loose (height, width, pace) rather than telling them to stop. If nobody attacks, the crosscourts are already tight (good) or nobody is crossing at all (make a minimum number of crosscourts per rally the constraint). Add a reducing tin as an optional constraint so the crosscourt attack must also be precise. Debrief: which of your crosscourts got punished, and where did it land?',
+     coach:'Watch the crosscourts, not the attacks: a player who keeps feeding attackable crosscourts is the one to coach — ask what made that crosscourt loose (height, width, pace) rather than telling them to stop. If nobody attacks, check whether the crosscourts are making the opponent move — one taken easily off the bounce and sent down a straight length is still loose, even though nobody attacked it — or whether nobody is crossing at all (make a minimum number of crosscourts per rally the constraint). Add a reducing tin as an optional constraint so the crosscourt attack must also be precise. Debrief: when one of your crosscourts got punished, where was racquet–ball contact?',
      focus:'Only attack off a crosscourt. Crosscourt only when it is tight — a loose one hands over the attack.',
      score:(v)=>'Rally win 1. Win with an attack played off an opponent crosscourt: +'+v.licence+'. Attacking off a straight ball does not count — the rally plays on.',
      anti:'No bonus if the attacked ball did not come crosscourt, or if the attack was off a straight ball.',
      stepper:[{k:'licence',label:'Crosscourt-attack bonus',min:1,max:4,sign:'+'}]}
 ];
 function ccffCard(g,v){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
+// ── CROSSCOURT CHOICE (v764) ────────────────────────────────────────────────────
+// Coach, 25 Sep: juniors cross for no reason instead of building from straight lines. Not a
+// ban — the crosscourt is EARNED from straight play, JUDGED by what it does to the opponent,
+// then CHOSEN. Stages 3–4 are existing games (Cross Court Friend or Foe, Common Game Errors),
+// linked, not copied. One definition: this screen and standardGames() read CXC_GAMES.
+const CXC_DEFAULTS={count:4,functional:2,gift:1,crosses:1,price:2};
+const CXC_GAMES=[
+  {id:'cxc-earn',stage:1,title:'Earn It',rld:4,duration:8,tag:'Build it straight — the crosscourt is unlocked, not banned',
+   from:'Juniors often cross because they arrive late or too close to the ball, and the crosscourt becomes an escape rather than a choice. Here the straight game comes first: straight shots build the rally, and only then does the crosscourt become available.',
+   rule:(v)=>'Play a normal rally. Nobody may hit a crosscourt until the rally has had '+v.count+' straight shot'+(v.count>1?'s':'')+' in a row — both players count them out loud. A boast or a crosscourt ends the count, and it starts again from zero. A crosscourt played before the count is reached loses the rally.',
+   coach:'Bring the count down as the group gets comfortable building straight rallies: 4, then 3, 2, 1. Listen to the counting — it tells you how long the straight rallies are. Debrief: when did you want to cross before it was unlocked, and what made you want to?',
+   focus:'Build it straight. Count out loud — the crosscourt is earned.',
+   score:(v)=>'Normal rally scoring. A crosscourt before '+v.count+' straight shot'+(v.count>1?'s':'')+' in a row loses the rally.',
+   stepper:[{k:'count',label:'Straight shots to unlock',min:1,max:4,sign:''}]},
+  {id:'cxc-away',stage:2,title:'Cross Away, Not At',rld:5,duration:10,tag:'Judged by what it does to the opponent',
+   from:'A crosscourt is functional when it makes the opponent move and cannot be cut off. The chance comes when the opponent is on your side of the court; the crosscourt still has to get past them. Both tests are visible — where the opponent’s feet were, and whether they volleyed it.',
+   rule:(v)=>'Play normal rallies. When you hit a crosscourt, look at your opponent. If they had both feet on your side of the half-court line (imagine it running on to the front wall) and they cannot volley it — they have to move and take it off the bounce — you score +'+v.functional+'. If your opponent volleys your crosscourt, wherever they were standing, they score +'+v.gift+': a crosscourt they can volley was loose. Any other crosscourt plays on with no bonus.',
+   coach:'Watch the striker’s head before a crosscourt — do they look at the opponent first? The receiver always wants to volley a crosscourt (it pays them), so this game also trains cutting crosscourts off. Debrief: where was your opponent when you crossed, and did they have to move?',
+   focus:'Cross away from them, not at them — and past them.',
+   score:(v)=>'Crosscourt with the opponent’s both feet on your side, not volleyed: +'+v.functional+' to you. Opponent volleys your crosscourt: +'+v.gift+' to them. Otherwise play on.',
+   stepper:[{k:'functional',label:'Functional crosscourt',min:1,max:4,sign:'+'},{k:'gift',label:'Volleyed crosscourt (to opponent)',min:1,max:3,sign:'+'}]},
+  {id:'cxc-choose',stage:5,title:'Choose It',rld:5,duration:10,tag:'The crosscourt becomes a decision',
+   from:'Adapted from the one-short-shot-per-rally condition game: a limited number of crosscourts per rally makes each one a choice, and a price on the result shows both sides of that choice.',
+   rule:(v)=>'Each player may hit '+(v.crosses===1?'one crosscourt':v.crosses+' crosscourts')+' per rally — choose when. Win the rally on your crosscourt, on the reply to it, or on your next shot: +'+v.price+'. Lose the rally in that same window: your opponent scores +'+v.price+'. A crosscourt beyond your allowance loses the rally.',
+   coach:'Start with one crosscourt each; allow two once players are choosing well. Watch when the crosscourt is used — early and automatic, or held until the opponent is on the wrong side? Debrief: why did you spend your crosscourt there?',
+   focus:'Your crosscourts are limited — spend each one when the opponent is on the wrong side.',
+   score:(v)=>'Rally won within two shots of your own crosscourt: +'+v.price+'. Lost within two shots of it: +'+v.price+' to your opponent. Crosscourt beyond your allowance: lose the rally.',
+   stepper:[{k:'crosses',label:'Crosscourts per rally',min:1,max:2,sign:''},{k:'price',label:'Crosscourt price',min:1,max:3,sign:'+'}]}
+];
+function cxcCard(g,v){return {id:g.id,title:g.title,category:'Crosscourt Choice',format:'Conditioned game — crosscourt decision',duration:g.duration,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),layers:['Decision Making','Shot Selection']};}
+function CrosscourtChoiceFamily({onAdd,openFamily,label='Add To Session'}){
+  const[v,setV]=React.useState(CXC_DEFAULTS);
+  const link=(id,text)=><button type="button" className="secondaryBtn" onClick={()=>openFamily&&openFamily(id)}>{text}</button>;
+  const card=g=><div className="gameCard" key={g.id}>
+    <div className="categoryTag">Crosscourt Choice · Stage {g.stage} · RLD {g.rld}</div><h2>{g.title}</h2>
+    <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
+    <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
+    <div className="infoBox"><strong>How to play</strong><p>{g.rule(v)}</p></div>
+    <div style={{display:'flex',alignItems:'center',gap:'10px',margin:'6px 0',flexWrap:'wrap'}}>{g.stepper.map(st=><span key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><PointStepper value={v[st.k]} min={st.min} max={st.max} sign={st.sign} onChange={val=>setV(prev=>({...prev,[st.k]:val}))}/></span>)}</div>
+    <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
+    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(cxcCard(g,v));}}>{label}</button>
+  </div>;
+  return <>
+  <div className="gameCard">
+    <div className="categoryTag">Crosscourt Choice</div><h2>↔️ Crosscourt Choice</h2>
+    <p>Juniors often cross for no reason instead of building the rally with straight shots. This series doesn’t ban the crosscourt. It is <strong>earned</strong> from straight play, <strong>judged</strong> by what it does to the opponent — make them move, and don’t hand them the volley — and finally <strong>chosen</strong>.</p>
+    <p className="mutedText">Five stages. Stages 3 and 4 are existing games, linked below rather than repeated. Every call is visible to the players: straight shots counted out loud, the opponent’s feet, and whether the crosscourt was volleyed.</p>
+  </div>
+  {CXC_GAMES.filter(g=>g.stage<=2).map(card)}
+  <div className="gameCard">
+    <div className="categoryTag">Crosscourt Choice · Stage 3</div><h2>Make Them Move</h2>
+    <p>Play <strong>The Functional Cross</strong> (Cross Court Friend or Foe, game 3): a crosscourt scores when it beats the volley and dies behind the service box. Or <strong>Functional Crosscourt</strong> in Common Game Errors: a crosscourt counts only if it moves the opponent.</p>
+    <div className="buttonRow">{link('crosscourtfof','Open Cross Court Friend or Foe →')}{link('errors','Open Common Game Errors →')}</div>
+  </div>
+  <div className="gameCard">
+    <div className="categoryTag">Crosscourt Choice · Stage 4</div><h2>Feel the Gift</h2>
+    <p>Swap to the receiver’s side: <strong>Volley Toll</strong> and <strong>One-Lunge Finish</strong> (Cross Court Friend or Foe, games 1 and 4). Players learn that a loose crosscourt gets punished — from the opponent, not the coach.</p>
+    <div className="buttonRow">{link('crosscourtfof','Open Cross Court Friend or Foe →')}</div>
+  </div>
+  {CXC_GAMES.filter(g=>g.stage===5).map(card)}
+  </>;
+}
+
 function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
   const[cc,setCc]=React.useState(CCFF_DEFAULTS);
   const games=CCFF_GAMES;
@@ -17287,6 +17354,8 @@ const GAME_LIBRARY=[
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><MovementLabFamily onAdd={addAndGo}/>},
   {id:'crosscourtfof',label:'Cross Court Friend or Foe',category:'Cross Court Friend or Foe',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo}/>},
+  {id:'crosscourtchoice',label:'Crosscourt Choice',category:'Crosscourt Choice',groups:['technique','perception','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrosscourtChoiceFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'errors',label:'Common Game Errors',category:'Common Game Errors',groups:['tools','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CommonGameErrors setSession={setSession}/>},
   {id:'custom',label:'Game Builder',category:'Custom',groups:['tools'],
