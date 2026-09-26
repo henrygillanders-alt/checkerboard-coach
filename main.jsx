@@ -1,3 +1,4 @@
+// v767: crosscourt rewards paid on conversion within N shots; opponent winner off your crosscourt = the ultimate gift
 // v766: not volleyed / not attacked is not proof a crosscourt was good — the test is whether it moved the opponent (coach)
 // v765: Crosscourt Licence debrief asks about racquet–ball contact (coach)
 // v764: Crosscourt Choice family (earn it, cross away not at, choose it) + links to existing stages 3–4
@@ -285,7 +286,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v766 Crosscourt Test Is Movement';
+const APP_VERSION='v767 Crosscourt Conversion Window';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8093,7 +8094,7 @@ function TimeSpaceLabFamily({onAdd,label='Add To Session'}){
 // Cross Court Friend or Foe — one definition, read by the family screen and by
 // standardGames() (Session Builder's All Games list and search). v747: Crosscourt
 // Licence moved in from Classic Games as game 5.
-const CCFF_DEFAULTS={toll:1,attackVolley:3,attackWinner:3,tin:'service line',lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2};
+const CCFF_DEFAULTS={toll:1,attackVolley:3,attackWinner:3,tin:'service line',lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-toll',key:'toll',title:'1 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
@@ -8111,11 +8112,11 @@ const CCFF_GAMES=[
      stepper:[{k:'attackVolley',label:'Volley-kill bonus',min:1,max:5,sign:'+'},{k:'attackWinner',label:'Cross-winner bonus',min:1,max:5,sign:'+'},{k:'tin',label:'Tin height',type:'select',options:['service line','three-quarter','full front wall']}]},
     {id:'ccff-functional',key:'functional',title:'3 · The Functional Cross',rld:3,tag:'Rewards the good crosscourt',
      from:'The mirror of the first two games. A functional crosscourt is one the opponent cannot volley — it is wide and dying into the back. This game pays that directly, so the family rewards the good cross as well as punishing the loose one.',
-     rule:(v)=>'Play above the line. Any crosscourt that beats the opponent’s volley and dies behind the service box scores +'+v.functional+'. If they volley it, no bonus — it was loose. The visible test is simple: did it get past the volley into the back? Run this alongside Volley Toll and both behaviours are priced at once — cross loose and you are volleyed, cross well and you score.',
+     rule:(v)=>'Play above the line. A functional crosscourt rarely wins the rally itself — it starts the pressure cycle. If your crosscourt beats the opponent’s volley and dies behind the service box, and you then win the rally with the crosscourt itself or within your next '+v.window+' shot'+(v.window>1?'s':'')+', you score +'+v.functional+'. If they volley it, no bonus — it was loose. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Run this alongside Volley Toll and both behaviours are priced at once.',
      coach:'This is the reward half — use it once players have felt the punishment games, so they know what a loose cross costs and now chase the functional one. Watch width: a cross that dies deep almost always used the side wall. Debrief: what made your best crosscourt un-volleyable — width, height, or where it died?',
-     focus:'Cross wide and deep, past the volley, dying in the back. That cross is your friend.',
-     score:(v)=>'Rally win 1. +'+v.functional+' for a crosscourt that beats the volley and dies behind the service box.',
-     stepper:[{k:'functional',label:'Functional-cross bonus',min:1,max:4,sign:'+'}]},
+     focus:'Cross wide and deep, past the volley — then finish what it started.',
+     score:(v)=>'Rally win 1. Crosscourt beats the volley and dies behind the service box, then you win within '+v.window+' of your shots: +'+v.functional+'. Opponent wins with their reply to your crosscourt: +'+v.giftWin+' to them.',
+     stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]},
     {id:'ccff-lunge',key:'lunge',title:'4 · One-Lunge Finish',rld:4,tag:'Convert the loose crosscourt in position',
      from:'A loose crosscourt should leave you needing only one step to reach it — you were already in position because it was readable. This game rewards being there and converting fast, and prices hesitation.',
      rule:(v)=>'Play above the line. When your opponent crosscourts, you may respond with a single lunge step and go for the finish. Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.',
@@ -8138,7 +8139,7 @@ function ccffCard(g,v){return {id:g.id,title:g.title.replace(/^\d+ · /,''),cate
 // ban — the crosscourt is EARNED from straight play, JUDGED by what it does to the opponent,
 // then CHOSEN. Stages 3–4 are existing games (Cross Court Friend or Foe, Common Game Errors),
 // linked, not copied. One definition: this screen and standardGames() read CXC_GAMES.
-const CXC_DEFAULTS={count:4,functional:2,gift:1,crosses:1,price:2};
+const CXC_DEFAULTS={count:4,functional:2,gift:1,crosses:1,price:2,window:2,giftWin:3};
 const CXC_GAMES=[
   {id:'cxc-earn',stage:1,title:'Earn It',rld:4,duration:8,tag:'Build it straight — the crosscourt is unlocked, not banned',
    from:'Juniors often cross because they arrive late or too close to the ball, and the crosscourt becomes an escape rather than a choice. Here the straight game comes first: straight shots build the rally, and only then does the crosscourt become available.',
@@ -8149,18 +8150,18 @@ const CXC_GAMES=[
    stepper:[{k:'count',label:'Straight shots to unlock',min:1,max:4,sign:''}]},
   {id:'cxc-away',stage:2,title:'Cross Away, Not At',rld:5,duration:10,tag:'Judged by what it does to the opponent',
    from:'A crosscourt is functional when it makes the opponent move and cannot be cut off. The chance comes when the opponent is on your side of the court; the crosscourt still has to get past them. Both tests are visible — where the opponent’s feet were, and whether they volleyed it.',
-   rule:(v)=>'Play normal rallies. When you hit a crosscourt, look at your opponent. If they had both feet on your side of the half-court line (imagine it running on to the front wall) and they cannot volley it — they have to move and take it off the bounce — you score +'+v.functional+'. If your opponent volleys your crosscourt, wherever they were standing, they score +'+v.gift+': a crosscourt they can volley was loose. Any other crosscourt plays on with no bonus.',
+   rule:(v)=>'Play normal rallies. When you hit a crosscourt, look at your opponent. The crosscourt is functional if they had both feet on your side of the half-court line (imagine it running on to the front wall) and they cannot volley it — they have to move and take it off the bounce. A functional crosscourt starts the pressure cycle: win the rally with it or within your next '+v.window+' shot'+(v.window>1?'s':'')+' and you score +'+v.functional+'. If your opponent volleys your crosscourt, wherever they were standing, they score +'+v.gift+': a crosscourt they can volley was loose. If they win the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them instead. Anything else plays on.',
    coach:'Watch the striker’s head before a crosscourt — do they look at the opponent first? The receiver always wants to volley a crosscourt (it pays them), so this game also trains cutting crosscourts off. Debrief: where was your opponent when you crossed, and did they have to move?',
    focus:'Cross away from them, not at them — and past them.',
-   score:(v)=>'Crosscourt with the opponent’s both feet on your side, not volleyed: +'+v.functional+' to you. Opponent volleys your crosscourt: +'+v.gift+' to them. Otherwise play on.',
-   stepper:[{k:'functional',label:'Functional crosscourt',min:1,max:4,sign:'+'},{k:'gift',label:'Volleyed crosscourt (to opponent)',min:1,max:3,sign:'+'}]},
+   score:(v)=>'Functional crosscourt (opponent’s both feet on your side, not volleyed), then you win within '+v.window+' of your shots: +'+v.functional+'. Opponent volleys your crosscourt: +'+v.gift+' to them. Opponent wins with their reply to your crosscourt: +'+v.giftWin+' to them instead.',
+   stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'gift',label:'Volleyed crosscourt (to opponent)',min:1,max:3,sign:'+'},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]},
   {id:'cxc-choose',stage:5,title:'Choose It',rld:5,duration:10,tag:'The crosscourt becomes a decision',
    from:'Adapted from the one-short-shot-per-rally condition game: a limited number of crosscourts per rally makes each one a choice, and a price on the result shows both sides of that choice.',
-   rule:(v)=>'Each player may hit '+(v.crosses===1?'one crosscourt':v.crosses+' crosscourts')+' per rally — choose when. Win the rally on your crosscourt, on the reply to it, or on your next shot: +'+v.price+'. Lose the rally in that same window: your opponent scores +'+v.price+'. A crosscourt beyond your allowance loses the rally.',
+   rule:(v)=>'Each player may hit '+(v.crosses===1?'one crosscourt':v.crosses+' crosscourts')+' per rally — choose when. Win the rally with your crosscourt or within your next two shots: +'+v.price+'. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Lose the rally on your next two shots: your opponent scores +'+v.price+'. A crosscourt beyond your allowance loses the rally.',
    coach:'Start with one crosscourt each; allow two once players are choosing well. Watch when the crosscourt is used — early and automatic, or held until the opponent is on the wrong side? Debrief: why did you spend your crosscourt there?',
    focus:'Your crosscourts are limited — spend each one when the opponent is on the wrong side.',
-   score:(v)=>'Rally won within two shots of your own crosscourt: +'+v.price+'. Lost within two shots of it: +'+v.price+' to your opponent. Crosscourt beyond your allowance: lose the rally.',
-   stepper:[{k:'crosses',label:'Crosscourts per rally',min:1,max:2,sign:''},{k:'price',label:'Crosscourt price',min:1,max:3,sign:'+'}]}
+   score:(v)=>'Won with your crosscourt or your next two shots: +'+v.price+'. Opponent wins with their reply: +'+v.giftWin+' to them. Lost on your next two shots: +'+v.price+' to them. Crosscourt beyond your allowance: lose the rally.',
+   stepper:[{k:'crosses',label:'Crosscourts per rally',min:1,max:2,sign:''},{k:'price',label:'Crosscourt price',min:1,max:3,sign:'+'},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]}
 ];
 function cxcCard(g,v){return {id:g.id,title:g.title,category:'Crosscourt Choice',format:'Conditioned game — crosscourt decision',duration:g.duration,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),layers:['Decision Making','Shot Selection']};}
 function CrosscourtChoiceFamily({onAdd,openFamily,label='Add To Session'}){
