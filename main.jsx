@@ -1,3 +1,4 @@
+// v778: Improvement page — author's experience, why the belief is so sticky, honest limits incl. the CI debate in sport
 // v777: new page — Where Did the Improvement Come From? (feeling-of-learning research; why lessons get the credit)
 // v776: Why CLA? fitness — game-based conditioning first, off-court work has a place; timed circuit as a time constraint
 // v775: Ghosting — three movement signals: called zone, lights, coach's honest shadow shot
@@ -296,7 +297,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v777 Where Did The Improvement Come From';
+const APP_VERSION='v778 Why The Belief Sticks';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -23894,6 +23895,11 @@ function CreditForLearningScreen({setScreen}){
       <p>This is not ingratitude or a lack of insight. It is one of the most reliable findings in learning research: <strong>the practice that feels most productive is often not the practice that teaches the most.</strong></p>
       <p>And it matters beyond the player. Every player who believes it grows into a parent, a coach or a club member who passes it on — which is one way the traditional approach keeps renewing itself.</p>
     </>)}
+    {card('From the author',<>
+      <p>I regularly find myself debating with players who are certain that solo practice is vital to their development, and who hold their 1-2-1 lesson as the highest form of training there is. The group games are what they do in between.</p>
+      <p>These are young teenagers — and the belief is already fixed. They are not wrong to value hard work or individual attention. What surprises me is how completely the credit goes to the sessions that feel productive, and how rarely it goes to the games where I can see the change happening.</p>
+      <p className="mutedText" style={{margin:0}}>— Henry Gillanders</p>
+    </>)}
     {card('The feeling of learning is a poor guide',<>
       <p><strong>Movement skills.</strong> Simon and Bjork (2001) had people learn three keystroke patterns, practising either one pattern at a time or all three mixed. One-at-a-time made practice go better; mixed practice was remembered better a day later. Yet people predicted they would do better after the one-at-a-time practice. The researchers’ conclusion: we mistake how easy a skill feels right now for how well it has been learned.</p>
       <p><strong>Trained musicians.</strong> Abushanab and Bishara (2013) had pianists with formal training practise melodies either repeated in blocks or mixed. They played the blocked melodies faster during practice — but two days later they were faster on the mixed ones. They still believed the blocked practice had served them better, even though they had tried both.</p>
@@ -23908,6 +23914,12 @@ function CreditForLearningScreen({setScreen}){
         <li>The payoff from games shows up weeks later in a match, with nothing obvious to tie it back to.</li>
       </ul>
     </>)}
+    {card('Why the belief is so sticky',<>
+      <p>Three ideas from psychology help explain why solo practice and 1-2-1s feel like the real work. None of them has been studied in squash players directly — they are explanations that fit what coaches see, not proof.</p>
+      <p><strong>“The hard, lonely work is what sets me apart.”</strong> People tend to judge something as better when they believe more effort went into it — the effort heuristic (Kruger and colleagues, 2004; later replications found the effect for liking and quality but were mixed). Sport also carries a powerful story here. Ericsson’s famous study of violinists (1993) defined expert practice as effortful and not inherently enjoyable, and found the best violinists had done more solitary practice — the idea later popularised as “10,000 hours”. A careful repeat of that study (Macnamara and Maitra, 2019) found the link between practice and skill was much smaller than first reported — yet the violinists still rated practising alone as more relevant to their improvement than practice their teacher had designed. Solo grind feels like what serious players do.</p>
+      <p><strong>“I can hear how well I’m hitting it.”</strong> In solo practice every ball comes back the same way, and a clean, powerful strike announces itself off the front wall. Self-efficacy theory (Bandura, 1997) says our strongest source of confidence is our own successful performances — and solo practice delivers a steady stream of them. That confidence is real and useful. But it is confidence in hitting a ball that comes back predictably, not in a rally against someone trying to stop you.</p>
+      <p><strong>“A lesson just for me must be the valuable part.”</strong> A 1-2-1 is scarce, booked, paid for, and entirely about the player. Expectations like these shape how well we think something works: in one study, people who paid the regular price for an energy drink solved more puzzles than people who got the identical drink at a discount (Shiv, Carmon and Ariely, 2005). The individual attention is genuinely valuable — but its price and exclusivity make it feel like the source of every improvement.</p>
+    </>)}
     {card('Not an argument against 1-2-1s or solo practice',<>
       <p>Time on the ball, individual attention and confidence all matter. The real difference is method, not format: a 1-2-1 can be run as a game, and solo practice can be exploration rather than repetition (see Unopposed Practice — Exploration vs Installation).</p>
       <p>The problem is only where the credit goes — because the credit decides what players and parents ask for next.</p>
@@ -23920,14 +23932,14 @@ function CreditForLearningScreen({setScreen}){
         <li><strong>Change the question.</strong> Ask “where did you use it in a match?” rather than “did that feel good?”</li>
         <li><strong>Close the gap at pick-up and keep a shared record</strong> — see For parents → Getting the credit, and the Breakthrough Log.</li>
       </ul>
-      <p className="mutedText">An honest limit: these studies used students and trained musicians, not junior squash players. But the same illusion has turned up across very different skills — keyboard patterns, piano, painting styles — which is why it is a safe bet that teenagers feel it too.</p>
+      <p className="mutedText">Honest limits. No study has measured this belief in junior squash players; the misjudgement has been shown with students and trained musicians, across very different skills — keyboard patterns, piano, painting styles — which makes it a safe bet that teenagers feel it too. And in sport itself, whether mixed practice actually teaches more than repeated practice is still debated: two recent reviews disagree (Ammar and colleagues, 2023, found no clear benefit in sports settings; Czyż and colleagues, 2024, found better retention with mixed practice). So the case for games does not rest on the order of repetitions — it rests on keeping the reading and decisions of real rallies inside practice.</p>
       <div className="buttonRow" style={{marginTop:'8px'}}>
         <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('parents')}>For parents — Getting the credit →</button>
         <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('breakthrough')}>Breakthrough Log →</button>
         <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('soloPractice')}>Unopposed Practice →</button>
       </div>
     </>)}
-    {card('Sources',<p className="mutedText" style={{margin:0}}>Simon, D. A., & Bjork, R. A. (2001). Metacognition in motor learning. Journal of Experimental Psychology: Learning, Memory, and Cognition, 27(4), 907–912. · Abushanab, B., & Bishara, A. J. (2013). Memory and metacognition for piano melodies: Illusory advantages of fixed- over random-order practice. Memory & Cognition, 41, 928–937. · Kornell, N., & Bjork, R. A. (2008). Learning concepts and categories: Is spacing the “enemy of induction”? Psychological Science, 19, 585–592. · Verkoeijen, P. P. J. L., & Bouwmeester, S. (2014). Is spacing really the “friend of induction”? Frontiers in Psychology, 5, 259.</p>)}
+    {card('Sources',<p className="mutedText" style={{margin:0}}>Simon, D. A., & Bjork, R. A. (2001). Metacognition in motor learning. Journal of Experimental Psychology: Learning, Memory, and Cognition, 27(4), 907–912. · Abushanab, B., & Bishara, A. J. (2013). Memory and metacognition for piano melodies: Illusory advantages of fixed- over random-order practice. Memory & Cognition, 41, 928–937. · Kornell, N., & Bjork, R. A. (2008). Learning concepts and categories: Is spacing the “enemy of induction”? Psychological Science, 19, 585–592. · Verkoeijen, P. P. J. L., & Bouwmeester, S. (2014). Is spacing really the “friend of induction”? Frontiers in Psychology, 5, 259. · Kruger, J., Wirtz, D., Van Boven, L., & Altermatt, T. W. (2004). The effort heuristic. Journal of Experimental Social Psychology, 40, 91–98. · Ziano, I., et al. (2023). “The effort heuristic” revisited: Mixed results for replications of Kruger et al. (2004). Collabra: Psychology, 9(1). · Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. Psychological Review, 100(3), 363–406. · Macnamara, B. N., & Maitra, M. (2019). The role of deliberate practice in expert performance: revisiting Ericsson, Krampe & Tesch-Römer (1993). Royal Society Open Science, 6, 190327. · Bandura, A. (1997). Self-efficacy: The exercise of control. Freeman. · Shiv, B., Carmon, Z., & Ariely, D. (2005). Placebo effects of marketing actions: Consumers may get what they pay for. Journal of Marketing Research, 42(4), 383–393. · Ammar, A., et al. (2023). The myth of contextual interference learning benefit in sports practice: A systematic review and meta-analysis. Educational Research Review, 39, 100537. · Czyż, S. H., et al. (2024). High contextual interference improves retention in motor learning: systematic review and meta-analysis. Scientific Reports, 14, 15974.</p>)}
   </div>;
 }
 
