@@ -1,3 +1,4 @@
+// v781: Improvement page — pick-up and Breakthrough Log explained; sources shortened with full references folded away
 // v780: formal register — conversational stock phrases removed (P27)
 // v779: Improvement page — honest limits rewritten in three short paragraphs; 'junior squash players'
 // v778: Improvement page — author's experience, why the belief is so sticky, honest limits incl. the CI debate in sport
@@ -299,7 +300,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v780 Formal Register';
+const APP_VERSION='v781 Improvement Page Tidy';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -23932,7 +23933,8 @@ function CreditForLearningScreen({setScreen}){
         <li><strong>Judge learning where it counts</strong> — in matches, a week or two later — not at the end of a session.</li>
         <li><strong>Identify it when it appears.</strong> When a match shot originated in a group game, say so: “holding that crosscourt until they were on your side — that’s Crosscourt Choice.”</li>
         <li><strong>Ask a different question.</strong> Ask “where did you use it in a match?” rather than “did that feel good?”</li>
-        <li><strong>Communicate at pick-up and keep a shared record</strong> — see For parents → Getting the credit, and the Breakthrough Log.</li>
+        <li><strong>Tell parents at pick-up.</strong> In two sentences, name what the player discovered in the session and the game that produced it. A private lesson comes with its own commentary — “today we worked on your drop” — whereas group games deliberately do not, so the improvement has no label unless the coach gives it one.</li>
+        <li><strong>Record when a change first appears.</strong> The Breakthrough Log notes the date and the session in which a skill first showed itself. It gives the player, their parents and any other coaches a shared record of where the improvement came from.</li>
       </ul>
       <div className="infoBox" style={{marginTop:'10px'}}>
         <strong>Limitations of the evidence</strong>
@@ -23946,7 +23948,12 @@ function CreditForLearningScreen({setScreen}){
         <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('soloPractice')}>Unopposed Practice →</button>
       </div>
     </>)}
-    {card('Sources',<p className="mutedText" style={{margin:0}}>Simon, D. A., & Bjork, R. A. (2001). Metacognition in motor learning. Journal of Experimental Psychology: Learning, Memory, and Cognition, 27(4), 907–912. · Abushanab, B., & Bishara, A. J. (2013). Memory and metacognition for piano melodies: Illusory advantages of fixed- over random-order practice. Memory & Cognition, 41, 928–937. · Kornell, N., & Bjork, R. A. (2008). Learning concepts and categories: Is spacing the “enemy of induction”? Psychological Science, 19, 585–592. · Verkoeijen, P. P. J. L., & Bouwmeester, S. (2014). Is spacing really the “friend of induction”? Frontiers in Psychology, 5, 259. · Kruger, J., Wirtz, D., Van Boven, L., & Altermatt, T. W. (2004). The effort heuristic. Journal of Experimental Social Psychology, 40, 91–98. · Ziano, I., et al. (2023). “The effort heuristic” revisited: Mixed results for replications of Kruger et al. (2004). Collabra: Psychology, 9(1). · Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. Psychological Review, 100(3), 363–406. · Macnamara, B. N., & Maitra, M. (2019). The role of deliberate practice in expert performance: revisiting Ericsson, Krampe & Tesch-Römer (1993). Royal Society Open Science, 6, 190327. · Bandura, A. (1997). Self-efficacy: The exercise of control. Freeman. · Shiv, B., Carmon, Z., & Ariely, D. (2005). Placebo effects of marketing actions: Consumers may get what they pay for. Journal of Marketing Research, 42(4), 383–393. · Ammar, A., et al. (2023). The myth of contextual interference learning benefit in sports practice: A systematic review and meta-analysis. Educational Research Review, 39, 100537. · Czyż, S. H., et al. (2024). High contextual interference improves retention in motor learning: systematic review and meta-analysis. Scientific Reports, 14, 15974.</p>)}
+    {card('Sources',<>
+      <p className="mutedText" style={{margin:0}}>Simon & Bjork (2001) · Abushanab & Bishara (2013) · Kornell & Bjork (2008) · Verkoeijen & Bouwmeester (2014) · Kruger et al. (2004) · Ziano et al. (2023) · Ericsson et al. (1993) · Macnamara & Maitra (2019) · Bandura (1997) · Shiv et al. (2005) · Ammar et al. (2023) · Czyż et al. (2024)</p>
+      <details style={{marginTop:'8px'}}><summary className="mutedText" style={{cursor:'pointer',fontWeight:700}}>Full references</summary>
+        <ul className="mutedText" style={{fontSize:'0.85rem',marginTop:'6px'}}>{["Simon, D. A., & Bjork, R. A. (2001). Metacognition in motor learning. Journal of Experimental Psychology: Learning, Memory, and Cognition, 27(4), 907–912.", "Abushanab, B., & Bishara, A. J. (2013). Memory and metacognition for piano melodies: Illusory advantages of fixed- over random-order practice. Memory & Cognition, 41, 928–937.", "Kornell, N., & Bjork, R. A. (2008). Learning concepts and categories: Is spacing the “enemy of induction”? Psychological Science, 19, 585–592.", "Verkoeijen, P. P. J. L., & Bouwmeester, S. (2014). Is spacing really the “friend of induction”? Frontiers in Psychology, 5, 259.", "Kruger, J., Wirtz, D., Van Boven, L., & Altermatt, T. W. (2004). The effort heuristic. Journal of Experimental Social Psychology, 40, 91–98.", "Ziano, I., et al. (2023). “The effort heuristic” revisited: Mixed results for replications of Kruger et al. (2004). Collabra: Psychology, 9(1).", "Ericsson, K. A., Krampe, R. T., & Tesch-Römer, C. (1993). The role of deliberate practice in the acquisition of expert performance. Psychological Review, 100(3), 363–406.", "Macnamara, B. N., & Maitra, M. (2019). The role of deliberate practice in expert performance: revisiting Ericsson, Krampe & Tesch-Römer (1993). Royal Society Open Science, 6, 190327.", "Bandura, A. (1997). Self-efficacy: The exercise of control. Freeman.", "Shiv, B., Carmon, Z., & Ariely, D. (2005). Placebo effects of marketing actions: Consumers may get what they pay for. Journal of Marketing Research, 42(4), 383–393.", "Ammar, A., et al. (2023). The myth of contextual interference learning benefit in sports practice: A systematic review and meta-analysis. Educational Research Review, 39, 100537.", "Czyż, S. H., et al. (2024). High contextual interference improves retention in motor learning: systematic review and meta-analysis. Scientific Reports, 14, 15974."].map((r,i)=><li key={i} style={{marginBottom:'4px'}}>{r}</li>)}</ul>
+      </details>
+    </>)}
   </div>;
 }
 
