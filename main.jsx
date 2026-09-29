@@ -1,3 +1,6 @@
+// v787: Drop, Boast & Lob family — six games for Loose Drop / Loose Boast / Loose Lob, linked in the index
+// v786: Match Problem Index aligned to the Match Analysis app's cause tags (v785 discarded)
+// v784: Match Problem Index — match-play problems linked to the games that address them
 // v783: Learning to Intercept — references added (Lee, Kayed & van der Meer, Jacobs & Michaels, Gibson, Pinder et al.)
 // v782: new coach module — Learning to Intercept (early hitters), linked from Level 0, Perception-related pages and search
 // v781: Improvement page — pick-up and Breakthrough Log explained; sources shortened with full references folded away
@@ -302,7 +305,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v783 Intercept References';
+const APP_VERSION='v787 Drop Boast Lob';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -776,6 +779,7 @@ lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
 ...CXC_GAMES.map(g=>cxcCard(g,CXC_DEFAULTS)),
+...DBL_GAMES.map(g=>dblCard(g,DBL_DEFAULTS)),
 {id:'game-25',title:'25',category:'Classic Conditioned',duration:12,format:'1v1',task:'Play a normal rally game, first to 25. Each time YOU reach a multiple of 5 (5, 10, 15) you drop a zone — your playable area shrinks as you score, so leading constrains you. At 20, your opponent chooses the single zone you must play into for the run to 25.',rationale:'Self-handicapping leveller: the player in front is progressively constrained, keeping games close across standards and forcing solution variety as space is removed.',coach:'Watch how the leading player adapts as zones are taken away — variety and shot quality under shrinking space, not panic.',layers:['Target zones'],cbCode:'None'},
 {id:'midcourt-intercept',title:'Midcourt Intercept',category:'Volley & Intercept',duration:8,format:'King of Court',task:'Earn the volley/intercept from pressure and positioning.',rationale:'Links central control, pressure and early interception.',coach:'Do not let players hunt volleys recklessly; the volley should be earned.',layers:['Volley Finish','Clean Winner'],cbCode:'None'},
 {id:'invasion-lives',title:'Invasion Lives Game',category:'Invasion',duration:8,format:'Team Courts',task:'Each court has equal total lives; individual lives adjust to player count.',rationale:'Balances uneven court numbers while keeping pressure and chaos representative.',coach:'Use equal total lives per court, not equal lives per player.',layers:['Clean Winner'],cbCode:'None'}
@@ -6777,6 +6781,16 @@ function GamesLibrary({setScreen,setSession}){
       <button className={tab==='stabilise'?'activeFamilyTab':''} onClick={()=>setTab('stabilise')}>🎯 Stabilise</button>
       <button className={tab==='compete'?'activeFamilyTab':''} onClick={()=>setTab('compete')}>🏆 Compete</button>
     </div>}
+    {!inGameClass&&<div style={{margin:'0 0 14px'}}>
+        <div className="exploreEntryCard" onClick={()=>setScreen('matchProblems')}>
+        <div className="exploreEntryLeft">
+          <span className="categoryTag" style={{marginBottom:'10px',display:'inline-block'}}>Start from the match</span>
+          <h2>Match Problem Index</h2>
+          <p className="exploreEntrySubtitle">What you see in matches → the games that address it</p>
+          <p>Shot choice · Length and width · Volley · Movement · Reading the opponent · Finishing · Pressure</p>
+        </div>
+      </div>
+    </div>}
     {tab==='explore'&&<div>
       <div className="libraryStageIntro"><h2>🔍 Explore</h2><p>Discovery, affordance exploration, movement confidence and simple representative tasks. The entry point for beginner coaching.</p></div>
       <div className="exploreEntryCard" onClick={()=>setScreen('level0')}>
@@ -8182,6 +8196,87 @@ const CCFF_GAMES=[
      stepper:[{k:'licence',label:'Crosscourt-attack bonus',min:1,max:4,sign:'+'}]}
 ];
 function ccffCard(g,v){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
+// ── DROP, BOAST & LOB (v787) ────────────────────────────────────────────────────
+// Coach, 28 Sep: games for the Match Analysis tags with the thinnest coverage — Loose Drop,
+// Loose Boast, Loose Lob. Every rule is a visible test (a taped line, the opponent's feet,
+// a volley, a rally won) so players can score it themselves. One definition (DBL_GAMES)
+// read by this family screen, standardGames() and the Match Problem Index.
+const DBL_TRAM=['one racquet length from the side wall','three-quarters of a racquet length from the side wall','half a racquet length from the side wall'];
+const DBL_DEAD=['No tape — the painted short line is the line','Tape halfway between the short line and the front wall','Tape a quarter of the way back from the front wall'];
+const DBL_DEFAULTS={tram:1,dead:1,pin:1,drop:1,dropWin:2,window:2,giftWin:3,boast:1,boastWin:2,lob:1,reset:1};
+const DBL_GAMES=[
+ {id:'dbl-tramline',shot:'Drop',title:'Tramline Drop',rld:3,duration:8,tag:'A drop counts only if it hugs the side wall',
+  from:'A loose drop sits away from the side wall and hands the opponent an easy attack. The taped tramline makes a tight drop visible to both players.',
+  setup:(v)=>['Tape a line on the floor from the front wall back to the short line, '+DBL_TRAM[v.tram-1]+', on each side.','The strip between the tape and the side wall is the tramline.'],
+  play:()=>['Play normal rallies.','Drop whenever you choose.'],
+  score:(v)=>['Rally won: 1 point.','Each of your drops whose first bounce lands inside the tramline: +'+v.drop+' to you, whoever wins the rally.','A drop that bounces outside the tramline earns nothing.'],
+  coach:'When the group lands most drops inside the tramline, move the tape closer to the wall (next stage). If nobody lands one, move it back a stage. Debrief: where was racquet–ball contact on the drops that stayed tight?',
+  focus:'Drop to the wall, not to the middle.',
+  steppers:[{k:'tram',label:'Tramline stage',min:1,max:3,sign:''},{k:'drop',label:'Tight drop bonus',min:1,max:3,sign:'+'}]},
+ {id:'dbl-convert',shot:'Drop',title:'Drop and Convert',rld:4,duration:10,tag:'A drop is judged by what it sets up',
+  from:'A good drop rarely wins the rally by itself — it starts the pressure. A loose drop gives the opponent the attack. The scoring rewards the first and prices the second.',
+  setup:()=>['No set-up needed.','A drop is any shot played to land in front of the short line, other than a boast.'],
+  play:()=>['Play normal rallies.','After each of your drops, count your next shots.'],
+  score:(v)=>['Rally won: 1 point.','You win the rally with your drop or within your next '+v.window+' shot'+(v.window>1?'s':'')+': +'+v.dropWin+'.','Your opponent wins the rally with their reply to your drop: +'+v.giftWin+' to them.'],
+  coach:'Watch where the opponent is when the drop is played: drops played while the opponent is behind the short line tend to convert. Debrief: which drops set up the win, and where was your opponent standing?',
+  focus:'Drop to start the pressure, then finish what it started.',
+  steppers:[{k:'dropWin',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your drop (to opponent)',min:1,max:5,sign:'+'}]},
+ {id:'dbl-plan',shot:'Boast',title:'Boast with a Plan',rld:4,duration:10,tag:'The boast is played only when the opponent is at the back',
+  from:'A boast played while the opponent is on the T is an easy ball for them. A boast played while they are behind the short line makes them travel the full length of the court.',
+  setup:()=>['No set-up needed.'],
+  play:()=>['Play normal rallies.','You may boast only when your opponent has both feet behind the short line as you strike.'],
+  score:(v)=>['Rally won: 1 point.','Boast while your opponent is in front of the short line: you lose the rally.','Legal boast, then you win the rally with it or within your next '+v.window+' shot'+(v.window>1?'s':'')+': +'+v.boastWin+'.','Your opponent wins the rally with their reply to your boast: +'+v.giftWin+' to them.'],
+  coach:'The receiver calls the feet — they know where they were standing. Debrief: when did you want to boast but could not, and what did you play instead?',
+  focus:'Boast when they are at the back — then follow it in.',
+  steppers:[{k:'boastWin',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your boast (to opponent)',min:1,max:5,sign:'+'}]},
+ {id:'dbl-dead',shot:'Boast',title:'Dead Boast',rld:3,duration:8,tag:'A boast counts only if it dies in the far front corner',
+  from:'A loose boast lands in mid-court and the opponent walks onto it. A boast that bounces first in the far front corner makes them run and reach.',
+  setup:(v)=>[DBL_DEAD[v.dead-1]+'.','The target is the far front corner: in front of that line, on the opposite side of the court from where you strike.'],
+  play:()=>['Play normal rallies.','Boast whenever you choose.'],
+  score:(v)=>['Rally won: 1 point.','Each of your boasts whose first bounce lands in the target: +'+v.boast+' to you, whoever wins the rally.','Each of your boasts whose first bounce lands outside the target: +'+v.boast+' to your opponent.'],
+  coach:'When most boasts land in the target, move the line forward a stage; if nobody lands one, move it back. Debrief: what was different about the boasts that died in the corner?',
+  focus:'Low into the side wall — make it die in the far corner.',
+  steppers:[{k:'dead',label:'Target stage',min:1,max:3,sign:''},{k:'boast',label:'Boast bonus',min:1,max:3,sign:'+'}]},
+ {id:'dbl-lobover',shot:'Lob',title:'Lob Over',rld:3,duration:8,tag:'A lob counts only if it gets over the opponent and pins them',
+  from:'A loose lob is low or short and gets volleyed. A good lob beats the volley and pushes the opponent deep. The pin line from Length That Pins makes that visible.',
+  setup:(v)=>[pinLine(v.pin).setup],
+  play:()=>['Play normal rallies.','Lob whenever you choose.'],
+  score:(v)=>['Rally won: 1 point.','Each of your lobs that your opponent cannot volley and plays with both feet '+pinLine(v.pin).where+': +'+v.lob+' to you.','Your opponent volleys your lob: +'+v.lob+' to them.'],
+  coach:'The pin line is a progression, not a measurement: when the group gets lobs over comfortably, move the line back a stage; if nobody does, move it forward a stage. Debrief: which lobs got over the opponent, and where did you play them from?',
+  focus:'Over them and deep — make them turn and chase it.',
+  steppers:[{k:'pin',label:'Pin line stage',min:1,max:4,sign:''},{k:'lob',label:'Lob bonus',min:1,max:3,sign:'+'}]},
+ {id:'dbl-reset',shot:'Lob',title:'Lob to Reset',rld:4,duration:10,tag:'The lob as the way out of trouble',
+  from:'Under pressure at the front, the lob buys time to get back into the rally. A loose one gets volleyed and the pressure continues.',
+  setup:()=>['Tape a small square around the T, about one step each way. This is the T box.'],
+  play:()=>['Play normal rallies.','A reset lob is any lob you play from in front of the short line.'],
+  score:(v)=>['Rally won: 1 point.','After your reset lob, you are back with both feet in the T box before your opponent strikes the ball: +'+v.reset+' to you.','Your opponent volleys your reset lob: +'+v.reset+' to them.'],
+  coach:'This is a recovery game as much as a lob game: the lob has to be high enough to buy the time, and the player has to use it. Debrief: which lobs gave you time to get back?',
+  focus:'Lob high enough to buy the time — then get back.',
+  steppers:[{k:'reset',label:'Reset bonus',min:1,max:3,sign:'+'}]}
+];
+function dblCard(g,v){return {id:g.id,title:g.title,category:'Drop, Boast & Lob',format:'Conditioned game — '+g.shot.toLowerCase()+' quality',duration:g.duration,rld:g.rld,
+  task:['Set-up: '+g.setup(v).join(' '),'Play: '+g.play(v).join(' ')].join(' '),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v).join(' '),layers:['Shot Selection','Shot Quality']};}
+function DropBoastLobFamily({onAdd,label='Add To Session'}){
+  const[v,setV]=React.useState(DBL_DEFAULTS);
+  const list=(title,items)=><div className="infoBox"><strong>{title}</strong><ol style={{margin:'6px 0 0',paddingLeft:'20px'}}>{items.map((x,i)=><li key={i}>{x}</li>)}</ol></div>;
+  return <>
+    <div className="gameCard"><div className="categoryTag">Drop, Boast & Lob</div><h2>🎯 Drop, Boast & Lob</h2>
+      <p>Six games for the three loose-shot problems in the Match Analysis app: <strong>Loose Drop</strong>, <strong>Loose Boast</strong> and <strong>Loose Lob</strong>. Every rule is something both players can see — a taped line, where the opponent’s feet are, whether a ball was volleyed — so the players score it themselves.</p></div>
+    {['Drop','Boast','Lob'].map(shot=><React.Fragment key={shot}>
+      <h3 style={{margin:'16px 0 8px'}}>{shot}</h3>
+      {DBL_GAMES.filter(g=>g.shot===shot).map(g=><div className="gameCard" key={g.id}>
+        <div className="categoryTag">{g.shot} · RLD {g.rld} · {g.duration} min</div><h2>{g.title}</h2>
+        <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
+        <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
+        {list('Set-up',g.setup(v))}{list('Play',g.play(v))}{list('Scoring',g.score(v))}
+        <div style={{display:'flex',alignItems:'center',gap:'10px',margin:'6px 0',flexWrap:'wrap'}}>{g.steppers.map(st=><span key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><PointStepper value={v[st.k]} min={st.min} max={st.max} sign={st.sign} onChange={val=>setV(prev=>({...prev,[st.k]:val}))}/></span>)}</div>
+        <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
+        <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(dblCard(g,v));}}>{label}</button>
+      </div>)}
+    </React.Fragment>)}
+  </>;
+}
+
 // ── CROSSCOURT CHOICE (v764) ────────────────────────────────────────────────────
 // Coach, 25 Sep: juniors cross for no reason instead of building from straight lines. Not a
 // ban — the crosscourt is EARNED from straight play, JUDGED by what it does to the opponent,
@@ -17406,6 +17501,8 @@ const GAME_LIBRARY=[
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo}/>},
   {id:'crosscourtchoice',label:'Crosscourt Choice',category:'Crosscourt Choice',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrosscourtChoiceFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
+  {id:'dropboastlob',label:'Drop, Boast & Lob',category:'Drop, Boast & Lob',groups:['technique','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><DropBoastLobFamily onAdd={addAndGo}/>},
   {id:'errors',label:'Common Game Errors',category:'Common Game Errors',groups:['tools','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CommonGameErrors setSession={setSession}/>},
   {id:'custom',label:'Game Builder',category:'Custom',groups:['tools'],
@@ -23892,6 +23989,34 @@ function parentPackText(){
 // progress, not the CLA group sessions — a belief that keeps the traditional approach
 // going. The research on the feeling of learning explains why. Complements, and links to,
 // Parents → "Getting the credit" (the coach's actions) rather than repeating it.
+// ── MATCH PROBLEM INDEX (v784) ──────────────────────────────────────────────────
+// Coach, 28 Sep: tie the games back to the problems coaches see in match play. Each entry
+// names what the problem looks like in a match and opens the games that address it (a
+// Games Library family via its classId, or an app screen). Add problems here; the screen,
+// the search entries and the groups all read from this one list. v786: titles marked ma:true
+// use the Match Analysis app's own cause tags word for word, so an analysed match leads here.
+const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop, Boast & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop, Boast & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Drop, Boast & Lob — Dead Boast", "c": "dropboastlob", "note": "The boast must die in the far front corner"}, {"label": "Drop, Boast & Lob — Boast with a Plan", "c": "dropboastlob", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop, Boast & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop, Boast & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Crosscourt Choice — Cross Away, Not At", "c": "crosscourtchoice", "note": "Scored by where the opponent is standing"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Crosscourt Choice — Cross Away, Not At", "c": "crosscourtchoice", "note": "Scored by where the opponent is standing"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Boasting from good length", "ma": false, "see": "Playing a defensive boast from a ball that could be driven back to length.", "games": [{"label": "Drop, Boast & Lob — Boast with a Plan", "c": "dropboastlob", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}]}, {"group": "Movement and recovery", "title": "Overrunning or crowding the ball", "ma": false, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late preparation", "ma": false, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Crosscourt Choice — Cross Away, Not At (as receiver)", "c": "crosscourtchoice", "note": "Volleying a crosscourt pays the receiver"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Volley Attack, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
+function MatchProblemIndex({setScreen}){
+  const groups=[...new Set(MATCH_PROBLEMS.map(p=>p.group))];
+  const [open,setOpen]=useState(null);
+  useBackIntercept(open!==null,()=>{setOpen(null);return true;});
+  function openGame(g){try{if(g.c)localStorage.setItem(GAME_LIBRARY_CLASS_KEY,g.c);}catch(e){}setScreen&&setScreen(g.c?'games':g.s);}
+  return <div className="page">
+    <div className="pageTop"><div><h1>Match Problem Index</h1><p className="mutedText">Start from what you see in matches</p></div><button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('gamesLibrary')}>← Games Library</button></div>
+    <p className="mutedText">Watch the match, find the problem, then open the games designed to address it. Problems marked “Match Analysis tag” use the same names as the cause tags in the Match Analysis app.</p>
+    {groups.map(gr=><div key={gr} style={{marginBottom:'16px'}}>
+      <h2 style={{margin:'10px 0 8px'}}>{gr}</h2>
+      {MATCH_PROBLEMS.map((p,i)=>p.group!==gr?null:<div key={i} className="gameCard" style={{marginBottom:'10px'}}>
+        <button type="button" onClick={()=>setOpen(open===i?null:i)} style={{background:'none',border:'none',color:'inherit',textAlign:'left',width:'100%',padding:0,cursor:'pointer'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}><strong style={{fontSize:'1.05rem'}}>{p.title}{p.ma&&<span className="mutedText" style={{fontSize:'0.72rem',fontWeight:700,marginLeft:'8px',border:'1px solid #2a4a63',borderRadius:'6px',padding:'1px 6px'}}>Match Analysis tag</span>}</strong><span className="mutedText">{open===i?'▾':'▸'} {p.games.length} game{p.games.length>1?'s':''}</span></div>
+          <p className="mutedText" style={{margin:'6px 0 0'}}>{p.see}</p>
+        </button>
+        {open===i&&<div style={{marginTop:'10px',display:'grid',gap:'8px'}}>{p.games.map((g,j)=><button key={j} type="button" className="secondaryBtn" style={{textAlign:'left'}} onClick={()=>openGame(g)}><strong>{g.label} →</strong><br/><span className="mutedText" style={{fontSize:'0.85rem'}}>{g.note}</span></button>)}</div>}
+      </div>)}
+    </div>)}
+  </div>;
+}
+
 // ── LEARNING TO INTERCEPT (v782) ────────────────────────────────────────────────
 // Coach-authored module on early hitters (coach, 28 Sep), revised for the app: the original
 // "observations" and "module" parts merged so each point is told once; P25/P26/P27 applied.
@@ -24821,6 +24946,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Tools',sub:'Tools architecture',kw:'tools architecture',screen:'tools'},
   {label:'Diagnostic Intervention',sub:'Diagnose & intervene',kw:'diagnostic intervention',screen:'diagnosticIntervention'},
   {label:'Level 0 Foundations',sub:'Foundation activities',kw:'level 0 foundation beginner',screen:'level0'},
+  {label:'Match Problem Index',sub:'Match problems → games',kw:'match problems index issues errors what is going wrong games for problem',screen:'matchProblems'},
   {label:'Learning to Intercept',sub:'Coach module · early hitters',kw:'intercept interception early hitters feeding tau time to contact short ball opposite wall feed young children beginners',screen:'learningToIntercept'},
   {label:'Data / Storage',sub:'Backup & data',kw:'storage data backup export',screen:'storage'},
   // ── game-library classes ──
@@ -24864,6 +24990,7 @@ function buildSearchIndex(){
   pushGames(typeof DISRUPTION_ROTATIONS!=='undefined'&&DISRUPTION_ROTATIONS,'Disruption Rotations',{screen:'games',classId:'rotations'});
   const libCat={};try{GAME_LIBRARY.forEach(e=>{if(!e.route)libCat[e.category]=e.id;});}catch{}
   try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games',...(libCat[g.category]?{classId:libCat[g.category]}:{})});});}catch{}
+  try{MATCH_PROBLEMS.forEach(p=>idx.push({label:p.title,sub:'Match Problem Index · '+p.group,kw:p.title+' '+p.see+' '+p.games.map(g=>g.label).join(' '),screen:'matchProblems'}));}catch{}
   try{GAME_LIBRARY.forEach(e=>{const heads=GAME_LIBRARY_GROUPS.filter(gr=>e.groups.includes(gr.id)).map(gr=>gr.title);idx.push({label:e.label,sub:'Games Library · '+heads.join(' · '),kw:e.label+' '+e.category+' '+heads.join(' '),...(e.route?{screen:e.route}:{screen:'games',classId:e.id})});});}catch{}
   const pushOv=(arr,fam)=>{try{(arr||[]).forEach(o=>{if(o&&o.title)idx.push({label:o.title,sub:'Modifier Engine · '+fam,kw:o.title+' '+(o.rule||'')+' '+(o.category||''),screen:'technical'});});}catch{}};
   pushOv(typeof TECHNICAL_OVERLAYS!=='undefined'&&TECHNICAL_OVERLAYS,'Technical');
@@ -29270,6 +29397,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
       {screen==='creditLearning'&&<CreditForLearningScreen setScreen={go}/>}
       {screen==='learningToIntercept'&&<LearningToInterceptScreen setScreen={go}/>}
+      {screen==='matchProblems'&&<MatchProblemIndex setScreen={go}/>}
       {screen==='breakthrough'&&<BreakthroughLog setScreen={go}/>}
 {screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
