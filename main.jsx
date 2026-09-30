@@ -1,3 +1,5 @@
+// v790: Negative Scoring attaches to one game (not every game); racquet rules made consistent
+// v789: Session Builder Remove fixed — every rotation gets a unique id (duplicate ids broke removal)
 // v788: Match Problem Index gets a Home (More Stuff) tile; three entries renamed to match Match Analysis v2 tags
 // v787: Drop, Boast & Lob family — six games for Loose Drop / Loose Boast / Loose Lob, linked in the index
 // v786: Match Problem Index aligned to the Match Analysis app's cause tags (v785 discarded)
@@ -306,7 +308,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v788 Match Problem Index Tile';
+const APP_VERSION='v790 Penalties Per Game';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -898,6 +900,12 @@ function activePenaltyEntriesFromStorage(){
   }catch{return [];}
 }
 function activePenaltySummaryFromStorage(){return activePenaltyEntriesFromStorage().map(e=>`${e.label} = -${e.points}`).join(' · ');}
+/* v790: Negative Scoring belongs to ONE game. The panel's setting is attached to the next game
+   added to the session (appendToSessionState) and then cleared, so it can never follow every
+   later game. Before v790 it was read live from storage for every Player Display — a penalty set
+   once appeared on all games (coach found "Racquet Heat above shoulder" on a game he never set). */
+function clearPendingPenalties(){try{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));window.dispatchEvent(new CustomEvent('cbPenaltiesCleared'));}catch{}}
+try{if(!localStorage.getItem('checkerboard_penalty_per_game_v790')){localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));localStorage.setItem('checkerboard_penalty_per_game_v790','1');}}catch{}
 function scoringLogicForLayers(layers=[],modifierScores={}){
   const active=editableModifierLayers(layers);
   const parts=active.map(layer=>modifierScoreLabel(layer,modifierScores?.[layer])).filter(Boolean);
@@ -922,7 +930,7 @@ function getPlayerDisplayFields(game){
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
   const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
   const baseScore=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
-  const penaltySummary=activePenaltySummaryFromStorage();
+  const penaltySummary=item.penaltySummary||'';
   const score=penaltySummary ? `${baseScore} · Penalties: ${penaltySummary}` : baseScore;
   const rationale=item.rationale||'Use the task constraints to shape player behaviour.';
   const rldLevelRaw=Number(item.rld);
@@ -2461,7 +2469,7 @@ function emptyModifierConfig(){
 const TECH_CONSTRAINT_KEY='checkerboard_tech_constraints_v1';
 const TECH_CONSTRAINT_LIBRARY=[
   {id:'tc-string',label:'Strings to the front wall',cue:'Finish with the strings facing the front wall.',check:'Ball check \u2014 racket face visibly turned away at the finish.',penalty:1},
-  {id:'tc-ceiling',label:'Racket points to the ceiling',cue:'Racket head up before the ball arrives.',check:'Body check \u2014 racket head below the shoulder as the ball arrives.',penalty:1},
+  {id:'tc-ceiling',label:'Racket points to the ceiling',cue:'Racket head up before the ball arrives.',check:'Body check \u2014 racket head below the wrist as the ball arrives.',penalty:1},
   {id:'tc-nonplaying',label:'Active non-playing arm',cue:'Non-playing arm out and working, not tucked in.',check:'Body check \u2014 arm pinned to the side through the strike.',penalty:1},
   {id:'tc-returnT',label:'Return to the T',cue:'Back to the T after every shot.',check:'Body check \u2014 still outside the T area when the opponent strikes.',penalty:1},
   {id:'tc-headstill',label:'Head still through contact',cue:'Eyes and head steady through contact and follow-through.',check:'Body check \u2014 head pulls away before the follow-through finishes.',penalty:1},
@@ -8490,7 +8498,7 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
 function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
-function remove(index){saveSessionSnapshot();setSession(session.filter((_,i)=>i!==index));}
+function remove(index){saveSessionSnapshot();setSession(uniqueSessionIds(session.filter((_,i)=>i!==index)));}
 // Reorder a rotation. dir = -1 up, +1 down. Clamped at the ends, and snapshotted
 // so the existing undo covers it like remove and duplicate.
 function move(index,dir){
@@ -12162,14 +12170,14 @@ function ToolsArchitecture({setScreen}){
       </div>
       <div className="gameCard">
         <h3>The method</h3>
-        <p><strong>1. Name the habit as something visible.</strong> Not “bad swing” but “racquet head above the shoulder.” The rule must hang on a body or racquet position any player on court can see, so it can be called by the players and never argued about. If the habit can only be described by intent or feel, it belongs in the per-player Technical Constraints tool, not a group rule.</p>
+        <p><strong>1. Name the habit as something visible.</strong> Not “bad swing” but “backswing above the shoulder.” The rule must hang on a body or racquet position any player on court can see, so it can be called by the players and never argued about. If the habit can only be described by intent or feel, it belongs in the per-player Technical Constraints tool, not a group rule.</p>
         <p><strong>2. Write the rule so the habit costs the score.</strong> Points to the opponent or loss of the rally the moment the position appears. Everyone is under the same rule, so the pressure is competitive, not personal.</p>
         <p><strong>3. Expect the substitute habit.</strong> A rule removes one solution, and the group will find the nearest neighbouring one — often just as inefficient. Watch for it in the first ten minutes and have the counter-rule ready. The counter-rule stacks; it does not replace.</p>
         <p><strong>4. Progress by giving time back, then taking it away.</strong> Start in formats that give players more time than a full game, so complying with the rule is achievable. Then reintroduce time pressure and watch whether the new pattern holds. If the habit returns under pressure, step back one format and stay there longer.</p>
       </div>
       <div className="gameCard">
         <h3>Worked example — excessive, dangerous swing</h3>
-        <p><strong>The rule:</strong> players may only swing with the racquet head at or below the shoulder. If the racquet head rises above the shoulder there is a points or rally-loss consequence, called on court. All players are similarly restricted, so nobody is unfairly disadvantaged.</p>
+        <p><strong>The rule — backswing above the shoulder:</strong> players may only take the racquet back to shoulder height. If the backswing rises above the shoulder there is a points or rally-loss consequence, called on court. All players are similarly restricted, so nobody is unfairly disadvantaged.</p><p className="mutedText">Use this rule only for the over-swinging habit. At every other time the racquet should be up and ready — racquet head above the wrist — so do not run it as a general rule.</p>
         <p><strong>The predictable substitute:</strong> a shoulder cap often produces excessive horizontal swinging — the big swing turns sideways rather than shrinking. The counter-rule: strings must always face the front (and back) wall through the swing. That closes the horizontal escape while leaving the compact swing as the only rule-legal solution. (The same strings-facing rule exists in Technical Constraints for one player; here it is applied to the whole group.)</p>
         <p><strong>The progression:</strong> play it as ABL and as Egyptian ¾ court first, with no volleys — both formats give more time on the ball, so a compact swing is achievable while it is still new. As the excessive backswing is seen less, allow volleys in a further progression: less time naturally shortens the swing, and the volley round is the test of whether the new pattern survives pressure. Egyptian ¾ is ready to run in Games → Depth Cap (Classic Symmetric).</p>
       </div>
@@ -13086,6 +13094,7 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   const [customLabel,setCustomLabel]=useState('');
   const [customPoints,setCustomPoints]=useState(1);
   useEffect(()=>{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled,presetPoints,customList}));},[enabled,presetPoints,customList]);
+  useEffect(()=>{const f=()=>{setEnabled(false);setPresetPoints({});setCustomList([]);};window.addEventListener('cbPenaltiesCleared',f);return()=>window.removeEventListener('cbPenaltiesCleared',f);},[]);
   function setPreset(id,pts){setPresetPoints(prev=>({...prev,[id]:pts}));}
   function addCustom(){const l=customLabel.trim();if(!l)return;setCustomList(prev=>[...prev,{label:l,points:customPoints}]);setCustomLabel('');setCustomPoints(1);}
   function removeCustom(i){setCustomList(prev=>prev.filter((_,idx)=>idx!==i));}
@@ -13100,9 +13109,9 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
     
   }
   const rules=activeRules();
-  return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="All Games — deduct points for named faults" color="red" defaultOpen={false}>
+  return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="This game only — deduct points for named faults" color="red" defaultOpen={false}>
     <div className="universalDbHeader">
-      <div><p>Punish specific faults by taking points off — or, for a rule that must not be broken at all, step past -5 to <strong>Forfeit rally</strong>, and the rally is lost outright when it happens.</p></div>
+      <div><p>Punish specific faults by taking points off — or, for a rule that must not be broken at all, step past -5 to <strong>Forfeit rally</strong>, and the rally is lost outright when it happens.</p><p className="mutedText" style={{fontSize:'0.85rem'}}>These penalties are attached to the <strong>next game you add to the session</strong>, and then cleared — they do not carry over to other games.</p></div>
       <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Negative Scoring On':'Enable Negative Scoring'}</button>
     </div>
     {enabled&&<>
@@ -14325,8 +14334,15 @@ function appendToSessionState(prev,card){
   /* Every module adds through here, so confirming here confirms everywhere —
      including modules built later. */
   try{window.dispatchEvent(new CustomEvent('cbSessionAdded',{detail:{title:next.title||'Game',count:base.length+1}}));}catch{}
-  return [...base,{...next,duration:8}];
+  /* v789: every rotation needs its own id. Library cards carry fixed ids (e.g. 'ccff-licence'),
+     so adding the same game twice produced two rotations with one id — duplicate React keys,
+     and Remove in Session Builder could appear to do nothing. */
+  const pen=next.penaltySummary?'':activePenaltySummaryFromStorage();
+  if(pen){next.penaltySummary=pen;clearPendingPenalties();}
+  const clash=!next.id||base.some(r=>r&&r.id===next.id);
+  return [...base,{...next,...(clash?{id:'rot-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),sourceId:next.id}:{}),duration:8}];
 }
+function uniqueSessionIds(list){const seen=new Set();return (Array.isArray(list)?list:[]).map((r,i)=>{if(!r||typeof r!=='object')return r;if(r.id!=null&&!seen.has(r.id)){seen.add(r.id);return r;}const id='rot-'+Date.now().toString(36)+'-'+i+'-'+Math.random().toString(36).slice(2,6);seen.add(id);return {...r,id,sourceId:r.id};});}
 function SessionAddToast(){
   const [msg,setMsg]=useState(null);
   useEffect(()=>{
@@ -29162,7 +29178,7 @@ function goBack(){
 }
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
 const presentCount=useMemo(()=>(players||[]).filter(p=>p&&p.present).length,[players]);
-const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[]);}catch{return[]}});
+const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return uniqueSessionIds(Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[]));}catch{return[]}});
 const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   try{
     const direct=localStorage.getItem('checkerboardInvasionFormat');
