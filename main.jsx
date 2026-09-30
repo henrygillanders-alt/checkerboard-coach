@@ -1,3 +1,5 @@
+// v792: One-Lunge Finish — the finishing shots (up to three) may go below the line
+// v791: Volley Attack — rally above the line, volley-attack may go below it; staged kill line replaces the tin
 // v790: Negative Scoring attaches to one game (not every game); racquet rules made consistent
 // v789: Session Builder Remove fixed — every rotation gets a unique id (duplicate ids broke removal)
 // v788: Match Problem Index gets a Home (More Stuff) tile; three entries renamed to match Match Analysis v2 tags
@@ -308,7 +310,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v790 Penalties Per Game';
+const APP_VERSION='v792 One-Lunge Finish Below Line';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8166,7 +8168,11 @@ function TimeSpaceLabFamily({onAdd,label='Add To Session'}){
 // Cross Court Friend or Foe — one definition, read by the family screen and by
 // standardGames() (Session Builder's All Games list and search). v747: Crosscourt
 // Licence moved in from Classic Games as game 5.
-const CCFF_DEFAULTS={toll:1,attackVolley:3,attackWinner:3,tin:'service line',lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+// Volley Attack kill line (v791, coach: an above-the-line game cannot finish short unless the
+// attack may use the full front court). Stage 1 = the whole front court below the service line.
+const CCFF_KILL_LINES={'Stage 1 · service line':'stage 1, the service line — anywhere below it and above the tin counts','Stage 2 · tape halfway down':'stage 2, a taped line halfway between the tin and the service line','Stage 3 · tape just above the tin':'stage 3, a taped line one racquet-head above the tin'};
+const CCFF_KILL_KEYS=Object.keys(CCFF_KILL_LINES);
+const CCFF_DEFAULTS={kill:'Stage 1 · service line',toll:1,attackVolley:3,attackWinner:3,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-toll',key:'toll',title:'1 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
@@ -8175,13 +8181,13 @@ const CCFF_GAMES=[
      focus:'Volley every loose crosscourt. If you can reach it, it was loose.',
      score:(v)=>'Rally win 1. +'+v.toll+' each time you volley the opponent’s crosscourt.',
      stepper:[{k:'toll',label:'Volley bonus',min:1,max:3,sign:'+'}]},
-    {id:'ccff-attack',key:'attack',title:'2 · Volley Attack',rld:3,tag:'Attack the loose crosscourt, progressively',
-     from:'Once players intercept loose crosscourts, the next step is finishing them — and tightening the target so the finish must be precise. This is your volley-kill and reducing-tin progression in one game.',
-     rule:(v)=>'Play above the line. Volley a crosscourt short and win the rally with it: +'+v.attackVolley+'. Any crosscourt winner (volleyed or not): +'+v.attackWinner+'. Play as many as you like. The tin is set to '+v.tin+' — lower it round by round (service line → three-quarter → full front wall) so the volley-kill has to get tighter each time. Everyone sees the volley, the winner and the tin height, so it self-officiates.',
-     coach:'Run it as a ladder: start at the service-line tin, drop it as the group converts cleanly, finish at full front wall where only a real kill counts. If nobody attacks, don’t assume the crosscourts are tight — check whether they are making the opponent move; one taken easily off the bounce and sent down a straight length is still loose. If they are moving the opponent, good; if they aren’t and still nobody attacks, the tin is too low for the group — raise it. Debrief: which loose crosscourt did you attack, and was the tin height fair for that ball?',
-     focus:'Volley the loose cross and kill it. Lower tin, tighter kill.',
-     score:(v)=>'Rally win 1. Volley-short winner off a crosscourt +'+v.attackVolley+'. Any crosscourt winner +'+v.attackWinner+'. Tin: '+v.tin+'.',
-     stepper:[{k:'attackVolley',label:'Volley-kill bonus',min:1,max:5,sign:'+'},{k:'attackWinner',label:'Cross-winner bonus',min:1,max:5,sign:'+'},{k:'tin',label:'Tin height',type:'select',options:['service line','three-quarter','full front wall']}]},
+    {id:'ccff-attack',key:'attack',title:'2 · Volley Attack',rld:3,tag:'Attack the loose crosscourt — the one shot allowed below the line',
+     from:'Once players intercept loose crosscourts, the next step is finishing them — and tightening the target so the finish must be precise. The rally stays above the line; the volley-attack on a crosscourt is the one shot allowed below it, so the kill has the front court to aim at.',
+     rule:(v)=>{const k=CCFF_KILL_LINES[v.kill]||CCFF_KILL_LINES[CCFF_KILL_KEYS[0]];return 'Rally above the line — except for one shot: when you volley your opponent\u2019s crosscourt, that volley may go short and below the line. Win the rally with it: +'+v.attackVolley+'. The volley-attack must hit the front wall below the kill line and above the tin: '+k+'. Any winner you hit off your opponent\u2019s crosscourt, volleyed or not: +'+v.attackWinner+'. Everyone sees the volley, the winner and the kill line, so it self-officiates.';},
+     coach:'Run it as a ladder: start with the whole front court below the service line, then tape the kill line lower as the group converts cleanly, so the finish has to be lower and tighter. The rally itself stays above the line — only the volley-attack on a crosscourt may go below it. If nobody attacks, don\u2019t assume the crosscourts are tight — check whether they are making the opponent move; one taken easily off the bounce and sent down a straight length is still loose. If they are moving the opponent, good; if they aren\u2019t and still nobody attacks, the kill line is too low for the group — raise it a stage. Debrief: which loose crosscourt did you attack, and was the kill line fair for that ball?',
+     focus:'Volley the loose cross and kill it below the line. Lower line, tighter kill.',
+     score:(v)=>'Rally win 1. Volley-attack off a crosscourt, below the kill line, that wins the rally: +'+v.attackVolley+'. Any winner off the opponent\u2019s crosscourt: +'+v.attackWinner+'. Kill line: '+v.kill+'.',
+     stepper:[{k:'attackVolley',label:'Volley-kill bonus',min:1,max:5,sign:'+'},{k:'attackWinner',label:'Cross-winner bonus',min:1,max:5,sign:'+'},{k:'kill',label:'Kill line',type:'select',options:CCFF_KILL_KEYS}]},
     {id:'ccff-functional',key:'functional',title:'3 · The Functional Cross',rld:3,tag:'Rewards the good crosscourt',
      from:'The mirror of the first two games. A functional crosscourt is one the opponent cannot volley — it is wide and dying into the back. This game pays that directly, so the family rewards the good cross as well as punishing the loose one.',
      rule:(v)=>'Play above the line. A functional crosscourt rarely wins the rally itself — it starts the pressure cycle. If your crosscourt beats the opponent’s volley and dies behind the service box, and you then win the rally with the crosscourt itself or within your next '+v.window+' shot'+(v.window>1?'s':'')+', you score +'+v.functional+'. If they volley it, no bonus — it was loose. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Run this alongside Volley Toll and both behaviours are priced at once.',
@@ -8191,10 +8197,10 @@ const CCFF_GAMES=[
      stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]},
     {id:'ccff-lunge',key:'lunge',title:'4 · One-Lunge Finish',rld:4,tag:'Convert the loose crosscourt in position',
      from:'A loose crosscourt should leave you needing only one step to reach it — you were already in position because it was readable. This game rewards being there and converting fast, and prices hesitation.',
-     rule:(v)=>'Play above the line. When your opponent crosscourts, you may respond with a single lunge step and go for the finish. Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.',
+     rule:(v)=>'Rally above the line — except for the finish. When your opponent crosscourts, you may respond with a single lunge step and go for the finish: from that shot, for up to three shots, you may play below the line — anywhere on the front wall above the tin. Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — back above the line, reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.',
      coach:'This game is about position and decision as much as the shot: a player who needs two steps was caught out by a good cross (fine) or read it late (coach that). The recycle keeps it honest — no reward for a scrappy prolonged scramble. Debrief: were you already moving when they crossed, and what told you it was coming?',
      focus:'One step to the loose cross, then finish fast. Sooner is worth more.',
-     score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+'; recycles after.',
+     score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+' — the finishing shots may go below the line; recycles after.',
      stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'}]},
     {id:'ccff-licence',key:'licence',title:'5 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
      from:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional — tight and dying into the back — or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on.',
