@@ -1,3 +1,5 @@
+// v798: CCFF — line progression (service line → halfway → full front court) on Volley Toll, Functional Cross, One-Lunge Finish
+// v797: Game Logic builders — no consequence without a required action
 // v796: Session Builder rotations compact — title, minutes, controls, 'How to play' (3 lines); Details opens the rest
 // v795: Crosscourt Choice — a boast does not count as a crosscourt (coach)
 // v794: Boast series (4 games) split from Drop & Lob; boast ≠ crosscourt in CCFF; CCFF Home tile
@@ -314,7 +316,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v796 Compact Session Builder';
+const APP_VERSION='v798 Line Progression CCFF';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8159,7 +8161,7 @@ function TimeSpaceLabFamily({onAdd,label='Add To Session'}){
 // line, then a taped line halfway down, then the full front court.
 const CCFF_LINES={'Service line':'Play above the line: every shot must hit the front wall above the service line.','Halfway down':'Play above the line: every shot must hit the front wall above a taped line halfway between the service line and the tin.','Full front court':'Play a normal rally: the whole front wall above the tin.'};
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
-const CCFF_DEFAULTS={xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8177,25 +8179,25 @@ const CCFF_GAMES=[
      stepper:[{k:'punish',label:'Punish bonus',min:1,max:8,sign:'+'},{k:'volleyExtra',label:'Volley extra',min:1,max:5,sign:'+'},{k:'lineP',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
     {id:'ccff-toll',key:'toll',title:'3 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
-     rule:(v)=>'Play above the line. Every time you volley your opponent’s crosscourt, you score +'+v.toll+'. That is the whole game: a crosscourt loose enough to volley is a crosscourt that hands you the point. Everyone saw whether it was volleyed, so it calls itself.',
+     rule:(v)=>(CCFF_LINES[v.lineT]||CCFF_LINES['Service line'])+' Every time you volley your opponent’s crosscourt, you score +'+v.toll+'. That is the whole game: a crosscourt loose enough to volley is a crosscourt that hands you the point. Everyone saw whether it was volleyed, so it calls itself.',
      coach:'Watch the feeder, not the volleyer: the player whose crosscourts keep getting volleyed is the one to coach — ask what made the cross loose (too straight, too central, too high, no width). A crosscourt that isn’t volleyed isn’t automatically good: a low crosscourt from the front can still be taken easily off the bounce and sent down a straight length, leaving the crosscourt player with no chance. The test is whether it made the opponent move. When crosscourts are beating the volley and moving the opponent, move to The Functional Cross to reward them. Debrief: when your crosscourt was volleyed, where was racquet–ball contact? When it wasn’t volleyed, did it make your opponent move?',
      focus:'Volley every loose crosscourt. If you can reach it, it was loose.',
-     score:(v)=>'Rally win 1. +'+v.toll+' each time you volley the opponent’s crosscourt.',
-     stepper:[{k:'toll',label:'Volley bonus',min:1,max:3,sign:'+'}]},
+     score:(v)=>'Rally win 1. +'+v.toll+' each time you volley the opponent’s crosscourt. Line: '+v.lineT+'.',
+     stepper:[{k:'toll',label:'Volley bonus',min:1,max:3,sign:'+'},{k:'lineT',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
     {id:'ccff-functional',key:'functional',title:'4 · The Functional Cross',rld:3,tag:'Rewards the good crosscourt',
      from:'The mirror of the first two games. A functional crosscourt is one the opponent cannot volley — it is wide and dying into the back. This game pays that directly, so the family rewards the good cross as well as punishing the loose one.',
-     rule:(v)=>'Play above the line. A functional crosscourt rarely wins the rally itself — it starts the pressure cycle. If your crosscourt beats the opponent’s volley and dies behind the service box, and you then win the rally with the crosscourt itself or within your next '+v.window+' shot'+(v.window>1?'s':'')+', you score +'+v.functional+'. If they volley it, no bonus — it was loose. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Run this alongside Volley Toll and both behaviours are priced at once.',
+     rule:(v)=>(CCFF_LINES[v.lineF]||CCFF_LINES['Service line'])+' A functional crosscourt rarely wins the rally itself — it starts the pressure cycle. If your crosscourt beats the opponent’s volley and dies behind the service box, and you then win the rally with the crosscourt itself or within your next '+v.window+' shot'+(v.window>1?'s':'')+', you score +'+v.functional+'. If they volley it, no bonus — it was loose. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Run this alongside Volley Toll and both behaviours are priced at once.',
      coach:'This is the reward half — use it once players have felt the punishment games, so they know what a loose cross costs and now chase the functional one. Watch width: a cross that dies deep almost always used the side wall. Debrief: what made your best crosscourt un-volleyable — width, height, or where it died?',
      focus:'Cross wide and deep, past the volley — then finish what it started.',
-     score:(v)=>'Rally win 1. Crosscourt beats the volley and dies behind the service box, then you win within '+v.window+' of your shots: +'+v.functional+'. Opponent wins with their reply to your crosscourt: +'+v.giftWin+' to them.',
-     stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]},
+     score:(v)=>'Rally win 1. Crosscourt beats the volley and dies behind the service box, then you win within '+v.window+' of your shots: +'+v.functional+'. Opponent wins with their reply to your crosscourt: +'+v.giftWin+' to them. Line: '+v.lineF+'.',
+     stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'},{k:'lineF',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
     {id:'ccff-lunge',key:'lunge',title:'5 · One-Lunge Finish',rld:4,tag:'Convert the loose crosscourt in position',
      from:'A loose crosscourt should leave you needing only one step to reach it — you were already in position because it was readable. This game rewards being there and converting fast, and prices hesitation.',
-     rule:(v)=>'Rally above the line — except for the finish. When your opponent crosscourts, you may respond with a single lunge step and go for the finish: from that shot, for up to three shots, you may play below the line — anywhere on the front wall above the tin. Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — back above the line, reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.',
+     rule:(v)=>{const full=v.lineL==='Full front court';const line=(CCFF_LINES[v.lineL]||CCFF_LINES['Service line']);return line+' When your opponent crosscourts, you may respond with a single lunge step and go for the finish'+(full?'.':': from that shot, for up to three shots, you may play below the line — anywhere on the front wall above the tin.')+' Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — '+(full?'':'back above the line, ')+'reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.';},
      coach:'This game is about position and decision as much as the shot: a player who needs two steps was caught out by a good cross (fine) or read it late (coach that). The recycle keeps it honest — no reward for a scrappy prolonged scramble. Debrief: were you already moving when they crossed, and what told you it was coming?',
      focus:'One step to the loose cross, then finish fast. Sooner is worth more.',
-     score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+' — the finishing shots may go below the line; recycles after.',
-     stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'}]},
+     score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+(v.lineL==='Full front court'?'':' — the finishing shots may go below the line')+'; recycles after. Line: '+v.lineL+'.',
+     stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'},{k:'lineL',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
     {id:'ccff-licence',key:'licence',title:'6 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
      from:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional — tight and dying into the back — or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on.',
      rule:(v)=>'Play a normal rally with one rule: you may only attack — go short, volley-kill, or take the ball in to finish — off a ball that came CROSSCOURT. A straight ball may not be attacked; you must answer it straight or with a length, and wait. Only when your opponent hits crosscourt is the attack unlocked — and a tight crosscourt dying into the back is still hard to do anything with, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court, so the unlock is self-officiating. Win any rally: 1 point. Win a rally with an attack off a crosscourt: +'+v.licence+'.',
@@ -12552,24 +12554,32 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
   function addTrigger(){if(triggers.length<5&&!triggers.includes(newTrigger))setTriggers([...triggers,newTrigger]);}
   function toggleQuality(id){setQualities(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
   const triggerText=activeTriggers.length?activeTriggers.map(t=>t.name).join(' AND '):'No additional trigger';
+  /* v797 (coach, 2 Oct): with "No required action" the builder still promised "+2 if successful"
+     and told players "Choose the best solution". A consequence needs something to reward or
+     punish, so without a required action the triggers and consequence are switched off and only
+     quality bonuses (which stand on their own) can be added. */
+  const noAction=requiredAction==='none';
   const playerRules=[
     baseGame?.task||baseGame?.description||'Play the base game as set.',
-    activeTriggers.length?`Extra condition applies when ${activeTriggers.map(t=>t.player).join(' AND ')}.`:'',
-    selectedAction.player,
-    selectedConsequence.player,
+    !noAction&&activeTriggers.length?`Extra condition applies when ${activeTriggers.map(t=>t.player).join(' AND ')}.`:'',
+    noAction?'':selectedAction.player,
+    noAction?'':selectedConsequence.player,
     ...activeQualities.map(q=>q.player)
   ].filter(Boolean);
-  const coachLogic=`Triggers: ${triggerText}. Required Action: ${selectedAction.name}. Consequence: ${selectedConsequence.text}${activeQualities.length?' Quality: '+activeQualities.map(q=>q.name).join(' · '):''}`;
+  const coachLogic=noAction
+    ?`No required action, so no extra consequence.${activeQualities.length?' Quality: '+activeQualities.map(q=>q.name).join(' · '):''}`
+    :`Triggers: ${triggerText}. Required Action: ${selectedAction.name}. Consequence: ${selectedConsequence.text}${activeQualities.length?' Quality: '+activeQualities.map(q=>q.name).join(' · '):''}`;
+  const canAddLogic=!noAction||activeQualities.length>0;
   function buildGame(){
     return {
       ...baseGame,
       id:Date.now()+Math.random(),
       title:`${baseGame.title||'Game'} + Game Logic`,
       task:`${baseGame.task||baseGame.description||'Play the base game.'} Added Game Logic: ${coachLogic}`,
-      scoring:`${baseGame.scoring||'Base scoring applies.'} Added Game Logic: ${selectedConsequence.text}${activeQualities.length?' Quality bonuses: '+activeQualities.map(q=>q.name).join(' · '):''}`,
+      scoring:`${baseGame.scoring||'Base scoring applies.'}${noAction?'':' Added Game Logic: '+selectedConsequence.text}${activeQualities.length?' Quality bonuses: '+activeQualities.map(q=>q.name).join(' · '):''}`,
       coach:`${baseGame.coach||''} Game Logic: ${coachLogic}`,
       playerView:playerRules.join(' '),
-      layers:[...(baseGame.layers||[]),'Game Logic',...activeTriggers.map(t=>t.name),...(requiredAction!=='none'?[selectedAction.name]:[]),selectedConsequence.name,...activeQualities.map(q=>q.name)]
+      layers:[...(baseGame.layers||[]),'Game Logic',...(noAction?[]:activeTriggers.map(t=>t.name)),...(noAction?[]:[selectedAction.name,selectedConsequence.name]),...activeQualities.map(q=>q.name)]
     };
   }
   return <div className="inlineLogicPanel gameCard">
@@ -12580,11 +12590,12 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     <div className="triggerAddRow"><select value={newTrigger} onChange={e=>setNewTrigger(e.target.value)}>{triggerOptions.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><button className="secondaryBtn" onClick={addTrigger}>+ Add Trigger</button></div>
     <div className="triggerStackList">{activeTriggers.map(t=><div className="triggerStackItem" key={t.id}><strong>{t.name}</strong><button className="secondaryBtn" onClick={()=>setTriggers(triggers.filter(x=>x!==t.id))}>Remove</button></div>)}</div>
     <label>Required Action<select value={requiredAction} onChange={e=>setRequiredAction(e.target.value)}>{actions.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label>
-    <label>Consequence<select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    <label>Consequence<select value={consequence} disabled={noAction} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    {noAction&&<p className="mutedText" style={{margin:'-4px 0 8px'}}>Choose a required action first — a consequence needs something to reward or punish. Quality bonuses below can still be added on their own.</p>}
     <h4>Quality Modifiers</h4>
     <div className="qualityGrid">{qualityOptions.map(q=><button type="button" key={q.id} className={qualities.includes(q.id)?'activeQualityBtn':''} onClick={()=>toggleQuality(q.id)}>{qualities.includes(q.id)?'✓ ':'+ '}{q.name}</button>)}</div>
     <div className="dualViewGrid"><div className="overlayCoachOutput"><strong>Coach View</strong><p>{coachLogic}</p></div><div className="overlayCoachOutput playerViewCard"><strong>Player View</strong><ol>{playerRules.map((r,i)=><li key={i}>{r}</li>)}</ol></div></div>
-    <div className="buttonRow"><button className="primaryBtn" onClick={()=>onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
+    <div className="buttonRow"><button className="primaryBtn" disabled={!canAddLogic} title={canAddLogic?'':'Choose a required action or a quality bonus first'} onClick={()=>canAddLogic&&onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
 }
 
@@ -22691,7 +22702,8 @@ function OverlayBuilderStandalone({setScreen,setSession}){
   function toggleQuality(id){setSelectedQuality(selectedQuality.includes(id)?selectedQuality.filter(x=>x!==id):[...selectedQuality,id]);}
   const activeTriggers=selectedTriggers.map(T); const activeQuality=selectedQuality.map(Q).filter(Boolean); const selectedAction=A(action); const selectedConsequence=C(consequence);
   const coachView=[activeTriggers.length?'Triggers: '+activeTriggers.map(t=>t.name).join(' AND '):'No trigger stack selected', action==='none'?'Required Action: none — player self-organises':'Required Action: '+selectedAction.name, 'Consequence: '+selectedConsequence.name, activeQuality.length?'Quality Modifiers: '+activeQuality.map(q=>q.name).join(' · '):'No quality modifiers'].join('. ');
-  const playerRules=[baseTemplates[base].base, activeTriggers.length?'Extra condition applies when '+activeTriggers.map(t=>t.player).join(' AND ')+'.':'', selectedAction.player, selectedConsequence.player, ...activeQuality.map(q=>q.player)].filter(Boolean);
+  const noActionSA=action==='none';
+  const playerRules=[baseTemplates[base].base, !noActionSA&&activeTriggers.length?'Extra condition applies when '+activeTriggers.map(t=>t.player).join(' AND ')+'.':'', noActionSA?'':selectedAction.player, noActionSA?'':selectedConsequence.player, ...activeQuality.map(q=>q.player)].filter(Boolean);
   const builtGame={id:Date.now(),title,category:baseTemplates[base].category,duration:15,task:baseRules+' Game Logic: '+coachView,scoring:baseScoring+' Added consequence: '+selectedConsequence.player+(activeQuality.length?' Quality modifiers: '+activeQuality.map(q=>q.player).join(' '):''),rationale:'Game Logic layer augments the base game without changing its configuration.',coach:'Base game protected. '+coachView,layers:['Game Logic Builder',base,...activeTriggers.map(t=>t.name),...(action!=='none'?[selectedAction.name]:[]),selectedConsequence.name,...activeQuality.map(q=>q.name)],playerView:playerRules.join(' ')};
   function addToSession(){if(!setSession){setStatus('Session connection not available.');return;} setSession(prev=>[...prev,{...builtGame,id:Date.now()+Math.random()}]); setStatus('Game Logic card added to session.');}
   return <div className="page gameLogicBuilderPage">
@@ -22700,7 +22712,7 @@ function OverlayBuilderStandalone({setScreen,setSession}){
     <div className="overlayBuilderCard"><h2>1. Base Game</h2><label>Game Type<select value={base} onChange={e=>changeBase(e.target.value)}>{Object.keys(baseTemplates).map(g=><option key={g}>{g}</option>)}</select></label><label>Title<input value={title} onChange={e=>setTitle(e.target.value)}/></label><label>Base Rules<textarea value={baseRules} onChange={e=>setBaseRules(e.target.value)}/></label><label>Base Scoring<textarea value={baseScoring} onChange={e=>setBaseScoring(e.target.value)}/></label></div>
     <div className="overlayBuilderCard"><h2>2. Trigger Stack</h2><p className="mutedText">Add up to 5 triggers. AND logic: all selected triggers must be satisfied.</p><div className="triggerAddRow"><select value={newTrigger} onChange={e=>setNewTrigger(e.target.value)}>{triggers.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><button className="primaryBtn" onClick={addTrigger}>+ Add Trigger</button></div><div className="triggerStackList">{activeTriggers.map(t=><div className="triggerStackItem" key={t.id}><strong>{t.name}</strong><span>{t.text}</span><button className="secondaryBtn" onClick={()=>removeTrigger(t.id)}>Remove</button></div>)}</div></div>
     <div className="overlayBuilderCard"><h2>3. Required Action</h2><p className="mutedText">Default is no required action. Use only for a directed solution.</p><label>Required Action<select value={action} onChange={e=>setAction(e.target.value)}>{actions.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></label><div className="logicExplainBox"><strong>{selectedAction.name}</strong><p>{selectedAction.text}</p></div></div>
-    <div className="overlayBuilderCard"><h2>4. Consequence</h2><label>Main Consequence<select value={consequence} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><div className="logicExplainBox"><strong>{selectedConsequence.name}</strong><p>{selectedConsequence.text}</p></div></div>
+    <div className="overlayBuilderCard"><h2>4. Consequence</h2>{action==='none'&&<p className="mutedText">Choose a required action first — a consequence needs something to reward or punish.</p>}<label>Main Consequence<select value={consequence} disabled={action==='none'} onChange={e=>setConsequence(e.target.value)}>{consequences.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><div className="logicExplainBox"><strong>{selectedConsequence.name}</strong><p>{selectedConsequence.text}</p></div></div>
     <div className="overlayBuilderCard"><h2>5. Quality Modifiers</h2><p className="mutedText">Optional execution bonuses. Stackable.</p><div className="qualityGrid">{quality.map(q=><button type="button" key={q.id} className={selectedQuality.includes(q.id)?'activeQualityBtn':''} onClick={()=>toggleQuality(q.id)}>{selectedQuality.includes(q.id)?'✓ ':'+ '}{q.name}</button>)}</div></div>
     <div className="generatedOverlayCard"><h2>6. Generated Output</h2><div className="dualViewGrid"><div className="overlayCoachOutput"><strong>Coach View</strong><p>{coachView}</p></div><div className="overlayCoachOutput playerViewCard"><strong>Player View</strong><ol>{playerRules.map((r,i)=><li key={i}>{r}</li>)}</ol></div></div><div className="buttonRow"><button className="primaryBtn" onClick={addToSession}>Add Complete Game Card To Session</button><button className="secondaryBtn" onClick={()=>setStatus('')}>Clear Status</button></div>{status&&<div className="statusBox">{status}</div>}</div>
   </div>;
