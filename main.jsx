@@ -1,3 +1,5 @@
+// v796: Session Builder rotations compact — title, minutes, controls, 'How to play' (3 lines); Details opens the rest
+// v795: Crosscourt Choice — a boast does not count as a crosscourt (coach)
 // v794: Boast series (4 games) split from Drop & Lob; boast ≠ crosscourt in CCFF; CCFF Home tile
 // v793: CCFF — coach's Crosscourt Winner + Punish the Cross lead the family, Volley Attack retired; Player Display shows title + task only
 // v792: One-Lunge Finish — the finishing shots (up to three) may go below the line
@@ -312,7 +314,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v794 Boast Series + CCFF Tile';
+const APP_VERSION='v796 Compact Session Builder';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8336,7 +8338,8 @@ const CXC_GAMES=[
    score:(v)=>'Won with your crosscourt or your next two shots: +'+v.price+'. Opponent wins with their reply: +'+v.giftWin+' to them. Lost on your next two shots: +'+v.price+' to them. Crosscourt beyond your allowance: lose the rally.',
    stepper:[{k:'crosses',label:'Crosscourts per rally',min:1,max:2,sign:''},{k:'price',label:'Crosscourt price',min:1,max:3,sign:'+'},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'}]}
 ];
-function cxcCard(g,v){return {id:g.id,title:g.title,category:'Crosscourt Choice',format:'Conditioned game — crosscourt decision',duration:g.duration,rld:g.rld,task:g.rule(v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),layers:['Decision Making','Shot Selection']};}
+function cxcRule(g,v){return g.rule(v)+CCFF_NO_BOAST;}
+function cxcCard(g,v){return {id:g.id,title:g.title,category:'Crosscourt Choice',format:'Conditioned game — crosscourt decision',duration:g.duration,rld:g.rld,task:cxcRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),layers:['Decision Making','Shot Selection']};}
 function CrosscourtChoiceFamily({onAdd,openFamily,label='Add To Session'}){
   const[v,setV]=React.useState(CXC_DEFAULTS);
   const link=(id,text)=><button type="button" className="secondaryBtn" onClick={()=>openFamily&&openFamily(id)}>{text}</button>;
@@ -8344,7 +8347,7 @@ function CrosscourtChoiceFamily({onAdd,openFamily,label='Add To Session'}){
     <div className="categoryTag">Crosscourt Choice · Stage {g.stage} · RLD {g.rld}</div><h2>{g.title}</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
     <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
-    <div className="infoBox"><strong>How to play</strong><p>{g.rule(v)}</p></div>
+    <div className="infoBox"><strong>How to play</strong><p>{cxcRule(g,v)}</p></div>
     <div style={{display:'flex',alignItems:'center',gap:'10px',margin:'6px 0',flexWrap:'wrap'}}>{g.stepper.map(st=><span key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><PointStepper value={v[st.k]} min={st.min} max={st.max} sign={st.sign} onChange={val=>setV(prev=>({...prev,[st.k]:val}))}/></span>)}</div>
     <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
     <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(cxcCard(g,v));}}>{label}</button>
@@ -8552,6 +8555,8 @@ function updateCb(index,code){saveSessionSnapshot();const updated=clone(session)
 function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
 function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
 const [editIndex,setEditIndex]=useState(null);
+const [openRot,setOpenRot]=useState({}); // v796: rotations are compact; Details opens one
+const toggleRot=id=>setOpenRot(o=>({...o,[id]:!o[id]}));
 function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
@@ -8559,9 +8564,17 @@ return <div className="page sessionBuilderPage">
 {showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
 <h2>Session Rotations</h2>
 {session.length===0&&<div className="placeholder">No rotations added yet. Press Open Games Library to add games.</div>}
-{session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'3px solid #2E6E8E',background:index%2===0?'#0d1826':'#12203025',borderRadius:'16px',marginBottom:'24px',boxShadow:'0 2px 14px rgba(0,0,0,0.35)'}}>
+<style>{`.rotCompactHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rotCompactTitle{flex:1 1 260px;min-width:0;font-size:1.02rem}.rotNum{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;background:#2E6E8E;color:#fff;font-weight:900;font-size:.85rem;margin-right:8px}.rotCompactCtl{display:flex;gap:6px;flex-wrap:wrap}.rotCompactCtl .secondaryBtn{padding:6px 11px;min-height:0;font-size:.85rem}.rotCompactCtl .rotOpen{background:#2E6E8E;color:#fff}.rotHowTo{margin-top:6px;color:#dbeafe;font-size:.95rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}`}</style>
+{session.length>0&&<p className="mutedText" style={{margin:'0 0 8px'}}>Each rotation shows how to play. Tap <strong>Details</strong> for the rationale, coach focus, player view and the edit / push buttons.</p>}
+{session.map((game,index)=><div className="rotationCard" key={game.id||index} style={{border:'1px solid #2E6E8E',background:index%2===0?'#0d1826':'#101d2c',borderRadius:'12px',marginBottom:'8px',padding:'8px 12px'}}>
 {editIndex===index?<div style={{padding:'2px'}}><div className="rotationTop"><div><strong>Editing Rotation {index+1}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" onClick={()=>setEditIndex(null)}>Close</button></div></div><UniversalGameEditor key={'edit-'+(game.id||index)} game={game} saveLabel="Save Changes" onAddToSession={g=>applyEdit(index,g)} onCancel={()=>setEditIndex(null)}/></div>:<>
-<div className="rotationTop"><div><strong>Rotation {index+1} · {game.duration||8} min · {game.format}</strong><h3>{game.title}</h3></div><div className="rotationControls"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><label>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} /></label><button className="secondaryBtn" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" onClick={()=>remove(index)}>Remove</button></div></div>
+<div className="rotCompact">
+  <div className="rotCompactHead"><div className="rotCompactTitle"><span className="rotNum">{index+1}</span><strong>{game.title}</strong><span className="mutedText"> · {game.duration||8} min</span></div>
+    <div className="rotCompactCtl"><button className="secondaryBtn" title="Move up" disabled={index===0} onClick={()=>move(index,-1)}>↑</button><button className="secondaryBtn" title="Move down" disabled={index===session.length-1} onClick={()=>move(index,1)}>↓</button><button className="secondaryBtn" title="One minute less" onClick={()=>bumpDuration(index,-1)}>−</button><button className="secondaryBtn" title="One minute more" onClick={()=>bumpDuration(index,1)}>+</button><button className="secondaryBtn" title="Remove" onClick={()=>remove(index)}>✕</button><button className={'secondaryBtn'+(openRot[game.id]?' rotOpen':'')} onClick={()=>toggleRot(game.id)}>{openRot[game.id]?'Close ▴':'Details ▾'}</button></div></div>
+  <div className="rotHowTo"><strong>How to play: </strong>{getPlayerDisplayFields(game).what}</div>
+</div>
+{openRot[game.id]&&<>
+<div style={{display:'flex',alignItems:'center',gap:'8px',margin:'8px 0'}}><span className="mutedText">{game.format}</span><label style={{marginLeft:'auto'}}>Duration <input type="number" min="1" value={game.duration||8} onChange={e=>updateDuration(index,e.target.value)} style={{width:'64px'}}/></label></div>
 <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'12px'}}><div className="infoBox" style={{margin:0}}><strong>Task</strong><p>{game.task}</p></div><div className="infoBox" style={{margin:0}}><strong>{game.format==='Pattern Lab'?'Description':'Rationale'}</strong><p>{game.rationale}</p></div><div className="infoBox" style={{margin:0}}><strong>Coach Focus</strong><p>{game.coach}</p></div><div className="infoBox" style={{margin:0}}><strong>Player Focus</strong><p>{game.playerFocus||'Focus on the cue that unlocks the scoring constraint.'}</p></div></div>
 {game.category==='Checkerboard'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the CHECKERBOARD module. Set the codes, scope and constraints there; Session Builder shows the challenge only.</p><p><strong>Challenge:</strong> {getPlayerDisplayFields(game).what}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p></div>:game.category==='Perception'?<div className="sessionReadOnlyPanel"><strong>Session Parameters</strong><p>This rotation is configured in the PERCEPTION™ module. Session Builder shows the selected game only.</p><p><strong>Constraints:</strong> {safeLayersForSession(game).join(' · ')||'None'}</p><p><strong>Scoring:</strong> {getPlayerDisplayFields(game).score}</p><p><strong>RLD:</strong> {game.rld??'Not set'}</p></div>:<div className="playerViewMini playerViewSessionPreview" style={{margin:0}}><h3>Player View Preview</h3><p className="mutedText" style={{margin:'0 0 6px'}}>Players see the title and the task. The rationale and focus are for you to communicate.</p><p><strong>TASK</strong><br/>{getPlayerDisplayFields(game).what}</p>{getPlayerDisplayFields(game).dbText&&<p><strong>DB ALLOCATIONS</strong><br/>{getPlayerDisplayFields(game).dbText}</p>}{game.showScoring&&<p><strong>SCORE</strong><br/>{getPlayerDisplayFields(game).score}</p>}<label style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'8px',fontWeight:700}}><input type="checkbox" checked={!!game.showScoring} onChange={e=>{saveSessionSnapshot();const updated=clone(session);updated[index]={...updated[index],showScoring:e.target.checked};setSession(updated);}}/> Show scoring on the player display</label></div>}
 <div className="buttonRow" style={{marginTop:'12px',flexWrap:'wrap',gap:'8px'}}>
@@ -8571,6 +8584,7 @@ return <div className="page sessionBuilderPage">
 <button type="button" className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>Push Player Display</button>
 <button type="button" className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} }}>Copy Player Link</button>
 </div>
+</>}
 </>}
 </div>)}
 </div>;
