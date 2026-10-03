@@ -1,3 +1,4 @@
+// v799: S&L — big winner buttons in token colours, big challenge buttons, undo after a win (withdraws the ladder result), shapes for shared initials, one colour list
 // v798: CCFF — line progression (service line → halfway → full front court) on Volley Toll, Functional Cross, One-Lunge Finish
 // v797: Game Logic builders — no consequence without a required action
 // v796: Session Builder rotations compact — title, minutes, controls, 'How to play' (3 lines); Details opens the rest
@@ -316,7 +317,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v798 Line Progression CCFF';
+const APP_VERSION='v799 Snakes & Ladders Scoring';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -14532,6 +14533,30 @@ function slCourtShapeName(courtLabel){
 }
 /* Initials: first-name initial normally, but where two players on the same court
    share it, both fall back to first+surname initials (Laya Sabry LS, Leo Ivlenkov LI). */
+/* v799 (coach, 2 Oct): one colour list for the scorer, the wall display and the race display
+   (the display had two players sharing the same teal), and players whose names start with the
+   same letter get different token SHAPES — Leo a circle, Laya a square, Laura an octagon. */
+const SL_TOKEN_COLORS=['#2f9bff','#ff8a80','#6fae8b','#ff5fd0','#ffe000','#a98bff','#6bd6d6','#c8e66b'];
+const SL_PLAYER_SHAPES=[
+  {borderRadius:'50%'},
+  {borderRadius:'18%'},
+  {clipPath:'polygon(30% 0%,70% 0%,100% 30%,100% 70%,70% 100%,30% 100%,0% 70%,0% 30%)',borderRadius:0},
+  {borderRadius:'4px',transform:'rotate(45deg)'},
+  {clipPath:'polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)',borderRadius:0},
+  {clipPath:'polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)',borderRadius:0}
+];
+const SL_SHAPE_NAMES=['circle','square','octagon','diamond','hexagon','pentagon'];
+function slShapeMap(names,fallback){
+  const list=(names||[]).map(n=>String(n||'').trim());
+  const groups={};list.forEach(n=>{const k=(n[0]||'P').toUpperCase();(groups[k]=groups[k]||[]).push(n);});
+  const map={};
+  Object.values(groups).forEach(g=>{g.forEach((n,i)=>{map[n]=g.length>1?{style:SL_PLAYER_SHAPES[i%SL_PLAYER_SHAPES.length],shape:SL_SHAPE_NAMES[i%SL_SHAPE_NAMES.length]}:{style:fallback||SL_PLAYER_SHAPES[0],shape:''};});});
+  return map;
+}
+function SlToken({name,color,shapeMap,initials,extraClass,title}){
+  const st=(shapeMap&&shapeMap[name]&&shapeMap[name].style)||SL_PLAYER_SHAPES[0];
+  return <b className={'slTok'+(extraClass?' '+extraClass:'')} title={title} style={{background:color,...st}}><span style={st.transform?{display:'block',transform:'rotate(-45deg)'}:undefined}>{initials||(String(name||'P')[0]||'P').toUpperCase()}</span></b>;
+}
 function slInitialsMap(names){
   const list=(names||[]).map(n=>String(n||'').trim());
   const first=n=>(n[0]||'P').toUpperCase();
@@ -14545,7 +14570,9 @@ function slInitialsMap(names){
 function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false,setupChallenge='',onSetSetupChallenge=null}){
   const tokShape=slCourtShapeStyle(courtLabel);
   const initialsMap=useMemo(()=>slInitialsMap((players||[]).map(n=>String(n))),[players]);
-  const SL_COLORS=['#2f9bff','#2e6e8e','#6fae8b','#ff5fd0','#ffe000','#a98bff'];
+  const shapeMap=useMemo(()=>slShapeMap((players||[]).map(n=>String(n)),tokShape),[players,courtLabel]);
+  const SL_COLORS=SL_TOKEN_COLORS;
+  const autoKeyRef=useRef(null);
   const size=settings.size;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const grid=useMemo(()=>slSerpentine(size,cols),[size,cols]);
@@ -14613,15 +14640,15 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [undoStack,setUndoStack]=useState([]);
   const [rallyWins,setRallyWins]=useState({});   /* every point won, per player */
 
-  function slSnapshot(){return {roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
-  function undoMove(){setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
+  function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
+  function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
   useEffect(()=>{
     if(winner==null)return;
     const names=roster.map(p=>p.name);
     const key='sl|'+(courtLabel||'court')+'|'+names.join(',')+'|'+names.map(n=>rallyWins[n]||0).join('-');
-    ladderAutoRecordGame(key,'Snakes & Ladders'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:rallyWins[n]||0})));
+    if(ladderAutoRecordGame(key,'Snakes & Ladders'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:rallyWins[n]||0}))))autoKeyRef.current=key;
   },[winner]);
 
   function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
@@ -14752,6 +14779,10 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   return <div className={scoring?'slCourt slCourtScoring':'slCourt'}>
     {scoring&&<style>{`
 .slCourtScoring .slOnCourt .primaryBtn{flex:1;min-width:150px;font-size:1.45rem !important;padding:20px 16px !important;border-radius:14px;}
+.slOnCourt{gap:44px !important;align-items:stretch;}
+.slWinBtn{flex:1 1 200px;min-height:104px;border:3px solid rgba(255,255,255,0.35);border-radius:18px;color:#0a1322;font-size:1.6rem;font-weight:900;display:flex;align-items:center;justify-content:center;gap:14px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.35);}
+.slWinBtn:active{transform:scale(0.98);}
+.slWinTok{min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-size:1.25rem !important;color:#ffffff !important;flex:none;}
 .slCourtScoring .slOnCourt{gap:12px;}
 .slCourtScoring .slOnCourt .slVs{font-size:1.1rem;}
 .slCourtScoring .slLbRow{font-size:1.08rem;}
@@ -14764,13 +14795,15 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 .slBoard .slCell.slSnake{background:#5e1633 !important;border-color:#ff5fa2 !important;}
 .slBoard .slCell.slFinish{background:#3d4657 !important;border-color:#2e6e8e !important;}
 .slBoard .slNum{font-size:1.8rem !important;font-weight:800 !important;color:#f2f7ff !important;line-height:1.05 !important;}
-.slBoard .slTok{font-size:1.35rem !important;min-width:2.1rem !important;height:2.1rem !important;line-height:2.1rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slBoard .slTok{font-size:1.35rem !important;min-width:2.1rem !important;height:2.1rem !important;line-height:2.1rem !important;font-weight:800 !important;color:#0a1322 !important;}
 .slBoard .slMark{font-size:1.55rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.1 !important;}
 .slDisplayBoard .slMark{font-size:2.1rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.1rem !important;}
 .slChallengeConfirm{background:#1a1408;border:1px solid #2e6e8e;border-radius:12px;padding:12px 14px;margin:10px 0;}
 .slChallengeConfirm p{margin:0 0 10px;color:#e0d3b4;font-weight:600;}
-.slChallengeConfirmBtns{display:flex;gap:8px;flex-wrap:wrap;}
+.slChallengeConfirmBtns{display:flex;gap:18px;flex-wrap:wrap;}
+.slChallengeConfirmBtns button{flex:1 1 220px;min-height:84px;font-size:1.3rem !important;font-weight:800 !important;border-radius:14px !important;}
+.slChallengeConfirm p{font-size:1.15rem !important;}
 .slChallengeEditor{margin:10px 0;}
 .slChallengeEditorPanel{background:#0b1118;border:1px solid #223044;border-radius:10px;padding:10px 13px;margin-top:8px;display:flex;flex-direction:column;gap:8px;}
 .slChallengeEditorRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -14814,11 +14847,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const P=roster[onA];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(lad)setAwaitingConfirm({slot:0,idx:onA,text:lad});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}>{roster[onA].name} won</button>
+      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onA%SL_COLORS.length]}} onClick={()=>{const P=roster[onA];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(lad)setAwaitingConfirm({slot:0,idx:onA,text:lad});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}><SlToken name={roster[onA].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onA].name]} extraClass="slWinTok"/><span>{roster[onA].name} won</span></button>
       <span className="slVs">vs</span>
-      <button type="button" className="primaryBtn" onClick={()=>{const P=roster[onB];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(lad)setAwaitingConfirm({slot:1,idx:onB,text:lad});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}>{roster[onB].name} won</button>
+      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onB%SL_COLORS.length]}} onClick={()=>{const P=roster[onB];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(lad)setAwaitingConfirm({slot:1,idx:onB,text:lad});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}><SlToken name={roster[onB].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onB].name]} extraClass="slWinTok"/><span>{roster[onB].name} won</span></button>
     </div>}
-    {scoring&&winner==null&&queue.length>=2&&!awaitingConfirm&&<div style={{margin:'6px 0'}}><button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45,width:'100%',padding:'13px',fontSize:'1.05rem'}}>↶ Step back — undo last rally</button></div>}
+    {!awaitingConfirm&&(winner!=null||queue.length>=2)&&<div style={{margin:'10px 0'}}><button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45,width:'100%',minHeight:'64px',fontSize:'1.2rem',fontWeight:800}}>{winner!=null?'↶ Wrong winner? Undo the last rally':'↶ Step back — undo last rally'}</button></div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
     {queue.length<2&&<div className="slQueue">Needs at least 2 players on this court.</div>}
 
@@ -14835,7 +14868,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><b className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length],...tokShape}}><span style={tokShape.transform?{display:'block',transform:'rotate(-45deg)'}:undefined}>{initialsMap[p.name]||(p.name||'P')[0].toUpperCase()}</span></b><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#2e6e8e',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><SlToken name={p.name} color={SL_COLORS[i%SL_COLORS.length]} shapeMap={shapeMap} initials={initialsMap[p.name]}/><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#2e6e8e',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     {!scoring&&<div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -14847,7 +14880,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
           {ci.show&&ci.isLadder&&<span className="slMark">🪜→{ci.to}</span>}
           {ci.show&&ci.isSnake&&<span className="slMark">🐍→{ci.to}</span>}
           {n===size&&<span className="slMark">🏁</span>}
-          {here.length>0&&<span className="slTokens">{here.map(i=><b key={i} className="slTok" style={{background:SL_COLORS[i%SL_COLORS.length],...tokShape}}><span style={tokShape.transform?{display:'block',transform:'rotate(-45deg)'}:undefined}>{initialsMap[roster[i].name]||(roster[i].name||'P')[0].toUpperCase()}</span></b>)}</span>}
+          {here.length>0&&<span className="slTokens">{here.map(i=><SlToken key={i} name={roster[i].name} color={SL_COLORS[i%SL_COLORS.length]} shapeMap={shapeMap} initials={initialsMap[roster[i].name]}/>)}</span>}
         </div>;
       })}
     </div>}
@@ -15281,7 +15314,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 
 function SnakesLaddersPlayerDisplay({payload={}}){
   useWakeLock();
-  const SL_COLORS=['#5b9bff','#2e6e8e','#6fae8b','#e069c0','#2e6e8e','#7d7bff'];
+  const SL_COLORS=SL_TOKEN_COLORS;
   const size=payload.size||21;
   const cols=size===15?5:size===30?6:size===50?10:7;
   const rows=Math.ceil(size/cols);
@@ -15289,6 +15322,7 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const board=payload.board||{snakes:{},ladders:{}};
   const players=payload.players||[];
   const idxByName=useMemo(()=>{const m={};players.forEach((p,i)=>{m[p.name]=i;});return m;},[players]);
+  const dispNames=(Array.isArray(players)?players:[]).map(p=>String(p&&p.name!=null?p.name:p));const dispShapes=slShapeMap(dispNames);const dispInitials=slInitialsMap(dispNames);
   const revealed=new Set(payload.revealed||[]);
   const visible=payload.visible!==false;
   const onCourt=payload.onCourt||[];
@@ -15306,14 +15340,14 @@ function SnakesLaddersPlayerDisplay({payload={}}){
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
 .slDisplayBoard .slMark{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:clamp(0.8rem,2.4vw,2.2rem) !important;font-weight:800 !important;color:#f2f7ff !important;}
-.slDisplayBoard .slTok{font-size:clamp(0.6rem,1.6vw,1.5rem) !important;min-width:clamp(1.1rem,2.6vw,2.4rem) !important;height:clamp(1.1rem,2.6vw,2.4rem) !important;line-height:clamp(1.1rem,2.6vw,2.4rem) !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slDisplayBoard .slTok{font-size:clamp(0.6rem,1.6vw,1.5rem) !important;min-width:clamp(1.1rem,2.6vw,2.4rem) !important;height:clamp(1.1rem,2.6vw,2.4rem) !important;line-height:clamp(1.1rem,2.6vw,2.4rem) !important;font-weight:800 !important;color:#0a1322 !important;}
 .slDisplayBoard .slActiveLadder{animation:slLadderPulse 1.1s ease-in-out infinite;}
 @keyframes slLadderPulse{0%,100%{box-shadow:0 0 0 2px #2e6e8e inset;}50%{box-shadow:0 0 0 6px #2e6e8e inset;}}
 `}</style>
     <div className="slDisplayHead"><span className="slDisplayLive">● LIVE</span><h1>Snakes &amp; Ladders</h1>{payload.courtLabel?<p>{payload.courtLabel}</p>:null}</div>
     {winnerName?<div className="slWinBanner slDisplayWin">🏆 {winnerName} wins!</div>
       :onCourt.length>=2?<div className="slDisplayOnCourt">{onCourt[0]} <span>vs</span> {onCourt[1]}</div>:null}
-    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);const chText=(payload.pendingChallenge||{})[p.name];return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><b className="slTok" style={{background:SL_COLORS[ci%SL_COLORS.length]}}>{(p.name||'P')[0].toUpperCase()}</b><span className="slLbName">{p.name}{chText?<span style={{color:'#e0d3b4',fontWeight:700}}> ⏳ "{chText}"</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slDisplayLeaderboard">{[...players].sort((a,b)=>b.pos-a.pos).map(p=>{const ci=idxByName[p.name]||0;const on=onCourt.includes(p.name);const chText=(payload.pendingChallenge||{})[p.name];return <div key={p.name} className={on?'slLbRow slLbOn':'slLbRow'}><SlToken name={p.name} color={SL_COLORS[ci%SL_COLORS.length]} shapeMap={dispShapes} initials={dispInitials[p.name]}/><span className="slLbName">{p.name}{chText?<span style={{color:'#e0d3b4',fontWeight:700}}> ⏳ "{chText}"</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
     <div className="slDisplayBoardWrap">
       <div className="slBoard slDisplayBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
         {grid.flat().map((n,idx)=>{
@@ -15326,7 +15360,7 @@ function SnakesLaddersPlayerDisplay({payload={}}){
             {ci.show&&ci.isL&&<span className="slMark">🪜→{ci.to}</span>}
             {ci.show&&ci.isS&&<span className="slMark">🐍→{ci.to}</span>}
             {n===size&&<span className="slMark">🏁</span>}
-            {here.length>0&&<span className="slTokens">{here.map(nm=><b key={nm} className="slTok" style={{background:SL_COLORS[(idxByName[nm]||0)%SL_COLORS.length]}}>{nm[0].toUpperCase()}</b>)}</span>}
+            {here.length>0&&<span className="slTokens">{here.map(nm=><SlToken key={nm} name={nm} color={SL_COLORS[(idxByName[nm]||0)%SL_COLORS.length]} shapeMap={dispShapes} initials={dispInitials[nm]}/>)}</span>}
           </div>;
         })}
       </div>
@@ -27696,7 +27730,7 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
 
 function SnakesLaddersRaceDisplay({host,courtCount}){
   useWakeLock();
-  const SL_COLORS=['#5b9bff','#2e6e8e','#6fae8b','#e069c0','#2e6e8e','#7d7bff','#6bd6d6','#ff8a80'];
+  const SL_COLORS=SL_TOKEN_COLORS;
   const [courts,setCourts]=useState([]); // array of payloads, one per court, index 0 = Court 1
   useEffect(()=>{
     let cancelled=false;
@@ -27739,7 +27773,7 @@ function SnakesLaddersRaceDisplay({host,courtCount}){
 .slDisplayBoard .slCell{aspect-ratio:1/1;min-width:0;box-sizing:border-box;}
 .slDisplayBoard .slMark{font-size:2.2rem !important;font-weight:800 !important;color:#e0d3b4 !important;line-height:1.05 !important;}
 .slDisplayBoard .slNum{font-size:2.2rem !important;font-weight:800 !important;color:#f2f7ff !important;}
-.slDisplayBoard .slTok{font-size:1.3rem !important;min-width:2.3rem !important;height:2.3rem !important;line-height:2.3rem !important;font-weight:800 !important;color:#0a1322 !important;border-radius:50% !important;}
+.slDisplayBoard .slTok{font-size:1.3rem !important;min-width:2.3rem !important;height:2.3rem !important;line-height:2.3rem !important;font-weight:800 !important;color:#0a1322 !important;}
 @media (max-width:640px){
   .slDisplayBoard{min-width:${cols*40}px;gap:4px !important;}
   .slDisplayBoard .slMark{font-size:1.15rem !important;}
@@ -28289,6 +28323,7 @@ function ladderAppendEvents(list){
 /* Automatic capture: a game scored in the app credits the ladder without anyone
    remembering to log it. Recorded once per game via a dedupe key, using real
    per-rally tallies (not board position, which ladders and snakes distort). */
+function ladderUndoAutoRecord(key){if(!key)return;try{const st=ladderLoadStore();st.events=(st.events||[]).filter(e=>e.autoKey!==key);st.autoKeys=(st.autoKeys||[]).filter(k=>k!==key);ladderSaveStore(st);}catch{}}
 function ladderAutoRecordGame(key,gameName,tallies){
   const rows=(tallies||[]).filter(r=>r&&r.player);
   if(rows.length<2)return false;
@@ -28296,7 +28331,7 @@ function ladderAutoRecordGame(key,gameName,tallies){
   const done=Array.isArray(store.autoKeys)?store.autoKeys:[];
   if(done.includes(key))return false;
   const ranked=[...rows].sort((a,b)=>(b.wins-a.wins)||String(a.player).localeCompare(String(b.player)));
-  ladderAppendEvents([{type:'ranked',game:gameName||'Scored game',weight:1,auto:true,
+  ladderAppendEvents([{type:'ranked',game:gameName||'Scored game',weight:1,auto:true,autoKey:key,
     entries:ranked.map((r,i)=>({player:r.player,rank:i+1,wins:Math.max(0,Number(r.wins)||0)}))}]);
   const next=ladderLoadStore();
   next.autoKeys=[...done,key].slice(-400);
