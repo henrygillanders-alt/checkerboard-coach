@@ -1,3 +1,4 @@
+// v800: S&L winner buttons — equal, side by side on phones too
 // v799: S&L — big winner buttons in token colours, big challenge buttons, undo after a win (withdraws the ladder result), shapes for shared initials, one colour list
 // v798: CCFF — line progression (service line → halfway → full front court) on Volley Toll, Functional Cross, One-Lunge Finish
 // v797: Game Logic builders — no consequence without a required action
@@ -317,7 +318,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v799 Snakes & Ladders Scoring';
+const APP_VERSION='v800 S&L Buttons Side By Side';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -14779,8 +14780,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   return <div className={scoring?'slCourt slCourtScoring':'slCourt'}>
     {scoring&&<style>{`
 .slCourtScoring .slOnCourt .primaryBtn{flex:1;min-width:150px;font-size:1.45rem !important;padding:20px 16px !important;border-radius:14px;}
-.slOnCourt{gap:44px !important;align-items:stretch;}
-.slWinBtn{flex:1 1 200px;min-height:104px;border:3px solid rgba(255,255,255,0.35);border-radius:18px;color:#0a1322;font-size:1.6rem;font-weight:900;display:flex;align-items:center;justify-content:center;gap:14px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.35);}
+/* v800: two equal buttons side by side on every screen, phone included — label above, 'vs' between */
+.slOnCourt{display:grid !important;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) !important;gap:14px !important;align-items:stretch !important;}
+.slOnCourt .slOnCourtLabel{grid-column:1/-1;}
+.slOnCourt .slVs{align-self:center;margin:0 !important;}
+.slWinBtn{min-width:0;min-height:120px;border:3px solid rgba(255,255,255,0.35);border-radius:18px;color:#0a1322;font-size:clamp(1.15rem,4.6vw,1.6rem);font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 8px;text-align:center;line-height:1.15;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.35);overflow-wrap:anywhere;}
 .slWinBtn:active{transform:scale(0.98);}
 .slWinTok{min-width:2.4rem !important;height:2.4rem !important;line-height:2.4rem !important;font-size:1.25rem !important;color:#ffffff !important;flex:none;}
 .slCourtScoring .slOnCourt{gap:12px;}
