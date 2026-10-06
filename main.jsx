@@ -1,3 +1,8 @@
+// v809: S&L — the 'Chance is gone / keep trying' setup choice removed; one rule (coach, 4 Oct)
+// v808: S&L ladders — lose while waiting = ladder forfeited for good; win without showing = stays armed (every mode)
+// v807: S&L — losing on a snake's head slides you to its tail again (bite lost on 4 Sep)
+// v806: S&L hand-off — referee gets the coach's exact game; take-back keeps the referee's game; copy/share inside the tap
+// v805: Onside Offside — its own series of five separate games (one per progression)
 // v804: Onside Offside — rally-win value and the offside price customisable too
 // v803: Cross Away, Not At retired — its useful parts folded into Onside Offside; CXC stage 2 links to it
 // v802: CCFF game 3 — Onside Offside, the coach's five court-tested progressions
@@ -322,7 +327,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v804 Onside Offside Scoring';
+const APP_VERSION='v809 S&L One Ladder Rule';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -795,6 +800,7 @@ return[
 lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
+...ONSIDE_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Onside Offside')),
 ...CXC_GAMES.map(g=>cxcCard(g,CXC_DEFAULTS)),
 ...DBL_GAMES.map(g=>dblCard(g,DBL_DEFAULTS)),
 ...BOAST_GAMES.map(g=>dblCard(g,DBL_DEFAULTS)),
@@ -8185,40 +8191,28 @@ const CCFF_GAMES=[
      focus:'Read the crosscourt, take it early, finish it.',
      score:(v)=>'Rally win +1. Bonus +'+v.punish+' for winning with a shot off the opponent\u2019s crosscourt; extra bonus +'+v.volleyExtra+' if it was a volley. Line: '+v.lineP+'.',
      stepper:[{k:'punish',label:'Punish bonus',min:1,max:8,sign:'+'},{k:'volleyExtra',label:'Volley extra',min:1,max:5,sign:'+'},{k:'lineP',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
-    {id:'ccff-onside',key:'onside',title:'3 · Onside Offside',rld:3,tag:'Crosscourt only when your opponent is onside',
-     from:'The coach\u2019s court-tested ladder (3 Oct). One rule never changes — cross only when the opponent is onside — and each progression adds one thing. It trains awareness of an opponent who lingers on your side and leaves the crosscourt open, and (progression 5) of the opponent\u2019s position for the straight winner. Simple to understand and to police: everyone can see the feet.',
-     rule:(v)=>{const p=Number(v.onStep||1);const onRule='Onside = your opponent has both feet on your side of the half-court line (imagine it running on to the front wall). Crosscourt only when they are onside \u2014 crosscourt when they have one or both feet offside and '+(CCFF_OFFSIDE_PRICE[v.onOff]||'you lose the rally')+'.';
-       const setup=p<=2?'Rotating drives: the second bounce must land in the back of the court (zones 3 and 4).':'Full court, boasts allowed.';
-       const xw=(p===2||p>=4)?' Bonus: +'+v.onXwin+' for a crosscourt winner.':'';
-       const sw=p===5?' Bonus: +'+v.onSwin+' for a straight winner played while your opponent is offside.':'';
-       const vol=v.onNoVolley==='Yes'?' An onside crosscourt your opponent volleys earns no bonus \u2014 it did not make them move.':'';
-       return 'Progression '+p+'. '+setup+' '+onRule+' Win the rally: +'+(v.onRally||1)+'. Bonus: +'+v.onX+' for every onside crosscourt.'+vol+xw+sw;},
-     coach:'Run the progressions in order. 1: rotating drives (second bounce in 3 and 4) — +1 for every onside crosscourt; a crosscourt with the opponent offside loses the rally. Rationale: spot the opponent who lingers and leaves an opening for the crosscourt. 2: as 1, plus a bonus for a crosscourt winner. 3: as 1 on the full court, boasts allowed. 4: as 3, plus the crosscourt-winner bonus. 5: as 4, plus a bonus for a straight winner played while the opponent is offside — rationale: opponent-position awareness. The receiver calls the feet. Watch the striker\u2019s head before a crosscourt \u2014 do they look at the opponent first? Option (from the retired Cross Away, Not At): set \u201cvolleyed cross earns no bonus\u201d to Yes when players are crossing onside but loosely — the crosscourt test is whether it made the opponent move. Debrief: where were your opponent\u2019s feet when you chose to cross, and did they have to move?',
-     focus:'Check their feet before you cross.',
-     score:(v)=>{const p=Number(v.onStep||1);return 'Progression '+p+'. Rally win +'+(v.onRally||1)+'. Bonus +'+v.onX+' per onside crosscourt; offside crosscourt: '+(CCFF_OFFSIDE_PRICE[v.onOff]||'you lose the rally')+'.'+((p===2||p>=4)?' Crosscourt winner +'+v.onXwin+'.':'')+(p===5?' Straight winner with opponent offside +'+v.onSwin+'.':'');},
-     stepper:[{k:'onStep',label:'Progression',type:'select',options:CCFF_ONSIDE_STEPS},{k:'onRally',label:'Rally win',min:1,max:3,sign:'+'},{k:'onOff',label:'Offside crosscourt',type:'select',options:Object.keys(CCFF_OFFSIDE_PRICE)},{k:'onNoVolley',label:'Volleyed cross earns no bonus',type:'select',options:['No','Yes']},{k:'onX',label:'Onside cross bonus',min:1,max:3,sign:'+'},{k:'onXwin',label:'Cross winner bonus',min:1,max:6,sign:'+'},{k:'onSwin',label:'Straight winner bonus',min:1,max:6,sign:'+'}]},
-    {id:'ccff-toll',key:'toll',title:'4 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
+    {id:'ccff-toll',key:'toll',title:'3 · Volley Toll',rld:2,tag:'Punishes the loose crosscourt',
      from:'A crosscourt that can be volleyed is, by definition, non-functional — it sat up in the middle instead of dying into the back. So rewarding the volley off a crosscourt is the same as punishing the loose crosscourt, but positive and self-officiating.',
      rule:(v)=>(CCFF_LINES[v.lineT]||CCFF_LINES['Service line'])+' Every time you volley your opponent’s crosscourt, you score +'+v.toll+'. That is the whole game: a crosscourt loose enough to volley is a crosscourt that hands you the point. Everyone saw whether it was volleyed, so it calls itself.',
      coach:'Watch the feeder, not the volleyer: the player whose crosscourts keep getting volleyed is the one to coach — ask what made the cross loose (too straight, too central, too high, no width). A crosscourt that isn’t volleyed isn’t automatically good: a low crosscourt from the front can still be taken easily off the bounce and sent down a straight length, leaving the crosscourt player with no chance. The test is whether it made the opponent move. When crosscourts are beating the volley and moving the opponent, move to The Functional Cross to reward them. Debrief: when your crosscourt was volleyed, where was racquet–ball contact? When it wasn’t volleyed, did it make your opponent move?',
      focus:'Volley every loose crosscourt. If you can reach it, it was loose.',
      score:(v)=>'Rally win 1. +'+v.toll+' each time you volley the opponent’s crosscourt. Line: '+v.lineT+'.',
      stepper:[{k:'toll',label:'Volley bonus',min:1,max:3,sign:'+'},{k:'lineT',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
-    {id:'ccff-functional',key:'functional',title:'5 · The Functional Cross',rld:3,tag:'Rewards the good crosscourt',
+    {id:'ccff-functional',key:'functional',title:'4 · The Functional Cross',rld:3,tag:'Rewards the good crosscourt',
      from:'The mirror of the first two games. A functional crosscourt is one the opponent cannot volley — it is wide and dying into the back. This game pays that directly, so the family rewards the good cross as well as punishing the loose one.',
      rule:(v)=>(CCFF_LINES[v.lineF]||CCFF_LINES['Service line'])+' A functional crosscourt rarely wins the rally itself — it starts the pressure cycle. If your crosscourt beats the opponent’s volley and dies behind the service box, and you then win the rally with the crosscourt itself or within your next '+v.window+' shot'+(v.window>1?'s':'')+', you score +'+v.functional+'. If they volley it, no bonus — it was loose. If your opponent wins the rally with their reply to your crosscourt, that is the ultimate gift: +'+v.giftWin+' to them. Run this alongside Volley Toll and both behaviours are priced at once.',
      coach:'This is the reward half — use it once players have felt the punishment games, so they know what a loose cross costs and now chase the functional one. Watch width: a cross that dies deep almost always used the side wall. Debrief: what made your best crosscourt un-volleyable — width, height, or where it died?',
      focus:'Cross wide and deep, past the volley — then finish what it started.',
      score:(v)=>'Rally win 1. Crosscourt beats the volley and dies behind the service box, then you win within '+v.window+' of your shots: +'+v.functional+'. Opponent wins with their reply to your crosscourt: +'+v.giftWin+' to them. Line: '+v.lineF+'.',
      stepper:[{k:'functional',label:'Conversion bonus',min:1,max:4,sign:'+'},{k:'window',label:'Shots to convert',min:1,max:4,sign:''},{k:'giftWin',label:'Winner off your crosscourt (to opponent)',min:1,max:5,sign:'+'},{k:'lineF',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
-    {id:'ccff-lunge',key:'lunge',title:'6 · One-Lunge Finish',rld:4,tag:'Convert the loose crosscourt in position',
+    {id:'ccff-lunge',key:'lunge',title:'5 · One-Lunge Finish',rld:4,tag:'Convert the loose crosscourt in position',
      from:'A loose crosscourt should leave you needing only one step to reach it — you were already in position because it was readable. This game rewards being there and converting fast, and prices hesitation.',
      rule:(v)=>{const full=v.lineL==='Full front court';const line=(CCFF_LINES[v.lineL]||CCFF_LINES['Service line']);return line+' When your opponent crosscourts, you may respond with a single lunge step and go for the finish'+(full?'.':': from that shot, for up to three shots, you may play below the line — anywhere on the front wall above the tin.')+' Win within 1 shot +'+v.lunge1+', within 2 shots +'+v.lunge2+', within 3 shots +'+v.lunge3+'. After three shots the chance recycles — '+(full?'':'back above the line, ')+'reset and wait for the next loose cross. One lunge only: if you need more than a step, the cross was functional and there is no bonus.';},
      coach:'This game is about position and decision as much as the shot: a player who needs two steps was caught out by a good cross (fine) or read it late (coach that). The recycle keeps it honest — no reward for a scrappy prolonged scramble. Debrief: were you already moving when they crossed, and what told you it was coming?',
      focus:'One step to the loose cross, then finish fast. Sooner is worth more.',
      score:(v)=>'Rally win 1. One-lunge response to a crosscourt, then win within 1 shot +'+v.lunge1+', 2 shots +'+v.lunge2+', 3 shots +'+v.lunge3+(v.lineL==='Full front court'?'':' — the finishing shots may go below the line')+'; recycles after. Line: '+v.lineL+'.',
      stepper:[{k:'lunge1',label:'Win in 1',min:1,max:3,sign:'+'},{k:'lunge2',label:'Win in 2',min:1,max:4,sign:'+'},{k:'lunge3',label:'Win in 3',min:1,max:5,sign:'+'},{k:'lineL',label:'Line',type:'select',options:CCFF_LINE_KEYS}]},
-    {id:'ccff-licence',key:'licence',title:'7 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
+    {id:'ccff-licence',key:'licence',title:'6 · Crosscourt Licence',rld:4,duration:10,tag:'The attack is unlocked only by a crosscourt',
      from:'Trains both halves of one of the most punished patterns in match squash: the hitter learns that a loose crosscourt hands over the attack, so crosscourts must be functional — tight and dying into the back — or not played; the attacker learns to recognise and punish the loose crosscourt rather than forcing an attack off a straight ball that is not on.',
      rule:(v)=>'Play a normal rally with one rule: you may only attack — go short, volley-kill, or take the ball in to finish — off a ball that came CROSSCOURT. A straight ball may not be attacked; you must answer it straight or with a length, and wait. Only when your opponent hits crosscourt is the attack unlocked — and a tight crosscourt dying into the back is still hard to do anything with, so in practice it is the LOOSE crosscourt that gives the attack away. Everyone saw whether the last ball crossed the court, so the unlock is self-officiating. Win any rally: 1 point. Win a rally with an attack off a crosscourt: +'+v.licence+'.',
      coach:'Watch the crosscourts, not the attacks: a player who keeps feeding attackable crosscourts is the one to coach — ask what made that crosscourt loose (height, width, pace) rather than telling them to stop. If nobody attacks, check whether the crosscourts are making the opponent move — one taken easily off the bounce and sent down a straight length is still loose, even though nobody attacked it — or whether nobody is crossing at all (make a minimum number of crosscourts per rally the constraint). Add a reducing tin as an optional constraint so the crosscourt attack must also be precise. Debrief: when one of your crosscourts got punished, where was racquet–ball contact?',
@@ -8229,7 +8223,30 @@ const CCFF_GAMES=[
 ];
 const CCFF_NO_BOAST=' A boast does not count as a crosscourt.';
 function ccffRule(g,v){return g.rule(v)+CCFF_NO_BOAST;}
-function ccffCard(g,v){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
+// ── ONSIDE OFFSIDE (v802 → own series v805) ─────────────────────────────────────
+// The coach's court-tested crosscourt session (3 Oct). v805 (coach: "this is confusing — we need
+// each progression as a separate game"): five separate games, each card complete on its own,
+// sharing one set of scoring values. All scoring customisable (v804 principle).
+const ONSIDE_RULE=(v)=>'Onside = your opponent has both feet on your side of the half-court line (imagine it running on to the front wall). Crosscourt only when they are onside \u2014 crosscourt when they have one or both feet offside and '+(CCFF_OFFSIDE_PRICE[v.onOff]||'you lose the rally')+'.';
+const ONSIDE_VOLLEY=(v)=>v.onNoVolley==='Yes'?' An onside crosscourt your opponent volleys earns no bonus \u2014 it did not make them move.':'';
+const ONSIDE_COMMON_STEPS=[{k:'onRally',label:'Rally win',min:1,max:3,sign:'+'},{k:'onX',label:'Onside cross bonus',min:1,max:3,sign:'+'},{k:'onOff',label:'Offside crosscourt',type:'select',options:Object.keys(CCFF_OFFSIDE_PRICE)},{k:'onNoVolley',label:'Volleyed cross earns no bonus',type:'select',options:['No','Yes']}];
+function onsideGame(p){
+  const back=p<=2;
+  const xw=p===2||p>=4, sw=p===5;
+  const setup=back?'Rotating drives: the second bounce must land in the back of the court (zones 3 and 4).':'Full court, boasts allowed.';
+  const titles={1:'Onside Offside — Drives',2:'Onside Offside — Drives + Cross Winner',3:'Onside Offside — Full Court',4:'Onside Offside — Full Court + Cross Winner',5:'Onside Offside — Full Court + Straight Winner'};
+  const tags={1:'Rotating drives; cross only when your opponent is onside',2:'As 1, plus a bonus for a crosscourt winner',3:'As 1 on the full court, boasts allowed',4:'As 3, plus a bonus for a crosscourt winner',5:'As 4, plus a bonus for a straight winner while your opponent is offside'};
+  const whys={1:'Spot the opponent who lingers on your side and leaves the crosscourt open.',2:'Spot the lingering opponent — and make the crosscourt good enough to win.',3:'The same awareness with the whole court and the boast in play.',4:'Awareness on the full court, and a crosscourt good enough to win.',5:'Opponent-position awareness: when they are offside, the straight winner is on.'};
+  return {id:'onside-'+p,stage:p,title:p+' · '+titles[p],rld:3,duration:8,tag:tags[p],
+    from:whys[p]+' One rule throughout — cross only when the opponent is onside — and everyone can see the feet, so it is simple to understand and police.',
+    rule:(v)=>setup+' '+ONSIDE_RULE(v)+' Win the rally: +'+(v.onRally||1)+'. Bonus: +'+v.onX+' for every onside crosscourt.'+ONSIDE_VOLLEY(v)+(xw?' Bonus: +'+v.onXwin+' for a crosscourt winner.':'')+(sw?' Bonus: +'+v.onSwin+' for a straight winner played while your opponent is offside.':''),
+    coach:'The receiver calls the feet. Watch the striker\u2019s head before a crosscourt \u2014 do they look at the opponent first? '+(p<5?'Next: game '+(p+1)+'. ':'')+'Option: set \u201cvolleyed cross earns no bonus\u201d to Yes when players cross onside but loosely \u2014 the crosscourt test is whether it made the opponent move. Debrief: where were your opponent\u2019s feet when you chose to cross'+(sw?', and when you went straight?':', and did they have to move?'),
+    focus:sw?'Check their feet: onside, cross; offside, go straight.':'Check their feet before you cross.',
+    score:(v)=>'Rally win +'+(v.onRally||1)+'. Bonus +'+v.onX+' per onside crosscourt; offside crosscourt: '+(CCFF_OFFSIDE_PRICE[v.onOff]||'you lose the rally')+'.'+(xw?' Crosscourt winner +'+v.onXwin+'.':'')+(sw?' Straight winner with opponent offside +'+v.onSwin+'.':''),
+    stepper:[...ONSIDE_COMMON_STEPS,...(xw?[{k:'onXwin',label:'Cross winner bonus',min:1,max:6,sign:'+'}]:[]),...(sw?[{k:'onSwin',label:'Straight winner bonus',min:1,max:6,sign:'+'}]:[])]};
+}
+const ONSIDE_GAMES=[1,2,3,4,5].map(onsideGame);
+function ccffCard(g,v,category){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:category||'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
 // ── DROP, BOAST & LOB (v787) ────────────────────────────────────────────────────
 // Coach, 28 Sep: games for the Match Analysis tags with the thinnest coverage — Loose Drop,
 // Loose Boast, Loose Lob. Every rule is a visible test (a taped line, the opponent's feet,
@@ -8376,34 +8393,34 @@ function CrosscourtChoiceFamily({onAdd,openFamily,label='Add To Session'}){
   {CXC_GAMES.filter(g=>g.stage<=1).map(card)}
   <div className="gameCard">
     <div className="categoryTag">Crosscourt Choice · Stage 2</div><h2>Cross Away, Not At</h2>
-    <p>Play <strong>Onside Offside</strong> (Cross Court Friend or Foe, game 3): crosscourt only when your opponent has both feet on your side of the half-court line — cross with them offside and you lose the rally. Five court-tested progressions, from rotating drives to the full court.</p>
-    <div className="buttonRow">{link('crosscourtfof','Open Cross Court Friend or Foe →')}</div>
+    <p>Play <strong>Onside Offside</strong>: crosscourt only when your opponent has both feet on your side of the half-court line — cross with them offside and you lose the rally. Five court-tested games, from rotating drives to the full court.</p>
+    <div className="buttonRow">{link('onsideoffside','Open Onside Offside →')}</div>
   </div>
   <div className="gameCard">
     <div className="categoryTag">Crosscourt Choice · Stage 3</div><h2>Make Them Move</h2>
-    <p>Play <strong>The Functional Cross</strong> (Cross Court Friend or Foe, game 5): a crosscourt scores when it beats the volley and dies behind the service box. Or <strong>Functional Crosscourt</strong> in Common Game Errors: a crosscourt counts only if it moves the opponent.</p>
+    <p>Play <strong>The Functional Cross</strong> (Cross Court Friend or Foe, game 4): a crosscourt scores when it beats the volley and dies behind the service box. Or <strong>Functional Crosscourt</strong> in Common Game Errors: a crosscourt counts only if it moves the opponent.</p>
     <div className="buttonRow">{link('crosscourtfof','Open Cross Court Friend or Foe →')}{link('errors','Open Common Game Errors →')}</div>
   </div>
   <div className="gameCard">
     <div className="categoryTag">Crosscourt Choice · Stage 4</div><h2>Feel the Gift</h2>
-    <p>Swap to the receiver’s side: <strong>Volley Toll</strong> and <strong>One-Lunge Finish</strong> (Cross Court Friend or Foe, games 4 and 6). Players learn that a loose crosscourt gets punished — from the opponent, not the coach.</p>
+    <p>Swap to the receiver’s side: <strong>Volley Toll</strong> and <strong>One-Lunge Finish</strong> (Cross Court Friend or Foe, games 3 and 5). Players learn that a loose crosscourt gets punished — from the opponent, not the coach.</p>
     <div className="buttonRow">{link('crosscourtfof','Open Cross Court Friend or Foe →')}</div>
   </div>
   {CXC_GAMES.filter(g=>g.stage===5).map(card)}
   </>;
 }
 
-function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
+function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session',openFamily,games=CCFF_GAMES,category='Cross Court Friend or Foe',intro=null}){
   const[cc,setCc]=React.useState(CCFF_DEFAULTS);
-  const games=CCFF_GAMES;
   return <>
-  <div className="gameCard">
+  {intro?intro:<><div className="gameCard">
     <div className="categoryTag">Cross Court Friend or Foe</div><h2>🎯 Cross Court Friend or Foe</h2>
     <p>One of the most punished patterns in match squash is the non-functional crosscourt — loose, central, volleyable. This family fixes it on a single visible hinge: <strong>a crosscourt you can volley is a foe (it was loose); a crosscourt that beats the volley and dies in the back is a friend (it was functional).</strong> The games punish the loose cross, reward the functional one, and train converting the loose ball you are given. In every game a boast does not count as a crosscourt — boasts have their own series.</p>
     <p className="mutedText">Every game is self-officiating — everyone sees whether the crosscourt was volleyed or reached the back. Values below are starting defaults; set them for your group.</p>
   </div>
+  <div className="gameCard"><div className="categoryTag">Also in this series</div><h2>Onside Offside — five games</h2><p>Crosscourt only when your opponent is onside; cross with them offside and you lose the rally. Five court-tested games, from rotating drives to the full court.</p><div className="buttonRow"><button type="button" className="secondaryBtn" onClick={()=>openFamily&&openFamily('onsideoffside')}>Open Onside Offside →</button></div></div></>}
   {games.map(g=>{const v=cc;return <div className="gameCard" key={g.id}>
-    <div className="categoryTag">Cross Court Friend or Foe · RLD {g.rld}</div><h2>{g.title}</h2>
+    <div className="categoryTag">{category} · RLD {g.rld}</div><h2>{g.title}</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
     <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
     <div className="infoBox"><strong>How to play</strong><p>{ccffRule(g,v)}</p></div>
@@ -8412,9 +8429,12 @@ function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session'}){
       ? <label key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><select value={v[st.k]} onChange={e=>setCc(prev=>({...prev,[st.k]:e.target.value}))}>{st.options.map(o=><option key={o} value={o}>{o}</option>)}</select></label>
       : <span key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><PointStepper value={v[st.k]} min={st.min} max={st.max} sign={st.sign} onChange={val=>setCc(prev=>({...prev,[st.k]:val}))}/></span>)}</div>
     <div className="infoBox"><strong>Coach Help</strong><p>{g.coach}</p></div>
-    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(ccffCard(g,v));}}>{label}</button>
+    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(ccffCard(g,v,category));}}>{label}</button>
   </div>;})}
   </>;
+}
+function OnsideOffsideFamily({onAdd,label,openFamily}){
+  return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={ONSIDE_GAMES} category="Onside Offside" intro={<div className="gameCard"><div className="categoryTag">Onside Offside</div><h2>↔️ Onside Offside</h2><p>One rule in every game: <strong>crosscourt only when your opponent is onside</strong> — both their feet on your side of the half-court line. Cross with them offside and you pay. Each game below is complete on its own; play them in order, 1 to 5.</p><p className="mutedText">Court-tested by the coach: simple to understand and to police — everyone can see the feet. All scoring values are adjustable. A boast does not count as a crosscourt. Part of the crosscourt work in <button type="button" className="secondaryBtn" style={{padding:'2px 10px'}} onClick={()=>openFamily&&openFamily('crosscourtfof')}>Cross Court Friend or Foe →</button></p></div>}/>;
 }
 function MovementLabFamily({onAdd,label='Add To Session'}){
   const[mlB,setMlB]=React.useState({overrun:1,pinned:1,tram:1,twosteps:1,turned:1,offt:1,stranded:1,recovery:1,walladd:4});
@@ -14584,7 +14604,7 @@ function slInitialsMap(names){
   list.forEach(n=>{map[n]=counts[first(n)]>1?both(n):first(n);});
   return map;
 }
-function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false,setupChallenge='',onSetSetupChallenge=null,gameKey=''}){
+function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null,fixedBoard=null,alsoRoomId=null,scoring=false,setupChallenge='',onSetSetupChallenge=null,gameKey='',onState=null}){
   const tokShape=slCourtShapeStyle(courtLabel);
   const initialsMap=useMemo(()=>slInitialsMap((players||[]).map(n=>String(n))),[players]);
   const shapeMap=useMemo(()=>slShapeMap((players||[]).map(n=>String(n)),tokShape),[players,courtLabel]);
@@ -14603,7 +14623,10 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [events,setEvents]=useState([]);
   const [streak,setStreak]=useState(()=>seed?seed.streak:{holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
-  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {rosterIdx: ladderTargetSquare} — landed on a ladder, awaiting their own next result
+  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{});
+  /* v808 (coach, 4 Oct): {rosterIdx: square} — a ladder LOST by losing the rally while waiting on
+     it. It stays lost while the player stands there: the next win moves them past it. */
+  const [forfeited,setForfeited]=useState(()=>seed?(seed.forfeited||{}):{}); // {rosterIdx: ladderTargetSquare} — landed on a ladder, awaiting their own next result
   // Optional coach-attached challenge text per ladder-bottom square (this board only —
   // square numbers only mean something in the context of THIS randomly generated board).
   // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
@@ -14657,8 +14680,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [undoStack,setUndoStack]=useState([]);
   const [rallyWins,setRallyWins]=useState({});   /* every point won, per player */
 
-  function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge}};}
-  function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
+  function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge},forfeited:{...forfeited}};}
+  function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setForfeited(s.forfeited||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
   useEffect(()=>{
@@ -14668,7 +14691,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(ladderAutoRecordGame(key,'Snakes & Ladders'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:rallyWins[n]||0}))))autoKeyRef.current=key;
   },[winner]);
 
-  function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setUndoStack([]);}
+  function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setForfeited({});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot,{forfeitPending=false,snakePinned=false,snakeEscaped=false}={}){
@@ -14682,11 +14705,12 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const ev=[],reveal=new Set(revealed);
     const nextPending={...pending};
     const nextPendingChallenge={...pendingChallenge};
+    const nextForfeited={...forfeited};
     if(snakeEscaped)ev.push(`${W.name} shows the challenge and escapes the snake at ${W.pos}`);
 
     /* A challenge written after a player landed still applies: if the winner is
        standing on a challenged ladder, arm it now rather than only at landing. */
-    if(nextPending[wIdx]==null&&board.ladders[W.pos]!=null&&chFor(W.pos)){
+    if(nextPending[wIdx]==null&&board.ladders[W.pos]!=null&&chFor(W.pos)&&nextForfeited[wIdx]!==W.pos){
       nextPending[wIdx]=board.ladders[W.pos];
       nextPendingChallenge[wIdx]=chFor(W.pos);
     }
@@ -14697,9 +14721,11 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     }else if(nextPending[wIdx]!=null){
       const top=nextPending[wIdx],fromSquare=W.pos;
       if(forfeitPending){
-        if(settings.fateMode==='earned'&&nextPendingChallenge[wIdx]){
+        if(nextPendingChallenge[wIdx]){
           /* Winning is never punished like losing (P4): the rally is won, the
-             player holds the square, and the ladder stays armed for another go. */
+             player holds the square, and the ladder stays armed for another go.
+             v808 (coach): in every mode — "if he keeps winning he deserves the
+             rewards of challenging for the promotion". */
           ev.push(`${W.name} wins the rally but the challenge wasn't shown — holds ${fromSquare}, the ladder stays armed`);
         }else{
           ev.push(`${W.name} won the rally but the challenge wasn't confirmed — ladder forfeited, stays on ${fromSquare}`);
@@ -14712,7 +14738,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
         delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
         if(board.ladders[top]){
           const nextTop=board.ladders[top],chText=chFor(top);
-          ev.push(settings.fateMode==='earned'&&chText?`${W.name} lands straight on another ladder at ${top} — armed: climbs to ${nextTop} once they win and show "${chText}"`:`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
+          ev.push(chText?`${W.name} lands straight on another ladder at ${top} — armed: climbs to ${nextTop} once they win and show "${chText}"`:`${W.name} lands straight on another ladder at ${top} — climbs to ${nextTop} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
           reveal.add(top);
           nextPending[wIdx]=nextTop;
           if(chText)nextPendingChallenge[wIdx]=chText;
@@ -14722,7 +14748,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       const moved=applyMove(W.pos+1);
       if(board.ladders[moved]){
         const top=board.ladders[moved],chText=chFor(moved);
-        ev.push(settings.fateMode==='earned'&&chText?`${W.name} lands on a ladder at ${moved} — armed: climbs to ${top} once they win and show "${chText}"`:`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
+        ev.push(chText?`${W.name} lands on a ladder at ${moved} — armed: climbs to ${top} once they win and show "${chText}"`:`${W.name} lands on a ladder at ${moved} — climbs to ${top} if they win next${chText?` and demonstrate: "${chText}"`:''}, forfeits it if they lose next`);
         reveal.add(moved);
         W.pos=moved;
         nextPending[wIdx]=top;
@@ -14753,14 +14779,29 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
        a loss forfeits the climb but never moves you. The loser-slide is gone with the
        knock-back — it could also drop a snake-pinned player who was told "stays pinned". */
     if(nextPending[lIdx]!=null){
-      if(settings.fateMode==='earned'&&nextPendingChallenge[lIdx]){
+      if(false){ /* v809: losing while waiting always forfeits (coach, 4 Oct) */
         ev.push(`${L.name} loses — stays on the armed ladder at ${L.pos}; the climb still needs a win and "${nextPendingChallenge[lIdx]}"`);
       }else{
-        ev.push(`${L.name} loses while pending — their ladder is forfeited`);
+        ev.push(`${L.name} loses while waiting on the ladder at ${L.pos} — the ladder is forfeited; the next win moves on past it`);
         delete nextPending[lIdx];delete nextPendingChallenge[lIdx];
+        nextForfeited[lIdx]=L.pos;
       }
+    }else if(board.snakes[L.pos]!=null){
+      /* v807 (coach, 4 Oct: "players not moving to the correct place", standard game): the
+         snake bite. A player standing on a snake's head who LOSES the rally slides to its tail —
+         the mirror of the ladder (climb only if you win next), and what the board tells them
+         ("Lose here and it bites"). The 4 Sep change that stopped losers moving removed the
+         knock-back and the loser-slide, and took the bite out with them: in the standard game no
+         snake ever did anything, while the screen still promised it would. One move per lost
+         rally, never two: a loser on an armed ladder is handled above and never also bitten. */
+      const from=L.pos,to=board.snakes[from];
+      ev.push(`${L.name} loses on the snake at ${from} — bitten, slides to ${to}`);
+      reveal.add(from);
+      L.pos=to;
     }
-    setRoster(next);setRevealed(reveal);setPending(nextPending);setPendingChallenge(nextPendingChallenge);
+    if(nextForfeited[wIdx]!=null&&nextForfeited[wIdx]!==W.pos)delete nextForfeited[wIdx];
+    if(nextForfeited[lIdx]!=null&&nextForfeited[lIdx]!==L.pos)delete nextForfeited[lIdx];
+    setRoster(next);setRevealed(reveal);setPending(nextPending);setPendingChallenge(nextPendingChallenge);setForfeited(nextForfeited);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
     if(W.pos>=size){setWinner(wIdx);return;}
     let newStreak={holder:wIdx,n:streak.holder===wIdx?streak.n+1:1};
@@ -14777,7 +14818,6 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const cellInfo=(n)=>{const isLadder=board.ladders[n]!=null,isSnake=board.snakes[n]!=null;const show=settings.visible||revealed.has(n);return {isLadder,isSnake,show,to:isLadder?board.ladders[n]:isSnake?board.snakes[n]:null};};
 
   useEffect(()=>{
-    if(!project)return;
     const pendingByName={};
     Object.keys(pending).forEach(idx=>{ if(roster[idx])pendingByName[roster[idx].name]=pending[idx]; });
     const pendingChallengeByName={};
@@ -14787,11 +14827,13 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
-      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,challengeSquares,challengeAll,
+      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,forfeited:Object.fromEntries(Object.keys(forfeited).filter(k=>roster[k]).map(k=>[roster[k].name,forfeited[k]])),challengeSquares,challengeAll,
       courtLabel,gameKey};
+    if(onState)onState(payload);
+    if(!project)return;
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
     if(alsoRoomId)writeLivePlayerRoom(alsoRoomId,'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,challengeSquares,alsoRoomId,gameKey]);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,forfeited,challengeSquares,alsoRoomId,gameKey]);
 
   return <div className={scoring?'slCourt slCourtScoring':'slCourt'}>
     <style>{`
@@ -14853,7 +14895,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       <p>Did <strong>{roster[awaitingConfirm.idx].name}</strong> demonstrate the attached challenge: <em>"{awaitingConfirm.text}"</em>?</p>
       <div className="slChallengeConfirmBtns">
         <button type="button" className="primaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakeEscaped:true}:{});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✓ Yes — escapes the snake':'✓ Yes — complete the climb'}</button>
-        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✗ Not yet — stays pinned':(settings.fateMode==='earned'?'✗ Not yet — stays put, ladder still armed':'✗ No — forfeit the ladder')}</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✗ Not yet — stays pinned':'✗ Not yet — stays put, ladder still armed'}</button>
       </div>
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div style={{display:'flex',gap:'10px',flexWrap:'wrap',margin:'8px 0'}}>
@@ -14861,8 +14903,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
         const P=roster[pi];if(!P)return null;
         const ch=chFor(P.pos);
         let tag=null,detail=null;
-        if(pending[pi]!=null){tag='⏳ Armed ladder — climbs to '+pending[pi];detail=pendingChallenge[pi]?'Win AND show: '+pendingChallenge[pi]:'Win the rally to climb';}
-        else if(board.ladders[P.pos]!=null){tag='🪜 On a ladder to '+board.ladders[P.pos];detail=ch?(settings.fateMode==='earned'?'Win AND show: '+ch:'Win next + show: '+ch):'Win the next rally to climb';}
+        if(forfeited[pi]===P.pos&&board.ladders[P.pos]!=null){tag='🪜 Ladder forfeited';detail='Lost a rally while waiting — the next win moves on past it';}
+        else if(pending[pi]!=null){tag='⏳ Armed ladder — climbs to '+pending[pi];detail=pendingChallenge[pi]?'Win AND show: '+pendingChallenge[pi]:'Win the rally to climb';}
+        else if(board.ladders[P.pos]!=null){tag='🪜 On a ladder to '+board.ladders[P.pos];detail=ch?'Win AND show: '+ch+' — lose and it is forfeited':'Win the next rally to climb';}
         else if(board.snakes[P.pos]!=null){tag='🐍 On a snake to '+board.snakes[P.pos];detail=ch?'Win & show to escape: '+ch+' — lose and it bites':'Lose here and it bites';}
         return <div key={pi} style={{flex:'1',minWidth:'220px',background:'#0c1626',border:'1px solid '+(tag?(String(tag).startsWith('🐍')?'#7a3d3d':'#2f5c46'):'#223044'),borderRadius:'12px',padding:'10px 13px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'8px'}}><strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>{P.name}</strong><span style={{color:'#6eaac8',fontWeight:800,fontSize:'1.05rem'}}>Sq {P.pos}</span></div>
@@ -14873,9 +14916,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div className="slOnCourt">
       <span className="slOnCourtLabel">On court</span>
-      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onA%SL_COLORS.length]}} onClick={()=>{const P=roster[onA];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(lad)setAwaitingConfirm({slot:0,idx:onA,text:lad});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}><SlToken name={roster[onA].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onA].name]} extraClass="slWinTok"/><span>{roster[onA].name} won</span></button>
+      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onA%SL_COLORS.length]}} onClick={()=>{const P=roster[onA];const lad=board.ladders[P.pos]!=null&&chFor(P.pos)&&forfeited[onA]!==P.pos;const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onA])setAwaitingConfirm({slot:0,idx:onA,text:pendingChallenge[onA]});else if(lad)setAwaitingConfirm({slot:0,idx:onA,text:lad});else if(sc)setAwaitingConfirm({slot:0,idx:onA,text:sc,snake:true});else playRally(0);}}><SlToken name={roster[onA].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onA].name]} extraClass="slWinTok"/><span>{roster[onA].name} won</span></button>
       <span className="slVs">vs</span>
-      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onB%SL_COLORS.length]}} onClick={()=>{const P=roster[onB];const lad=board.ladders[P.pos]!=null&&chFor(P.pos);const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(lad)setAwaitingConfirm({slot:1,idx:onB,text:lad});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}><SlToken name={roster[onB].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onB].name]} extraClass="slWinTok"/><span>{roster[onB].name} won</span></button>
+      <button type="button" className="slWinBtn" style={{background:SL_COLORS[onB%SL_COLORS.length]}} onClick={()=>{const P=roster[onB];const lad=board.ladders[P.pos]!=null&&chFor(P.pos)&&forfeited[onB]!==P.pos;const sc=board.snakes[P.pos]!=null&&chFor(P.pos);if(pendingChallenge[onB])setAwaitingConfirm({slot:1,idx:onB,text:pendingChallenge[onB]});else if(lad)setAwaitingConfirm({slot:1,idx:onB,text:lad});else if(sc)setAwaitingConfirm({slot:1,idx:onB,text:sc,snake:true});else playRally(1);}}><SlToken name={roster[onB].name} color="#0a1322" shapeMap={shapeMap} initials={initialsMap[roster[onB].name]} extraClass="slWinTok"/><span>{roster[onB].name} won</span></button>
     </div>}
     {!awaitingConfirm&&(winner!=null||queue.length>=2)&&<div style={{margin:'10px 0'}}><button type="button" className="secondaryBtn" onClick={undoMove} disabled={!undoStack.length} style={{opacity:undoStack.length?1:0.45,width:'100%',minHeight:'64px',fontSize:'1.2rem',fontWeight:800}}>{winner!=null?'↶ Wrong winner? Undo the last rally':'↶ Step back — undo last rally'}</button></div>}
     {queue.length>2&&winner==null&&<div className="slQueue">Next: {queue.slice(2).map(i=>roster[i].name).join(' → ')}</div>}
@@ -14894,7 +14937,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       </div>}
     </div>}
 
-    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><SlToken name={p.name} color={SL_COLORS[i%SL_COLORS.length]} shapeMap={shapeMap} initials={initialsMap[p.name]}/><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#2e6e8e',fontWeight:700}}> ⏳ {settings.fateMode==='earned'&&pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
+    <div className="slLeaderboard">{[...roster].map((p,i)=>i).sort((a,b)=>roster[b].pos-roster[a].pos).map(i=>{const p=roster[i];return <div key={i} className={`slLbRow${(i===onA||i===onB)&&winner==null?' slLbOn':''}`}><SlToken name={p.name} color={SL_COLORS[i%SL_COLORS.length]} shapeMap={shapeMap} initials={initialsMap[p.name]}/><span className="slLbName">{p.name}{pending[i]!=null?<span style={{color:'#2e6e8e',fontWeight:700}}> ⏳ {pendingChallenge[i]?<>armed — climbs to {pending[i]} once they win and show: "{pendingChallenge[i]}"</>:<>climbs to {pending[i]} if they win next{pendingChallenge[i]?<> · must also demonstrate: "{pendingChallenge[i]}"</>:null}</>}</span>:null}</span><span className="slLbPos">Sq {p.pos}</span></div>;})}</div>
 
     {!scoring&&<div className="slBoard" style={{gridTemplateColumns:`repeat(${cols},1fr)`}}>
       {grid.flat().map((n,idx)=>{
@@ -14990,7 +15033,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   // positions are cleared and re-dealt, hand-offs return to this device, a race unlocks.
   const [gameNonce,setGameNonce]=useState(0);
   const [gameKey,setGameKey]=useState(()=>Date.now().toString(36));
-  function clearGame(){setGameNonce(n=>n+1);setGameKey(Date.now().toString(36));setHandedOff(new Set());setRaceBoard(null);}
+  const courtStateRef=useRef({});
+  const [courtSeeds,setCourtSeeds]=useState({});
+  function clearGame(){setGameNonce(n=>n+1);setGameKey(Date.now().toString(36));setHandedOff(new Set());setRaceBoard(null);setCourtSeeds({});courtStateRef.current={};}
   async function copyRaceLink(){
     // Without this the courts never write and the display waits forever — every court
     // gates its writes on `projecting`, and copying a link is the coach saying go live.
@@ -15031,9 +15076,15 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       setSlDiag('\u26a0 Wrote '+room+' but could not read it back \u2014 reads may be blocked on this network. Try the club WiFi.');
     }
   }
-  async function copySLScoreLink(n){
-    setProjecting(true);
+  async function copySLScoreLink(n,how='copy'){
     const url=buildSlScoreLink(n,base,courts===1);
+    /* v806: the copy (or the share sheet) must start inside the tap. It used to run after two
+       network calls, and iPad/iPhone Safari refuses clipboard writes once the tap has 'expired' —
+       the coach couldn't paste the link on his phone (4 Oct). */
+    let clip=null;
+    if(how==='share'&&navigator.share){try{clip=navigator.share({title:'Snakes & Ladders — Court '+n+' scoring',text:'Scoring link for Court '+n,url});}catch(e){clip=Promise.reject(e);}}
+    else{try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}}
+    setProjecting(true);
     // Seed the room with the CURRENT setup before handing off. Marking the court handed
     // off unmounts its SnakesLaddersCourt in the same render, so without this write the
     // first-copied court's room is never seeded and its scoring link waits forever —
@@ -15042,10 +15093,18 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     const names=allocation[n-1]||[];
     const label=courts>1?`Court ${n}`:'';
     try{
-      const row=await readLivePlayerRoom(seedRoomId);
+      /* v806: hand the referee EXACTLY the game on this screen — board, squares, turn order.
+         Before, it re-used whatever was last in the room when the players' names matched (an
+         earlier game's positions), or dealt a brand-new random board — either way the phone
+         and the coach screen disagreed and players appeared on the wrong squares. */
+      const live=courtStateRef.current[n];
+      const liveMatches=!!live&&(live.players||[]).length===names.length&&(live.players||[]).every((p,i)=>p.name===names[i]);
+      const row=liveMatches?null:await readLivePlayerRoom(seedRoomId);
       const existing=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;
-      const samePlayers=!!existing&&(existing.players||[]).length===names.length&&(existing.players||[]).every((p,i)=>p.name===names[i]);
-      if(samePlayers){
+      const samePlayers=!!existing&&existing.gameKey===gameKey&&(existing.players||[]).length===names.length&&(existing.players||[]).every((p,i)=>p.name===names[i]);
+      if(liveMatches){
+        await writeLivePlayerRoom(seedRoomId,'snakesladders',{...live,settings,size:settings.size,courtLabel:label,gameKey});
+      }else if(samePlayers){
         // Court already live with these players — keep their board and positions, refresh config.
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{...existing,settings,size:settings.size,courtLabel:label,challengeAll:existing.challengeAll||setupChallenge||''});
       }else{
@@ -15053,13 +15112,19 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{type:'snakesladders',size:settings.size,board:seedBoard,visible:settings.visible,revealed:[],
           players:names.map(nm=>({name:nm,pos:1})),
           onCourt:names.slice(0,2),queueNames:names.slice(2),winnerName:null,
-          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},challengeAll:setupChallenge||'',courtLabel:label});
+          settings,streak:{holder:null,n:0},pending:{},pendingChallenge:{},challengeSquares:{},challengeAll:setupChallenge||'',courtLabel:label,gameKey});
       }
     }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
-    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+    try{await clip;if(how!=='share'){setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}}
+    catch(e){if(!(e&&e.name==='AbortError'))window.prompt('Court '+n+' SCORING link — press and hold to copy, then send it to the referee\'s phone:',url);}
   }
-  function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
+  /* v806: taking control back loads the referee's latest game onto this screen (it used to
+     restart the court on a new random board and broadcast that over the referee's game). */
+  async function takeBackControl(n){
+    try{const row=await readLivePlayerRoom(courtRoomId(base,n));const p=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;if(p)setCourtSeeds(prev=>({...prev,[n]:slSeedFromPayload(p)}));}catch{}
+    setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});
+  }
 
   const allocation=useMemo(()=>{
     if(usingAttendance){
@@ -15248,12 +15313,8 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         <input value={setupChallenge} onChange={e=>setSetupChallenge(e.target.value)} placeholder="Or type your own challenge" style={{flex:'1',minWidth:'180px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',padding:'9px 11px'}}/>
         {setupChallenge&&<button type="button" className="secondaryBtn" onClick={()=>setSetupChallenge('')}>Clear</button>}
       </div>
-      <div style={{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap',margin:'10px 0 0'}}>
-        <span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>If they win but don't show it:</span>
-        <button type="button" className="secondaryBtn" style={settings.fateMode!=='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'winNext'}))}>Chance is gone</button>
-        <button type="button" className="secondaryBtn" style={settings.fateMode==='earned'?{background:'#101d18',border:'1px solid #2f5c46',color:'#8fbfa4'}:undefined} onClick={()=>setSettings(s2=>({...s2,fateMode:'earned'}))}>They keep trying until they show it</button>
-      </div>
-      <p className="mutedText" style={{margin:'7px 0 0',fontSize:'0.78rem'}}>Landing on a ladder then means winning the rally <b>and</b> showing the challenge; a snake pins you until you do.</p>
+      {/* v809: the coach's rule (4 Oct) replaces the old "Chance is gone / keep trying" choice */}
+      <p className="mutedText" style={{margin:'10px 0 0',fontSize:'0.85rem'}}><b>Ladder:</b> win <b>and</b> show the challenge to climb. Win without showing it — stay on the ladder and keep trying. Lose while waiting — the ladder is forfeited. <b>Snake:</b> win and show it to escape; win without showing it — stay pinned; lose — it bites.</p>
       </>}
     </div>
     <button type="button" onClick={()=>setShowBonuses(!showBonuses)} style={{width:'100%',textAlign:'left',background:'#0c1626',border:'1px solid #223044',borderRadius:'12px',padding:'13px 15px',marginBottom:'10px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
@@ -15291,7 +15352,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     {allocation.map((g,i)=><div key={`court-${i}`} style={{display:i===active?'block':'none'}}>
       {handedOff.has(i+1)
         ? <div className="slAllocRow" style={{background:'#12203a',border:'1px solid #2E6E8E'}}><strong>{courts>1?`Court ${i+1} — scoring handed to a court device`:'Scoring handed to the court device'}</strong><span>This device is just monitoring; the court device is now scoring live.</span></div>
-        : <SnakesLaddersCourt key={`c-${i}-${settings.size}-${competitionMode}-${gameNonce}`} players={g} settings={settings} onSetSetupChallenge={t=>setSetupChallenge(t)} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} setupChallenge={setupChallenge} roomId={courts>1?courtRoomId(base,i+1):null} alsoRoomId={courts===1?courtRoomId(base,1):null} fixedBoard={competitionMode==='race'?raceBoard:null} gameKey={gameKey}/>}
+        : <SnakesLaddersCourt key={`c-${i}-${settings.size}-${competitionMode}-${gameNonce}-${courtSeeds[i+1]?courtSeeds[i+1].v:0}`} seed={courtSeeds[i+1]||null} onState={p=>{courtStateRef.current[i+1]=p;}} players={g} settings={settings} onSetSetupChallenge={t=>setSetupChallenge(t)} project={courts>1?projecting:(projecting&&i===active)} courtLabel={courts>1?`Court ${i+1}`:''} setupChallenge={setupChallenge} roomId={courts>1?courtRoomId(base,i+1):null} alsoRoomId={courts===1?courtRoomId(base,1):null} fixedBoard={competitionMode==='race'?raceBoard:null} gameKey={gameKey}/>}
     </div>)}
     </>}
 
@@ -15301,7 +15362,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         {allocation.map((g,i)=><div key={i} style={{display:'flex',flexDirection:'column',gap:'5px',background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 11px'}}>
           <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1}: {g.join(', ')}{handedOff.has(i+1)?' — scoring handed off':''}</span>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>{typeof navigator!=='undefined'&&navigator.share&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>copySLScoreLink(i+1,'share')}>📤 Send</button>}
             <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
             {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
           </div>
@@ -15314,7 +15375,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     <div className="slStepHd"><span className="n">4</span><span><span className="t">Go live</span> <span className="h">Put the board on the wall, then hand a scoring link to each court referee</span></span></div>
     <div className="slDisplayBar" style={{position:'sticky',bottom:'0',zIndex:60,background:'#0b1320',border:'1px solid #2f5c46',borderRadius:'12px',padding:'10px 12px',boxShadow:'0 -4px 14px rgba(0,0,0,0.35)'}}>
       {courts===1&&<span className="mutedText" style={{display:'block',width:'100%',fontSize:'0.82rem',marginBottom:'4px'}}>Two links, in this order: <strong>1 · Wall display</strong> — open it on the screen or projector, it shows the board and follows this device. <strong>2 · Scoring</strong> — only if a referee's phone will tap the winners instead of this device.</span>}
-      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>1 · Copy wall display link</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'2 · Copy scoring link (referee)'}</button>}{courts===1&&handedOff.has(1)&&<button type="button" className="secondaryBtn" onClick={()=>takeBackControl(1)}>Take back control</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={runSlLinkTest}>Test link connection</button>}{courts===1&&slDiag&&<span className="mutedText" style={{display:'block',width:'100%',fontSize:'0.84rem',marginTop:'6px'}}>{slDiag}</span>}
+      {courts===1&&<button type="button" className="primaryBtn" onClick={copySLPlayerLink}>1 · Copy wall display link</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1)}>{copiedScoreCourt===1?'Copied ✓':'2 · Copy scoring link (referee)'}</button>}{courts===1&&typeof navigator!=='undefined'&&navigator.share&&<button type="button" className="secondaryBtn" onClick={()=>copySLScoreLink(1,'share')}>📤 Send scoring link (WhatsApp, Messages…)</button>}{courts===1&&handedOff.has(1)&&<button type="button" className="secondaryBtn" onClick={()=>takeBackControl(1)}>Take back control</button>}{courts===1&&<button type="button" className="secondaryBtn" onClick={runSlLinkTest}>Test link connection</button>}{courts===1&&slDiag&&<span className="mutedText" style={{display:'block',width:'100%',fontSize:'0.84rem',marginTop:'6px'}}>{slDiag}</span>}
       {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Snakes & Ladders',category:'Snakes & Ladders',format:'King of Court board game',duration:12,task:'Run the Snakes & Ladders module live. Win rallies to climb; ladders jump you forward, snakes slide you back.',scoring:'First to the top wins. Non-linear consequence on every rally.',rationale:'Informational pressure and non-linear consequence — momentum, loss-aversion and emotional regulation.',coach:'Debrief responses to swings of fortune, not just the result.',playerFocus:'Every rally can swing the board — stay composed through the ups and downs.',layers:['Informational Pressure'],rld:4}));}}>Add to Session</button>}
       {projecting&&courts===1&&<span className="slDisplayHint">🟢 Live · board updates as you tap winners</span>}
     </div>
@@ -15327,7 +15388,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
             <span style={{fontSize:'0.85rem',color:'#cdd9e6'}}>Court {i+1} ({g.length} players){handedOff.has(i+1)?' — scoring handed off':''}</span>
           </div>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>
+            <button type="button" className="primaryBtn" style={{flex:'none',minWidth:'130px'}} onClick={()=>copySLScoreLink(i+1)}>{copiedScoreCourt===i+1?'Copied ✓':'Copy Scoring link'}</button>{typeof navigator!=='undefined'&&navigator.share&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>copySLScoreLink(i+1,'share')}>📤 Send</button>}
             <button type="button" className="secondaryBtn" style={{flex:'none',minWidth:'110px'}} onClick={()=>copySLCourtLink(i+1)}>{copiedCourt===i+1?'Copied ✓':'Copy View link'}</button>
             {handedOff.has(i+1)&&<button type="button" className="secondaryBtn" style={{flex:'none'}} onClick={()=>takeBackControl(i+1)}>Take back control</button>}
           </div>
@@ -17622,7 +17683,9 @@ const GAME_LIBRARY=[
   {id:'movementlab',label:'Movement Lab',category:'Movement Lab',groups:['technique','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><MovementLabFamily onAdd={addAndGo}/>},
   {id:'crosscourtfof',label:'Cross Court Friend or Foe',category:'Cross Court Friend or Foe',groups:['technique','perception','fault'],
-    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo}/>},
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
+  {id:'onsideoffside',label:'Onside Offside',category:'Onside Offside',groups:['technique','perception','fault'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><OnsideOffsideFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'crosscourtchoice',label:'Crosscourt Choice',category:'Crosscourt Choice',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrosscourtChoiceFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'boast',label:'Boast',category:'Boast',groups:['technique','fault'],
@@ -24122,7 +24185,7 @@ function parentPackText(){
 // Games Library family via its classId, or an app screen). Add problems here; the screen,
 // the search entries and the groups all read from this one list. v786: titles marked ma:true
 // use the Match Analysis app's own cause tags word for word, so an analysed match leads here.
-const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Boast — Punish the Boast", "c": "boast", "note": "A loose boast hands the opponent a bonus"}, {"label": "Boast — Dead Boast", "c": "boast", "note": "The boast must die in the far front corner"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Cross Court Friend or Foe — Onside Offside", "c": "crosscourtfof", "note": "Cross only when the opponent is onside — five court-tested progressions"}, {"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Cross Court Friend or Foe — Onside Offside", "c": "crosscourtfof", "note": "Cross only when the opponent is onside — five court-tested progressions"}, {"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Cross Court Friend or Foe — Onside Offside", "c": "crosscourtfof", "note": "Cross only when the opponent is onside — five court-tested progressions"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Unnecessary Boast", "ma": true, "see": "Boasting from a ball that could be driven back to length — the boast may be tight, but it was the wrong choice.", "games": [{"label": "Boast — Back-Wall Boast Only", "c": "boast", "note": "Boast only when the straight ball has gone"}, {"label": "Boast — Boast with a Plan", "c": "boast", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}]}, {"group": "Movement and recovery", "title": "Poor Spacing", "ma": true, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late Preparation", "ma": true, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}, {"label": "Cross Court Friend or Foe — Onside Offside", "c": "crosscourtfof", "note": "Cross only when the opponent is onside — five court-tested progressions"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Punish the Cross, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
+const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Boast — Punish the Boast", "c": "boast", "note": "A loose boast hands the opponent a bonus"}, {"label": "Boast — Dead Boast", "c": "boast", "note": "The boast must die in the far front corner"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Unnecessary Boast", "ma": true, "see": "Boasting from a ball that could be driven back to length — the boast may be tight, but it was the wrong choice.", "games": [{"label": "Boast — Back-Wall Boast Only", "c": "boast", "note": "Boast only when the straight ball has gone"}, {"label": "Boast — Boast with a Plan", "c": "boast", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}]}, {"group": "Movement and recovery", "title": "Poor Spacing", "ma": true, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late Preparation", "ma": true, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Punish the Cross, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
 function MatchProblemIndex({setScreen}){
   const groups=[...new Set(MATCH_PROBLEMS.map(p=>p.group))];
   const [open,setOpen]=useState(null);
@@ -27669,6 +27732,23 @@ function slSetupFingerprint(p){
   const ch=Object.entries(p.challengeSquares||{}).map(([a,b])=>a+'='+b).sort().join(',');
   return [names,(p.settings&&p.settings.size)||p.size||'',lad,sn,ch,p.challengeAll||'',p.gameKey||''].join('#');
 }
+/* v806: one converter from a room payload to a court seed — used by the referee phone and by
+   'Take back control' on the coach screen (which used to remount the court on a NEW random board
+   with everyone on square 1, overwriting the referee's game). */
+function slSeedFromPayload(p){
+  const roster=(p.players||[]).map(x=>({name:x.name,pos:Number(x.pos)||1}));
+  const names=roster.map(x=>x.name);
+  const idxOf=nm=>names.indexOf(nm);
+  const onCourtIdx=(p.onCourt||[]).map(idxOf).filter(i=>i>=0);
+  const queueIdx=(p.queueNames||[]).map(idxOf).filter(i=>i>=0);
+  const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
+  const pendingByIdx={};Object.keys(p.pending||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)pendingByIdx[i]=p.pending[nm];});
+  const pcByIdx={};Object.keys(p.pendingChallenge||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)pcByIdx[i]=p.pendingChallenge[nm];});
+  const ffByIdx={};Object.keys(p.forfeited||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)ffByIdx[i]=p.forfeited[nm];});
+  const queue=[...onCourtIdx,...queueIdx];
+  names.forEach((_,i)=>{if(!queue.includes(i))queue.push(i);});
+  return {board:p.board||{snakes:{},ladders:{}},roster,queue,winner:winnerIdx>=0?winnerIdx:null,revealed:p.revealed||[],streak:p.streak||{holder:null,n:0},pending:pendingByIdx,pendingChallenge:pcByIdx,forfeited:ffByIdx,challengeSquares:p.challengeSquares||{},challengeAll:p.challengeAll||'',gameKey:p.gameKey||'',v:Date.now()};
+}
 function SnakesLaddersCourtScorer({court,host,mirror}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
@@ -27684,29 +27764,8 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
       slTries.current+=1;
       const p=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;
       if(p){
-        const roster=p.players||[];
-        const names=roster.map(x=>x.name);
-        const idxOf=nm=>names.indexOf(nm);
-        const onCourtIdx=(p.onCourt||[]).map(idxOf).filter(i=>i>=0);
-        const queueIdx=(p.queueNames||[]).map(idxOf).filter(i=>i>=0);
-        const winnerIdx=p.winnerName?idxOf(p.winnerName):-1;
-        const pendingByIdx={};
-        Object.keys(p.pending||{}).forEach(nm=>{ const i=idxOf(nm); if(i>=0)pendingByIdx[i]=p.pending[nm]; });
-        const pendingChallengeByIdx={};
-        Object.keys(p.pendingChallenge||{}).forEach(nm=>{ const i=idxOf(nm); if(i>=0)pendingChallengeByIdx[i]=p.pendingChallenge[nm]; });
-        const seed={
-          board:p.board||{snakes:{},ladders:{}},
-          roster,
-          queue:[...onCourtIdx,...queueIdx],
-          winner:winnerIdx>=0?winnerIdx:null,
-          revealed:p.revealed||[],
-          streak:p.streak||{holder:null,n:0},
-          pending:pendingByIdx,
-          pendingChallenge:pendingChallengeByIdx,
-          challengeSquares:p.challengeSquares||{},
-          challengeAll:p.challengeAll||'',
-          gameKey:p.gameKey||''
-        };
+        const seed=slSeedFromPayload(p);delete seed.v;
+        const names=seed.roster.map(x=>x.name);
         setSeedData({seed,names,settings:p.settings||{size:p.size||21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[]},courtLabel:p.courtLabel||('Court '+court)});
         setStatus('Live');
       }else setStatus(slTries.current<4?'Waiting for coach device to set up this court…':'Still trying — check this phone has signal, and that the Snakes & Ladders board is open and projecting on the coach device. This screen keeps retrying by itself.');
