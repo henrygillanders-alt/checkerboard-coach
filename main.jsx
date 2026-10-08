@@ -1,3 +1,4 @@
+// v810: Player Development cards (Players → Development) — Secure/Developing/New/Change, 3 ticks, note, auto history
 // v809: S&L — the 'Chance is gone / keep trying' setup choice removed; one rule (coach, 4 Oct)
 // v808: S&L ladders — lose while waiting = ladder forfeited for good; win without showing = stays armed (every mode)
 // v807: S&L — losing on a snake's head slides you to its tail again (bite lost on 4 Sep)
@@ -327,7 +328,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v809 S&L One Ladder Rule';
+const APP_VERSION='v810 Player Development Cards';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -20917,6 +20918,7 @@ const CB_BACKUP_KEYS=[
   {key:'checkerboard_game_suggestions_v1',label:'Suggestions & road-test reports'},
   {key:'checkerboard_master_coach_suggestions_v1',label:'Coach suggestions'},
   {key:'checkerboard_player_plans_v1',label:'Player plans'},
+  {key:'checkerboard_player_development_v1',label:'Player development cards'},
   {key:'checkerboard_master_v54_players',label:'Players & attendance'},
   {key:'checkerboard_universal_db_handicap_v97',label:'Double bounce allowances'},
   {key:'checkerboard_hdl_scoring_v1',label:'Hold & Deception scoring settings'},
@@ -22156,16 +22158,86 @@ function PlayerPlans({players}){
   </div>;
 }
 
+/* ───────────────────── PLAYER DEVELOPMENT (v810) ─────────────────────
+   Step 1 of the Player Development Loop (agreed 7 Oct). P28 simplicity first: plain words, the
+   fewest fields — a card is one line in the coach's words, where it's at (4 options), where it
+   shows (3 ticks) and an optional coach-only note. History is kept automatically, shown on tap.
+   Coach rule (7 Oct): only a habit that does not work is marked Change. A solution that works in
+   some situations is never removed — the player is given New options to sit beside it.
+   Stored per player name, like Player Plans; included in Storage & Backup. */
+const PLAYER_DEV_KEY='checkerboard_player_development_v1';
+const DEV_STATUSES=[
+  {id:'secure',label:'Secure',meaning:'It holds up, even under pressure.',color:'#6fae8b'},
+  {id:'developing',label:'Developing',meaning:'It’s appearing, but not every time.',color:'#5b9bff'},
+  {id:'new',label:'New',meaning:'An extra option to sit beside what already works.',color:'#a98bff'},
+  {id:'change',label:'Change',meaning:'Only a habit that doesn’t work in any situation.',color:'#ff8a80'}
+];
+const DEV_TICKS=[{id:'practice',label:'In practice'},{id:'pressure',label:'Under pressure'},{id:'matches',label:'In matches'}];
+const DEV_CHANGE_REMINDER='Only for a habit that doesn’t work. If it works sometimes, add a New option instead.';
+function loadPlayerDev(){try{const v=JSON.parse(localStorage.getItem(PLAYER_DEV_KEY));return v&&typeof v==='object'?v:{};}catch{return {};}}
+function devStatus(id){return DEV_STATUSES.find(s=>s.id===id)||DEV_STATUSES[1];}
+function devStamp(){return new Date().toISOString();}
+function devDate(iso){try{return new Date(iso).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
+function PlayerDevelopment({players}){
+  const [byPlayer,setByPlayer]=useState(()=>loadPlayerDev());
+  useEffect(()=>{try{localStorage.setItem(PLAYER_DEV_KEY,JSON.stringify(byPlayer));}catch{}},[byPlayer]);
+  const names=useMemo(()=>[...new Set([...(players||[]).map(p=>p&&p.name).filter(Boolean),...Object.keys(byPlayer)])].sort((a,b)=>a.localeCompare(b)),[players,byPlayer]);
+  const [who,setWho]=useState('');
+  const [draft,setDraft]=useState('');
+  const [openHist,setOpenHist]=useState({});
+  const [openNote,setOpenNote]=useState({});
+  const cards=who?(byPlayer[who]||[]):[];
+  function save(list){setByPlayer(prev=>({...prev,[who]:list}));}
+  function edit(id,fn){save(cards.map(c=>c.id===id?{...fn(c),updatedAt:devStamp()}:c));}
+  function addCard(){const t=draft.trim();if(!t||!who)return;const now=devStamp();save([...cards,{id:'dev-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:t,status:'developing',ticks:{practice:false,pressure:false,matches:false},note:'',createdAt:now,updatedAt:now,history:[{at:now,what:'Added as Developing'}]}]);setDraft('');}
+  function setStatus(c,id){if(c.status===id)return;if(id==='change'&&!window.confirm(DEV_CHANGE_REMINDER+'\n\nMark “'+c.title+'” as Change?'))return;edit(c.id,x=>({...x,status:id,history:[...(x.history||[]),{at:devStamp(),what:devStatus(x.status).label+' → '+devStatus(id).label}]}));}
+  function toggleTick(c,t){edit(c.id,x=>{const on=!(x.ticks&&x.ticks[t.id]);return {...x,ticks:{...(x.ticks||{}),[t.id]:on},history:[...(x.history||[]),{at:devStamp(),what:(on?'✓ ':'✗ ')+t.label}]};});}
+  function setNote(c,v){edit(c.id,x=>({...x,note:v}));}
+  function rename(c){const t=window.prompt('Change the wording:',c.title);if(t==null)return;const v=t.trim();if(!v||v===c.title)return;edit(c.id,x=>({...x,title:v,history:[...(x.history||[]),{at:devStamp(),what:'Reworded (was “'+x.title+'”)'}]}));}
+  function remove(c){if(!window.confirm('Delete “'+c.title+'” and its history?'))return;save(cards.filter(x=>x.id!==c.id));}
+  const pill=(on,color)=>({padding:'7px 12px',borderRadius:'999px',border:'1px solid '+(on?color:'#2a3a4f'),background:on?color:'#0f1a2a',color:on?'#0a1322':'#cfe0ee',fontWeight:800,fontSize:'0.88rem',cursor:'pointer'});
+  return <div className="page">
+    <div className="pageTop"><h1>Player Development</h1></div>
+    <p className="mutedText" style={{marginTop:0}}>One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically.</p>
+    <div className="gameCard">
+      <label style={{fontWeight:800}}>Player <select value={who} onChange={e=>setWho(e.target.value)} style={{marginLeft:'8px'}}><option value="">Choose a player…</option>{names.map(n=><option key={n} value={n}>{n}{(byPlayer[n]||[]).length?' ('+byPlayer[n].length+')':''}</option>)}</select></label>
+    </div>
+    {who&&<>
+      <div className="gameCard">
+        <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addCard();}} placeholder="What is this player working on? e.g. Volleys the loose crosscourt" style={{flex:'1 1 260px',minWidth:0}}/><button type="button" className="primaryBtn" onClick={addCard} disabled={!draft.trim()}>Add card</button></div>
+      </div>
+      {cards.length===0&&<p className="mutedText">No cards yet for {who}.</p>}
+      {DEV_STATUSES.map(st=>{const list=cards.filter(c=>c.status===st.id);if(!list.length)return null;return <div key={st.id} style={{margin:'14px 0'}}>
+        <h3 style={{margin:'0 0 2px',color:st.color}}>{st.label} <span className="mutedText" style={{fontSize:'0.85rem',fontWeight:600}}>· {st.meaning}</span></h3>
+        {list.map(c=><div key={c.id} className="gameCard" style={{borderLeft:'5px solid '+st.color,padding:'12px 14px',margin:'8px 0'}}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'flex-start'}}><strong style={{fontSize:'1.08rem'}}>{c.title}</strong><span style={{display:'flex',gap:'6px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>rename(c)}>Edit</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} title="Delete" onClick={()=>remove(c)}>✕</button></span></div>
+          <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'10px 0 6px'}}>{DEV_STATUSES.map(s=><button key={s.id} type="button" style={pill(c.status===s.id,s.color)} onClick={()=>setStatus(c,s.id)}>{s.label}</button>)}</div>
+          <div style={{display:'flex',gap:'14px',flexWrap:'wrap',margin:'6px 0'}}>{DEV_TICKS.map(t=><label key={t.id} style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:700}}><input type="checkbox" checked={!!(c.ticks&&c.ticks[t.id])} onChange={()=>toggleTick(c,t)}/>{t.label}</label>)}</div>
+          <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'4px'}}>
+            <button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>setOpenNote(o=>({...o,[c.id]:!o[c.id]}))}>{c.note?'Note ✎':'Add note'}</button>
+            <button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>setOpenHist(o=>({...o,[c.id]:!o[c.id]}))}>History ({(c.history||[]).length})</button>
+          </div>
+          {openNote[c.id]&&<textarea value={c.note||''} onChange={e=>setNote(c,e.target.value)} placeholder="Coach only — not shown to players" rows={2} style={{width:'100%',marginTop:'8px'}}/>}
+          {!openNote[c.id]&&c.note&&<p className="mutedText" style={{margin:'6px 0 0',whiteSpace:'pre-wrap'}}>{c.note}</p>}
+          {openHist[c.id]&&<ul style={{margin:'8px 0 0',paddingLeft:'18px'}}>{(c.history||[]).slice().reverse().map((h,i)=><li key={i} className="mutedText"><b>{devDate(h.at)}</b> — {h.what}</li>)}</ul>}
+        </div>)}
+      </div>;})}
+    </>}
+  </div>;
+}
+
 function PlayerHub({players,setPlayers,session,setSession}){
   const [tab,setTab]=useState('attendance');
   return <div className="page playerHubPage">
     <div className="playerHubTabs">
       <button className={tab==='attendance'?'activeTab':''} onClick={()=>setTab('attendance')}>Attendance</button>
+      <button className={tab==='development'?'activeTab':''} onClick={()=>setTab('development')}>Development</button>
       <button className={tab==='ladder'?'activeTab':''} onClick={()=>setTab('ladder')}>Challenge Ladder</button>
       <button className={tab==='performance'?'activeTab':''} onClick={()=>setTab('performance')}>Performance Ladder</button>
       <button className={tab==='storage'?'activeTab':''} onClick={()=>setTab('storage')}>Storage & Backup</button>
     </div>
     {tab==='attendance'&&<Players players={players} setPlayers={setPlayers}/>}
+    {tab==='development'&&<PlayerDevelopment players={players}/>}
     {tab==='ladder'&&<JuniorLadder players={players} setPlayers={setPlayers}/>}
     {tab==='performance'&&<SeasonLadder/>}
     {tab==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
