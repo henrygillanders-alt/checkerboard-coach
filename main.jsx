@@ -1,3 +1,4 @@
+// v811: the app updates itself — checks for a new deploy when brought to the front; reloads on Home, otherwise offers 'Update now'
 // v810: Player Development cards (Players → Development) — Secure/Developing/New/Change, 3 ticks, note, auto history
 // v809: S&L — the 'Chance is gone / keep trying' setup choice removed; one rule (coach, 4 Oct)
 // v808: S&L ladders — lose while waiting = ladder forfeited for good; win without showing = stays armed (every mode)
@@ -328,7 +329,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v810 Player Development Cards';
+const APP_VERSION='v811 Auto Update';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -29379,6 +29380,31 @@ useEffect(()=>{
   document.addEventListener('visibilitychange',onVis);
   return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
 },[screen]);
+/* v811 (coach, 7 Oct: "how can the app update itself, like the CRM app does?"). Each deploy gives
+   the app a new script file name. Whenever the app comes back to the front (and every 10 minutes)
+   it asks the server which file is current. If it has changed: on the Home screen the app simply
+   reloads itself; anywhere else a bar offers "Update now", so a game in progress is never cut off —
+   and it updates by itself the next time the coach goes back to Home. */
+const[updateReady,setUpdateReady]=useState(false);
+const screenRef=useRef(screen);
+useEffect(()=>{screenRef.current=screen;},[screen]);
+useEffect(()=>{
+  function currentScript(){try{const el=Array.from(document.querySelectorAll('script[src]')).find(x=>/\/assets\/[^"']+\.js/.test(x.getAttribute('src')||''));return el?el.getAttribute('src'):null;}catch{return null;}}
+  const mine=currentScript();
+  if(!mine)return;
+  let busy=false;
+  async function check(){
+    if(busy||document.visibilityState!=='visible')return;busy=true;
+    try{const r=await fetch('/?update-check='+Date.now(),{cache:'no-store'});if(r.ok){const t=await r.text();const m=t.match(/\/assets\/[^"']+\.js/);if(m&&m[0]!==mine){if(screenRef.current==='home'){window.location.reload();return;}setUpdateReady(true);}}}catch{}
+    busy=false;
+  }
+  const onVis=()=>{if(document.visibilityState==='visible')check();};
+  document.addEventListener('visibilitychange',onVis);
+  window.addEventListener('focus',onVis);
+  const id=setInterval(check,10*60*1000);
+  return ()=>{document.removeEventListener('visibilitychange',onVis);window.removeEventListener('focus',onVis);clearInterval(id);};
+},[]);
+useEffect(()=>{if(updateReady&&screen==='home'){try{window.location.reload();}catch{}}},[updateReady,screen]);
 const[backStack,setBackStack]=useState([]);
 const nsslCourtParam=useMemo(()=>getNsslCourtFromUrl(),[]);
 const nsslMasterParam=useMemo(()=>getNsslMasterFromUrl(),[]);
@@ -29499,6 +29525,7 @@ if(screen==='playerDisplay'&&liveGame){return <PlayerDisplayView session={sessio
 if(screen==='playerDisplay'&&sharedPlayerCompetition){return <CompetitionPlayerDisplayView competition={sharedPlayerCompetition} setScreen={go}/>;}
 if(screen==='playerDisplay'&&sharedPlayerGame){return <PlayerDisplayView session={session} setScreen={go} sharedGame={sharedPlayerGame}/>;}
 return <div>
+{updateReady&&<div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999,background:'#1d4f3a',color:'#eafff5',padding:'calc(env(safe-area-inset-top,0px) + 10px) 16px 10px',display:'flex',alignItems:'center',justifyContent:'center',gap:'14px',fontWeight:800,boxShadow:'0 4px 14px rgba(0,0,0,0.4)'}}><span>A new version of the app is ready.</span><button type="button" className="primaryBtn" style={{padding:'8px 16px'}} onClick={()=>window.location.reload()}>Update now</button><button type="button" className="secondaryBtn" style={{padding:'8px 12px'}} onClick={()=>setUpdateReady(false)}>Later</button></div>}
 <style>{`
 /* Global reset: buttons/selects can render with native iOS system chrome (light
    background) even when a class sets a dark background-color, unless appearance
