@@ -1,3 +1,4 @@
+// v812: Read the Attack — the coach's 7-game perception series (winner on perception duty)
 // v811: the app updates itself — checks for a new deploy when brought to the front; reloads on Home, otherwise offers 'Update now'
 // v810: Player Development cards (Players → Development) — Secure/Developing/New/Change, 3 ticks, note, auto history
 // v809: S&L — the 'Chance is gone / keep trying' setup choice removed; one rule (coach, 4 Oct)
@@ -329,7 +330,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v811 Auto Update';
+const APP_VERSION='v812 Read the Attack';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -803,6 +804,7 @@ lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Conditioned',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
 ...ONSIDE_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Onside Offside')),
+...RTA_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Read the Attack')),
 ...CXC_GAMES.map(g=>cxcCard(g,CXC_DEFAULTS)),
 ...DBL_GAMES.map(g=>dblCard(g,DBL_DEFAULTS)),
 ...BOAST_GAMES.map(g=>dblCard(g,DBL_DEFAULTS)),
@@ -8177,7 +8179,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8224,7 +8226,7 @@ const CCFF_GAMES=[
      stepper:[{k:'licence',label:'Crosscourt-attack bonus',min:1,max:4,sign:'+'}]}
 ];
 const CCFF_NO_BOAST=' A boast does not count as a crosscourt.';
-function ccffRule(g,v){return g.rule(v)+CCFF_NO_BOAST;}
+function ccffRule(g,v){return g.rule(v)+(g.boastRule===false?'':CCFF_NO_BOAST);} /* v812: the boast sentence belongs to the crosscourt series only */
 // ── ONSIDE OFFSIDE (v802 → own series v805) ─────────────────────────────────────
 // The coach's court-tested crosscourt session (3 Oct). v805 (coach: "this is confusing — we need
 // each progression as a separate game"): five separate games, each card complete on its own,
@@ -8248,6 +8250,34 @@ function onsideGame(p){
     stepper:[...ONSIDE_COMMON_STEPS,...(xw?[{k:'onXwin',label:'Cross winner bonus',min:1,max:6,sign:'+'}]:[]),...(sw?[{k:'onSwin',label:'Straight winner bonus',min:1,max:6,sign:'+'}]:[])]};
 }
 const ONSIDE_GAMES=[1,2,3,4,5].map(onsideGame);
+// ── READ THE ATTACK (v812) ──────────────────────────────────────────────────────
+// The coach's perception series, run on court 7 Oct ("it went smoothly"). The winner of the last
+// rally is always on perception duty — drives only — and must read the attacking shot; the other
+// player may play it at any time, disguising it as long as possible. Group: the incoming player
+// serves and attacks. Two players: the winner serves, the receiver attacks (the receiver has the
+// edge, so is likely to win and then take on perception duty). After the attacking shot: drives
+// (straight or crosscourt), or an open rally — at once or once the perceiver has survived N
+// attacking shots. Scoring adjustable; a perceiver who survives and wins earns a bonus.
+// Here a boast is simply an attacking shot (boastRule:false — no crosscourt-series sentence).
+const RTA_AFTER={'Drives only':'reply with a straight or crosscourt drive, and drives carry on','Open rally':'the rally is open','Open after 2 attacking shots':'reply with a drive; once the player on perception duty has survived 2 attacking shots, the rally is open','Open after 3 attacking shots':'reply with a drive; once the player on perception duty has survived 3 attacking shots, the rally is open'};
+const RTA_AFTER_KEYS=Object.keys(RTA_AFTER);
+function rtaGame(p){
+  const all=p>=4;
+  const shot={1:'a boast',2:'a straight drop',3:'a crosscourt drop',4:'a boast',5:'a straight drop',6:'a crosscourt drop',7:'any attacking shot into zone 1 or 2 (the front of the court)'}[p];
+  const short={1:'Boast',2:'Straight Drop',3:'Crosscourt Drop',4:'Boast',5:'Straight Drop',6:'Crosscourt Drop',7:'Attack to the Front'}[p];
+  return {id:'rta-'+p,stage:p,boastRule:false,title:p+' · '+(all?'All Drives':'Straight Drives')+' — '+short,rld:all?4:3,duration:8,
+    tag:(all?'Straight or crosscourt drives':'Straight drives')+'; read '+shot.replace(/ \(.*\)/,''),
+    from:'One player is on perception duty: they can only drive, so they must pick the attacking shot early from what the striker shows them. The attacker tries to hide it for as long as possible. Winning puts you on perception duty, so the better player is always the one being tested.',
+    rule:(v)=>(all?'Rotating drives — straight or crosscourt.':'Rotating straight drives.')+' The winner of the last rally is on perception duty: drives only — read the attacking shot and answer it. The other player has the attacking shot — '+shot+' — and can play it at any time; disguise it as long as you can. In a group the incoming player serves and attacks; with two players the winner serves and the receiver attacks. After the attacking shot: '+(RTA_AFTER[v.rtaAfter]||RTA_AFTER['Drives only'])+'. Win the rally: +'+(v.rtaRally||1)+'. Bonus: +'+v.rtaBonus+' if the player on perception duty wins a rally in which the attacking shot was played.',
+    coach:'Point the perceiver to where the information is — the striker’s position, body and racquet — and let them work out what it means; don’t tell them the cue. '+(p<7?'Next: game '+(p+1)+'. ':'')+'When the perceiver is coping, set “After the attacking shot” to Open after 2 or 3 attacking shots, then to Open rally. Debrief: what told you the attacking shot was coming — and when did you know?',
+    focus:'Perception duty: what is the striker showing you? Attacker: hide it as long as you can.',
+    score:(v)=>'Rally win +'+(v.rtaRally||1)+'. Perceiver wins a rally with the attacking shot played: bonus +'+v.rtaBonus+'. After the attacking shot: '+(v.rtaAfter||'Drives only')+'.',
+    stepper:[{k:'rtaAfter',label:'After the attacking shot',type:'select',options:RTA_AFTER_KEYS},{k:'rtaRally',label:'Rally win',min:1,max:3,sign:'+'},{k:'rtaBonus',label:'Perceiver survives & wins — bonus',min:1,max:6,sign:'+'}]};
+}
+const RTA_GAMES=[1,2,3,4,5,6,7].map(rtaGame);
+function ReadTheAttackFamily({onAdd,label,openFamily}){
+  return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={RTA_GAMES} category="Read the Attack" intro={<div className="gameCard"><div className="categoryTag">Read the Attack</div><h2>👁️ Read the Attack</h2><p>A perception series. The winner of the last rally is <strong>on perception duty</strong>: they can only drive, and must read the attacking shot early. The other player can play the attacking shot whenever they like, and tries to disguise it.</p><p className="mutedText">Court-tested by the coach. Games 1–3 use straight drives, 4–6 add the crosscourt drive, and 7 opens the attack to the whole front of the court. All scoring is adjustable.</p></div>}/>;
+}
 function ccffCard(g,v,category){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:category||'Cross Court Friend or Foe',format:'Conditioned game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:['Decision Making','Shot Selection','Attacking Conversion']};}
 // ── DROP, BOAST & LOB (v787) ────────────────────────────────────────────────────
 // Coach, 28 Sep: games for the Match Analysis tags with the thinnest coverage — Loose Drop,
@@ -17686,6 +17716,8 @@ const GAME_LIBRARY=[
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><MovementLabFamily onAdd={addAndGo}/>},
   {id:'crosscourtfof',label:'Cross Court Friend or Foe',category:'Cross Court Friend or Foe',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
+  {id:'readtheattack',label:'Read the Attack',category:'Read the Attack',groups:['perception'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ReadTheAttackFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'onsideoffside',label:'Onside Offside',category:'Onside Offside',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><OnsideOffsideFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'crosscourtchoice',label:'Crosscourt Choice',category:'Crosscourt Choice',groups:['technique','perception','fault'],
