@@ -1,3 +1,5 @@
+// v814: Designing the Problem — rule-check paragraph reworded formally (P27); pending-build promise removed (P7)
+// v813: Development cards — optional game/constraint link + Keep/Adjust/Remove review in dated history; decay vs deliberate fading clarified (Renshaw et al. 2010 brief)
 // v812: Read the Attack — the coach's 7-game perception series (winner on perception duty)
 // v811: the app updates itself — checks for a new deploy when brought to the front; reloads on Home, otherwise offers 'Update now'
 // v810: Player Development cards (Players → Development) — Secure/Developing/New/Change, 3 ticks, note, auto history
@@ -330,7 +332,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v812 Read the Attack';
+const APP_VERSION='v814 Formal Rule Check';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -4412,7 +4414,10 @@ function WhyCLAScreen({setScreen}){
       {t:'p',v:'Constraints are not fixed in importance. Their influence over a player\u2019s behaviour shifts as learning progresses.'},
       {t:'p',v:'Research examining a football kicking task illustrates this clearly (Chow, Davids, Button & Koh, 2005, discussed in Renshaw, Chow, Davids & Hammond, 2010). Novice players were asked to kick a ball over a height barrier and land it accurately on a target.'},
       {t:'p',v:'Early in practice, players focused almost entirely on clearing the height barrier, with little regard for accuracy. As they became more consistent at clearing the bar, that height constraint decayed in importance — and an accuracy constraint emerged to take its place as the dominant influence on performance.'},
-      {t:'p',v:'This matters because it shows a rate limiter is never permanent. As one constraint is mastered it fades into the background, and a different constraint rises to become the new priority.'},
+      {t:'p',v:'Note what did not happen: the height barrier was never taken away. It stayed exactly where it was. Its relative influence declined because clearing it had become manageable \u2014 the change was in the learner, not in the task.'},
+      {t:'p',v:'This matters because it shows a rate limiter is never permanent. As one constraint is mastered it recedes into the background, and a different constraint rises to become the new priority.'},
+      {t:'p',v:'This is not the same as a coach deliberately fading a rule, bonus or support. Decay and emergence is something that happens as learning develops, and it is what the kicking study illustrates. Fading is something the coach does on purpose \u2014 for example, halving a bonus or removing a support \u2014 to check whether a behaviour holds up without it. That is a practical coaching application of the idea, not something the study itself tested.'},
+      {t:'p',v:'The two are connected but not equivalent. Seeing a constraint lose its influence is a good reason to consider fading it; fading it is how you find out whether the learning transfers to ordinary matchplay.'},
       {t:'p',v:'For coaches, the practical implication is to keep reassessing rather than fixing a single priority for a player. A constraint that mattered most last month may no longer be the one holding them back today.'},
     ]},
     {id:'d1-ecodyn',title:'Ecological Dynamics',blocks:[
@@ -4511,7 +4516,7 @@ function WhyCLAScreen({setScreen}){
     'Newell (1986) laid the theoretical foundation showing how performer, environment and task constraints shape behaviour.',
     'Davids, Button & Bennett (2008) formalised this into the Constraints-Led Approach as a coaching framework.',
     'A rate limiter is the single constraint most limiting a player\u2019s performance right now — coaches should identify and target it first, rather than working on everything at once.',
-    'Constraints decay and emerge over time: mastering one constraint often reveals a different one as the new priority (Chow, Davids, Button & Koh, 2005).',
+    'Constraints decay and emerge over time: mastering one constraint often reveals a different one as the new priority, even when the first constraint stays in place (Chow, Davids, Button & Koh, 2005). A coach deliberately fading a rule or bonus to test transfer is a separate, practical step.',
     'Ecological Dynamics integrates these ideas into a modern theory of skill acquisition.',
     'Small-sided games multiply meaningful practice repetitions and can build fitness alongside tactical learning (Fenoglio, 2003; Impellizzeri et al., 2006).',
     'Task simplification scales the whole skill down while keeping perception and action coupled — unlike task decomposition, which isolates parts and risks decoupling them.',
@@ -12229,8 +12234,12 @@ function ToolsArchitecture({setScreen}){
       </div>
       <div className="gameCard">
         <h3>Has the rule done its job? Keep · Relax · Replace · Progress</h3>
-        <p>Constraints wear out — by working. The paper&rsquo;s kicking study shows it cleanly: learners first cared only about clearing the height bar; once they could, accuracy became the live problem and the height constraint faded to background. The lines cross, and the moment they cross, the old rule is no longer coaching anyone.</p>
-        <p>So after a session, ask of each rule you used: <strong>is this constraint still producing adaptation?</strong> Four honest answers: <strong>Keep</strong> — it&rsquo;s still biting, run it again. <strong>Relax</strong> — it&rsquo;s biting too hard, ease the value (every stepper in this app exists for this). <strong>Replace</strong> — it&rsquo;s solved; the next limiter needs a different rule. <strong>Progress</strong> — it&rsquo;s solved; keep the theme, raise the demand. Watching for the crossing point is the coaching skill this whole page serves — the app will prompt this question in Session Builder in a coming version, but the habit is yours to start now.</p>
+        <p>Two different things get called &ldquo;fading,&rdquo; and they are worth keeping apart.</p>
+        <p><strong>A constraint decays as learning develops.</strong> The paper&rsquo;s kicking study shows it cleanly: learners first cared only about clearing the height bar; once clearing it was manageable, accuracy became the live problem. The bar was never removed &mdash; it stayed where it was. Its relative influence declined because the learners changed, not the task. The lines cross, and once they cross the old rule is doing less of the coaching.</p>
+        <p><strong>A coach fades a rule on purpose.</strong> Halving a bonus, removing a target, taking away a support &mdash; this is a deliberate check, a practical application of the idea rather than something the study tested. Its job is to answer one question: does the behaviour still appear in ordinary matchplay when the rule is no longer paying for it? A player who volleys the loose crosscourt only while the volley bonus is live is complying; one who still takes those volleys when it is gone has learned something that transfers.</p>
+        <p>Spotting decay tells you <em>when</em> to consider fading. Fading is how you find out whether it worked.</p>
+        <p>After a session, ask of each rule used: <strong>is this constraint still producing adaptation?</strong> There are four possible answers. <strong>Keep</strong> — it is still working; run it again. <strong>Relax</strong> — it is too demanding; ease the value (every stepper in the app exists for this purpose). <strong>Replace</strong> — it has been solved; the next limiter requires a different rule. <strong>Progress</strong> — it has been solved; keep the theme and raise the demand. Recognising the crossing point is the coaching skill this page is intended to develop.</p>
+        <p className="mutedText">To keep the evidence with the player: Players → Development → <strong>Link game</strong> on the card, then <strong>Review</strong> once the rule has been eased &mdash; Keep, Adjust or Remove, with a line on what was seen in ordinary play. Each review is dated in the card&rsquo;s history; the card&rsquo;s status remains the coach&rsquo;s decision.</p>
       </div>
       <div className="gameCard">
         <h3>How to ask your players questions</h3>
@@ -22197,7 +22206,13 @@ function PlayerPlans({players}){
    shows (3 ticks) and an optional coach-only note. History is kept automatically, shown on tap.
    Coach rule (7 Oct): only a habit that does not work is marked Change. A solution that works in
    some situations is never removed — the player is given New options to sit beside it.
-   Stored per player name, like Player Plans; included in Storage & Backup. */
+   Stored per player name, like Player Plans; included in Storage & Backup.
+   v813 (Renshaw, Chow, Davids & Hammond 2010 brief, 9 Oct): a card may OPTIONALLY name the game or
+   constraint being used (c.link) and carry coach reviews — Keep / Adjust / Remove plus a short
+   observation once the rule, bonus or support is reduced or removed. Reviews are stored as dated
+   entries in the card's existing history ({at,what,review:{decision,obs,link},editedAt?}) and stay
+   editable there. Older cards without these fields work unchanged. Nothing is automated: a review
+   never changes the card's status or ticks — the coach judges transfer. Coach-only screen. */
 const PLAYER_DEV_KEY='checkerboard_player_development_v1';
 const DEV_STATUSES=[
   {id:'secure',label:'Secure',meaning:'It holds up, even under pressure.',color:'#6fae8b'},
@@ -22207,6 +22222,28 @@ const DEV_STATUSES=[
 ];
 const DEV_TICKS=[{id:'practice',label:'In practice'},{id:'pressure',label:'Under pressure'},{id:'matches',label:'In matches'}];
 const DEV_CHANGE_REMINDER='Only for a habit that doesn’t work. If it works sometimes, add a New option instead.';
+const DEV_REVIEW_CHOICES=[
+  {id:'keep',label:'Keep',meaning:'Keep the constraint as it is.',color:'#6fae8b'},
+  {id:'adjust',label:'Adjust',meaning:'Change it — e.g. reduce the bonus or ease the rule.',color:'#6eaac8'},
+  {id:'remove',label:'Remove',meaning:'Take it away — the behaviour has to stand on its own.',color:'#ff8a80'}
+];
+const DEV_REVIEW_HINT='Once the rule, bonus or support is reduced or removed, watch ordinary matchplay: does the player still find the behaviour when it is useful? That is transfer — not compliance with the bonus. A review never changes the card’s status; that remains the coach’s decision.';
+function devReviewChoice(id){return DEV_REVIEW_CHOICES.find(r=>r.id===id)||DEV_REVIEW_CHOICES[0];}
+function devReviewWhat(r){return 'Review: '+devReviewChoice(r.decision).label+(r.link?' “'+r.link+'”':'')+(r.obs?' — '+r.obs:'');}
+/* Suggestions only — the link is free text so an ad-hoc constraint ("volley bonus ×2") is fine too.
+   Each catalogue is read inside its own try so a renamed list can never break this screen. */
+function devLinkSuggestions(){
+  const out=[];
+  const add=v=>{if(typeof v==='string'&&v.trim())out.push(v.trim());};
+  try{GAME_LIBRARY.forEach(g=>{if(g&&g.id!=='custom'&&g.id!=='saved')add(g.label);});}catch{}
+  const fams=[
+    ['Cross Court Friend or Foe',()=>CCFF_GAMES],['Onside Offside',()=>ONSIDE_GAMES],['Read the Attack',()=>RTA_GAMES],
+    ['Crosscourt Choice',()=>CXC_GAMES],['Boast',()=>BOAST_GAMES],['Drop & Lob',()=>DBL_GAMES],
+    ['Double Bounce',()=>DB_GAMES],['Tin War',()=>TINWAR_GAMES],['Classic Constraint',()=>CLASSIC_CONSTRAINT_GAMES]
+  ];
+  fams.forEach(([fam,get])=>{try{(get()||[]).forEach(g=>{const t=g&&(g.title||g.label);if(t)add(fam+' — '+t);});}catch{}});
+  return [...new Set(out)];
+}
 function loadPlayerDev(){try{const v=JSON.parse(localStorage.getItem(PLAYER_DEV_KEY));return v&&typeof v==='object'?v:{};}catch{return {};}}
 function devStatus(id){return DEV_STATUSES.find(s=>s.id===id)||DEV_STATUSES[1];}
 function devStamp(){return new Date().toISOString();}
@@ -22219,7 +22256,10 @@ function PlayerDevelopment({players}){
   const [draft,setDraft]=useState('');
   const [openHist,setOpenHist]=useState({});
   const [openNote,setOpenNote]=useState({});
+  const [linkDraft,setLinkDraft]=useState({}); /* cardId → text while the link editor is open */
+  const [review,setReview]=useState(null);     /* {cardId, idx (history index when editing) | null, decision, obs} */
   const cards=who?(byPlayer[who]||[]):[];
+  const linkOptions=useMemo(()=>{const used=Object.values(byPlayer).flat().map(c=>c&&c.link).filter(Boolean);return [...new Set([...used,...devLinkSuggestions()])];},[byPlayer]);
   function save(list){setByPlayer(prev=>({...prev,[who]:list}));}
   function edit(id,fn){save(cards.map(c=>c.id===id?{...fn(c),updatedAt:devStamp()}:c));}
   function addCard(){const t=draft.trim();if(!t||!who)return;const now=devStamp();save([...cards,{id:'dev-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:t,status:'developing',ticks:{practice:false,pressure:false,matches:false},note:'',createdAt:now,updatedAt:now,history:[{at:now,what:'Added as Developing'}]}]);setDraft('');}
@@ -22228,12 +22268,44 @@ function PlayerDevelopment({players}){
   function setNote(c,v){edit(c.id,x=>({...x,note:v}));}
   function rename(c){const t=window.prompt('Change the wording:',c.title);if(t==null)return;const v=t.trim();if(!v||v===c.title)return;edit(c.id,x=>({...x,title:v,history:[...(x.history||[]),{at:devStamp(),what:'Reworded (was “'+x.title+'”)'}]}));}
   function remove(c){if(!window.confirm('Delete “'+c.title+'” and its history?'))return;save(cards.filter(x=>x.id!==c.id));}
+  function toggleLink(c){setLinkDraft(o=>{const n={...o};if(c.id in n)delete n[c.id];else n[c.id]=c.link||'';return n;});}
+  function saveLink(c){
+    const v=(linkDraft[c.id]||'').trim();const was=c.link||'';
+    setLinkDraft(o=>{const n={...o};delete n[c.id];return n;});
+    if(v===was)return;
+    const what=!v?'Link removed (was “'+was+'”)':was?'Linked to “'+v+'” (was “'+was+'”)':'Linked to “'+v+'”';
+    edit(c.id,x=>({...x,link:v,history:[...(x.history||[]),{at:devStamp(),what}]}));
+  }
+  function startReview(c,idx){
+    if(idx==null){setReview({cardId:c.id,idx:null,decision:'',obs:''});return;}
+    const h=(c.history||[])[idx];if(!h||!h.review)return;
+    setReview({cardId:c.id,idx,decision:h.review.decision||'keep',obs:h.review.obs||''});
+  }
+  function saveReview(c){
+    if(!review||!review.decision)return;
+    const obs=review.obs.trim();
+    edit(c.id,x=>{
+      const hist=[...(x.history||[])];
+      if(review.idx!=null&&hist[review.idx]&&hist[review.idx].review){
+        const old=hist[review.idx];const r={...old.review,decision:review.decision,obs};
+        hist[review.idx]={...old,review:r,what:devReviewWhat(r),editedAt:devStamp()};
+      }else{
+        const r={decision:review.decision,obs,link:x.link||''};
+        hist.push({at:devStamp(),what:devReviewWhat(r),review:r});
+      }
+      return {...x,history:hist};
+    });
+    setReview(null);
+  }
+  function lastReview(c){const h=(c.history||[]).filter(e=>e&&e.review);return h.length?h[h.length-1]:null;}
   const pill=(on,color)=>({padding:'7px 12px',borderRadius:'999px',border:'1px solid '+(on?color:'#2a3a4f'),background:on?color:'#0f1a2a',color:on?'#0a1322':'#cfe0ee',fontWeight:800,fontSize:'0.88rem',cursor:'pointer'});
+  const smallBtn={padding:'4px 10px'};
   return <div className="page">
     <div className="pageTop"><h1>Player Development</h1></div>
-    <p className="mutedText" style={{marginTop:0}}>One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically.</p>
+    <p className="mutedText" style={{marginTop:0}}>One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically. Optionally, link the game or constraint in use and review it once the constraint is eased.</p>
+    <datalist id="devLinkOptions">{linkOptions.map(o=><option key={o} value={o}/>)}</datalist>
     <div className="gameCard">
-      <label style={{fontWeight:800}}>Player <select value={who} onChange={e=>setWho(e.target.value)} style={{marginLeft:'8px'}}><option value="">Choose a player…</option>{names.map(n=><option key={n} value={n}>{n}{(byPlayer[n]||[]).length?' ('+byPlayer[n].length+')':''}</option>)}</select></label>
+      <label style={{fontWeight:800}}>Player <select value={who} onChange={e=>{setWho(e.target.value);setReview(null);setLinkDraft({});}} style={{marginLeft:'8px'}}><option value="">Choose a player…</option>{names.map(n=><option key={n} value={n}>{n}{(byPlayer[n]||[]).length?' ('+byPlayer[n].length+')':''}</option>)}</select></label>
     </div>
     {who&&<>
       <div className="gameCard">
@@ -22242,18 +22314,36 @@ function PlayerDevelopment({players}){
       {cards.length===0&&<p className="mutedText">No cards yet for {who}.</p>}
       {DEV_STATUSES.map(st=>{const list=cards.filter(c=>c.status===st.id);if(!list.length)return null;return <div key={st.id} style={{margin:'14px 0'}}>
         <h3 style={{margin:'0 0 2px',color:st.color}}>{st.label} <span className="mutedText" style={{fontSize:'0.85rem',fontWeight:600}}>· {st.meaning}</span></h3>
-        {list.map(c=><div key={c.id} className="gameCard" style={{borderLeft:'5px solid '+st.color,padding:'12px 14px',margin:'8px 0'}}>
-          <div style={{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'flex-start'}}><strong style={{fontSize:'1.08rem'}}>{c.title}</strong><span style={{display:'flex',gap:'6px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>rename(c)}>Edit</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} title="Delete" onClick={()=>remove(c)}>✕</button></span></div>
+        {list.map(c=>{const lr=lastReview(c);const editingLink=c.id in linkDraft;const rv=review&&review.cardId===c.id?review:null;const rvEntry=rv&&rv.idx!=null?(c.history||[])[rv.idx]:null;const rvLink=rv?(rvEntry&&rvEntry.review?rvEntry.review.link:c.link):'';return <div key={c.id} className="gameCard" style={{borderLeft:'5px solid '+st.color,padding:'12px 14px',margin:'8px 0'}}>
+          <div style={{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'flex-start'}}><strong style={{fontSize:'1.08rem'}}>{c.title}</strong><span style={{display:'flex',gap:'6px'}}><button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>rename(c)}>Edit</button><button type="button" className="secondaryBtn" style={smallBtn} title="Delete" onClick={()=>remove(c)}>✕</button></span></div>
+          {c.link&&!editingLink&&<p className="mutedText" style={{margin:'4px 0 0'}}>🔗 Using: <b>{c.link}</b></p>}
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'10px 0 6px'}}>{DEV_STATUSES.map(s=><button key={s.id} type="button" style={pill(c.status===s.id,s.color)} onClick={()=>setStatus(c,s.id)}>{s.label}</button>)}</div>
           <div style={{display:'flex',gap:'14px',flexWrap:'wrap',margin:'6px 0'}}>{DEV_TICKS.map(t=><label key={t.id} style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:700}}><input type="checkbox" checked={!!(c.ticks&&c.ticks[t.id])} onChange={()=>toggleTick(c,t)}/>{t.label}</label>)}</div>
           <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'4px'}}>
-            <button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>setOpenNote(o=>({...o,[c.id]:!o[c.id]}))}>{c.note?'Note ✎':'Add note'}</button>
-            <button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>setOpenHist(o=>({...o,[c.id]:!o[c.id]}))}>History ({(c.history||[]).length})</button>
+            <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>setOpenNote(o=>({...o,[c.id]:!o[c.id]}))}>{c.note?'Note ✎':'Add note'}</button>
+            <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>toggleLink(c)}>{c.link?'Link ✎':'Link game'}</button>
+            {c.link&&<button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>rv&&rv.idx==null?setReview(null):startReview(c,null)}>Review</button>}
+            <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>setOpenHist(o=>({...o,[c.id]:!o[c.id]}))}>History ({(c.history||[]).length})</button>
           </div>
+          {editingLink&&<div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'8px',alignItems:'center'}}>
+            <input list="devLinkOptions" value={linkDraft[c.id]} onChange={e=>{const v=e.target.value;setLinkDraft(o=>({...o,[c.id]:v}));}} onKeyDown={e=>{if(e.key==='Enter')saveLink(c);}} placeholder="Game or constraint being used — pick or type" style={{flex:'1 1 240px',minWidth:0}}/>
+            <button type="button" className="primaryBtn" style={smallBtn} onClick={()=>saveLink(c)}>Save</button>
+            <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>toggleLink(c)}>Cancel</button>
+            {c.link&&<span className="mutedText" style={{fontSize:'0.82rem'}}>Clear the box and Save to remove the link.</span>}
+          </div>}
+          {rv&&<div style={{marginTop:'10px',padding:'10px 12px',border:'1px solid #2a3a4f',borderRadius:'10px',background:'#0f1a2a'}}>
+            <div style={{fontWeight:800,marginBottom:'4px'}}>{rv.idx!=null?'Edit review':'Review'}{rvLink?<> — <span style={{fontWeight:600}}>{rvLink}</span></>:null}</div>
+            <p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.85rem'}}>{DEV_REVIEW_HINT}</p>
+            <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>{DEV_REVIEW_CHOICES.map(r=><button key={r.id} type="button" title={r.meaning} style={pill(rv.decision===r.id,r.color)} onClick={()=>setReview(x=>({...x,decision:r.id}))}>{r.label}</button>)}</div>
+            {rv.decision&&<p className="mutedText" style={{margin:'6px 0 0',fontSize:'0.85rem'}}>{devReviewChoice(rv.decision).meaning}</p>}
+            <textarea value={rv.obs} onChange={e=>{const v=e.target.value;setReview(x=>({...x,obs:v}));}} rows={2} placeholder="What did you see once it was reduced or removed? e.g. Bonus halved — still took 3 useful volleys in an ordinary game" style={{width:'100%',marginTop:'8px'}}/>
+            <div style={{display:'flex',gap:'8px',marginTop:'6px'}}><button type="button" className="primaryBtn" style={smallBtn} disabled={!rv.decision} onClick={()=>saveReview(c)}>Save review</button><button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>setReview(null)}>Cancel</button></div>
+          </div>}
           {openNote[c.id]&&<textarea value={c.note||''} onChange={e=>setNote(c,e.target.value)} placeholder="Coach only — not shown to players" rows={2} style={{width:'100%',marginTop:'8px'}}/>}
           {!openNote[c.id]&&c.note&&<p className="mutedText" style={{margin:'6px 0 0',whiteSpace:'pre-wrap'}}>{c.note}</p>}
-          {openHist[c.id]&&<ul style={{margin:'8px 0 0',paddingLeft:'18px'}}>{(c.history||[]).slice().reverse().map((h,i)=><li key={i} className="mutedText"><b>{devDate(h.at)}</b> — {h.what}</li>)}</ul>}
-        </div>)}
+          {lr&&!rv&&<p className="mutedText" style={{margin:'6px 0 0'}}>Last review <b>{devDate(lr.at)}</b>: <b style={{color:devReviewChoice(lr.review.decision).color}}>{devReviewChoice(lr.review.decision).label}</b>{lr.review.obs?' — '+lr.review.obs:''}</p>}
+          {openHist[c.id]&&<ul style={{margin:'8px 0 0',paddingLeft:'18px'}}>{(c.history||[]).map((h,i)=>({h,i})).reverse().map(({h,i})=><li key={i} className="mutedText"><b>{devDate(h.at)}</b> — {h.what}{h.editedAt?<em> (edited {devDate(h.editedAt)})</em>:null}{h.review&&<button type="button" className="secondaryBtn" style={{padding:'1px 8px',marginLeft:'8px',fontSize:'0.8rem'}} onClick={()=>startReview(c,i)}>Edit</button>}</li>)}</ul>}
+        </div>;})}
       </div>;})}
     </>}
   </div>;
@@ -22965,7 +23055,7 @@ function VisionPerceptionModule({setScreen}){
     <div className="visionPrincipleGrid">
       <div><strong>Search Location</strong><p>First help the player look back towards the opponent.</p></div>
       <div><strong>Search Content</strong><p>Then broaden attention to shoulders, trunk, racquet path, racquet face, timing and movement.</p></div>
-      <div><strong>Constraint Fading</strong><p>Constraints are scaffolding, not the building. Fade once the behaviour emerges.</p></div>
+      <div><strong>Constraint Fading</strong><p>Constraints are scaffolding, not the building. Once the behaviour appears, fade the support on purpose and check it still shows in ordinary matchplay.</p></div>
     </div>
     <div className="visionWarning"><strong>Important Coach Note</strong><p>The coloured racquet is not the cue. It is a guide to the cue. Once the player searches in the right area, attention must broaden to specifying information from the whole opponent-racquet scene.</p></div>
     {sections.map(sec=><section key={sec} className="visionSection"><h2>{sec}</h2><div className="visionGrid">{VISION_ACTIVITIES.filter(a=>a.section===sec).map(a=><div key={a.title} className="visionCard"><div className="rldBadgeSm"><span className="rldDotSm" style={{background:'#5c9c7a'}}/> {a.rld}</div><h3>{a.title}</h3><p>{a.purpose}</p><div className="infoBox"><strong>Setup</strong><p>{a.setup}</p></div><div className="infoBox"><strong>Activity</strong><p>{a.task}</p></div><div className="infoBox"><strong>Rationale</strong><p>{a.rationale}</p></div><div className="visionFadeBox"><strong>When to fade</strong><p>{a.fade}</p></div><div className="visionRiskBox"><strong>What could go wrong?</strong><p>{a.risk}</p></div></div>)}</div></section>)}
