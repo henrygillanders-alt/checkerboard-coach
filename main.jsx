@@ -1,3 +1,6 @@
+// v817: Breakout pairs — a pattern ball volleyed anywhere plays on; the volley itself returns to the pattern or is the breakout (short-line exception removed)
+// v816: Breakout pairs — a pattern or breakout ball may be volleyed instead of bouncing (judged by where the ball is at contact; front-court balls volleyed behind the short line do not count)
+// v815: Breakout Squash on Checkerboard pairs (wall → floor pattern, breakout target, open rally after); zone 1 = front left everywhere
 // v814: Designing the Problem — rule-check paragraph reworded formally (P27); pending-build promise removed (P7)
 // v813: Development cards — optional game/constraint link + Keep/Adjust/Remove review in dated history; decay vs deliberate fading clarified (Renshaw et al. 2010 brief)
 // v812: Read the Attack — the coach's 7-game perception series (winner on perception duty)
@@ -332,7 +335,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v814 Formal Rule Check';
+const APP_VERSION='v817 Breakout Volley Choice';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -7069,19 +7072,63 @@ function ShotBonusRally({setSession}){
 // nominated target zone and starts an unconditional shot-count pressure window
 // (win within N shots or the point is forfeit, regardless of what happens in play).
 const BREAKOUT_ZONE_PRESETS=[
-  {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],partialDepth:false,note:'Players restricted to the front-left quarter (zone 2). Breakout shot escapes into the front-right quarter (zone 1).'},
-  {id:'egyptian',label:'Egyptian 3/4 Court (Zone 2 + partial Zone 3)',restricted:['2','3'],breakout:['1','4'],partialDepth:true,note:'Restricted area = zone 2 in full, plus zone 3 limited to the short-line-to-back-of-service-box depth only (NOT the full zone to the back wall) — that partial back depth is what makes this a 3/4 court, not a true half-court. Breakout escapes into the opposite-side Egyptian area: zone 1 in full, plus zone 4 to the same partial depth. Deselect a zone below to breakout into just Zone 1 or just Zone 2 instead of the full opposite Egyptian area.'},
+  {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],partialDepth:false,note:'Players restricted to the front-right quarter (zone 2). Breakout shot escapes into the front-left quarter (zone 1).'},
+  {id:'egyptian',label:'Egyptian 3/4 Court (Zone 2 + partial Zone 3)',restricted:['2','3'],breakout:['1','4'],partialDepth:true,note:'Restricted area = zone 2 in full, plus zone 3 limited to the short-line-to-back-of-service-box depth only (NOT the full zone to the back wall) — that partial back depth is what makes this a 3/4 court, not a true half-court. Breakout escapes into the opposite-side Egyptian area: zone 1 in full, plus zone 4 to the same partial depth. Deselect a zone below to breakout into just Zone 1 or just Zone 4 instead of the full opposite Egyptian area.'},
   {id:'custom',label:'Custom Pairing',restricted:[],breakout:[],partialDepth:false,note:'Pick your own restricted zone(s) and breakout target zone(s) below.'}
 ];
 const BREAKOUT_ZONES=['1','2','3','4'];
-const BREAKOUT_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
-const MAIN_ZONE_DESC={1:'Front Right',2:'Front Left',3:'Back Right',4:'Back Left'};
+const BREAKOUT_ZONE_DESC={1:'Front Left',2:'Front Right',3:'Back Right',4:'Back Left'};
+const MAIN_ZONE_DESC={1:'Front Left',2:'Front Right',3:'Back Right',4:'Back Left'};
 const SUB_ZONE_DESC={1:'front-inner',2:'front-wall',3:'back-wall',4:'back-inner'};
 function subZoneLabel(main,sub){return 'zone '+main+'/'+sub+' ('+(MAIN_ZONE_DESC[main]||'').toLowerCase()+', '+(SUB_ZONE_DESC[sub]||'')+')';}
 const EARN_BELOW_TARGETS={'3/3':'zone 3/3 — the back-right corner (deep, tramline-tight, behind the service box)','4/4':'zone 4/4 — the back-left corner (deep, tramline-tight, behind the service box)','both':'either back corner — zone 3/3 or zone 4/4 (deep and tramline-tight, behind the service box)'};
 
 const BREAKOUT_WALL_ZONES=['5','6','7','8'];
 const BREAKOUT_WALL_DESC={5:'Front wall top left',6:'Front wall top right',7:'Front wall bottom right',8:'Front wall bottom left'};
+/* v815 — Breakout on Checkerboard pairs (coach, 10 Oct). The rally is played on one or
+   more front-wall → floor pairs (e.g. 5-4); one shot outside the pattern is the breakout,
+   and must match a nominated target: another pair ('6-3'), any wall into a floor zone
+   ('F2'), or a front-wall zone with any landing ('W7'). After the breakout the rally is
+   open for both players (coach). Only open-play pairs are offered — cbCodeIssue() is the
+   app's existing rule that a high front-wall ball (5, 6) cannot land in the front court.
+   Side-wall zones are phase 2 (coach, 10 Oct), after road-testing. */
+const BRK_OPEN_PAIRS=(()=>{const out=[];['5','6','7','8'].forEach(w=>['1','2','3','4'].forEach(f=>{if(!cbCodeIssue('['+w+'-'+f+']').length)out.push(w+'-'+f);}));return out;})();
+const BRK_FLOOR_TARGETS=['F1','F2','F3','F4'];
+const BRK_WALL_TARGETS=['W5','W6','W7','W8'];
+const BRK_PAIR_PRESETS=[
+  {id:'p-short',label:'Back-left length → short',pattern:['5-4'],breakout:['F1','F2'],note:'The rally is played on high length into the back left. Break out with any shot into the front court.'},
+  {id:'p-cross',label:'Back-left length → crosscourt length',pattern:['5-4'],breakout:['6-3'],note:'The rally is played on high length into the back left. Break out with a high crosscourt length into the back right.'},
+  {id:'p-both',label:'Both lengths → short',pattern:['5-4','6-3'],breakout:['F1','F2'],note:'The rally is played on high length into either back corner. Break out with any shot into the front court.'},
+  {id:'custom',label:'Custom pairs',pattern:null,breakout:null,note:'Pick your own pattern pairs and breakout targets below.'}
+];
+function brkPairDesc(pr){const [w,f]=pr.split('-');return (BREAKOUT_WALL_DESC[w]||'').replace('Front wall ','front wall ')+' → '+(BREAKOUT_ZONE_DESC[f]||'').toLowerCase();}
+function brkTargetLabel(t){
+  if(t[0]==='F'){const f=t.slice(1);return 'any front-wall zone → floor zone '+f+' ('+(BREAKOUT_ZONE_DESC[f]||'').toLowerCase()+')';}
+  if(t[0]==='W'){const w=t.slice(1);return 'front-wall zone '+w+' ('+(BREAKOUT_WALL_DESC[w]||'').replace('Front wall ','')+'), any landing';}
+  return '['+t+'] ('+brkPairDesc(t)+')';
+}
+function brkTargetOverlaps(t,pattern){
+  if(t[0]==='F')return pattern.some(p=>p.split('-')[1]===t.slice(1));
+  if(t[0]==='W')return pattern.some(p=>p.split('-')[0]===t.slice(1));
+  return pattern.includes(t);
+}
+/* Rule text for the pairs mode, as short sentences (shown numbered on screen; joined for the card). */
+function brkPairSteps(pattern,targets,tier,shotLimit){
+  const pat=pattern.map(p=>'['+p+'] ('+brkPairDesc(p)+')').join(' or ');
+  const tg=targets.map(brkTargetLabel).join('; or ');
+  const steps=[
+    'Until the breakout, every shot must follow a pattern pair: '+(pat||'none set')+'.',
+    'A shot follows a pair if it hits that front-wall zone and then either bounces first in that floor zone, or is volleyed by the opponent anywhere on the court.',
+    'A volley is the volleyer’s own shot: it either goes back onto a pattern pair or is a breakout into a target.',
+    'Either player may break out with one shot that matches a breakout target: '+(tg||'none set')+'. The opponent may volley the breakout shot; the same test applies.',
+    'A shot outside the pattern that matches no breakout target loses the rally.',
+    'After the breakout the rally is open for both players: any front-wall zone, any landing.'
+  ];
+  if(tier==='1')steps.push('If the opponent plays the ball back onto a pattern pair, the breakout player must win the point with their very next shot or lose the point. Otherwise the rally continues open.');
+  else steps.push('Once the breakout shot is played, the breakout player must win the point within their own next '+shotLimit+' shots (the opponent’s shots do not count), or the point goes to the opponent.');
+  steps.push('The player not striking calls each shot: the front-wall zone it hit, and where it first bounced (unless it was volleyed).');
+  return steps;
+}
 
 /* ============================================================================
    UNIFIED SUB-ZONE SYSTEM (foundation) — coach spec 12 Sep.
@@ -7090,7 +7137,7 @@ const BREAKOUT_WALL_DESC={5:'Front wall top left',6:'Front wall top right',7:'Fr
    truth that future consumers (Earn the Below/Reload targets, the board
    renderer, challenge squares) draw from. Pure data + helpers, zero risk.
    ------------------------------------------------------------------------- */
-// FLOOR main zones (existing): 1 Front Right, 2 Front Left, 3 Back Right, 4 Back Left.
+// FLOOR main zones: 1 Front Left, 2 Front Right, 3 Back Right, 4 Back Left (coach, 10 Oct — matches ATB_FLOOR_ZONES and the court map).
 // Each floor zone quarters into sub-zones 1..4 that MIRROR the main-zone layout,
 // tramline splitting the wall-side pair from the inner pair:
 //   sub 1 front-inner · sub 2 front-wall · sub 3 back-wall · sub 4 back-inner
@@ -7138,9 +7185,17 @@ function BreakoutSquash({setSession}){
   const [breakoutBonus,setBreakoutBonus]=useState('2');
   const [defenceBonus,setDefenceBonus]=useState('2');
   const [surface,setSurface]=useState('floor');
+  const [pairPreset,setPairPreset]=useState('p-short');
+  const [patternPairs,setPatternPairs]=useState(['5-4']);
+  const [pairTargets,setPairTargets]=useState(['F1','F2']);
+  const isPairs=surface==='pairs';
+  const liveTargets=pairTargets.filter(t=>!brkTargetOverlaps(t,patternPairs));
+  function choosePairPreset(pr){setPairPreset(pr.id);if(pr.pattern){setPatternPairs([...pr.pattern]);setPairTargets([...pr.breakout]);}}
+  function togglePattern(pr){setPairPreset('custom');setPatternPairs(prev=>prev.includes(pr)?prev.filter(x=>x!==pr):[...prev,pr]);}
+  function togglePairTarget(t){setPairPreset('custom');setPairTargets(prev=>prev.includes(t)?prev.filter(x=>x!==t):[...prev,t]);}
   const ZONES=surface==='wall'?BREAKOUT_WALL_ZONES:BREAKOUT_ZONES;
   const ZDESC=surface==='wall'?BREAKOUT_WALL_DESC:BREAKOUT_ZONE_DESC;
-  function switchSurface(s){setSurface(s);setPresetId('custom');setPartialDepth(false);if(s==='wall'){setRestrictedZones(['6']);setBreakoutZones(['8']);}else{setRestrictedZones(['2']);setBreakoutZones(['1']);}}
+  function switchSurface(s){setSurface(s);setPresetId('custom');setPartialDepth(false);if(s==='pairs')return;if(s==='wall'){setRestrictedZones(['6']);setBreakoutZones(['8']);}else{setRestrictedZones(['2']);setBreakoutZones(['1']);}}
   const [added,setAdded]=useState('');
   function choosePreset(p){
     setPresetId(p.id);
@@ -7154,6 +7209,7 @@ function BreakoutSquash({setSession}){
   const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   function buildTask(){
+    if(isPairs)return brkPairSteps(patternPairs,liveTargets,tier,shotLimit).join(' ');
     const presetLabel=presetId==='egyptian'?'Egyptian 3/4 Court — ':'';
     const base=`${presetLabel}Both players restricted to ${surface==='wall'?'front wall':'Checkerboard floor'} zone${restrictedZones.length>1?'s':''} ${restrictedZones.join('/')||'—'} (${restrictedZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}). Either player may, at any point, play ONE breakout shot out of the restricted zone into zone${breakoutZones.length>1?'s':''} ${breakoutZones.join('/')||'—'} (${breakoutZones.map(z=>zoneDesc(z)).join(' / ')||'none set'}).`;
     if(tier==='1'){
@@ -7165,13 +7221,19 @@ function BreakoutSquash({setSession}){
     const bb=Number(breakoutBonus)||0,db=Number(defenceBonus)||0;
     const bbLine=bb>0?` Breakout player wins within the window = +${bb} bonus on top of the point (reward for taking the risk).`:'';
     const dbLine=db>0?` Opponent successfully prevents the breakout player from converting = +${db} bonus on top of the point (reward for the defensive read/effort).`:'';
+    if(isPairs){
+      const head='Rally win = +1. A shot outside the pattern that matches no breakout target = rally lost.';
+      const bbP=bb>0?` Breakout converted = +${bb} bonus on top of the point.`:'';
+      const dbP=db>0?` Opponent prevents the conversion = +${db} bonus on top of the point.`:'';
+      return tier==='1'?`${head} After the opponent plays the ball back onto a pattern pair, the breakout player must win with the very next shot or lose the point.${bbP}${dbP}`:`${head} Breakout player fails to win within their own ${shotLimit} shots = point to the opponent.${bbP}${dbP}`;
+    }
     if(tier==='1')return `Normal rally scoring. Breakout pressure triggered = win the point with the very next shot for the point.${bbLine} Fail to finish with that next shot after the opponent restores the restricted zone = automatic loss of the point to the opponent.${dbLine}`;
     return `Normal rally scoring. Breakout pressure triggered on landing = win the point within the breakout player's own next ${shotLimit} shots.${bbLine} Breakout player fails to convert within their own ${shotLimit} shots = automatic loss of the point to the opponent.${dbLine}`;
   }
   function addToSession(){
     if(typeof setSession!=='function')return;
     const presetTitleTag=presetId==='egyptian'?' (Egyptian 3/4 Court)':'';
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${surface==='wall'?'Wall':'Floor'} — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${isPairs?'Pairs':surface==='wall'?'Wall':'Floor'} — ${tier==='1'?'Tier 1: Breakout & Return':`Tier 2: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:isPairs?'Checkerboard Pair Rally':'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:isPairs?'The pattern keeps the rally stable and predictable; the breakout is a deliberate change of pattern that has to be converted quickly. Players learn when changing the pattern is worth the risk and when it is not (education of intention). The opponent learns to read the change and survive it.':tier==='1'?'Creates a genuine escape decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:isPairs?'Let players discover when to break out; do not prescribe it. If nobody breaks out, add a breakout target, lengthen the window or raise the breakout bonus. If breakouts are converted too easily, shorten the window or remove a target.':tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:isPairs?'Change the pattern only when you can finish it.':tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:tier==='1'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:tier==='1'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -7204,11 +7266,31 @@ function BreakoutSquash({setSession}){
     <div className="brkWrap">
       <div className="brkSection">
         <div className="brkLabel">Breakout surface</div>
-        <div className="brkChips"><div role="button" tabIndex={0} className={surface==='floor'?'brkChip on':'brkChip'} onClick={()=>switchSurface('floor')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('floor');}}>Floor breakout (zones 1–4)</div><div role="button" tabIndex={0} className={surface==='wall'?'brkChip on':'brkChip'} onClick={()=>switchSurface('wall')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('wall');}}>Wall breakout (front wall 5–8)</div></div>
-        <p className="brkHint">{surface==='wall'?'Both players must hit a front-wall zone; break out by hitting a different front-wall zone (e.g. play into 6, break out into 8), then finish within your shot count.':'Both players are restricted to a floor zone; break out into a different floor zone, then finish under pressure.'}</p>
+        <div className="brkChips"><div role="button" tabIndex={0} className={surface==='floor'?'brkChip on':'brkChip'} onClick={()=>switchSurface('floor')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('floor');}}>Floor breakout (zones 1–4)</div><div role="button" tabIndex={0} className={surface==='wall'?'brkChip on':'brkChip'} onClick={()=>switchSurface('wall')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('wall');}}>Wall breakout (front wall 5–8)</div><div role="button" tabIndex={0} className={isPairs?'brkChip on':'brkChip'} onClick={()=>switchSurface('pairs')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('pairs');}}>Checkerboard pairs (wall → floor)</div></div>
+        <p className="brkHint">{isPairs?'Both players play a Checkerboard pair (front-wall zone → floor zone). Break out by changing the pattern into a nominated target, then finish within your shot count.':surface==='wall'?'Both players must hit a front-wall zone; break out by hitting a different front-wall zone (e.g. play into 6, break out into 8), then finish within your shot count.':'Both players are restricted to a floor zone; break out into a different floor zone, then finish under pressure.'}</p>
       </div>
       <div className="brkSection">
-        <div className="brkLabel">1. Zone pairing</div>
+        <div className="brkLabel">{isPairs?'1. Pattern and breakout':'1. Zone pairing'}</div>
+        {isPairs&&<>
+          <div className="brkChips">{BRK_PAIR_PRESETS.map(pr=><div key={pr.id} role="button" tabIndex={0} className={pairPreset===pr.id?'brkChip on':'brkChip'} onClick={()=>choosePairPreset(pr)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePairPreset(pr);}}>{pr.label}</div>)}</div>
+          <p className="brkHint">{(BRK_PAIR_PRESETS.find(pr=>pr.id===pairPreset)||{}).note||''}</p>
+          <div style={{marginTop:12}}>
+            <div className="brkLabel">Pattern pair(s) — front-wall zone → floor zone</div>
+            <div className="brkZoneGrid">{BRK_OPEN_PAIRS.map(pr=><div key={'pp'+pr} role="button" tabIndex={0} className={patternPairs.includes(pr)?'brkZoneBtn restrictedOn':'brkZoneBtn'} onClick={()=>togglePattern(pr)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')togglePattern(pr);}}>[{pr}]</div>)}</div>
+            <p className="brkHint">Only pairs that can happen in open play are shown: only [8-1] and [7-2] reach the front court.</p>
+          </div>
+          <div style={{marginTop:12}}>
+            <div className="brkLabel">Breakout target(s) — another pair</div>
+            <div className="brkZoneGrid">{BRK_OPEN_PAIRS.map(pr=>{const off=brkTargetOverlaps(pr,patternPairs);return <div key={'tp'+pr} role="button" tabIndex={off?-1:0} aria-disabled={off} className={liveTargets.includes(pr)?'brkZoneBtn on':'brkZoneBtn'} style={off?{opacity:0.35,cursor:'default'}:undefined} onClick={()=>{if(!off)togglePairTarget(pr);}} onKeyDown={ev=>{if(!off&&(ev.key==='Enter'||ev.key===' '))togglePairTarget(pr);}}>[{pr}]</div>;})}</div>
+            <div className="brkLabel" style={{marginTop:10}}>…or any front-wall zone into a floor zone</div>
+            <div className="brkZoneGrid">{BRK_FLOOR_TARGETS.map(t=>{const off=brkTargetOverlaps(t,patternPairs);return <div key={t} role="button" tabIndex={off?-1:0} aria-disabled={off} className={liveTargets.includes(t)?'brkZoneBtn on':'brkZoneBtn'} style={off?{opacity:0.35,cursor:'default'}:undefined} onClick={()=>{if(!off)togglePairTarget(t);}} onKeyDown={ev=>{if(!off&&(ev.key==='Enter'||ev.key===' '))togglePairTarget(t);}}>Floor {t.slice(1)}<br/>{BREAKOUT_ZONE_DESC[t.slice(1)]}</div>;})}</div>
+            <div className="brkLabel" style={{marginTop:10}}>…or a front-wall zone, any landing</div>
+            <div className="brkZoneGrid">{BRK_WALL_TARGETS.map(t=>{const off=brkTargetOverlaps(t,patternPairs);return <div key={t} role="button" tabIndex={off?-1:0} aria-disabled={off} className={liveTargets.includes(t)?'brkZoneBtn on':'brkZoneBtn'} style={off?{opacity:0.35,cursor:'default'}:undefined} onClick={()=>{if(!off)togglePairTarget(t);}} onKeyDown={ev=>{if(!off&&(ev.key==='Enter'||ev.key===' '))togglePairTarget(t);}}>Wall {t.slice(1)}<br/>{(BREAKOUT_WALL_DESC[t.slice(1)]||'').replace('Front wall ','')}</div>;})}</div>
+            <p className="brkHint">Targets that the pattern already covers are greyed out.</p>
+          </div>
+          <p className="brkHint">Pattern: {patternPairs.length?patternPairs.map(pr=>'['+pr+']').join(' · '):'—'} · Breakout: {liveTargets.length?liveTargets.map(t=>t[0]==='F'?'floor '+t.slice(1):t[0]==='W'?'wall '+t.slice(1):'['+t+']').join(' · '):'—'}</p>
+        </>}
+        {!isPairs&&<>
         {surface==='floor'&&<><div className="brkChips">{BREAKOUT_ZONE_PRESETS.map(p=><div key={p.id} role="button" tabIndex={0} className={presetId===p.id?'brkChip on':'brkChip'} onClick={()=>choosePreset(p)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')choosePreset(p);}}>{p.label}</div>)}</div>
         <p className="brkHint">{BREAKOUT_ZONE_PRESETS.find(p=>p.id===presetId)?.note||''}</p></>}
         <div style={{marginTop:12}}>
@@ -7224,12 +7306,13 @@ function BreakoutSquash({setSession}){
           <div role="button" tabIndex={0} className={partialDepth?'brkDepthBtn on':'brkDepthBtn'} onClick={()=>setPartialDepth(v=>!v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setPartialDepth(v=>!v);}}>{partialDepth?'✓ ':''}Limit zone 3/4 to short-line-to-service-box depth (3/4 court, not full back wall)</div>
         </div>}
         <p className="brkHint">Restricted: {restrictedLabel} · Breakout target: {breakoutLabel}</p>
+        </>}
       </div>
       <div className="brkSection">
         <div className="brkLabel">2. Tier</div>
         <div className="brkTierRow">
-          <div role="button" tabIndex={0} className={tier==='1'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('1')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('1');}}>Tier 1 — Breakout & Return<span>One-shot finish only if opponent restores the restricted zone</span></div>
-          <div role="button" tabIndex={0} className={tier==='2'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>Tier 2 — Nominated Zone<span>Land it in the target zone, then win within N shots</span></div>
+          <div role="button" tabIndex={0} className={tier==='1'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('1')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('1');}}>Tier 1 — Breakout & Return<span>{isPairs?'One-shot finish only if the opponent plays back onto the pattern':'One-shot finish only if opponent restores the restricted zone'}</span></div>
+          <div role="button" tabIndex={0} className={tier==='2'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>Tier 2 — Nominated Zone<span>{isPairs?'Play it into a target, then win within N shots':'Land it in the target zone, then win within N shots'}</span></div>
         </div>
         {tier==='2'&&<div style={{marginTop:10}}>
           <div className="brkLabel">Shot-count window</div>
@@ -7248,13 +7331,13 @@ function BreakoutSquash({setSession}){
           <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'db'+n} role="button" tabIndex={0} className={defenceBonus===n?'brkChip on':'brkChip'} onClick={()=>setDefenceBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDefenceBonus(n);}}>+{n}</div>)}</div>
         </div>
       </div>
-      <div className="brkBox"><strong>Task / rules preview</strong><p>{buildTask()}</p></div>
+      <div className="brkBox"><strong>Task / rules preview</strong>{isPairs?<ol style={{margin:0,paddingLeft:'20px',color:'#dbe6f2',lineHeight:1.45}}>{brkPairSteps(patternPairs,liveTargets,tier,shotLimit).map((x,i)=><li key={i}>{x}</li>)}</ol>:<p>{buildTask()}</p>}</div>
       <div className="brkBox"><strong>Scoring preview</strong><p>{buildScoring()}</p></div>
 
       <UniversalModifierEngine title="Universal Modifiers"/>
 
       <div className="brkAddRow">
-        <button className="primaryBtn" onClick={addToSession} disabled={restrictedZones.length===0||breakoutZones.length===0}>Add To Session</button>
+        <button className="primaryBtn" onClick={addToSession} disabled={isPairs?(patternPairs.length===0||liveTargets.length===0):(restrictedZones.length===0||breakoutZones.length===0)}>Add To Session</button>
         {added&&<span className="brkAdded">Added: {added}</span>}
       </div>
     </div>
@@ -8782,7 +8865,7 @@ function cbRandomFrom(pool,avoid){
 // e.g. [5-4] + [8-1]  ↔  [6-3] + [7-2]
 const CB_MIRROR_MAP={'5':'6','6':'5','7':'8','8':'7','1':'2','2':'1','3':'4','4':'3'};
 function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=>CB_MIRROR_MAP[d]||d);}
-// Front-floor landings (1=front-right, 2=front-left) are only sensible as a boast off
+// Front-floor landings (1=front-left, 2=front-right) are only sensible as a boast off
 // the opposite side wall: [8-1] and [7-2]. A high front-wall shot can't sit in the front
 // floor in OPEN play — but these patterns ARE viable in constraint games (ATL/BTL), so
 // this is a non-blocking warning only, and ATL_CB_ZONE_OPTIONS must keep them.
@@ -25350,7 +25433,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Tin War',sub:'Games Library',kw:'tin war height ladder climb',screen:'games',classId:'tinwar'},
   {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
   {label:'Shot Bonus Rally',sub:'Games Library · Standalone',kw:'shot bonus rally repetition finish tactical live tally zone restriction affordance straight drop central corridor volley boast',screen:'gamesLibrary'},
-  {label:'Breakout Squash',sub:'Games Library · Standalone',kw:'breakout squash restricted zone escape egyptian half court nominated zone shot limit pressure',screen:'games',classId:'breakout'},
+  {label:'Breakout Squash',sub:'Games Library · Standalone',kw:'breakout squash restricted zone escape egyptian half court nominated zone shot limit pressure checkerboard pairs pattern wall floor change of pattern',screen:'games',classId:'breakout'},
   {label:'Press Call',sub:'Games Library · Standalone',kw:'press call cash in advantage shot clock self call coach called opponent called finish',screen:'games',classId:'presscall'},
   {label:'Patience → Urgency',sub:'Games Library · eight timed-phase games',kw:'patience urgency rally band timed phases blue red signal finish window time band games',screen:'games',classId:'patienceurgency'},
   {label:'Shared Patience',sub:'Patience → Urgency · entry game',kw:'shared patience hold rally open after signal',screen:'games',classId:'patienceurgency'},
