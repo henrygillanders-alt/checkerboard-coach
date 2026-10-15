@@ -1,3 +1,5 @@
+// v821: universal modifier 'No Non-Functional Crosscourts' now carries the coach's court-tested Onside rule (feet, not steps); constraint only by default
+// v820: S&L — win N in a row on a challenged ladder/snake without showing it and you climb/escape anyway (anti-throwing, coach 13 Oct); forfeit markers remapped on roster change
 // v819: Power Driver revised from the coach's build note — kill by second bounce, one-player option, ordered/any-order cycles, serve excluded, no bonus stacking, Shots links, reset, P23 attribution
 // v818: Power Driver — Penetrating Drive (9 games), Kill (9 games) and Drive or Kill; Games Library family, All Games list, Match Problem Index links
 // v817: Breakout pairs — a pattern ball volleyed anywhere plays on; the volley itself returns to the pattern or is the breakout (short-line exception removed)
@@ -337,7 +339,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v819 Power Driver Revised';
+const APP_VERSION='v821 Onside Modifier';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -894,7 +896,8 @@ const CONSTRAINT_BONUS_POINTS={
   'Front + Back':'+2',
   'Three Shot Families':'+3',
   'Opposite Solution':'+2',
-  'Random Diversity Card':'+2'
+  'Random Diversity Card':'+2',
+  'No Non-Functional Crosscourts':'constraint only' /* v821: breach loses the rally (Onside rule); a coach-set bonus pays per onside crosscourt */
 };
 const MODIFIER_SCORE_CHOICES=['constraint only','+1','+2','+3','+4','+5'];
 function defaultModifierScore(layer){return CONSTRAINT_BONUS_POINTS[layer]||'constraint only';}
@@ -2205,7 +2208,7 @@ const TACTICAL_OVERLAYS = [
   {category:'Pressure', title:'Pressing Length', rule:'1. A straight drive earns the bonus when its first bounce is behind the back line of the service box and the ball bounces a second time before it reaches the back wall. 2. If the opponent volleys it or plays it after one bounce, no bonus and no penalty: the ball never showed what it would do. 3. A straight drive that reaches the back wall is still a good shot. It holds the rally and gives you time. The bonus is only for the drive that takes time away.', coach:'Your straight drive has two jobs and they are different shots. Murray, James, Perš, Mandeljc and Vučković (2018, Journal of Sports Sciences 36, 1415-1422) coded elite drives as reaching the back wall or not and found the split separates a holding drive (maintain stability) from a pressing drive. Their 2019 follow-up (Frontiers in Psychology 10, 1036) adds that a drive can also press by being hit hard enough to reach the back wall with little time, so the back-wall check is the visible marker of pressing, not the only route to it. This overlay rewards the visible one because both players can see it. Score only: pace, height and target stay with the player.', pairings:['Working Length','Tiger','Backhand Half Finish']},
   {category:'Pressure', title:'Opponent Moving Forward', rule:'Exploit the opponent travelling forward by changing length or lifting behind them.', coach:'Develops manipulation of opponent momentum rather than hitting into their movement.', pairings:['Owl','Dolphin']},
   {category:'Tempo', title:'T Challenge', rule:'Player must re-establish the T before the next attacking opportunity counts.', coach:'Keeps central control honest under pressure and rewards recovery quality.', pairings:['Wolf','Elephant']},
-  {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'A crosscourt only counts if it makes the opponent move more than 1 step \u2014 rather than being played by default or out of habit.', coach:'Ask: did that crosscourt move them more than a step? If not, it was non-functional.', pairings:['Route Breaker','Attack Only On Advantage']},
+  {category:'Shot Selection', title:'No Non-Functional Crosscourts', rule:'1. Crosscourt only when your opponent is onside: both their feet on your side of the half-court line (imagine it running on to the front wall). 2. Crosscourt while they have one or both feet offside and you lose the rally. 3. The receiver calls the feet. 4. A boast does not count as a crosscourt. 5. If a bonus is set for this rule, it is earned for every onside crosscourt.', coach:'The coach’s court-tested Onside Offside rule (3 Oct): simple to understand and to police, because everyone can see the feet. Use it on any game where juniors cross by default. For the full progression, play the Onside Offside series (five games).', pairings:['Route Breaker','Attack Only On Advantage']},
   {category:'Volley', title:'Volley Before Short Line', rule:'Player looks to intercept and volley any loose ball before it crosses the short line, rather than letting it travel into the back of the court.', coach:'Watch for early racquet preparation and a positive step in to take the ball on the rise.', pairings:['Volley Opportunity','Racquet Above Wrist']},
   {category:'Length', title:'Bounce Inside Tramline', rule:'Drives must bounce inside the tramline \u2014 the channel between the side wall and the service box line. Crosscourts also count if they land in a band of the same width across the back of the court: a crosscourt that finishes tight along the back is a good ball even though it is away from the side wall. Straight shots must still find the side channel \u2014 to count, rewarding tight attacking length over loose width.', coach:'Watch where the ball actually bounces, not just the general direction of the shot.', pairings:['Width Before Attack','Hit Through The Ball']},
   {category:'Volley', title:'Volley In Front Of Short Line', rule:'Player must take the ball as a volley while it is still in front of the short line (the front half of the court), rather than letting it travel to the back.', coach:'Watch for an early step in and racquet preparation to take the ball on the rise in the front court.', pairings:['Volley Opportunity','Volley Finish In Front Of Short Line']},
@@ -14887,6 +14890,13 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   },[challengeAll,challengeSquares]);
   const chFor=(sq)=>challengeSquares[sq]||challengeAll||'';
   const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
+  /* v820 (coach, 13 Oct road test): opponents tinned the ball on purpose so a player on a challenged
+     ladder won rallies without ever showing the challenge — throwing cost them only the rally and kept
+     the rival stuck (P22: declining to compete was cheaper than competing). Price, not prohibition:
+     after showLimit wins in a row without showing it, the player climbs the ladder anyway (coach:
+     "climbs to the top"); the same on a challenged snake — they escape. {rosterIdx:{sq, n}} */
+  const [unshown,setUnshown]=useState(()=>seed?(seed.unshown||{}):{});
+  const showLimit=Math.max(2,Number(settings&&settings.showLimit)||3);
   useEffect(()=>{
     /* A mid-game change to who's on this court (late arrival, attendance edit,
        Playing/Not-playing tap) must never re-deal the board. The component no
@@ -14911,6 +14921,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     setQueue([...survivedQueue,...newcomers]);
     setPending(prev=>remap(prev));
     setPendingChallenge(prev=>remap(prev));
+    setForfeited(prev=>remap(prev)); /* v820: was not remapped — a late arrival could move a forfeit marker to another player */
+    setUnshown(prev=>remap(prev));
     setWinner(w=>w==null?null:mapIdx(w));
     setAwaitingConfirm(null);
     setUndoStack([]);
@@ -14920,8 +14932,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [undoStack,setUndoStack]=useState([]);
   const [rallyWins,setRallyWins]=useState({});   /* every point won, per player */
 
-  function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge},forfeited:{...forfeited}};}
-  function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setForfeited(s.forfeited||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
+  function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge},forfeited:{...forfeited},unshown:{...unshown}};}
+  function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setForfeited(s.forfeited||{});setUnshown(s.unshown||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
 
   function applyMove(pos){if(pos>size){return settings.exactFinish?size-(pos-size):size;}return pos;}
   useEffect(()=>{
@@ -14931,7 +14943,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     if(ladderAutoRecordGame(key,'Snakes & Ladders'+(courtLabel?' \u2014 '+courtLabel:''),names.map(n=>({player:n,wins:rallyWins[n]||0}))))autoKeyRef.current=key;
   },[winner]);
 
-  function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setForfeited({});setUndoStack([]);}
+  function resetPositions(){setRallyWins({});setRoster(players.map(n=>({name:n,pos:1})));setQueue(players.map((_,i)=>i));setWinner(null);setRevealed(new Set());setEvents([]);setStreak({holder:null,n:0});setPending({});setForfeited({});setUnshown({});setUndoStack([]);}
   function newBoard(){setBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));resetPositions();}
 
   function playRally(slot,{forfeitPending=false,snakePinned=false,snakeEscaped=false}={}){
@@ -14946,7 +14958,15 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     const nextPending={...pending};
     const nextPendingChallenge={...pendingChallenge};
     const nextForfeited={...forfeited};
+    const nextUnshown={...unshown};
+    delete nextUnshown[lIdx];
+    const prevN=(unshown[wIdx]&&unshown[wIdx].sq===W.pos)?unshown[wIdx].n:0;
+    let keepUnshown=false,autoClimb=false;
     if(snakeEscaped)ev.push(`${W.name} shows the challenge and escapes the snake at ${W.pos}`);
+    if(snakePinned){
+      if(prevN+1>=showLimit){snakePinned=false;ev.push(`${W.name} wins ${showLimit} in a row on the snake at ${W.pos} without showing the challenge — escapes anyway`);}
+      else{nextUnshown[wIdx]={sq:W.pos,n:prevN+1};keepUnshown=true;}
+    }
 
     /* A challenge written after a player landed still applies: if the winner is
        standing on a challenged ladder, arm it now rather than only at landing. */
@@ -14955,8 +14975,12 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       nextPendingChallenge[wIdx]=chFor(W.pos);
     }
 
+    if(forfeitPending&&nextPending[wIdx]!=null&&nextPendingChallenge[wIdx]){
+      if(prevN+1>=showLimit){forfeitPending=false;autoClimb=true;}
+      else{nextUnshown[wIdx]={sq:W.pos,n:prevN+1};keepUnshown=true;}
+    }
     if(snakePinned){
-      ev.push(`${W.name} wins the rally but stays pinned on the snake at ${W.pos} — win and show "${chFor(W.pos)||'the challenge'}" to escape`);
+      ev.push(`${W.name} wins the rally but stays pinned on the snake at ${W.pos} — win and show "${chFor(W.pos)||'the challenge'}" to escape (${showLimit-nextUnshown[wIdx].n} more win${showLimit-nextUnshown[wIdx].n===1?'':'s'} and it escapes anyway)`);
       reveal.add(W.pos);
     }else if(nextPending[wIdx]!=null){
       const top=nextPending[wIdx],fromSquare=W.pos;
@@ -14966,13 +14990,13 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
              player holds the square, and the ladder stays armed for another go.
              v808 (coach): in every mode — "if he keeps winning he deserves the
              rewards of challenging for the promotion". */
-          ev.push(`${W.name} wins the rally but the challenge wasn't shown — holds ${fromSquare}, the ladder stays armed`);
+          ev.push(`${W.name} wins the rally but the challenge wasn't shown — holds ${fromSquare}, the ladder stays armed (${showLimit-nextUnshown[wIdx].n} more win${showLimit-nextUnshown[wIdx].n===1?'':'s'} and it climbs anyway)`);
         }else{
           ev.push(`${W.name} won the rally but the challenge wasn't confirmed — ladder forfeited, stays on ${fromSquare}`);
           delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
         }
       }else{
-        ev.push(`${W.name} wins the climb · ${fromSquare}→${top}`);
+        ev.push(autoClimb?`${W.name} wins ${showLimit} in a row on the ladder without showing the challenge — climbs anyway · ${fromSquare}→${top}`:`${W.name} wins the climb · ${fromSquare}→${top}`);
         reveal.add(fromSquare);
         W.pos=top;
         delete nextPending[wIdx];delete nextPendingChallenge[wIdx];
@@ -15041,7 +15065,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     }
     if(nextForfeited[wIdx]!=null&&nextForfeited[wIdx]!==W.pos)delete nextForfeited[wIdx];
     if(nextForfeited[lIdx]!=null&&nextForfeited[lIdx]!==L.pos)delete nextForfeited[lIdx];
-    setRoster(next);setRevealed(reveal);setPending(nextPending);setPendingChallenge(nextPendingChallenge);setForfeited(nextForfeited);
+    if(!keepUnshown)delete nextUnshown[wIdx];
+    setRoster(next);setRevealed(reveal);setPending(nextPending);setPendingChallenge(nextPendingChallenge);setForfeited(nextForfeited);setUnshown(nextUnshown);
     if(ev.length)setEvents(prev=>[...ev,...prev].slice(0,6));
     if(W.pos>=size){setWinner(wIdx);return;}
     let newStreak={holder:wIdx,n:streak.holder===wIdx?streak.n+1:1};
@@ -15067,13 +15092,13 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       onCourt:(winner==null&&queue.length>=2)?[roster[queue[0]].name,roster[queue[1]].name]:[],
       queueNames:queue.slice(2).map(i=>roster[i].name),
       winnerName:winner!=null?roster[winner].name:null,
-      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,forfeited:Object.fromEntries(Object.keys(forfeited).filter(k=>roster[k]).map(k=>[roster[k].name,forfeited[k]])),challengeSquares,challengeAll,
+      settings,streak,pending:pendingByName,pendingChallenge:pendingChallengeByName,forfeited:Object.fromEntries(Object.keys(forfeited).filter(k=>roster[k]).map(k=>[roster[k].name,forfeited[k]])),unshown:Object.fromEntries(Object.keys(unshown).filter(k=>roster[k]).map(k=>[roster[k].name,unshown[k]])),challengeSquares,challengeAll,
       courtLabel,gameKey};
     if(onState)onState(payload);
     if(!project)return;
     writeLivePlayerRoom(roomId||getPersistentLiveRoomId(),'snakesladders',payload);
     if(alsoRoomId)writeLivePlayerRoom(alsoRoomId,'snakesladders',payload);
-  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,forfeited,challengeSquares,alsoRoomId,gameKey]);
+  },[project,roster,board,queue,winner,revealed,courtLabel,roomId,settings,streak,pending,pendingChallenge,forfeited,unshown,challengeSquares,alsoRoomId,gameKey]);
 
   return <div className={scoring?'slCourt slCourtScoring':'slCourt'}>
     <style>{`
@@ -15135,7 +15160,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       <p>Did <strong>{roster[awaitingConfirm.idx].name}</strong> demonstrate the attached challenge: <em>"{awaitingConfirm.text}"</em>?</p>
       <div className="slChallengeConfirmBtns">
         <button type="button" className="primaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakeEscaped:true}:{});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✓ Yes — escapes the snake':'✓ Yes — complete the climb'}</button>
-        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{awaitingConfirm.snake?'✗ Not yet — stays pinned':'✗ Not yet — stays put, ladder still armed'}</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{playRally(awaitingConfirm.slot,awaitingConfirm.snake?{snakePinned:true}:{forfeitPending:true});setAwaitingConfirm(null);}}>{(()=>{const ix=awaitingConfirm.idx,P=roster[ix],n=(unshown[ix]&&unshown[ix].sq===P.pos?unshown[ix].n:0)+1;if(n>=showLimit)return awaitingConfirm.snake?'✗ Not shown — win '+n+' in a row: escapes anyway':'✗ Not shown — win '+n+' in a row: climbs anyway';return awaitingConfirm.snake?'✗ Not yet — stays pinned ('+(showLimit-n)+' more win'+(showLimit-n===1?'':'s')+' and it escapes anyway)':'✗ Not yet — stays put, ladder still armed ('+(showLimit-n)+' more win'+(showLimit-n===1?'':'s')+' and it climbs anyway)';})()}</button>
       </div>
     </div>}
     {winner==null&&queue.length>=2&&!awaitingConfirm&&<div style={{display:'flex',gap:'10px',flexWrap:'wrap',margin:'8px 0'}}>
@@ -15144,9 +15169,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
         const ch=chFor(P.pos);
         let tag=null,detail=null;
         if(forfeited[pi]===P.pos&&board.ladders[P.pos]!=null){tag='🪜 Ladder forfeited';detail='Lost a rally while waiting — the next win moves on past it';}
-        else if(pending[pi]!=null){tag='⏳ Armed ladder — climbs to '+pending[pi];detail=pendingChallenge[pi]?'Win AND show: '+pendingChallenge[pi]:'Win the rally to climb';}
+        else if(pending[pi]!=null){const un=(unshown[pi]&&unshown[pi].sq===P.pos)?unshown[pi].n:0;tag='⏳ Armed ladder — climbs to '+pending[pi];detail=pendingChallenge[pi]?'Win AND show: '+pendingChallenge[pi]+' — or win '+showLimit+' in a row ('+un+' so far)':'Win the rally to climb';}
         else if(board.ladders[P.pos]!=null){tag='🪜 On a ladder to '+board.ladders[P.pos];detail=ch?'Win AND show: '+ch+' — lose and it is forfeited':'Win the next rally to climb';}
-        else if(board.snakes[P.pos]!=null){tag='🐍 On a snake to '+board.snakes[P.pos];detail=ch?'Win & show to escape: '+ch+' — lose and it bites':'Lose here and it bites';}
+        else if(board.snakes[P.pos]!=null){const un=(unshown[pi]&&unshown[pi].sq===P.pos)?unshown[pi].n:0;tag='🐍 On a snake to '+board.snakes[P.pos];detail=ch?'Win & show to escape: '+ch+' — or win '+showLimit+' in a row ('+un+' so far) — lose and it bites':'Lose here and it bites';}
         return <div key={pi} style={{flex:'1',minWidth:'220px',background:'#0c1626',border:'1px solid '+(tag?(String(tag).startsWith('🐍')?'#7a3d3d':'#2f5c46'):'#223044'),borderRadius:'12px',padding:'10px 13px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',gap:'8px'}}><strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>{P.name}</strong><span style={{color:'#6eaac8',fontWeight:800,fontSize:'1.05rem'}}>Sq {P.pos}</span></div>
           {tag?<div style={{marginTop:'3px'}}><span style={{color:String(tag).startsWith('🐍')?'#c98a8a':'#8fbfa4',fontWeight:800,fontSize:'0.88rem'}}>{tag}</span><span style={{display:'block',color:'#8aa0b6',fontSize:'0.8rem'}}>{detail}</span></div>
@@ -15208,7 +15233,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
   // only — the live board, court hand-offs and active court are never restored.
   const SL_SETUP_KEY='cbSnakesLaddersSetupV1';
-  const SL_DEFAULT_SETTINGS={size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[],fateMode:'winNext'};
+  const SL_DEFAULT_SETTINGS={size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[],fateMode:'winNext',showLimit:3};
   const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(SL_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
@@ -15554,7 +15579,9 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         {setupChallenge&&<button type="button" className="secondaryBtn" onClick={()=>setSetupChallenge('')}>Clear</button>}
       </div>
       {/* v809: the coach's rule (4 Oct) replaces the old "Chance is gone / keep trying" choice */}
-      <p className="mutedText" style={{margin:'10px 0 0',fontSize:'0.85rem'}}><b>Ladder:</b> win <b>and</b> show the challenge to climb. Win without showing it — stay on the ladder and keep trying. Lose while waiting — the ladder is forfeited. <b>Snake:</b> win and show it to escape; win without showing it — stay pinned; lose — it bites.</p>
+      <p className="mutedText" style={{margin:'10px 0 0',fontSize:'0.85rem'}}><b>Ladder:</b> win <b>and</b> show the challenge to climb. Win without showing it — stay on the ladder and keep trying; win {Number(settings.showLimit)||3} in a row without showing it and climb anyway. Lose while waiting — the ladder is forfeited. <b>Snake:</b> win and show it to escape; win without showing it — stay pinned, and {Number(settings.showLimit)||3} wins in a row escape anyway; lose — it bites.</p>
+      <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'8px 0 0'}}><span className="mutedText" style={{fontSize:'0.85rem',fontWeight:700}}>Wins in a row without showing the challenge, then climb or escape anyway</span><PointStepper value={Number(settings.showLimit)||3} min={2} max={6} sign="" onChange={v=>setSettings(s=>({...s,showLimit:v}))}/></div>
+      <p className="mutedText" style={{margin:'4px 0 0',fontSize:'0.8rem'}}>This stops opponents losing rallies on purpose to keep a player stuck on a challenged square.</p>
       </>}
     </div>
     <button type="button" onClick={()=>setShowBonuses(!showBonuses)} style={{width:'100%',textAlign:'left',background:'#0c1626',border:'1px solid #223044',borderRadius:'12px',padding:'13px 15px',marginBottom:'10px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
@@ -28141,9 +28168,10 @@ function slSeedFromPayload(p){
   const pendingByIdx={};Object.keys(p.pending||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)pendingByIdx[i]=p.pending[nm];});
   const pcByIdx={};Object.keys(p.pendingChallenge||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)pcByIdx[i]=p.pendingChallenge[nm];});
   const ffByIdx={};Object.keys(p.forfeited||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)ffByIdx[i]=p.forfeited[nm];});
+  const unByIdx={};Object.keys(p.unshown||{}).forEach(nm=>{const i=idxOf(nm);if(i>=0)unByIdx[i]=p.unshown[nm];});
   const queue=[...onCourtIdx,...queueIdx];
   names.forEach((_,i)=>{if(!queue.includes(i))queue.push(i);});
-  return {board:p.board||{snakes:{},ladders:{}},roster,queue,winner:winnerIdx>=0?winnerIdx:null,revealed:p.revealed||[],streak:p.streak||{holder:null,n:0},pending:pendingByIdx,pendingChallenge:pcByIdx,forfeited:ffByIdx,challengeSquares:p.challengeSquares||{},challengeAll:p.challengeAll||'',gameKey:p.gameKey||'',v:Date.now()};
+  return {board:p.board||{snakes:{},ladders:{}},roster,queue,winner:winnerIdx>=0?winnerIdx:null,revealed:p.revealed||[],streak:p.streak||{holder:null,n:0},pending:pendingByIdx,pendingChallenge:pcByIdx,forfeited:ffByIdx,unshown:unByIdx,challengeSquares:p.challengeSquares||{},challengeAll:p.challengeAll||'',gameKey:p.gameKey||'',v:Date.now()};
 }
 function SnakesLaddersCourtScorer({court,host,mirror}){
   useWakeLock();
