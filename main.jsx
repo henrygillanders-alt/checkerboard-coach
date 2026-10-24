@@ -1,3 +1,6 @@
+// v836: START HERE page 'What Checkerboard Squash Is For' (coach's evolving doc, first draft) — shown on first open per device, top tile on Home; Breakout coach's note regrouped under What / Why / How / Use it when
+// v835: Breakout coach's note gains 'The research behind it' (small-sided games: Fenoglio 2003 in Renshaw et al. 2010; Davids, Araújo, Correia & Vilar 2013; Impellizzeri et al. 2006) — coach-approved 21 Oct
+// v834: Breakout Game 4 (floor) — 'After the breakout, play in': Step 1 breakout zone only, Step 2 both zones, Step 3 full court (coach, 21 Oct); out-of-area after the breakout loses and scores for the other player; shots suggestion follows that area
 // v833: Breakout coach's note at the top of the page (training and scoring rationale, coach-approved 21 Oct); 'after outside' bonus defaults to +3; Game 2 bonus labels match the note
 // v832: Breakout Game 2 (Defender's Choice) rebuilt to the coach's rules of 21 Oct (constrained after the return, N shots to win, out-of-zone after the return loses and scores for the other player as if they won, one breakout per rally); shots-to-win stepper with a court-size default (front 1, Egyptian 2, full 3); default bonuses 3/3
 // v831: Breakout rules and scoring in the coach's words with Player A / Player B (coach approved 21 Oct); bonus chips (+0..+3) replaced by steppers 0–10
@@ -351,7 +354,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v833 Breakout Coach Note';
+const APP_VERSION='v836 Start Here';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -4157,6 +4160,91 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
     </div>
   </div>;
 }
+/* v836 (coach, 24 Oct): "What Checkerboard Squash Is For" — the first page coaches see.
+   Content mirrors the coach's evolving Claude Doc of the same name (the "Ideas still to consider"
+   list stays in the doc). Shown automatically the first time the app opens on a device. */
+const PURPOSE_SEEN_KEY='checkerboardPurposeSeenV1';
+function PurposeScreen({setScreen}){
+  useEffect(()=>{try{localStorage.setItem(PURPOSE_SEEN_KEY,'1');}catch{}},[]);
+  const B=({h,children})=><section className="purposeSection"><h2>{h}</h2>{children}</section>;
+  return <div className="page purposePage">
+    <style>{`
+.purposePage .pageTop h1{color:#eaf4fb;font-size:2.4rem!important;line-height:1.1!important}
+.purposeLead{color:#eaf4fb;font-size:1.2rem;font-weight:700;line-height:1.5;margin:4px 0 18px}
+.purposeSection{background:#0f1822;border:1px solid #223044;border-left:3px solid #2E6E8E;border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.purposeSection h2{color:#eaf4fb;margin:0 0 10px;font-size:1.15rem;font-weight:800}
+.purposeSection p{color:#c7d6e2;line-height:1.6;margin:0 0 9px;font-size:0.98rem}
+.purposeSection p:last-child{margin-bottom:0}
+.purposeSection ol,.purposeSection ul{margin:0;padding-left:22px;color:#c7d6e2}
+.purposeSection li{margin-bottom:7px;line-height:1.55}
+.purposeSection strong{color:#eaf4fb}
+.purposeQuestion{color:#9fd3f0!important;font-weight:800;font-size:1.1rem!important}
+.purposeWip{color:#8aa0b6;font-style:italic;margin:6px 0 22px}
+`}</style>
+    <div className="pageTop">
+      <div><h1>What Checkerboard Squash Is For</h1>
+        <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'10px'}}>
+          <button type="button" className="secondaryBtn" onClick={()=>setScreen('whyCLA')}>Why CLA? — the science in depth →</button>
+          <button type="button" className="secondaryBtn" onClick={()=>setScreen('rld')}>RLD — how close to match play →</button>
+        </div></div>
+      <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
+    </div>
+    <p className="purposeLead">Checkerboard Squash helps coaches teach squash through playing it. The coach changes the game, and the game teaches the player.</p>
+    <B h="A different approach">
+      <p className="purposeQuestion">Before you read on, ask yourself: how does a player actually learn a skill?</p>
+      <p>Most coaching never asks this question. This app is built on the answer.</p>
+      <p>Much of traditional coaching is passed down from coach to coach: the coach explains the right way, the player copies it, and repetition grooves it in. It does improve skill. But the research points to a more effective way, and it turns the traditional approach upside down.</p>
+      <p>Instead of the coach holding the answers and handing them over, the learning sits with the player. The coach designs the problem, the game sets the challenge, and the player discovers the solution. Skills learned this way hold up better under pressure, because they were built under pressure, in situations that look like real squash.</p>
+    </B>
+    <B h="The principles behind it">
+      <p>The app is built on the <strong>constraints-led approach</strong> (CLA): players learn best by solving real squash problems, and the coach’s job is to design those problems.</p>
+      <ol>
+        <li><strong>The game is the teacher.</strong> Players learn squash by playing problems that look like squash, not by rehearsing movements away from the game.</li>
+        <li><strong>Change the game, not the player.</strong> Coaches shape learning by changing the space, the rules or the scoring, so the problem draws out the skill. These changes are called constraints.</li>
+        <li><strong>Keep it real.</strong> Practice keeps what players use in matches: a real opponent, a moving ball and real decisions. Every activity is labelled for how close it is to match play.</li>
+        <li><strong>Variety builds adaptable players.</strong> The same feed, repeated, builds a narrow skill. Varied situations build skill that holds up under pressure.</li>
+        <li><strong>Players find their own solutions.</strong> There is rarely one correct way. Each player finds what works for their body and the situation, and the coach guides with questions.</li>
+        <li><strong>The score teaches.</strong> Points and bonuses reward good decisions, so playing to win means learning the right lessons.</li>
+        <li><strong>Simple for players, thought through for coaches.</strong> Rules are short enough for a 10-year-old; the reasoning and research sit in the coach’s notes.</li>
+      </ol>
+    </B>
+    <B h="Backed by evidence">
+      <p>These principles come from research in skill acquisition and sport science, not from opinion or tradition. The constraints-led approach is set out by Renshaw, Davids, Newcombe and Roberts (2019, <em>The Constraints-Led Approach: Principles for Sports Coaching and Practice Design</em>). The case for keeping practice close to the real game comes from work on representative learning design (Pinder, Davids, Renshaw and Araújo, 2011). Research on small-sided games shows how changing the space and the rules develops movement and decision-making together (Davids, Araújo, Correia and Vilar, 2013).</p>
+      <p>We are honest about the limits. Most of this research comes from other sports, squash-specific studies are few, and the evidence is stronger for some principles than others. Each game’s coach’s note names the research behind it and says plainly where the evidence is thin.</p>
+    </B>
+    <B h="What we develop in players">
+      <ol>
+        <li><strong>Decision makers under pressure.</strong> Games like Breakout and Snakes &amp; Ladders give players real choices with real consequences. The scoring rewards good decisions, not just winning rallies.</li>
+        <li><strong>Adaptable players.</strong> Every ball is different. We develop skill that adapts to the situation, rather than one grooved action repeated until it breaks under pressure.</li>
+        <li><strong>Problem solvers, not instruction takers.</strong> The game sets the problem and the player finds the answer. The coach asks more than they tell.</li>
+        <li><strong>Readers of the game.</strong> Players learn to pick up early information from the opponent and the ball, so they know when and where to move.</li>
+        <li><strong>Skill, fitness and fun together.</strong> Players learn while playing competitive games, with far more meaningful shots and decisions per minute than queuing for feeds.</li>
+        <li><strong>Composure and fair play.</strong> Players learn to reset between rallies, handle pressure, and make their own calls honestly.</li>
+        <li><strong>Every player at their own edge.</strong> Handicaps and adjustable rules let players of different standards play meaningful games against each other.</li>
+      </ol>
+    </B>
+    <B h="How the app helps the coach">
+      <ul>
+        <li><strong>Constraints:</strong> change the space, the rules or the scoring to create the problem you want players to solve.</li>
+        <li><strong>Scoring that teaches:</strong> bonus points reward the right decisions.</li>
+        <li><strong>Honest labels:</strong> every activity shows how closely it resembles match play (RLD 0–6).</li>
+        <li><strong>Rules for kids:</strong> short, simple steps on the player display.</li>
+        <li><strong>Coach’s notes:</strong> every game opens with <strong>What</strong> (the game and the problem it creates), <strong>Why</strong> (what it develops, with research where there is some), <strong>How</strong> (setting it up, progressions, adjusting on court) and a short <strong>Use it when</strong> line (the match problem it is for). The notes never tell players when to use an action: that is what the game lets them discover.</li>
+      </ul>
+    </B>
+    <B h="What it is not">
+      <ul>
+        <li><strong>Not anti-technique.</strong> Technique matters. It’s developed as the answer to real problems on court.</li>
+        <li><strong>Not a rejection of traditional practice.</strong> Feeding and solo work still have a place, clearly labelled for what they can and can’t carry over into matches.</li>
+      </ul>
+    </B>
+    <p className="purposeWip">Checkerboard Squash is a work in progress, tested on court every week.</p>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'30px'}}>
+      <button type="button" className="primaryBtn" onClick={()=>setScreen('home')}>Go to the app →</button>
+      <button type="button" className="secondaryBtn" onClick={()=>setScreen('whyCLA')}>Read Why CLA? →</button>
+    </div>
+  </div>;
+}
 function WhyCLAScreen({setScreen}){
   const sections=[
     {id:'d2-intro',title:'Introduction',blocks:[
@@ -6742,6 +6830,10 @@ ${homeGradedTileCss()}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
       {/* ── FOUNDATIONS — always on Home ── */}
+      <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('purpose')}>
+        <strong>START HERE</strong>
+        <p>What Checkerboard Squash is for · the principles behind it · what we develop in players</p>
+      </button>
       <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('whyCLA')}>
         <strong>WHY CLA?</strong>
         <p>Origins · principles · the science behind Checkerboard — the reason this app exists</p>
@@ -7201,6 +7293,7 @@ function BreakoutSquash({setSession}){
   const [tier,setTier]=useState('1');
   const [shotLimit,setShotLimitRaw]=useState(3);
   const [shotManual,setShotManual]=useState(false);
+  const [afterArea,setAfterArea]=useState('target');
   const setShotLimit=v=>{setShotManual(true);setShotLimitRaw(v);};
   const [breakoutBonus,setBreakoutBonus]=useState(3);
   const [defenceBonus,setDefenceBonus]=useState(3);
@@ -7212,7 +7305,11 @@ function BreakoutSquash({setSession}){
   const isPairs=surface==='pairs';
   /* v832 (coach, 21 Oct): shots to win follow the court size — front court only 1,
      Egyptian 3/4 court 2, full court 3. Follows the zones until the coach sets it by hand. */
-  const frontOnly=surface==='floor'&&restrictedZones.length>0&&restrictedZones.every(z=>z==='1'||z==='2');
+  /* v834 (coach, 21 Oct): Game 4 progressions — after the breakout play continues in the breakout zone only,
+     then in both zones, then full court. Shots-to-win follows the area played in after the breakout. */
+  const g4Floor=tier==='2'&&surface==='floor';
+  const afterZones=g4Floor?(afterArea==='target'?[...breakoutZones]:afterArea==='both'?[...new Set([...restrictedZones,...breakoutZones])].sort():['1','2','3','4']):restrictedZones;
+  const frontOnly=surface==='floor'&&afterZones.length>0&&afterZones.every(z=>z==='1'||z==='2');
   const shortCourt=surface==='floor'&&(presetId==='egyptian'||partialDepth);
   const shotSuggest=frontOnly?1:shortCourt?2:3;
   const shotWhy=frontOnly?'front court only':shortCourt?'Egyptian 3/4 court':'full court';
@@ -7256,7 +7353,11 @@ function BreakoutSquash({setSession}){
     if(surface==='floor'&&partialDepth&&backZonesInPlay)head.push('Back zones end at the back of the service box.');
     head.push(`Either player breaks out into ${T}. They are Player A.`);
     head.push('Only one breakout per rally.');
-    if(tier==='2')return brkLines([...head,`Player A must win within ${shots}, or lose the rally.`]);
+    if(tier==='2'){
+      if(surface!=='floor')return brkLines([...head,`Player A must win within ${shots}, or lose the rally.`]);
+      const area=afterArea==='full'?null:zAnd(afterZones);
+      return brkLines([...head,area?`After the breakout, play only in ${area}.`:'After the breakout, play full court.',`Player A must win within ${shots}, or lose the rally.`,...(area?[`Anyone who plays outside ${area} loses the rally.`]:[])]);
+    }
     if(tier==='1')return brkLines([...head,`Player B must return the ball to ${Ro}.`,'Player A must then win on the next shot, or lose the rally.']);
     if(tier==='1c')return brkLines([...head,
       'Player B can’t get it? Player A wins the rally.',
@@ -7279,6 +7380,7 @@ function BreakoutSquash({setSession}){
     }else if(tier==='2'){
       if(bb>0)L.push(`Player A wins in time = +${bb} to Player A.`);
       if(db>0)L.push(`Player A doesn’t = +${db} to Player B.`);
+      if(surface==='floor'&&afterArea!=='full')L.push('Playing outside after the breakout: the other player scores as if they won.');
     }else if(tier==='1'){
       if(bb>0)L.push(`Player A wins on the next shot = +${bb} to Player A.`);
       if(db>0)L.push(`Player A loses = +${db} to Player B.`);
@@ -7297,7 +7399,7 @@ function BreakoutSquash({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const presetTitleTag=presetId==='egyptian'?' (Egyptian 3/4 Court)':'';
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${isPairs?'Pairs':surface==='wall'?'Wall':'Floor'} — ${effTier==='1'?(isPairs?'1: Breakout & Return':'1: Restore or Lose'):effTier==='1c'?'2: Defender’s Choice':effTier==='1p'?'3: Play It Out':`${isPairs?'2':'4'}: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:isPairs?'Checkerboard Pair Rally':'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:isPairs?'The pattern keeps the rally stable and predictable; the breakout is a deliberate change of pattern that has to be converted quickly. Players learn when changing the pattern is worth the risk and when it is not (education of intention). The opponent learns to read the change and survive it.':tier==='1p'?'Removes the automatic loss after a restore, so a missed finish becomes a rally the breakout player must now survive, and the defender plays for a double bonus. Player A decides between forcing the winner and playing safe; Player B decides between restore and escape.':tier==='1c'?'After retrieving the breakout, the defender chooses: play outside the zones (the rally goes full court; safe, but only 1 point to win and a bonus to the breakout player if they win it) or play back into the zones (the rally stays constrained; the breakout player has a set number of shots to win, sized to the court; the defender wins a bonus whenever they win the rally from there). Playing outside after the return loses the rally and the other player scores as if they had won, so it can never be used to cap a loss. Gaming-audited with the coach, 21 Oct.':tier==='1'?'Creates a genuine breakout decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:isPairs?'Let players discover when to break out; do not prescribe it. If nobody breaks out, add a breakout target, lengthen the window or raise the breakout bonus. If breakouts are converted too easily, shorten the window or remove a target.':tier==='1p'?'Run after Defender’s Choice. With no automatic loss, restoring may become the obvious choice; keep the defence bonus low (+1 doubles to +2) and the capture bonus at +1 or +2 if escape should stay a live option. Debrief Player A: after the restore, did you force the winner or play safe, and why? Debrief Player B: what made the restore worth it?':tier==='1c'?'Run this after Restore or Lose. Shots to win follow the court size (front court only 1, Egyptian 3/4 court 2, full court 3); change it if the breakout player wins too easily or never. If defenders always play outside, raise the defender bonus; if they never do, raise the bonus for Player A after playing outside. Debrief the defender: why back in, or outside, on that one?':tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:isPairs?'Change the pattern only when you can finish it.':tier==='1p'?'Back in the zone? Only go for the winner if it’s on.':tier==='1c'?'Player B: back in if you can make it tight. Player A: make that hard.':tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:effTier!=='2'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:effTier!=='2'?4:5};
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${isPairs?'Pairs':surface==='wall'?'Wall':'Floor'} — ${effTier==='1'?(isPairs?'1: Breakout & Return':'1: Restore or Lose'):effTier==='1c'?'2: Defender’s Choice':effTier==='1p'?'3: Play It Out':`${isPairs?'2':'4'}: Nominated Zone (${shotLimit}-shot${g4Floor?(afterArea==='target'?', breakout zone only':afterArea==='both'?', both zones':', full court'):''})`}${presetTitleTag}`,category:'Breakout Squash',format:isPairs?'Checkerboard Pair Rally':'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:isPairs?'The pattern keeps the rally stable and predictable; the breakout is a deliberate change of pattern that has to be converted quickly. Players learn when changing the pattern is worth the risk and when it is not (education of intention). The opponent learns to read the change and survive it.':tier==='1p'?'Removes the automatic loss after a restore, so a missed finish becomes a rally the breakout player must now survive, and the defender plays for a double bonus. Player A decides between forcing the winner and playing safe; Player B decides between restore and escape.':tier==='1c'?'After retrieving the breakout, the defender chooses: play outside the zones (the rally goes full court; safe, but only 1 point to win and a bonus to the breakout player if they win it) or play back into the zones (the rally stays constrained; the breakout player has a set number of shots to win, sized to the court; the defender wins a bonus whenever they win the rally from there). Playing outside after the return loses the rally and the other player scores as if they had won, so it can never be used to cap a loss. Gaming-audited with the coach, 21 Oct.':tier==='1'?'Creates a genuine breakout decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:isPairs?'Let players discover when to break out; do not prescribe it. If nobody breaks out, add a breakout target, lengthen the window or raise the breakout bonus. If breakouts are converted too easily, shorten the window or remove a target.':tier==='1p'?'Run after Defender’s Choice. With no automatic loss, restoring may become the obvious choice; keep the defence bonus low (+1 doubles to +2) and the capture bonus at +1 or +2 if escape should stay a live option. Debrief Player A: after the restore, did you force the winner or play safe, and why? Debrief Player B: what made the restore worth it?':tier==='1c'?'Run this after Restore or Lose. Shots to win follow the court size (front court only 1, Egyptian 3/4 court 2, full court 3); change it if the breakout player wins too easily or never. If defenders always play outside, raise the defender bonus; if they never do, raise the bonus for Player A after playing outside. Debrief the defender: why back in, or outside, on that one?':tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:isPairs?'Change the pattern only when you can finish it.':tier==='1p'?'Back in the zone? Only go for the winner if it’s on.':tier==='1c'?'Player B: back in if you can make it tight. Player A: make that hard.':tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:effTier!=='2'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:effTier!=='2'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -7330,8 +7432,8 @@ function BreakoutSquash({setSession}){
     <div className="brkWrap">
     <details className="brkBox" open style={{margin:'0 0 14px'}}><summary style={{cursor:'pointer',fontWeight:800,color:'#eaf4fb'}}>Coach’s note: Breakout games</summary>
       <div style={{color:'#dbe6f2',lineHeight:1.5,marginTop:8}}>
-        <p style={{margin:'0 0 6px'}}><strong>Why these games</strong></p>
-        <p style={{margin:'0 0 10px'}}>The restricted zone makes rallies tight and repetitive, so the breakout becomes a decision rather than a habit. Players learn when it is worth breaking out, how to defend a breakout, and how to finish under pressure. Nothing is prescribed: the answers come from playing a real opponent.</p>
+        <h3 style={{margin:'4px 0 8px',color:'#9fd3f0',fontSize:'1rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>What</h3>
+        <p style={{margin:'0 0 8px'}}>Play in a small zone. One shot can break out of it, but breaking out brings pressure.</p>
         <p style={{margin:'0 0 6px'}}><strong>The four games</strong></p>
         <ol style={{margin:'0 0 10px',paddingLeft:'20px'}}>
           <li><strong>Restore or Lose:</strong> learn the breakout and the pressure of finishing straight away.</li>
@@ -7339,6 +7441,15 @@ function BreakoutSquash({setSession}){
           <li><strong>Play It Out:</strong> no automatic loss. Player A must choose between going for a winner and staying patient.</li>
           <li><strong>Nominated Zone:</strong> break out, then finish within a set number of shots.</li>
         </ol>
+        <h3 style={{margin:'4px 0 8px',color:'#9fd3f0',fontSize:'1rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>Why</h3>
+        <p style={{margin:'0 0 6px'}}><strong>Why these games</strong></p>
+        <p style={{margin:'0 0 10px'}}>The restricted zone makes rallies tight and repetitive, so the breakout becomes a decision rather than a habit. Players learn when it is worth breaking out, how to defend a breakout, and how to finish under pressure. Nothing is prescribed: the answers come from playing a real opponent.</p>
+        <p style={{margin:'0 0 6px'}}><strong>The research behind it</strong></p>
+        <p style={{margin:'0 0 8px'}}>These games are squash’s version of <strong>small-sided games</strong>, a core idea in the constraints-led approach. In team sports, shrinking the game multiplies the useful actions each player gets: cutting a youth football game from 8 v 8 to 4 v 4 sharply increased passes, shots and one-on-one duels (Fenoglio, 2003, cited in Renshaw, Chow, Davids &amp; Hammond, 2010).</p>
+        <p style={{margin:'0 0 8px'}}>Davids, Araújo, Correia and Vilar (2013) explain why this works. Changing the space and the rules steers players towards the actions the coach wants, while they still find their own solutions against a live opponent.</p>
+        <p style={{margin:'0 0 8px'}}>Fitness comes with it. Junior footballers training in small-sided games gained aerobic fitness similar to interval running (Impellizzeri et al., 2006).</p>
+        <p style={{margin:'0 0 10px'}}>Squash has no sides to shrink, so the restricted zones and breakout rules do the same job: more breakouts, decisions and finishes in every minute of play.</p>
+        <h3 style={{margin:'4px 0 8px',color:'#9fd3f0',fontSize:'1rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>How</h3>
         <p style={{margin:'0 0 6px'}}><strong>How the scoring works</strong></p>
         <ul style={{margin:'0 0 10px',paddingLeft:'20px'}}>
           <li><strong>Every rally is worth 1 point.</strong> Bonuses reward the decision, not just the result.</li>
@@ -7355,6 +7466,8 @@ function BreakoutSquash({setSession}){
           <li><strong>Player B keeps forcing loose balls back into the zones?</strong> Lower Player A’s bonus for winning after Player B plays outside, to +2, so playing outside is a fair option when Player B is in trouble.</li>
           <li><strong>Player A rarely wins within their shots?</strong> Add a shot. If they win too easily, take one away.</li>
         </ul>
+        <h3 style={{margin:'4px 0 8px',color:'#9fd3f0',fontSize:'1rem',textTransform:'uppercase',letterSpacing:'0.04em'}}>Use it when</h3>
+        <p style={{margin:0}}>Rallies are safe and predictable. Players never change the pace or take a calculated risk, or they can’t finish when an opening comes.</p>
       </div>
     </details>
       <div className="brkSection">
@@ -7411,6 +7524,10 @@ function BreakoutSquash({setSession}){
           </>}
           <div role="button" tabIndex={0} className={tier==='2'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>{isPairs?'2 — Nominated Zone':'4 — Nominated Zone'}<span>{isPairs?'Into a target, then win within N shots.':'Land in the target, then win within N shots.'}</span></div>
         </div>
+        {g4Floor&&<div style={{marginTop:10}}>
+          <div className="brkLabel">After the breakout, play in</div>
+          <div className="brkChips">{[['target','Step 1 — Breakout zone only'],['both','Step 2 — Both zones'],['full','Step 3 — Full court']].map(([k,l])=><div key={k} role="button" tabIndex={0} className={afterArea===k?'brkChip on':'brkChip'} onClick={()=>setAfterArea(k)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setAfterArea(k);}}>{l}</div>)}</div>
+        </div>}
         {(tier==='2'||(tier==='1c'&&!isPairs))&&<div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
           <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Shots for Player A to win</div>
           <PointStepper value={shotLimit} min={1} max={5} sign="" onChange={v=>setShotLimit(v)}/>
@@ -29841,7 +29958,7 @@ const[sharedPlayerCompetition]=useState(()=>sharedPlayerPayload?.type==='competi
 const liveCompetition=livePayload?.type==='competition'?(livePayload.competition||livePayload):((livePayload?.mode&&['matchplay','roundRobin','monrad','invasion','nsl'].includes(livePayload.mode))?livePayload:null);
 const liveGame=livePayload?.type==='game'?normaliseGameCard(livePayload.game):null;
 const initialPlayerDisplay=!!liveRoomParam||!!sharedPlayerGame||!!sharedPlayerCompetition;
-const[screen,setScreen]=useState(()=>initialPlayerDisplay?'playerDisplay':'home');
+const[screen,setScreen]=useState(()=>{if(initialPlayerDisplay)return 'playerDisplay';try{if(!localStorage.getItem(PURPOSE_SEEN_KEY))return 'purpose';}catch{}return 'home';});
 const[livePollAttempts,setLivePollAttempts]=useState(0);
 useEffect(()=>{
   if(!liveRoomParam) return;
@@ -30142,6 +30259,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
       {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
+      {screen==='purpose'&&<PurposeScreen setScreen={go}/>}
       {screen==='whyCLA'&&<WhyCLAScreen setScreen={go}/>}
       {screen==='pressure'&&<PressureModule setScreen={go} setSession={setSession}/>}
 {screen==='sessions'&&<Sessions session={session} setSession={setSession} setScreen={go}/>}
