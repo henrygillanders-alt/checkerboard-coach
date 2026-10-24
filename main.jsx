@@ -1,3 +1,5 @@
+// v833: Breakout coach's note at the top of the page (training and scoring rationale, coach-approved 21 Oct); 'after outside' bonus defaults to +3; Game 2 bonus labels match the note
+// v832: Breakout Game 2 (Defender's Choice) rebuilt to the coach's rules of 21 Oct (constrained after the return, N shots to win, out-of-zone after the return loses and scores for the other player as if they won, one breakout per rally); shots-to-win stepper with a court-size default (front 1, Egyptian 2, full 3); default bonuses 3/3
 // v831: Breakout rules and scoring in the coach's words with Player A / Player B (coach approved 21 Oct); bonus chips (+0..+3) replaced by steppers 0–10
 // v830: Breakout game buttons in progression order and plain names — 1 Restore or Lose, 2 Defender's Choice, 3 Play It Out, 4 Nominated Zone (coach, 21 Oct); 'Tier' → 'Game'
 // v829: Breakout scoring lines say who gets each bonus ('you get' / 'your opponent gets'); 'Put it back in the zone and stop them' replaced (coach, 21 Oct)
@@ -349,7 +351,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v831 Breakout Coach Words';
+const APP_VERSION='v833 Breakout Coach Note';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -7197,15 +7199,24 @@ function BreakoutSquash({setSession}){
   const [breakoutZones,setBreakoutZones]=useState(['1']);
   const [partialDepth,setPartialDepth]=useState(false);
   const [tier,setTier]=useState('1');
-  const [shotLimit,setShotLimit]=useState('3');
-  const [breakoutBonus,setBreakoutBonus]=useState(2);
-  const [defenceBonus,setDefenceBonus]=useState(2);
-  const [captureBonus,setCaptureBonus]=useState(1);
+  const [shotLimit,setShotLimitRaw]=useState(3);
+  const [shotManual,setShotManual]=useState(false);
+  const setShotLimit=v=>{setShotManual(true);setShotLimitRaw(v);};
+  const [breakoutBonus,setBreakoutBonus]=useState(3);
+  const [defenceBonus,setDefenceBonus]=useState(3);
+  const [captureBonus,setCaptureBonus]=useState(3);
   const [surface,setSurface]=useState('floor');
   const [pairPreset,setPairPreset]=useState('p-short');
   const [patternPairs,setPatternPairs]=useState(['5-4']);
   const [pairTargets,setPairTargets]=useState(['F1','F2']);
   const isPairs=surface==='pairs';
+  /* v832 (coach, 21 Oct): shots to win follow the court size — front court only 1,
+     Egyptian 3/4 court 2, full court 3. Follows the zones until the coach sets it by hand. */
+  const frontOnly=surface==='floor'&&restrictedZones.length>0&&restrictedZones.every(z=>z==='1'||z==='2');
+  const shortCourt=surface==='floor'&&(presetId==='egyptian'||partialDepth);
+  const shotSuggest=frontOnly?1:shortCourt?2:3;
+  const shotWhy=frontOnly?'front court only':shortCourt?'Egyptian 3/4 court':'full court';
+  useEffect(()=>{if(!shotManual)setShotLimitRaw(shotSuggest);},[shotSuggest,shotManual]);
   /* v826: Tier 1 = Restore or Lose (coach's original); Tier 1+ ('1c') = Defender's Choice progression, floor/wall only. Pairs keeps its own Tier 1.
      v828: Tier 1++ ('1p') = Play It Out (coach, 21 Oct): after a restore a missed finish no longer loses the point — the rally is played out full court; Player B wins it = point + double defence bonus, Player A wins it = point only. Task and scoring are short numbered lines, one per row (P10). */
   const effTier=isPairs&&(tier==='1c'||tier==='1p')?'1':tier;
@@ -7235,20 +7246,32 @@ function BreakoutSquash({setSession}){
   function brkLines(lines){return lines.map((x,i)=>`${i+1}. ${x}`).join('\n');}
   function buildTask(){
     if(isPairs)return brkLines(brkPairSteps(patternPairs,liveTargets,effTier,shotLimit));
-    const zl=zs=>zs.length?'zone '+zs.join(' or '):'the zone';
-    const R=zl(restrictedZones),T=zl(breakoutZones);
+    const zAnd=zs=>zs.length>1?'zones '+zs.slice(0,-1).join(', ')+' and '+zs[zs.length-1]:zs.length?'zone '+zs[0]:'the zone';
+    const zOr=zs=>zs.length>1?'zone '+zs.slice(0,-1).join(', ')+' or '+zs[zs.length-1]:zs.length?'zone '+zs[0]:'the zone';
+    const R=zAnd(restrictedZones),Ro=zOr(restrictedZones),T=zOr(breakoutZones);
+    const shots=shotLimit===1?'1 shot':`${shotLimit} shots`;
     const head=[];
     if(presetId==='egyptian')head.push('Egyptian 3/4 court.');
     head.push(`Play in ${R}.`);
     if(surface==='floor'&&partialDepth&&backZonesInPlay)head.push('Back zones end at the back of the service box.');
     head.push(`Either player breaks out into ${T}. They are Player A.`);
-    if(tier==='2')return brkLines([...head,`Player A must win within ${shotLimit} shots, or lose the rally.`]);
-    if(tier==='1')return brkLines([...head,`Player B must return the ball to ${R}.`,'Player A must then win on the next shot, or lose the rally.']);
-    if(tier==='1c')return brkLines([...head,'Player B chooses:',`Return to ${R}: Player A must win on the next shot, or lose the rally.`,'Play anywhere else: play the rally out, full court.']);
-    return brkLines([...head,'Player B chooses:','Play anywhere else: play the rally out, full court.',`Return to ${R}: Player A’s next shot must be a winner.`,'Not a winner? Play the rally out, full court.']);
+    head.push('Only one breakout per rally.');
+    if(tier==='2')return brkLines([...head,`Player A must win within ${shots}, or lose the rally.`]);
+    if(tier==='1')return brkLines([...head,`Player B must return the ball to ${Ro}.`,'Player A must then win on the next shot, or lose the rally.']);
+    if(tier==='1c')return brkLines([...head,
+      'Player B can’t get it? Player A wins the rally.',
+      `Player B plays it outside ${R}? Play the rally out, full court.`,
+      `Player B plays it back into ${Ro}? Keep playing in ${R}.`,
+      `Player A has ${shots} to win the rally.`,
+      `Not won? Play the rally out in ${R}.`,
+      `After Player B plays it back, anyone who plays outside ${R} loses the rally.`]);
+    return brkLines([...head,'Player B chooses:',`Play anywhere else: play the rally out, full court.`,`Return to ${Ro}: Player A’s next shot must be a winner.`,'Not a winner? Play the rally out, full court.']);
   }
   function buildScoring(){
     const bb=Number(breakoutBonus)||0,db=Number(defenceBonus)||0,eb=Number(captureBonus)||0;
+    const zAnd=zs=>zs.length>1?'zones '+zs.slice(0,-1).join(', ')+' and '+zs[zs.length-1]:zs.length?'zone '+zs[0]:'the zone';
+    const R=zAnd(restrictedZones);
+    const shots=shotLimit===1?'1 shot':`${shotLimit} shots`;
     const L=['Win a rally = 1 point.'];
     if(isPairs){
       if(bb>0)L.push(`Breakout player wins = +${bb} to them.`);
@@ -7256,13 +7279,17 @@ function BreakoutSquash({setSession}){
     }else if(tier==='2'){
       if(bb>0)L.push(`Player A wins in time = +${bb} to Player A.`);
       if(db>0)L.push(`Player A doesn’t = +${db} to Player B.`);
-    }else if(tier==='1'||tier==='1c'){
+    }else if(tier==='1'){
       if(bb>0)L.push(`Player A wins on the next shot = +${bb} to Player A.`);
       if(db>0)L.push(`Player A loses = +${db} to Player B.`);
-      if(tier==='1c'&&eb>0)L.push(`Player A wins after “anywhere else” = +${eb} to Player A.`);
+    }else if(tier==='1c'){
+      if(bb>0)L.push(`Player A wins within ${shots} = +${bb} to Player A.`);
+      if(db>0)L.push(`Player B wins after playing it back into ${R} = +${db} to Player B.`);
+      if(eb>0)L.push(`Player A wins after Player B plays outside = +${eb} to Player A.`);
+      L.push('Playing outside after the return: the other player scores as if they won.');
     }else{
       if(bb>0)L.push(`Player A hits a winner = +${bb} to Player A.`);
-      if(db>0)L.push(`Player B wins after returning to ${restrictedZones.length?'zone '+restrictedZones.join(' or '):'the zone'} = +${db*2} to Player B.`);
+      if(db>0)L.push(`Player B wins after returning to ${R} = +${db*2} to Player B.`);
       if(eb>0)L.push(`Player A wins after “anywhere else” = +${eb} to Player A.`);
     }
     return brkLines(L);
@@ -7270,7 +7297,7 @@ function BreakoutSquash({setSession}){
   function addToSession(){
     if(typeof setSession!=='function')return;
     const presetTitleTag=presetId==='egyptian'?' (Egyptian 3/4 Court)':'';
-    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${isPairs?'Pairs':surface==='wall'?'Wall':'Floor'} — ${effTier==='1'?(isPairs?'1: Breakout & Return':'1: Restore or Lose'):effTier==='1c'?'2: Defender’s Choice':effTier==='1p'?'3: Play It Out':`${isPairs?'2':'4'}: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:isPairs?'Checkerboard Pair Rally':'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:isPairs?'The pattern keeps the rally stable and predictable; the breakout is a deliberate change of pattern that has to be converted quickly. Players learn when changing the pattern is worth the risk and when it is not (education of intention). The opponent learns to read the change and survive it.':tier==='1p'?'Removes the automatic loss after a restore, so a missed finish becomes a rally the breakout player must now survive, and the defender plays for a double bonus. Player A decides between forcing the winner and playing safe; Player B decides between restore and escape.':tier==='1c'?'Adds a second decision to Restore or Lose: after retrieving the breakout, the defender weighs their own position and the breakout player’s finishing ability, then chooses between the restore (risk, with the defence bonus available) and the escape (safer, no bonus, and it concedes the capture bonus if the breakout player wins the rally). The scoring is set so that neither choice always wins.':tier==='1'?'Creates a genuine breakout decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:isPairs?'Let players discover when to break out; do not prescribe it. If nobody breaks out, add a breakout target, lengthen the window or raise the breakout bonus. If breakouts are converted too easily, shorten the window or remove a target.':tier==='1p'?'Run after Defender’s Choice. With no automatic loss, restoring may become the obvious choice; keep the defence bonus low (+1 doubles to +2) and the capture bonus at +1 or +2 if escape should stay a live option. Debrief Player A: after the restore, did you force the winner or play safe, and why? Debrief Player B: what made the restore worth it?':tier==='1c'?'Run this only after Restore or Lose has been played. Set the three bonuses so both choices stay live: if every defender escapes, raise the defence bonus or the capture bonus; if every defender restores, lower the defence bonus. Debrief the defender: why did you restore, or escape, on that one? Debrief the breakout player: which breakouts made restoring hardest?':tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:isPairs?'Change the pattern only when you can finish it.':tier==='1p'?'Back in the zone? Only go for the winner if it’s on.':tier==='1c'?'Defending: restore if you can make it tight; escape if you cannot. Breaking out: make the restore hard.':tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:effTier!=='2'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:effTier!=='2'?4:5};
+    const card={id:Date.now()+Math.random(),title:`Breakout Squash — ${isPairs?'Pairs':surface==='wall'?'Wall':'Floor'} — ${effTier==='1'?(isPairs?'1: Breakout & Return':'1: Restore or Lose'):effTier==='1c'?'2: Defender’s Choice':effTier==='1p'?'3: Play It Out':`${isPairs?'2':'4'}: Nominated Zone (${shotLimit}-shot)`}${presetTitleTag}`,category:'Breakout Squash',format:isPairs?'Checkerboard Pair Rally':'Restricted-Zone Rally',duration:9,task:buildTask(),rationale:isPairs?'The pattern keeps the rally stable and predictable; the breakout is a deliberate change of pattern that has to be converted quickly. Players learn when changing the pattern is worth the risk and when it is not (education of intention). The opponent learns to read the change and survive it.':tier==='1p'?'Removes the automatic loss after a restore, so a missed finish becomes a rally the breakout player must now survive, and the defender plays for a double bonus. Player A decides between forcing the winner and playing safe; Player B decides between restore and escape.':tier==='1c'?'After retrieving the breakout, the defender chooses: play outside the zones (the rally goes full court; safe, but only 1 point to win and a bonus to the breakout player if they win it) or play back into the zones (the rally stays constrained; the breakout player has a set number of shots to win, sized to the court; the defender wins a bonus whenever they win the rally from there). Playing outside after the return loses the rally and the other player scores as if they had won, so it can never be used to cap a loss. Gaming-audited with the coach, 21 Oct.':tier==='1'?'Creates a genuine breakout decision under real opposition — the breakout only pays off if the player can also close it out immediately, so the shot choice has to be earned, not just attempted. Weighting the bonus points to both outcomes keeps the risk honest: it must be worth it to attempt, and worth it to defend.':'Sharpens accuracy to a nominated target under a live shot-count clock, forcing efficient point construction rather than opportunistic rallying once the restriction is broken. Bonus scoring on both sides keeps the risk/reward genuine rather than one-sided.',coach:isPairs?'Let players discover when to break out; do not prescribe it. If nobody breaks out, add a breakout target, lengthen the window or raise the breakout bonus. If breakouts are converted too easily, shorten the window or remove a target.':tier==='1p'?'Run after Defender’s Choice. With no automatic loss, restoring may become the obvious choice; keep the defence bonus low (+1 doubles to +2) and the capture bonus at +1 or +2 if escape should stay a live option. Debrief Player A: after the restore, did you force the winner or play safe, and why? Debrief Player B: what made the restore worth it?':tier==='1c'?'Run this after Restore or Lose. Shots to win follow the court size (front court only 1, Egyptian 3/4 court 2, full court 3); change it if the breakout player wins too easily or never. If defenders always play outside, raise the defender bonus; if they never do, raise the bonus for Player A after playing outside. Debrief the defender: why back in, or outside, on that one?':tier==='1'?'Let players discover when a breakout is worth the risk — do not prescribe when to play it. Watch whether the one-shot finish demand is producing rushed, low-percentage shots; if so, widen the restricted zone rather than relaxing the rule.':'Adjust the shot limit up if finishes are too rare (killing rally flow) or down if the pressure is not being felt. Keep the target zone nomination visible to both players so the follow-up defence is representative too.',playerFocus:isPairs?'Change the pattern only when you can finish it.':tier==='1p'?'Back in the zone? Only go for the winner if it’s on.':tier==='1c'?'Player B: back in if you can make it tight. Player A: make that hard.':tier==='1'?'Only break out when you can also close it.':'Land it in the zone, then finish inside your own shot count.',scoring:buildScoring(),layers:effTier!=='2'?['Space Manipulation','Decision Making']:['Space Manipulation','Accuracy Under Pressure','Shot Economy'],rld:effTier!=='2'?4:5};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(card.title);
   }
@@ -7301,6 +7328,35 @@ function BreakoutSquash({setSession}){
     <style>{STYLE}</style>
     <div className="libraryStageIntro"><h2>🚪 Breakout Squash</h2><p>Restricted-zone rally with a configurable breakout mechanic. Either player may break out of the restricted zone with one shot — but breaking out brings pressure with it.</p></div>
     <div className="brkWrap">
+    <details className="brkBox" open style={{margin:'0 0 14px'}}><summary style={{cursor:'pointer',fontWeight:800,color:'#eaf4fb'}}>Coach’s note: Breakout games</summary>
+      <div style={{color:'#dbe6f2',lineHeight:1.5,marginTop:8}}>
+        <p style={{margin:'0 0 6px'}}><strong>Why these games</strong></p>
+        <p style={{margin:'0 0 10px'}}>The restricted zone makes rallies tight and repetitive, so the breakout becomes a decision rather than a habit. Players learn when it is worth breaking out, how to defend a breakout, and how to finish under pressure. Nothing is prescribed: the answers come from playing a real opponent.</p>
+        <p style={{margin:'0 0 6px'}}><strong>The four games</strong></p>
+        <ol style={{margin:'0 0 10px',paddingLeft:'20px'}}>
+          <li><strong>Restore or Lose:</strong> learn the breakout and the pressure of finishing straight away.</li>
+          <li><strong>Defender’s Choice:</strong> the defender decides between playing it back in (brave) and playing outside (safe, but costly).</li>
+          <li><strong>Play It Out:</strong> no automatic loss. Player A must choose between going for a winner and staying patient.</li>
+          <li><strong>Nominated Zone:</strong> break out, then finish within a set number of shots.</li>
+        </ol>
+        <p style={{margin:'0 0 6px'}}><strong>How the scoring works</strong></p>
+        <ul style={{margin:'0 0 10px',paddingLeft:'20px'}}>
+          <li><strong>Every rally is worth 1 point.</strong> Bonuses reward the decision, not just the result.</li>
+          <li><strong>Player A’s bonus</strong> rewards taking the risk of breaking out and finishing it.</li>
+          <li><strong>Player B’s bonus</strong> rewards brave defending: playing it back into the zones.</li>
+          <li><strong>The easy route costs.</strong> If Player B plays outside, Player A earns a bonus for winning.</li>
+          <li><strong>No cheating the score.</strong> After the return, playing outside loses the rally and the other player scores as if they had won.</li>
+          <li><strong>No reward for waiting.</strong> Player B’s bonus is the same whenever they win after the return.</li>
+          <li><strong>Shots to win match the court size:</strong> front court only 1, Egyptian 3/4 court 2, full court 3.</li>
+        </ul>
+        <p style={{margin:'0 0 6px'}}><strong>Adjusting on court</strong></p>
+        <ul style={{margin:0,paddingLeft:'20px'}}>
+          <li><strong>Everyone takes the easy route?</strong> Raise Player B’s bonus for going back in.</li>
+          <li><strong>Player B keeps forcing loose balls back into the zones?</strong> Lower Player A’s bonus for winning after Player B plays outside, to +2, so playing outside is a fair option when Player B is in trouble.</li>
+          <li><strong>Player A rarely wins within their shots?</strong> Add a shot. If they win too easily, take one away.</li>
+        </ul>
+      </div>
+    </details>
       <div className="brkSection">
         <div className="brkLabel">Breakout surface</div>
         <div className="brkChips"><div role="button" tabIndex={0} className={surface==='floor'?'brkChip on':'brkChip'} onClick={()=>switchSurface('floor')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('floor');}}>Floor breakout (zones 1–4)</div><div role="button" tabIndex={0} className={surface==='wall'?'brkChip on':'brkChip'} onClick={()=>switchSurface('wall')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('wall');}}>Wall breakout (front wall 5–8)</div><div role="button" tabIndex={0} className={isPairs?'brkChip on':'brkChip'} onClick={()=>switchSurface('pairs')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')switchSurface('pairs');}}>Checkerboard pairs (wall → floor)</div></div>
@@ -7355,9 +7411,10 @@ function BreakoutSquash({setSession}){
           </>}
           <div role="button" tabIndex={0} className={tier==='2'?'brkTierBtn on':'brkTierBtn'} onClick={()=>setTier('2')} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setTier('2');}}>{isPairs?'2 — Nominated Zone':'4 — Nominated Zone'}<span>{isPairs?'Into a target, then win within N shots.':'Land in the target, then win within N shots.'}</span></div>
         </div>
-        {tier==='2'&&<div style={{marginTop:10}}>
-          <div className="brkLabel">Shot-count window</div>
-          <div className="brkChips">{BREAKOUT_SHOT_LIMITS.map(n=><div key={n} role="button" tabIndex={0} className={shotLimit===n?'brkChip on':'brkChip'} onClick={()=>setShotLimit(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setShotLimit(n);}}>{n} shots</div>)}</div>
+        {(tier==='2'||(tier==='1c'&&!isPairs))&&<div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Shots for Player A to win</div>
+          <PointStepper value={shotLimit} min={1} max={5} sign="" onChange={v=>setShotLimit(v)}/>
+          <span className="brkHint" style={{margin:0}}>{shotManual?<>Set by hand. <span role="button" tabIndex={0} style={{textDecoration:'underline',cursor:'pointer'}} onClick={()=>{setShotManual(false);}}>Use suggested ({shotSuggest})</span></>:<>Suggested for {shotWhy}: {shotSuggest}</>}</span>
         </div>}
       </div>
       <div className="brkSection">
@@ -7368,12 +7425,12 @@ function BreakoutSquash({setSession}){
           <PointStepper value={breakoutBonus} min={0} max={10} zeroLabel="off" onChange={v=>setBreakoutBonus(v)}/>
         </div>
         <div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
-          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player B stops Player A — bonus to Player B</div>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>{tier==='1c'&&!isPairs?'Player B wins after going back in — bonus to Player B':'Player B stops Player A — bonus to Player B'}</div>
           <PointStepper value={defenceBonus} min={0} max={10} zeroLabel="off" onChange={v=>setDefenceBonus(v)}/>{tier==='1p'&&!isPairs&&<span className="brkHint" style={{margin:0}}>doubled in game 3</span>}
         </div>
         {(tier==='1c'||tier==='1p')&&!isPairs&&<>
         <div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
-          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player A wins after “anywhere else” — bonus to Player A</div>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player A wins after Player B plays outside — bonus to Player A</div>
           <PointStepper value={captureBonus} min={0} max={10} zeroLabel="off" onChange={v=>setCaptureBonus(v)}/>
         </div>
         </>}
