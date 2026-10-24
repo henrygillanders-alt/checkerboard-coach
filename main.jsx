@@ -1,3 +1,4 @@
+// v837: Start Here 'Backed by evidence' opens with the lineage — Bernstein (1967), Gibson (1979), Newell (1986) — 'not a new idea' (coach, 24 Oct)
 // v836: START HERE page 'What Checkerboard Squash Is For' (coach's evolving doc, first draft) — shown on first open per device, top tile on Home; Breakout coach's note regrouped under What / Why / How / Use it when
 // v835: Breakout coach's note gains 'The research behind it' (small-sided games: Fenoglio 2003 in Renshaw et al. 2010; Davids, Araújo, Correia & Vilar 2013; Impellizzeri et al. 2006) — coach-approved 21 Oct
 // v834: Breakout Game 4 (floor) — 'After the breakout, play in': Step 1 breakout zone only, Step 2 both zones, Step 3 full court (coach, 21 Oct); out-of-area after the breakout loses and scores for the other player; shots suggestion follows that area
@@ -354,7 +355,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v836 Start Here';
+const APP_VERSION='v837 Start Here Origins';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -4209,7 +4210,13 @@ function PurposeScreen({setScreen}){
       </ol>
     </B>
     <B h="Backed by evidence">
-      <p>These principles come from research in skill acquisition and sport science, not from opinion or tradition. The constraints-led approach is set out by Renshaw, Davids, Newcombe and Roberts (2019, <em>The Constraints-Led Approach: Principles for Sports Coaching and Practice Design</em>). The case for keeping practice close to the real game comes from work on representative learning design (Pinder, Davids, Renshaw and Araújo, 2011). Research on small-sided games shows how changing the space and the rules develops movement and decision-making together (Davids, Araújo, Correia and Vilar, 2013).</p>
+      <p><strong>This is not a new idea.</strong> It rests on research going back almost a hundred years.</p>
+      <ul>
+        <li><strong>Nikolai Bernstein</strong> (from the 1920s): skilled movement is never an exact repeat. Every attempt solves the movement problem afresh, so practice should be “repetition without repetition” (Bernstein, 1967, <em>The Co-ordination and Regulation of Movements</em>).</li>
+        <li><strong>James Gibson</strong> (from the 1950s): we see the world in terms of what it lets us do, its <em>affordances</em>. Perception and action work together and cannot be trained apart (Gibson, 1979, <em>The Ecological Approach to Visual Perception</em>).</li>
+        <li><strong>Karl Newell</strong> (1986): movement emerges from the interaction of three kinds of constraints: the performer, the task and the environment. Change the constraints and the movement changes.</li>
+      </ul>
+      <p style={{marginTop:'10px'}}>The constraints-led approach is the coaching method built on this foundation. It is set out by Renshaw, Davids, Newcombe and Roberts (2019, <em>The Constraints-Led Approach: Principles for Sports Coaching and Practice Design</em>). The case for keeping practice close to the real game comes from work on representative learning design (Pinder, Davids, Renshaw and Araújo, 2011). Research on small-sided games shows how changing the space and the rules develops movement and decision-making together (Davids, Araújo, Correia and Vilar, 2013).</p>
       <p>We are honest about the limits. Most of this research comes from other sports, squash-specific studies are few, and the evidence is stronger for some principles than others. Each game’s coach’s note names the research behind it and says plainly where the evidence is thin.</p>
     </B>
     <B h="What we develop in players">
