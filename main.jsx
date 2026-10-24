@@ -1,3 +1,4 @@
+// v831: Breakout rules and scoring in the coach's words with Player A / Player B (coach approved 21 Oct); bonus chips (+0..+3) replaced by steppers 0–10
 // v830: Breakout game buttons in progression order and plain names — 1 Restore or Lose, 2 Defender's Choice, 3 Play It Out, 4 Nominated Zone (coach, 21 Oct); 'Tier' → 'Game'
 // v829: Breakout scoring lines say who gets each bonus ('you get' / 'your opponent gets'); 'Put it back in the zone and stop them' replaced (coach, 21 Oct)
 // v828: Breakout Tier 1++ Play It Out (coach, 21 Oct); every Breakout task and scoring line rewritten for juniors — short numbered lines, 'you' and 'your opponent' (P32: we are always talking to kids)
@@ -348,7 +349,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v830 Breakout Games 1-4';
+const APP_VERSION='v831 Breakout Coach Words';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -7197,9 +7198,9 @@ function BreakoutSquash({setSession}){
   const [partialDepth,setPartialDepth]=useState(false);
   const [tier,setTier]=useState('1');
   const [shotLimit,setShotLimit]=useState('3');
-  const [breakoutBonus,setBreakoutBonus]=useState('2');
-  const [defenceBonus,setDefenceBonus]=useState('2');
-  const [captureBonus,setCaptureBonus]=useState('1');
+  const [breakoutBonus,setBreakoutBonus]=useState(2);
+  const [defenceBonus,setDefenceBonus]=useState(2);
+  const [captureBonus,setCaptureBonus]=useState(1);
   const [surface,setSurface]=useState('floor');
   const [pairPreset,setPairPreset]=useState('p-short');
   const [patternPairs,setPatternPairs]=useState(['5-4']);
@@ -7238,33 +7239,32 @@ function BreakoutSquash({setSession}){
     const R=zl(restrictedZones),T=zl(breakoutZones);
     const head=[];
     if(presetId==='egyptian')head.push('Egyptian 3/4 court.');
-    head.push(surface==='wall'?`Every shot must hit the front wall in ${R}.`:`Every shot must land in ${R}.`);
+    head.push(`Play in ${R}.`);
     if(surface==='floor'&&partialDepth&&backZonesInPlay)head.push('Back zones end at the back of the service box.');
-    head.push(`Break out: you may hit ONE shot into ${T}.`);
-    if(tier==='2')return brkLines([...head,`It only counts if it ${surface==='wall'?'hits':'lands in'} ${T}.`,`Then win within your next ${shotLimit} shots.`,'Your opponent’s shots don’t count.','Not won in time? Your opponent wins the point.']);
-    const got='Opponent can’t get it? You win the point.';
-    const call='The player not hitting calls if it went in.';
-    if(tier==='1')return brkLines([...head,got,`Opponent gets it but misses ${R}? You win the point.`,`Opponent puts it back into ${R}? You must win with your next shot.`,'Don’t win with it? Your opponent wins the point.',call]);
-    if(tier==='1c')return brkLines([...head,got,'Opponent gets it, then chooses:',`Back into ${R}: you must win with your next shot, or lose the point.`,'Anywhere else: the zone rule stops. Play the rally out.','The zone rule comes back next rally.',call]);
-    return brkLines([...head,got,'Opponent gets it, then chooses:',`Back into ${R}: you get one shot to hit a winner.`,'A winner = your opponent can’t return it.','No winner, or anywhere else: the zone rule stops. Play the rally out.','The zone rule comes back next rally.',call]);
+    head.push(`Either player breaks out into ${T}. They are Player A.`);
+    if(tier==='2')return brkLines([...head,`Player A must win within ${shotLimit} shots, or lose the rally.`]);
+    if(tier==='1')return brkLines([...head,`Player B must return the ball to ${R}.`,'Player A must then win on the next shot, or lose the rally.']);
+    if(tier==='1c')return brkLines([...head,'Player B chooses:',`Return to ${R}: Player A must win on the next shot, or lose the rally.`,'Play anywhere else: play the rally out, full court.']);
+    return brkLines([...head,'Player B chooses:','Play anywhere else: play the rally out, full court.',`Return to ${R}: Player A’s next shot must be a winner.`,'Not a winner? Play the rally out, full court.']);
   }
   function buildScoring(){
     const bb=Number(breakoutBonus)||0,db=Number(defenceBonus)||0,eb=Number(captureBonus)||0;
-    const L=['Win a rally: 1 point.'];
-    const escapeLine=eb>0?`Opponent escapes, but you win the rally: you get +${eb} bonus.`:null;
-    if(isPairs||tier==='2'){
-      if(bb>0)L.push(`Break out and win it${tier==='2'&&!isPairs?' in time':''}: you get +${bb} bonus.`);
-      if(db>0)L.push(isPairs?`You don’t win it: your opponent gets +${db} bonus.`:`You don’t win in time: your opponent gets +${db} bonus.`);
+    const L=['Win a rally = 1 point.'];
+    if(isPairs){
+      if(bb>0)L.push(`Breakout player wins = +${bb} to them.`);
+      if(db>0)L.push(`Breakout player doesn’t = +${db} to the opponent.`);
+    }else if(tier==='2'){
+      if(bb>0)L.push(`Player A wins in time = +${bb} to Player A.`);
+      if(db>0)L.push(`Player A doesn’t = +${db} to Player B.`);
     }else if(tier==='1'||tier==='1c'){
-      if(bb>0)L.push(`Break out, then win with your next shot: you get +${bb} bonus.`);
-      if(db>0)L.push(`Put back in the zone and you don’t win your next shot? Your opponent gets +${db} bonus.`);
-      if(tier==='1c'&&escapeLine)L.push(escapeLine);
+      if(bb>0)L.push(`Player A wins on the next shot = +${bb} to Player A.`);
+      if(db>0)L.push(`Player A loses = +${db} to Player B.`);
+      if(tier==='1c'&&eb>0)L.push(`Player A wins after “anywhere else” = +${eb} to Player A.`);
     }else{
-      if(bb>0)L.push(`Break out, then hit a winner: you get +${bb} bonus.`);
-      if(db>0)L.push(`Put back in the zone and your opponent wins the rally? They get +${db*2} bonus (double).`);
-      if(escapeLine)L.push(escapeLine);
+      if(bb>0)L.push(`Player A hits a winner = +${bb} to Player A.`);
+      if(db>0)L.push(`Player B wins after returning to ${restrictedZones.length?'zone '+restrictedZones.join(' or '):'the zone'} = +${db*2} to Player B.`);
+      if(eb>0)L.push(`Player A wins after “anywhere else” = +${eb} to Player A.`);
     }
-    if(L.length>1)L.push('Anything else: just 1 point.');
     return brkLines(L);
   }
   function addToSession(){
@@ -7361,21 +7361,22 @@ function BreakoutSquash({setSession}){
         </div>}
       </div>
       <div className="brkSection">
-        <div className="brkLabel">3. Bonus scoring (risk / reward weighting)</div>
-        <p className="brkHint">Bonus points on top of the normal point — so both taking the breakout risk and defending it well are worth something.</p>
-        <div style={{marginTop:8}}>
-          <div className="brkLabel">Breakout player bonus (converts within window)</div>
-          <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'bb'+n} role="button" tabIndex={0} className={breakoutBonus===n?'brkChip on':'brkChip'} onClick={()=>setBreakoutBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setBreakoutBonus(n);}}>+{n}</div>)}</div>
+        <div className="brkLabel">3. Bonus points</div>
+        <p className="brkHint">Extra points on top of the 1 point for the rally. Set to off for none.</p>
+        <div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player A wins — bonus to Player A</div>
+          <PointStepper value={breakoutBonus} min={0} max={10} zeroLabel="off" onChange={v=>setBreakoutBonus(v)}/>
         </div>
-        <div style={{marginTop:10}}>
-          <div className="brkLabel">Opponent defence bonus (prevents the conversion)</div>
-          <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'db'+n} role="button" tabIndex={0} className={defenceBonus===n?'brkChip on':'brkChip'} onClick={()=>setDefenceBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setDefenceBonus(n);}}>+{n}</div>)}</div>
+        <div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player B stops Player A — bonus to Player B</div>
+          <PointStepper value={defenceBonus} min={0} max={10} zeroLabel="off" onChange={v=>setDefenceBonus(v)}/>{tier==='1p'&&!isPairs&&<span className="brkHint" style={{margin:0}}>doubled in game 3</span>}
         </div>
-        {(tier==='1c'||tier==='1p')&&!isPairs&&<div style={{marginTop:10}}>
-          <div className="brkLabel">Capture bonus (breakout player wins after the defender escapes)</div>
-          <div className="brkChips">{BREAKOUT_BONUS_POINTS.map(n=><div key={'cb'+n} role="button" tabIndex={0} className={captureBonus===n?'brkChip on':'brkChip'} onClick={()=>setCaptureBonus(n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setCaptureBonus(n);}}>+{n}</div>)}</div>
-          <p className="brkHint">Paid to the breakout player for hunting down a defender who escaped. The defender never earns a bonus from escaping — the defence bonus is reserved for the restore.</p>
-        </div>}
+        {(tier==='1c'||tier==='1p')&&!isPairs&&<>
+        <div style={{marginTop:10,display:'flex',alignItems:'center',gap:'14px',flexWrap:'wrap'}}>
+          <div className="brkLabel" style={{margin:0,minWidth:'230px'}}>Player A wins after “anywhere else” — bonus to Player A</div>
+          <PointStepper value={captureBonus} min={0} max={10} zeroLabel="off" onChange={v=>setCaptureBonus(v)}/>
+        </div>
+        </>}
       </div>
       <div className="brkBox"><strong>Task / rules preview</strong>{isPairs?<ol style={{margin:0,paddingLeft:'20px',color:'#dbe6f2',lineHeight:1.45}}>{brkPairSteps(patternPairs,liveTargets,effTier,shotLimit).map((x,i)=><li key={i}>{x}</li>)}</ol>:<p style={{whiteSpace:'pre-line'}}>{buildTask()}</p>}</div>
       <div className="brkBox"><strong>Scoring preview</strong><p style={{whiteSpace:'pre-line'}}>{buildScoring()}</p></div>
