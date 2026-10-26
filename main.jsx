@@ -1,3 +1,9 @@
+// v843: Negative Scoring preset — crosscourt cut off by an opponent with a foot in the T Zone (coach, 26 Oct)
+// v842: Checkerboard — coach's default scoring (rally 1; complete single +1 / pair +2 / triple +3; win after completing +2; challenge finish = win the rally with a code shot +2; no clean-winner bonus); target bonuses renamed; group codes flash on the player-display court map (wall zone, then floor zone, in turn; alternatives in different colours)
+// v841: Checkerboard session card (player display) rewritten as kid lines — what a code means, the codes, how many, order, level window, (SA); kid scoring lines; full coach wording kept in the card's coach field (coach, 26 Oct)
+// v840: the marked T Zone replaces the leftover 'T corridor' (Break the T, Break The Middle, T Zone Denial); Poached Egg Model and T Zone Games findable in search (coach, 25 Oct)
+// v839: Start Here wording — 'solving problems'; Checkerboard tactical framework named in 'Decision makers'; coach's-notes line no longer claims every game has What/Why/How/Use it when (only Breakout so far) — coach, 25 Oct
+// v838: coach's court-tested sessions added without duplication — Double Bounce Suite: Bank & Spend rebuilt to the coach's rules (start 3, cap 3, tramline/volley winner earns back, more DB left breaks a tie, then best-of-5), new DB Ladder and The Whistle, suite-wide 'Who has double bounces' and give-up penalty; new T Zone Games series (5 games) with size and 'Go' options, linked from the Match Problem Index and the older Recover To T / Off T Recognition cards
 // v837: Start Here 'Backed by evidence' opens with the lineage — Bernstein (1967), Gibson (1979), Newell (1986) — 'not a new idea' (coach, 24 Oct)
 // v836: START HERE page 'What Checkerboard Squash Is For' (coach's evolving doc, first draft) — shown on first open per device, top tile on Home; Breakout coach's note regrouped under What / Why / How / Use it when
 // v835: Breakout coach's note gains 'The research behind it' (small-sided games: Fenoglio 2003 in Renshaw et al. 2010; Davids, Araújo, Correia & Vilar 2013; Impellizzeri et al. 2006) — coach-approved 21 Oct
@@ -355,7 +361,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v837 Start Here Origins';
+const APP_VERSION='v843 T Zone Penalty';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -828,7 +834,7 @@ return[
 lengthBeforeAttackCard(),
 {id:'off-t-bonus',title:'Opponent Off-T Bonus',category:'Classic Constrained',duration:8,format:'King of Court',task:'Bonus if the winning shot is played while the opponent is outside the T-zone.',rationale:'Rewards recognition of opponent recovery state, not just shot execution.',coach:'Cue players to notice opponent position before selecting the attack.',layers:['Opponent Off T','Clean Winner'],cbCode:'None'},
 ...CCFF_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS)),
-...ONSIDE_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Onside Offside')),
+...ONSIDE_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Onside Offside')), ...TZONE_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'T Zone Games')),
 ...RTA_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Read the Attack')),
 ...PD_GAMES.map(g=>ccffCard(g,CCFF_DEFAULTS,'Power Driver')),
 ...CXC_GAMES.map(g=>cxcCard(g,CXC_DEFAULTS)),
@@ -1491,7 +1497,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
     {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
       <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
         <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
-        <CheckerboardCourtMap compact/>
+        <CheckerboardCourtMap compact codes={cbParseFlashCodes(chosen.task)}/>
       </div>}
   </div>;
 }
@@ -3889,9 +3895,9 @@ function PlugAndPlay({setScreen,setSession}){
     {
       id:'PP103',title:'Break The Middle',tags:['Length','Width','Pressure','Movement'],type:'Constrained Game',players:'2–4',level:'Intermediate → Professional',
       develops:['Width creation','Opponent displacement','Court geometry'],
-      why:'Encourages players to move the opponent away from central control rather than simply hitting harder through the middle. Poached Egg read: the corridor is the marking \u2014 a contact forced outside it is a contact on the toast, while you hold the yolk.',
-      what:'Score bonuses for shots that force the opponent outside the central corridor or away from the T-zone.',
-      score:'Win rally = 1. Bonus +1 when opponent is forced clearly outside central corridor.',
+      why:'Encourages players to move the opponent away from central control rather than simply hitting harder through the middle. Poached Egg read: a contact forced out of the middle is a contact on the toast, while you hold the yolk.',
+      what:'Mark a T Zone around the T (as in T Zone Games). Score a bonus for shots that force the opponent to play from outside the T Zone.',
+      score:'Win rally = 1. Bonus +1 when the opponent plays from outside the T Zone.',
       coach:'Break the middle before trying to finish.',player:'Move them away from the centre.',load:'Break The Middle'
     },
     {
@@ -3932,7 +3938,7 @@ function PlugAndPlay({setScreen,setSession}){
       why:'Makes recovery visible and scoreable without turning the session into isolated movement lines.',
       what:'Rally normally. Coach awards bonus when player recovers to an effective central position after shot execution.',
       score:'Win rally = 1. Quality recovery = +1 coach bonus.',
-      coach:'Recover into the next problem.',player:'Hit, recover, read again.',load:'Recover To T'
+      coach:'Recover into the next problem. Court-tested version: T Zone Games, game 1.',player:'Hit, recover, read again.',load:'Recover To T'
     },
     {
       id:'PP303',title:'Continuous Pressure',tags:['Movement','Pressure','Conditioning'],type:'Constrained Game',players:'2–8',level:'Intermediate → Professional',
@@ -3948,7 +3954,7 @@ function PlugAndPlay({setScreen,setSession}){
       why:'Teaches players to recognise when they have created positional advantage rather than attacking automatically.',
       what:'Player calls or identifies when opponent is off T and may then use an attacking option.',
       score:'Win rally = 1. Correct off-T attack = +1 bonus.',
-      coach:'Notice the opponent, not just the ball.',player:'See when the middle opens.',load:'Off T Recognition'
+      coach:'Notice the opponent, not just the ball. Court-tested version: T Zone Games, games 3–5.',player:'See when the middle opens.',load:'Off T Recognition'
     },
     {
       id:'PP402',title:'T Challenge',tags:['T-Zone','Movement','Pressure'],type:'Checkerboard Overlay',players:'2–4',level:'Junior Elite → Professional',
@@ -4200,7 +4206,7 @@ function PurposeScreen({setScreen}){
     <B h="The principles behind it">
       <p>The app is built on the <strong>constraints-led approach</strong> (CLA): players learn best by solving real squash problems, and the coach’s job is to design those problems.</p>
       <ol>
-        <li><strong>The game is the teacher.</strong> Players learn squash by playing problems that look like squash, not by rehearsing movements away from the game.</li>
+        <li><strong>The game is the teacher.</strong> Players learn squash by solving problems that look like squash, not by rehearsing movements away from the game.</li>
         <li><strong>Change the game, not the player.</strong> Coaches shape learning by changing the space, the rules or the scoring, so the problem draws out the skill. These changes are called constraints.</li>
         <li><strong>Keep it real.</strong> Practice keeps what players use in matches: a real opponent, a moving ball and real decisions. Every activity is labelled for how close it is to match play.</li>
         <li><strong>Variety builds adaptable players.</strong> The same feed, repeated, builds a narrow skill. Varied situations build skill that holds up under pressure.</li>
@@ -4221,7 +4227,7 @@ function PurposeScreen({setScreen}){
     </B>
     <B h="What we develop in players">
       <ol>
-        <li><strong>Decision makers under pressure.</strong> Games like Breakout and Snakes &amp; Ladders give players real choices with real consequences. The scoring rewards good decisions, not just winning rallies.</li>
+        <li><strong>Decision makers under pressure.</strong> The Checkerboard tactical framework, which maps the court into numbered floor and front-wall zones, and games like Breakout and Snakes &amp; Ladders give players real choices with real consequences. The scoring rewards good decisions, not just winning rallies.</li>
         <li><strong>Adaptable players.</strong> Every ball is different. We develop skill that adapts to the situation, rather than one grooved action repeated until it breaks under pressure.</li>
         <li><strong>Problem solvers, not instruction takers.</strong> The game sets the problem and the player finds the answer. The coach asks more than they tell.</li>
         <li><strong>Readers of the game.</strong> Players learn to pick up early information from the opponent and the ball, so they know when and where to move.</li>
@@ -4236,7 +4242,7 @@ function PurposeScreen({setScreen}){
         <li><strong>Scoring that teaches:</strong> bonus points reward the right decisions.</li>
         <li><strong>Honest labels:</strong> every activity shows how closely it resembles match play (RLD 0–6).</li>
         <li><strong>Rules for kids:</strong> short, simple steps on the player display.</li>
-        <li><strong>Coach’s notes:</strong> every game opens with <strong>What</strong> (the game and the problem it creates), <strong>Why</strong> (what it develops, with research where there is some), <strong>How</strong> (setting it up, progressions, adjusting on court) and a short <strong>Use it when</strong> line (the match problem it is for). The notes never tell players when to use an action: that is what the game lets them discover.</li>
+        <li><strong>Coach’s notes:</strong> the reasoning behind each game. We are giving every game series the same opening, starting with Breakout: <strong>What</strong> (the game and the problem it creates), <strong>Why</strong> (what it develops, with research where there is some), <strong>How</strong> (setting it up, progressions, adjusting on court) and a short <strong>Use it when</strong> line (the match problem it is for). The notes never tell players when to use an action: that is what the game lets them discover.</li>
       </ul>
     </B>
     <B h="What it is not">
@@ -5215,7 +5221,7 @@ function perceptionPlaceholderCards(section){
       {id:'per-ex-src2',code:'EX-S2',module:'Exit Framework',phase:'Source Exit',title:'Source + Adjacent Restriction',category:'Perception',duration:8,format:'Constrained Rally',rld:4,gate:'Opponent contact floor zone',task:'Player may not hit into the opponent source zone or its immediate adjacent floor zone. Coach may simplify by using only one side first. Back-court straight exchange exception still applies for 3→3 and 4→4.',scoring:'Win rally = 1. Playing into locked source/adjacent space = loss or -1. Bonus +1 for a clean tactical exit that moves opponent away from base.',rationale:'Increases the demand from simple recognition to bigger displacement. The player must see source and solve a reduced space problem.',coach:'Use this only after Source Lock is stable. If it kills rallies, return to L1.',playerFocus:'See source, then move them away.',layers:['Source Recognition','Space Manipulation'],cbCode:'None'},
       {id:'per-ex-src3',code:'EX-S3',module:'Exit Framework',phase:'Source Exit',title:'Escape Forward',category:'Perception',duration:8,format:'Live Rally',rld:4,gate:'Opponent contact floor zone',task:'Source zone remains locked, but front options are now encouraged. The player may exit into a front floor zone or use wall targets 5–8 when available. Back-court straight exchange exception remains.',scoring:'Normal rally score. +1 for a clean exit that creates front-court pressure. Source violation = loss or -1.',rationale:'Adds attacking opportunity without changing the perceptual problem. The player now decides whether to maintain pressure, move wider, or escape short.',coach:'Do not force short shots. The front option should emerge because the opponent source and recovery create it.',playerFocus:'Exit source, use front when it is open.',layers:['Front Court','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src4',code:'EX-S4',module:'Exit Framework',phase:'Source Exit',title:'Opposite Side Exit',category:'Perception',duration:8,format:'Constrained Rally',rld:4,gate:'Opponent contact side',task:'If opponent hits from the left side, player must exit to the right side. If opponent hits from the right side, player must exit to the left side. Back-court straight exchanges 3→3 and 4→4 may be exempted by the coach.',scoring:'Win rally = 1. Successful side switch before winning rally = +1. Failing to switch side when required = loss or no bonus.',rationale:'A clearer version of diagonal/opposite-quadrant logic. It exaggerates displacement and makes source-to-space mapping simple.',coach:'Use left/right language with younger players before using zone numbers.',playerFocus:'They hit one side; you solve the other.',layers:['Width Change','Source Recognition'],cbCode:'None'},
-      {id:'per-ex-src5',code:'EX-S5',module:'Exit Framework',phase:'Source Exit',title:'Corridor Denial',category:'Perception',duration:8,format:'Tactical Pressure Rally',rld:5,gate:'Opponent contact location',task:'Source Exit rules apply. In addition, if the opponent contacts from the central corridor/T-zone, that counts against the player who fed them there unless the coach marks it as an unavoidable recovery.',scoring:'Win rally = 1. Opponent contact from central corridor = -1 against feeder. Clean exit away from corridor = +1.',rationale:'Links the game directly to match-analysis: opponent contact from central areas often means danger. The player learns not to feed strong central hitting positions. Poached Egg read: the corridor is the marking \u2014 an opponent contacting from it is an opponent fed the yolk or egg white; a clean exit sends their contact toward the toast.',coach:'Be fair: only penalise when the player had a genuine option to avoid feeding the corridor.',playerFocus:'Do not feed the middle hitter.',layers:['Opponent Off T','Source Recognition'],cbCode:'None'},
+      {id:'per-ex-src5',code:'EX-S5',module:'Exit Framework',phase:'Source Exit',title:'T Zone Denial',category:'Perception',duration:8,format:'Tactical Pressure Rally',rld:5,gate:'Opponent contact location',task:'Source Exit rules apply. Mark a T Zone around the T (as in T Zone Games). If the opponent plays the ball from inside the T Zone, that counts against the player who fed them there, unless the coach marks it as an unavoidable recovery.',scoring:'Win rally = 1. Opponent plays from inside the T Zone = -1 against the feeder. Clean exit that makes them play from outside it = +1.',rationale:'Links the game directly to match-analysis: opponent contact from central areas often means danger. The player learns not to feed strong central hitting positions. Poached Egg read: an opponent playing from the T Zone has been fed the yolk or egg white; a clean exit sends their contact toward the toast.',coach:'Be fair: only penalise when the player had a genuine option to avoid feeding the T Zone.',playerFocus:'Do not feed the middle hitter.',layers:['Opponent Off T','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src6',code:'EX-S6',module:'Exit Framework',phase:'Source Exit',title:'Early Source Call',category:'Perception',duration:7,format:'Constrained Rally',rld:4,gate:'Before / at opponent contact',task:'During controlled rallies, player calls the source zone as early as practical: “1, 2, 3 or 4”. The call is used only while learning, then reduced.',scoring:'Correct early source call = +1. Late or incorrect call = 0. Rally score still applies.',rationale:'Uses explicit questioning/calling to shape visual search, similar to the two-coloured racquet task.',coach:'Start with frequent calls, then ask randomly, then remove the call and keep the game rule.',playerFocus:'Call it early, then exit it.',layers:['Early Call','Source Recognition'],cbCode:'None'},
       {id:'per-ex-src7',code:'EX-S7',module:'Exit Framework',phase:'Source Exit',title:'Recall Call',category:'Perception',duration:7,format:'Live Rally',rld:4,gate:'After rally',task:'The rally is not stopped. After selected rallies, coach asks: “Where did they hit from?” and “What options did you have?” Questions are random and faded over time.',scoring:'Correct recall = +1 optional. Incorrect recall = 0. Normal rally scoring continues.',rationale:'Preserves representative rally flow while checking whether source information was actually perceived.',coach:'Ask randomly, not every time. The uncertainty keeps attention tuned without making the game verbal.',playerFocus:'Play normally, but know the source.',layers:['Recall','Source Recognition'],cbCode:'None'},
       {id:'per-ex-tgt1',code:'EX-T1',module:'Exit Framework',phase:'Target Exit',title:'Target Lock',category:'Perception',duration:8,format:'Checkerboard Wall Target Rally',rld:4,gate:'Opponent wall target',task:'Player may not repeat the front-wall zone the opponent has just targeted. Use wall zones 5–8. Example: opponent hits to 7, zone 7 is locked for the next shot.',scoring:'Win rally = 1. Repeating locked wall target = loss or -1. Clean new target under pressure = +1 optional.',rationale:'Shifts attention from where the opponent stood to what tactical target they selected.',coach:'Use visible wall-zone language. This is target recognition, not technique.',playerFocus:'What wall zone did they use? Choose another.',layers:['Wall Target','Pattern Recognition'],cbCode:'None'},
@@ -8501,7 +8507,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8572,6 +8578,35 @@ function onsideGame(p){
     stepper:[...ONSIDE_COMMON_STEPS,...(xw?[{k:'onXwin',label:'Cross winner bonus',min:1,max:6,sign:'+'}]:[]),...(sw?[{k:'onSwin',label:'Straight winner bonus',min:1,max:6,sign:'+'}]:[])]};
 }
 const ONSIDE_GAMES=[1,2,3,4,5].map(onsideGame);
+// ── T ZONE GAMES (v838) ─────────────────────────────────────────────────────────
+// The coach's court-tested T Zone session (Oct 2026): rotating drives, five games, one rule added
+// at a time. T Zone size is adjustable to the players' level. Optional "Go" call by the waiting
+// player when the non-striker is outside the T Zone (works best with a small T Zone — reaction
+// delay). Rules are short numbered lines for juniors (P32); no "you" on the player display.
+function tzGame(p){
+  const shortZ={3:'zone 1',4:'zone 2',5:'zone 1 or 2'}[p];
+  const titles={1:'T Zone — Straight Recovery',2:'T Zone — Crosscourts Allowed',3:'T Zone — Short to Zone 1',4:'T Zone — Short to Zone 2',5:'T Zone — Short to Zones 1 and 2'};
+  const tags={1:'Straight rotating drives; back to the T Zone or lose the rally',2:'Crosscourts any time; a crosscourt that is cut off loses the rally',3:'As 2, plus short to zone 1 when the opponent is outside the T Zone',4:'As 2, plus short to zone 2 when the opponent is outside the T Zone',5:'As 2, plus short to zone 1 or 2 when the opponent is outside the T Zone'};
+  const whys={1:'Recovery becomes part of the rally, not an afterthought: a player who watches their own shot loses the point.',2:'A crosscourt is only good if it gets past the opponent. Cut off from the T Zone, it was the wrong choice or a poor shot.',3:'The short ball is earned, not hoped for: it is only allowed when the opponent has been moved out of the T Zone.',4:'The same opponent-position test, into the other front corner.',5:'Both front corners are open once the opponent is out of the T Zone, so the striker must read the opponent and choose.'};
+  return {id:'tzone-'+p,stage:p,boastRule:false,title:p+' · '+titles[p],rld:p<=2?3:4,duration:8,tag:tags[p],format:'Constrained game — rotating drives',
+    from:whys[p]+' Court-tested by the coach, Oct 2026.',
+    rule:(v)=>{const L=['Mark '+({Large:'a large',Medium:'a medium',Small:'a small'}[v.tzSize]||'a')+' T Zone around the T.'];
+      if(p===1){L.push('Rotating drives: straight only.','After each shot, get back into the T Zone before the opponent hits.','Not back in time? That player loses the rally.');}
+      else{L.push('Rotating drives: straight or crosscourt.','Crosscourts are allowed any time.','A crosscourt that gets volleyed, or cut off from the T Zone, loses the rally.');
+        if(shortZ)L.push('Opponent outside the T Zone? The striker may play short into '+shortZ+'.');
+        if(shortZ&&v.tzGo==='Yes')L.push('The waiting player shouts “Go” when the opponent is outside the T Zone.');}
+      L.push('The waiting player calls it.');
+      return L.map((x,i)=>(i+1)+'. '+x).join('\n');},
+    coach:'Size the T Zone to the players: start large, shrink it as they improve. The waiting player judges'+(p===1?' whether the striker got back in time':' the T Zone calls')+'; with only two players, the opponent calls it. '+(shortZ?'Option: the “Go” call trains the waiting player to read the opponent’s position, but it only works with a small T Zone — the call and the striker’s change of decision take time. ':'')+(p<5?'Next: game '+(p+1)+'. ':'')+'Use it when: '+(p===1?'players watch their own shot instead of recovering.':p===2?'crosscourts keep coming back to the middle and get cut off.':'players attack short while the opponent is still on the T.'),
+    focus:p===1?'Hit, then get back.':p===2?'Cross only if it gets past them.':'Short only when they are out of the T Zone.',
+    score:(v)=>'1. Win a rally = '+(v.tzRally||1)+' point'+((v.tzRally||1)>1?'s':'')+'.',
+    stepper:[{k:'tzSize',label:'T Zone size',type:'select',options:['Large','Medium','Small']},...(shortZ?[{k:'tzGo',label:'Waiting player calls “Go”',type:'select',options:['No','Yes']}]:[]),{k:'tzRally',label:'Rally win',min:1,max:3,sign:'+'}],
+    layers:['Movement Economy','Decision Making','Opponent Awareness']};
+}
+const TZONE_GAMES=[1,2,3,4,5].map(tzGame);
+function TZoneFamily({onAdd,label,openFamily}){
+  return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={TZONE_GAMES} category="T Zone Games" intro={<div className="gameCard"><div className="categoryTag">T Zone Games</div><h2>⊕ T Zone Games</h2><p>Five court-tested games on rotating drives, one rule added at a time: <strong>recover to the T Zone</strong>, then <strong>crosscourt only if it gets past the opponent</strong>, then <strong>short only when the opponent is outside the T Zone</strong>. The T Zone is marked around the T and sized to the players’ level.</p><p className="mutedText">Optional: the waiting player calls “Go” when the opponent is out of the T Zone — best with a small T Zone.</p></div>}/>;
+}
 // ── READ THE ATTACK (v812) ──────────────────────────────────────────────────────
 // The coach's perception series, run on court 7 Oct ("it went smoothly"). The winner of the last
 // rally is always on perception duty — drives only — and must read the attacking shot; the other
@@ -8890,7 +8925,7 @@ function CrossCourtFriendOrFoeFamily({onAdd,label='Add To Session',openFamily,ga
     <div className="categoryTag">{category} · RLD {g.rld}</div><h2>{g.title}</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>{g.tag}</p>
     <div className="infoBox"><strong>The idea</strong><p>{g.from}</p></div>
-    <div className="infoBox"><strong>How to play</strong><p>{ccffRule(g,v)}</p></div>
+    <div className="infoBox"><strong>How to play</strong><p style={{whiteSpace:'pre-line'}}>{ccffRule(g,v)}</p></div>
     {g.anti&&<div className="infoBox"><strong>Anti-gaming</strong><p>{g.anti}</p></div>}
     <div style={{display:'flex',alignItems:'center',gap:'10px',margin:'6px 0',flexWrap:'wrap'}}>{g.stepper.map(st=>st.type==='select'
       ? <label key={st.k} style={{display:'flex',alignItems:'center',gap:'6px'}}><span className="mutedText" style={{fontSize:'0.82rem',fontWeight:700}}>{st.label}</span><select value={v[st.k]} onChange={e=>setCc(prev=>({...prev,[st.k]:e.target.value}))}>{st.options.map(o=><option key={o} value={o}>{o}</option>)}</select></label>
@@ -8978,7 +9013,7 @@ function MovementLabFamily({onAdd,label='Add To Session'}){
  score:(b)=>'+'+b+' when you win the rally with the opponent’s both feet in front of the taped line (about halfway between the front wall and the short line).',layers:['Movement Economy','Attacking Conversion'],dur:10,def:1,max:3},
 {id:'ml-recovery',key:'recovery',title:'8 · Recovery Race',rld:3,tag:'Early progression — rewards your own recovery',
  rule:(b)=>'The positive game of the family. Play normal rallies; +'+b+' each time you get back to the T before your opponent strikes the ball. Every other game here pays the opponent’s failure to recover — this one pays your success at it, directly. Your opponent confirms you made the T in time.',
- coach:'Run this when you want to train the habit itself rather than punish its absence — it’s the cleanest movement conditioner in the set and the gentlest to score. Watch the recovery path, not just the arrival: the shortest way back to the T is rarely a straight line. Debrief: which of your shots made recovery easiest, and why? Progression: when players reach the T reliably, move to the overlays Recover Through Central Lane and Early Opponent Pickup (Constraints panel), where recovery is judged by a position that keeps the striker in view and the likely next ball within reach, rather than by the T itself.',
+ coach:'Run this when you want to train the habit itself rather than punish its absence — it’s the cleanest movement conditioner in the set and the gentlest to score. Watch the recovery path, not just the arrival: the shortest way back to the T is rarely a straight line. Debrief: which of your shots made recovery easiest, and why? Progression: when players reach the T reliably, move to the overlays Recover Through Central Lane and Early Opponent Pickup (Constraints panel), where recovery is judged by a position that keeps the striker in view and the likely next ball within reach, rather than by the T itself. Court-tested follow-on in rotating drives: T Zone Games, game 1.',
  focus:'Hit, then beat them home. On the T before they strike is the receipt.',
  score:(b)=>'+'+b+' each time you recover to the T before the opponent’s contact, opponent-confirmed.',layers:['Movement Economy','Composure Under Pressure'],dur:8,def:1,max:3},
 ].map(g=>{const bVal=(mlB[g.key]!=null?mlB[g.key]:g.def);return <div className="gameCard" key={g.id}>
@@ -9184,10 +9219,10 @@ function cbStrictScoring(perSquare,winAfterFrom,winAfter){
   if(winAfter>0)parts.push(winAfterFrom==='commenced'
     ?'Win the rally after the challenge has commenced (your first square of the run has landed) = +'+winAfter+', whether or not you completed it'
     :'Win the rally after completing the challenge = +'+winAfter);
-  parts.push('Challenge finish = +2','Clean winner = +2 and sits on top of all scoring.');
+  parts.push('Challenge finish (win the rally with a code shot) = +2');
   return parts.join('  \u00b7  ')+'  Levels 1\u20133: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the complete-bonus is lost'+(perSquare>0?', but squares already banked stay banked':'')+' \u2014 start the challenge again from scratch.';
 }
-const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +3  ·  Challenge finish = +2  ·  Clean winner = +2 and sits on top of all scoring.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
+const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +2  ·  Challenge finish (win the rally with a code shot) = +2.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
 
 /* Any-order (non-consecutive) challenges. A strict sequence resets the moment a
    code is missed, which stalls rallies; letting the codes be met in any order,
@@ -9214,7 +9249,7 @@ function cbAnyOrderScoring(perCode,allBonus,sameRallyBonus,count,anyOrder,consec
     '  \u00b7  Each code completed = +'+perCode+
     '  \u00b7  All '+n+' completed during the game = +'+allBonus+
     (sameRallyBonus>0?('  \u00b7  All '+n+' completed inside a single rally = +'+sameRallyBonus):'')+
-    '  \u00b7  Win the rally = +1  \u00b7  Clean winner = +2 and sits on top of all scoring.'+
+    '  \u00b7  Win the rally = +1  \u00b7  Challenge finish (win the rally with a code shot) = +2.'+
     (consecutive?'  A broken run restarts the challenge.':'  A missed code costs nothing \u2014 keep playing and take them as they come.');
 }
 function cbIsOptional(type){return type==='Optional Single'||type==='Optional Pair'||type==='Optional Triple';}
@@ -9301,7 +9336,7 @@ function cbLevelScoring(level){
   const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
   const complete=`complete = +${d.bonus}`;
   const win=d.window==='No window'?'banks once completed':`banks only if you finish within ${d.window.replace('-shot window',' shots')} of completing`;
-  return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · win after +3 · finish +2 · ${win}`;
+  return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · win after +2 · challenge finish +2 · ${win}`;
 }
 // Player-facing level expansion for the session card: what the level means, not just its number.
 function cbLevelBrief(level){const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];return 'L'+level+' '+d.type.toLowerCase()+(d.window==='No window'?', banks once completed':', finish within '+d.window.replace('-shot window',' shots')+' of completing or the complete-bonus is lost');}
@@ -9497,7 +9532,7 @@ function CheckerboardSetup({setScreen,setSession}){
   const [aoTarget,setAoTarget]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').target??3;}catch{return 3;}});
 const [stPerSquare,setStPerSquare]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stPerSquare??0;}catch{return 0;}});
 const [stWinAfterFrom,setStWinAfterFrom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfterFrom||'complete';}catch{return 'complete';}});
-const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfter??3;}catch{return 3;}});
+const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfter??2;}catch{return 2;}});
   useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget,stPerSquare,stWinAfterFrom,stWinAfter}));}catch{}},[anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget,stPerSquare,stWinAfterFrom,stWinAfter]);
 
   useEffect(()=>{try{localStorage.setItem(CB_SEAM_KEY,seamAllowance?'1':'0');}catch{}},[seamAllowance]);
@@ -9605,13 +9640,42 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     }else{
       presents.forEach(n=>{const r=alloc[n];if(r)taskLines.push(`${n} — ${cbCardCode(r,seamAllowance)} (${cbLevelBrief(r.level||1)})`);});
     }
-    // Join scope-lines with a separator that is NOT " + ", because a Checkerboard
-    // code contains " + " internally ([5-4] + [7-2]) and the player display splits
-    // WHAT TO DO on " + ". Using newline keeps each player/court on its own line and
-    // each full code intact.
     taskLines.push('Order: '+((anyOrder||!aoConsecutive)?cbOrderRuleText(anyOrder,aoConsecutive,aoTarget,[]).split('.')[0]+'.':'codes in the order listed, on consecutive shots with no other shot between; a broken run restarts the challenge.')+(seamAllowance?' Seam allowance on.':' Strict zones.'));
-    const task=taskLines.length?taskLines.join('\n'):'No challenge allocated yet.';
+    const coachTask=taskLines.length?taskLines.join('\n'):'No challenge allocated yet.';
     const scopeLabel={player:'Per-player',group:'Group (all players)',court:'Per-court'}[scope]||scope;
+    const coachScoring=(anyOrder||!aoConsecutive)
+        ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
+        :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter);
+    // Kid lines (P32)
+    const K=[];const codesSeen=[];
+    const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`;};
+    if(scope==='group'){K.push(codeLine('Everyone’s codes',group));}
+    else if(scope==='court'){courtChallenges.forEach((c,i)=>K.push(codeLine(`Court ${i+1}`,c)));}
+    else{presents.forEach(n=>{const r=alloc[n];if(r)K.push(codeLine(n,r));});}
+    K.unshift(cbKidExample(codesSeen.join(' ')));
+    if(anyOrder||!aoConsecutive){
+      K.push(`Hit ${aoTarget} codes during the game, ${anyOrder?'in any order':'in the order shown'}.`);
+      K.push(aoConsecutive?'They must come one straight after the other. Break the run? Start again.':'Other shots in between are fine.');
+      K.push('The same code twice counts.');
+    }else{
+      K.push('Hit the code in the order shown, one shot straight after the other.','Break the run? Start again.');
+    }
+    const lvl=scope==='group'?group&&group.level:null;
+    const lvlLine=lvl?cbKidLevel(lvl):null; if(lvlLine)K.push(lvlLine);
+    if(/\(SA\)/.test(codesSeen.join(' ')))K.push('(SA) = landing on the middle line also counts.');
+    const task=K.map((x,i)=>(i+1)+'. '+x).join('\n');
+    const S=['Win a rally = 1 point.'];
+    if(anyOrder||!aoConsecutive){
+      if(aoPerCode>0)S.push(`Each code hit = +${aoPerCode}.`);
+      if(aoAllBonus>0)S.push(`All ${aoTarget} codes during the game = +${aoAllBonus}.`);
+      if(aoRallyBonus>0)S.push(`All ${aoTarget} codes in one rally = +${aoRallyBonus}.`);
+    }else{
+      if(stPerSquare>0)S.push(`Each part of the code landed = +${stPerSquare}.`);
+      S.push('Finish the code = +1 single, +2 pair, +3 triple.');
+      if(stWinAfter>0)S.push(stWinAfterFrom==='commenced'?`Win the rally once the code has started = +${stWinAfter}.`:`Win the rally after finishing the code = +${stWinAfter}.`);
+    }
+    S.push('Win the rally with a code shot = +2 (challenge finish).');
+    const scoring=S.map((x,i)=>(i+1)+'. '+x).join('\n');
     const card=normaliseGameCard({
       title:'Checkerboard — '+scopeLabel,
       category:'Checkerboard',
@@ -9619,10 +9683,8 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       duration:8,
       task,
       description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
-      scoring:(anyOrder||!aoConsecutive)
-        ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
-        :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter),
-      coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'.',
+      scoring,
+      coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'. Full rules: '+coachTask.replace(/\n/g,' | ')+'  Full scoring: '+coachScoring,
       playerFocus:'Find the solution to the code within the live rally.'
     });
     setSession(prev=>appendToSessionState(prev,card));
@@ -9750,11 +9812,11 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
             <PointStepper value={aoPerCode} onChange={setAoPerCode} min={0} max={5} zeroLabel="0" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Target reached during the game</span>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All {aoTarget} codes done during the game (across rallies)</span>
             <PointStepper value={aoAllBonus} onChange={setAoAllBonus} min={0} max={9} zeroLabel="0" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Target reached inside a single rally</span>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>All {aoTarget} codes done in one rally</span>
             <PointStepper value={aoRallyBonus} onChange={setAoRallyBonus} min={0} max={9} zeroLabel="Off" sign="+"/>
           </div>
         </div>}
@@ -9908,6 +9970,22 @@ function cbCodeText(r,seam){
 }
 // Card/player-facing code: masks the code when the challenge is blind (hidden and not revealed),
 // so blind allocations do not leak their codes into the Session Builder card or the player display.
+/* v841 (coach, 26 Oct: the Checkerboard player display "does not explain the game").
+   Kid-language lines for the session card (P32). The full coach wording moves to the card's
+   coach field, so nothing is lost. */
+function cbKidCode(t){
+  return String(t||'—').replace(/\s*\/\s*/g,' or ').replace(/\s*↔\s*/g,', or the mirror ').replace(/\s*\+\s*/g,' then ');
+}
+function cbKidExample(codeText){
+  const m=String(codeText||'').match(/\[(\d)-(\d)\]/);
+  const a=m?m[1]:'5',b=m?m[2]:'4';
+  return `A code is a target: [${a}-${b}] = hit the front wall in zone ${a}, first bounce in floor zone ${b}.`;
+}
+function cbKidLevel(level){
+  const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
+  if(d.window==='No window')return null;
+  return `After the code, win the rally within ${d.window.replace('-shot window',' shots')}, or lose the code bonus.`;
+}
 function cbCardCode(r,seam){
   if(r&&r.hidden&&!r.revealed)return '🙈 hidden (revealed on court)';
   return cbCodeText(r,seam);
@@ -12032,7 +12110,7 @@ function TacticalPressureModule({onAddToSession}){
         <div className="tpCPFCard tpCPFHard">
           <div className="tpCPFIcon">🔴</div>
           <strong>Below 50% — Reduce Challenge</strong>
-          <p>Move back to a simpler Pressure Point game. Reduce to Single Pressure Point only. Check the player understands the corridor concept — visit The Corridor tab.</p>
+          <p>Move back to a simpler Pressure Point game. Reduce to Single Pressure Point only. Check the player understands the Poached Egg Model — visit the Poached Egg Model tab.</p>
         </div>
         <div className="tpCPFCard tpCPFOptimal">
           <div className="tpCPFIcon">🟡</div>
@@ -13662,7 +13740,9 @@ const PENALTY_PRESETS=[
   {id:'looseStraight',label:'Loose straight (sits up or short)'},
   {id:'ballDiesMiddle',label:'Ball dies in the middle'},
   {id:'noLengthPressure',label:'No length under pressure'},
-  {id:'wrongShot',label:'Wrong shot from the wrong position'}
+  {id:'wrongShot',label:'Wrong shot from the wrong position'},
+  /* v843 (coach, 26 Oct): same marked T Zone as T Zone Games */
+  {id:'ccCutOffT',label:'Crosscourt cut off by an opponent with a foot in the T Zone'}
 ];
 const PENALTY_POINT_OPTIONS=[0,1,2,3,4,5];
 /* Some transgressions should not cost points — they should lose the rally
@@ -14788,7 +14868,20 @@ function TPCorridorCourtMap(){
     <text x="160" y="452" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">BACK WALL</text>
   </svg>;
 }
-function CheckerboardCourtMap({width='100%',compact=false}){
+/* v842 (coach, 26 Oct): flash the code on the court map. Reads the group codes from a card's
+   task line ("Everyone — [5-4] / [6-3]" or "Everyone's codes: [5-4] or [6-3]"): alternatives
+   split on "/", "or", "↔"; steps on "+" or "then". Only simple [wall-floor] codes animate. */
+function cbParseFlashCodes(task){
+  const line=String(task||'').split('\n').find(l=>/Everyone/.test(l));
+  if(!line)return null;
+  const body=line.replace(/^.*?Everyone[^:—]*[:—]/,'').replace(/\(L\d[^)]*\)/g,'');
+  const alts=body.split(/\s*(?:\/|↔|\bor\b)\s*/).map(a=>a.split(/\s*(?:\+|\bthen\b)\s*/).map(st=>{const m=st.match(/\[([5-8])-([1-4])\]/);return m?[m[1],m[2]]:null;}).filter(Boolean)).filter(a=>a.length);
+  return alts.length?alts:null;
+}
+function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
+  const [tick,setTick]=useState(0);
+  const codesKey=codes?JSON.stringify(codes):'';
+  useEffect(()=>{if(!codesKey)return;const id=setInterval(()=>setTick(t=>t+1),900);return()=>clearInterval(id);},[codesKey]);
   /* Rendered from ATB_FLOOR_ZONES / ATB_WALL_ZONES so the map cannot drift from the
      data model. Layout follows the original definitive reference: unfolded schematic,
      centre strip TIN / front wall / floor / back wall, side walls as perspective flanks
@@ -14847,7 +14940,23 @@ function CheckerboardCourtMap({width='100%',compact=false}){
     <line x1={L} y1="330" x2={R} y2="330" stroke={MU} strokeWidth="1.6" strokeDasharray="5 4"/>
 
     {box(L,490,80,30,LT,'BL')}{box(R-80,490,80,30,SH,'BR')}
+    {codes&&codes.length>0&&(()=>{
+      const Z={[wtl]:[L,52,80,62],[wtr]:[R-80,52,80,62],[wbl]:[L,114,80,52],[wbr]:[R-80,114,80,52],
+               [fl]:[L,Y0,80,155],[fr]:[R-80,Y0,80,155],[bl]:[L,330,80,160],[br]:[R-80,330,80,160]};
+      const COL=['#5fd38a','#f0b94a','#6cb6ff'];
+      return codes.slice(0,3).map((alt,ai)=>{
+        const phases=alt.length*2+1;
+        const ph=tick%phases;
+        if(ph===phases-1)return null;
+        const step=alt[Math.floor(ph/2)],isFloor=ph%2===1;
+        const zw=Z[step[0]],zf=Z[step[1]];if(!zw||!zf)return null;
+        const z=isFloor?zf:zw;const c=COL[ai%COL.length];
+        return <g key={'fl'+ai}>
+          <rect x={z[0]+2+ai*3} y={z[1]+2+ai*3} width={z[2]-4-ai*6} height={z[3]-4-ai*6} fill={c} fillOpacity="0.4" stroke={c} strokeWidth="3"/>
+          {isFloor&&<line x1={zw[0]+zw[2]/2} y1={zw[1]+zw[3]/2} x2={zf[0]+zf[2]/2} y2={zf[1]+zf[3]/2} stroke={c} strokeWidth="3" strokeDasharray="6 4"/>}
+        </g>;});})()}
     <text x="210" y="536" textAnchor="middle" fill={MU} fontSize="8.5" fontWeight="800" letterSpacing="2">BACK WALL</text>
+    {codes&&codes.length>0&&<text x="210" y="586" textAnchor="middle" fontSize="12" fontWeight="800">{codes.slice(0,3).map((alt,ai)=><tspan key={ai} fill={['#5fd38a','#f0b94a','#6cb6ff'][ai%3]}>{(ai?'   or   ':'')+alt.map(st=>'['+st[0]+'-'+st[1]+']').join(' then ')}</tspan>)}</text>}
 
     <rect x="120" y="556" width="11" height="11" fill={SH} stroke={LN}/><rect x="131" y="556" width="11" height="11" fill={LT} stroke={LN}/>
     <text x="148" y="565" fill={MU} fontSize="8.5">Zone shading</text>
@@ -15985,12 +16094,27 @@ function SnakesLaddersPlayerDisplay({payload={}}){
 
 // ─── DOUBLE BOUNCE SUITE™ ─────────────────────────────────────────────────────
 const DB_GAMES=[
-  {id:'db1',title:'Bank & Spend',tag:'Foundation',
+  {id:'db1',title:'Bank & Spend',tag:'Foundation · court-tested',
    principle:'Spend a bounce to survive — earn it back through pressure.',
-   logic:'Everyone starts on the set DB. Using a double bounce costs DB. Recover DB by producing the chosen tactical behaviour.',
-   earn:['Volley Finish (the volley ends the rally)','Force opponent behind the short line','Force opponent off the T'],
-   scoring:'Normal rally scoring. DB is a separate currency.',
-   note:'Coach picks which earn-condition is live; tap + when a player produces it.'},
+   logic:'Court-tested (coach, Oct 2026). Each player starts the rotation with the set number of double bounces (default 3, never more than the cap). Using one leaves one fewer for the rest of the rotation. Win one back by meeting the live challenge in a rally (clean = the opponent gets no racket on it; a tramline winner’s first bounce is in the tramline). At the end of the rotation, the player with more double bounces left wins a tie on points; still level, the usual best-of-5 play-off.',
+   earn:['Clean tramline winner, 3 to 3 or 4 to 4','Clean volley winner','Force opponent behind the short line'],
+   scoring:'Normal rally scoring. Level on points at the end? More double bounces left wins. Still level? Best-of-5 play-off.',
+   note:'Session focus decides how the bounce is used: for time (movement mindset — keep chasing every ball) or for holding (deception). Say which before you start.',
+   rules:v=>[`Each player starts the rotation with ${v.start} double bounces.`,'Use one: one fewer for the rest of the rotation.',v.earn?`Win one back: ${v.earn}.`:'Win one back by meeting the challenge.',`Never more than ${v.cap}.`,'Level on points at the end? More double bounces left wins.','Still level? Best-of-5 play-off.']},
+  {id:'db10',title:'DB Ladder',tag:'Session ladder · court-tested',
+   principle:'Take the bounces away one step at a time.',
+   logic:'Court-tested (coach, Oct 2026). Five games in a row, each with fewer double bounces: 1 unlimited, 2 three each, 3 two each, 4 one each, 5 a normal game. Move down a step when players are coping. Tap the step below to set every counter.',
+   earn:[],
+   scoring:'Normal rally scoring in every step.',
+   note:'Built for a movement mindset: the extra bounce keeps players chasing every ball, and the ladder hands them back the full demand of the real game step by step.',
+   rules:v=>[`Game ${v.step} of 5.`,v.step===1?'Double bounces: unlimited.':v.step===5?'Normal game: no double bounces.':`Double bounces: ${({2:3,3:2,4:1})[v.step]} each.`,'Each game gets harder: fewer double bounces.']},
+  {id:'db11',title:'The Whistle',tag:'Surprise · court-tested',
+   principle:'Use the bounce for time — then manage without it.',
+   logic:'Court-tested (coach, Oct 2026). Double bounces are unlimited until the coach blows the whistle. After the whistle, no double bounces for the rest of the rotation. Use the double bounce only when time is needed, not to hold.',
+   earn:[],
+   scoring:'Normal rally scoring.',
+   note:'Players cannot plan for the whistle, so they must keep moving as if the bounce could vanish at any moment. Blow it when players start leaning on the bounce instead of chasing.',
+   rules:v=>[v.whistled?'The whistle has gone: no more double bounces this rotation.':'Double bounces: unlimited, until the whistle.','After the whistle: no double bounces for the rest of the rotation.','Use the double bounce only when time is needed, not to hold.']},
   {id:'db2',title:'Steal the Bounce',tag:'Zero-sum',
    principle:'Win the right way and take a bounce off your opponent.',
    logic:'Using a DB costs 1. Win with a volley winner or a front-court attack and you STEAL 1 DB from your opponent.',
@@ -16011,8 +16135,9 @@ const DB_GAMES=[
    note:'Simplest earn engine — rewards taking the ball early.'},
   {id:'db5',title:'Break the T',tag:'Displacement',
    principle:'Move them off the T — bank a bounce.',
-   logic:'If the opponent contacts the ball OUTSIDE the T corridor, you earn +1 DB. Uses the same T-corridor marking already in the app \u2014 in Poached Egg terms, their contact has come off the egg, toast territory.',
-   earn:['Opponent struck from outside the T corridor → +1 DB'],
+   logic:'Mark a T Zone around the T with tape or cones, sized to the players \u2014 the same marking as T Zone Games (coach, 25 Oct). If the opponent plays the ball from outside the T Zone, the player who moved them there earns +1 DB.',
+   earn:['Opponent plays the ball from outside the T Zone → +1 DB'],
+   rules:v=>['Mark a T Zone around the T.','Opponent plays a shot from outside the T Zone? The other player earns 1 double bounce.','Using a double bounce costs 1.',`Never more than ${v.cap}.`],
    scoring:'Normal rally scoring.',
    note:'Mirror of T Reward — earn by displacing the opponent, not by holding.'},
   {id:'db6',title:'Three Shot Recovery',tag:'Conversion',
@@ -16204,7 +16329,13 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const game=DB_GAMES.find(g=>g.id===gameId)||DB_GAMES[0];
 
   const [startingDB,setStartingDB]=useState(3);
-  const [maxCap,setMaxCap]=useState(5);
+  const [maxCap,setMaxCap]=useState(3);
+  /* v838 (coach, Oct 2026, court-tested): who has double bounces, a give-up penalty judged
+     by the waiting player, the DB Ladder step and The Whistle. */
+  const [whoHas,setWhoHas]=useState('All players');
+  const [giveUp,setGiveUp]=useState(0);
+  const [ladderStep,setLadderStep]=useState(1);
+  const [whistled,setWhistled]=useState(false);
   const [rewardValue,setRewardValue]=useState(1);
   const [costValue,setCostValue]=useState(1);
   const [losePointOnUse,setLosePointOnUse]=useState(false);
@@ -16228,6 +16359,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
       return names.filter(n=>a[n]==='Unlimited DB');}catch{return [];}
   },[names]);
   useEffect(()=>{setLiveEarn(null);},[gameId]);
+  useEffect(()=>{setWhistled(false);setLadderStep(1);},[gameId]);
 
   const [db,setDb]=useState({});
   const [golden,setGolden]=useState({});
@@ -16247,6 +16379,22 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
     setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);
   },[gameId,startingDB,maxCap,namesKey]);
 
+  /* Ladder and Whistle set every counter directly (Infinity = unlimited). Declared after the
+     reset effect so it wins on game change. */
+  useEffect(()=>{
+    if(gameId!=='db10'&&gameId!=='db11')return;
+    const val=gameId==='db10'?({1:Infinity,2:3,3:2,4:1,5:0})[ladderStep]:(whistled?0:Infinity);
+    setDb(()=>{const o={};names.forEach(n=>{o[n]=val;});return o;});
+  },[gameId,ladderStep,whistled,namesKey]);
+  const showDb=v=>Number.isFinite(v??0)?(v??0):'∞';
+  function gaveUp(n){pushUndo();setPoints(p=>({...p,[n]:(p[n]||0)-giveUp}));addLog(n+' stopped chasing → −'+giveUp+' pt');}
+  function rulesLines(){
+    const v={start:startingDB,cap:maxCap,earn:liveEarn||(earnList[0]||''),step:ladderStep,whistled};
+    const L=(game.rules?game.rules(v):[game.logic]).slice();
+    if(whoHas==='Incoming player only')L.push('Only the incoming player has double bounces.');
+    if(giveUp>0)L.push(`Stop chasing a ball? Lose ${giveUp} point${giveUp>1?'s':''}. The waiting player calls it.`);
+    return L.map((x,i)=>`${i+1}. ${x}`).join('\n');
+  }
   function snapshot(){return {db:{...db},golden:{...golden},points:{...points},tcount:{...tcount},recovery:recovery?{...recovery}:null,log:[...log]};}
   function pushUndo(){const s=snapshot();setUndoStack(prev=>[...prev.slice(-29),s]);}
   function addLog(msg){setLog(prev=>[msg,...prev].slice(0,8));}
@@ -16315,12 +16463,12 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
     if(!projecting)return;
     const payload={type:'doublebounce',
       game:{title:game.title,tag:game.tag,principle:game.principle},
-      players:names.map(n=>({name:n,db:db[n]??0,golden:golden[n]||null,points:points[n]??0,tcount:tcount[n]??0})),
+      players:names.map(n=>({name:n,db:showDb(db[n]),golden:golden[n]||null,points:points[n]??0,tcount:tcount[n]??0})),rules:rulesLines(),
       recovery:recovery?{player:recovery.player,shots:recovery.shots}:null,
       lastSteal,maxCap,
-      showPoints:gameId==='db7',showGolden:gameId==='db8',showT:gameId==='db3'};
+      showPoints:gameId==='db7'||giveUp>0,showGolden:gameId==='db8',showT:gameId==='db3'};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'doublebounce',payload);
-  },[projecting,db,golden,points,tcount,recovery,lastSteal,gameId,namesKey,maxCap]);
+  },[projecting,db,golden,points,tcount,recovery,lastSteal,gameId,namesKey,maxCap,whoHas,giveUp,ladderStep,whistled,liveEarn,startingDB]);
 
   async function copyPlayerLink(){
     setProjecting(true);
@@ -16391,6 +16539,9 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
         <div><h4>Scoring</h4><p>{game.scoring}</p></div>
       </div>
       <p className="dbNote">{game.note}</p>
+      {gameId==='db10'&&<div style={{display:'flex',gap:'6px',flexWrap:'wrap',alignItems:'center'}}><span className="mutedText" style={{fontWeight:700}}>Step</span>{[[1,'Unlimited'],[2,'3 each'],[3,'2 each'],[4,'1 each'],[5,'Normal game']].map(([k,l])=><button type="button" key={k} className={ladderStep===k?'primaryBtn':'secondaryBtn'} style={{padding:'6px 11px',fontSize:'0.82rem'}} onClick={()=>setLadderStep(k)}>{k} · {l}</button>)}</div>}
+      {gameId==='db11'&&<div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>{!whistled?<button type="button" className="primaryBtn" onClick={()=>{pushUndo();setWhistled(true);addLog('Whistle — double bounces gone for the rest of the rotation');}}>📣 Blow the whistle</button>:<span className="dbNote" style={{margin:0}}>Whistle blown — no double bounces for the rest of the rotation.</span>}{whistled&&<button type="button" className="secondaryBtn" onClick={()=>setWhistled(false)}>New rotation</button>}</div>}
+      <div className="dbNote" style={{background:'#0f1822',borderColor:'#223044',color:'#dbe6f2',whiteSpace:'pre-line'}}><strong style={{color:'#9fd3f0'}}>Rules players see</strong>{'\n'+rulesLines()}</div>
     </div>
 
     {unlimitedPlayers.length>0&&<div style={{background:'#131a24',border:'1px solid #2e6e8e',borderRadius:'10px',padding:'9px 13px',margin:'0 0 10px'}}>
@@ -16407,6 +16558,8 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
       <label>Max DB cap<select value={maxCap} onChange={e=>setMaxCap(Number(e.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(v=><option key={v} value={v}>{v}</option>)}</select></label>
       <label>Reward<select value={rewardValue} onChange={e=>setRewardValue(Number(e.target.value))}><option value={1}>+1</option><option value={2}>+2</option></select></label>
       <label>Cost<select value={costValue} onChange={e=>setCostValue(Number(e.target.value))}><option value={1}>−1</option><option value={2}>−2</option></select></label>
+      <label>Who has double bounces<select value={whoHas} onChange={e=>setWhoHas(e.target.value)}><option>All players</option><option>Incoming player only</option></select></label>
+      <label>Give-up penalty (waiting player calls it)<select value={giveUp} onChange={e=>setGiveUp(Number(e.target.value))}><option value={0}>Off</option><option value={1}>−1 pt</option><option value={2}>−2 pt</option><option value={3}>−3 pt</option></select></label>
       <label className="dbToggleLabel">Lose point on use<button type="button" className={losePointOnUse?'primaryBtn':'secondaryBtn'} onClick={()=>setLosePointOnUse(!losePointOnUse)}>{losePointOnUse?'ON':'OFF'}</button></label>
       {gameId==='db7'&&<label>Debt penalty<select value={debtPenalty} onChange={e=>setDebtPenalty(Number(e.target.value))}><option value={0}>0 pt</option><option value={1}>1 pt</option><option value={2}>2 pt</option></select></label>}
     </div>}
@@ -16417,10 +16570,10 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
       {names.map(n=>{
         const isStealTarget=stealFrom&&stealFrom!==n;
         return <div className="dbPlayerCard" key={n}>
-          <div className="dbPlayerTop"><strong>{n}</strong>{gameId==='db8'&&<span className={golden[n]==='lost'?'dbGoldenChip dbGoldenLost':'dbGoldenChip'}>{golden[n]==='lost'?'Golden lost':'Golden ●'}</span>}{gameId==='db7'&&<span className="dbPointChip">{points[n]||0} pts</span>}</div>
+          <div className="dbPlayerTop"><strong>{n}</strong>{gameId==='db8'&&<span className={golden[n]==='lost'?'dbGoldenChip dbGoldenLost':'dbGoldenChip'}>{golden[n]==='lost'?'Golden lost':'Golden ●'}</span>}{(gameId==='db7'||giveUp>0)&&<span className="dbPointChip">{points[n]||0} pts</span>}</div>
           <div className="dbCounterRow">
             <button type="button" className="dbCounterBtn dbMinus" onClick={()=>spend(n)}>−</button>
-            <div className="dbCounter"><span className="dbCounterNum">{db[n]??0}</span><span className="dbCounterLabel">DB</span></div>
+            <div className="dbCounter"><span className="dbCounterNum">{showDb(db[n])}</span><span className="dbCounterLabel">DB</span></div>
             <button type="button" className="dbCounterBtn dbPlus" onClick={()=>reward(n,rewardValue)}>+</button>
           </div>
           <div className="dbActionStrip">
@@ -16429,6 +16582,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
             {gameId==='db4'&&<><button type="button" className="dbActionBtn" onClick={()=>reward(n,1)}>Volley Finish +1</button><button type="button" className="dbActionBtn" onClick={()=>reward(n,2)}>Clean Volley Winner +2</button></>}
             {gameId==='db6'&&!recovery&&<button type="button" className="dbActionBtn" onClick={()=>startRecovery(n)}>Spend → recovery</button>}
             {gameId==='db7'&&<><button type="button" className="dbActionBtn" onClick={()=>spendDebt(n)}>Spend (debt)</button><button type="button" className="dbActionBtn" onClick={()=>volleyPoint(n)}>Volley win +pt+DB</button></>}
+            {giveUp>0&&<button type="button" className="dbActionBtn dbActionDanger" onClick={()=>gaveUp(n)}>Gave up −{giveUp}</button>}
             {gameId==='db8'&&golden[n]==='active'&&<><button type="button" className="dbActionBtn dbActionGood" onClick={()=>useGolden(n,true)}>Golden → WON</button><button type="button" className="dbActionBtn dbActionDanger" onClick={()=>useGolden(n,false)}>Golden → LOST</button></>}
           </div>
           {isStealTarget&&<button type="button" className="dbStealTarget" onClick={()=>steal(stealFrom,n)}>Steal from {n}</button>}
@@ -16450,7 +16604,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
       <button type="button" className="dbUndoBtn" onClick={undo} disabled={!undoStack.length}>↶ Undo</button>
       <button type="button" className="secondaryBtn" onClick={resetEconomy}>Reset</button>
       {typeof setSession==='function'&&<UniversalModifierEngine title="Universal Modifiers" context="Double Bounce" value={modifier} onChange={setModifier} presentPlayers={presents} hideDoubleBounce={true}/>}
-      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Double Bounce — '+game.title,category:'Double Bounce',format:'Resource economy',duration:10,task:'Run the Double Bounce Suite live: '+game.title+'. '+game.principle,scoring:game.scoring,rationale:'Double bounce as a resource economy — spend to survive, earn to dominate.',coach:'Debrief the decisions — when they spent, when they held, what they earned.',playerFocus:'Spend a bounce to survive; earn it back through pressure.',modifier,layers:['Double Bounce',...(modifier.constraints||[])],rld:4}));}}>Add to Session</button>}
+      {typeof setSession==='function'&&<button type="button" className="secondaryBtn" onClick={()=>{setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Double Bounce — '+game.title,category:'Double Bounce',format:'Resource economy',duration:10,task:rulesLines(),scoring:game.scoring,rationale:'Double bounce as a resource economy — spend to survive, earn to dominate.',coach:'Debrief the decisions — when they spent, when they held, what they earned.',playerFocus:'Spend a bounce to survive; earn it back through pressure.',modifier,layers:['Double Bounce',...(modifier.constraints||[])],rld:4}));}}>Add to Session</button>}
       <button type="button" className="primaryBtn" onClick={copyPlayerLink}>{projecting?'Player View live ✓ — copy link':'Copy Player Link'}</button>
     </div>
 
@@ -16475,6 +16629,7 @@ function DoubleBounceSuitePlayerDisplay({payload={}}){
           {payload.showT&&<div className="dbDisplayPoints">T-hold {p.tcount}/2</div>}
         </div>)}
       </div>
+      {payload.rules&&<div className="dbDisplayRecovery" style={{whiteSpace:'pre-line',textAlign:'left',fontWeight:600}}>{payload.rules}</div>}
       {rec&&<div className="dbDisplayRecovery">RECOVERY — {rec.player}: <strong>{rec.shots}</strong> shots left</div>}
       {payload.lastSteal&&<div className="dbDisplaySteal">{payload.lastSteal.to} stole a bounce from {payload.lastSteal.from}</div>}
     </div>
@@ -18213,6 +18368,8 @@ const GAME_LIBRARY=[
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CrossCourtFriendOrFoeFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'readtheattack',label:'Read the Attack',category:'Read the Attack',groups:['perception'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><ReadTheAttackFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
+  {id:'tzonegames',label:'T Zone Games',category:'T Zone Games',groups:['perception','pressure'],
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TZoneFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'onsideoffside',label:'Onside Offside',category:'Onside Offside',groups:['technique','perception','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><OnsideOffsideFamily onAdd={addAndGo} openFamily={setActiveClassId}/>},
   {id:'powerdriver',label:'Power Driver',category:'Power Driver',groups:['technique','pressure'],
@@ -22725,7 +22882,7 @@ function devLinkSuggestions(){
   const add=v=>{if(typeof v==='string'&&v.trim())out.push(v.trim());};
   try{GAME_LIBRARY.forEach(g=>{if(g&&g.id!=='custom'&&g.id!=='saved')add(g.label);});}catch{}
   const fams=[
-    ['Cross Court Friend or Foe',()=>CCFF_GAMES],['Onside Offside',()=>ONSIDE_GAMES],['Read the Attack',()=>RTA_GAMES],
+    ['Cross Court Friend or Foe',()=>CCFF_GAMES],['Onside Offside',()=>ONSIDE_GAMES],['T Zone Games',()=>TZONE_GAMES],['Read the Attack',()=>RTA_GAMES],
     ['Crosscourt Choice',()=>CXC_GAMES],['Boast',()=>BOAST_GAMES],['Drop & Lob',()=>DBL_GAMES],
     ['Double Bounce',()=>DB_GAMES],['Tin War',()=>TINWAR_GAMES],['Classic Constraint',()=>CLASSIC_CONSTRAINT_GAMES]
   ];
@@ -24868,7 +25025,7 @@ function parentPackText(){
 // Games Library family via its classId, or an app screen). Add problems here; the screen,
 // the search entries and the groups all read from this one list. v786: titles marked ma:true
 // use the Match Analysis app's own cause tags word for word, so an analysed match leads here.
-const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Power Driver — Penetrating Drive", "c": "powerdriver", "note": "Low drives that must still reach the back"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Boast — Punish the Boast", "c": "boast", "note": "A loose boast hands the opponent a bonus"}, {"label": "Boast — Dead Boast", "c": "boast", "note": "The boast must die in the far front corner"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Unnecessary Boast", "ma": true, "see": "Boasting from a ball that could be driven back to length — the boast may be tight, but it was the wrong choice.", "games": [{"label": "Boast — Back-Wall Boast Only", "c": "boast", "note": "Boast only when the straight ball has gone"}, {"label": "Boast — Boast with a Plan", "c": "boast", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}]}, {"group": "Movement and recovery", "title": "Poor Spacing", "ma": true, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late Preparation", "ma": true, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Punish the Cross, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Power Driver — Kill", "c": "powerdriver", "note": "A low kill that dies in the front court"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
+const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Power Driver — Penetrating Drive", "c": "powerdriver", "note": "Low drives that must still reach the back"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Boast — Punish the Boast", "c": "boast", "note": "A loose boast hands the opponent a bonus"}, {"label": "Boast — Dead Boast", "c": "boast", "note": "The boast must die in the far front corner"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}, {"label": "T Zone Games", "c": "tzonegames", "note": "A crosscourt cut off from the T Zone loses the rally — court-tested"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "T Zone Games", "c": "tzonegames", "note": "Short only when the opponent is outside the T Zone — court-tested"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Unnecessary Boast", "ma": true, "see": "Boasting from a ball that could be driven back to length — the boast may be tight, but it was the wrong choice.", "games": [{"label": "Boast — Back-Wall Boast Only", "c": "boast", "note": "Boast only when the straight ball has gone"}, {"label": "Boast — Boast with a Plan", "c": "boast", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}, {"label": "T Zone Games", "c": "tzonegames", "note": "Rotating drives: back to the T Zone or lose the rally — court-tested"}]}, {"group": "Movement and recovery", "title": "Poor Spacing", "ma": true, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late Preparation", "ma": true, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "T Zone Games", "c": "tzonegames", "note": "The waiting player calls “Go” when the opponent leaves the T Zone"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Punish the Cross, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Power Driver — Kill", "c": "powerdriver", "note": "A low kill that dies in the front court"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
 function MatchProblemIndex({setScreen}){
   const groups=[...new Set(MATCH_PROBLEMS.map(p=>p.group))];
   const [open,setOpen]=useState(null);
@@ -25834,7 +25991,9 @@ const SEARCH_DESTINATIONS=[
   {label:'Noughts & Crosses Squash',sub:'Games Library',kw:'noughts crosses tic tac toe board team',screen:'games',classId:'noughtscrosses'},
   {label:'Custom Game Builder',sub:'Games Library',kw:'custom build your own game',screen:'games',classId:'custom'},
   {label:'Information / Anticipation',sub:'Games Library',kw:'information anticipation early read pattern',screen:'games',classId:'information'},
-  {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal',screen:'games',classId:'doubleBounce'},
+  {label:'Double Bounce Suite',sub:'Games Library',kw:'double bounce suite bank steal ladder whistle give up',screen:'games',classId:'doubleBounce'},
+  {label:'Poached Egg Model',sub:'Tactical Pressure · court diagram',kw:'poached egg model yolk egg white toast t corridor central control diagram court map pressure point',screen:'games',classId:'tacticalpressure'},
+  {label:'T Zone Games',sub:'Games Library · five court-tested games',kw:'t zone recovery rotating drives crosscourt cut off short go call t corridor',screen:'games',classId:'tzonegames'},
   {label:'Tin War',sub:'Games Library',kw:'tin war height ladder climb',screen:'games',classId:'tinwar'},
   {label:'Disruption Rotations',sub:'Games Library · Rotations',kw:'disruption rotations chaos predator court battle',screen:'games',classId:'rotations'},
   {label:'Shot Bonus Rally',sub:'Games Library · Standalone',kw:'shot bonus rally repetition finish tactical live tally zone restriction affordance straight drop central corridor volley boast',screen:'gamesLibrary'},
