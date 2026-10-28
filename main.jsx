@@ -1,3 +1,4 @@
+// v847: every Double Bounce Suite game has short numbered player rules (P32); Golden Bounce and Court Currency 'Earn DB' lists keep only real earn conditions (coach, 28 Oct)
 // v846: [7-1] and [8-2] accepted as crosscourt drops near the seam; only high front-wall (5, 6) to front-court codes are flagged (coach, 28 Oct)
 // v845: custom-code warning in Checkerboard setup rewritten in plain words (coach, 28 Oct: 'this message is confusing')
 // v844: player display — page always scrolls; on landscape screens the rules fill the left half and the Checkerboard court map the right half (smaller rules text, map scaled to the screen height) so nothing runs off the screen (coach, 26 Oct)
@@ -364,7 +365,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v846 Crosscourt Drop Codes';
+const APP_VERSION='v847 DB Rules For Kids';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -16136,18 +16137,21 @@ const DB_GAMES=[
    principle:'Win the right way and take a bounce off your opponent.',
    logic:'Using a DB costs 1. Win with a volley winner or a front-court attack and you STEAL 1 DB from your opponent.',
    earn:['Volley Finish → steal 1','Straight Drop or Straight Kill wins the rally → steal 1'],
+   rules:v=>[`Each player starts with ${v.start} double bounces.`,'Using a double bounce costs 1.','Win the rally with a volley, a straight drop or a straight kill? Take 1 double bounce from the opponent.','Nobody can go below 0.'],
    scoring:'Normal rally scoring. The steal moves 1 DB loser → winner.',
    note:'Refinement: a player can never be stolen below 0 — the steal only moves what is there.'},
   {id:'db3',title:'T Reward',tag:'Earned T',
    principle:'Hold the T under pressure and bank a bounce.',
    logic:'Earn DB by EARNING the T: hold it for 2 consecutive opponent contacts straight after you have attacked or moved the opponent. Passive camping does not count.',
    earn:['Hold earned T for 2 consecutive opponent contacts → +1 DB, then reset'],
+   rules:v=>[`Each player starts with ${v.start} double bounces.`,'Using a double bounce costs 1.','Attack or move the opponent, then stay on the T for their next 2 shots: earn 1 double bounce.','Just standing on the T does not count.',`Never more than ${v.cap}.`],
    scoring:'Normal rally scoring. The T-hold counter runs live.',
    note:'Refinement: reward is for T won through pressure, not for standing on the T.'},
   {id:'db4',title:'Volley Harvest',tag:'Volley',
    principle:'Only volleys pay.',
    logic:'Only volleys earn DB. 1) Volley Finish = +1 DB \u2014 the volley ends the rally, including where the opponent got a racket to it. 2) Clean Volley Winner = +2 DB \u2014 the opponent gets no racket on the ball in any way. 3) Using a double bounce = minus 1 DB. Both are ball checks both players can see.',
    earn:['Volley Finish (volley ends the rally) → +1 DB','Clean Volley Winner (no racket on it) → +2 DB'],
+   rules:v=>[`Each player starts with ${v.start} double bounces.`,'Using a double bounce costs 1.','Win the rally with a volley: earn 1.','Volley winner they can’t touch: earn 2.',`Never more than ${v.cap}.`],
    scoring:'Normal rally scoring.',
    note:'Simplest earn engine — rewards taking the ball early.'},
   {id:'db5',title:'Break the T',tag:'Displacement',
@@ -16161,24 +16165,28 @@ const DB_GAMES=[
    principle:'Survive now — but pay it back fast.',
    logic:'Spend a DB and a 3-shot recovery window opens. Regain the T and win the rally within 3 shots to restore the DB. Miss the window and the DB is gone.',
    earn:['Win within the 3-shot window after a spend → restore the DB'],
+   rules:v=>[`Each player starts with ${v.start} double bounces.`,'After using a double bounce, the player has 3 shots.','Win the rally within those 3 shots? The double bounce comes back.','Don’t win in 3 shots? It’s gone.'],
    scoring:'Normal rally scoring. The recovery counter runs live.',
    note:'Conversion-window pressure: capitalise quickly or lose the resource.'},
   {id:'db7',title:'Pressure Debt',tag:'Loss-aversion',
    principle:'Survival costs you on the scoreboard.',
    logic:'Using a DB costs 1 DB AND a point penalty. Win the rally with a volley and you earn +1 point and +1 DB.',
    earn:['Volley Finish → +1 point and +1 DB'],
+   rules:v=>[`Each player starts with ${v.start} double bounces.`,`Using a double bounce costs 1 double bounce${v.debt>0?` and ${v.debt} point${v.debt>1?'s':''}`:''}.`,'Win the rally with a volley: earn 1 point and 1 double bounce.',`Never more than ${v.cap}.`],
    scoring:'Live point tracker. A DB spend applies the point penalty.',
    note:'Refinement: the point penalty is configurable (0 / 1 / 2) so spending stays a live option, not a trap.'},
   {id:'db9',title:'Court Currency',tag:'Promotion',
    principle:'Earn bounces here — spend them on the harder court.',
-   logic:'Runs alongside monarch / king-of-court rotation. Volley a ball and win the rally within 3 shots of that volley → bank 1 DB. Banked DB travel WITH the player when promoted and are spent to survive on the harder court. Relegated players keep nothing — the bank resets.',
-   earn:['Volley taken, then the rally won within 3 shots of it → +1 DB (banked)','Promoted → take your bank with you','Relegated → bank resets to 0'],
+   logic:'Runs alongside monarch / king-of-court rotation. Volley a ball and win the rally within 3 shots of that volley → bank 1 DB. Banked DB travel WITH the player when promoted and are spent to survive on the harder court. Relegated players keep nothing — the bank resets to 0.',
+   earn:['Volley taken, then the rally won within 3 shots of it → +1 DB (banked)'],
+   rules:v=>['Play winner-stays-on across the courts.','Volley, then win the rally within 3 shots: bank 1 double bounce.','Move up a court? The banked double bounces come too.','Move down a court? The bank goes back to 0.','Use banked double bounces to survive on the harder court.'],
    scoring:'Normal rally scoring on every court. The bank is the bridge between courts.',
    note:'The earn condition is the promotion skill itself — taking the ball early and converting fast — so the currency is earned by the behaviour the harder court will demand.'},
   {id:'db8',title:'Golden Bounce',tag:'Clutch',
    principle:'One bounce, all-or-nothing.',
    logic:'Each player has 1 Golden DB. Use it and win the rally → you keep it. Use it and lose → it is gone for good. Normal DB are unaffected.',
-   earn:['Use Golden + win → retain','Use Golden + lose → lost permanently'],
+   earn:[],
+   rules:v=>['Each player has one Golden double bounce.','Use it: let the ball bounce twice and still play it.','Win that rally? Keep the Golden double bounce.','Lose that rally? It’s gone for the rest of the game.','Normal double bounces work as usual.'],
    scoring:'Normal rally scoring.',
    note:'A pure commitment decision — when do you bet the golden bounce?'},
 ];
@@ -16406,7 +16414,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const showDb=v=>Number.isFinite(v??0)?(v??0):'∞';
   function gaveUp(n){pushUndo();setPoints(p=>({...p,[n]:(p[n]||0)-giveUp}));addLog(n+' stopped chasing → −'+giveUp+' pt');}
   function rulesLines(){
-    const v={start:startingDB,cap:maxCap,earn:liveEarn||(earnList[0]||''),step:ladderStep,whistled};
+    const v={start:startingDB,cap:maxCap,earn:liveEarn||(earnList[0]||''),step:ladderStep,whistled,debt:debtPenalty,cost:costValue};
     const L=(game.rules?game.rules(v):[game.logic]).slice();
     if(whoHas==='Incoming player only')L.push('Only the incoming player has double bounces.');
     if(giveUp>0)L.push(`Stop chasing a ball? Lose ${giveUp} point${giveUp>1?'s':''}. The waiting player calls it.`);
