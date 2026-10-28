@@ -1,3 +1,5 @@
+// v846: [7-1] and [8-2] accepted as crosscourt drops near the seam; only high front-wall (5, 6) to front-court codes are flagged (coach, 28 Oct)
+// v845: custom-code warning in Checkerboard setup rewritten in plain words (coach, 28 Oct: 'this message is confusing')
 // v844: player display — page always scrolls; on landscape screens the rules fill the left half and the Checkerboard court map the right half (smaller rules text, map scaled to the screen height) so nothing runs off the screen (coach, 26 Oct)
 // v843: Negative Scoring preset — crosscourt cut off by an opponent with a foot in the T Zone (coach, 26 Oct)
 // v842: Checkerboard — coach's default scoring (rally 1; complete single +1 / pair +2 / triple +3; win after completing +2; challenge finish = win the rally with a code shot +2; no clean-winner bonus); target bonuses renamed; group codes flash on the player-display court map (wall zone, then floor zone, in turn; alternatives in different colours)
@@ -362,7 +364,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v844 Display Fit';
+const APP_VERSION='v846 Crosscourt Drop Codes';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -9301,8 +9303,9 @@ function cbCodeIssue(code){
   const bad=[];const re=/(\d)\s*-\s*(\d)/g;let m;
   while((m=re.exec(code||''))){
     const w=m[1],f=m[2];
-    if(f==='1'&&w!=='8')bad.push(`[${w}-${f}]`);
-    if(f==='2'&&w!=='7')bad.push(`[${w}-${f}]`);
+    /* v846 (coach, 28 Oct): a crosscourt drop close to the seam makes [7-1] and [8-2] real
+       shots. Only a high front-wall ball (5, 6) landing in the front court is flagged. */
+    if((f==='1'||f==='2')&&(w==='5'||w==='6'))bad.push(`[${w}-${f}]`);
   }
   return bad;
 }
@@ -9463,7 +9466,7 @@ function CbCustomInput({optional,next,onAdd}){
       <button type="button" className="cbsetMiniBtn" onClick={add}>Add</button>
     </div>
     {issues.length>0
-      ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')}: to land front-floor off the front wall, only [8-1] and [7-2] work in open play — those are the paths, and a boast, a crosscourt drop and a straight drop all take them. It's valid in constraint games like ATL, so add it if that's the context.</p>
+      ? <p className="cbsetCustomWarn">⚠ {issues.join(', ')} {issues.length>1?'almost never happen':'almost never happens'} in a normal rally: a ball that hits the front wall high does not land short. Short balls in zones 1 and 2 come off the low zones, 7 and 8. Add {issues.length>1?'them':'it'} only for a special game where the shot is set up on purpose, such as Above The Line (ATL).</p>
       : <p className="cbsetCustomHint">Type any code — single, pair or triple. Just numbers, e.g. 5-4 6-3 8-1; brackets are added for you.</p>}
   </div>;
 }
