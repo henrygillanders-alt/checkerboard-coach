@@ -1,3 +1,4 @@
+// v852: P33 — never use cones when tape will suffice; 'tape or cones' → 'tape' in T Zone, corridor and Break the T text (coach, 28 Oct)
 // v851: Corridor Games series — NFC 1–2, NFL 1–3 and 'NFC or NFL?' on the marked corridor; 'when to cross' left to Onside Offside (coach, 28 Oct)
 // v850: Negative Scoring names both corridor errors — NFC (non-functional crosscourt) and NFL (non-functional length) — alongside 'any shot' (coach, 28 Oct)
 // v849: Negative Scoring — marked corridor faults (crosscourt cut off from the corridor; any shot cut off from the corridor) and the 'penalty no bigger than the rally' guidance (coach, 28 Oct, court-tested)
@@ -369,7 +370,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v851 Corridor Games';
+const APP_VERSION='v852 Tape Not Cones';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8634,7 +8635,7 @@ const COR_GAMES_DEF=[
 const CORRIDOR_GAMES=COR_GAMES_DEF.map((d,i)=>({id:'corridor-'+d.key,stage:i+1,boastRule:false,title:d.title,rld:d.rld,duration:8,tag:d.tag,format:'Constrained game — marked corridor',
   from:d.why+' Court-tested corridor, Oct 2026.',
   rule:(v)=>{const L=['Mark '+({Narrow:'a narrow',Medium:'a medium',Wide:'a wide'}[v.corWidth]||'a')+' corridor: a strip from the front wall to the back wall, through the T.',...d.lines(v)];return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  coach:'Mark the corridor with tape or cones; widen it to make the game harder, narrow it to make it easier. The player not hitting makes the call; with a waiting player, they call it. Keep the penalty at losing the rally — a bigger penalty makes players stop competing or avoid the shot. Next: '+d.next+' Use it when: '+d.use,
+  coach:'Mark the corridor with tape; widen it to make the game harder, narrow it to make it easier. The player not hitting makes the call; with a waiting player, they call it. Keep the penalty at losing the rally — a bigger penalty makes players stop competing or avoid the shot. Next: '+d.next+' Use it when: '+d.use,
   focus:d.focus,
   score:(v)=>{const L=['Win a rally = '+(v.corRally||1)+' point'+((v.corRally||1)>1?'s':'')+'.'];if(d.bonus)L.push(d.bonus(v));return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
   stepper:[{k:'corWidth',label:'Corridor width',type:'select',options:['Narrow','Medium','Wide']},...(d.bonus?[{k:'corBonus',label:'Bonus',min:1,max:3,sign:'+'}]:[]),{k:'corRally',label:'Rally win',min:1,max:3,sign:'+'}],
@@ -13809,7 +13810,7 @@ const PENALTY_PRESETS=[
   /* v843 (coach, 26 Oct): same marked T Zone as T Zone Games */
   {id:'ccCutOffT',label:'Crosscourt cut off by an opponent with a foot in the T Zone'},
   /* v849 (coach, 28 Oct, court-tested): the marked central corridor — a strip running front to
-     back through the T, tape or cones, width set to the players. Crosscourts first (the commonest
+     back through the T, marked with tape, width set to the players. Crosscourts first (the commonest
      junior error), then any shot, once loose lengths and boasts start being cut off instead. */
   {id:'ccCutOffCorr',label:'Non-functional crosscourt (NFC): crosscourt cut off from the corridor'},
   /* v850 (coach, 28 Oct): the non-functional length is the second biggest cause of trouble in
@@ -13856,7 +13857,7 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
     {enabled&&<>
       <div className="statusBox"><strong>Preset faults</strong><p>Set a deduction to switch a fault on. Leave it on Off to ignore it. One step past -5 is Forfeit rally.</p>
         <p style={{marginTop:6}}><strong>Keep a penalty no bigger than the rally.</strong> If a fault costs more than losing the rally, players stop competing to protect a lead, or avoid the shot altogether (court-tested, Oct 2026). <strong>Forfeit rally</strong> is usually the right setting.</p>
-        <p style={{marginTop:6}}><strong>The corridor:</strong> mark a central strip with tape or cones, running front to back through the T, its width set to the players. Two errors matter most in matches: the <strong>non-functional crosscourt (NFC)</strong>, the commonest, and the <strong>non-functional length (NFL)</strong>, the next. Switch both on by name so players learn which one they made. Use <em>Any shot cut off from the corridor</em> on top to close the boast loophole.</p></div>
+        <p style={{marginTop:6}}><strong>The corridor:</strong> mark a central strip with tape, running front to back through the T, its width set to the players. Two errors matter most in matches: the <strong>non-functional crosscourt (NFC)</strong>, the commonest, and the <strong>non-functional length (NFL)</strong>, the next. Switch both on by name so players learn which one they made. Use <em>Any shot cut off from the corridor</em> on top to close the boast loophole.</p></div>
       <div className="dbAllocationGrid">
         {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}{presetPoints[p.id]>=PENALTY_FORFEIT&&<em style={{display:'block',color:'#c98a8a',fontSize:'0.78rem'}}>Rally is forfeited on this fault</em>}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={PENALTY_FORFEIT} zeroLabel="Off" sign="-"/></div>)}
       </div>
@@ -16213,7 +16214,7 @@ const DB_GAMES=[
    note:'Simplest earn engine — rewards taking the ball early.'},
   {id:'db5',title:'Break the T',tag:'Displacement',
    principle:'Move them off the T — bank a bounce.',
-   logic:'Mark a T Zone around the T with tape or cones, sized to the players \u2014 the same marking as T Zone Games (coach, 25 Oct). If the opponent plays the ball from outside the T Zone, the player who moved them there earns +1 DB.',
+   logic:'Mark a T Zone around the T with tape, sized to the players \u2014 the same marking as T Zone Games (coach, 25 Oct). If the opponent plays the ball from outside the T Zone, the player who moved them there earns +1 DB.',
    earn:['Opponent plays the ball from outside the T Zone → +1 DB'],
    rules:v=>['Mark a T Zone around the T.','Opponent plays a shot from outside the T Zone? The other player earns 1 double bounce.','Using a double bounce costs 1.',`Never more than ${v.cap}.`],
    scoring:'Normal rally scoring.',
