@@ -1,3 +1,4 @@
+// v848: Golden Bounce rebuilt to the coach's rules — the Golden is the first double bounce used in a rally; win → Golden kept, normal ones used are gone (won back by the challenge); lose → Golden gone for the rotation (28 Oct)
 // v847: every Double Bounce Suite game has short numbered player rules (P32); Golden Bounce and Court Currency 'Earn DB' lists keep only real earn conditions (coach, 28 Oct)
 // v846: [7-1] and [8-2] accepted as crosscourt drops near the seam; only high front-wall (5, 6) to front-court codes are flagged (coach, 28 Oct)
 // v845: custom-code warning in Checkerboard setup rewritten in plain words (coach, 28 Oct: 'this message is confusing')
@@ -365,7 +366,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v847 DB Rules For Kids';
+const APP_VERSION='v848 Golden Bounce Rules';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -16182,13 +16183,13 @@ const DB_GAMES=[
    rules:v=>['Play winner-stays-on across the courts.','Volley, then win the rally within 3 shots: bank 1 double bounce.','Move up a court? The banked double bounces come too.','Move down a court? The bank goes back to 0.','Use banked double bounces to survive on the harder court.'],
    scoring:'Normal rally scoring on every court. The bank is the bridge between courts.',
    note:'The earn condition is the promotion skill itself — taking the ball early and converting fast — so the currency is earned by the behaviour the harder court will demand.'},
-  {id:'db8',title:'Golden Bounce',tag:'Clutch',
+  {id:'db8',title:'Golden Bounce',tag:'Clutch · coach rules',
    principle:'One bounce, all-or-nothing.',
-   logic:'Each player has 1 Golden DB. Use it and win the rally → you keep it. Use it and lose → it is gone for good. Normal DB are unaffected.',
-   earn:[],
-   rules:v=>['Each player has one Golden double bounce.','Use it: let the ball bounce twice and still play it.','Win that rally? Keep the Golden double bounce.','Lose that rally? It’s gone for the rest of the game.','Normal double bounces work as usual.'],
+   logic:'Coach rules (28 Oct). Each player has their normal double bounces (e.g. 3) plus 1 Golden. The first double bounce used in a rally is always the Golden; any more in the same rally are normal ones. Win the rally → the Golden is kept; the normal ones used are gone, but can be won back by meeting the challenge. Lose the rally → the Golden is gone for the rest of the rotation (normal ones used are gone too). Coach: after the rally tap Golden → WON or Golden → LOST, and Use DB for each normal one spent.',
+   earn:['Clean volley winner','Clean tramline winner, 3 to 3 or 4 to 4'],
+   rules:v=>[`Each player has ${v.start} double bounces plus 1 Golden.`,'The first double bounce used in a rally is always the Golden.','Any more in the same rally are normal ones.','Win the rally? Keep the Golden. Normal ones used are gone.','Lose the rally? The Golden is gone for the rest of the rotation.',v.earn?`Win a normal one back: ${v.earn}.`:'Win a normal one back by meeting the challenge.',`Never more than ${v.cap} normal ones.`],
    scoring:'Normal rally scoring.',
-   note:'A pure commitment decision — when do you bet the golden bounce?'},
+   note:'A pure commitment decision — when is it worth betting the Golden? Spending a normal one on top of it raises the stakes in that rally.'},
 ];
 
 function DBSuiteStyles(){
