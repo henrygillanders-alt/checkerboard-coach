@@ -1,3 +1,4 @@
+// v844: player display — page always scrolls; on landscape screens the rules fill the left half and the Checkerboard court map the right half (smaller rules text, map scaled to the screen height) so nothing runs off the screen (coach, 26 Oct)
 // v843: Negative Scoring preset — crosscourt cut off by an opponent with a foot in the T Zone (coach, 26 Oct)
 // v842: Checkerboard — coach's default scoring (rally 1; complete single +1 / pair +2 / triple +3; win after completing +2; challenge finish = win the rally with a code shot +2; no clean-winner bonus); target bonuses renamed; group codes flash on the player-display court map (wall zone, then floor zone, in turn; alternatives in different colours)
 // v841: Checkerboard session card (player display) rewritten as kid lines — what a code means, the codes, how many, order, level window, (SA); kid scoring lines; full coach wording kept in the card's coach field (coach, 26 Oct)
@@ -361,7 +362,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v843 T Zone Penalty';
+const APP_VERSION='v844 Display Fit';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1489,21 +1490,34 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
     {/* v793 (coach, 30 Sep): players see the task and nothing else — "I stretched the screen to show
         only the task narrative; that was certainly better". Rationale, focus and constraints are
         the coach's to communicate. Scoring appears only if the coach switches it on for the game. */}
+    {(()=>{const isCb=chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'));return <div className={isCb?'pdBody pdWithMap':'pdBody'}>
+    <style>{`
+/* v844 (coach, 26 Oct: "information bleeds off screen"): the page always scrolls, and on a
+   landscape screen the Checkerboard map sits beside the rules so both fit without scrolling. */
+.playerDisplayPage.pdGamePage{overflow-y:auto!important;-webkit-overflow-scrolling:touch;height:auto!important;min-height:100vh;min-height:100dvh;max-height:none!important;padding-bottom:calc(60px + env(safe-area-inset-bottom));box-sizing:border-box;}
+@media (min-width:900px) and (orientation:landscape){
+  .pdWithMap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
+  .pdWithMap .pdTaskText{font-size:clamp(1.2rem,2.5vw,2.2rem);}
+  .pdWithMap .pdMapCol{margin-top:14px;}
+  .pdWithMap .pdMapCol svg{width:100%!important;max-width:100%!important;height:calc(100dvh - 300px)!important;min-height:320px;}
+}
+`}</style>
     <div className="pdTaskOnly">
       <div className="pdTaskText">{what}</div>
       {dbText&&<div className="pdTaskExtra"><div className="pdGlanceLabel">DB ALLOCATIONS</div><div>{dbText}</div></div>}
       {chosen&&chosen.showScoring&&<div className="pdTaskExtra"><div className="pdGlanceLabel">SCORE</div><div>{score}</div></div>}
     </div>
-    {chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'))&&
-      <div className="claRationaleBox" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
+    {isCb&&
+      <div className="claRationaleBox pdMapCol" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
         <h2 style={{color:'#9fd0f5'}}>Checkerboard Court Map</h2>
         <CheckerboardCourtMap compact codes={cbParseFlashCodes(chosen.task)}/>
       </div>}
+    </div>;})()}
   </div>;
 }
 function PlayerDisplayView({session,setScreen,sharedGame=null}){
   const [selectedIndex,setSelectedIndex]=useState(0);
-  return <div className="playerDisplayPage">
+  return <div className="playerDisplayPage pdGamePage">
     {!sharedGame&&<div className="playerDisplayControls"><button className="secondaryBtn" onClick={()=>setScreen('home')}>← Coach App</button><button className="secondaryBtn" onClick={()=>setScreen('sessions')}>Session Builder</button></div>}
     <PlayerDisplayCard game={sharedGame} session={session} selectedIndex={selectedIndex} onSelect={setSelectedIndex}/>
   </div>;
