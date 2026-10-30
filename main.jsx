@@ -1,3 +1,4 @@
+// v853: Tin War 'Rising Tax' rebuilt as 'Bonus Shots' — no shot lists; Soft or Strict; stages Discover / Name it / Code it (Checkerboard codes); taped Lines 1–4; points per line; no minus points; kid rules (coach, 29 Oct)
 // v852: P33 — never use cones when tape will suffice; 'tape or cones' → 'tape' in T Zone, corridor and Break the T text (coach, 28 Oct)
 // v851: Corridor Games series — NFC 1–2, NFL 1–3 and 'NFC or NFL?' on the marked corridor; 'when to cross' left to Onside Offside (coach, 28 Oct)
 // v850: Negative Scoring names both corridor errors — NFC (non-functional crosscourt) and NFL (non-functional length) — alongside 'any shot' (coach, 28 Oct)
@@ -370,7 +371,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v852 Tape Not Cones';
+const APP_VERSION='v853 Bonus Shots';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -16789,8 +16790,14 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
-const TINWAR_DEFAULTS={tw1:{win:1,loss:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
+const TINWAR_DEFAULTS={tw1:{win:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
 const TINWAR_BONUS_TABLE_DEFAULT={1:1,2:2,3:3,4:4,5:5};
+/* v853 (coach, 29 Oct): Bonus Shots (was Rising Tax). No shot lists — players work out which
+   winners still clear their line. Coach picks Soft or Strict and a stage: 1 Discover, 2 Name it
+   (call the Checkerboard code, a learning call), 3 Code it (only chosen codes earn the bonus).
+   Levels: 0 = tin, 1–4 = taped lines; bonus-table keys are level+1. */
+const TW_LINE_NAMES=['Tin','Line 1','Line 2','Line 3','Line 4'];
+const TW_CODE_CHOICES=['[5-4]','[6-3]','[5-3]','[6-4]','[7-2]','[8-1]','[7-1]','[8-2]','[7-3]','[8-4]'];
 const TINWAR_GAMES=[
   {id:'tw2',title:'Climb',tag:'Full wall leveller',
    principle:'The more you win, the less bottom wall you have.',
@@ -16800,14 +16807,14 @@ const TINWAR_GAMES=[
    scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
    example:'Alice starts on Full Wall. She wins rally 1 — her wall steps up to 15cm removed, so every shot she plays from now on, builds and finishers alike, must clear that line. She wins rally 2 — 30cm removed. She loses rally 3 — no change, her wall stays at 30cm removed. She wins rally 4 — 65cm removed, and the game keeps getting harder only for her, only because she keeps winning.',
    note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
-  {id:'tw1',title:'Rising Tax',tag:'Shot trigger',
-   principle:'Your tax height only ever applies to the specific shot you\u2019re nominated to trigger with — clear it and the bonus grows; miss it and it\u2019s a fault, exactly like your own personal tin. Every other shot in the rally is unrestricted.',
-   setup:'All players start at zero tax (Full Wall). Coach nominates the trigger-shot list before play begins, and sets the bonus for each tax height below — that\u2019s the only thing set in advance.',
-   player:'Ordinary shots (not on the coach\u2019s nominated list) are always full court, no restriction — win with one and you score {WIN} flat, tax untouched. When you go for one of the nominated trigger shots, your current tax height applies to that shot only: clear it and it\u2019s a trigger-shot win — {WIN} plus the bonus for your current height, and your tax climbs one more height for next time. Fail to clear it and it\u2019s a fault, same as hitting your own tin — the rally is lost like any other loss: \u2212{LOSS} points, tax unchanged.',
-   logic:'WALL RULE: applies only at the moment you attempt a nominated trigger shot — nowhere else in the rally. This is why a shot like a kill, which is naturally played low, gets genuinely risky to use once your tax height is high: it may no longer be physically possible to land it above your line. At that point, switch to a nominated shot that can still clear the height — a drop played with more loop, or a straight winner hit higher — rather than forcing the kill. Coach sets a bonus value for each of the five tax heights individually; they don\u2019t have to rise in equal steps, since climbing from height 4 to 5 is harder than climbing from 0 to 1.',
-   scoring:'Ordinary win (non-nominated shot, full court) = +{WIN} flat, tax untouched. Trigger shot clearing your tax height = +{WIN} plus that height\u2019s bonus, tax height +1. Trigger shot failing to clear your tax height = fault, rally lost like any other loss: \u2212{LOSS}, tax unchanged. Loss on a non-trigger rally = \u2212{LOSS}, floored at 0.',
-   example:'Alice\u2019s tax height is 3 (65cm removed). She goes for a straight kill winner — one of the nominated shots — but a kill is naturally low, and it lands below her raised line. That\u2019s a fault, same as hitting the tin: rally lost to Bob, no bonus, tax stays at 3. Next rally, she instead plays a straight drop winner with more height, clearing her line comfortably — trigger-shot win: {WIN} plus height 3\u2019s bonus, tax climbs to 4. In between, an ordinary rally win (any shot not on the nominated list) always just scores {WIN} flat, full court, no height check at all.',
-   note:'Use only clear winning-shot triggers, such as volley winner, straight drop winner, boast winner, trickle boast winner, straight kill winner or counter-drop winner. If a nominated shot becomes impossible to land at the group\u2019s highest tax heights, swap it out for one that stays viable.'},
+  {id:'tw1',title:'Bonus Shots',tag:'Your line goes up',
+   principle:'Hit a winner above your own line for bonus points — then your line goes up, and you have to find a winner that still works.',
+   setup:'Mark 4 lines on the front wall above the tin with tape: Line 1 to Line 4. Choose Soft or Strict, and the stage, below.',
+   player:'',
+   logic:'SOFT: no risk, only a reward — for younger players and early levels. STRICT: a winner under the line is a tin — for experienced players. STAGES: 1 Discover — any winner counts; players find out which finishing shots still work as their line rises. 2 Name it — after a bonus win the other player calls the Checkerboard code of the winner; a learning call, no points. 3 Code it — choose 1 to 3 codes; only a winner matching one earns the bonus. As the line rises, codes off the low front wall (7, 8) stop working, so players work out which still do. Previously called Rising Tax.',
+   scoring:'',
+   example:'Soft, stage 1. Alice is on Line 2. She hits a drop winner above Line 2: 4 points, and moves up to Line 3. Next rally she wins with a low kill: 1 point, and stays on Line 3. In Strict, that low kill would be a tin — she would lose the rally.',
+   note:'If nobody goes for the bonus, raise the points. If players keep forcing hopeless low winners, the line is doing its job.'},
   {id:'tw3',title:'King Hunt',tag:'Score-leader crown',
    principle:'The King is whoever is winning on the scoreboard, not whoever is on court. Only overtaking the King\u2019s score wins the crown.',
    setup:'All players start at 0–0. Nobody is King until someone wins the very first point.',
@@ -16867,6 +16874,21 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const [stationCourts,setStationCourts]=useState(()=>[]);
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [bonusTable,setBonusTable]=useState(()=>({...TINWAR_BONUS_TABLE_DEFAULT}));
+  const [twMode,setTwMode]=useState('Soft');
+  const [twStage,setTwStage]=useState(1);
+  const [twCodes,setTwCodes]=useState(()=>['[5-4]','[6-3]']);
+  function toggleTwCode(cd){setTwCodes(p=>p.includes(cd)?p.filter(x=>x!==cd):(p.length>=3?p:[...p,cd]));}
+  const twPoints=L=>(Number(cfg.win)||1)+(Number(bonusTable[L+1])||0);
+  function twRules(){
+    const L=['Each player has their own line. It starts at the tin.','A winner is a shot the opponent can’t return.'];
+    if(twStage===3)L.push(`Bonus codes: ${twCodes.join(' or ')||'—'}.`);
+    L.push(twStage===3?'A bonus-code winner above the line: bonus points. Then the line goes up one.':'A winner above the line: bonus points. Then the line goes up one.');
+    if(twMode==='Strict')L.push('A winner under the line counts as a tin. The rally is lost.');
+    L.push(`Any other rally won: ${cfg.win||1} point.`);
+    if(twStage===2)L.push('After a bonus win, the other player calls the code, like [5-4].');
+    return L.map((x,k)=>(k+1)+'. '+x).join('\n');
+  }
+  const twScoring=()=>`Any rally won: ${cfg.win||1} point.\nWinner above the line:`+'\n'+TW_LINE_NAMES.map((n,L)=>`On ${n==='Tin'?'the tin':n}: ${twPoints(L)} points`).join('\n');
   function setBonusHeight(h,val){setBonusTable(p=>({...p,[h]:val}));}
   const base=useMemo(()=>{const cm=getCourtModeFromUrl();return cm?cm.host:getPersistentLiveRoomId();},[]);
   function toggleTrigger(t){setSelectedTriggers(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);}
@@ -16875,18 +16897,18 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const cfg={...defaults,...(cfgByGame[gameId]||{})};
   function setCfgVal(key,val){setCfgByGame(p=>({...p,[gameId]:{...(p[gameId]||{}),[key]:val}}));}
   function resolveText(t){if(!t)return t;let r=t;if(cfg.win!=null)r=r.split('{WIN}').join(cfg.win);if(cfg.loss!=null)r=r.split('{LOSS}').join(cfg.loss);if(cfg.bonus!=null)r=r.split('{BONUS}').join(cfg.bonus);return r;}
-  const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:resolveText(game.player),logic:resolveText(game.logic),scoring:resolveText(game.scoring),example:resolveText(game.example)}),[game,cfg.win,cfg.loss,cfg.bonus]);
+  const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:gameId==='tw1'?twRules():resolveText(game.player),logic:resolveText(game.logic),scoring:gameId==='tw1'?twScoring():resolveText(game.scoring),example:resolveText(game.example)}),[game,cfg.win,cfg.loss,cfg.bonus,gameId,bonusTable,twMode,twStage,twCodes]);
 
   useEffect(()=>{
     if(!projecting)return;
     const payload={type:'tinwar',game:{title:resolvedGame.title,tag:resolvedGame.tag,principle:resolvedGame.principle,setup:resolvedGame.setup,player:resolvedGame.player,logic:resolvedGame.logic,scoring:resolvedGame.scoring,example:resolvedGame.example,note:resolvedGame.note},
-      triggers:gameId==='tw1'?selectedTriggers:null,bonusTable:gameId==='tw1'?bonusTable:null};
+      triggers:null,bonusTable:null};
     if(stationCourts.length>0){
       stationCourts.forEach(n=>writeLivePlayerRoom(courtRoomId(base,n),'tinwar',payload));
     }else{
       writeLivePlayerRoom(getPersistentLiveRoomId(),'tinwar',payload);
     }
-  },[projecting,gameId,selectedTriggers,resolvedGame,stationCourts,base,bonusTable]);
+  },[projecting,gameId,resolvedGame,stationCourts,base]);
   async function copyPlayerLink(){setProjecting(true);const url=buildLivePlayerViewUrl();try{await navigator.clipboard.writeText(url);}catch{window.prompt('LIVE Tin War player link:',url);}}
   async function copyCourtLink(n){setProjecting(true);const url=buildCourtLink(n,base);try{await navigator.clipboard.writeText(url);setCopiedCourt(n);setTimeout(()=>setCopiedCourt(null),1500);}catch{window.prompt('Court '+n+' link:',url);}}
 
@@ -16900,23 +16922,23 @@ function TinWarModule({setScreen,embedded=false,setSession}){
       <p className="twPrinciple">{resolvedGame.principle}</p>
       <div className="twInfoGrid">
         <div><h4>Setup</h4><p>{resolvedGame.setup}</p></div>
-        <div><h4>Player rule</h4><p>{resolvedGame.player}</p></div>
+        <div><h4>Player rule</h4><p style={{whiteSpace:'pre-line'}}>{resolvedGame.player}</p></div>
         <div><h4>Step by step</h4><p>{resolvedGame.logic}</p></div>
-        <div><h4>Scoring</h4><p>{resolvedGame.scoring}</p></div>
+        <div><h4>Scoring</h4><p style={{whiteSpace:'pre-line'}}>{resolvedGame.scoring}</p></div>
       </div>
       <div className="twExample"><h4>Worked example</h4><p>{resolvedGame.example}</p></div>
       <p className="twNote">{resolvedGame.note}</p>
     </div>
-    {gameId==='tw1'&&<div className="twSettings"><strong>Coach-selected winning-shot protocol:</strong><div className="twActionStrip">{TINWAR_TRIGGERS.map(t=><button type="button" key={t} className={selectedTriggers.includes(t)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTrigger(t)}>{selectedTriggers.includes(t)?'✓ ':''}{t}</button>)}</div></div>}
-    {gameId==='tw1'&&<div className="twSettings">
-      <div style={{flex:'1 1 100%'}}>
-        <strong>Bonus per tax height (set each independently):</strong>
-        <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'8px'}}>
-          {[1,2,3,4,5].map(h=><div key={h} style={{display:'flex',alignItems:'center',gap:'10px'}}>
-            <span style={{fontSize:'0.85rem',color:'#cdd9e6',minWidth:'110px'}}>Height {h}{h===5?' (Top Window)':''}:</span>
-            <div className="twActionStrip">{[1,2,3,5,8].map(v=><button type="button" key={v} className={bonusTable[h]===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setBonusHeight(h,v)}>{v} pt{v>1?'s':''}</button>)}</div>
-          </div>)}
-        </div>
+    {gameId==='tw1'&&<div className="twSettings" style={{flexDirection:'column',alignItems:'stretch'}}>
+      <div className="twExample" style={{margin:0}}><h4>How to choose</h4>
+        <p><strong>Soft</strong> — no risk, only a reward. For younger players and early levels.<br/><strong>Strict</strong> — a winner under the line is a tin. For experienced players.</p>
+        <p style={{marginTop:6}}><strong>Stage 1 · Discover</strong> — any winner counts. Players find which shots still work as their line goes up.<br/><strong>Stage 2 · Name it</strong> — after a bonus win, the other player calls the code. Just for learning, no points.<br/><strong>Stage 3 · Code it</strong> — pick up to 3 codes. Only those earn the bonus. As the line goes up, codes off the low front wall (7, 8) stop working.</p>
+      </div>
+      <div><strong>Soft or Strict:</strong><div className="twActionStrip">{['Soft','Strict'].map(m=><button type="button" key={m} className={twMode===m?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setTwMode(m)}>{m}</button>)}</div></div>
+      <div><strong>Stage:</strong><div className="twActionStrip">{[[1,'1 · Discover'],[2,'2 · Name it'],[3,'3 · Code it']].map(([k,l])=><button type="button" key={k} className={twStage===k?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setTwStage(k)}>{l}</button>)}</div></div>
+      {twStage===3&&<div><strong>Bonus codes (up to 3):</strong><div className="twActionStrip">{TW_CODE_CHOICES.map(cd=><button type="button" key={cd} className={twCodes.includes(cd)?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>toggleTwCode(cd)}>{twCodes.includes(cd)?'✓ ':''}{cd}</button>)}</div></div>}
+      <div><strong>Bonus points for a winner above the line:</strong>
+        <div style={{display:'flex',flexDirection:'column',gap:'6px',marginTop:'6px'}}>{TW_LINE_NAMES.map((n,L)=><div key={L} style={{display:'flex',alignItems:'center',gap:'10px'}}><span style={{minWidth:'70px',color:'#cdd9e6'}}>{n}</span><PointStepper value={twPoints(L)} min={(Number(cfg.win)||1)} max={12} sign="" onChange={v=>setBonusHeight(L+1,v-(Number(cfg.win)||1))}/><span className="mutedText" style={{fontSize:'0.8rem'}}>pts</span></div>)}</div>
       </div>
     </div>}
     <div className="twSettings">
@@ -16955,9 +16977,9 @@ function TinWarPlayerDisplay({payload={}}){
     <div className="twDisplayTop"><span>TIN WAR</span><h1>{game.title||'Tin War'}</h1><p>{game.principle||''}</p></div>
     <div className="twDisplayRules">
       <div className="twDisplaySection"><h4>Setup</h4><p>{game.setup}</p></div>
-      <div className="twDisplaySection"><h4>Player rule</h4><p>{game.player}</p></div>
+      <div className="twDisplaySection"><h4>Player rule</h4><p style={{whiteSpace:'pre-line'}}>{game.player}</p></div>
       <div className="twDisplaySection"><h4>Step by step</h4><p>{game.logic}</p></div>
-      <div className="twDisplaySection"><h4>Scoring</h4><p>{game.scoring}</p></div>
+      <div className="twDisplaySection"><h4>Scoring</h4><p style={{whiteSpace:'pre-line'}}>{game.scoring}</p></div>
     </div>
     {triggers&&triggers.length>0&&<div className="twDisplayTriggers"><h4>Winning-shot protocol</h4><div className="twDisplayTriggerRow">{triggers.map(t=><span key={t} className="twDispChip">{t}</span>)}</div></div>}
     {bonusTable&&<div className="twDisplayTriggers"><h4>Bonus per tax height</h4><div className="twDisplayTriggerRow">{[1,2,3,4,5].map(h=><span key={h} className="twDispChip">H{h}: {bonusTable[h]}pt{bonusTable[h]>1?'s':''}</span>)}</div></div>}
@@ -18400,7 +18422,7 @@ const GAME_LIBRARY=[
   {id:'fusion',label:'Spatial + Temporal',category:'Spatial + Temporal',groups:['pressure'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><FusionBuilder key="fusion-engine" onAddToSession={addAndGo} setScreen={setScreen}/>},
   {id:'tinwar',label:'Tin War',category:'Tin War',groups:['pressure'],
-    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Rising Tax uses coach-selected winning-shot protocols. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>},
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Bonus Shots (was Rising Tax) moves each player’s own line up as they hit winners above it. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>},
   {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce',groups:['pressure'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>},
   {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure',groups:['pressure'],
