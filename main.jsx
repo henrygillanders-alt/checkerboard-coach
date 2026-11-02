@@ -1,3 +1,5 @@
+// v855: ABL Drives — taped targets (penetrating band 30–90 cm above the tin + first bounce in the service box; kill band up to 30 cm + second bounce in the 30 cm short-line band) and ChatGPT's game order (coach, 29 Oct)
+// v854: Power Driver — ABL Drives series (6 games): working drives above the line; below only with a penetrating drive (first bounce behind the short line) or a kill (second bounce in the service box → in front of the short line); side → full court; Penetrate & Finish (drop only after a passing penetrating drive) (coach, 29 Oct)
 // v853: Tin War 'Rising Tax' rebuilt as 'Bonus Shots' — no shot lists; Soft or Strict; stages Discover / Name it / Code it (Checkerboard codes); taped Lines 1–4; points per line; no minus points; kid rules (coach, 29 Oct)
 // v852: P33 — never use cones when tape will suffice; 'tape or cones' → 'tape' in T Zone, corridor and Break the T text (coach, 28 Oct)
 // v851: Corridor Games series — NFC 1–2, NFL 1–3 and 'NFC or NFL?' on the marked corridor; 'when to cross' left to Onside Offside (coach, 28 Oct)
@@ -371,7 +373,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v853 Bonus Shots';
+const APP_VERSION='v855 ABL Drive Targets';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8530,7 +8532,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8797,10 +8799,63 @@ const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Cons
   focus:'Same start, late choice: deep or dead.',
   score:(v)=>'Rally win +'+(v.pdRally||1)+'. Low shot passing the drive or kill test: +'+v.pdDok+'; if it wins the rally: +'+v.pdDokWin+' instead (not both).',
   stepper:[PD_STEP_RALLY,{k:'pdBonusTest',label:'Drive test',type:'select',options:Object.keys(PD_DRIVE_TEST)},{k:'pkBonusTest',label:'Kill test',type:'select',options:Object.keys(PD_KILL_TEST)},{k:'pdDok',label:'Shot bonus',min:1,max:3,sign:'+'},{k:'pdDokWin',label:'Winner bonus',min:1,max:6,sign:'+'}]};
-const PD_GAMES=[...PD_DRIVE_GAMES,...PD_KILL_GAMES,PD_LINK_GAME];
+// ── POWER DRIVER: ABL DRIVES (v854) ─────────────────────────────────────────────
+// Coach, 29 Oct (game 6 refined with ChatGPT and approved): rallies stay Above the (service)
+// Line with working drives; going Below the Line is allowed only with a shot that passes its
+// test. Penetrating drive — published sources define it by effect (a pressing drive reaching the
+// back with little time; Murray et al. 2018, 2019), so the visible test is: front wall below the
+// service line, first bounce behind the short line. Kill — front wall below the service line,
+// second bounce in the service box (starting level), progressing to in front of the short line
+// (published: Carboch & Dušek 2023). Side games first, then full court. Kid rules (P32).
+const AB_SIDES={'Right side':'Play in the right half only: zones 2 and 3.','Left side':'Play in the left half only: zones 1 and 4.'};
+/* v855 (coach, 29 Oct): both shots judged by taped targets. Penetrating drive: hits the
+   penetrating band (30–90 cm above the tin) and first bounce in the service box (the opposite
+   one for a crosscourt). Kill: hits the kill band (tin to about 30 cm above) and second bounce
+   in the short-line band (floor tapes 30 cm either side of the short line) — a drop dies nearer
+   the front wall, so it cannot pass. Applies to ABL Drives only; other Power Driver games keep
+   the v819 second-bounce tests (coach: leave them for now). Order follows the ChatGPT plan. */
+const AB_PEN_LINE='Penetrating drive: hit the penetrating band (30–90 cm above the tin). First bounce in the service box.';
+const AB_KILL_LINE='Kill: hit the kill band (up to 30 cm above the tin). Second bounce between the floor tapes by the short line.';
+const AB_DEFS=[
+  {n:1,title:'Length Before Power',side:true,pen:true,kill:false,drop:false,rld:3,tag:'One side; working drives above the line, penetrating drive below',
+   why:'Working drives keep the rally above the line; the penetrating drive is the only way below it, so players learn when a low, deep drive is on.'},
+  {n:2,title:'Length or Kill',side:true,pen:false,kill:true,drop:false,rld:3,tag:'One side; working drives above the line, kill below',
+   why:'The same frame with the kill as the only way below the line: players learn which balls can be killed and which must be kept above. No set number of working drives first.'},
+  {n:3,title:'Choose Your Drive',side:true,pen:true,kill:true,drop:false,rld:4,tag:'One side; working, penetrating or kill — any time',
+   why:'All three drives on one side: players change pace and intention whenever they choose, and learn to hide which one is coming.'},
+  {n:4,title:'Crosscourt Penetration',side:false,pen:true,kill:false,drop:false,rld:4,tag:'Full court; penetrating drive below, straight or crosscourt',
+   why:'Crosscourts arrive: the same targets in both directions, and the opponent’s position decides which way to penetrate.'},
+  {n:5,title:'Drive Selection',side:false,pen:true,kill:true,drop:false,rld:4,tag:'Full court; all three drives, straight or crosscourt',
+   why:'Length, direction and pace change as chances appear — the full choice on the whole court.'},
+  {n:6,title:'Penetrate & Finish',side:false,pen:true,kill:true,drop:true,rld:5,tag:'Full court; a drop is allowed only straight after a penetrating drive',
+   why:'The penetrating drive becomes the way to create an attacking chance: the drop is only available once the penetration target has been met. Two shots below the line are allowed, never required.'}
+];
+const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,duration:8,format:'Constrained game — ABL drives',layers:['Shot Selection','Attacking Conversion','Decision Making'],
+  title:'ABL '+d.n+' · '+d.title,rld:d.rld,tag:d.tag,
+  from:d.why+' ABL = Above the Line: the front wall above the service line.',
+  rule:(v)=>{const L=[];
+    L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court. Straight or crosscourt.');
+    L.push('Every shot hits the front wall above the service line.');
+    const ways=[];if(d.pen)ways.push('a penetrating drive');if(d.kill)ways.push('a kill');
+    if(d.drop)ways.push('a drop');
+    L.push('Below the line only with '+(ways.length>2?ways.slice(0,-1).join(', ')+' or '+ways[ways.length-1]:ways.join(' or '))+'.');
+    if(d.pen)L.push(AB_PEN_LINE);
+    if(d.kill)L.push(AB_KILL_LINE);
+    if(d.drop)L.push('Drop: only as the player’s next shot after a penetrating drive that passes.');
+    L.push('A shot below the line that fails? Lose the rally.');
+    return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
+  coach:'Setup with tape: on the front wall, a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin; on the floor, two tapes 30 cm either side of the short line. The bands show trajectory and power without anyone judging pace; the short-line band tells a kill from a drop. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
+  focus:d.drop?'Penetrate first; the drop comes after.':d.pen&&d.kill?'Same low ball: deep or dead.':d.pen?'Low and deep, or stay above.':'Low and dead, or stay above.',
+  score:(v)=>{const L=['Win a rally = '+(v.abRally||1)+' point'+((v.abRally||1)>1?'s':'')+'.'];
+    if(d.pen)L.push('Penetrating drive that passes = +'+v.abBonus+'.');
+    if(d.kill)L.push('Kill that passes = +'+v.abBonus+'.');
+    if(d.drop)L.push('Drop winner after a penetrating drive = +'+v.abDrop+'.');
+    return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
+  stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abBonus',label:'Shot bonus',min:1,max:3,sign:'+'},...(d.drop?[{k:'abDrop',label:'Drop-winner bonus',min:1,max:5,sign:'+'}]:[]),{k:'abRally',label:'Rally win',min:1,max:3,sign:'+'}]}));
+const PD_GAMES=[...PD_DRIVE_GAMES,...PD_KILL_GAMES,PD_LINK_GAME,...PD_ABL_GAMES];
 function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
   const[series,setSeries]=React.useState('d');
-  const list=series==='d'?PD_DRIVE_GAMES:series==='k'?PD_KILL_GAMES:[PD_LINK_GAME];
+  const list=series==='d'?PD_DRIVE_GAMES:series==='k'?PD_KILL_GAMES:series==='a'?PD_ABL_GAMES:[PD_LINK_GAME];
   const tab=(id,txt)=><button key={id} type="button" className={series===id?'primaryBtn':'secondaryBtn'} style={{padding:'6px 12px'}} onClick={()=>setSeries(id)}>{txt}</button>;
   const openShots=sec=>{try{localStorage.setItem(SHOTS_OPEN_KEY,sec);}catch(e){}if(typeof setScreen==='function')setScreen('shots');};
   return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={list} category="Power Driver" showReset={true} intro={<div className="gameCard"><div className="categoryTag">Power Driver</div><h2>💥 Power Driver</h2>
@@ -8810,7 +8865,7 @@ function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
       <p><strong>Coach design.</strong> The ladder, the drive bounce lines, the three-shot cycles, the easiest kill line (the service-box back line) and the elite halfway tape are coaching design, not research findings. Similar conditions appear in Squash Norway’s junior programme (drives behind the service box; a back-court game with the first bounce after the short line; a low kill option when varying pace).</p></div>
     <p>For players who play above the line and cannot change pace. Two series on the same ladder: the <strong>penetrating drive</strong> (low on the front wall, deep on the floor) and the <strong>kill</strong> (low on the front wall, dead in the front). Each series moves from half court to full court, tightens its test, mixes in the shot within every three shots, then rewards it in a normal game. <strong>Drive or Kill</strong> links the two.</p>
     <p className="mutedText">Every game is complete on its own; play them in order. All scoring is adjustable, and any game can apply to one player only.</p>
-    <div className="buttonRow" style={{flexWrap:'wrap'}}>{tab('d','Penetrating Drive · 1–9')}{tab('k','Kill · 1–9')}{tab('x','Drive or Kill')}</div>
+    <div className="buttonRow" style={{flexWrap:'wrap'}}>{tab('d','Penetrating Drive · 1–9')}{tab('k','Kill · 1–9')}{tab('x','Drive or Kill')}{tab('a','ABL Drives · 1–6')}</div>
     <div className="buttonRow" style={{flexWrap:'wrap',marginTop:'8px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('increase')}>Read: the penetrating drive (Shots) →</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('finish')}>Read: the kill (Shots) →</button></div></div>}/>;
 }
 function ccffCard(g,v,category){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:category||'Cross Court Friend or Foe',format:g.format||'Constrained game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:g.layers||['Decision Making','Shot Selection','Attacking Conversion']};}
