@@ -1,3 +1,5 @@
+// v857: ABL Drives to the coach's court-tested rules (2 Nov) — every ball behind the short line (side games = zone 3 / zone 4); penetrating drive both targets +2, winner +3; missed target = play on; lands in front of the short line = lose the rally; kill unchanged pending its floor line
+// v856: new session games show scoring on the player display by default (queued 29 Oct). Invasion player display — one numbered rules box (invasion rules + every active universal modifier, incl. Negative Scoring and CB code), courts with each player's DB beside their name; duplicate rules/extras/DB panels removed (coach, 2 Nov)
 // v855: ABL Drives — taped targets (penetrating band 30–90 cm above the tin + first bounce in the service box; kill band up to 30 cm + second bounce in the 30 cm short-line band) and ChatGPT's game order (coach, 29 Oct)
 // v854: Power Driver — ABL Drives series (6 games): working drives above the line; below only with a penetrating drive (first bounce behind the short line) or a kill (second bounce in the service box → in front of the short line); side → full court; Penetrate & Finish (drop only after a passing penetrating drive) (coach, 29 Oct)
 // v853: Tin War 'Rising Tax' rebuilt as 'Bonus Shots' — no shot lists; Soft or Strict; stages Discover / Name it / Code it (Checkerboard codes); taped Lines 1–4; points per line; no minus points; kid rules (coach, 29 Oct)
@@ -373,7 +375,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v855 ABL Drive Targets';
+const APP_VERSION='v857 ABL Drives Tested';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1743,7 +1745,7 @@ function CompetitionPlayerDisplayCard({competition}){
       <CompetitionRulesPanel compact/>
       <ActiveExtrasPanel/>
     </div>}
-    {mode!=='matchplay'&&<><CompetitionRulesPanel/><ActiveExtrasPanel/></>}
+    {mode!=='matchplay'&&mode!=='invasion'&&<><CompetitionRulesPanel/><ActiveExtrasPanel/></>}
     {mode==='roundRobin'&&(()=>{
       const scores=competition.competitionMatchScores||{};
       const hasBoxes=Array.isArray(competition.rrBoxes)&&competition.rrBoxes.length>0;
@@ -1888,28 +1890,22 @@ function CompetitionPlayerDisplayCard({competition}){
     })()}
     {mode==='invasion'&&competition.invasionTeams&&competition.invasionTeams.length>0&&(()=>{
       const formatLabel=competition.invasionFormat==='lives'?'Lives Format':'Points Format';
+      const base=competition.invasionFormat==='lives'
+        ?['Invader puts the ball out: −1 life.','Invader hits into the balcony: −3 lives.','Stop when one invader has lost all their lives.']
+        :['Defender makes an error: +1 to the invader.','Defender hits into the balcony: +3 to the invader.','Invader puts the ball out or into the balcony: no score.'];
+      const rot=competition.invasionRotation||'Rotate courts and invaders as the coach sets.';
+      const mods=(competition.competitionModifierLines||[]);
+      const cb=competition.competitionCbCode&&competition.competitionCbCode!=='None'?['Checkerboard code: '+competition.competitionCbCode+'.']:[];
+      const lines=[...base,rot.replace(/\.?$/,'.'),...cb,...mods.map(m=>m.replace(/\.?$/,'.'))];
       return <div className="invasionPlayerCompactDisplay invasionPlayerTightV140">
         <section className="invasionDisplayInfo invasionRulesBox">
-          <h2>INVASION RULES</h2>
-          <p>{formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</p>
-          <div className="competitionRuleGrid">
-            {competition.invasionFormat==='lives'?<>
-            <span>Invader puts ball out = -1 life</span>
-            <span>Invader hits into balcony = -3 lives</span>
-            <span>Stop when one invader loses all lives</span>
-            </>:<>
-            <span>Defender error = +1 to invader</span>
-            <span>Defender into balcony = +3 to invader</span>
-            <span>Invader puts ball out / into balcony = no score</span>
-            </>}
-            <span>{competition.invasionRotation||'Rotate courts / invaders using the selected format.'}</span>
-          </div>
+          <h2>RULES · {formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</h2>
+          <ol style={{margin:'6px 0 0',paddingLeft:'22px',lineHeight:1.45,fontWeight:700}}>{lines.map((l,k)=><li key={k}>{l}</li>)}</ol>
         </section>
-        {activeDbRows.length>0&&<section className="invasionDisplayInfo invasionDbBadgeBox"><h2>ACTIVE DB</h2><p>{activeDbRows.map(name=>`${name}: ${playerBounces[name]}`).join(' · ')}</p></section>}
         <section className="invasionCourtCards">
           <h2>INVASION COURTS</h2>
           <div className="invasionCourtGrid">{competition.invasionTeams.map(team=>{
-            const dbTeam=(team.players||[]).filter(name=>activeDbRows.includes(name)).map(name=>`${name} ${playerBounces[name]}`).join(' · ');
+            const withDb=(team.players||[]).map(name=>activeDbRows.includes(name)?`${name} (${playerBounces[name]})`:name).join(' · ');
             const points=Number(competition.invasionTeamPoints?.[team.id]||competition.invasionTeamPoints?.[team.name]||0);
             const lives=invasionTeamStartLives(team);
             const invaderList=[...(team.players||[])];
@@ -1917,8 +1913,8 @@ function CompetitionPlayerDisplayCard({competition}){
             return <article key={team.id||team.name} className="invasionCourtCard">
               <b>{team.court||'Court'}</b>
               <strong>{team.name}</strong>
-              <span>{(team.players||[]).join(' · ')}</span>
-              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`} · Invader: {currentInvader}{dbTeam?` · ${dbTeam}`:''}</em>
+              <span>{withDb}</span>
+              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`} · Invader: {currentInvader}</em>
             </article>;
           })}</div>
         </section>
@@ -8532,7 +8528,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abPdWin:3,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8807,7 +8803,11 @@ const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Cons
 // service line, first bounce behind the short line. Kill — front wall below the service line,
 // second bounce in the service box (starting level), progressing to in front of the short line
 // (published: Carboch & Dušek 2023). Side games first, then full court. Kid rules (P32).
-const AB_SIDES={'Right side':'Play in the right half only: zones 2 and 3.','Left side':'Play in the left half only: zones 1 and 4.'};
+/* v857 (coach, court-tested 2 Nov): every ball lands behind the short line (so a side game is
+   zone 3 or zone 4 only). A penetrating drive that hits both targets = +2, and +3 if it is also a
+   winner. A penetrating drive that misses a target: play on. One that lands in front of the short
+   line: lose the rally. Kill rules unchanged until its floor line is settled. */
+const AB_SIDES={'Right side':'Right side only. Every ball lands behind the short line, in zone 3.','Left side':'Left side only. Every ball lands behind the short line, in zone 4.'};
 /* v855 (coach, 29 Oct): both shots judged by taped targets. Penetrating drive: hits the
    penetrating band (30–90 cm above the tin) and first bounce in the service box (the opposite
    one for a crosscourt). Kill: hits the kill band (tin to about 30 cm above) and second bounce
@@ -8834,24 +8834,24 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
   title:'ABL '+d.n+' · '+d.title,rld:d.rld,tag:d.tag,
   from:d.why+' ABL = Above the Line: the front wall above the service line.',
   rule:(v)=>{const L=[];
-    L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court. Straight or crosscourt.');
+    L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court, straight or crosscourt. Every ball lands behind the short line'+(d.kill||d.drop?' (except kills'+(d.drop?' and drops':'')+')':'')+'.');
     L.push('Every shot hits the front wall above the service line.');
     const ways=[];if(d.pen)ways.push('a penetrating drive');if(d.kill)ways.push('a kill');
     if(d.drop)ways.push('a drop');
     L.push('Below the line only with '+(ways.length>2?ways.slice(0,-1).join(', ')+' or '+ways[ways.length-1]:ways.join(' or '))+'.');
-    if(d.pen)L.push(AB_PEN_LINE);
-    if(d.kill)L.push(AB_KILL_LINE);
-    if(d.drop)L.push('Drop: only as the player’s next shot after a penetrating drive that passes.');
-    L.push('A shot below the line that fails? Lose the rally.');
+    if(d.pen){L.push(AB_PEN_LINE);L.push('Penetrating drive that misses a target? Play on.');L.push('Penetrating drive that lands in front of the short line? Lose the rally.');}
+    if(d.kill){L.push(AB_KILL_LINE);L.push('Kill that misses its targets? Lose the rally.');}
+    if(d.drop)L.push('Drop: only as the player’s next shot after a penetrating drive that hits both targets.');
+    L.push('Any other shot below the line? Lose the rally.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
   coach:'Setup with tape: on the front wall, a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin; on the floor, two tapes 30 cm either side of the short line. The bands show trajectory and power without anyone judging pace; the short-line band tells a kill from a drop. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
   focus:d.drop?'Penetrate first; the drop comes after.':d.pen&&d.kill?'Same low ball: deep or dead.':d.pen?'Low and deep, or stay above.':'Low and dead, or stay above.',
   score:(v)=>{const L=['Win a rally = '+(v.abRally||1)+' point'+((v.abRally||1)>1?'s':'')+'.'];
-    if(d.pen)L.push('Penetrating drive that passes = +'+v.abBonus+'.');
+    if(d.pen){L.push('Penetrating drive that hits both targets = +'+v.abBonus+'.');L.push('Penetrating-drive winner that hits both targets = +'+v.abPdWin+'.');}
     if(d.kill)L.push('Kill that passes = +'+v.abBonus+'.');
     if(d.drop)L.push('Drop winner after a penetrating drive = +'+v.abDrop+'.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abBonus',label:'Shot bonus',min:1,max:3,sign:'+'},...(d.drop?[{k:'abDrop',label:'Drop-winner bonus',min:1,max:5,sign:'+'}]:[]),{k:'abRally',label:'Rally win',min:1,max:3,sign:'+'}]}));
+  stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abBonus',label:'Shot bonus',min:1,max:3,sign:'+'},...(d.pen?[{k:'abPdWin',label:'Penetrating-drive winner',min:1,max:5,sign:'+'}]:[]),...(d.drop?[{k:'abDrop',label:'Drop-winner bonus',min:1,max:5,sign:'+'}]:[]),{k:'abRally',label:'Rally win',min:1,max:3,sign:'+'}]}));
 const PD_GAMES=[...PD_DRIVE_GAMES,...PD_KILL_GAMES,PD_LINK_GAME,...PD_ABL_GAMES];
 function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
   const[series,setSeries]=React.useState('d');
@@ -15158,6 +15158,9 @@ function appendToSessionState(prev,card){
   /* House default: every rotation lands in the session at 8 minutes; the coach
      adjusts per card in Session Builder. */
   const next=normaliseGameCard(card);
+  /* v856 (coach, 29 Oct): scoring shows on the player display by default for every game added;
+     the coach unticks it in Session Builder to hide. Saved sessions keep their own setting. */
+  if(next.showScoring==null)next.showScoring=true;
   /* Every module adds through here, so confirming here confirms everywhere —
      including modules built later. */
   try{window.dispatchEvent(new CustomEvent('cbSessionAdded',{detail:{title:next.title||'Game',count:base.length+1}}));}catch{}
@@ -20524,6 +20527,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       invasionEliminated,
       competitionLayers,
       competitionCbCode,
+      /* v856 (coach, 2 Nov): every active universal modifier reaches the player display as a
+         short rule line — game logic and constraints (with their points) and Negative Scoring. */
+      competitionModifierLines:(()=>{const m=competitionModifier||{};const sc=m.scoring||{};
+        const named=[...(m.gameLogic||[]),...(m.constraints||[])].map(n=>{const v=sc[n];return (v===''||v==null||Number(v)===0)?n:`${n}: ${Number(v)>0?'+':''}${v}`;});
+        const pen=(typeof activePenaltyEntriesFromStorage==='function'?activePenaltyEntriesFromStorage():[]).map(e=>penaltyRuleText(e.label,e.points));
+        return [...named,...pen];})(),
       playerBounces,
       playerNames,
       matchScore,
