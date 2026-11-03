@@ -1,3 +1,9 @@
+// v863: ABL Drives — a separate points stepper for every value (rally, penetrating drive, penetrating-drive winner, kill, crosscourt, drop winner), 0 hides the line (coach, 2 Nov)
+// v862: ABL kill zone — first bounce between a floor tape (about halfway to the short line) and the short line; in front of the tape is a drop and loses the rally (coach, 2 Nov)
+// v861: Clear all present on the attendance panel; ABL Drives — no measurements on the player display, kill judged by its first bounce (in front of the short line; behind = lose; missed band = play on), full-court crosscourts only when the opponent is onside with the cut-off penalty and a past-the-opponent bonus; tramline left to the rally (coach, 2 Nov)
+// v860: Invasion setup cleaned to the basic game (format, courts, lives, teams with invader, Start/End, courts now + Rotate courts / Next invaders); scoring engines, dashboard, individual record, notes moved under 'More options'; player display now shows each court's defending team and visiting invader from the same engine as the coach screen (coach, 2 Nov)
+// v859: Competition screen preview — Current Focus, Checkerboard (only if set) and Active Modifiers stack beside the Rules, no stretched empty box; modifiers list all active universal modifiers (coach, 2 Nov)
+// v858: invasion player display — court cards size to content, players one per line with their DB, invader marked, all text large (coach, 2 Nov)
 // v857: ABL Drives to the coach's court-tested rules (2 Nov) — every ball behind the short line (side games = zone 3 / zone 4); penetrating drive both targets +2, winner +3; missed target = play on; lands in front of the short line = lose the rally; kill unchanged pending its floor line
 // v856: new session games show scoring on the player display by default (queued 29 Oct). Invasion player display — one numbered rules box (invasion rules + every active universal modifier, incl. Negative Scoring and CB code), courts with each player's DB beside their name; duplicate rules/extras/DB panels removed (coach, 2 Nov)
 // v855: ABL Drives — taped targets (penetrating band 30–90 cm above the tin + first bounce in the service box; kill band up to 30 cm + second bounce in the 30 cm short-line band) and ChatGPT's game order (coach, 29 Oct)
@@ -375,7 +381,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v857 ABL Drives Tested';
+const APP_VERSION='v863 ABL Point Steppers';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -1897,26 +1903,48 @@ function CompetitionPlayerDisplayCard({competition}){
       const mods=(competition.competitionModifierLines||[]);
       const cb=competition.competitionCbCode&&competition.competitionCbCode!=='None'?['Checkerboard code: '+competition.competitionCbCode+'.']:[];
       const lines=[...base,rot.replace(/\.?$/,'.'),...cb,...mods.map(m=>m.replace(/\.?$/,'.'))];
-      return <div className="invasionPlayerCompactDisplay invasionPlayerTightV140">
+      return <div className="invasionPlayerCompactDisplay invasionPlayerTightV140 invV858">
+        <style>{`
+/* v858 (coach, 2 Nov: "so much free space and detail in small print"): court cards size to
+   their content, no stretched boxes; everything players read is large. */
+.invV858 .invasionCourtCards,.invV858 .invasionCourtGrid,.invV858 .invasionCourtCard{min-height:0!important;height:auto!important;flex:none!important;}
+.invV858 .invasionCourtGrid{align-items:start!important;gap:14px!important;}
+.invV858 .invasionRulesBox ol{font-size:clamp(1.15rem,2vw,1.6rem)!important;}
+.invV858 .invasionCourtCard{padding:16px 18px!important;}
+.invV858 .invasionCourtCard b{font-size:clamp(1rem,1.6vw,1.25rem)!important;}
+.invV858 .invasionCourtCard strong{font-size:clamp(1.4rem,2.6vw,2.1rem)!important;display:block;margin:2px 0 8px;}
+.invV858 .invCourtPlayers{list-style:none;margin:0 0 10px;padding:0;}
+.invV858 .invCourtPlayers li{display:flex;justify-content:space-between;gap:10px;font-size:clamp(1.15rem,2vw,1.6rem);font-weight:800;color:#eaf4fb;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.08);}
+.invV858 .invCourtPlayers li span{color:#9fd3f0;}
+.invV858 .invCourtPlayers li.isInvader{color:#ffd66e;}
+.invV858 .invCourtStatus{font-size:clamp(1.15rem,2vw,1.6rem)!important;font-weight:800;color:#5fd38a;}
+`}</style>
         <section className="invasionDisplayInfo invasionRulesBox">
           <h2>RULES · {formatLabel} · Round {(competition.invasionPlayerRound||0)+1}</h2>
-          <ol style={{margin:'6px 0 0',paddingLeft:'22px',lineHeight:1.45,fontWeight:700}}>{lines.map((l,k)=><li key={k}>{l}</li>)}</ol>
+          <ol style={{margin:'6px 0 0',paddingLeft:'26px',lineHeight:1.45,fontWeight:700}}>{lines.map((l,k)=><li key={k}>{l}</li>)}</ol>
         </section>
         <section className="invasionCourtCards">
           <h2>INVASION COURTS</h2>
-          <div className="invasionCourtGrid">{competition.invasionTeams.map(team=>{
-            const withDb=(team.players||[]).map(name=>activeDbRows.includes(name)?`${name} (${playerBounces[name]})`:name).join(' · ');
+          {competition.invasionFormat==='lives'&&Array.isArray(competition.invasionCourtView)&&competition.invasionCourtView.length>0
+          ?<div className="invasionCourtGrid">{competition.invasionCourtView.map(c=><article key={c.court} className="invasionCourtCard">
+              <b>Court {c.court}</b>
+              <strong>{c.defendingTeam} defend</strong>
+              <ul className="invCourtPlayers">{(c.defenders||[]).map(name=><li key={name}>{name}<span>{activeDbRows.includes(name)?playerBounces[name]:''}</span></li>)}</ul>
+              <ul className="invCourtPlayers"><li className="isInvader">⚔ Invader: {c.invader}<span>{activeDbRows.includes(c.invader)?playerBounces[c.invader]:''}</span></li></ul>
+              <div className="invCourtStatus">{c.invadingTeam} · {c.lives} lives</div>
+            </article>)}</div>
+          :<div className="invasionCourtGrid">{competition.invasionTeams.map(team=>{
             const points=Number(competition.invasionTeamPoints?.[team.id]||competition.invasionTeamPoints?.[team.name]||0);
             const lives=invasionTeamStartLives(team);
             const invaderList=[...(team.players||[])];
-            const currentInvader=competition.invasionInvaderOverrides?.[team.id]||competition.invasionInvaderOverrides?.[team.name]||invaderList[(competition.invasionPlayerRound||0)%Math.max(1,invaderList.length)]||'Waiting';
+            const currentInvader=competition.invasionCurrentInvaders?.[team.id]||competition.invasionInvaderOverrides?.[team.id]||competition.invasionInvaderOverrides?.[team.name]||invaderList[(competition.invasionPlayerRound||0)%Math.max(1,invaderList.length)]||'Waiting';
             return <article key={team.id||team.name} className="invasionCourtCard">
               <b>{team.court||'Court'}</b>
               <strong>{team.name}</strong>
-              <span>{withDb}</span>
-              <em>{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`} · Invader: {currentInvader}</em>
+              <ul className="invCourtPlayers">{(team.players||[]).map(name=><li key={name} className={name===currentInvader?'isInvader':''}>{name}{name===currentInvader?' ⚔':''}<span>{activeDbRows.includes(name)?playerBounces[name]:''}</span></li>)}</ul>
+              <div className="invCourtStatus">{competition.invasionFormat==='lives'?`Lives ${lives}`:`Points ${points}`} · Invader: {currentInvader}</div>
             </article>;
-          })}</div>
+          })}</div>}
         </section>
       </div>;
     })()}
@@ -8528,7 +8556,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abPdWin:3,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abKillBonus:2,abPdWin:3,abCross:1,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8814,8 +8842,13 @@ const AB_SIDES={'Right side':'Right side only. Every ball lands behind the short
    in the short-line band (floor tapes 30 cm either side of the short line) — a drop dies nearer
    the front wall, so it cannot pass. Applies to ABL Drives only; other Power Driver games keep
    the v819 second-bounce tests (coach: leave them for now). Order follows the ChatGPT plan. */
-const AB_PEN_LINE='Penetrating drive: hit the penetrating band (30–90 cm above the tin). First bounce in the service box.';
-const AB_KILL_LINE='Kill: hit the kill band (up to 30 cm above the tin). Second bounce between the floor tapes by the short line.';
+const AB_PEN_LINE='Penetrating drive: hit the penetrating band. First bounce in the service box.';
+/* v861 (coach, 2 Nov): the kill is judged by its first bounce only — in front of the short line
+   (the general coaching standard). Behind it: lose the rally. Missing the band: play on. */
+/* v862 (coach, 2 Nov: drops passed off as kills "would be the first thing they do"): a floor
+   tape about halfway between the front wall and the short line. Kill = first bounce between that
+   tape and the short line. In front of the tape it is a drop. */
+const AB_KILL_LINE='Kill: hit the kill band. First bounce in the kill zone, between the floor tape and the short line.';
 const AB_DEFS=[
   {n:1,title:'Length Before Power',side:true,pen:true,kill:false,drop:false,rld:3,tag:'One side; working drives above the line, penetrating drive below',
    why:'Working drives keep the rally above the line; the penetrating drive is the only way below it, so players learn when a low, deep drive is on.'},
@@ -8837,21 +8870,26 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
     L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court, straight or crosscourt. Every ball lands behind the short line'+(d.kill||d.drop?' (except kills'+(d.drop?' and drops':'')+')':'')+'.');
     L.push('Every shot hits the front wall above the service line.');
     const ways=[];if(d.pen)ways.push('a penetrating drive');if(d.kill)ways.push('a kill');
-    if(d.drop)ways.push('a drop');
+    if(d.drop)ways.push('a drop straight after a penetrating drive that hits both targets');
     L.push('Below the line only with '+(ways.length>2?ways.slice(0,-1).join(', ')+' or '+ways[ways.length-1]:ways.join(' or '))+'.');
-    if(d.pen){L.push(AB_PEN_LINE);L.push('Penetrating drive that misses a target? Play on.');L.push('Penetrating drive that lands in front of the short line? Lose the rally.');}
-    if(d.kill){L.push(AB_KILL_LINE);L.push('Kill that misses its targets? Lose the rally.');}
-    if(d.drop)L.push('Drop: only as the player’s next shot after a penetrating drive that hits both targets.');
+    /* v861: kept to 9 lines or fewer (P32) by merging the play-on and lose lines. */
+    if(d.pen)L.push(AB_PEN_LINE);
+    if(d.kill)L.push(AB_KILL_LINE);
+    L.push(d.pen&&d.kill?'Missed a band or the box? Play on.':d.pen?'Missed the band or the box? Play on.':'Missed the band? Play on.');
+    L.push(d.pen&&d.kill?'Penetrating drive landing in front of the short line, or kill landing outside the kill zone? Lose the rally.':d.pen?'Penetrating drive landing in front of the short line? Lose the rally.':'Kill landing outside the kill zone? Lose the rally.');
+    if(!d.side)L.push('Crosscourt only when the opponent is onside. Cut off? Lose the rally.');
     L.push('Any other shot below the line? Lose the rally.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  coach:'Setup with tape: on the front wall, a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin; on the floor, two tapes 30 cm either side of the short line. The bands show trajectory and power without anyone judging pace; the short-line band tells a kill from a drop. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
+  coach:'Setup with tape on the front wall: a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin. The bands show trajectory and power without anyone judging pace. On the floor, one tape about halfway between the front wall and the short line: the kill zone is between it and the short line (in front of the tape is a drop — in game 6 allowed only straight after a penetrating drive). A kill is judged by its first bounce (in the kill zone); a penetrating drive by its first bounce (in the service box). Full court: crosscourts only when the opponent is onside (feet — see Onside Offside); a crosscourt cut off loses the rally. Width is left to the rally: a loose ball gets cut off. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
   focus:d.drop?'Penetrate first; the drop comes after.':d.pen&&d.kill?'Same low ball: deep or dead.':d.pen?'Low and deep, or stay above.':'Low and dead, or stay above.',
   score:(v)=>{const L=['Win a rally = '+(v.abRally||1)+' point'+((v.abRally||1)>1?'s':'')+'.'];
-    if(d.pen){L.push('Penetrating drive that hits both targets = +'+v.abBonus+'.');L.push('Penetrating-drive winner that hits both targets = +'+v.abPdWin+'.');}
-    if(d.kill)L.push('Kill that passes = +'+v.abBonus+'.');
-    if(d.drop)L.push('Drop winner after a penetrating drive = +'+v.abDrop+'.');
+    if(d.pen){if(v.abBonus>0)L.push('Penetrating drive that hits both targets = +'+v.abBonus+'.');if(v.abPdWin>0)L.push('Penetrating-drive winner that hits both targets = +'+v.abPdWin+'.');}
+    if(d.kill&&v.abKillBonus>0)L.push('Kill that hits the band and lands in the kill zone = +'+v.abKillBonus+'.');
+    if(!d.side&&v.abCross>0)L.push('Crosscourt that gets past the opponent into the back corner = +'+v.abCross+'.');
+    if(d.drop&&v.abDrop>0)L.push('Drop winner after a penetrating drive = +'+v.abDrop+'.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abBonus',label:'Shot bonus',min:1,max:3,sign:'+'},...(d.pen?[{k:'abPdWin',label:'Penetrating-drive winner',min:1,max:5,sign:'+'}]:[]),...(d.drop?[{k:'abDrop',label:'Drop-winner bonus',min:1,max:5,sign:'+'}]:[]),{k:'abRally',label:'Rally win',min:1,max:3,sign:'+'}]}));
+  /* v863 (coach, 2 Nov): every point value has its own stepper, wide ranges. */
+  stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abRally',label:'Rally win',min:1,max:5,sign:'+'},...(d.pen?[{k:'abBonus',label:'Penetrating drive',min:0,max:6,sign:'+'},{k:'abPdWin',label:'Penetrating-drive winner',min:0,max:8,sign:'+'}]:[]),...(d.kill?[{k:'abKillBonus',label:'Kill',min:0,max:6,sign:'+'}]:[]),...(!d.side?[{k:'abCross',label:'Crosscourt past the opponent',min:0,max:5,sign:'+'}]:[]),...(d.drop?[{k:'abDrop',label:'Drop winner',min:0,max:8,sign:'+'}]:[])]}));
 const PD_GAMES=[...PD_DRIVE_GAMES,...PD_KILL_GAMES,PD_LINK_GAME,...PD_ABL_GAMES];
 function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
   const[series,setSeries]=React.useState('d');
@@ -18818,7 +18856,7 @@ return <div className="page">
 <label className="secondaryBtn importPlayersLabel">Import Players<input type="file" accept=".json,application/json" onChange={importPlayersFile}/></label>
 <button className="primaryBtn" onClick={()=>{setEditing(null);setForm(EMPTY_PLAYER);setShowForm(!showForm);}}>+ Add Player</button>
 </div></div>
-<div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button>{history.length>0&&<button className="secondaryBtn" onClick={undo} title={'Restores '+history[history.length-1].length+' players to how they were before the last change'}>↺ Undo last change ({history.length})</button>}</div></div>
+<div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="primaryBtn" onClick={()=>{saveSnapshot();setPlayers(players.map(p=>({...p,present:false})));}} title="Marks every player absent. Players are never deleted; Undo restores them.">Clear all present</button><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button>{history.length>0&&<button className="secondaryBtn" onClick={undo} title={'Restores '+history[history.length-1].length+' players to how they were before the last change'}>↺ Undo last change ({history.length})</button>}</div></div>
 {lastRecord&&<div className="hintBox"><strong>Saved record for this date:</strong> {lastRecord.players.filter(p=>p.present).length} present · {lastRecord.players.filter(p=>!p.present).length} absent · saved {new Date(lastRecord.createdAt).toLocaleString()}</div>}
 
 {/* Saved attendance records were being written but never displayed anywhere —
@@ -19108,6 +19146,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [nslPlayoffTarget,setNslPlayoffTarget]=useState(()=>Number(getSavedCompetitionState().nslPlayoffTarget)||3);
   const [nslPlayoffAwardMp,setNslPlayoffAwardMp]=useState(()=>{const v=getSavedCompetitionState().nslPlayoffAwardMp;return v==null?1:Number(v);});
   const [showCompetitionProjection,setShowCompetitionProjection]=useState(false);
+  const [showInvMore,setShowInvMore]=useState(false);
   const [invasionInvaderOverrides,setInvasionInvaderOverrides]=useState({});
 
   const present=Array.isArray(players)?players.filter(player=>player.present):[];
@@ -20529,6 +20568,11 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       competitionCbCode,
       /* v856 (coach, 2 Nov): every active universal modifier reaches the player display as a
          short rule line — game logic and constraints (with their points) and Negative Scoring. */
+      /* v860: the players' display shows exactly what the coach screen shows — each court's
+         defending team and the visiting invader (Final Invasion Engine), not a team's own name. */
+      invasionCourtView:(invasionTeams||[]).map((_,idx)=>{const d=getFinalDefendingTeamForCourt(idx);const v=getFinalInvadingTeamForCourt(idx);
+        return {court:idx+1,defendingTeam:d?displayTeamName(d,idx):'',defenders:(d&&d.players)||[],invader:v?getFinalInvader(v):'',invadingTeam:v?displayTeamName(v,(invasionTeams||[]).indexOf(v)):'',lives:v?getFinalStartLives(v):null};}),
+      invasionCurrentInvaders:Object.fromEntries((invasionTeams||[]).map(t=>[t.id,getFinalInvader(t)])),
       competitionModifierLines:(()=>{const m=competitionModifier||{};const sc=m.scoring||{};
         const named=[...(m.gameLogic||[]),...(m.constraints||[])].map(n=>{const v=sc[n];return (v===''||v==null||Number(v)===0)?n:`${n}: ${Number(v)>0?'+':''}${v}`;});
         const pen=(typeof activePenaltyEntriesFromStorage==='function'?activePenaltyEntriesFromStorage():[]).map(e=>penaltyRuleText(e.label,e.points));
@@ -20741,22 +20785,27 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             </p>
           </div>
 
-          <div className="projectionInfoGrid">
-            <div className="projectionInfoCard">
-              <strong>Current Focus</strong>
-              <p>{current.tactical}</p>
+          {/* v859 (coach, 2 Nov): no tall empty boxes — the short cards stack in the left column
+              beside the rules; the Checkerboard card only shows when a code is set; overlays list
+              every active universal modifier, not only constraints. */}
+          <div className="projectionInfoGrid" style={{alignItems:'start'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:'14px',minWidth:0}}>
+              <div className="projectionInfoCard" style={{minHeight:0,height:'auto'}}>
+                <strong>Current Focus</strong>
+                <p>{current.tactical}</p>
+              </div>
+              {competitionCbCode&&competitionCbCode!=='None'&&<div className="projectionInfoCard" style={{minHeight:0,height:'auto'}}>
+                <strong>Checkerboard</strong>
+                <p>{competitionCbCode}</p>
+              </div>}
+              <div className="projectionInfoCard" style={{minHeight:0,height:'auto'}}>
+                <strong>Active Modifiers</strong>
+                {(()=>{const lines=getCompetitionProjectionState().competitionModifierLines||[];return lines.length?lines.map((l,li)=><p key={li}>{l}</p>):<p>None selected</p>;})()}
+              </div>
             </div>
-            <div className="projectionInfoCard">
+            <div className="projectionInfoCard" style={{minHeight:0,height:'auto'}}>
               <strong>Rules</strong>
               {(current.rules&&current.rules.length?current.rules:['—']).map((r,ri)=><p key={ri}>{r}</p>)}
-            </div>
-            <div className="projectionInfoCard">
-              <strong>Checkerboard</strong>
-              <p>{competitionCbCode}</p>
-            </div>
-            <div className="projectionInfoCard">
-              <strong>Active Overlays</strong>
-              <p>{competitionLayers.length?competitionLayers.join(' · '):'None selected'}</p>
             </div>
           </div>
 
@@ -20930,27 +20979,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               </div>}
             </div>
 
-            <label className="invasionTextLabel">Rotation / Organisation Notes
-              <textarea value={invasionRotation} onChange={e=>setInvasionRotation(e.target.value)} />
-            </label>
-
-            <label className="invasionTextLabel">Challenge / Tactical Focus
-              <textarea value={invasionChallenge} onChange={e=>setInvasionChallenge(e.target.value)} />
-            </label>
-
-            <div className="invasionStartPanel">
-              <div>
-                <strong>{invasionGameStarted?'Game live':'Ready to start'}</strong>
-                <p>{invasionFormat==='lives'
-                  ?'Starts the live carry-over lives competition and updates Player Display.'
-                  :'Starts the live points competition and updates Player Display.'}</p>
-              </div>
-              <div className="invasionStartButtons">
-                <button type="button" className="primaryBtn" onClick={startInvasionPlayerDisplay}>START GAME / PLAYER DISPLAY</button>
-                <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayerDisplay}>STOP / END GAME</button>
-              </div>
-            </div>
-
             <div className="invasionSetupBox">
               <strong>Teams / Courts Setup</strong>
               <p>Players are pulled from Attendance. Choose number of courts above, then generate ranked court groups. Court 1 is biased to the smaller group and Court 2 receives the first extra player.</p>
@@ -20963,8 +20991,12 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                       <h3>{displayTeamName(team,index)}</h3>
                       <p><strong>Court:</strong> {team.court}</p>
                       <p><strong>Players:</strong> {team.players.length?team.players.join(' · '):'Waiting for players'}</p>
+                      {(()=>{const ordered=sortInvasionPlayersLowestFirst(team.players||[]);const cur=invasionInvaderOverrides[team.id]||ordered[invasionPlayerRound%Math.max(1,ordered.length)]||'';
+                        return ordered.length>0&&<label style={{display:'block',marginTop:'6px',fontWeight:700}}>Invader
+                          <select value={cur} onChange={e=>setInvasionInvaderOverrides(prev=>({...prev,[team.id]:e.target.value}))} style={{display:'block',width:'100%',marginTop:'4px'}}>{ordered.map(pl=><option key={pl} value={pl}>{pl}</option>)}</select>
+                          <span className="mutedText" style={{display:'block',fontSize:'0.78rem',fontWeight:500,marginTop:'3px'}}>Order: {ordered.join(' → ')}</span></label>;})()}
 
-                      {invasionFormat==='lives'&&(
+                      {invasionFormat==='lives'&&showInvMore&&(
                         <div className="invasionLifeBankControls">
                           <strong>Carry-Over Lives: {invasionTeamLives[team.id] ?? invasionStartingLives}</strong>
                           <p>This carry-over is added to the next invader's fair base lives.</p>
@@ -21016,11 +21048,31 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                 </div>
               )}
 
-              {invasionFormat==='lives'&&invasionTeams.length>0&&(
+              {invasionFormat==='lives'&&invasionTeams.length>0&&showInvMore&&(
                 <button type="button" className="secondaryBtn" onClick={()=>{captureCompetitionUndo('Reset Team Life Banks');resetInvasionLifeBanks();}}>Reset Team Life Banks</button>
               )}
 
               {invasionTeams.length>0&&(
+                <div className="buttonRow" style={{marginTop:'12px'}}>
+                  <button type="button" className="primaryBtn" onClick={startInvasionPlayerDisplay}>Start game</button>
+                  <button type="button" className="secondaryBtn dangerBtn" onClick={stopInvasionPlayerDisplay}>End game</button>
+                </div>
+              )}
+
+              {invasionTeams.length>0&&invasionFormat==='lives'&&(
+                <div className="invasionSetupBox" style={{marginTop:'14px'}}>
+                  <strong>Courts now · invader round {invasionPlayerRound+1} · court rotation {invasionCourtRound+1}</strong>
+                  {Array.from({length:invasionTeams.length}).map((_,idx)=>{const d=getFinalDefendingTeamForCourt(idx);const v=getFinalInvadingTeamForCourt(idx);
+                    return <p key={idx} style={{margin:'6px 0'}}><b>Court {idx+1}:</b> {d?displayTeamName(d,idx):'—'} defend · invader <b>{v?getFinalInvader(v):'—'}</b> ({v?getFinalStartLives(v):'—'} lives)</p>;})}
+                  <div className="buttonRow">
+                    <button type="button" className="primaryBtn" onClick={()=>{captureCompetitionUndo('Rotate courts');rotateFinalCourts();}}>Rotate courts</button>
+                    <button type="button" className="primaryBtn" onClick={()=>{captureCompetitionUndo('Next invaders');nextFinalInvaders();}}>Next invaders</button>
+                  </div>
+                  <p className="mutedText" style={{fontSize:'0.8rem',margin:'6px 0 0'}}>Players keep their own lives on court. Rotate courts when an invader runs out; Next invaders when every invader has visited every court.</p>
+                </div>
+              )}
+
+              {invasionTeams.length>0&&showInvMore&&(
                 <div className="coachInvaderSelector">
                   <h2>Coach Invader Selection</h2>
                   <p>Default order is lowest-ranked player first. Override here if a team chooses a tactical invader.</p>
@@ -21043,6 +21095,15 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
               )}
             </div>
 
+            <button type="button" className="secondaryBtn" style={{marginTop:'16px'}} onClick={()=>setShowInvMore(v=>!v)}>{showInvMore?'▾ Hide more options':'▸ More options'}</button>
+            {showInvMore&&<div style={{borderLeft:'3px solid #2a4a63',paddingLeft:'12px',marginTop:'10px'}}>
+            <p className="mutedText" style={{fontSize:'0.82rem'}}>Only needed if you keep score on court, or for the Performance Ladder. The game runs without any of this.</p>
+            <label className="invasionTextLabel">Rotation / Organisation Notes
+              <textarea value={invasionRotation} onChange={e=>setInvasionRotation(e.target.value)} />
+            </label>
+            <label className="invasionTextLabel">Challenge / Tactical Focus
+              <textarea value={invasionChallenge} onChange={e=>setInvasionChallenge(e.target.value)} />
+            </label>
             {invasionTeams.length>0&&(
               <div className="invasionRotationEngine">
                 <div className="rotationEngineTop">
@@ -21239,6 +21300,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                   :'Timed rotations. Team total is built from player scores.'}</p>
               </div>
             </div>
+            </div>}
           </div>
         )}
 
