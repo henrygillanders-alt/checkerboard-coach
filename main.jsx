@@ -1,3 +1,4 @@
+// v865: coach's court notes (4 Nov) — ABL: no behind-the-short-line rule, bonuses 3 / 6, below the line one target = play on, both missed = lose (drops still lose); Tin War Climb: line moves up every N wins (default 3, stepper), taped Lines 1–4, kid rules
 // v864: ABL kill — deep kill plays on where both drives are allowed (games 3, 5, 6), still loses in the kill-only game 2; only a ball landing in front of the floor tape loses; kill winner +3 with its own stepper; short penetrating drive still loses (coach, 4 Nov)
 // v863: ABL Drives — a separate points stepper for every value (rally, penetrating drive, penetrating-drive winner, kill, crosscourt, drop winner), 0 hides the line (coach, 2 Nov)
 // v862: ABL kill zone — first bounce between a floor tape (about halfway to the short line) and the short line; in front of the tape is a drop and loses the rally (coach, 2 Nov)
@@ -382,7 +383,7 @@ async function pullSharedNames(){
 }
 
 
-const APP_VERSION='v864 Kill Rules';
+const APP_VERSION='v865 Court Notes';
 /* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
    Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
    Empty string = tile explains where to set it instead of navigating. */
@@ -8557,7 +8558,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={abSide:'Right side',abBonus:2,abKillBonus:2,abKillWin:3,abPdWin:3,abCross:1,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={abSide:'Right side',abBonus:3,abKillBonus:3,abKillWin:6,abPdWin:6,abCross:1,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8836,7 +8837,11 @@ const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Cons
    zone 3 or zone 4 only). A penetrating drive that hits both targets = +2, and +3 if it is also a
    winner. A penetrating drive that misses a target: play on. One that lands in front of the short
    line: lose the rally. Kill rules unchanged until its floor line is settled. */
-const AB_SIDES={'Right side':'Right side only. Every ball lands behind the short line, in zone 3.','Left side':'Left side only. Every ball lands behind the short line, in zone 4.'};
+/* v865 (coach, 4 Nov, court notes): no 'behind the short line' rule — a short ball above the line
+   gives the opponent an opening, so the rally regulates it. Bonuses 3 / 6. Below the line: one
+   target hit = play on, both missed = lose the rally. A ball landing in front of the floor tape
+   (a drop) still loses, except game 6's drop after a penetrating drive. */
+const AB_SIDES={'Right side':'Right side only: zones 2 and 3.','Left side':'Left side only: zones 1 and 4.'};
 /* v855 (coach, 29 Oct): both shots judged by taped targets. Penetrating drive: hits the
    penetrating band (30–90 cm above the tin) and first bounce in the service box (the opposite
    one for a crosscourt). Kill: hits the kill band (tin to about 30 cm above) and second bounce
@@ -8868,7 +8873,7 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
   title:'ABL '+d.n+' · '+d.title,rld:d.rld,tag:d.tag,
   from:d.why+' ABL = Above the Line: the front wall above the service line.',
   rule:(v)=>{const L=[];
-    L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court, straight or crosscourt. Every ball lands behind the short line'+(d.kill||d.drop?' (except kills'+(d.drop?' and drops':'')+')':'')+'.');
+    L.push(d.side?AB_SIDES[v.abSide]||AB_SIDES['Right side']:'Full court, straight or crosscourt.');
     L.push('Every shot hits the front wall above the service line.');
     const ways=[];if(d.pen)ways.push('a penetrating drive');if(d.kill)ways.push('a kill');
     if(d.drop)ways.push('a drop straight after a penetrating drive that hits both targets');
@@ -8876,15 +8881,12 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
     /* v861: kept to 9 lines or fewer (P32) by merging the play-on and lose lines. */
     if(d.pen)L.push(AB_PEN_LINE);
     if(d.kill)L.push(AB_KILL_LINE);
-    /* v864 (coach, 4 Nov): where both drives are allowed, a kill that lands deep plays on (the rally
-       punishes it) and only a ball landing in front of the floor tape (a drop) loses. In the
-       kill-only game a deep "kill" still loses — otherwise it is a hidden penetrating drive. */
-    L.push(d.pen&&d.kill?'Missed a band or the box, or a kill landing deep? Play on.':d.pen?'Missed the band or the box? Play on.':'Missed the band? Play on.');
-    L.push(d.pen&&d.kill?('Penetrating drive landing in front of the short line, or any '+(d.drop?'other ':'')+'ball landing in front of the floor tape? Lose the rally.'):d.pen?'Penetrating drive landing in front of the short line? Lose the rally.':'Kill landing outside the kill zone? Lose the rally.');
+    L.push(d.pen&&d.kill?'Below the line, hit one of the two targets? Play on. Missed both? Lose the rally.':d.pen?'Penetrating drive hits one of its two targets? Play on. Missed both? Lose the rally.':'Kill hits one of its two targets? Play on. Missed both? Lose the rally.');
+    if(d.kill)L.push(d.drop?'Any other ball landing in front of the floor tape is a drop: lose the rally.':'A ball landing in front of the floor tape is a drop: lose the rally.');
     if(!d.side)L.push('Crosscourt only when the opponent is onside. Cut off? Lose the rally.');
     L.push('Any other shot below the line? Lose the rally.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  coach:'Setup with tape on the front wall: a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin. The bands show trajectory and power without anyone judging pace. On the floor, one tape about halfway between the front wall and the short line: the kill zone is between it and the short line (in front of the tape is a drop — in game 6 allowed only straight after a penetrating drive). A kill is judged by its first bounce (in the kill zone; where both drives are allowed a kill landing deep plays on, in the kill-only game it loses); a penetrating drive by its first bounce (in the service box). Full court: crosscourts only when the opponent is onside (feet — see Onside Offside); a crosscourt cut off loses the rally. Width is left to the rally: a loose ball gets cut off. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
+  coach:'Setup with tape on the front wall: a kill band from the tin to about 30 cm above it, and a penetrating band from 30 to 90 cm above the tin. The bands show trajectory and power without anyone judging pace. On the floor, one tape about halfway between the front wall and the short line: the kill zone is between it and the short line (in front of the tape is a drop — in game 6 allowed only straight after a penetrating drive). A kill is judged by its first bounce (in the kill zone; where both drives are allowed a kill landing deep plays on, in the kill-only game it loses); a penetrating drive by its first bounce (in the service box). Full court: crosscourts only when the opponent is onside (feet — see Onside Offside); a crosscourt cut off loses the rally. Width and length are left to the rally: a short or loose ball gives the opponent an opening. Below the line each shot has two targets (wall band and floor): one hit = play on, both missed = lose the rally. The opponent calls whether a shot below the line passed. '+(d.side?'Play the right side, then the left (forehand and backhand). ':'')+(d.n<6?'Next: ABL '+(d.n+1)+'. ':'')+'Debrief: which balls let you go below the line — and which did you have to keep above?',
   focus:d.drop?'Penetrate first; the drop comes after.':d.pen&&d.kill?'Same low ball: deep or dead.':d.pen?'Low and deep, or stay above.':'Low and dead, or stay above.',
   score:(v)=>{const L=['Win a rally = '+(v.abRally||1)+' point'+((v.abRally||1)>1?'s':'')+'.'];
     if(d.pen){if(v.abBonus>0)L.push('Penetrating drive that hits both targets = +'+v.abBonus+'.');if(v.abPdWin>0)L.push('Penetrating-drive winner that hits both targets = +'+v.abPdWin+'.');}
@@ -16891,7 +16893,7 @@ const TIN_LADDER=[
 const TIN_OPEN=0;
 const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
-const TINWAR_DEFAULTS={tw1:{win:1},tw2:{win:1},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
+const TINWAR_DEFAULTS={tw1:{win:1},tw2:{win:1,climb:3},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
 const TINWAR_BONUS_TABLE_DEFAULT={1:1,2:2,3:3,4:4,5:5};
 /* v853 (coach, 29 Oct): Bonus Shots (was Rising Tax). No shot lists — players work out which
    winners still clear their line. Coach picks Soft or Strict and a stage: 1 Discover, 2 Name it
@@ -16901,13 +16903,13 @@ const TW_LINE_NAMES=['Tin','Line 1','Line 2','Line 3','Line 4'];
 const TW_CODE_CHOICES=['[5-4]','[6-3]','[5-3]','[6-4]','[7-2]','[8-1]','[7-1]','[8-2]','[7-3]','[8-4]'];
 const TINWAR_GAMES=[
   {id:'tw2',title:'Climb',tag:'Full wall leveller',
-   principle:'The more you win, the less bottom wall you have.',
-   setup:'All players start on Full Wall. No shots need to be nominated — every win moves the winner\u2019s own wall, whoever wins it.',
-   player:'Start with full wall. Each win removes more of your own bottom front wall. You carry your wall restriction for the whole rotation period, until courts change.',
-   logic:'WALL RULE: applies to every shot in the rally, not just the finish. While you\u2019re at a given level, every shot you hit for the whole point must clear that raised line or it\u2019s a fault — self-officiated, like a real tin. Win a rally and your own Tin restriction moves up one level: Full wall → 15cm removed → 30cm removed → 65cm removed → service line removed → top window. Losing does not ease your wall. Resets fresh at the start of the next rotation period, when courts change.',
-   scoring:'Rally win = +{WIN}. Each win also removes one more level of your own bottom wall.',
-   example:'Alice starts on Full Wall. She wins rally 1 — her wall steps up to 15cm removed, so every shot she plays from now on, builds and finishers alike, must clear that line. She wins rally 2 — 30cm removed. She loses rally 3 — no change, her wall stays at 30cm removed. She wins rally 4 — 65cm removed, and the game keeps getting harder only for her, only because she keeps winning.',
-   note:'This is the base leveller game — start here. The player who keeps winning must solve a harder finishing problem, and winning never gets easier.'},
+   principle:'The more you win, the higher your own line — every shot must clear it.',
+   setup:'Mark 4 lines on the front wall above the tin with tape: Line 1 to Line 4 (the same lines as Bonus Shots). No shots need to be nominated.',
+   player:'1. Everyone starts at the tin.\n2. Every shot the player hits must be above their own line.\n3. A shot under the line counts as a tin.\n4. Every {CLIMB} rallies won: the line moves up one.\n5. Losing a rally never moves the line down.\n6. Lines go back to the tin when courts change.',
+   logic:'Court-tested change (4 Nov, Zoë\u2019s tweak): moving up one line per win put the leaders above the line for most of the rotation. Moving up every {CLIMB} wins keeps the leveller without ending the contest. The line applies to every shot in the rally, builds and finishers alike, self-officiated like a real tin.',
+   scoring:'Rally won = +{WIN}. Every {CLIMB} rallies won also moves the winner\u2019s line up one.',
+   example:'Wins per line: 3. Alice wins three rallies — her line moves to Line 1, so every shot she plays must clear it. She loses the next rally — no change. Three more wins — Line 2. The game only gets harder for her because she keeps winning.',
+   note:'This is the base leveller game — start here. If the leader is still above the line for most of the rotation, raise the wins per line; if the line never moves, lower it.'},
   {id:'tw1',title:'Bonus Shots',tag:'Your line goes up',
    principle:'Hit a winner above your own line for bonus points — then your line goes up, and you have to find a winner that still works.',
    setup:'Mark 4 lines on the front wall above the tin with tape: Line 1 to Line 4. Choose Soft or Strict, and the stage, below.',
@@ -16997,7 +16999,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
   const defaults=TINWAR_DEFAULTS[gameId]||{win:1};
   const cfg={...defaults,...(cfgByGame[gameId]||{})};
   function setCfgVal(key,val){setCfgByGame(p=>({...p,[gameId]:{...(p[gameId]||{}),[key]:val}}));}
-  function resolveText(t){if(!t)return t;let r=t;if(cfg.win!=null)r=r.split('{WIN}').join(cfg.win);if(cfg.loss!=null)r=r.split('{LOSS}').join(cfg.loss);if(cfg.bonus!=null)r=r.split('{BONUS}').join(cfg.bonus);return r;}
+  function resolveText(t){if(!t)return t;let r=t;if(cfg.win!=null)r=r.split('{WIN}').join(cfg.win);if(cfg.loss!=null)r=r.split('{LOSS}').join(cfg.loss);if(cfg.bonus!=null)r=r.split('{BONUS}').join(cfg.bonus);r=r.split('{CLIMB}').join(cfg.climb!=null?cfg.climb:3);return r;}
   const resolvedGame=useMemo(()=>({...game,setup:resolveText(game.setup),principle:resolveText(game.principle),player:gameId==='tw1'?twRules():resolveText(game.player),logic:resolveText(game.logic),scoring:gameId==='tw1'?twScoring():resolveText(game.scoring),example:resolveText(game.example)}),[game,cfg.win,cfg.loss,cfg.bonus,gameId,bonusTable,twMode,twStage,twCodes]);
 
   useEffect(()=>{
@@ -17043,6 +17045,7 @@ function TinWarModule({setScreen,embedded=false,setSession}){
       </div>
     </div>}
     <div className="twSettings">
+      {gameId==='tw2'&&<div style={{display:'flex',alignItems:'center',gap:'10px'}}><strong>Wins per line:</strong><PointStepper value={cfg.climb!=null?cfg.climb:3} min={1} max={6} sign="" onChange={v=>setCfgVal('climb',v)}/></div>}
       <div><strong>Win points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.win===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('win',v)}>{v} pt{v>1?'s':''}</button>)}</div></div>
       {defaults.loss!=null&&<div><strong>Loss points:</strong><div className="twActionStrip">{[1,2,3].map(v=><button type="button" key={v} className={cfg.loss===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('loss',v)}>{'\u2212'}{v}</button>)}</div></div>}
       {defaults.bonus!=null&&<div><strong>{gameId==='tw3'?'Bonus for overtaking the King:':gameId==='tw1'?'Bonus per tax height:':'Bonus points:'}</strong><div className="twActionStrip">{[1,2,3,5].map(v=><button type="button" key={v} className={cfg.bonus===v?'twActionBtn twActionGood':'twActionBtn'} onClick={()=>setCfgVal('bonus',v)}>{v} pt{v>1?'s':''}{gameId==='tw1'?' / height':''}</button>)}</div></div>}
