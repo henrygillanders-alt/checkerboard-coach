@@ -1,138 +1,9 @@
-// v865: coach's court notes (4 Nov) — ABL: no behind-the-short-line rule, bonuses 3 / 6, below the line one target = play on, both missed = lose (drops still lose); Tin War Climb: line moves up every N wins (default 3, stepper), taped Lines 1–4, kid rules
-// v864: ABL kill — deep kill plays on where both drives are allowed (games 3, 5, 6), still loses in the kill-only game 2; only a ball landing in front of the floor tape loses; kill winner +3 with its own stepper; short penetrating drive still loses (coach, 4 Nov)
-// v863: ABL Drives — a separate points stepper for every value (rally, penetrating drive, penetrating-drive winner, kill, crosscourt, drop winner), 0 hides the line (coach, 2 Nov)
-// v862: ABL kill zone — first bounce between a floor tape (about halfway to the short line) and the short line; in front of the tape is a drop and loses the rally (coach, 2 Nov)
-// v861: Clear all present on the attendance panel; ABL Drives — no measurements on the player display, kill judged by its first bounce (in front of the short line; behind = lose; missed band = play on), full-court crosscourts only when the opponent is onside with the cut-off penalty and a past-the-opponent bonus; tramline left to the rally (coach, 2 Nov)
-// v860: Invasion setup cleaned to the basic game (format, courts, lives, teams with invader, Start/End, courts now + Rotate courts / Next invaders); scoring engines, dashboard, individual record, notes moved under 'More options'; player display now shows each court's defending team and visiting invader from the same engine as the coach screen (coach, 2 Nov)
-// v859: Competition screen preview — Current Focus, Checkerboard (only if set) and Active Modifiers stack beside the Rules, no stretched empty box; modifiers list all active universal modifiers (coach, 2 Nov)
-// v858: invasion player display — court cards size to content, players one per line with their DB, invader marked, all text large (coach, 2 Nov)
-// v857: ABL Drives to the coach's court-tested rules (2 Nov) — every ball behind the short line (side games = zone 3 / zone 4); penetrating drive both targets +2, winner +3; missed target = play on; lands in front of the short line = lose the rally; kill unchanged pending its floor line
-// v856: new session games show scoring on the player display by default (queued 29 Oct). Invasion player display — one numbered rules box (invasion rules + every active universal modifier, incl. Negative Scoring and CB code), courts with each player's DB beside their name; duplicate rules/extras/DB panels removed (coach, 2 Nov)
-// v855: ABL Drives — taped targets (penetrating band 30–90 cm above the tin + first bounce in the service box; kill band up to 30 cm + second bounce in the 30 cm short-line band) and ChatGPT's game order (coach, 29 Oct)
-// v854: Power Driver — ABL Drives series (6 games): working drives above the line; below only with a penetrating drive (first bounce behind the short line) or a kill (second bounce in the service box → in front of the short line); side → full court; Penetrate & Finish (drop only after a passing penetrating drive) (coach, 29 Oct)
-// v853: Tin War 'Rising Tax' rebuilt as 'Bonus Shots' — no shot lists; Soft or Strict; stages Discover / Name it / Code it (Checkerboard codes); taped Lines 1–4; points per line; no minus points; kid rules (coach, 29 Oct)
-// v852: P33 — never use cones when tape will suffice; 'tape or cones' → 'tape' in T Zone, corridor and Break the T text (coach, 28 Oct)
-// v851: Corridor Games series — NFC 1–2, NFL 1–3 and 'NFC or NFL?' on the marked corridor; 'when to cross' left to Onside Offside (coach, 28 Oct)
-// v850: Negative Scoring names both corridor errors — NFC (non-functional crosscourt) and NFL (non-functional length) — alongside 'any shot' (coach, 28 Oct)
-// v849: Negative Scoring — marked corridor faults (crosscourt cut off from the corridor; any shot cut off from the corridor) and the 'penalty no bigger than the rally' guidance (coach, 28 Oct, court-tested)
-// v848: Golden Bounce rebuilt to the coach's rules — the Golden is the first double bounce used in a rally; win → Golden kept, normal ones used are gone (won back by the challenge); lose → Golden gone for the rotation (28 Oct)
-// v847: every Double Bounce Suite game has short numbered player rules (P32); Golden Bounce and Court Currency 'Earn DB' lists keep only real earn conditions (coach, 28 Oct)
-// v846: [7-1] and [8-2] accepted as crosscourt drops near the seam; only high front-wall (5, 6) to front-court codes are flagged (coach, 28 Oct)
-// v845: custom-code warning in Checkerboard setup rewritten in plain words (coach, 28 Oct: 'this message is confusing')
-// v844: player display — page always scrolls; on landscape screens the rules fill the left half and the Checkerboard court map the right half (smaller rules text, map scaled to the screen height) so nothing runs off the screen (coach, 26 Oct)
-// v843: Negative Scoring preset — crosscourt cut off by an opponent with a foot in the T Zone (coach, 26 Oct)
-// v842: Checkerboard — coach's default scoring (rally 1; complete single +1 / pair +2 / triple +3; win after completing +2; challenge finish = win the rally with a code shot +2; no clean-winner bonus); target bonuses renamed; group codes flash on the player-display court map (wall zone, then floor zone, in turn; alternatives in different colours)
-// v841: Checkerboard session card (player display) rewritten as kid lines — what a code means, the codes, how many, order, level window, (SA); kid scoring lines; full coach wording kept in the card's coach field (coach, 26 Oct)
-// v840: the marked T Zone replaces the leftover 'T corridor' (Break the T, Break The Middle, T Zone Denial); Poached Egg Model and T Zone Games findable in search (coach, 25 Oct)
-// v839: Start Here wording — 'solving problems'; Checkerboard tactical framework named in 'Decision makers'; coach's-notes line no longer claims every game has What/Why/How/Use it when (only Breakout so far) — coach, 25 Oct
-// v838: coach's court-tested sessions added without duplication — Double Bounce Suite: Bank & Spend rebuilt to the coach's rules (start 3, cap 3, tramline/volley winner earns back, more DB left breaks a tie, then best-of-5), new DB Ladder and The Whistle, suite-wide 'Who has double bounces' and give-up penalty; new T Zone Games series (5 games) with size and 'Go' options, linked from the Match Problem Index and the older Recover To T / Off T Recognition cards
-// v837: Start Here 'Backed by evidence' opens with the lineage — Bernstein (1967), Gibson (1979), Newell (1986) — 'not a new idea' (coach, 24 Oct)
-// v836: START HERE page 'What Checkerboard Squash Is For' (coach's evolving doc, first draft) — shown on first open per device, top tile on Home; Breakout coach's note regrouped under What / Why / How / Use it when
-// v835: Breakout coach's note gains 'The research behind it' (small-sided games: Fenoglio 2003 in Renshaw et al. 2010; Davids, Araújo, Correia & Vilar 2013; Impellizzeri et al. 2006) — coach-approved 21 Oct
-// v834: Breakout Game 4 (floor) — 'After the breakout, play in': Step 1 breakout zone only, Step 2 both zones, Step 3 full court (coach, 21 Oct); out-of-area after the breakout loses and scores for the other player; shots suggestion follows that area
-// v833: Breakout coach's note at the top of the page (training and scoring rationale, coach-approved 21 Oct); 'after outside' bonus defaults to +3; Game 2 bonus labels match the note
-// v832: Breakout Game 2 (Defender's Choice) rebuilt to the coach's rules of 21 Oct (constrained after the return, N shots to win, out-of-zone after the return loses and scores for the other player as if they won, one breakout per rally); shots-to-win stepper with a court-size default (front 1, Egyptian 2, full 3); default bonuses 3/3
-// v831: Breakout rules and scoring in the coach's words with Player A / Player B (coach approved 21 Oct); bonus chips (+0..+3) replaced by steppers 0–10
-// v830: Breakout game buttons in progression order and plain names — 1 Restore or Lose, 2 Defender's Choice, 3 Play It Out, 4 Nominated Zone (coach, 21 Oct); 'Tier' → 'Game'
-// v829: Breakout scoring lines say who gets each bonus ('you get' / 'your opponent gets'); 'Put it back in the zone and stop them' replaced (coach, 21 Oct)
-// v828: Breakout Tier 1++ Play It Out (coach, 21 Oct); every Breakout task and scoring line rewritten for juniors — short numbered lines, 'you' and 'your opponent' (P32: we are always talking to kids)
-// v827: Breakout Defender's Choice — 'escape' now belongs only to the defender; the breakout player's reward after an escape is the Capture bonus (was Escape bonus); intro says 'break out' not 'escape'
-// v826: Breakout Squash (floor/wall) — Tier 1 restored to the coach's original Restore or Lose (not restored = point to the breakout player); new Tier 1+ Defender's Choice progression (restore for the defence bonus, or escape at the cost of an escape bonus); pairs Tier 1 unchanged
-// v825: P31 completed — every user-facing "conditioned" (player, both/one conditioned, role labels) → "constrained"; "conditioned down" → handicapping wording; legacy keys, property names, kw search strings and the one quoted traditional reference kept
-// v824: P31 terminology sweep — 'conditioned game/rally/match(play)' → 'constrained …'; category 'Classic Conditioned' → 'Classic Constrained' (legacy key aliased); saved scoring mode migrated; search keywords keep both terms
-// v823: Traffic Light Zones — RLD badge on every format button; Solo carries a transfer warning and a calibration rationale; Constrained rallies is the default and Solo is listed last
-// v822: Movement Lab revised — Traditional v CLA table; Overrun as an unpressured early progression with a scalable fault line; The Tramline with an outcome-based escape; Runners to the Front and Recovery Race marked early progressions with their functional next steps; ghosting imagery claims corrected
-// v821: universal modifier 'No Non-Functional Crosscourts' now carries the coach's court-tested Onside rule (feet, not steps); constraint only by default
-// v820: S&L — win N in a row on a challenged ladder/snake without showing it and you climb/escape anyway (anti-throwing, coach 13 Oct); forfeit markers remapped on roster change
-// v819: Power Driver revised from the coach's build note — kill by second bounce, one-player option, ordered/any-order cycles, serve excluded, no bonus stacking, Shots links, reset, P23 attribution
-// v818: Power Driver — Penetrating Drive (9 games), Kill (9 games) and Drive or Kill; Games Library family, All Games list, Match Problem Index links
-// v817: Breakout pairs — a pattern ball volleyed anywhere plays on; the volley itself returns to the pattern or is the breakout (short-line exception removed)
-// v816: Breakout pairs — a pattern or breakout ball may be volleyed instead of bouncing (judged by where the ball is at contact; front-court balls volleyed behind the short line do not count)
-// v815: Breakout Squash on Checkerboard pairs (wall → floor pattern, breakout target, open rally after); zone 1 = front left everywhere
-// v814: Designing the Problem — rule-check paragraph reworded formally (P27); pending-build promise removed (P7)
-// v813: Development cards — optional game/constraint link + Keep/Adjust/Remove review in dated history; decay vs deliberate fading clarified (Renshaw et al. 2010 brief)
-// v812: Read the Attack — the coach's 7-game perception series (winner on perception duty)
-// v811: the app updates itself — checks for a new deploy when brought to the front; reloads on Home, otherwise offers 'Update now'
-// v810: Player Development cards (Players → Development) — Secure/Developing/New/Change, 3 ticks, note, auto history
-// v809: S&L — the 'Chance is gone / keep trying' setup choice removed; one rule (coach, 4 Oct)
-// v808: S&L ladders — lose while waiting = ladder forfeited for good; win without showing = stays armed (every mode)
-// v807: S&L — losing on a snake's head slides you to its tail again (bite lost on 4 Sep)
-// v806: S&L hand-off — referee gets the coach's exact game; take-back keeps the referee's game; copy/share inside the tap
-// v805: Onside Offside — its own series of five separate games (one per progression)
-// v804: Onside Offside — rally-win value and the offside price customisable too
-// v803: Cross Away, Not At retired — its useful parts folded into Onside Offside; CXC stage 2 links to it
-// v802: CCFF game 3 — Onside Offside, the coach's five court-tested progressions
-// v801: S&L — New game reaches the referee phone (game key); winner buttons styled on the coach screen too
-// v800: S&L winner buttons — equal, side by side on phones too
-// v799: S&L — big winner buttons in token colours, big challenge buttons, undo after a win (withdraws the ladder result), shapes for shared initials, one colour list
-// v798: CCFF — line progression (service line → halfway → full front court) on Volley Toll, Functional Cross, One-Lunge Finish
-// v797: Game Logic builders — no consequence without a required action
-// v796: Session Builder rotations compact — title, minutes, controls, 'How to play' (3 lines); Details opens the rest
-// v795: Crosscourt Choice — a boast does not count as a crosscourt (coach)
-// v794: Boast series (4 games) split from Drop & Lob; boast ≠ crosscourt in CCFF; CCFF Home tile
-// v793: CCFF — coach's Crosscourt Winner + Punish the Cross lead the family, Volley Attack retired; Player Display shows title + task only
-// v792: One-Lunge Finish — the finishing shots (up to three) may go below the line
-// v791: Volley Attack — rally above the line, volley-attack may go below it; staged kill line replaces the tin
-// v790: Negative Scoring attaches to one game (not every game); racquet rules made consistent
-// v789: Session Builder Remove fixed — every rotation gets a unique id (duplicate ids broke removal)
-// v788: Match Problem Index gets a Home (More Stuff) tile; three entries renamed to match Match Analysis v2 tags
-// v787: Drop, Boast & Lob family — six games for Loose Drop / Loose Boast / Loose Lob, linked in the index
-// v786: Match Problem Index aligned to the Match Analysis app's cause tags (v785 discarded)
-// v784: Match Problem Index — match-play problems linked to the games that address them
-// v783: Learning to Intercept — references added (Lee, Kayed & van der Meer, Jacobs & Michaels, Gibson, Pinder et al.)
-// v782: new coach module — Learning to Intercept (early hitters), linked from Level 0, Perception-related pages and search
-// v781: Improvement page — pick-up and Breakthrough Log explained; sources shortened with full references folded away
-// v780: formal register — conversational stock phrases removed (P27)
-// v779: Improvement page — honest limits rewritten in three short paragraphs; 'junior squash players'
-// v778: Improvement page — author's experience, why the belief is so sticky, honest limits incl. the CI debate in sport
-// v777: new page — Where Did the Improvement Come From? (feeling-of-learning research; why lessons get the credit)
-// v776: Why CLA? fitness — game-based conditioning first, off-court work has a place; timed circuit as a time constraint
-// v775: Ghosting — three movement signals: called zone, lights, coach's honest shadow shot
-// v774: CLA Update takeaways — reinvestment explained simply; source-credibility and blocked-practice lines made plain
-// v773: Why CLA? Reinvestment panel expanded — Masters (1992), Smeeton et al. (2005), limits, where it shows in the app
-// v772: Hysteresis section explains sequence scoring with real game examples (no internal jargon)
-// v771: Essential vs Elemental rewritten plainly with a squash example (was a tennis serve)
-// v770: Why CLA? Bernstein section gains the black-hole landing study (Gibb, Schvaneveldt & Gray 2008); research claim softened
-// v769: Why CLA? research section — the environment teaches, the coach designs and guides
-// v768: Why CLA? tells Bernstein's repetition point once per tier; 'never exactly the same' wording
-// v767: crosscourt rewards paid on conversion within N shots; opponent winner off your crosscourt = the ultimate gift
-// v766: not volleyed / not attacked is not proof a crosscourt was good — the test is whether it moved the opponent (coach)
-// v765: Crosscourt Licence debrief asks about racquet–ball contact (coach)
-// v764: Crosscourt Choice family (earn it, cross away not at, choose it) + links to existing stages 3–4
-// v763: every dropdown starts dark (no browser-white select boxes anywhere)
-// v762: Between-Rally Reset added to the 12 builder screens that assemble their own modifier layers
-// v761: Between-Rally Reset added as panel 7 of Universal Modifiers (same setting as the Player Display)
-// v760: Between-Rally Reset — switch-on constraint on the Player Display for any game
-// v759: stray Time Givers panel removed from the Diagnostics principles grid; one-line principle card instead
-// v758: parent pages may also name that approach to explain CLA versus traditional coaching (P26)
-// v757: P26 refined — coach education may name that approach to explain what it is and why CLA rejects it
-// v756: practice language — the banned word removed from every screen (coach: P26)
-// v755: Checkerboard page shows "Why this level" under each level picker
-// v754: retired Checkerboard Builder deleted; five-level ladder (CB_LEVEL_DEFAULTS) untouched
-// v753: Chipping games single-sourced across Level 0 and Perception, each home keeps its own purpose
-// v752: Length Before Attack no longer carries the Quality Length Before Attack layer (+2 stacking)
-// v751: King of Court Power Play games moved from Plug & Play to the Power Play module; Move Before Front Wall out of Serve & Return
-// v750: Length Before Attack single-sourced with a progressive pin line; Length That Pins shares it
-// v749: Stranded rebuilt on a taped line; Home tiles in graded blues (see APP_VERSION)
-// v748: Crosscourt Licence anti-gaming line restored on the family card (see APP_VERSION)
-// v747: Master Game Library — one registry for every Games Library family (see APP_VERSION)
-// v746: Match Analysis app URL wired into the Home tile (deployed 23 Sep)
-// v745 Match Analysis split: LMC suite moved to matchanalysis_v1.jsx (see APP_VERSION)
-// v539 Player Display step-renderer + design principle (see APP_VERSION)
-// v538 Player Display brevity pass
-// v537 Deep Touch rationale rewrite
-// v536 Coach-facing cleanup of CLA Update games
-// v535 CLA Update part 2 — Role Constraint engine + Court Geometry
-// v534 CLA Update — McBroom & Gray integration (see APP_VERSION history)
-// v142 game-builder/scoring/player-display cleanup build
-/* v135 Competition Payload Export Fix */
+// Checkerboard Squash™ — change history and design notes live in CHECKERBOARD_HANDOVER_BRIEF (comments stripped v866 to save space).
 
 import React,{useEffect,useMemo,useRef,useState}from'react';
 import{createRoot}from'react-dom/client';
 import'./styles.css';
 
-
-// ── LIVE PLAYER VIEW SYNC (Supabase REST; no extra package required) ─────────
 const SUPABASE_URL='https://pjohecwpciwexvtmvkdz.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_AJlpAmypniaLs4Zmc7ki6w_3zT1kmcQ';
 const LIVE_ROOM_KEY='checkerboardLiveRoomIdV128';
@@ -148,7 +19,7 @@ function getNsslCourtFromUrl(){try{const p=new URLSearchParams(window.location.s
 function getNsslMasterFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('nsslMaster');if(h)return {host:h};}catch{}return null;}
 function buildNsslCourtLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?nsslCourt=${n}&host=${encodeURIComponent(base)}`;}
 function buildNsslMasterLink(base){const b=window.location.origin+window.location.pathname;return `${b}?nsslMaster=${encodeURIComponent(base)}`;}
-// Patience → Urgency: one coach device holds the clock and the allocation; each court has its own device that follows the clock and scores its own court; a board reads every court.
+
 function puClockRoomId(base){return `${base}__puclock`;}
 function puCourtRoomId(base,n){return `${base}__pucourt${n}`;}
 function getPuCourtFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('puCourt');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
@@ -176,9 +47,7 @@ function getHangmanLiveRoomId(){return getPersistentLiveRoomId()+'-hangman';}
 function getMatchplayLiveRoomId(){return getPersistentLiveRoomId()+'-matchplay';}
 function useWakeLock(){
   useEffect(()=>{
-    // Two layers: (1) Screen Wake Lock API (iPad/Android/desktop). (2) A muted, inline, looping
-    // video fed by a tiny canvas stream — a NoSleep-style fallback that keeps iPhone Safari awake,
-    // where the Wake Lock API is unreliable and Low Power Mode disables it entirely.
+
     let lock=null, video=null, canvas=null, drawTimer=null, tick=0;
     const haveWL=typeof navigator!=='undefined'&&navigator.wakeLock;
     async function acquire(){try{if(haveWL&&document.visibilityState==='visible'){lock=await navigator.wakeLock.request('screen');}}catch{}}
@@ -218,10 +87,7 @@ function useWakeLock(){
       if(armed())hidePrompt();
     }
     acquireAll();
-    /* Low Power Mode refuses both the wake lock and video autoplay until a real tap —
-       and a wall display is exactly the screen nobody touches. After a few seconds
-       without either layer armed, ask for the one tap; the tap arms both and the
-       prompt goes. The watchdog re-checks every 20 s for the rest of the session. */
+
     setTimeout(()=>{if(!dead&&!armed())showPrompt();},4000);
     watchdog=setInterval(()=>{if(dead)return;if(!armed()&&document.visibilityState==='visible'){acquireAll();setTimeout(()=>{if(!dead&&!armed())showPrompt();},1200);}else if(armed())hidePrompt();},20000);
     const onVis=()=>{if(document.visibilityState==='visible'){acquireAll();}};
@@ -291,8 +157,7 @@ function nsslBuildLeague(courtPayloads,playoffs){
   return Object.values(table).sort((x,y)=>y.mp-x.mp||(y.pf-y.pa)-(x.pf-x.pa)||y.pf-x.pf||String(x.name).localeCompare(String(y.name)));
 }
 function supabaseRestHeaders(extra={}){
-  // Supabase REST expects both apikey and Authorization for browser writes with RLS.
-  // This works for the new sb_publishable_ keys as well as legacy eyJ anon keys.
+
   const key=String(SUPABASE_ANON_KEY||'').trim();
   return {
     apikey:key,
@@ -304,8 +169,7 @@ async function writeLivePlayerRoom(roomId,mode,payload){
   if(!roomId||!liveSyncReady()) return false;
   const key=String(SUPABASE_ANON_KEY||'').trim();
   const row={room_id:roomId,mode,payload:{...payload,liveRoomId:roomId,updatedAt:new Date().toISOString()},updated_at:new Date().toISOString()};
-  // v134: send the key three ways: apikey header, bearer header, and apikey URL param.
-  // This removes the previous misleading fallback where the last failed attempt had no apikey header.
+
   const endpoint=`${SUPABASE_URL}/rest/v1/live_sessions?on_conflict=room_id&apikey=${encodeURIComponent(key)}`;
   const headers={
     apikey:key,
@@ -335,21 +199,13 @@ async function writeLivePlayerRoom(roomId,mode,payload){
 }
 async function deleteLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady())return false;
-  // Uses the same proven write path as writeLivePlayerRoom (POST + upsert) rather than
-  // an actual DELETE request. A DELETE can silently do nothing if the database's
-  // row-level security policy only permits insert/update/select for the anon key —
-  // which is exactly what "Start fresh (clear it) has no effect" looks like from the
-  // outside (the call succeeds or fails silently, but the row is untouched either way).
-  // Overwriting with a neutral payload achieves the same "this court is now empty"
-  // result through a path that's already confirmed to work.
+
   return writeLivePlayerRoom(roomId,'cleared',{type:'cleared'});
 }
 async function readLivePlayerRoom(roomId){
   if(!roomId||!liveSyncReady()) return null;
   try{
-    /* Abort after 6s: on flaky mobile signal a fetch can hang indefinitely,
-       which left court scorers frozen on "Connecting" with no retry. A timed-out
-       read resolves to null, the caller reports the wait, and the poll retries. */
+
     const ctrl=new AbortController();
     const timer=setTimeout(()=>ctrl.abort(),6000);
     const res=await fetch(`${SUPABASE_URL}/rest/v1/live_sessions?room_id=eq.${encodeURIComponent(roomId)}&select=mode,payload,updated_at&limit=1&apikey=${encodeURIComponent(String(SUPABASE_ANON_KEY||'').trim())}`,{
@@ -382,19 +238,13 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
+const APP_VERSION='v869 Squad Clock Rotation';
 
-const APP_VERSION='v865 Court Notes';
-/* v745: Live Match Coaching / match analysis is now its own app (matchanalysis_v1.jsx, its own
-   Netlify site). Paste that site's URL below once deployed; the Home tile opens it in a new tab.
-   Empty string = tile explains where to set it instead of navigating. */
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
 const MORE_OPEN_KEY='cb_more_open_v1';
 const MORE_SCROLL_KEY='cb_more_scroll_v1';
 
-// Back-interceptor registry: lets a module with an inner (second) page tell the
-// floating Back button to step back inside the module before leaving to the
-// previous App screen. A module calls useBackIntercept(innerPageOpen, closeFn).
 const __backInterceptors=[];
 function __pushBack(fn){__backInterceptors.push(fn);}
 function __popBack(fn){const i=__backInterceptors.lastIndexOf(fn);if(i>=0)__backInterceptors.splice(i,1);}
@@ -404,7 +254,6 @@ function useBackIntercept(active,handler){
   useEffect(()=>{if(!active)return;const fn=()=>ref.current();__pushBack(fn);return ()=>__popBack(fn);},[active]);
 }
 
-// ── REPRESENTATIVE LEARNING DESIGN (RLD) SYSTEM ──────────────────────────────
 const RLD_LEVELS=[
   {level:0,label:'Foundation',short:'RLD 0',desc:'Perceptual and movement foundations. Simplified environment, reduced uncertainty.',color:'#6b7280',bg:'#111827',textColor:'#9ca3af'},
   {level:1,label:'Coach Controlled',short:'RLD 1',desc:'Coach calls every target, task or decision. Player solves the coach\'s problem.',color:'#ef4444',bg:'#450a0a',textColor:'#fca5a5'},
@@ -427,8 +276,7 @@ function RLDBadge({level,size='sm'}){
   </span>;
 }
 function RLDSpanBadge({items,size='sm'}){
-  // For a container of activities. Reports the range of representativeness its contents
-  // actually cover rather than claiming a single level for the wrapper.
+
   const levels=(items||[]).map(x=>x&&x.rld).filter(v=>v!==undefined&&v!==null);
   if(!levels.length)return null;
   const lo=Math.min(...levels),hi=Math.max(...levels);
@@ -437,8 +285,8 @@ function RLDSpanBadge({items,size='sm'}){
     <RLDBadge level={lo} size={size}/><span style={{opacity:0.7}}>—</span><RLDBadge level={hi} size={size}/>
   </span>;
 }
-// ─────────────────────────────────────────────────────────────────────────────
-const TEAM_NAMING_STANDARD="Max's Team"; // universal setup/projection naming standard
+
+const TEAM_NAMING_STANDARD="Max's Team"; 
 const UNIVERSAL_DB_OPTIONS=['No DB','1 DB','2 DB','3 DB','4 DB','5 DB','Unlimited DB'];
 const TIN_HEIGHT_OPTIONS=['No Tin Mod','L0 — 30cm above service line','L1 — Service line','L2 — 65cm from tin','L3 — 30cm from tin','L4 — 15cm from tin','L5 — Tin'];
 const TIN_HEIGHT_KEY='checkerboard_universal_tin_height_v149';
@@ -464,8 +312,6 @@ const CATEGORY_TO_CLASS={'ATL / BTL':'atl','Checkerboard':'checkerboard','Around
 const LEVELS=[
 {label:'Bronze',level:1},{label:'Silver',level:2},{label:'Gold / Elite',level:3},{label:'Performance',level:4},{label:'Professional',level:5}
 ];
-
-
 
 const ANIMAL_PAIRINGS=[
 {name:'Eagle + Golden Retriever',theme:'Awareness Under Distraction'},
@@ -521,7 +367,6 @@ const SHOTCLOCK_LISTS={
 };
 const DEFAULT_SHOTCLOCK={mode:'Shot Clock (win before)',unit:'Seconds',t1:20,t2:25,applyTo:'Server only',earlyEnd:'Replay the rally'};
 
-// ── v144 PLAYER IDENTIFIERS (animal identity + role model identity) ───────────
 const PLAYER_ANIMALS=[
   {emoji:'🦅',name:'Eagle',trait:'awareness, sees early, picks up information'},
   {emoji:'🐕',name:'Golden Retriever',trait:'resilient, ignores distractions, chases the next ball'},
@@ -647,7 +492,7 @@ function getRankedCourtSizes(total,courtCount){
   const extra=count%courts;
   const sizes=Array.from({length:courts},()=>base);
   for(let i=0;i<extra;i++){
-    const idx=courts===1?0:Math.min(i+1,courts-1); // court 1 stays smaller; court 2 receives first extra
+    const idx=courts===1?0:Math.min(i+1,courts-1); 
     sizes[idx]+=1;
   }
   return sizes;
@@ -662,12 +507,6 @@ function rankedBlockCourtAllocation(players,courtCount){
     return group;
   });
 }
-
-
-
-
-
-
 
 function buildShotClock(o){
   const unitWord=o.unit==='Shots'?'shots':'seconds';
@@ -789,7 +628,6 @@ autoLayers.push('Clean Winner');
 return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:`${options.btlCount}: ${shotText}. ${atlText} ${consecutiveText} ${sideText}${cbText}`,rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
 }
 
-// ── Classic Constraint games (CLA rebuild; RLD 6-dimension rubric). Source: Off The Wall Squash CIC, 2018. Added v453. Shared by Plug & Play and the Classic Constraint Games library tab. ──
 const CLASSIC_CONSTRAINT_GAMES=[
 {id:"CCG01",title:"Sides Game (No Front Court or Boasts)",category:'Classic Constraint',theme:"Length & Width",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"Constrained Game",tags:["Classic Constraint"],shortRationale:"Removing the front court and the boast forces players to win with height, width and depth rather than pace — inviting tight straight length and well-shaped cross-courts that die in the back.",task:"Every shot must cross to the opponent's side and land behind the short line (back court only).",description:"One player on each side of the court. Rally starts with a serve. Every shot must cross to the opponent's side and land behind the short line (back court only). No shots in the front court and no boasts allowed for the whole game.",what:"One player on each side of the court. Rally starts with a serve. Every shot must cross to the opponent's side and land behind the short line (back court only). No shots in the front court and no boasts allowed for the whole game.",rationale:"Removing the front court and the boast forces players to win with height, width and depth rather than pace — inviting tight straight length and well-shaped cross-courts that die in the back.",why:"Removing the front court and the boast forces players to win with height, width and depth rather than pace — inviting tight straight length and well-shaped cross-courts that die in the back.",coach:"Use height on the front wall and width on the cross-court. Can a deep, dying length force your opponent into an error? Where do you recover to after you hit? Both players are constrained. Demands accurate straight and cross-court length under width pressure and disciplined recovery to the T on 'their' side. Manipulate by assigning the weaker side to the stronger player.",playerFocus:"Use height on the front wall and width on the cross-court.",player:"Use height on the front wall and width on the cross-court.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Length & Width","RLD 3"],load:"Sides Game (No Front Court or Boasts)",layers:[],cbCode:'None',format:'Constrained Game',duration:8,players_desc:"Both constrained",courtArea:"Back court, one side each",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
 {id:"CCG02",title:"Sides Game (3/4 Length, No Boasts)",category:'Classic Constraint',theme:"Length & Width",rld:3,rldScore:19,level:"Levels 2–4",players:'2',type:"Constrained Game",tags:["Classic Constraint"],shortRationale:"Shrinking the back target invites controlled, dying length and thoughtful pace rather than hard hitting to the very back.",task:"All shots must go to the opponent's side and must NOT land behind the back of the service box (3/4 length only).",description:"One player on each side. All shots must go to the opponent's side and must NOT land behind the back of the service box (3/4 length only). No boasts allowed during the game.",what:"One player on each side. All shots must go to the opponent's side and must NOT land behind the back of the service box (3/4 length only). No boasts allowed during the game.",rationale:"Shrinking the back target invites controlled, dying length and thoughtful pace rather than hard hitting to the very back.",why:"Shrinking the back target invites controlled, dying length and thoughtful pace rather than hard hitting to the very back.",coach:"Think about shot selection and weight of shot. How do you win the rally without the very back of the court? Keep racket control on every ball. Both constrained. Rewards weight-of-shot control and racket-face awareness to keep the ball in a shortened length window; punishes over-hitting.",playerFocus:"Think about shot selection and weight of shot.",player:"Think about shot selection and weight of shot.",scoring:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",score:"Win the rally = 1. Layer any game-specific bonus or Negative Scoring with the universal modifiers.",develops:["Length & Width","RLD 3"],load:"Sides Game (3/4 Length, No Boasts)",layers:[],cbCode:'None',format:'Constrained Game',duration:8,players_desc:"Both constrained",courtArea:"3/4 court, one side each",difficulty:"Intermediate",rldDims:{coupling:4,pa:3,decision:3,repr:3,effort:3,transfer:3},source:"Off The Wall Squash CIC, 2018"},
@@ -868,7 +706,6 @@ lengthBeforeAttackCard(),
 ];
 }
 
-
 function libraryStarterGames(){
   return standardGames().map(game=>({...clone(game),saved:true,favourite:false}));
 }
@@ -882,7 +719,6 @@ const bRank=b.playerType==='Programme Player'?Number(b.juniorRanking&&String(b.j
 return aRank-bRank;
 });
 }
-
 
 function startCoachProjectionSession(sessionList,index=0){
   try{
@@ -910,8 +746,6 @@ function stopCoachProjectionSession(){
     }));
   }catch{}
 }
-
-
 
 const CONSTRAINT_BONUS_POINTS={
   'Clean Winner':'+2',
@@ -941,14 +775,11 @@ const CONSTRAINT_BONUS_POINTS={
   'Three Shot Families':'+3',
   'Opposite Solution':'+2',
   'Random Diversity Card':'+2',
-  'No Non-Functional Crosscourts':'constraint only' /* v821: breach loses the rally (Onside rule); a coach-set bonus pays per onside crosscourt */
+  'No Non-Functional Crosscourts':'constraint only' 
 };
 const MODIFIER_SCORE_CHOICES=['constraint only','+1','+2','+3','+4','+5'];
 function defaultModifierScore(layer){return CONSTRAINT_BONUS_POINTS[layer]||'constraint only';}
-// A layer whose value is one of these earns no points. It is a constraint, and
-// it belongs in CONSTRAINTS — printing "Volley allowed: constraint only" under
-// HOW TO SCORE tells a player that something does not affect scoring, inside the
-// section about scoring. Say nothing instead.
+
 const CONSTRAINT_ONLY_VALUES=['constraint only','focus constraint','handicap constraint','diversity constraint'];
 function layerScoresPoints(layer,value){
   return !CONSTRAINT_ONLY_VALUES.includes(value||defaultModifierScore(layer));
@@ -980,10 +811,7 @@ function activePenaltyEntriesFromStorage(){
   }catch{return [];}
 }
 function activePenaltySummaryFromStorage(){return activePenaltyEntriesFromStorage().map(e=>`${e.label} = -${e.points}`).join(' · ');}
-/* v790: Negative Scoring belongs to ONE game. The panel's setting is attached to the next game
-   added to the session (appendToSessionState) and then cleared, so it can never follow every
-   later game. Before v790 it was read live from storage for every Player Display — a penalty set
-   once appeared on all games (coach found "Racquet Heat above shoulder" on a game he never set). */
+
 function clearPendingPenalties(){try{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));window.dispatchEvent(new CustomEvent('cbPenaltiesCleared'));}catch{}}
 try{if(!localStorage.getItem('checkerboard_penalty_per_game_v790')){localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));localStorage.setItem('checkerboard_penalty_per_game_v790','1');}}catch{}
 function scoringLogicForLayers(layers=[],modifierScores={}){
@@ -1091,21 +919,7 @@ function buildPlayerCompetitionUrl(state){
   const base=window.location.origin+window.location.pathname;
   return `${base}?playerCompetition=${encoded}`;
 }
-// The player display is read courtside, at a glance, by someone holding a
-// racquet. Sequences and scoring arrive already delimited (" + " for shots,
-// " · " for scoring rules), so split them into bullets rather than printing the
-// raw run-on string. One idea per line, no prose walls, nothing clipped.
-/* ────────────────────────────────────────────────────────────────────────────
-   DESIGN PRINCIPLE — PLAYER DISPLAY (v539; standing rule for all future cards)
-   Players read this screen mid-session, often from across a court. Every
-   session card must carry: task = short NUMBERED STEPS ("1) … 2) … 3) …", as
-   few words as possible), scoring = one line, rationale = 1–2 short sentences.
-   Full coach detail belongs on the module screens, never on the card.
-   The display enforces this defensively — pdBullets() renders any prose as
-   numbered steps (numbered markers → newlines → legacy separator → sentences)
-   and the rationale box caps at two sentences — but WRITE CARDS TO THE
-   PRINCIPLE; the safety net is not the standard.
-   ──────────────────────────────────────────────────────────────────────────── */
+
 function pdSentenceParts(text){
   const t=String(text||'').trim();
   if(!t)return [];
@@ -1119,22 +933,22 @@ function pdFirstSentences(text,n){
 function pdBullets(text,sep){
   const t=String(text||'').trim();
   if(!t)return null;
-  // 1. explicit numbered steps: "1) … 2) … 3) …"
+
   if(/(^|\s)1\)\s/.test(t)){
     const parts=t.split(/\s*(?=\d+\)\s)/).map(x=>x.replace(/^\d+\)\s*/,'').trim()).filter(Boolean);
     if(parts.length>1)return parts;
   }
-  // 2. newlines
+
   if(t.includes('\n')){
     const parts=t.split('\n').map(x=>x.trim()).filter(Boolean);
     if(parts.length>1)return parts;
   }
-  // 3. legacy separator passed by the caller
+
   if(sep&&sep!=='\n'){
     const parts=t.split(sep).map(x=>x.trim()).filter(Boolean);
     if(parts.length>1)return parts;
   }
-  // 4. sentences — any prose becomes one short line per sentence
+
   const parts=pdSentenceParts(t);
   return parts.length>1?parts:null;
 }
@@ -1208,8 +1022,19 @@ function RotationTimer({durationMin,resetKey}){
     {done&&<span style={{color:'#ff7a7a',fontWeight:800}}>Time!</span>}
   </div>;
 }
-// Deterministic shared timeline — every court computes the SAME phase/remaining from
-// (elapsed since the broadcast start) + the shared config, so they stay in lockstep.
+
+const SQ_CUTOFF_DEFAULT=10;
+function sqRules(mode,cutoff,bonus){
+  /* v869 (coach, 5 Nov): several players per court — winner stays on. */
+  const c=Number(cutoff),b=Number(bonus)||0;
+  const rot='Winner stays on and serves. Loser steps off; the next player steps on to receive.';
+  const roll='Rally over early? Next rally straight away.';
+  const last=c>0?['“LAST RALLY” showing? No new serve.']:[];
+  if(mode.indexOf('Hold')===0)return [rot,'“HOLD” showing: keep the rally going. A winner does not count — serve again.','“ATTACK OPEN”: go for the winner.',roll,...last];
+  if(mode.indexOf('Window')===0)return [rot,'“HOLD” showing: keep building. A winner does not count — serve again.','“STRIKE”: win the rally now.','Still playing at the buzzer? Point to the receiver, who stays on.',roll,...last];
+  return [rot,'The server must win before the buzzer.',b>0?`Server wins? 1 point + ${b} bonus. Stays on.`:'Server wins? 1 point. Stays on.','Receiver wins? 1 point. Stays on and serves next.','Still playing at the buzzer? Point to the receiver, who stays on.',roll,...last];
+}
+function SqRulesBox({mode,cutoff,bonus}){return <div className="claRationaleBox" style={{marginTop:'10px'}}><h2>Rules for players</h2><ol style={{margin:'4px 0 0',paddingLeft:'22px',lineHeight:1.5,color:'#dbe6f2',fontWeight:600}}>{sqRules(mode,cutoff,bonus).map((l,i)=><li key={i}>{l}</li>)}</ol></div>;}
 function squadTimeline(cfg,elapsedSec){
   const isCeiling=cfg.mode.indexOf('Shot Clock')===0,isHold=cfg.mode.indexOf('Hold')===0,isWindow=cfg.mode.indexOf('Window')===0;
   const t1=Math.max(5,Number(cfg.t1)||20),t2=Math.max(t1+5,Number(cfg.t2)||t1+5);
@@ -1227,7 +1052,7 @@ function NetworkedSquadClock({setScreen}){
   const online=!!FIREBASE_CONFIG;
   const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
   const [room,setRoom]=useState(()=>{try{return localStorage.getItem('SQUAD_CLOCK_ROOM')||'MAIN';}catch(e){return 'MAIN';}});
-  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
+  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8,cutoff:(preset&&preset.cutoff!=null)?preset.cutoff:SQ_CUTOFF_DEFAULT,finishBonus:(preset&&preset.finishBonus)||0});
   const [state,setState]=useState(null);
   const [joined,setJoined]=useState(false);
   const [now,setNow]=useState(0);
@@ -1261,13 +1086,15 @@ function NetworkedSquadClock({setScreen}){
   let big=tl?tl.remaining:0,label='',color='#86b8a4',cue='';
   if(tl){
     if(tl.phase==='ready'){label='GET READY';color='#2e6e8e';cue='All courts — server to the box.';}
-    else if(tl.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
+    else if(tl.phase==='rest'){label='REST';color='#6db3e6';cue='Recover — winner stays on.';}
     else if(tl.phase==='done'){label='SESSION DONE';color='#86b8a4';cue='Rounds complete.';}
     else if(tl.phase==='work'){
       const el=tl.elapsedInWork;
-      if(tl.isCeiling){label='SHOT CLOCK';color=tl.remaining<=3?'#2e6e8e':'#86b8a4';cue='Win before the buzzer — still live = point to returner.';}
+      if(tl.isCeiling){label='SHOT CLOCK';color=tl.remaining<=3?'#2e6e8e':'#86b8a4';cue='Win before the buzzer. Rally over? Serve again.';}
       else if(tl.isHold){label=el<tl.t1?'HOLD':'ATTACK OPEN';color=el<tl.t1?'#ff7a7a':'#86b8a4';cue=el<tl.t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
       else{label=el<tl.t1?'HOLD':'STRIKE';color=el<tl.t1?'#2e6e8e':'#86b8a4';cue=el<tl.t1?'Too early — keep building.':'Strike window open.';}
+      const co=Number((state&&state.cfg&&state.cfg.cutoff!=null)?state.cfg.cutoff:cfg.cutoff);
+      if(co>0&&tl.remaining<=co){label='LAST RALLY';color='#f0b94a';cue='No new serve — play this rally out.';}
     }
   }
   const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
@@ -1288,9 +1115,12 @@ function NetworkedSquadClock({setScreen}){
         {isHold&&Row('Rally length (seconds)','holdRally',5,5)}
         {isWindow&&Row('Window from (seconds)','t1',5,5)}
         {isWindow&&Row('Window to (seconds)','t2',5,(Number(cfg.t1)||5)+5)}
+        {isCeiling&&Row('Server finish bonus (0 = off)','finishBonus',1,0)}
+        {Row('No new rally in the last (seconds)','cutoff',1,0)}
         {Row('Rest between rallies (seconds)','rest',5,5)}
         {Row('Rounds','rounds',1,1)}
       </div>
+      <SqRulesBox mode={cfg.mode} cutoff={cfg.cutoff} bonus={cfg.finishBonus}/>
       <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>
         <button type="button" className="primaryBtn" onClick={startAll}>▶ Start on all courts</button>
         <button type="button" className="secondaryBtn" onClick={join}>🔊 Arm sound (this court)</button>
@@ -1309,7 +1139,7 @@ function NetworkedSquadClock({setScreen}){
 
 function SquadClock({setScreen}){
   const preset=(()=>{try{return JSON.parse(localStorage.getItem('SQUAD_CLOCK_CFG'))||null;}catch(e){return null;}})();
-  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8});
+  const [cfg,setCfg]=useState({mode:(preset&&preset.mode)||'Shot Clock (win before)',t1:(preset&&preset.t1)||20,t2:(preset&&preset.t2)||25,holdRally:(preset&&preset.holdRally)||20,rest:15,rounds:8,cutoff:(preset&&preset.cutoff!=null)?preset.cutoff:SQ_CUTOFF_DEFAULT,finishBonus:(preset&&preset.finishBonus)||0});
   const [running,setRunning]=useState(false);
   const m=useRef({phase:'idle',round:1,remaining:0,gateFired:false});
   const [,force]=useState(0);const rr=()=>force(x=>x+1);
@@ -1341,13 +1171,14 @@ function SquadClock({setScreen}){
   const s=m.current;
   let big=s.remaining,label='',color='#86b8a4',cue='';
   if(s.phase==='ready'){label='GET READY';color='#2e6e8e';cue='All courts — server to the box.';}
-  else if(s.phase==='rest'){label='REST';color='#6db3e6';cue='Swap server, walk back, reset.';}
+  else if(s.phase==='rest'){label='REST';color='#6db3e6';cue='Recover — winner stays on.';}
   else if(s.phase==='done'){label='SESSION DONE';color='#86b8a4';cue=cfg.rounds+' rounds complete.';}
   else if(s.phase==='work'){
     const elapsed=workLen-s.remaining;
-    if(isCeiling){label='SHOT CLOCK';color=s.remaining<=3?'#2e6e8e':'#86b8a4';cue='Win before the buzzer — still live = point to returner.';}
+    if(isCeiling){label='SHOT CLOCK';color=s.remaining<=3?'#2e6e8e':'#86b8a4';cue='Win before the buzzer. Rally over? Serve again.';}
     else if(isHold){label=elapsed<t1?'HOLD':'ATTACK OPEN';color=elapsed<t1?'#ff7a7a':'#86b8a4';cue=elapsed<t1?'Build length — no winning yet.':'Clock open — go for the winner.';}
     else{label=elapsed<t1?'HOLD':'STRIKE';color=elapsed<t1?'#2e6e8e':'#86b8a4';cue=elapsed<t1?'Too early — keep building.':'Strike window open.';}
+    if(Number(cfg.cutoff)>0&&s.remaining<=Number(cfg.cutoff)){label='LAST RALLY';color='#f0b94a';cue='No new serve — play this rally out.';}
   }
   const mm=String(Math.floor(big/60)).padStart(2,'0'),ss=String(big%60).padStart(2,'0');
   const live=s.phase!=='idle';
@@ -1366,9 +1197,12 @@ function SquadClock({setScreen}){
         {isHold&&Row('Rally length (seconds)','holdRally',5,5)}
         {isWindow&&Row('Window from (seconds)','t1',5,5)}
         {isWindow&&Row('Window to (seconds)','t2',5,(Number(cfg.t1)||5)+5)}
+        {isCeiling&&Row('Server finish bonus (0 = off)','finishBonus',1,0)}
+        {Row('No new rally in the last (seconds)','cutoff',1,0)}
         {Row('Rest between rallies (seconds)','rest',5,1)}
         {Row('Rounds','rounds',1,1)}
       </div>
+      <SqRulesBox mode={cfg.mode} cutoff={cfg.cutoff} bonus={cfg.finishBonus}/>
       <div className="buttonRow sessionActionButtons"><button className="primaryBtn" onClick={start}>▶ Start Squad Clock</button><button className="secondaryBtn" onClick={()=>setScreen&&setScreen('squadClockNet')}>📡 Run across all courts</button></div>
     </div>
     :<div style={{maxWidth:'900px',margin:'18px auto',textAlign:'center'}}>
@@ -1383,30 +1217,23 @@ function SquadClock({setScreen}){
     </div>}
   </div>;
 }
-// ── BETWEEN-RALLY RESET (v760) ──────────────────────────────────────────────────
-// A switch-on constraint for ANY game on the Player Display (coach, 18 Sep; built for
-// courtside use 25 Sep). After each rally the player runs RESET → BREATHE → PICK UP
-// INFORMATION → GO inside a fixed window before the next serve. No technical talk: one
-// breath, then one EXTERNAL cue (P25), then play. It trains the reset by making players do
-// it every rally, not by explaining it. Built on CLA logic, NOT on Gupta/Egoyan 2022
-// (rejected source, v668). The setting is remembered on this device and overlays whatever
-// game is on the display until switched off.
+
 const RALLY_RESET_KEY='checkerboard_rally_reset_v1';
 const RALLY_RESET_CUES=['See the ball early','Find space','Get opponent off the T','See what’s available'];
 const RALLY_RESET_DEFAULT={on:false,seconds:6,cue:RALLY_RESET_CUES[0]};
 function loadRallyReset(){try{const v=JSON.parse(localStorage.getItem(RALLY_RESET_KEY)||'null');if(v&&typeof v==='object'){const seconds=Math.min(8,Math.max(5,Number(v.seconds)||6));const cue=RALLY_RESET_CUES.includes(v.cue)?v.cue:RALLY_RESET_CUES[0];return {on:!!v.on,seconds,cue};}}catch(e){}return {...RALLY_RESET_DEFAULT};}
 function saveRallyReset(v){try{localStorage.setItem(RALLY_RESET_KEY,JSON.stringify(v));}catch(e){}try{window.dispatchEvent(new CustomEvent('cb-rally-reset'));}catch(e){}}
-// Phase plan for a window of n seconds: 1 s reset, one breath (n−3 s, at least 2), 2 s to pick up information, then GO.
+
 function rallyResetPhase(left,n,cue){
   const breathe=Math.max(2,n-3);
-  const t=n-left; // seconds elapsed
+  const t=n-left; 
   if(left<=0)return {key:'go',label:'GO',big:'GO',sub:'Serve when ready.'};
   if(t<1)return {key:'reset',label:'RESET',big:'Walk back',sub:'Let the last rally go.'};
   if(t<1+breathe)return {key:'breathe',label:'BREATHE',big:'One slow breath',sub:'In through the nose, long breath out.'};
   return {key:'info',label:'PICK UP INFORMATION',big:cue,sub:'Then play.'};
 }
 function RallyResetPanel({cfg,setCfg}){
-  const [left,setLeft]=useState(null); // null = idle; number = seconds to GO; 0 = GO showing
+  const [left,setLeft]=useState(null); 
   useEffect(()=>{
     if(left===null)return;
     if(left<=0){scBeep(1);const id=setTimeout(()=>setLeft(null),1600);return ()=>clearTimeout(id);}
@@ -1508,9 +1335,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
       </div>}
       {chosen&&<RallyResetPanel cfg={resetCfg} setCfg={setResetCfg}/>}
     </div>
-    {/* v793 (coach, 30 Sep): players see the task and nothing else — "I stretched the screen to show
-        only the task narrative; that was certainly better". Rationale, focus and constraints are
-        the coach's to communicate. Scoring appears only if the coach switches it on for the game. */}
+    {}
     {(()=>{const isCb=chosen&&(String(chosen.category||'').toLowerCase()==='checkerboard'||String(chosen.title||'').toLowerCase().startsWith('checkerboard'));return <div className={isCb?'pdBody pdWithMap':'pdBody'}>
     <style>{`
 /* v844 (coach, 26 Oct: "information bleeds off screen"): the page always scrolls, and on a
@@ -2245,7 +2070,6 @@ function ProjectionView({session,setScreen,players=[]}){
   </div>;
 }
 
-
 const TECHNICAL_OVERLAYS = [
  {id:'eyes-contact',category:'Visual',title:'Eyes on Contact Point',rule:'Player keeps visual attention on the ball/contact space through strike.',process:'This stabilises visual calibration before impact. The player preserves ball-spacing information long enough to organise contact timing rather than lifting the head early.',breakdown:'Head pulls early; eyes leave contact space; contact timing becomes rushed.',constraint:'Clear look-away before contact = loss of rally or bonus removed.',checkerboard:'Useful on [8-1], [7-2], pressure drops from [5] or [6].',pairings:['Stable head through contact','Finish balanced','Non-playing arm active'],games:['Double Bounce','Progressive ATL','Checkerboard pairs']},
  {id:'second-eye',category:'Visual',title:'Second Eye Overlay',rule:'Player organises head/body shape so the eye furthest from the opponent has access to opponent information space.',process:'Maintaining outside-eye access preserves pickup of opponent posture, racquet preparation and movement direction. It reduces informational blindness caused by excessive body closure and teaches movement organisation around continuous opponent information.',breakdown:'Player turns too far away, closes body line and reacts late to the next shot.',constraint:'If completely blind to opponent information space, coach calls “blind”.',checkerboard:'Excellent in [6-3], [5-4], [7-2] and recovery after [8-1].',pairings:['Move before bounce','Prepared before leaving T','Split before opponent contact'],games:['Progressive ATL','Double Bounce','Checkerboard pairs']},
@@ -2266,7 +2090,6 @@ const TECHNICAL_OVERLAYS = [
  {id:'hit-through',category:'Swing Shape',title:'Hit Through The Ball',rule:'Player sends energy through intended line/space rather than poking or steering.',process:'Strengthens coupling between target affordance, swing path and ball outcome, especially when depth/penetration is required.',breakdown:'Player pokes, decelerates or steers.',constraint:'Poked/held without tactical purpose = “through”.',checkerboard:'Useful on [6-3], [5-4], [6-4], [5-3].',pairings:['Finish to front wall','Racquet above wrist','Stable head through contact'],games:['Progressive ATL','Length games','Double Bounce']},
  {id:'return-to-t',category:'Movement',title:'Return To T Zone',rule:'Player returns to the T after every shot, before the opponent\u2019s next contact, rather than watching their own shot from wherever they finished.',process:'Establishes a consistent recovery target that maximises court coverage and keeps options open for the next ball, rather than recovery being incidental to where the shot happened to finish. Use it as a starting target; progress to Recover Through Central Lane and Early Opponent Pickup, where recovery is judged by access to the next ball rather than by the location.',breakdown:'Player watches their own shot, recovers to the wrong spot, or is still arriving as the opponent strikes.',constraint:'Not back on/near the T before opponent contact = \u201cT\u201d.',checkerboard:'Useful after any finishing pattern, especially [8-1], [7-2], [6-3], [5-4].',pairings:['Recover Through Central Lane','Split Before Opponent Contact','Prepared Before Leaving T'],games:['Progressive ATL','Double Bounce','Rotational pressure']}
 ];
-
 
 const TACTICAL_OVERLAYS = [
   {category:'Advantage', title:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue: opponent late, off-balance, unrecovered or outside useful court position.', coach:'Ask: what did you see before attacking?', pairings:['Quiet Eye Before Attack','Recognise Opponent Vulnerability']},
@@ -2356,7 +2179,6 @@ const DIVERSITY_OVERLAYS=[
   {category:'Diversity Constraints',title:'Random Diversity Card',rule:'Before the rally or scoring phase, the app/coach calls a required family: Lob, Volley, Crosscourt, Boast or Drop.',coach:'Adds representative variability and prevents coach/player default bias. The challenge is to satisfy the card without losing tactical sense.',pairings:['Blind Finish','Pressure Games','Tactical Intentions']}
 ];
 
-// ── DIFFERENTIAL LEARNING (Schöllhorn) — anti-technical perturbation deck ─────
 const DIFFERENTIAL_DECK=[
   {name:'Non-dominant hand',rule:'Play the next shot with the other hand.',coach:'Forces a completely new movement solution and breaks the dominant pattern.'},
   {name:'Wrong foot',rule:'Strike the ball off the “wrong” foot for that shot.',coach:'Removes the habitual footwork so the body must reorganise.'},
@@ -2371,8 +2193,6 @@ const DIFFERENTIAL_DECK=[
 ];
 DIVERSITY_OVERLAYS.push(...DIFFERENTIAL_DECK.map(d=>({category:'Differential Learning',title:'DL — '+d.name,rule:d.rule,coach:d.coach,pairings:['Differential Learning','Produce The Shot From Here']})));
 
-// ── GHOSTING — rally-band block engine (Murray et al. 2016 movement profile) ──
-// Zones: 1 front-left · 2 front-right · 3 back-right · 4 back-left.
 const GHOST_BLOCKS={
   short:{label:'SHORT',dur:7,restAfter:5,pool:['1','2','1','2','3','4']},
   medium:{label:'MEDIUM',dur:23,restAfter:14,pool:['1','2','3','4','3','4']},
@@ -2387,7 +2207,6 @@ const GHOST_SESSIONS={
   'Very Long (~32 min)':{short:12,medium:24,long:9,very:2}
 };
 
-// ── RALLY BAND — land the rally duration in the assigned band (Murray 2016) ────
 const RALLY_BANDS=[
   {key:'short',label:'SHORT',min:0,max:12,color:'#2e6e8e',cue:'Resolve it fast — attack early and force a quick finish.'},
   {key:'medium',label:'MEDIUM',min:13,max:30,color:'#86b8a4',cue:'Build, then strike — a normal working rally.'},
@@ -2396,9 +2215,8 @@ const RALLY_BANDS=[
 ];
 const RALLY_BAND_WEIGHTS={short:5,medium:10,long:4,very:1};
 
-// ── PATIENCE → URGENCY — two timed phases per rally; last-ball responsibility (see brief §8) ──
 const PU_DEFAULT_CFG={patA:15,patB:15,samePat:true,urg:8,randomOn:false,patMin:12,patMax:18,cond:'both',surviveBonus:true,constraints:[],pts:{earlyError:2,earlyWinner:1,finish:2,noFinish:-1,normal:1}};
-// Patience-phase conditions. Each one stops the hold turning into cooperative hitting and each can be called by the opponent on court with nothing to judge: what is counted is a shot or a landing zone both players can see. A breach is an early ending by error, so it uses the scoring already on the card. Up to two at once.
+
 const PU_PATIENCE_CONSTRAINTS=[
   {id:'noRepeat',title:'No repeat',rule:'Five shots: straight drive, crosscourt drive, boast, drop, lob. You may not play the same one twice in a row.'},
   {id:'notBack',title:'Not back where it came from',rule:'The ball may not land in the quarter of the court your opponent hit it from. The quarter is the one they were standing in when they struck it.'},
@@ -2414,9 +2232,7 @@ function puConstraintText(cfg,nm){
   return ' Condition during patience, '+who+': '+on.map(c=>c.title+'. '+c.rule).join(' ')+' The opponent calls a breach before the next shot is played. A breach counts as an early ending by error: the opponent scores '+cfg.pts.earlyError+'. The condition lifts at the signal.';
 }
 function puOther(p){return p==='A'?'B':'A';}
-// Score a rally ending. phase: 'patience' | 'split' | 'urgency' | 'expired'. last: player who hit the last ball. kind: 'error' | 'unreturned'.
-// held: in the split phase (per-player release times), the player not yet released. Returns {A:delta,B:delta,note}. Pure so it can be tested.
-// One player held, the other free: the held player ending it is an early ending; the free player winning scores winPts; the free player erring gives the held player the normal point.
+
 function puAsym(pts,P,last,kind,winPts,winWord){
   const d={A:0,B:0};
   if(last===P){const v=kind==='error'?pts.earlyError:pts.earlyWinner;d[puOther(P)]+=v;return {...d,note:P+' ended it early by '+(kind==='error'?'an error':'a winner')+': '+puOther(P)+' +'+v+'.'};}
@@ -2432,17 +2248,17 @@ function puScore(cfg,phase,last,kind,held){
     const P=cfg.cond;d[P]+=pts.noFinish;d[puOther(P)]+=pts.normal;return {...d,note:'Time up: '+P+' did not finish ('+pts.noFinish+'), '+puOther(P)+' held out (+'+pts.normal+').'};
   }
   if(phase==='urgency'){d[winner]+=pts.finish;return {...d,note:winner+(cfg.urg===0?' won the open rally: +':' finished inside the window: +')+pts.finish+'.'};}
-  // patience phase
+
   if(cfg.cond==='both'){
     const v=kind==='error'?pts.earlyError:pts.earlyWinner;d[other]+=v;
     return {...d,note:last+' ended it early by '+(kind==='error'?'an error':'a winner')+': '+other+' +'+v+'.'};
   }
   return puAsym(pts,cfg.cond,last,kind,pts.earlyError,'beat');
 }
-// Per-player release times (variant: Individual Rally Bands). Only in Both mode, fixed transition, patience set per player; otherwise both release together.
+
 function puPerPlayer(cfg){return cfg.cond==='both'&&!cfg.randomOn&&!cfg.samePat;}
 function puReleases(cfg,resolved){return puPerPlayer(cfg)?{A:cfg.patA,B:cfg.patB}:{A:resolved,B:resolved};}
-// The eight Patience → Urgency games. Each is a preset over the same settings; the rule text the players see is always generated from the live values, so a coach can tap a game and then adjust. The card fields feed the Games Library, search and Session Builder.
+
 const PU_PRESET_OPEN_KEY='checkerboard_pu_open_preset';
 const PU_PRESETS=[
   {id:'shared',title:'Shared Patience',sub:'Both hold, then the rally opens',cfg:{cond:'both',samePat:true,patA:14,patB:14,urg:0,randomOn:false,pts:{earlyError:2,earlyWinner:2,finish:1,noFinish:0}},rld:4,
@@ -2506,10 +2322,6 @@ function puRuleText(cfg,nameA,nameB){
 }
 function puResolvePatienceLabel(cfg){const v=cfg.cond==='both'?cfg.patA:puPatienceFor(cfg,cfg.cond);return v+' seconds';}
 
-// ── COACH CUSTOM CONSTRAINT LIBRARY ──────────────────────────────────────────
-// Design principle: coaches can add their own constraints and make them permanent.
-// Stored on-device (localStorage) as the source of truth for what appears in the
-// builders; shared items are also published to Firestore so other coaches can adopt them.
 const CUSTOM_CONSTRAINTS_KEY='checkerboard_custom_constraints_v1';
 const CUSTOM_CONSTRAINT_FAMILIES=['Technical','Tactical','Mental Performance','Diversity'];
 let CUSTOM_CONSTRAINT_STORE=(()=>{try{const s=localStorage.getItem(CUSTOM_CONSTRAINTS_KEY);const a=s?JSON.parse(s):[];return Array.isArray(a)?a:[];}catch(e){return[];}})();
@@ -2519,9 +2331,6 @@ function getFinishRules(){return [...COMPLETION_CONSTRAINTS,...getCustomFinishRu
 function persistCustomConstraints(list){CUSTOM_CONSTRAINT_STORE=Array.isArray(list)?list:[];try{localStorage.setItem(CUSTOM_CONSTRAINTS_KEY,JSON.stringify(CUSTOM_CONSTRAINT_STORE));}catch(e){}try{window.dispatchEvent(new CustomEvent('customlib-changed'));}catch(e){}return CUSTOM_CONSTRAINT_STORE;}
 function customConstraintKey(c){return((c.title||'').trim().toLowerCase()+'|'+(c.rule||'').trim().toLowerCase());}
 
-// ── v145 UNIVERSAL MODIFIER ENGINE ───────────────────────────────────────────
-// Single engine. Fixed panel order everywhere: Game Logic · Constraints · Scoring · Double Bounce.
-// Constraints reuse the real standard overlay library (OverlayFamilyTabs) — same as the Games Library.
 function parseBonusValue(name){
   const raw=CONSTRAINT_BONUS_POINTS[name];
   if(!raw) return '';
@@ -2551,11 +2360,6 @@ function emptyModifierConfig(){
   };
 }
 
-/* ── INDIVIDUAL TECHNICAL CONSTRAINTS ─────────────────────────────────────────
-   Persistent technical habits, addressed player by player, with a scoring
-   consequence every time the constraint is not maintained. Coach-editable, and
-   every application is written to the player's history so a pattern is visible
-   across a season rather than a single night. */
 const TECH_CONSTRAINT_KEY='checkerboard_tech_constraints_v1';
 const TECH_CONSTRAINT_LIBRARY=[
   {id:'tc-string',label:'Strings to the front wall',cue:'Finish with the strings facing the front wall.',check:'Ball check \u2014 racket face visibly turned away at the finish.',penalty:1},
@@ -2572,8 +2376,7 @@ function loadTechConstraints(){
   try{const v=JSON.parse(localStorage.getItem(TECH_CONSTRAINT_KEY));return Array.isArray(v)&&v.length?v:TECH_CONSTRAINT_LIBRARY;}catch{return TECH_CONSTRAINT_LIBRARY;}
 }
 function saveTechConstraints(list){try{localStorage.setItem(TECH_CONSTRAINT_KEY,JSON.stringify(list));}catch{}}
-/* Written to each player's Breakthrough-style history whenever a constraint is
-   applied, so the coach can see what a player has been carrying and for how long. */
+
 function recordTechConstraintUse(playerName,entry){
   if(!playerName)return;
   try{
@@ -2664,10 +2467,7 @@ function UniversalTechConstraintPanel({value,onChange,presentPlayers=[]}){
     </div>
   </div>;
 }
-// Universal Modifiers → 7. Between-Rally Reset (v761). Where a coach switches the reset on as
-// a constraint for the game being set up. Same stored setting as the Player Display panel.
-// Same panel, as a layer for the builder screens that assemble their own layer stack
-// (they don't use UniversalModifierEngine) — v762.
+
 function UniversalRallyResetLayer({num='7'}){
   return <CollapsibleLayer num={num} title="Between-Rally Reset" subtitle="Switch-on constraint — one breath, one cue, then play" color="blue" defaultOpen={false}><UniversalRallyResetPanel/></CollapsibleLayer>;
 }
@@ -2945,9 +2745,6 @@ function TechnicalOverlays({setScreen}){
   </div>;
 }
 
-
-
-
 function CoachInvaderSelectorReadOnly({teams}){
   if(!teams||teams.length===0) return null;
   return <section className="coachInvaderSelector">
@@ -2966,12 +2763,9 @@ function CoachInvaderSelectorReadOnly({teams}){
   </section>;
 }
 
-
 function DoubleBounceAllocation(){
   const [open,setOpen]=useState(false);
-  /* Double bounce is a handicap, so it is set per player, not per game: a
-     returning junior may carry 3 DB while the strongest player carries none.
-     Shares the DB Handicap store so a game reads one source of truth. */
+
   const [state,setState]=useState(()=>{try{return JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}');}catch{return {};}});
   const allocations=state.allocations||{};
   const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
@@ -3048,11 +2842,6 @@ function DoubleBounceTool({setScreen,embedded=false}){
   </div>;
 }
 
-
-
-
-
-
 const UNIVERSAL_MENTAL_OVERLAYS = [
   {cat:'Attention', name:'Quiet Eye Before Serve', rule:'Target → Ball → Target → Ball → Strike. Elite: Target → Ball → Strike. Primary: Eagle. Secondary: Wolf.'},
   {cat:'Attention', name:'Quiet Eye Before Attack', rule:'Stabilise gaze on target/space before attack. See the opportunity, then commit. Primary: Eagle. Secondary: Lion.'},
@@ -3119,7 +2908,6 @@ function cbDefaultInvader(team){
   return cbSortLowestRankFirst(team?.players||[])[0];
 }
 
-
 function MentalOverlaySelector({context='Game'}){
   const [mode,setMode]=useState('single');
   const [selected,setSelected]=useState([]);
@@ -3159,11 +2947,6 @@ function MentalOverlaySelector({context='Game'}){
     </div>
   </section>;
 }
-
-
-
-
-
 
 function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'}){
   const [family,setFamily]=useState('Tactical');
@@ -3277,7 +3060,7 @@ function MentalSkillsPlaceholder({setScreen}){
 
   function saveCustom(){
     localStorage.setItem('checkerboard_custom_animal',JSON.stringify(custom));
-    
+
   }
 
   function SquashBallGraphic(){
@@ -3424,8 +3207,6 @@ function MentalSkillsPlaceholder({setScreen}){
     {!activeAnimal&&section==='overlays'&&<div className="mentalContentPanel"><h2>🎮 Mental Overlays</h2><p>Mental overlays are applied through the Universal Overlays section so coaches can combine tactical, technical and mental performance behaviours in one place.</p><button className="primaryBtn" onClick={()=>setScreen('technical')}>Open Universal Modifier Engine</button></div>}
   </div>;
 }
-
-
 
 function ShotsModule({setScreen}){
   const [section,setSection]=useState(()=>{try{const k=localStorage.getItem(SHOTS_OPEN_KEY);if(k){localStorage.removeItem(SHOTS_OPEN_KEY);return k;}}catch(e){}return null;});
@@ -3623,11 +3404,6 @@ function ShotsModule({setScreen}){
         <p className="shotsCallout">Instead of only asking if the shot looked technically correct, ask whether it gave time or took time away.</p>
       </section>
 
-
-
-
-
-
       <div className="shotsLearnTabs">
         <button className={learnTab==='quick'?'activeShotTab':''} onClick={()=>setLearnTab('quick')}>Quick Start</button>
         <button className={learnTab==='cla'?'activeShotTab':''} onClick={()=>setLearnTab('cla')}>CLA Principles</button>
@@ -3736,8 +3512,6 @@ function ShotsModule({setScreen}){
       </div>
     </div>}
 
-
-
     {section==='biomech'&&<div className="shotDetailPanel biomechModulePanel">
       <div className="shotDetailHeader"><div><div className="categoryTag">Swing Biomechanics · Elastic Release · Movement Organisation</div><h2>Swing Biomechanics</h2><p className="mutedText">A CLA coaching framework for organising the chain rather than teaching fixed technique.</p></div></div>
 
@@ -3840,10 +3614,6 @@ function ShotsModule({setScreen}){
   </div>;
 }
 
-
-// King of Court Power Play games (3–8 players, winner stays). v751: moved out of Plug &
-// Play into their natural home, the Power Play module (coach, 23 Sep) — too involved for
-// an off-the-shelf emergency game. Text verbatim from the Plug & Play cards.
 const PP_KOC_GAMES=[
   {
     id:'PPA01',title:'Open Power Play',tags:['Power Play','Pressure','Decision Making'],type:'King of Court · Power Play',players:'3–8',level:'Intermediate → Professional',
@@ -4129,7 +3899,6 @@ function PlugAndPlay({setScreen,setSession}){
   </div>;
 }
 
-
 function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=false,initialBaseGame='ATL / BTL',onClose}){
   const [family,setFamily]=useState('Tactical Constraints');
   const [selected,setSelected]=useState({});
@@ -4218,9 +3987,7 @@ function GameConstraintsEngine({setScreen,setSession,onAddToSession,embedded=fal
     </div>
   </div>;
 }
-/* v836 (coach, 24 Oct): "What Checkerboard Squash Is For" — the first page coaches see.
-   Content mirrors the coach's evolving Claude Doc of the same name (the "Ideas still to consider"
-   list stays in the doc). Shown automatically the first time the app opens on a device. */
+
 const PURPOSE_SEEN_KEY='checkerboardPurposeSeenV1';
 function PurposeScreen({setScreen}){
   useEffect(()=>{try{localStorage.setItem(PURPOSE_SEEN_KEY,'1');}catch{}},[]);
@@ -4702,8 +4469,6 @@ function WhyCLAScreen({setScreen}){
   ];
   const d1Close='Ultimately, CLA is not a departure from science — it is built upon decades of scientific research into how humans perceive, move and learn.';
 
-  // ── CLA UPDATE — McBroom & Gray integration: concepts identified as gaps in the
-  //    Checkerboard content library by the book gap analysis. ──
   const sections3=[
     {id:'d3-offline-online',title:'Offline vs Online Information',blocks:[
       {t:'p',v:'Two kinds of information control action.'},
@@ -4880,8 +4645,7 @@ function RLDScreen({setScreen}){
     {id:'transfer',label:'Transfer intent',q:'Is it clear how this specific task transfers to match-play, and is that link strong?'},
   ];
   const [rpat,setRpat]=useState(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;});
-  // CLA Update — the Six Activity Design Questions (McBroom & Gray, Ch. 7): the
-  // simpler entry-point gate. Only build a challenge if all six pass.
+
   const SIX_QUESTIONS=[
     'Is there a clear OUTCOME GOAL — a named affordance being amplified?',
     'Are there real DECISIONS for the player to make?',
@@ -4958,7 +4722,7 @@ function RLDScreen({setScreen}){
       )}
     </div>
 
-    {/* ── ASSESS AN ACTIVITY (RPAT-style) ── */}
+    {}
     {activeSection==='assess'&&<div>
       <div className="rldHero">
         <h2>Assess an Activity's RLD</h2>
@@ -4966,7 +4730,7 @@ function RLDScreen({setScreen}){
         <div className="rldHeroPrinciple">"How much does this look and feel like real squash?"</div>
       </div>
 
-      {/* ── CLA UPDATE: SIX ACTIVITY DESIGN QUESTIONS — the quick gate ── */}
+      {}
       <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #2e6e8e',borderRadius:'12px',padding:'16px 18px',marginBottom:'14px'}}>
         <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Quick gate — the Six Activity Design Questions</strong>
         <p className="mutedText" style={{margin:'4px 0 12px',lineHeight:1.4}}>The entry-point check before the full assessment (McBroom &amp; Gray, Ch. 7). Answer honestly for the activity as it will actually run. <strong style={{color:'#6eaac8'}}>Only build the challenge if all six pass.</strong></p>
@@ -4993,7 +4757,7 @@ function RLDScreen({setScreen}){
         <button type="button" className="secondaryBtn" onClick={()=>setRpat(()=>{const o={};RPAT_DIMS.forEach(d=>o[d.id]=3);return o;})} style={{alignSelf:'flex-start'}}>Reset ratings</button>
       </div>
 
-      {/* ── CLA UPDATE: FOUR FIDELITIES + KRAUSE BENCHMARKS ── */}
+      {}
       <div style={{background:'#0f1822',border:'1px solid #223044',borderLeft:'3px solid #2e6e8e',borderRadius:'12px',padding:'16px 18px',marginTop:'14px'}}>
         <strong style={{color:'#eaf4fb',fontSize:'1.02rem'}}>Four fidelity lenses — what "representative" actually means</strong>
         <p className="mutedText" style={{margin:'4px 0 10px',lineHeight:1.4}}>When a rating above feels hard to give, check the activity through each lens separately (McBroom &amp; Gray, Ch. 8). An activity can score high on one and fail another — a hard physical drill with no decisions has physiological fidelity and nothing else.</p>
@@ -5010,7 +4774,7 @@ function RLDScreen({setScreen}){
       </div>
     </div>}
 
-    {/* ── RLD SCALE ── */}
+    {}
     {activeSection==='rld'&&<div>
       <div className="rldHero">
         <h2>Representative Learning Design Scale</h2>
@@ -5059,7 +4823,7 @@ function RLDScreen({setScreen}){
       </div>
     </div>}
 
-    {/* ── CHALLENGE POINT ── */}
+    {}
     {activeSection==='cpf'&&<div>
       <div className="rldHero">
         <h2>Challenge Point Framework</h2>
@@ -5125,7 +4889,7 @@ function RLDScreen({setScreen}){
       </div>
     </div>}
 
-    {/* ── USING TOGETHER ── */}
+    {}
     {activeSection==='together'&&<div>
       <div className="rldHero">
         <h2>Using RLD and Challenge Point Together</h2>
@@ -5196,8 +4960,6 @@ function RLDScreen({setScreen}){
   </div>;
 }
 
-
-// ── PERCEPTION™ MODULE · v104 PHASE 2 COMPLETE ─────────────────────────────────
 const PERCEPTION_ACTION_LAYERS=['Contact Sync','Early Read','Early Take','High Contact'];
 
 const PERCEPTION_SECTIONS=[
@@ -5232,15 +4994,6 @@ function perceptionGames(){
   ];
 }
 
-// ── CHIPPING GAMES (v753) — one game, two homes ─────────────────────────────────
-// Coach, 23 Sep: chipping with different balls solves a movement-coordination problem
-// (Level 0 Foundations) AND is a tau / time-to-contact perception exercise (PERCEPTION™
-// Tracking). Both homes are deliberate. The GAME — what players do, the balls, goal,
-// variations, how to simplify and progress — is written once here and read by both.
-// The PURPOSE stays with each home: Level 0 keeps its own purpose and cue, Perception
-// its own rationale, coach help and player focus. Level 0's other chipping games
-// (Continuous, Volley Chip and Move, etc.) stay Level 0 only: by the time a player is
-// doing those, tau should be largely established.
 const CHIPPING_GAMES={
   stationary:{title:'Stationary Chipping',
     task:'Chip the ball to the wall again and again from close range, without moving between contacts. Start with any wall route that gives a controllable rebound; once the run holds, chip into a wall target on the front or side wall.',
@@ -5325,13 +5078,6 @@ function perceptionPlaceholderCards(section){
   return all[section]||[];
 }
 
-// ── OCCLUSION READ™ ──────────────────────────────────────────────────────────
-// Live courtside tool for goggle-controlled temporal occlusion training.
-// The goggles (their own app, own remote) own the actual occlusion timing —
-// this tool only labels which cut point is in use, captures the coach's
-// clean/not-clean judgement of the player's MOVEMENT response, and stores one
-// simple "cut point reached" note per player per session. No verbal calls,
-// no RLD/ERG wiring — deliberately kept to the minimum needed courtside.
 const OCR_CUT_POINTS=['Clear (Baseline)','Contact','Contact + Early','Contact + Very Early'];
 const OCR_LOG_KEY='checkerboard_occlusion_read_log_v1';
 function OcclusionReadTool(){
@@ -5488,8 +5234,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     const layers=Array.isArray(cfg.layers)?cfg.layers:[];
     const custom=cfg.custom||{};
     const base=clone(game||{});
-    // Perception cards may carry suggested layers in their data, but these must never become active by default.
-    // Only coach-selected layers from cfg.layers are allowed to reach Player View, Session Builder, scoring, or projection.
+
     delete base.layers;
     return normaliseGameCard({
       ...base,
@@ -5529,7 +5274,7 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     const url=buildPlayerDisplayUrl(card);
     if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} 
     setStatus(url?'Player link copied.':'Could not create player link.');
-    
+
   }
 
   return <div className={embedded?'perceptionModule perceptionEmbedded':'page perceptionModule'}>
@@ -5614,7 +5359,6 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
         <UniversalTinHeightPanel/>
         <UniversalTechConstraintsLayer/>
         <UniversalRallyResetLayer/>
-        
 
         <div className="playerViewMini playerViewPerceptionPreview"><h3>Player View Preview</h3><p><strong>WHAT TO DO</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).what}</p><p><strong>HOW TO SCORE</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).score}</p><p><strong>KEY FOCUS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).focus}</p><p><strong>CONSTRAINTS</strong><br/>{getPlayerDisplayFields(configuredPerceptionGame(active)).constraintText}</p></div>
         <div className="gameActionBar"><strong>Game Actions</strong><div><button className="primaryBtn" onClick={()=>addGame(active)}>Add To Session</button>{!embedded&&<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('sessions')}>View Session</button>}<button className="secondaryBtn" onClick={()=>setScreen&&setScreen('playerDisplay')}>PLAYER VIEW</button><button className="secondaryBtn" onClick={()=>copyPerceptionPlayerLink(active)}>COPY PLAYER LINK</button></div></div>
@@ -5623,7 +5367,6 @@ function PerceptionModule({setScreen,setSession,onAddToSession,embedded=false}){
     </div>}
   </div>;
 }
-
 
 const PEAK_WEEK_SESSIONS=[
   {id:'pw-s1',day:'Day -8',weekday:'Friday',title:'Session 1 · Last Full Sharpener',load:100,rld:'RLD 4–5',objective:'Full competitive sharpness with enough volume to feel ready.',activities:['Neural Tabata court activation','Invasion game','ATL / BTL decision block','Checkerboard pressure finish','Short matchplay'],duration:90,notes:'Last full session. Keep intensity high but stop before fatigue accumulates.'},
@@ -5641,17 +5384,11 @@ function formatPeakDate(baseDate,offset){
   return d.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'});
 }
 
-/* ── GAME SUGGESTIONS ─────────────────────────────────────────────────────────
-   Coaches and players propose improvements to games they have just played.
-   Device-local, exportable, and deliberately simple: a note, who it is from,
-   and which game it is about. */
 const SUGGESTIONS_KEY='checkerboard_game_suggestions_v1';
 function loadSuggestions(){try{const v=JSON.parse(localStorage.getItem(SUGGESTIONS_KEY));return Array.isArray(v)?v:[];}catch{return [];}}
 function saveSuggestions(list){try{localStorage.setItem(SUGGESTIONS_KEY,JSON.stringify(list));}catch{}}
 function AppSuggestions(){
-  /* Suggestions about the app itself — screens that are confusing, things that
-     are hard to find, features missing. Kept in the same store as game
-     suggestions so it is covered by the cloud backup. */
+
   const [items,setItems]=useState(()=>loadSuggestions());
   const [area,setArea]=useState('Player display');
   const [text,setText]=useState('');
@@ -5710,8 +5447,7 @@ function GameSuggestions({setScreen,session,embedded=false}){
   const [role,setRole]=useState('Player');
   const [text,setText]=useState('');
   const [filter,setFilter]=useState('open');
-  /* Road-test mode: a report of actually running a game, not an idea for one.
-     Kept in the same store so it is covered by cloud backup. */
+
   const [mode,setMode]=useState('idea');
   const [worked,setWorked]=useState('');
   const [changed,setChanged]=useState('');
@@ -5734,7 +5470,7 @@ function GameSuggestions({setScreen,session,embedded=false}){
     update([{id:makeLocalId(),at:new Date().toISOString(),game:game.trim()||'General',author:author.trim()||'Anonymous',role,kind:'idea',text:t,status:'open'},...items]);
     setText('');
   }
-  /* A game counts as road-tested once any report exists for it. */
+
   const testedGames=useMemo(()=>{
     const m={};
     items.filter(it=>it.kind==='roadtest').forEach(it=>{
@@ -5845,7 +5581,7 @@ function GameSuggestions({setScreen,session,embedded=false}){
     </div>
   </div>;
 }
-/* ── END GAME SUGGESTIONS ── */
+
 function CoachRationale({label='Why this game — coach rationale',children}){
   const [open,setOpen]=useState(false);
   return <>
@@ -5916,7 +5652,7 @@ function PeakWeekModule({setScreen,setSession,onAddToSession,embedded=false}){
 }
 
 const COACH_SUGGESTIONS_KEY='checkerboard_master_coach_suggestions_v1';
-// Paste the head coach's Formspree endpoint between the quotes to email every suggestion, e.g. 'https://formspree.io/f/abcdwxyz'
+
 const SUGGESTION_ENDPOINT='https://formspree.io/f/xykrbbav';
 const FIREBASE_CONFIG={apiKey:"AIzaSyADkl8sS8zVNoP-hTmIfQxnsfLJ1PT8fwk",authDomain:"coach-collaborations.firebaseapp.com",projectId:"coach-collaborations",storageBucket:"coach-collaborations.firebasestorage.app",messagingSenderId:"315516954436",appId:"1:315516954436:web:bb9fdd6c712306a3a45911",measurementId:"G-7EK8Z3CY8Z"};
 const SUGGEST_IDENTITY_KEY='checkerboard_master_suggest_identity_v1';
@@ -6176,9 +5912,8 @@ function CustomConstraintLibrary({setScreen}){
   </div>;
 }
 
-
 function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
-  // follow = {host,court}: this device is a court device. Settings, allocation, rotation rule and the clock come from the coach's device; this device scores its own court and reports back.
+
   const [feed,setFeed]=useState(null);const [feedStatus,setFeedStatus]=useState('');
   const offsetRef=useRef(0);
   useEffect(()=>{
@@ -6192,10 +5927,10 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
   const [presetLocal,setPreset]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_preset_v1')||'';}catch(e){return '';}});
   const cfg=follow&&feed&&feed.cfg?{...PU_DEFAULT_CFG,...feed.cfg,pts:{...PU_DEFAULT_CFG.pts,...(feed.cfg.pts||{})}}:cfgLocal;
   const preset=follow?(feed&&feed.preset||''):presetLocal;
-  // Any manual edit clears the preset name, so the label never claims a game the settings no longer match.
+
   function setCfg(fn){if(follow)return;setCfgRaw(fn);setPreset('');try{localStorage.setItem('checkerboard_pu_preset_v1','');}catch(e){}}
   function applyPreset(id){const p=PU_PRESETS.find(x=>x.id===id);if(!p)return;setCfgRaw(puPresetCfg(p));setPreset(id);try{localStorage.setItem('checkerboard_pu_preset_v1',id);}catch(e){}}
-  // Roster, courts and rotation. The roster is the present players (or names added). Courts 1 to 6: with one court everyone is on it; with more, players are allocated by level (top group to Court 1, as the other games do) or by hand. Each court has two slots (A = the holder, B = the challenger), its own queue and rotation; scores follow each player by name. One clock and one signal serve every court.
+
   const [roster,setRoster]=useState(()=>{try{const sv=JSON.parse(localStorage.getItem('checkerboard_pu_squad_v1')||'null');if(sv&&sv.length>=2)return sv;}catch(e){}const pr=cbReadPresents();return pr.length>=2?pr:['Player A','Player B'];});
   const [rotLocal,setRot]=useState(()=>{try{return localStorage.getItem('checkerboard_pu_rot_v1')||'winner';}catch(e){return 'winner';}});
   const rot=follow?(feed&&feed.rot||'winner'):rotLocal;
@@ -6214,7 +5949,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
   },[roster,rosterObjs,courtCount,allocMode,manualAssign,follow,feed&&JSON.stringify(feed.allocation)]);
   const unassigned=courtCount>1&&allocMode==='manual'?roster.filter(n=>manualAssign[n]==null||manualAssign[n]>=courtCount):[];
   const allocKey=allocation.map(g=>g.join(',')).join('|');
-  // Per-court slots and queue, as indexes into that court's group. Rebuilt whenever the allocation changes.
+
   const [courts,setCourts]=useState(()=>allocation.map(g=>({court:{A:0,B:1},queue:g.slice(2).map((_,i)=>i+2)})));
   useEffect(()=>{setCourts(allocation.map(g=>({court:{A:0,B:1},queue:g.slice(2).map((_,i)=>i+2)})));setActiveCourt(a=>Math.min(a,allocation.length-1));setRally(null);setAsking(false);},[allocKey]);
   const ac=Math.min(activeCourt,allocation.length-1);
@@ -6225,11 +5960,11 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
   const playable=ci=>groupOf(ci).length>=2;
   const squad=groupOf(ac);const court=cs(ac).court;const queue=cs(ac).queue;const multi=multiOf(ac);const names=namesOf(ac);
   const roleA=rot==='fixed'?'Player 1':'the holder',roleB=rot==='fixed'?'Player 2':'the challenger';
-  const [scores,setScoresRaw]=useState({});// keyed by player name
+  const [scores,setScoresRaw]=useState({});
   const sc=p=>scores[names[p]]||0;
   function addScores(ci,d){const n=namesOf(ci);if(!d.A&&!d.B)return;setScoresRaw(prev=>({...prev,[n.A]:(prev[n.A]||0)+(d.A||0),[n.B]:(prev[n.B]||0)+(d.B||0)}));}
   function setSquadSafe(list){const l=list.filter(Boolean);if(l.length<2)return;setRoster(l);}
-  // Rotation on one court after a rally. The court follows the rally: the rally winner holds it even when the points went against them, so a coasting pair can always be defected on. A time-up sends BOTH players off: patting the ball to the signal and through the window must never keep the court (juniors found this in one session).
+
   function rotateCourt(ci,winnerSlot){
     if(!multiOf(ci))return;
     const st=cs(ci);if(!st.queue.length)return;
@@ -6239,7 +5974,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     else{const out=nc[winnerSlot];nc.A=nc[puOther(winnerSlot)];nc.B=q.shift();q.push(out);}
     setCourts(prev=>prev.map((x,i)=>i===ci?{court:nc,queue:q}:x));
   }
-  const [rally,setRally]=useState(null); // {startTs,patience,phase,result}
+  const [rally,setRally]=useState(null); 
   const rallyRef=useRef(rally);rallyRef.current=rally;
   const epochRef=useRef(null);
   useEffect(()=>{
@@ -6247,7 +5982,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     const e=feed.epoch||null;
     if(e===epochRef.current)return;
     epochRef.current=e;
-    // Apply this court's pending rotation from the rally just finished before the new one starts.
+
     const prev=rallyRef.current;if(prev&&prev.results&&prev.results[0])rotateCourt(0,prev.results[0].winner);
     if(!e||!feed.rally){setRally(null);setAsking(false);return;}
     scUnlock();setAsking(false);
@@ -6257,7 +5992,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
   const [asking,setAsking]=useState(false);
   const [showRule,setShowRule]=useState(false);
   const [puAdded,setPuAdded]=useState('');
-  // Back goes one page at a time: a live or finished rally returns to the settings, never to Home.
+
   useBackIntercept(!!rally,()=>{setRally(null);setAsking(false);return true;});
   useEffect(()=>{try{localStorage.setItem('checkerboard_pu_cfg_v1',JSON.stringify(cfg));}catch(e){}},[cfg]);
   const live=rally&&(rally.phase==='patience'||rally.phase==='split'||rally.phase==='urgency');
@@ -6287,8 +6022,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
       setRally(r=>({...r,phase:'over',results,result:results[ac]||null}));
     }
   },[elapsed,rally,cfg,allocKey,courts,frozen]);
-  // The clock stops the moment the coach taps Rally over, so the phase and time scored are the ones the rally actually ended in, not the ones reached while tapping. A let restarts it from the same point.
-  // One court: the clock stops. Several courts on one clock: the other courts are still playing, so the tap takes a snapshot of this court's phase and time instead, and the clock runs on.
+
   const snap=rally&&rally.ends?rally.ends[ac]:null;
   function freezeRally(){
     const at=Math.max(0,(Date.now()-rally.startTs)/1000);
@@ -6302,7 +6036,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     setNow(Date.now());setAsking(false);
   }
   function setPts(k,v){setCfg(c=>({...c,pts:{...c.pts,[k]:v}}));}
-  // Two steps between rallies: Next rally lines up who's on and waits; Go starts the clock. The clock never starts until the coach says so.
+
   function newRally(){
     scUnlock();setAsking(false);
     if(rally&&rally.results){Object.entries(rally.results).forEach(([ci,res])=>rotateCourt(Number(ci),res.winner));}
@@ -6313,7 +6047,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     const pat=puResolvePatience(cfg);const rel=puReleases(cfg,pat);
     setRally({startTs:Date.now(),patience:Math.max(rel.A,rel.B),releases:rel,phase:'patience',result:null,results:{},ends:{},frozenAt:null,epoch:Date.now()});setNow(Date.now());
   }
-  // Pause, single court only: with several courts or a device following the coach's clock, one shared clock must not stop for one court.
+
   const paused=frozen&&!asking;
   function pauseRally(){const at=Math.max(0,(Date.now()-rally.startTs)/1000);setRally(r=>({...r,frozenAt:at}));}
   function resumeRally(){setRally(r=>({...r,startTs:Date.now()-(r.frozenAt||0)*1000,frozenAt:null}));setNow(Date.now());}
@@ -6338,7 +6072,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
   const Seg=({options,value,onChange})=><div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>{options.map(o=><button key={o.v} type="button" onClick={()=>onChange(o.v)} style={{padding:'8px 12px',borderRadius:'10px',border:'1px solid '+(value===o.v?'#6db3e6':'#2c3c4e'),background:value===o.v?'#12263b':'#0d1620',color:value===o.v?'#eaf4fb':'#6f8296',fontWeight:700}}>{o.l}</button>)}</div>;
   const Row=({label,children})=><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',padding:'8px 0',borderBottom:'1px solid #1d2a38'}}><span style={{color:'#cfe0ee'}}>{label}</span><span>{children}</span></div>;
   const ruleLines=puRuleText(cfg,multi?roleA:names.A,multi?roleB:names.B);
-  // Player display link: pushes the rule, step by step, plus who is on court and the scores, to the live room. Written on setting and phase changes only, not every tick.
+
   const [projecting,setProjecting]=useState(false);
   const [linkNote,setLinkNote]=useState('');
   const phaseKey=rally?rally.phase+(rally.free||''):'idle';
@@ -6353,7 +6087,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
       patience:rally?rally.patience:null,urg:cfg.urg,result:activeResult?{label:activeResult.phaseLabel,note:activeResult.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)}:null};
     writeLivePlayerRoom(getPersistentLiveRoomId(),'pu',payload);
   },[projecting,phaseKey,ruleLines.join('|'),scores,courts,allocKey,ac,presetTitle,cfg.urg]);
-  // Coach device with several courts: publish settings, allocation, rotation rule and the rally clock so court devices follow. sentAt lets each device correct for its own clock.
+
   const puBase=getPersistentLiveRoomId()+'-pu';
   const clockKey=JSON.stringify({c:cfg,a:allocation,r:rot,e:rally&&rally.epoch,s:rally&&rally.startTs,p:rally&&rally.patience,rel:rally&&rally.releases,pr:preset});
   useEffect(()=>{
@@ -6361,7 +6095,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     const h=setTimeout(()=>{writeLivePlayerRoom(puClockRoomId(puBase),'puclock',{type:'puclock',cfg,preset,allocation,rot,epoch:rally&&rally.epoch||null,rally:rally&&rally.epoch?{startTs:rally.startTs,patience:rally.patience,releases:rally.releases}:null,sentAt:Date.now()});},250);
     return ()=>clearTimeout(h);
   },[clockKey,follow,courtCount]);
-  // Court device: report this court (players, phase, scores) so the coach's board and the wall board can read it.
+
   useEffect(()=>{
     if(!follow)return;
     const h=setTimeout(()=>{writeLivePlayerRoom(puCourtRoomId(follow.host,follow.court),'pucourt',{type:'pucourt',court:follow.court,A:names.A,B:names.B,next:queue.map(i=>squad[i]),phase:rally?rally.phase:'idle',result:activeResult?{label:activeResult.phaseLabel,note:activeResult.note.replace(/\bA\b/g,names.A).replace(/\bB\b/g,names.B)}:null,scores:Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([name,score])=>({name,score}))});},250);
@@ -6504,7 +6238,7 @@ function PatienceUrgencyPanel({setScreen,onBack,follow,setSession}){
     </>}
   </div>;
 }
-// Court-screen view of a Patience → Urgency game: the rule laid out one step per row, the phase in colour, who is on court, and the scores.
+
 function PatienceUrgencyPlayerDisplay({payload={}}){
   const p=payload;const live=p.phase&&p.phase!=='idle';
   const red=p.phase==='urgency';const split=p.phase==='split';const over=p.phase==='over';
@@ -6534,7 +6268,7 @@ function PatienceUrgencyPlayerDisplay({payload={}}){
     </div>
   </div>;
 }
-// Board for a wall screen: every court's players, phase and scores, read from the court devices.
+
 function PatienceUrgencyBoard({host,courtCount}){
   useWakeLock();
   const [rows,setRows]=useState([]);
@@ -6555,7 +6289,7 @@ function PatienceUrgencyBoard({host,courtCount}){
     </div>
   </div>;
 }
-// Games Library class: the eight Patience → Urgency games as cards. Run opens Rally Band with the preset applied; Add puts the card in the session.
+
 function PatienceUrgencyGames({setSession,setScreen}){
   const [added,setAdded]=useState('');
   function run(p){try{localStorage.setItem(PU_PRESET_OPEN_KEY,p.id);}catch(e){}if(typeof setScreen==='function')setScreen('rallyBand');}
@@ -6603,7 +6337,7 @@ function RallyBandModule({setScreen,setSession}){
   function reset(){setBand(null);setResult(null);setTiming(false);setTally({inBand:0,total:0});}
   const elapsed=timing?Math.round((now-startTs)/1000):0;
   const running=timing||result;
-  // Back goes one page at a time. A dealt band returns to the band setup; the Patience → Urgency settings return to the band setup; only the band setup itself falls through to the app's back stack. The panel registers its own intercept for a live rally, which sits above this one.
+
   useBackIntercept(mode==='pu'||!!running,()=>{
     if(mode==='pu'){setMode('band');return true;}
     if(running){setBand(null);setResult(null);setTiming(false);return true;}
@@ -6655,7 +6389,7 @@ function RallyBandModule({setScreen,setSession}){
 function GhostingModule({setScreen}){
   const [size,setSize]=useState('Medium (~16 min)');
   const [mode,setMode]=useState('rally');
-  const [signal,setSignal]=useState('called'); // v775: called · lights · shadow (coach's honest shadow shot)
+  const [signal,setSignal]=useState('called'); 
   const [running,setRunning]=useState(false);
   const m=useRef({seq:[],idx:0,phase:'idle',remaining:0,zone:'1',sinceZone:0});
   const [,force]=useState(0);const rr=()=>force(x=>x+1);
@@ -6774,13 +6508,6 @@ function DifferentialLearning({setScreen,setSession}){
   </div>;
 }
 
-// ── CLA UPDATE — ANALOGY LIBRARY ─────────────────────────────────────────────
-// Browsable external-focus analogies per shot type (McBroom & Gray, Ch. 7).
-// The evidence: analogy-trained novices produced 8 distinct movement clusters vs
-// 3 for prescriptive instruction (Lee et al., 2014) — the analogy conveys the
-// movement INVARIANT without naming body parts, so each player solves it with
-// their own degrees of freedom (biological degeneracy). Coaches can add their
-// own analogies; custom entries persist locally.
 const ANALOGY_LIBRARY_KEY='checkerboard_analogy_library_v1';
 const ANALOGY_STARTERS=[
   {shot:'Straight Drive',cue:'Throw a bucket of water at the back wall.',why:'Invariant: sustained line and depth — the "water" has to travel the full length and soak the back.'},
@@ -6851,11 +6578,6 @@ function AnalogyLibraryScreen({setScreen}){
   </div>;
 }
 
-// Home tiles shaded as a graded run of blues, top to bottom, by position — so a tile
-// added or moved takes its place in the grade with no colour to pick. The primary five
-// grade on their own; the More Stuff tiles grade from the top again. Brand cards, the
-// Checkerboard tile (its board pattern is the brand) and the More Stuff toggle keep
-// their own looks. v749, coach request.
 const HOME_BLUE_LIGHT=[46,110,142], HOME_BLUE_DEEP=[17,46,72];
 function homeGradedTileCss(){
   const mix=(t)=>HOME_BLUE_LIGHT.map((c,i)=>Math.round(c+(HOME_BLUE_DEEP[i]-c)*t));
@@ -6866,8 +6588,8 @@ function homeGradedTileCss(){
   const out=['.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard){background:linear-gradient(135deg,'+hex(HOME_BLUE_DEEP)+','+deeper(HOME_BLUE_DEEP)+')!important;border:1px solid rgba(110,170,200,.45)!important;color:#eaf4fb!important;box-shadow:0 6px 18px rgba(0,0,0,.3)!important}',
     '.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard) h2{color:#eaf4fb!important}',
     '.homeGridV99h52>button:not(.homeBrandCard):not(.checkerboardHomeCard):not(.moreStuffCard) .homeTileSubtitle{color:#e2edf6!important}'];
-  for(let n=3;n<=7;n++)out.push(rule(n,(n-3)/4));            // Players … Sessions
-  const MORE_FIRST=9,MORE_COUNT=26;                            // Player Plans … Suggestions
+  for(let n=3;n<=7;n++)out.push(rule(n,(n-3)/4));            
+  const MORE_FIRST=9,MORE_COUNT=26;                            
   for(let k=0;k<MORE_COUNT;k++)out.push(rule(MORE_FIRST+k,k/(MORE_COUNT-1)));
   return out.join('\n');
 }
@@ -6893,7 +6615,7 @@ return <div className="homeGrid homeGridV99h52">
 ${homeGradedTileCss()}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
-      {/* ── FOUNDATIONS — always on Home ── */}
+      {}
       <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('purpose')}>
         <strong>START HERE</strong>
         <p>What Checkerboard Squash is for · the principles behind it · what we develop in players</p>
@@ -6912,14 +6634,14 @@ ${homeGradedTileCss()}`}</style>
         </div>
       </button>
 
-      {/* ── PRIMARY TILES — the five most-used ── */}
+      {}
       <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
       <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
       <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
       <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
 
-      {/* ── MORE STUFF — everything else, hidden by default ── */}
+      {}
       <button className="homeCard moreStuffCard homeTitleOnly" onClick={()=>setShowMore(v=>!v)}><h2>{showMore?'▲ Less':'▾ More Stuff'}</h2><span className="homeTileSubtitle">{showMore?'Hide the rest':'All the other modules'}</span></button>
 
       {showMore&&<>
@@ -6954,7 +6676,7 @@ ${homeGradedTileCss()}`}</style>
       <button className="homeCard homeTitleOnly" onClick={()=>setScreen('matchProblems')}><h2>Match Problem Index</h2><span className="homeTileSubtitle">Match problems → the games that fix them</span></button>
 
       <div className="moreSectionLabel">Coach Education</div>
-            
+
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       <div className="moreSectionLabel">Diagnostics & Tools</div>
@@ -6968,9 +6690,7 @@ ${homeGradedTileCss()}`}</style>
 
 function GamesLibrary({setScreen,setSession}){
   const [tab,setTab]=useState('stabilise');
-  // Which game class the embedded <Games/> currently has open (null = showing its tile
-  // grid). While a class is open, this page's own header/tabs/stage intro would just be
-  // stale chrome sitting above a dedicated game screen, so they collapse.
+
   const [openClass,setOpenClass]=useState(null);
   const inGameClass=!!openClass;
   return <div className="page gamesLibraryPage">
@@ -7012,14 +6732,6 @@ function GamesLibrary({setScreen,setSession}){
   </div>;
 }
 
-
-// ── SHOT BONUS RALLY ─────────────────────────────────────────────────────────
-// Standalone games-library module (kept OUT of the Universal Modifier Engine).
-// 2-tier shot training: Tier 1 rewards repetition of the target shot wherever it
-// occurs in a live opposed rally (exploring/stabilising the shot under varying
-// conditions — not fixed-pattern repetition); Tier 2 adds a tactical-appropriateness
-// gate so the bonus only counts when the shot is taken at a sound moment, with
-// optional behavioural-tag add-ons layered on top.
 const SHOT_BONUS_REGISTRY=[
   {id:'straight-drop',label:'Straight Drop',note:'Straight drop played tight down the same-side wall.'},
   {id:'cross-drop',label:'Crosscourt Drop',note:'Crosscourt drop landing away from the opponent, beating the cut.'},
@@ -7051,17 +6763,14 @@ function ShotBonusRally({setSession}){
   const [tags,setTags]=useState([]);
   const [customTag,setCustomTag]=useState('');
   const [zoneRestrict,setZoneRestrict]=useState([...SHOT_BONUS_ZONES]);
-  // Per-shot point values — each selected shot carries its own independent rep/finish
-  // value (e.g. Nick worth more than a straight drop) rather than one global setting.
+
   const [shotPoints,setShotPoints]=useState({'straight-drop':{rep:1,finish:1}});
-  // CLA Update — Stroke-Side Amplifier (Fitzpatrick et al.): amplify the affordance of
-  // the chosen stroke side (backhand or forehand) inside live, opposed play rather than fed-ball practice. Optional
-  // decay removes the amplifier mid-block so the invited behaviour has to stand alone.
+
   const [weakSide,setWeakSide]=useState('off');
   const [weakDecay,setWeakDecay]=useState(false);
   const [added,setAdded]=useState('');
   const [liveMode,setLiveMode]=useState(false);
-  const [tally,setTally]=useState({}); // {name:{win:0, byShot:{shotId:{rep:0,finish:0}}}}
+  const [tally,setTally]=useState({}); 
   const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
   useBackIntercept(liveMode,()=>{setLiveMode(false);return true;});
   function toggleShot(id){
@@ -7237,14 +6946,6 @@ function ShotBonusRally({setSession}){
   </div>;
 }
 
-// Standalone games-library module (kept OUT of the Universal Modifier Engine).
-// Restricted-zone play with a configurable "breakout" mechanic. Players are
-// confined to a restricted Checkerboard zone / zone-set; either player may play
-// one breakout shot out into a target zone / zone-set. Tier 1 = base rule (one-shot
-// finish pressure only triggers if the opponent recovers the ball and returns it
-// back into the restricted zone). Tier 2 = the breakout shot must land in a
-// nominated target zone and starts an unconditional shot-count pressure window
-// (win within N shots or the point is forfeit, regardless of what happens in play).
 const BREAKOUT_ZONE_PRESETS=[
   {id:'base',label:'Zone 2 → Zone 1 (Base)',restricted:['2'],breakout:['1'],partialDepth:false,note:'Players restricted to the front-right quarter (zone 2). Breakout shot escapes into the front-left quarter (zone 1).'},
   {id:'egyptian',label:'Egyptian 3/4 Court (Zone 2 + partial Zone 3)',restricted:['2','3'],breakout:['1','4'],partialDepth:true,note:'Restricted area = zone 2 in full, plus zone 3 limited to the short-line-to-back-of-service-box depth only (NOT the full zone to the back wall) — that partial back depth is what makes this a 3/4 court, not a true half-court. Breakout escapes into the opposite-side Egyptian area: zone 1 in full, plus zone 4 to the same partial depth. Deselect a zone below to breakout into just Zone 1 or just Zone 4 instead of the full opposite Egyptian area.'},
@@ -7259,13 +6960,7 @@ const EARN_BELOW_TARGETS={'3/3':'zone 3/3 — the back-right corner (deep, traml
 
 const BREAKOUT_WALL_ZONES=['5','6','7','8'];
 const BREAKOUT_WALL_DESC={5:'Front wall top left',6:'Front wall top right',7:'Front wall bottom right',8:'Front wall bottom left'};
-/* v815 — Breakout on Checkerboard pairs (coach, 10 Oct). The rally is played on one or
-   more front-wall → floor pairs (e.g. 5-4); one shot outside the pattern is the breakout,
-   and must match a nominated target: another pair ('6-3'), any wall into a floor zone
-   ('F2'), or a front-wall zone with any landing ('W7'). After the breakout the rally is
-   open for both players (coach). Only open-play pairs are offered — cbCodeIssue() is the
-   app's existing rule that a high front-wall ball (5, 6) cannot land in the front court.
-   Side-wall zones are phase 2 (coach, 10 Oct), after road-testing. */
+
 const BRK_OPEN_PAIRS=(()=>{const out=[];['5','6','7','8'].forEach(w=>['1','2','3','4'].forEach(f=>{if(!cbCodeIssue('['+w+'-'+f+']').length)out.push(w+'-'+f);}));return out;})();
 const BRK_FLOOR_TARGETS=['F1','F2','F3','F4'];
 const BRK_WALL_TARGETS=['W5','W6','W7','W8'];
@@ -7286,7 +6981,7 @@ function brkTargetOverlaps(t,pattern){
   if(t[0]==='W')return pattern.some(p=>p.split('-')[0]===t.slice(1));
   return pattern.includes(t);
 }
-/* Rule text for the pairs mode, as short sentences (shown numbered on screen; joined for the card). */
+
 function brkPairSteps(pattern,targets,tier,shotLimit){
   const pat=pattern.map(p=>'['+p+'] ('+brkPairDesc(p)+')').join(' or ');
   const tg=targets.map(brkTargetLabel).join('; or ');
@@ -7304,34 +6999,12 @@ function brkPairSteps(pattern,targets,tier,shotLimit){
   return steps;
 }
 
-/* ============================================================================
-   UNIFIED SUB-ZONE SYSTEM (foundation) — coach spec 12 Sep.
-   The tramline is the universal divider for the whole app. Floor and wall
-   mirror each other. Nothing renders this yet; it is the shared source of
-   truth that future consumers (Earn the Below/Reload targets, the board
-   renderer, challenge squares) draw from. Pure data + helpers, zero risk.
-   ------------------------------------------------------------------------- */
-// FLOOR main zones: 1 Front Left, 2 Front Right, 3 Back Right, 4 Back Left (coach, 10 Oct — matches ATB_FLOOR_ZONES and the court map).
-// Each floor zone quarters into sub-zones 1..4 that MIRROR the main-zone layout,
-// tramline splitting the wall-side pair from the inner pair:
-//   sub 1 front-inner · sub 2 front-wall · sub 3 back-wall · sub 4 back-inner
 const FLOOR_SUBZONE_DESC={1:'front-inner',2:'front-wall',3:'back-wall',4:'back-inner'};
-// WALL front-wall zones (existing): 5 top-left, 6 top-right, 7 bottom-right, 8 bottom-left.
-// Each wall zone quarters the same way, the TRAMLINE WIDTH PROJECTED ONTO THE WALL
-// (a vertical band aligned with the floor tramline) doing the wall-side/inner split,
-// height doing the high/low split:
-//   sub 1 high-inner · sub 2 high-wall(band) · sub 3 low-wall(band) · sub 4 low-inner
+
 const WALL_SUBZONE_DESC={1:'high-inner',2:'high-wall',3:'low-wall',4:'low-inner'};
-// GEOMETRY RULES (for the eventual board renderer — honour these, do not split 50/50):
-//  - The tramline is the lengthwise divider on the floor and, projected up as a
-//    vertical band, on the wall. Same lines both surfaces = true mirror image.
-//  - The SERVICE-BOX DEPTH is the sub-zone unit across the short line: the four
-//    sub-zones straddling the short line are all equal depth (front zones are
-//    quartered at the fixed service-box depth from the short line, NOT at their
-//    own midpoint), so the mid-court band is symmetrical front-to-back.
+
 const SUBZONE_GEOMETRY={divider:'tramline',wallDivider:'tramline width projected onto the wall',depthUnit:'service-box depth',depthRule:'four sub-zones straddling the short line are equal depth (service-box depth from the short line), not a 50/50 split of each zone'};
-// Unified label: floor uses "main/sub" (3/3); wall uses "main-sub" but written
-// the same "main/sub" way with the wall descriptor (7/2). subZoneRef parses either.
+
 function zoneSurface(main){return Number(main)>=5?'wall':'floor';}
 function subZoneName(main,sub){
   main=Number(main);sub=Number(sub);
@@ -7341,7 +7014,7 @@ function subZoneName(main,sub){
   return mainDesc.toLowerCase()+', '+subDesc;
 }
 function subZoneRefLabel(main,sub){return 'zone '+main+'/'+sub+' ('+subZoneName(main,sub)+')';}
-// Human targets used by games (floor back corners + wall penetrating-drive spot):
+
 const SUBZONE_TARGETS={
   '3/3':subZoneRefLabel(3,3)+' — the deep back-right corner, tramline-tight behind the service box',
   '4/4':subZoneRefLabel(4,4)+' — the deep back-left corner, tramline-tight behind the service box',
@@ -7367,10 +7040,7 @@ function BreakoutSquash({setSession}){
   const [patternPairs,setPatternPairs]=useState(['5-4']);
   const [pairTargets,setPairTargets]=useState(['F1','F2']);
   const isPairs=surface==='pairs';
-  /* v832 (coach, 21 Oct): shots to win follow the court size — front court only 1,
-     Egyptian 3/4 court 2, full court 3. Follows the zones until the coach sets it by hand. */
-  /* v834 (coach, 21 Oct): Game 4 progressions — after the breakout play continues in the breakout zone only,
-     then in both zones, then full court. Shots-to-win follows the area played in after the breakout. */
+
   const g4Floor=tier==='2'&&surface==='floor';
   const afterZones=g4Floor?(afterArea==='target'?[...breakoutZones]:afterArea==='both'?[...new Set([...restrictedZones,...breakoutZones])].sort():['1','2','3','4']):restrictedZones;
   const frontOnly=surface==='floor'&&afterZones.length>0&&afterZones.every(z=>z==='1'||z==='2');
@@ -7378,8 +7048,7 @@ function BreakoutSquash({setSession}){
   const shotSuggest=frontOnly?1:shortCourt?2:3;
   const shotWhy=frontOnly?'front court only':shortCourt?'Egyptian 3/4 court':'full court';
   useEffect(()=>{if(!shotManual)setShotLimitRaw(shotSuggest);},[shotSuggest,shotManual]);
-  /* v826: Tier 1 = Restore or Lose (coach's original); Tier 1+ ('1c') = Defender's Choice progression, floor/wall only. Pairs keeps its own Tier 1.
-     v828: Tier 1++ ('1p') = Play It Out (coach, 21 Oct): after a restore a missed finish no longer loses the point — the rally is played out full court; Player B wins it = point + double defence bonus, Player A wins it = point only. Task and scoring are short numbered lines, one per row (P10). */
+
   const effTier=isPairs&&(tier==='1c'||tier==='1p')?'1':tier;
   const restoreTest=surface==='wall'?'hits the front wall in the restricted zone':'first bounces in the restricted zone';
   const liveTargets=pairTargets.filter(t=>!brkTargetOverlaps(t,patternPairs));
@@ -7401,9 +7070,7 @@ function BreakoutSquash({setSession}){
   function zoneDesc(z){return (surface==='floor'&&partialDepth&&(z==='3'||z==='4'))?`${ZDESC[z]} — 3/4 depth only (short line to back of service box, not full zone to back wall)`:ZDESC[z];}
   const restrictedLabel=restrictedZones.length?restrictedZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
   const breakoutLabel=breakoutZones.length?breakoutZones.map(z=>`${z} (${zoneDesc(z)})`).join(' / '):'—';
-  /* v828 (coach, 21 Oct): "Remember we are always talking to kids." Task and scoring are
-     short numbered lines a junior can read on court (P32): "you" is the player who broke out,
-     "your opponent" the other. Coach detail lives in the rationale and coach notes. */
+
   function brkLines(lines){return lines.map((x,i)=>`${i+1}. ${x}`).join('\n');}
   function buildTask(){
     if(isPairs)return brkLines(brkPairSteps(patternPairs,liveTargets,effTier,shotLimit));
@@ -7629,26 +7296,13 @@ function BreakoutSquash({setSession}){
   </div>;
 }
 
-// Standalone games-library module (kept OUT of the Universal Modifier Engine).
-// The advantage-pressing counterpart to Breakout Squash. No zone restriction —
-// normal open rally play. At any point a "Press" is called (self, coach, or
-// opponent) and from that moment the pressing player must win the rally within
-// a configurable shot count or the point is forfeit automatically. Where
-// Breakout is an escape bet (get out of trouble), Press Call is an advantage
-// bet (cash in a moment already created) — same shot-clock mechanic, opposite
-// psychological trigger, so the two must stay separate games with separate names.
 const PRESS_CALL_MODES=[
   {id:'self',label:'Self-Call',desc:'The player calls "Press" the moment they judge that advantage has been created. Tests judgement of when the moment is actually on.'},
   {id:'coach',label:'Coach-Called',desc:'The coach calls "Press" for a player at a moment of the coach\u2019s choosing — removes self-judgement and tests execution under an externally imposed clock.'},
   {id:'opponent',label:'Opponent-Called',desc:'The opponent calls "Press" on their rival mid-rally — tests composure and finishing under a clock the player did not choose to start.'}
 ];
 const PRESS_CALL_SHOT_LIMITS=['2','3','4','5'];
-/* ── TRAFFIC LIGHT ZONES ──────────────────────────────────────────────────────
-   Height-banded front-wall constraint module (Hirst, Squash — Crowood Sports
-   Guides; WSF coaching manual). Three bands, each with a stated tactical
-   purpose; three formats on one engine. Band boundaries are the painted tin
-   and service lines plus one coach-taped line — every check is a ball check
-   players can see. */
+
 const TL_BANDS=[
  {id:'red',label:'Red',color:'#a35b5b',fill:'#1d1315',bounds:'from the taped line up to the out line',purpose:'Recovery and attacking',read:'Height that buys time — lobs and high drives that push your opponent deep and give you the T back.'},
  {id:'amber',label:'Amber',color:'#2e6e8e',fill:'#1c1810',bounds:'from the service line up to the taped line',purpose:'Recovery, attacking and consolidating',read:'The working band — mid-height shots that hold length and keep or rebuild a neutral rally.'},
@@ -7656,8 +7310,7 @@ const TL_BANDS=[
 ];
 const TL_TAPE_RULE='Setup — one strip of tape: run a horizontal tape line across the front wall midway between the service line and the out line. With the tin and the service line already painted, that one strip marks all three bands. Walk it before you play: stand at the T and check every boundary is visible from there.';
 function TrafficLightWallDiagram(){
-  /* Data-driven from TL_BANDS: top of wall to tin. Heights are illustrative
-     proportions, not measurements — the lines, not the pixels, are the rule. */
+
   const rows=[{band:TL_BANDS[0],y:16,h:64,line:'out line',ly:16},{band:TL_BANDS[1],y:80,h:56,line:'taped line',ly:80},{band:TL_BANDS[2],y:136,h:56,line:'service line',ly:136}];
   return <svg viewBox="0 0 340 232" style={{width:'100%',maxWidth:'420px',display:'block'}} role="img" aria-label="Front wall split into red, amber and green height bands">
     <rect x="10" y="16" width="240" height="200" fill="#0b1320" stroke="#223044"/>
@@ -7683,8 +7336,7 @@ function TrafficLightModule({setScreen,setSession}){
   const [gameShape,setGameShape]=useState('symmetric');
   const [added,setAdded]=useState('');
   const band=TL_BANDS.find(b=>b.id===bandId)||TL_BANDS[2];
-  /* v823: span = the RLD range each format covers across its options, shown on
-     the format button so the difference is visible at the moment of choice. */
+
   const MODES=[
     {id:'pairs',label:'Constrained rallies',sub:'Pairs — band restriction on one or both players',rld:pairShape==='symmetric'?3:4,span:[3,4]},
     {id:'game11',label:'Constrained game to 11',sub:'Full game with the band as the standing rule',rld:gameShape==='symmetric'?4:5,span:[4,5]},
@@ -7802,7 +7454,6 @@ function TrafficLightModule({setScreen,setSession}){
     </div>
   </div>;
 }
-/* ── END TRAFFIC LIGHT ZONES ── */
 
 function PressCallModule({setSession}){
   const [modeId,setModeId]=useState('self');
@@ -7882,15 +7533,6 @@ function PressCallModule({setSession}){
   </div>;
 }
 
-// ── CLA UPDATE — McBROOM & GRAY BOOK BUILDS ──────────────────────────────────
-// The four vetted games from the gap-analysis build order (Depth Cap, Attack
-// Straight, Serve for Advantage, Deep Touch) plus the Action Boundary design
-// decision. Specs are the CORRECTED Part D versions, which supersede all earlier
-// drafts. Key squash-mechanics correction applied throughout: squash has no
-// "run around the backhand" — a serve/shot that denies a clean response forces a
-// weaker SHOT TYPE (the boast), not a wrong side. Every bonus condition below is
-// objectively detectable (shot-type flag + existing floor-zone system 1–4), so
-// scoring is self-officiated with no coach adjudication.
 const CLA_UPDATE_GAME_DEFS=[
   {id:'depthcap',label:'Depth Cap',sub:'the Egyptian \u00be-court game \u2014 asymmetric by default, classic symmetric as a mode',
    summary:'The constrained player\u2019s shots may not land in the strip behind the back line of the service boxes \u2014 squash\u2019s own painted marker for the back quarter (note: NOT all of zones 3/4; the band between the short line and the service-box line stays legal). They are denied squash\u2019s highest-percentage TARGET: the safe, pressure-building length that rallies are won FROM. Winners themselves mostly land short \u2014 but they are created from deep. Everything else is normal squash. Bonus if the constrained player wins a rally in which they forced the free player to retreat into that same back-quarter zone \u2014 depth as an EFFECT (carry off the back wall, lobs that climb over, width that drags them back) while depth as a landing spot stays forbidden.',
@@ -8059,12 +7701,6 @@ function CLAUpdateGames({setSession}){
   </div>;
 }
 
-// ── ROLE CONSTRAINT — REUSABLE ASYMMETRIC-ROLE ENGINE (v535) ─────────────────
-// Part C priority #1: no existing module assigns different shot-type constraints
-// to each player simultaneously (ATL/BTL and zone codes constrain both players
-// identically). Boast & Drive (Ch. 11) is the flagship preset; the engine
-// generalises it into reusable attacker/defender shot-type pairings, absorbing
-// the pickleball Kitchen Attack/Defend translation as the Siege preset.
 const ROLE_CONSTRAINT_ROLES=[
   {id:'none',label:'No restriction',rule:'plays normal squash — any shot, any time'},
   {id:'boastOnly',label:'Boast only',rule:'may only play boasts (the ball must hit at least two walls before the floor)'},
@@ -8204,13 +7840,6 @@ function RoleConstraintEngine({setSession}){
   </div>;
 }
 
-// ── COURT GEOMETRY — DEPTH, HEIGHT & DIRECTION VARIANTS (v535) ───────────────
-// Part C priorities #3 and #6: Deep Bounce fills the genuine depth-zone gap in
-// the constraint library (which is mostly shot-count based); Out-Zone removes a
-// zone where Deep Bounce requires one; Above the Cut maps racquetball's ceiling
-// game onto squash's missing height dimension; Cross-Court Confinement and the
-// Passing Rules tree complete the Ch. 11 variant queue. All rules are
-// self-officiated via the existing floor-zone conventions (zones 3/4 = back).
 const COURT_GEOMETRY_MODES=[
   {id:'deepbounce',label:'Deep Bounce',emoji:'📏',
    note:'Every shot must bounce behind the short line (zones 3/4). CLA mechanism: removing every short affordance forces within-skill variability of LENGTH — the same outcome (a deep bounce) repeated from endlessly different positions, heights and pressures, calibrating the information–movement control laws for length under live opposition. Fills the depth-zone gap that front-biased and shot-count games do not reach.'},
@@ -8549,11 +8178,6 @@ function TimeSpaceLabFamily({onAdd,label='Add To Session'}){
   </>;
 }
 
-// Cross Court Friend or Foe — one definition, read by the family screen and by
-// standardGames() (Session Builder's All Games list and search). v747: Crosscourt
-// Licence moved in from Classic Games as game 5.
-// Line stages for the two opening games (coach, 30 Sep, tested on court): above the service
-// line, then a taped line halfway down, then the full front court.
 const CCFF_LINES={'Service line':'Play above the line: every shot must hit the front wall above the service line.','Halfway down':'Play above the line: every shot must hit the front wall above a taped line halfway between the service line and the tin.','Full front court':'Play a normal rally: the whole front wall above the tin.'};
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
@@ -8605,11 +8229,8 @@ const CCFF_GAMES=[
      stepper:[{k:'licence',label:'Crosscourt-attack bonus',min:1,max:4,sign:'+'}]}
 ];
 const CCFF_NO_BOAST=' A boast does not count as a crosscourt.';
-function ccffRule(g,v){return g.rule(v)+(g.boastRule===false?'':CCFF_NO_BOAST);} /* v812: the boast sentence belongs to the crosscourt series only */
-// ── ONSIDE OFFSIDE (v802 → own series v805) ─────────────────────────────────────
-// The coach's court-tested crosscourt session (3 Oct). v805 (coach: "this is confusing — we need
-// each progression as a separate game"): five separate games, each card complete on its own,
-// sharing one set of scoring values. All scoring customisable (v804 principle).
+function ccffRule(g,v){return g.rule(v)+(g.boastRule===false?'':CCFF_NO_BOAST);} 
+
 const ONSIDE_RULE=(v)=>'Onside = your opponent has both feet on your side of the half-court line (imagine it running on to the front wall). Crosscourt only when they are onside \u2014 crosscourt when they have one or both feet offside and '+(CCFF_OFFSIDE_PRICE[v.onOff]||'you lose the rally')+'.';
 const ONSIDE_VOLLEY=(v)=>v.onNoVolley==='Yes'?' An onside crosscourt your opponent volleys earns no bonus \u2014 it did not make them move.':'';
 const ONSIDE_COMMON_STEPS=[{k:'onRally',label:'Rally win',min:1,max:3,sign:'+'},{k:'onX',label:'Onside cross bonus',min:1,max:3,sign:'+'},{k:'onOff',label:'Offside crosscourt',type:'select',options:Object.keys(CCFF_OFFSIDE_PRICE)},{k:'onNoVolley',label:'Volleyed cross earns no bonus',type:'select',options:['No','Yes']}];
@@ -8629,12 +8250,7 @@ function onsideGame(p){
     stepper:[...ONSIDE_COMMON_STEPS,...(xw?[{k:'onXwin',label:'Cross winner bonus',min:1,max:6,sign:'+'}]:[]),...(sw?[{k:'onSwin',label:'Straight winner bonus',min:1,max:6,sign:'+'}]:[])]};
 }
 const ONSIDE_GAMES=[1,2,3,4,5].map(onsideGame);
-// ── CORRIDOR GAMES (v851) ───────────────────────────────────────────────────────
-// The coach's court-tested corridor (Oct 2026): a marked central strip, front wall to back wall
-// through the T, width set to the players. A shot cut off from the corridor is non-functional.
-// Two strands — NFC (non-functional crosscourt, the commonest cause of lost rallies) and NFL
-// (non-functional length, the second) — then a final game calling both. "When to cross" is
-// Onside Offside's job (the side the opponent is on matters), so it is linked, not repeated.
+
 const COR_GAMES_DEF=[
   {key:'nfc1',title:'NFC 1 · Spot the NFC',rld:4,tag:'A crosscourt cut off from the corridor loses the rally',
    why:'Makes the commonest junior error visible: a crosscourt the opponent can take from the corridor.',
@@ -8672,11 +8288,7 @@ const CORRIDOR_GAMES=COR_GAMES_DEF.map((d,i)=>({id:'corridor-'+d.key,stage:i+1,b
 function CorridorFamily({onAdd,label,openFamily}){
   return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={CORRIDOR_GAMES} category="Corridor Games" intro={<div className="gameCard"><div className="categoryTag">Corridor Games</div><h2>▥ Corridor Games — NFC and NFL</h2><p>Mark a <strong>corridor</strong>: a strip from the front wall to the back wall, through the T. A ball the opponent can take from the corridor is <strong>non-functional</strong>. Two strands for the two errors that cost most rallies in matches: <strong>NFC</strong> (non-functional crosscourt) and <strong>NFL</strong> (non-functional length), then a final game calling both.</p><p className="mutedText">When to cross depends on which side the opponent is on — that is Onside Offside. The same faults can be added to any game in Negative Scoring.</p></div>}/>;
 }
-// ── T ZONE GAMES (v838) ─────────────────────────────────────────────────────────
-// The coach's court-tested T Zone session (Oct 2026): rotating drives, five games, one rule added
-// at a time. T Zone size is adjustable to the players' level. Optional "Go" call by the waiting
-// player when the non-striker is outside the T Zone (works best with a small T Zone — reaction
-// delay). Rules are short numbered lines for juniors (P32); no "you" on the player display.
+
 function tzGame(p){
   const shortZ={3:'zone 1',4:'zone 2',5:'zone 1 or 2'}[p];
   const titles={1:'T Zone — Straight Recovery',2:'T Zone — Crosscourts Allowed',3:'T Zone — Short to Zone 1',4:'T Zone — Short to Zone 2',5:'T Zone — Short to Zones 1 and 2'};
@@ -8701,15 +8313,7 @@ const TZONE_GAMES=[1,2,3,4,5].map(tzGame);
 function TZoneFamily({onAdd,label,openFamily}){
   return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={TZONE_GAMES} category="T Zone Games" intro={<div className="gameCard"><div className="categoryTag">T Zone Games</div><h2>⊕ T Zone Games</h2><p>Five court-tested games on rotating drives, one rule added at a time: <strong>recover to the T Zone</strong>, then <strong>crosscourt only if it gets past the opponent</strong>, then <strong>short only when the opponent is outside the T Zone</strong>. The T Zone is marked around the T and sized to the players’ level.</p><p className="mutedText">Optional: the waiting player calls “Go” when the opponent is out of the T Zone — best with a small T Zone.</p></div>}/>;
 }
-// ── READ THE ATTACK (v812) ──────────────────────────────────────────────────────
-// The coach's perception series, run on court 7 Oct ("it went smoothly"). The winner of the last
-// rally is always on perception duty — drives only — and must read the attacking shot; the other
-// player may play it at any time, disguising it as long as possible. Group: the incoming player
-// serves and attacks. Two players: the winner serves, the receiver attacks (the receiver has the
-// edge, so is likely to win and then take on perception duty). After the attacking shot: drives
-// (straight or crosscourt), or an open rally — at once or once the perceiver has survived N
-// attacking shots. Scoring adjustable; a perceiver who survives and wins earns a bonus.
-// Here a boast is simply an attacking shot (boastRule:false — no crosscourt-series sentence).
+
 const RTA_AFTER={'Drives only':'reply with a straight or crosscourt drive, and drives carry on','Open rally':'the rally is open','Open after 2 attacking shots':'reply with a drive; once the player on perception duty has survived 2 attacking shots, the rally is open','Open after 3 attacking shots':'reply with a drive; once the player on perception duty has survived 3 attacking shots, the rally is open'};
 const RTA_AFTER_KEYS=Object.keys(RTA_AFTER);
 function rtaGame(p){
@@ -8729,18 +8333,7 @@ const RTA_GAMES=[1,2,3,4,5,6,7].map(rtaGame);
 function ReadTheAttackFamily({onAdd,label,openFamily}){
   return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={RTA_GAMES} category="Read the Attack" intro={<div className="gameCard"><div className="categoryTag">Read the Attack</div><h2>👁️ Read the Attack</h2><p>A perception series. The winner of the last rally is <strong>on perception duty</strong>: they can only drive, and must read the attacking shot early. The other player can play the attacking shot whenever they like, and tries to disguise it.</p><p className="mutedText">Court-tested by the coach. Games 1–3 use straight drives, 4–6 add the crosscourt drive, and 7 opens the attack to the whole front of the court. All scoring is adjustable.</p></div>}/>;
 }
-// ── POWER DRIVER (v818, revised v819) ───────────────────────────────────────────
-// Coach, 10 Oct: players who live above the line and cannot change pace or play the penetrating
-// drive. Two series on one ladder — Penetrating Drive and Kill — plus Drive or Kill, which links
-// them. Pace is never judged: bounce tests are visible proxies (P1, P24). Matches the app's
-// Penetrating Drive definition (time removed, not racquet speed).
-// v819 (coach, 13 Oct, after the Power Driver build note): kill judged by the SECOND BOUNCE only
-// (below the service line; no wall tape) — levels: service-box back line → short line → halfway
-// tape (the last is coach design; published kill definitions stop at the short line); option to
-// constrain one player only; cycles ordered or any order; the serve does not count; winner bonus
-// default +2; Drive or Kill pays the shot bonus OR the winner bonus, never both; links to the
-// Shots explanations; reset to defaults; P23 attribution (sources verified 13 Oct: Murray 2018
-// PhD thesis Table 1.1; Carboch & Dušek 2023; Vučković et al. 2013; Squash Norway Junior Inspire).
+
 const SHOTS_OPEN_KEY='checkerboard_shots_open_section';
 const PD_DRIVE_TEST={'Second bounce behind the short line':'its second bounce is behind the short line','First bounce behind the short line':'its first bounce is behind the short line','First bounce behind the service box':'its first bounce is behind the back line of the service box'};
 const PD_KILL_TEST={'In front of the service-box back line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the back line of the service box','In front of the short line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the short line','In front of a halfway tape':'it hits the front wall below the service line (above the tin), and its second bounce is in front of a tape halfway between the front wall and the short line'};
@@ -8825,35 +8418,11 @@ const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Cons
   focus:'Same start, late choice: deep or dead.',
   score:(v)=>'Rally win +'+(v.pdRally||1)+'. Low shot passing the drive or kill test: +'+v.pdDok+'; if it wins the rally: +'+v.pdDokWin+' instead (not both).',
   stepper:[PD_STEP_RALLY,{k:'pdBonusTest',label:'Drive test',type:'select',options:Object.keys(PD_DRIVE_TEST)},{k:'pkBonusTest',label:'Kill test',type:'select',options:Object.keys(PD_KILL_TEST)},{k:'pdDok',label:'Shot bonus',min:1,max:3,sign:'+'},{k:'pdDokWin',label:'Winner bonus',min:1,max:6,sign:'+'}]};
-// ── POWER DRIVER: ABL DRIVES (v854) ─────────────────────────────────────────────
-// Coach, 29 Oct (game 6 refined with ChatGPT and approved): rallies stay Above the (service)
-// Line with working drives; going Below the Line is allowed only with a shot that passes its
-// test. Penetrating drive — published sources define it by effect (a pressing drive reaching the
-// back with little time; Murray et al. 2018, 2019), so the visible test is: front wall below the
-// service line, first bounce behind the short line. Kill — front wall below the service line,
-// second bounce in the service box (starting level), progressing to in front of the short line
-// (published: Carboch & Dušek 2023). Side games first, then full court. Kid rules (P32).
-/* v857 (coach, court-tested 2 Nov): every ball lands behind the short line (so a side game is
-   zone 3 or zone 4 only). A penetrating drive that hits both targets = +2, and +3 if it is also a
-   winner. A penetrating drive that misses a target: play on. One that lands in front of the short
-   line: lose the rally. Kill rules unchanged until its floor line is settled. */
-/* v865 (coach, 4 Nov, court notes): no 'behind the short line' rule — a short ball above the line
-   gives the opponent an opening, so the rally regulates it. Bonuses 3 / 6. Below the line: one
-   target hit = play on, both missed = lose the rally. A ball landing in front of the floor tape
-   (a drop) still loses, except game 6's drop after a penetrating drive. */
+
 const AB_SIDES={'Right side':'Right side only: zones 2 and 3.','Left side':'Left side only: zones 1 and 4.'};
-/* v855 (coach, 29 Oct): both shots judged by taped targets. Penetrating drive: hits the
-   penetrating band (30–90 cm above the tin) and first bounce in the service box (the opposite
-   one for a crosscourt). Kill: hits the kill band (tin to about 30 cm above) and second bounce
-   in the short-line band (floor tapes 30 cm either side of the short line) — a drop dies nearer
-   the front wall, so it cannot pass. Applies to ABL Drives only; other Power Driver games keep
-   the v819 second-bounce tests (coach: leave them for now). Order follows the ChatGPT plan. */
+
 const AB_PEN_LINE='Penetrating drive: hit the penetrating band. First bounce in the service box.';
-/* v861 (coach, 2 Nov): the kill is judged by its first bounce only — in front of the short line
-   (the general coaching standard). Behind it: lose the rally. Missing the band: play on. */
-/* v862 (coach, 2 Nov: drops passed off as kills "would be the first thing they do"): a floor
-   tape about halfway between the front wall and the short line. Kill = first bounce between that
-   tape and the short line. In front of the tape it is a drop. */
+
 const AB_KILL_LINE='Kill: hit the kill band. First bounce in the kill zone, between the floor tape and the short line.';
 const AB_DEFS=[
   {n:1,title:'Length Before Power',side:true,pen:true,kill:false,drop:false,rld:3,tag:'One side; working drives above the line, penetrating drive below',
@@ -8878,7 +8447,7 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
     const ways=[];if(d.pen)ways.push('a penetrating drive');if(d.kill)ways.push('a kill');
     if(d.drop)ways.push('a drop straight after a penetrating drive that hits both targets');
     L.push('Below the line only with '+(ways.length>2?ways.slice(0,-1).join(', ')+' or '+ways[ways.length-1]:ways.join(' or '))+'.');
-    /* v861: kept to 9 lines or fewer (P32) by merging the play-on and lose lines. */
+
     if(d.pen)L.push(AB_PEN_LINE);
     if(d.kill)L.push(AB_KILL_LINE);
     L.push(d.pen&&d.kill?'Below the line, hit one of the two targets? Play on. Missed both? Lose the rally.':d.pen?'Penetrating drive hits one of its two targets? Play on. Missed both? Lose the rally.':'Kill hits one of its two targets? Play on. Missed both? Lose the rally.');
@@ -8895,7 +8464,7 @@ const PD_ABL_GAMES=AB_DEFS.map(d=>({id:'pab-'+d.n,stage:d.n,boastRule:false,dura
     if(!d.side&&v.abCross>0)L.push('Crosscourt that gets past the opponent into the back corner = +'+v.abCross+'.');
     if(d.drop&&v.abDrop>0)L.push('Drop winner after a penetrating drive = +'+v.abDrop+'.');
     return L.map((x,k)=>(k+1)+'. '+x).join('\n');},
-  /* v863 (coach, 2 Nov): every point value has its own stepper, wide ranges. */
+
   stepper:[...(d.side?[{k:'abSide',label:'Side',type:'select',options:Object.keys(AB_SIDES)}]:[]),{k:'abRally',label:'Rally win',min:1,max:5,sign:'+'},...(d.pen?[{k:'abBonus',label:'Penetrating drive',min:0,max:6,sign:'+'},{k:'abPdWin',label:'Penetrating-drive winner',min:0,max:8,sign:'+'}]:[]),...(d.kill?[{k:'abKillBonus',label:'Kill',min:0,max:6,sign:'+'},{k:'abKillWin',label:'Kill winner',min:0,max:8,sign:'+'}]:[]),...(!d.side?[{k:'abCross',label:'Crosscourt past the opponent',min:0,max:5,sign:'+'}]:[]),...(d.drop?[{k:'abDrop',label:'Drop winner',min:0,max:8,sign:'+'}]:[])]}));
 const PD_GAMES=[...PD_DRIVE_GAMES,...PD_KILL_GAMES,PD_LINK_GAME,...PD_ABL_GAMES];
 function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
@@ -8914,11 +8483,7 @@ function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
     <div className="buttonRow" style={{flexWrap:'wrap',marginTop:'8px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('increase')}>Read: the penetrating drive (Shots) →</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('finish')}>Read: the kill (Shots) →</button></div></div>}/>;
 }
 function ccffCard(g,v,category){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:category||'Cross Court Friend or Foe',format:g.format||'Constrained game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:g.layers||['Decision Making','Shot Selection','Attacking Conversion']};}
-// ── DROP, BOAST & LOB (v787) ────────────────────────────────────────────────────
-// Coach, 28 Sep: games for the Match Analysis tags with the thinnest coverage — Loose Drop,
-// Loose Boast, Loose Lob. Every rule is a visible test (a taped line, the opponent's feet,
-// a volley, a rally won) so players can score it themselves. One definition (DBL_GAMES)
-// read by this family screen, standardGames() and the Match Problem Index.
+
 const DBL_TRAM=['one racquet length from the side wall','three-quarters of a racquet length from the side wall','half a racquet length from the side wall'];
 const DBL_DEAD=['No tape — the painted short line is the line','Tape halfway between the short line and the front wall','Tape a quarter of the way back from the front wall'];
 const DBL_DEFAULTS={punishB:6,tram:1,dead:1,pin:1,drop:1,dropWin:2,window:2,giftWin:3,boast:1,boastWin:2,lob:1,reset:1};
@@ -9015,11 +8580,6 @@ function ShotQualityFamily({onAdd,label='Add To Session',games,heading,intro,cat
 function DropBoastLobFamily({onAdd,label}){return <ShotQualityFamily onAdd={onAdd} label={label} games={DBL_GAMES} heading="Drop & Lob" category="Drop & Lob" intro="Games for two of the loose-shot problems in the Match Analysis app: Loose Drop and Loose Lob. Every rule is something both players can see — a taped line, where the opponent’s feet are, whether a ball was volleyed — so the players score it themselves. Boasts have their own series."/>;}
 function BoastFamily({onAdd,label}){return <ShotQualityFamily onAdd={onAdd} label={label} games={BOAST_GAMES} heading="Boast" category="Boast" intro="The loose boast and the unnecessary boast are among the most punished shots in junior competition. These games make the drive the default and the boast the exception — and make a loose boast cost the rally. They match the Match Analysis tags Loose Boast and Unnecessary Boast."/>;}
 
-// ── CROSSCOURT CHOICE (v764) ────────────────────────────────────────────────────
-// Coach, 25 Sep: juniors cross for no reason instead of building from straight lines. Not a
-// ban — the crosscourt is EARNED from straight play, JUDGED by what it does to the opponent,
-// then CHOSEN. Stages 3–4 are existing games (Cross Court Friend or Foe, Common Game Errors),
-// linked, not copied. One definition: this screen and standardGames() read CXC_GAMES.
 const CXC_DEFAULTS={count:4,functional:2,gift:1,crosses:1,price:2,window:2,giftWin:3};
 const CXC_GAMES=[
   {id:'cxc-earn',stage:1,title:'Earn It',rld:4,duration:8,tag:'Build it straight — the crosscourt is unlocked, not banned',
@@ -9262,8 +8822,7 @@ function Sessions({session,setSession,setScreen}){session=Array.isArray(session)
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
 function remove(index){saveSessionSnapshot();setSession(uniqueSessionIds(session.filter((_,i)=>i!==index)));}
-// Reorder a rotation. dir = -1 up, +1 down. Clamped at the ends, and snapshotted
-// so the existing undo covers it like remove and duplicate.
+
 function move(index,dir){
   const to=index+dir;
   if(to<0||to>=session.length)return;
@@ -9286,7 +8845,7 @@ async function pushSessionPlayerDisplay(index=0){
   if(!game){return;}
   const {url,ok}=await copyLiveGameLink(game);
   try{if(navigator.clipboard) await navigator.clipboard.writeText(url);}catch{}
-  
+
 }
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
@@ -9295,7 +8854,7 @@ function updateCb(index,code){saveSessionSnapshot();const updated=clone(session)
 function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
 function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
 const [editIndex,setEditIndex]=useState(null);
-const [openRot,setOpenRot]=useState({}); // v796: rotations are compact; Details opens one
+const [openRot,setOpenRot]=useState({}); 
 const toggleRot=id=>setOpenRot(o=>({...o,[id]:!o[id]}));
 function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
@@ -9330,8 +8889,6 @@ return <div className="page sessionBuilderPage">
 </div>;
 }
 
-
-
 const CHECKERBOARD_CHALLENGES=[
   {id:'single',label:'Single Zone',type:'Single',baseCode:'[6-3]',description:'Complete one selected checkerboard target before bonus scoring opens.'},
   {id:'pair',label:'Pair Challenge',type:'Pair',baseCode:'[6-4] + [8-1]',description:'Complete a two-shot checkerboard pair before bonus scoring opens.'},
@@ -9357,9 +8914,8 @@ function CustomGameLogicAdder({selected=[],onToggle,standard=COMPLETION_CONSTRAI
   </div>;
 }
 
-// ── v225 PER-PLAYER CHECKERBOARD ALLOCATION ──────────────────────────────────
 const CB_SINGLE_BANK=['[5-4]','[8-1]','[6-3]','[7-3]','[5-3]','[8-4]','[6-4]','[7-2]'];
-// Quick banks: only sensible, achievable combinations. Anything else via Custom.
+
 const CB_PAIR_BANK=['[5-4] + [8-1]','[6-3] + [7-2]','[5-3] + [8-4]','[6-4] + [7-3]','[6-4] + [8-1]','[5-3] + [7-2]','[5-4] + [6-3]','[8-1] + [7-2]','[5-1] + [6-2]','[5-2] + [6-1]','[7-3] + [8-4]','[7-4] + [8-3]','[5-4] + [7-2]','[6-3] + [8-1]','[6-3] + [5-4]','[7-2] + [8-1]'];
 const CB_TRIPLE_BANK=['[5-4] + [5-4] + [8-1]','[5-4] + [5-4] + [7-2]','[5-4] + [5-4] + [5-4]','[6-3] + [6-3] + [7-2]','[6-3] + [6-3] + [8-1]','[6-3] + [6-3] + [6-3]','[6-4] + [8-1] + [5-3]','[5-3] + [7-2] + [8-1]','[6-3] + [8-1] + [5-4]','[7-2] + [5-4] + [6-3]'];
 const CB_CHALLENGE_TYPES=['Single','Optional Single','Pair','Optional Pair','Triple','Optional Triple'];
@@ -9367,17 +8923,7 @@ const CB_ALLOC_MODES=['Manual','Random Blind','Random Open','Optional A/B','Mirr
 const CB_ALLOC_KEY='checkerboard_per_player_alloc_v225';
 const CB_SEAM_KEY='checkerboard_seam_allowance_v1';
 const CB_SCOPES=[['player','Per-Player'],['group','Group (all players)'],['court','Per-Court']];
-// The complete Checkerboard scoring system, stated in full on any session card so a
-// coach reads the whole rule set and applies the line that fits each player. Numbers
-// match the five-level ladder in CB_LEVEL_DEFAULTS - this is the flagship scoring and must never
-// be reduced to a one-liner. Defined here at top level, before CheckerboardSetup and
-// its addToSession use it - a const does not hoist, and out-of-order placement is what
-// white-screened v414-v419.
-/* Strict-sequence scoring (mode 4, in sequence and consecutive). Two coach settings stop an
-   opponent denying a pair or triple by losing the rally on purpose: credit per square banks
-   each square the moment it lands, and the win-after bonus can be paid from the first square
-   of the run (commenced) rather than only from completion. Both are rewards on the
-   challenger's play, so nobody has to judge whether a lost rally was deliberate. */
+
 function cbStrictScoring(perSquare,winAfterFrom,winAfter){
   const parts=['Win the rally = +1'];
   if(perSquare>0)parts.push('Each square of a pair or triple landed in the run = +'+perSquare+', banked as it lands even if the rally is then lost');
@@ -9390,11 +8936,6 @@ function cbStrictScoring(perSquare,winAfterFrom,winAfter){
 }
 const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +2  ·  Challenge finish (win the rally with a code shot) = +2.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
 
-/* Any-order (non-consecutive) challenges. A strict sequence resets the moment a
-   code is missed, which stalls rallies; letting the codes be met in any order,
-   scoring each as it lands, keeps the rally alive and lifts the pace. Coach sets
-   the per-code value and the all-codes bonus. */
-/* Split a challenge string like "[8-4] + [7-3]" into the pool of codes it allows. */
 function cbPoolCodes(codeText){
   const out=(String(codeText||'').match(/\[\d-\d\](?:\s*\(SA\))?/g)||[]).map(c=>c.trim());
   return [...new Set(out)];
@@ -9441,36 +8982,26 @@ function cbRandomFrom(pool,avoid){
   const list=choices.length?choices:pool;
   return list[Math.floor(Math.random()*list.length)];
 }
-// Mirror = the complementary diagonal: front wall 5↔6, 7↔8; floor 1↔2, 3↔4.
-// e.g. [5-4] + [8-1]  ↔  [6-3] + [7-2]
+
 const CB_MIRROR_MAP={'5':'6','6':'5','7':'8','8':'7','1':'2','2':'1','3':'4','4':'3'};
 function cbMirrorCode(code){if(!code)return code;return code.replace(/[1-8]/g,d=>CB_MIRROR_MAP[d]||d);}
-// Front-floor landings (1=front-left, 2=front-right) are only sensible as a boast off
-// the opposite side wall: [8-1] and [7-2]. A high front-wall shot can't sit in the front
-// floor in OPEN play — but these patterns ARE viable in constraint games (ATL/BTL), so
-// this is a non-blocking warning only, and ATL_CB_ZONE_OPTIONS must keep them.
+
 function cbCodeIssue(code){
   const bad=[];const re=/(\d)\s*-\s*(\d)/g;let m;
   while((m=re.exec(code||''))){
     const w=m[1],f=m[2];
-    /* v846 (coach, 28 Oct): a crosscourt drop close to the seam makes [7-1] and [8-2] real
-       shots. Only a high front-wall ball (5, 6) landing in the front court is flagged. */
+
     if((f==='1'||f==='2')&&(w==='5'||w==='6'))bad.push(`[${w}-${f}]`);
   }
   return bad;
 }
-// Brackets are implied — turn "5-4+6-2" or "5-4 8-1" into "[5-4] + [6-2]".
+
 function cbNormalizeCode(code){
   const out=[];const re=/(\d)\s*-\s*(\d)/g;let m;
   while((m=re.exec(code||'')))out.push(`[${m[1]}-${m[2]}]`);
   return out.length?out.join(' + '):(code||'').trim();
 }
-// Checkerboard is a Level 1-5 metric first; the challenge type can then be tuned to
-// match. Level is the primary control and sets the default type and conversion
-// window; the type buttons remain so codes can be hand-matched to the level.
-// Why each rung of the ladder exists — coach-education text carried over verbatim from the
-// retired Checkerboard Builder (deleted v754). Shown on the Checkerboard page under each
-// level picker as "Why this level" (v755, coach request) via cbLevelWhy().
+
 const CB_LEVEL_RATIONALE={
   single:'A single challenge keeps the perceptual problem simple: the player is searching for one affordance, not holding a relational pattern in mind — appropriate early in the progression before the demand on working memory increases.',
   pair:'A pair challenge requires the player to hold two connected zones as one relational unit rather than two isolated targets — the tactical structure itself becomes the information the player must perceive and complete.',
@@ -9489,8 +9020,7 @@ const CB_LEVEL_DEFAULTS={
   4:{type:'Triple',  window:'4-shot window',bonus:3},
   5:{type:'Triple',  window:'2-shot window',bonus:3}
 };
-// Why this level: follows what is actually set on the row — the challenge type (a coach can
-// hand-tune it away from the level default), the level's conversion window, and blind mode.
+
 function cbLevelWhy(row){
   const d=CB_LEVEL_DEFAULTS[row.level||1]||CB_LEVEL_DEFAULTS[1];
   const t=String(row.type||d.type).replace(/^Optional /,'').toLowerCase();
@@ -9505,7 +9035,7 @@ function cbLevelScoring(level){
   const win=d.window==='No window'?'banks once completed':`banks only if you finish within ${d.window.replace('-shot window',' shots')} of completing`;
   return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · win after +2 · challenge finish +2 · ${win}`;
 }
-// Player-facing level expansion for the session card: what the level means, not just its number.
+
 function cbLevelBrief(level){const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];return 'L'+level+' '+d.type.toLowerCase()+(d.window==='No window'?', banks once completed':', finish within '+d.window.replace('-shot window',' shots')+' of completing or the complete-bonus is lost');}
 function cbBlankAlloc(){return {level:1,type:'Single',mode:'Manual',assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};}
 function cbReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
@@ -9514,12 +9044,10 @@ function cbRollFor(type){
   if(cbIsOptional(type)){const a=cbRandomFrom(pool);const b=cbRandomFrom(pool,a);return {optionA:a,optionB:b,optNext:'A',assigned:'',hidden:true,revealed:false};}
   return {assigned:cbRandomFrom(pool),optionA:'',optionB:'',hidden:true,revealed:false};
 }
-// Pure row transformers (reused by player / group / court targets)
+
 function cbTxSetType(row,type){const r={...row,type,assigned:'',optionA:'',optionB:'',optNext:'A',hidden:false,revealed:false};if(cbIsOptional(type)&&r.mode==='Manual')r.mode='Optional A/B';if(!cbIsOptional(type)&&r.mode==='Optional A/B')r.mode='Manual';return r;}
 function cbTxSetMode(row,mode){return {...row,mode};}
-// Setting a level sets the level (for scoring) and applies its default challenge
-// type, clearing codes so the coach re-taps to match. The type buttons still work
-// afterwards to hand-tune. CB_LEVEL_DEFAULTS maps 1-5 -> {type, window, bonus}.
+
 function cbTxSetLevel(row,level){
   const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
   return cbTxSetType({...row,level},d.type);
@@ -9530,10 +9058,7 @@ function cbTxTap(row,code){
     if(r.optNext==='A'){r.optionA=code;r.optNext='B';}else{r.optionB=code;r.optNext='A';}
   }else{
     r.assigned=code;
-    /* In Mirror mode the alternate must follow the code actually entered. Without
-       this it kept showing the mirror of whatever was assigned previously \u2014 so
-       typing 8-4 + 8-4 left a stale, unrelated pair in the Mirror Alt box instead
-       of 7-3 + 7-3. */
+
     if(r.mode==='Mirror'){r.optionA=code;r.optionB=cbMirrorCode(code);}
   }
   r.hidden=false;r.revealed=true;return r;
@@ -9621,8 +9146,6 @@ function CbCustomInput({optional,next,onAdd}){
   </div>;
 }
 
-// CB_PD_CSS moved here so CheckerboardSetup card screen can use it before the
-// player-display components below - a const does not hoist.
 const CB_PD_CSS=`
 .cbPdPage{min-height:100vh;background:#0a1019;color:#eaf4fb;padding:24px 18px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;}
 .cbPdHead{text-align:center;margin-bottom:18px;}
@@ -9666,10 +9189,7 @@ const CB_PD_CSS=`
 
 function CheckerboardSetup({setScreen,setSession}){
   const [presents,setPresents]=useState(cbReadPresents);
-  // Pass-around card screen: a dedicated full-screen deck of every present player's
-  // card, face-down, for a shared iPad. A player taps their card open, taps it
-  // closed, and hands the device on - so players without their own device still get
-  // their blind challenge privately. Which cards are currently open is tracked here.
+
   const [cardScreen,setCardScreen]=useState(false);
   const [openCards,setOpenCards]=useState({});
   const [bulkLevel,setBulkLevel]=useState(null);
@@ -9684,18 +9204,14 @@ function CheckerboardSetup({setScreen,setSession}){
   const [status,setStatus]=useState('');
   const [liveUrl,setLiveUrl]=useState('');
   const [seamAllowance,setSeamAllowance]=useState(()=>{try{return localStorage.getItem(CB_SEAM_KEY)==='1';}catch{return false;}});
-  /* Any-order mode and its scoring — kept with the other coach settings. */
+
   const [anyOrder,setAnyOrder]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').on||false;}catch{return false;}});
   const [aoPerCode,setAoPerCode]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').perCode??1;}catch{return 1;}});
   const [aoAllBonus,setAoAllBonus]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').allBonus??1;}catch{return 1;}});
   const [aoRallyBonus,setAoRallyBonus]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').rallyBonus??3;}catch{return 3;}});
-  /* Order and adjacency are independent: a challenge can be any-order or in-sequence,
-     and separately allow gaps or demand consecutive shots. Consecutive + in sequence
-     is the original strict behaviour; any order + gaps is the loosest. */
+
   const [aoConsecutive,setAoConsecutive]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').consecutive??true;}catch{return true;}});
-  /* How many code-completions the player must produce, drawn from the pool of
-     codes in the challenge. Repeats count \u2014 three completions can be the same
-     code three times, or any mix. */
+
   const [aoTarget,setAoTarget]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').target??3;}catch{return 3;}});
 const [stPerSquare,setStPerSquare]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stPerSquare??0;}catch{return 0;}});
 const [stWinAfterFrom,setStWinAfterFrom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfterFrom||'complete';}catch{return 'complete';}});
@@ -9710,12 +9226,10 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
 
   useEffect(()=>{try{localStorage.setItem(CB_ALLOC_KEY,JSON.stringify(alloc));}catch{}},[alloc]);
 
-  // keep court challenge slots sized to courtCount
   useEffect(()=>{
     setCourtChallenges(prev=>{const next=prev.slice(0,courtCount);while(next.length<courtCount)next.push(cbBlankAlloc());return next;});
   },[courtCount]);
 
-  // auto-assign present players to courts (round-robin), prune absent
   useEffect(()=>{
     setCourtOf(prev=>{
       const next={...prev};
@@ -9735,7 +9249,6 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     });
   }
 
-  // Target APIs — apply a transformer to the right store
   function playerApi(name){
     const apply=tx=>{snapshot();setAlloc(prev=>({...prev,[name]:tx(prev[name]||cbBlankAlloc())}));};
     return {
@@ -9754,7 +9267,6 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     return {setType:t=>apply(r=>cbTxSetType(r,t)),setLevel:l=>apply(r=>cbTxSetLevel(r,l)),setMode:m=>apply(r=>cbTxSetMode(r,m)),tapCode:c=>apply(r=>cbTxTap(r,c)),mirror:()=>apply(cbTxMirror),useMirrorAlt:()=>apply(cbTxUseMirror),clear:()=>apply(cbTxClear),reroll:()=>apply(cbTxRoll),reveal:()=>apply(cbTxReveal),hide:()=>apply(cbTxHide)};
   }
 
-  // Scope-aware bulk blind tools
   function eachTarget(tx){
     snapshot();
     if(scope==='group'){setGroup(prev=>tx(prev));return;}
@@ -9765,13 +9277,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
   function allocRandomOpenAll(){eachTarget(r=>{const x=cbTxRoll({...r,mode:'Random Open'});return {...x,hidden:false,revealed:true};});setStatus('Random challenges allocated — codes shown on the player display.');}
   function rerollAll(){eachTarget(r=>{if(r.mode==='Random Blind')return cbTxRoll(r);if(r.mode==='Random Open'){const x=cbTxRoll(r);return {...x,hidden:false,revealed:true};}return r;});setStatus('Re-rolled all random targets.');}
   function revealAll(){eachTarget(cbTxReveal);setStatus('All challenges revealed (coach view).');}
-  // Set one level across every target at once. On per-player scope this covers every
-  // present player, seeding a blank allocation for anyone not yet in alloc, so no one
-  // is skipped. Individual level selectors still override afterwards.
-  // Set one level everywhere at once. Applies to the group object, every court, AND
-  // every present player's row - not just the active scope - so setting "all to L3"
-  // in one scope carries over when you switch to another (the bug where you set the
-  // level in Group, switched to Per-Player, and found players still on L1).
+
   function setLevelAll(l){
     snapshot();
     setGroup(prev=>cbTxSetLevel(prev,l));
@@ -9794,9 +9300,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     setLiveUrl(url);
     setStatus(ok?'Sent to Player View. Per-player links are ready below.':'Saved. Live sync not confirmed — links below still work once the coach device is connected.');
   }
-  // Build a session rotation from the current challenge - the same kind of card the
-  // other modules add. Captures scope and the codes (seam-aware), so it reads in the
-  // Session Builder and the player view like any other rotation.
+
   function addToSession(){
     if(typeof setSession!=='function'){setStatus('Session connection not available.');return;}
     let taskLines=[];
@@ -9813,7 +9317,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     const coachScoring=(anyOrder||!aoConsecutive)
         ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
         :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter);
-    // Kid lines (P32)
+
     const K=[];const codesSeen=[];
     const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`;};
     if(scope==='group'){K.push(codeLine('Everyone’s codes',group));}
@@ -9867,7 +9371,6 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     return null;
   }
 
-  // Reusable challenge controls for any target (player / group / court)
   function controls(row,api){
     const optional=cbIsOptional(row.type);
     const showHidden=row.hidden&&!row.revealed;
@@ -9904,9 +9407,6 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     </>;
   }
 
-  // The pass-around deck. Each card shows a name face-down; tap toggles the code
-  // open or closed. Per-player scope only, since it reveals each player's own blind
-  // code. Rendered full-screen, above everything, with its own exit.
   if(cardScreen){
     return <div className="cbCardScreen"><style>{CB_SET_CSS}{CB_PD_CSS}</style>
       <div className="cbCardScreenTop">
@@ -9943,7 +9443,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       <CheckerboardCourtMap/>
     </div>
 
-    {/* 1 — PRESENT PLAYERS */}
+    {}
     <div className="cbsetSection">
       <h2>1 · Present Players</h2>
       <p className="cbsetSub">Pulled from players marked Present on the Players / Attendance screen.</p>
@@ -9953,7 +9453,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       <div style={{marginTop:'12px'}}><button className="cbsetReload" onClick={reloadPresents}>↻ Reload Present Players</button></div>
     </div>
 
-    {/* 2 — CHALLENGE ALLOCATION */}
+    {}
     <div className="cbsetSection">
       <h2>2 · Checkerboard Challenge Allocation</h2>
       <div className="cbsetField"><label>Challenge Scope</label>
@@ -10049,7 +9549,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       </>}
     </div>
 
-    {/* 3 — BLIND ALLOCATION TOOLS */}
+    {}
     <div className="cbsetSection">
       <h2>3 · Allocation Tools</h2>
       <p className="cbsetSub"><strong>Random (Shown)</strong> rolls random codes and shows them on the player display. <strong>Blind (Hidden)</strong> rolls random codes but hides them on the player display. Acts on the active scope ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
@@ -10064,14 +9564,14 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       {status&&<div className="cbsetStatus">{status}</div>}
     </div>
 
-    {/* 4-7 — GAME LOGIC · CONSTRAINTS · SCORING · DOUBLE BOUNCE */}
+    {}
     <div className="cbsetSection">
       <h2>4–7 · Game Logic · Constraints · Scoring · Double Bounce</h2>
       <p className="cbsetSub">Standard modifier engine — same order as every game. Constraints here are modifiers only; blind allocation lives in the panel above.</p>
       <UniversalModifierEngine title="" context="Checkerboard" value={modifier} onChange={setModifier} presentPlayers={presents}/>
     </div>
 
-    {/* PLAYER VIEW */}
+    {}
     <div className="cbsetSection">
       <h2>Player View</h2>
       <p className="cbsetSub">Send the current allocation to the player display. Each player opens their own link and sees only their own challenge ({CB_SCOPES.find(s=>s[0]===scope)[1]}).</p>
@@ -10084,22 +9584,8 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
   </div>;
 }
 
-
 function cbPlayerFromUrl(){try{return new URLSearchParams(window.location.search||'').get('player')||'';}catch{return '';}}
-// Seam allowance — Checkerboard. The seam's width is never stored: the coach
-// defines it on court, verbally, keeping this rule-based with nothing to mark.
-//
-// Only [7-2] and [8-1] can carry it, and only conditionally. Those are the codes
-// where one path serves three shots — a boast, a crosscourt drop and a straight
-// drop — so which one it is depends on where the player came from. The allowance
-// attaches to the sequence, not the code: it's on only when the preceding shot
-// came from the opposite side. After [5-4] a [7-2] is a genuine cross; after
-// [6-3] it's a straight drop and there is nothing to allow. Leading or alone, no
-// allowance.
-// Side is carried by the wall zone: 5 and 8 are left, 6 and 7 are right.
-//
-// Every other code is unambiguous, [5-3] and [6-4] included: the code names the
-// shot, and the player must engineer his position to play it strictly. No seam.
+
 const CB_SEAM_ON_TURN={'[7-2]':'R','[8-1]':'L'};
 function cbSideOf(code){
   const m=/\[(\d)\s*-\s*\d\]/.exec(code||'');
@@ -10127,19 +9613,13 @@ function cbHasSeam(row,on){
 function cbCodeText(r,seam){
   if(!r)return '—';
   if(cbIsOptional(r.type))return (cbWithSeam(r.optionA,seam)||'—')+(r.optionB?' / '+cbWithSeam(r.optionB,seam):'');
-  /* Mirror mode carries the opposite-side code in optionB. It was being dropped
-     here because only Optional types printed both, so a mirrored challenge
-     reached the session card and player display showing one side only. */
+
   if(r.mode==='Mirror'&&r.optionB&&r.optionB!==r.assigned){
     return (cbWithSeam(r.assigned,seam)||'—')+' ↔ '+cbWithSeam(r.optionB,seam);
   }
   return cbWithSeam(r.assigned,seam)||'—';
 }
-// Card/player-facing code: masks the code when the challenge is blind (hidden and not revealed),
-// so blind allocations do not leak their codes into the Session Builder card or the player display.
-/* v841 (coach, 26 Oct: the Checkerboard player display "does not explain the game").
-   Kid-language lines for the session card (P32). The full coach wording moves to the card's
-   coach field, so nothing is lost. */
+
 function cbKidCode(t){
   return String(t||'—').replace(/\s*\/\s*/g,' or ').replace(/\s*↔\s*/g,', or the mirror ').replace(/\s*\+\s*/g,' then ');
 }
@@ -10167,7 +9647,6 @@ function CheckerboardPlayerDisplay({payload}){
   const seam=!!payload?.seamAllowance;
   const [localReveal,setLocalReveal]=useState(false);
 
-  // Resolve the row + context for a given player under the active scope
   function rowFor(name){
     if(scope==='group')return {row:group,ctx:'Group challenge'};
     if(scope==='court'){const idx=courts.findIndex(c=>(c.players||[]).includes(name));return {row:idx>=0?courts[idx].challenge:null,ctx:idx>=0?`Court ${idx+1}`:''};}
@@ -10175,7 +9654,7 @@ function CheckerboardPlayerDisplay({payload}){
   }
 
   if(!player){
-    // coach / all view
+
     return <div className="cbPdPage"><style>{CB_PD_CSS}</style>
       <div className="cbPdHead"><span>Checkerboard · Coach View</span><h1>{scope==='group'?'Group':scope==='court'?'Courts':'All Players'}</h1></div>
       {scope==='group'?(()=>{const r=group||{};const hidden=r.hidden&&!r.revealed;const empty=!hidden&&(cbCodeText(r,seam)==='—');return empty?<div className="cbPdCard"><p className="cbPdEmpty">No challenge set yet. Your coach will send one shortly.</p></div>:<div className="cbPdCard"><div className="cbPdLabel">All present players</div><div className="cbPdCode" style={hidden?{color:'#6eaac8'}:null}>{hidden?'🙈 hidden':cbCodeText(r,seam)}</div><div className="cbPdLabel">{r.type||''}</div></div>;})()
@@ -10213,9 +9692,6 @@ function CheckerboardPlayerDisplay({payload}){
   </div>;
 }
 
-
-
-
 const ATL_CB_ZONE_OPTIONS=[
   'None','[5]','[6]','[7]','[8]','[1]','[2]','[3]','[4]',
   '[5-4]','[5-1]','[6-3]','[6-2]','[7-3]','[7-2]','[8-4]','[8-1]',
@@ -10226,11 +9702,8 @@ const ATL_CB_ZONE_OPTIONS=[
   'Custom'
 ];
 
-// ─── COLLAPSIBLE LAYER PANEL ─────────────────────────────────────────────────
 function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
-  // Unified with MEPanel's clean look (see Checkerboard / Universal Modifier Engine) so every
-  // builder screen shares one consistent accordion style. `color` is accepted but no longer used —
-  // kept in the signature so existing call sites don't need to change.
+
   const [open,setOpen]=useState(!!defaultOpen);
   const fullTitle=num?`${num}. ${title}`:title;
   return <div className={open?'mePanel meOpen':'mePanel'}>
@@ -10242,7 +9715,6 @@ function CollapsibleLayer({num,title,subtitle,color,defaultOpen,children}){
     {open&&<div className="mePanelBody">{children}</div>}
   </div>;
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 function LengthGamesBuilder({onAddToSession,setScreen}){
   const savedDraft=(()=>{try{const s=localStorage.getItem(GAME_LIBRARY_LENGTH_DRAFT_KEY);return s?JSON.parse(s):null;}catch{return null;}})();
@@ -10309,7 +9781,7 @@ function LengthGamesBuilder({onAddToSession,setScreen}){
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
     <UniversalRallyResetLayer/>
-    
+
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undo} disabled={history.length===0}>Undo</button>
       <button className="secondaryBtn" onClick={clearOverlays}>Clear Overlays</button>
@@ -10546,7 +10018,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
       layers:['Decision Making','Attacking Conversion','Spatial Constraint','Temporal Constraint']};
   }
   return <>
-  {/* Earn & Reload */}
+  {}
   <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div><h2>🔁 Earn & Reload</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Earn the attack with depth, then reload to the back if the short ball isn't on — as many times as you like. Five-stage progression.</p>
@@ -10561,7 +10033,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
     <div className="chips">{erCard().layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(erCard());}}>{label}</button>
   </div>
-  {/* Earn the Below */}
+  {}
   <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div><h2>🎯 Earn the Below</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Attack below the line only after you earn it with a deep tramline drive. A four-stage progression that tightens the vice.</p>
@@ -10576,7 +10048,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
     <div className="chips">{ebCard().layers.map(layer=><span className="badge" key={layer}>{layer}</span>)}</div>
     <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(ebCard());}}>{label}</button>
   </div>
-  {/* Break & Finish */}
+  {}
   <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div><h2>⚡ Break & Finish</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Both above the line until a player attacks; the attack must convert inside a shot budget.</p>
@@ -10666,7 +10138,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   }
 
   return <div className="gameCard">
-    
+
     <div className="categoryTag">ATL / BTL</div>
     <h2>ATL / BTL Builder</h2>
 
@@ -10706,7 +10178,6 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
     <UniversalRallyResetLayer/>
-    
 
     <div className="buttonRow">
       <button className="secondaryBtn" onClick={undoAtl} disabled={atlHistory.length===0}>Undo</button>
@@ -10725,16 +10196,6 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   </div>;
 }
 
-
-
-
-
-// ── PIN LINE (v750) ──────────────────────────────────────────────────────────
-// Shared by Length Before Attack (Classic Games → also the All Games list) and Length
-// That Pins (Common Game Errors). A length "pins" when the opponent has BOTH FEET behind
-// the line at the moment they strike — the feet decide, no judgement. The line is a
-// PROGRESSION, not a measurement (coach, 23 Sep): each stage asks the length to bury the
-// opponent deeper, so the same game stays a hard problem as the group improves.
 const PIN_LINES=[
   {stage:1,label:'Stage 1 · back of the service box',where:'behind the back line of the service box',setup:'No tape needed — the painted line at the back of the service box is the line.'},
   {stage:2,label:'Stage 2 · tape a quarter of the way back',where:'behind the tape',setup:'Tape a line across the court a quarter of the way from the back of the service box to the back wall.'},
@@ -10753,11 +10214,6 @@ function PinLineControls({value,onChange,bonuses=[]}){
   </div>;
 }
 
-// Length Before Attack — ONE definition (v750). Classic Games renders it with the pin
-// line and bonus steppers; standardGames() spreads it at defaults for the All Games list.
-// Plug & Play PP101 is its deliberate quick-games second home and is not generated here.
-// No 'Quality Length Before Attack' layer: the game IS that constraint, and the layer's own
-// +2 would stack on the card's attack bonus (coach, 23 Sep, v752).
 const LBA_DEFAULTS={line:1,attack:3,clean:2};
 function lengthBeforeAttackGame(v=LBA_DEFAULTS){
   const p=pinLine(v.line);
@@ -10834,7 +10290,6 @@ function ClassicConditionedBuilder({onAddToSession}){
       <div className="infoBox"><strong>Future Build</strong><p>This subsection will become a selectable library with editable scoring, overlays, checkerboard codes and player-facing projection text.</p></div>
     </div>
 
-
     <div className="hierarchyHelp"><strong>Workflow</strong><p>Game class → coaching problem → game options → expanded game card → overlay/adaptation choices → Add To Session.</p></div>
 
     <div className="problemGrid">
@@ -10876,13 +10331,11 @@ function ClassicConditionedBuilder({onAddToSession}){
       <UniversalTinHeightPanel/>
       <UniversalTechConstraintsLayer/>
       <UniversalRallyResetLayer/>
-      
+
       <button className="primaryBtn" onClick={()=>addGame(game)}>Add To Session</button>
     </div>)}
   </div>;
 }
-
-
 
 function ClassicConstraintBuilder({onAddToSession}){
   const THEMES=['Length & Width','Straight vs Cross-court','Short & Attacking Game','Shot-type Restriction','Court-Area / Spatial','Front & Back Roles','Serving','Novelty / Exploratory'];
@@ -11173,7 +10626,7 @@ function TechnicalFocusBuilder({onAddToSession}){
       <UniversalTinHeightPanel/>
       <UniversalTechConstraintsLayer/>
       <UniversalRallyResetLayer/>
-      
+
       <button className="primaryBtn" onClick={()=>addDiagnostic(card)}>Add Diagnostic To Session</button>
     </div>)}
   </div>;
@@ -11183,10 +10636,6 @@ function Level0Exploration(){
   return <Level0Foundations setScreen={()=>{}} setSession={null}/>;
 }
 
-
-/* Shared coaching-card renderer: used by Warm Up Activities and Level 0
-   Foundations. Previously nested inside Level 0, which meant Warm Up could not
-   see it — the screen threw "CoachCard is not defined" and rendered blank. */
 function CoachCard({card,onAdd}){
   const [expanded,setExpanded]=useState(false);
   return <div className={'l0CoachCard'+(expanded?' l0CoachCardOpen':'')}>
@@ -11211,16 +10660,10 @@ function CoachCard({card,onAdd}){
   </div>;
 }
 
-/* ── WARM UP ACTIVITIES ───────────────────────────────────────────────────────
-   The first ten minutes of a session: getting the ball warm, the body moving and
-   the eyes working, with enough structure that it is practice rather than
-   hitting. Cards use the same shape as Level 0 so they read identically. */
 function WarmUpActivities({setScreen,setSession}){
   const [added,setAdded]=useState('');
   const [section,setSection]=useState('court');
-  /* Pre-competition: a court is often unavailable, especially at junior events.
-     The calibration problem does not go away because the court has — it gets
-     harder, and the usual answer (catching a tennis ball) does not address it. */
+
   const preCards=[
     {code:'PC-1',title:'Visualisation with ghosting — together, not separately',
      purpose:'Rehearses the movement and the intention at the same time, so the ghosting is a rehearsal of playing rather than a fitness exercise done near a match.',
@@ -11448,7 +10891,6 @@ function Level0Foundations({setScreen,setSession}){
     {code:'BD-2',title:'Waltz Rhythm — Movement',purpose:'Rhythm-regulated movement to the ball.',task:'Player moves to feeds with the Blue Danube playing. Preparation aligns with the 1-2-3 waltz beat naturally.',constraint:'Coach feeds in waltz timing where possible.',cue:'Move with the music.',simplify:'Slow tempo. Short feeds.',progress:'Remove music once rhythm is established.'},
     {code:'BD-3',title:'Waltz Rhythm — Rally',purpose:'Relaxed, rhythmic rally play.',task:'Cooperative rally with Blue Danube playing. Both players aim to maintain a waltz-tempo rhythm across the rally.',constraint:'Music constraint active throughout rally.',cue:'Stay with the music.',simplify:'Zone targets to keep pace manageable.',progress:'Competitive rally with rhythm constraint.'},
   ];
-
 
   function addToSession(card){
     if(setSession) setSession(prev=>[...(prev||[]),{
@@ -11683,10 +11125,6 @@ function Level0Foundations({setScreen,setSession}){
     </div>}
   </div>;
 }
-
-
-
-// ─── PRESSURE MODULE ─────────────────────────────────────────────────────────
 
 const PRESSURE_FOCUS_PRINCIPLES=[
   {id:'tzone',label:'T-Zone Return',desc:'After every shot, recover to the T before the next feed arrives. Do not watch your shot — move immediately.',cue:'Hit and move.'},
@@ -11939,9 +11377,6 @@ const PRESSURE_122_EXERCISES=[
   },
 ];
 
-
-// ─── TACTICAL PRESSURE MODULE ────────────────────────────────────────────────
-
 const TP_GAMES=[
   {
     id:'tp1',code:'PP1',
@@ -12107,7 +11542,7 @@ function TacticalPressureModule({onAddToSession}){
         </div>)}
     </div>
 
-    {/* ── GAMES ── */}
+    {}
     {activeSection==='games'&&<div>
       {!activeGame
         ?<div className="tpGameGrid">
@@ -12179,7 +11614,7 @@ function TacticalPressureModule({onAddToSession}){
       }
     </div>}
 
-    {/* ── THE CORRIDOR ── */}
+    {}
     {activeSection==='corridor'&&<div className="tpCorridorSection">
       <div className="tpCorridorIntro">
         <h2>The Poached Egg Model</h2>
@@ -12222,7 +11657,7 @@ function TacticalPressureModule({onAddToSession}){
       </div>
     </div>}
 
-    {/* ── MATCH ANALYSIS LINK ── */}
+    {}
     {activeSection==='analysis'&&<div className="tpAnalysisSection">
       <div className="tpAnalysisHero">
         <h2>From Match Analysis to Practice Design</h2>
@@ -12267,7 +11702,7 @@ function TacticalPressureModule({onAddToSession}){
       </div>
     </div>}
 
-    {/* ── CHALLENGE POINT ── */}
+    {}
     {activeSection==='cpf'&&<div className="tpCPFSection">
       <div className="tpAnalysisHero">
         <h2>Challenge Point Guide</h2>
@@ -12297,8 +11732,6 @@ function TacticalPressureModule({onAddToSession}){
     </div>}
   </div>;
 }
-
-
 
 const PRESSURE_FORMAT_FILTERS=['ALL','1-2-1','1-2-2','1-2-3','P1 & P2','P1, P2, P3','P1, P2, P3, P4'];
 
@@ -12427,14 +11860,6 @@ const PHYSICAL_PRESSURE_GAMES=[
   }
 ];
 
-
-/* ── CENTRAL HUB PRESSURE RUNNER ──────────────────────────────────────────────
-   PP5 made adjustable and scoreable on court: choose how many build shots make a
-   cycle and how long each player works, then tap what happened. Two players swap
-   the worker and hub roles and their scores sit side by side.
-   Stage 1 — score = completed cycles.
-   Stage 2 — score = cycles completed AND finished with a winning attack.
-   Stage 3 — score = cycles completed, attack played, then the live rally won. */
 function PressureCycleRunner(){
   const present=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return [];}},[]);
   const [shots,setShots]=useState(3);
@@ -12581,16 +12006,13 @@ function PhysicalPressureGameDetail({game,onBack,setSession,setScreen}){
         <div className="pressureFocusCard"><strong>KEY FOCUS</strong><p>{game.projection.focus}</p></div>
       </div>
     </div>
-    {/* House convention: Add To Session sits at the foot of a game page, after the
-        coach has read it — never competing with the content at the top. */}
+    {}
     <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginTop:'14px'}}>
       {typeof setSession==='function'&&<button type="button" className="primaryBtn" onClick={addToSession}>Add To Session</button>}
       {typeof setScreen==='function'&&<button type="button" className="secondaryBtn" onClick={()=>setScreen('sessions')}>View Session</button>}
     </div>
   </div>;
 }
-
-
 
 function PressureModule({setScreen,setSession}){
   const [activeExercise,setActiveExercise]=useState(null);
@@ -12663,7 +12085,6 @@ function PressureModule({setScreen,setSession}){
   </div>;
 }
 
-
 function ToolsArchitecture({setScreen}){
   const [activeSection,setActiveSection]=useState('quickfix');
   const [qfCategory,setQfCategory]=useState(null);
@@ -12685,7 +12106,6 @@ function ToolsArchitecture({setScreen}){
     {id:'designlab',label:'Designing the Problem',emoji:'🎯'},
   ];
 
-  // ── QUICK FIX DATA ──────────────────────────────────────────────
   const qfCategories=[
     {id:'preparation',label:'Preparation',emoji:'⏱',problems:['Late Preparation','Racquet Not Ready','Watching Ball Too Late','No Split Step']},
     {id:'spacing',label:'Spacing',emoji:'📐',problems:['Poor Contact Distance','Too Close to Ball','Too Far from Ball','No Lunge']},
@@ -12733,7 +12153,6 @@ function ToolsArchitecture({setScreen}){
     'Poor Court Awareness':{cause:'Attention focused on ball and own action — insufficient opponent and court awareness.',constraint:'Call-and-move: player must call opponent position before every shot.',tool:'Checkerboard system: spatial awareness built into task design.',activity:'Two-touch awareness task: after each shot player looks to opponent T position before next ball.',progression:'Add movement. Reduce call requirement. Live competitive game.',levels:'Level 2–5'},
   };
 
-  // ── TOOL LIBRARY DATA ───────────────────────────────────────────
   const toolLibrary={
     coordination:[
       {name:'Happy Smiley Face',does:'Draw a smiley face on the player palm. The face must remain visible at follow-through.',why:'Creates an external focus on wrist position without body instruction. The face is the reference, not the wrist.',apply:'Marker pen on palm. Player chips or strikes with face visible. Coach calls if face disappears.',remove:'When wrist position is consistent without the visual cue.',problems:['Wrist Breakdown','Wristy Contact'],levels:'Level 0–2'},
@@ -12818,7 +12237,7 @@ function ToolsArchitecture({setScreen}){
       </button>)}
     </div>
 
-    {/* ── QUICK FIX SELECTOR ── */}
+    {}
     {activeSection==='quickfix'&&<div className="qfSection">
       {!qfProblem&&<div className="qfIntro">
         <div className="qfHero">
@@ -12869,7 +12288,7 @@ function ToolsArchitecture({setScreen}){
       </div>}
     </div>}
 
-    {/* ── TOOL LIBRARY SECTIONS ── */}
+    {}
     {['coordination','balance','visual','rhythm','constraint','scaling'].includes(activeSection)&&<div className="toolLibrarySection">
       <div className="toolLibraryIntro">
         {{
@@ -12886,7 +12305,7 @@ function ToolsArchitecture({setScreen}){
       </div>
     </div>}
 
-    {/* ── ANALOGY TOOLS ── */}
+    {}
     {activeSection==='analogy'&&<div className="toolLibrarySection">
       <div className="toolLibraryIntro">
         <h2>💡 Analogy Tools</h2>
@@ -12909,7 +12328,7 @@ function ToolsArchitecture({setScreen}){
       </div>
     </div>}
 
-    {/* ── PRINCIPLES ── */}
+    {}
     {activeSection==='designlab'&&<div className="toolLibrarySection">
       <div className="toolLibraryIntro">
         <h2>🎯 Designing the Problem — the layer above the games</h2>
@@ -13032,9 +12451,6 @@ function ToolsArchitecture({setScreen}){
   </div>;
 }
 
-
-
-
 function InvasionGamesBuilder({onAddToSession}){
   const [format,setFormat]=useState('lives');
   const [layers,setLayers]=useState([]);
@@ -13138,14 +12554,13 @@ function CustomGameBuilder({onAddToSession}){
   const [randomMode,setRandomMode]=useState('Open');
   const [randomResult,setRandomResult]=useState('');
 
-  // Pull current session attendance — players marked present
   const presentPlayers=useMemo(()=>{
     try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}
     catch{return[];}
   },[assignment]);
 
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Volley Finish','4-Shot Window','2-Shot Window','Zone Finish','Quality Length Before Attack'];
-  // All 8 Checkerboard zones individually selectable + pair combinations
+
   const cbOptions=['None',
     '[1]','[2]','[3]','[4]','[5]','[6]','[7]','[8]',
     '[1-2]','[1-3]','[1-4]','[2-3]','[2-4]','[3-4]',
@@ -13158,7 +12573,6 @@ function CustomGameBuilder({onAddToSession}){
   function toggleLayer(layer){setLayers(prev=>prev.includes(layer)?prev.filter(item=>item!==layer):[...prev,layer]);}
   function togglePlayer(name){setNamedPlayers(prev=>prev.includes(name)?prev.filter(n=>n!==name):[...prev,name]);}
 
-  // Auto-fill constraint text from customisation fields
   useEffect(()=>{
     const bits=[];
     if(straightOnly!=='None') bits.push(straightOnly);
@@ -13204,7 +12618,7 @@ function CustomGameBuilder({onAddToSession}){
     <h2>Custom Game Builder</h2>
     <p className="engineIntro">Select a base game, then open the layers you need.</p>
 
-    {/* BASE GAME — always visible */}
+    {}
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">What players do</span></div>
       <div className="customBaseGameGrid">
@@ -13244,7 +12658,7 @@ function CustomGameBuilder({onAddToSession}){
       </div>
     </div>
 
-    {/* GAME LOGIC */}
+    {}
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
       <div className="atlOptionsGrid">
         <label>Straight Only<select value={straightOnly} onChange={e=>setStraightOnly(e.target.value)}><option>None</option><option>Straight Only</option></select></label>
@@ -13276,14 +12690,11 @@ function CustomGameBuilder({onAddToSession}){
     <UniversalTinHeightPanel/>
     <UniversalTechConstraintsLayer/>
     <UniversalRallyResetLayer/>
-    
 
     <div className="infoBox"><strong>Active Custom Game</strong><p>{activeCondition}</p><p><strong>Scoring:</strong> {scoring}</p></div>
     <div className="buttonRow"><button className="primaryBtn" onClick={addGame}>Add Custom Game To Session</button><button className="secondaryBtn" type="button" onClick={resetCustom}>Reset</button></div>
   </div>;
 }
-
-
 
 function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
   const triggerOptions=[
@@ -13340,10 +12751,7 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
   function addTrigger(){if(triggers.length<5&&!triggers.includes(newTrigger))setTriggers([...triggers,newTrigger]);}
   function toggleQuality(id){setQualities(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);}
   const triggerText=activeTriggers.length?activeTriggers.map(t=>t.name).join(' AND '):'No additional trigger';
-  /* v797 (coach, 2 Oct): with "No required action" the builder still promised "+2 if successful"
-     and told players "Choose the best solution". A consequence needs something to reward or
-     punish, so without a required action the triggers and consequence are switched off and only
-     quality bonuses (which stand on their own) can be added. */
+
   const noAction=requiredAction==='none';
   const playerRules=[
     baseGame?.task||baseGame?.description||'Play the base game as set.',
@@ -13384,7 +12792,6 @@ function InlineGameLogicBuilder({baseGame,onAddBase,onAddLogic,onCancel}){
     <div className="buttonRow"><button className="primaryBtn" disabled={!canAddLogic} title={canAddLogic?'':'Choose a required action or a quality bonus first'} onClick={()=>canAddLogic&&onAddLogic(buildGame())}>Add Game + Logic To Session</button><button className="secondaryBtn" onClick={()=>onAddBase(baseGame)}>Add Base Game Only To Session</button><button className="secondaryBtn" onClick={onCancel}>Cancel</button></div>
   </div>;
 }
-
 
 const HDL_SCORE_DEFAULTS={
   hdlDbDeception:[{key:'win',label:'Win the rally',value:1},{key:'held',label:'Receiver never committed before contact',value:1},{key:'wrongWay',label:'Receiver moved the wrong way',value:2},{key:'swingWinner',label:'Winner struck after completing the swing count',value:2},{key:'visibleHold',label:'Every visible hold shown during the rally (live-game stage, stacks)',value:1}],
@@ -13636,7 +13043,7 @@ function InformationAnticipationBuilder({onAddToSession}){
   const rawActivity=activities.find(a=>a.id===selectedActivity)||activities[0];
   const hdlValues=hdlValuesFor(rawActivity.id);
   const activity=hdlValues?{...rawActivity,scoring:hdlFillTemplate(rawActivity.scoring,hdlValues),task:hdlFillTemplate(rawActivity.task,hdlValues)}:rawActivity;
-  const [hdlEditTick,setHdlEditTick]=useState(0); // forces a re-render after an edit, since values live outside React state
+  const [hdlEditTick,setHdlEditTick]=useState(0); 
   function setHdlValue(key,val){
     const all=loadHdlScoring();
     const forId={...(all[rawActivity.id]||{})};
@@ -13839,7 +13246,7 @@ function UniversalDBHandicapPanel({onAddToSession,setScreen}){
   function activeSummary(){return presentPlayers.length?presentPlayers.map(name=>`${name}: ${allocations[name]||'No DB'}`).join(' · '):'No present players selected';}
   function addDbCard(){
     localStorage.setItem(DB_HANDICAP_KEY,JSON.stringify({enabled:true,playersText:'',allocations,source:'presentPlayers'}));
-    
+
   }
 
   return <CollapsibleLayer num="4" title="DB Handicap" subtitle="All Games — Uses players marked Present today" color="gold" defaultOpen={false}>
@@ -13875,7 +13282,7 @@ function UniversalTinHeightPanel({setScreen}){
   function activeSummary(){return presentPlayers.length?presentPlayers.map(name=>`${name}: ${allocations[name]||'No Tin Mod'}`).join(' · '):'No present players selected';}
   function saveTin(){
     localStorage.setItem(TIN_HEIGHT_KEY,JSON.stringify({enabled:true,allocations,source:'presentPlayers'}));
-    
+
   }
 
   return <CollapsibleLayer num="5" title="Tin Height" subtitle="All Games — Uses players marked Present today" color="blue" defaultOpen={false}>
@@ -13908,21 +13315,16 @@ const PENALTY_PRESETS=[
   {id:'ballDiesMiddle',label:'Ball dies in the middle'},
   {id:'noLengthPressure',label:'No length under pressure'},
   {id:'wrongShot',label:'Wrong shot from the wrong position'},
-  /* v843 (coach, 26 Oct): same marked T Zone as T Zone Games */
+
   {id:'ccCutOffT',label:'Crosscourt cut off by an opponent with a foot in the T Zone'},
-  /* v849 (coach, 28 Oct, court-tested): the marked central corridor — a strip running front to
-     back through the T, marked with tape, width set to the players. Crosscourts first (the commonest
-     junior error), then any shot, once loose lengths and boasts start being cut off instead. */
+
   {id:'ccCutOffCorr',label:'Non-functional crosscourt (NFC): crosscourt cut off from the corridor'},
-  /* v850 (coach, 28 Oct): the non-functional length is the second biggest cause of trouble in
-     matches, so it is named on its own, not only folded into "any shot". */
+
   {id:'nflCutOffCorr',label:'Non-functional length (NFL): straight length cut off from the corridor'},
   {id:'anyCutOffCorr',label:'Any shot cut off from the corridor (NFC, NFL or boast)'}
 ];
 const PENALTY_POINT_OPTIONS=[0,1,2,3,4,5];
-/* Some transgressions should not cost points — they should lose the rally
-   outright (e.g. two runners in the tramline when only one is allowed).
-   Value 6 on the stepper is that: one step past the heaviest deduction. */
+
 const PENALTY_FORFEIT=6;
 function penaltyPointLabel(p){return p>=PENALTY_FORFEIT?'Forfeit rally':(p>0?('-'+p):'Off');}
 function penaltyRuleText(label,points){
@@ -13947,7 +13349,7 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   function clearAll(){setEnabled(false);setPresetPoints({});setCustomList([]);}
   function savePenalties(){
     localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:true,presetPoints,customList}));
-    
+
   }
   const rules=activeRules();
   return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="This game only — deduct points for named faults" color="red" defaultOpen={false}>
@@ -13970,8 +13372,6 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
     </>}
   </CollapsibleLayer>;
 }
-
-// ─── POWER PLAY™ BUILDER ─────────────────────────────────────────────────────
 
 const PP_OVERLAYS=[
   {id:'cb-single',label:'Single Challenge',category:'Checkerboard'},
@@ -14127,7 +13527,6 @@ function PowerPlayBuilder({onAddToSession}){
   const [selectedPreset,setSelectedPreset]=useState(null);
   const [ppStatus,setPpStatus]=useState('');
 
-  // Custom builder state
   const [engine,setEngine]=useState('open');
   const [format,setFormat]=useState('Two Player');
   const [tokens,setTokens]=useState(3);
@@ -14140,7 +13539,6 @@ function PowerPlayBuilder({onAddToSession}){
   const [selectedOverlays,setSelectedOverlays]=useState([]);
   const [customTitle,setCustomTitle]=useState('');
 
-  // PP Scoring builder state
   const [ppRallies,setPpRallies]=useState(5);
   const [ppRallyPoints,setPpRallyPoints]=useState([1,1,2,2,3]);
   const [ppCompletionBonus,setPpCompletionBonus]=useState(5);
@@ -14161,7 +13559,6 @@ function PowerPlayBuilder({onAddToSession}){
   }
   const ppTotalIfWinAll=ppRallyPoints.reduce((a,b)=>a+b,0)+ppCompletionBonus;
 
-  // PP History log
   const [ppHistory,setPpHistory]=useState(()=>{
     try{const s=localStorage.getItem('checkerboard_pp_history');return s?JSON.parse(s):[];}catch{return[];}
   });
@@ -14248,7 +13645,7 @@ function PowerPlayBuilder({onAddToSession}){
       </button>)}
     </div>
 
-    {/* ── PLUG & PLAY PRESETS ── */}
+    {}
     {ppTab==='presets'&&<div className="ppPresetGrid">
       {PP_PRESETS.map(preset=><div key={preset.id} className={`ppPresetCard${selectedPreset===preset.id?' ppPresetSelected':''}`}>
         <div className="ppPresetTopRow">
@@ -14304,7 +13701,7 @@ function PowerPlayBuilder({onAddToSession}){
       </div>)}</div>
     </div>}
 
-    {/* ── CUSTOM BUILDER ── */}
+    {}
     {ppTab==='builder'&&<div className="ppCustomBuilder">
       <div className="ppSection">
         <h3>Step 1 — Engine</h3>
@@ -14420,7 +13817,7 @@ function PowerPlayBuilder({onAddToSession}){
       <button type="button" className="primaryBtn ppAddBtn" onClick={addCustom}>Add Custom Power Play to Session</button>
     </div>}
 
-    {/* ── SCORING BUILDER ── */}
+    {}
     {ppTab==='scoring'&&<div className="ppScoringBuilder">
       <div className="ppScoringHero">
         <h3>Power Play Scoring Builder</h3>
@@ -14512,7 +13909,7 @@ function PowerPlayBuilder({onAddToSession}){
       </div>
     </div>}
 
-    {/* ── HISTORY LOG ── */}
+    {}
     {ppTab==='history'&&<div className="ppHistoryLog">
       <h3>Power Play History</h3>
       {ppHistory.length===0&&<p className="mutedText">No Power Play activity recorded yet. Add a preset or custom Power Play to session to start logging.</p>}
@@ -14528,21 +13925,12 @@ function PowerPlayBuilder({onAddToSession}){
   </div>;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-
-// ─── AROUND THE BOARD BUILDER ────────────────────────────────────────────────
-
 const ATB_OVERLAYS=[
   'Clean Winner','Opponent Off T','T Challenge','Blind Finish',
   'Double Bounce','Quality Length Before Attack',
   'Volley Finish','4 Shot Conversion','2 Shot Conversion'
 ];
 
-// Clockwise from front left, exactly as the wall zones run clockwise from top
-// left: 1 FL, 2 FR, 3 BR, 4 BL. So left is 1 and 4; right is 2 and 3. Zones 1 and
-// 2 were previously mirrored here and sat in the key beneath the map that
-// contradicted them; 3 and 4 were always correct.
 const ATB_FLOOR_ZONES={
   1:{label:'Zone 1',desc:'Front left',color:'#1d4ed8',short:'FL'},
   2:{label:'Zone 2',desc:'Front right',color:'#059669',short:'FR'},
@@ -14747,7 +14135,7 @@ function AroundTheBoardBuilder({onAddToSession}){
 
   return <div className="atbBuilder">
 
-    {/* Header */}
+    {}
     <div className="atbHeader">
       <div className="categoryTag" style={{background:'#0e7490',marginBottom:'10px',display:'inline-block'}}>Around The Board</div>
       <h2>Around The Board</h2>
@@ -14755,14 +14143,14 @@ function AroundTheBoardBuilder({onAddToSession}){
       <p className="mutedText">Players learn to recognise and use different areas of the court while remaining in representative squash. The game rewards occupancy of affordance spaces — not technical execution.</p>
     </div>
 
-    {/* Tab bar */}
+    {}
     <div className="atbTabBar">
       {[{id:'families',label:'🎮 Game Families'},{id:'settings',label:'⚙ Settings'},{id:'court',label:'🗺 Court Map'},{id:'principles',label:'📋 Principles'}].map(t=>
         <button key={t.id} type="button" className={activeTab===t.id?'atbTabActive':'atbTabBtn'} onClick={()=>setActiveTab(t.id)}>{t.label}</button>
       )}
     </div>
 
-    {/* ── GAME FAMILIES ── */}
+    {}
     {activeTab==='families'&&<div className="atbFamilySection">
       {!activeFamily
         ?<div className="atbFamilyGrid">
@@ -14888,7 +14276,6 @@ function AroundTheBoardBuilder({onAddToSession}){
           <UniversalTinHeightPanel/>
           <UniversalTechConstraintsLayer/>
           <UniversalRallyResetLayer/>
-          
 
           <button type="button" className="primaryBtn atbAddBtn" onClick={()=>buildAndAdd(family)}>
             Add {family.title} to Session
@@ -14897,7 +14284,7 @@ function AroundTheBoardBuilder({onAddToSession}){
       }
     </div>}
 
-    {/* ── SETTINGS ── */}
+    {}
     {activeTab==='settings'&&<div className="atbSettingsPanel">
       <h3>Global Settings</h3>
       <div className="atbSettingSection">
@@ -14926,7 +14313,7 @@ function AroundTheBoardBuilder({onAddToSession}){
       </div>
     </div>}
 
-    {/* ── COURT MAP ── */}
+    {}
     {activeTab==='court'&&<div className="atbCourtPanel">
       <h3>Court Zone Map</h3>
       <p className="mutedText">Visual reference for all 8 zones. Floor zones 1-4 in blue tones. Wall zones 5-8 in warm tones.</p>
@@ -14966,7 +14353,7 @@ function AroundTheBoardBuilder({onAddToSession}){
       </div>
     </div>}
 
-    {/* ── PRINCIPLES ── */}
+    {}
     {activeTab==='principles'&&<div className="atbPrinciplesPanel">
       <h3>Around The Board Principles</h3>
       <div className="atbPrinciplesGrid">
@@ -14995,38 +14382,29 @@ function AroundTheBoardBuilder({onAddToSession}){
   </div>;
 }
 
-
-// Full Checkerboard court map — matches "checkerboard-court-map-definitive" reference.
-// Unfolded schematic: centre strip = TIN / front wall (5,6 / 7,8) / floor (1,2 / 3,4) / back wall (BL,BR).
-// Left flank = LEFT SIDE WALL, three depth bands A/B/C (front→back) each split HI/LO.
-// Right flank = RIGHT SIDE WALL, mirrored (LO/HI column order reversed vs left).
 function TPCorridorCourtMap(){
-  /* Floor plan to true court proportions (6.4 m x 9.75 m), drawn with the same
-     tokens as CheckerboardCourtMap. Painted features placed to scale: short line
-     5.44 m from the front wall, half-court line to the back wall, 1.6 m service
-     boxes on the short line. The corridor is court-anchored: the central band
-     between the two service boxes, spanning the T. */
+
   const SH='#1b2636',LN='#3a4a63',TX='#dbe6f2',MU='#8aa0b6';
-  const X0=40,X1=280,Y0=40,Y1=430;                 /* floor: 240 x 390 = 6.4 x 9.75 */
+  const X0=40,X1=280,Y0=40,Y1=430;                 
   const px=m=>X0+(X1-X0)*(m/6.4), py=m=>Y0+(Y1-Y0)*(m/9.75);
   const SHORT=py(5.44), BOXW=px(1.6)-X0, BOXD=py(5.44+1.6)-SHORT;
-  const CL=X0+BOXW, CR=X1-BOXW;                    /* corridor sides = inner box edges */
-  const CT=SHORT-BOXD, CB=SHORT+BOXD;              /* corridor depth: one box-depth either side of the short line */
+  const CL=X0+BOXW, CR=X1-BOXW;                    
+  const CT=SHORT-BOXD, CB=SHORT+BOXD;              
   const MID=(X0+X1)/2;
   const out=(x,y,w,h)=>(<rect key={'o'+x+y} x={x} y={y} width={w} height={h} fill="#a35b5b" opacity="0.13"/>);
   return <svg viewBox="0 0 320 470" style={{width:'100%',maxWidth:'440px',display:'block',margin:'0 auto'}} role="img"
       aria-label="Court floor plan drawn as the Poached Egg Model. The yolk sits over the T, the egg white spans the playable middle, and the toast fills the four corners \u2014 contacts on the toast are Pressure Point contacts.">
     <text x="160" y="16" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">FRONT WALL</text>
     <rect x={X0} y={Y0} width={X1-X0} height={Y1-Y0} fill={SH} stroke={LN} strokeWidth="2"/>
-    {/* toast tint: the four corners, outside the egg */}
+    {}
     {out(X0,Y0,72,86)}{out(X1-72,Y0,72,86)}
     {out(X0,Y1-86,72,86)}{out(X1-72,Y1-86,72,86)}
-    {/* painted lines, to scale */}
+    {}
     <line x1={X0} y1={SHORT} x2={X1} y2={SHORT} stroke={TX} strokeWidth="1.6"/>
     <line x1={MID} y1={SHORT} x2={MID} y2={Y1} stroke={TX} strokeWidth="1.6"/>
     <rect x={X0} y={SHORT} width={BOXW} height={BOXD} fill="none" stroke={TX} strokeWidth="1.6"/>
     <rect x={X1-BOXW} y={SHORT} width={BOXW} height={BOXD} fill="none" stroke={TX} strokeWidth="1.6"/>
-    {/* the egg on toast: yolk = T (attack) · egg white = rally or pressure · toast = corners (defend) */}
+    {}
     <ellipse cx={MID} cy={SHORT-12} rx={(X1-X0)/2-14} ry={(Y1-Y0)/2-24} fill="#dbe6f2" opacity="0.10" stroke="#dbe6f2" strokeWidth="1.6" strokeDasharray="2 4"/>
     <ellipse cx={MID} cy={SHORT} rx="56" ry="62" fill="#2e6e8e" opacity="0.28" stroke="#2e6e8e" strokeWidth="2"/>
     <circle cx={MID} cy={SHORT} r="13" fill="#101d18" stroke="#6fae8b" strokeWidth="2"/>
@@ -15045,9 +14423,7 @@ function TPCorridorCourtMap(){
     <text x="160" y="452" textAnchor="middle" fill={MU} fontSize="9" fontWeight="800" letterSpacing="2">BACK WALL</text>
   </svg>;
 }
-/* v842 (coach, 26 Oct): flash the code on the court map. Reads the group codes from a card's
-   task line ("Everyone — [5-4] / [6-3]" or "Everyone's codes: [5-4] or [6-3]"): alternatives
-   split on "/", "or", "↔"; steps on "+" or "then". Only simple [wall-floor] codes animate. */
+
 function cbParseFlashCodes(task){
   const line=String(task||'').split('\n').find(l=>/Everyone/.test(l));
   if(!line)return null;
@@ -15059,10 +14435,7 @@ function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
   const [tick,setTick]=useState(0);
   const codesKey=codes?JSON.stringify(codes):'';
   useEffect(()=>{if(!codesKey)return;const id=setInterval(()=>setTick(t=>t+1),900);return()=>clearInterval(id);},[codesKey]);
-  /* Rendered from ATB_FLOOR_ZONES / ATB_WALL_ZONES so the map cannot drift from the
-     data model. Layout follows the original definitive reference: unfolded schematic,
-     centre strip TIN / front wall / floor / back wall, side walls as perspective flanks
-     with three depth bands A-C (front->back) each split High / Low. */
+
   const F=(typeof ATB_FLOOR_ZONES!=='undefined')?ATB_FLOOR_ZONES:{1:{short:'FL'},2:{short:'FR'},3:{short:'BR'},4:{short:'BL'}};
   const W=(typeof ATB_WALL_ZONES!=='undefined')?ATB_WALL_ZONES:{5:{},6:{},7:{},8:{}};
   const fp={}; Object.keys(F).forEach(k=>{fp[(F[k].short||'').toUpperCase()]=k;});
@@ -15073,9 +14446,9 @@ function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
   const wtl=wp.TL||'5', wtr=wp.TR||'6', wbr=wp.BR||'7', wbl=wp.BL||'8';
 
   const SH='#1b2636', LT='#212e40', LN='#3a4a63', TX='#dbe6f2', MU='#8aa0b6';
-  const L=130, R=290, Y0=175, Y1=490;                    /* centre strip + floor extent */
+  const L=130, R=290, Y0=175, Y1=490;                    
   const bands=[[175,280,'A'],[280,385,'B'],[385,490,'C']];
-  const outL=y=>44+(y-Y0)*(78-44)/(Y1-Y0);               /* left flank outer edge, perspective */
+  const outL=y=>44+(y-Y0)*(78-44)/(Y1-Y0);               
   const outR=y=>376-(y-Y0)*(376-342)/(Y1-Y0);
   const box=(x,y,w,h,fill,label,big)=>(<g key={'b'+x+y}>
     <rect x={x} y={y} width={w} height={h} fill={fill} stroke={LN} strokeWidth="1.4"/>
@@ -15093,7 +14466,7 @@ function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
     <rect x={L} y="166" width={R-L} height="11" fill="#2b3a4e" stroke={LN}/>
     <text x="210" y="174.5" textAnchor="middle" fill={MU} fontSize="7.5" fontWeight="800" letterSpacing="2">TIN</text>
 
-    {/* side wall flanks — perspective quadrilaterals, three depth bands, dashed High / Low split */}
+    {}
     {bands.map(([y,y2,band],i)=>{
       const fill=i%2?LT:SH;
       const loL=(outL(y)+L)/2, loL2=(outL(y2)+L)/2;
@@ -15111,7 +14484,7 @@ function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
     <text x="30" y="330" textAnchor="middle" fill={MU} fontSize="8" fontWeight="700" letterSpacing="1.5" transform="rotate(-90 30 330)">LEFT SIDE WALL</text>
     <text x="392" y="330" textAnchor="middle" fill={MU} fontSize="8" fontWeight="700" letterSpacing="1.5" transform="rotate(90 392 330)">RIGHT SIDE WALL</text>
 
-    {/* floor — clockwise from front left */}
+    {}
     {box(L,Y0,80,155,SH,fl,true)}{box(R-80,Y0,80,155,LT,fr,true)}
     {box(L,330,80,160,LT,bl,true)}{box(R-80,330,80,160,SH,br,true)}
     <line x1={L} y1="330" x2={R} y2="330" stroke={MU} strokeWidth="1.6" strokeDasharray="5 4"/>
@@ -15142,11 +14515,6 @@ function CheckerboardCourtMap({width='100%',compact=false,codes=null}){
   </svg>;
 }
 
-// Sessions freeze a card's text at add-time, so anything saved before the seam
-// notation changed still carries the old codes and would show them forever.
-// Rewrite the legacy forms on read: [7/8L-2] named the seam as the target, which
-// it never was, and the boast's path marker is S not L. Applied at the one point
-// every card passes through, so saved sessions correct themselves.
 const LEGACY_CODE_FIXES=[['[LBL-8/7L-2]','[LBL-8/7S-2]'],['[7/8L-2]','[7L-2] (SA)']];
 function moderniseCodes(text){
   if(typeof text!=='string'||!text)return text;
@@ -15200,18 +14568,13 @@ function emptyUniversalGame(category='Custom'){
 
 function appendToSessionState(prev,card){
   const base=Array.isArray(prev)?prev:(prev&&Array.isArray(prev.rotations)?prev.rotations:[]);
-  /* House default: every rotation lands in the session at 8 minutes; the coach
-     adjusts per card in Session Builder. */
+
   const next=normaliseGameCard(card);
-  /* v856 (coach, 29 Oct): scoring shows on the player display by default for every game added;
-     the coach unticks it in Session Builder to hide. Saved sessions keep their own setting. */
+
   if(next.showScoring==null)next.showScoring=true;
-  /* Every module adds through here, so confirming here confirms everywhere —
-     including modules built later. */
+
   try{window.dispatchEvent(new CustomEvent('cbSessionAdded',{detail:{title:next.title||'Game',count:base.length+1}}));}catch{}
-  /* v789: every rotation needs its own id. Library cards carry fixed ids (e.g. 'ccff-licence'),
-     so adding the same game twice produced two rotations with one id — duplicate React keys,
-     and Remove in Session Builder could appear to do nothing. */
+
   const pen=next.penaltySummary?'':activePenaltySummaryFromStorage();
   if(pen){next.penaltySummary=pen;clearPendingPenalties();}
   const clash=!next.id||base.some(r=>r&&r.id===next.id);
@@ -15295,11 +14658,8 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}
   </div>;
 }
 
-
 function slClampBoard(b,size){
-  /* Boards can arrive from race mode, restores or live sync built for a
-     different size. Nothing may point past the finish: ladder tops cap at the
-     final square, unreachable feet/heads are dropped. */
+
   const ladders={},snakes={};
   Object.entries((b&&b.ladders)||{}).forEach(([f,t])=>{const foot=Number(f);if(foot>=2&&foot<size)ladders[foot]=Math.min(Number(t),size);});
   Object.entries((b&&b.snakes)||{}).forEach(([h,t])=>{const head=Number(h);if(head>2&&head<=size)snakes[head]=Math.max(1,Math.min(Number(t),size));});
@@ -15341,18 +14701,17 @@ function slSerpentine(size,cols){
 }
 function slReadPresents(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
 function slDefaultRoster(n,presents){const r=[];for(let i=0;i<n;i++){r.push({name:(presents&&presents[i])||`Player ${i+1}`,pos:1});}return r;}
-/* Court shapes: when the same game runs on several courts, each court's tokens
-   take a distinct silhouette so players can find their own court at a glance. */
+
 function slCourtShapeStyle(courtLabel){
   const n=Number(String(courtLabel||'').replace(/\D/g,''))||0;
   if(!n)return {borderRadius:'50%'};
   const shapes=[
-    {borderRadius:'50%'},                                   /* 1 circle */
-    {borderRadius:'4px'},                                   /* 2 square */
-    {borderRadius:'4px',transform:'rotate(45deg)'},         /* 3 diamond */
-    {borderRadius:'50% 50% 12% 50%'},                       /* 4 teardrop */
-    {clipPath:'polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)',borderRadius:'2px'}, /* 5 pentagon */
-    {clipPath:'polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)',borderRadius:'2px'}, /* 6 hexagon */
+    {borderRadius:'50%'},                                   
+    {borderRadius:'4px'},                                   
+    {borderRadius:'4px',transform:'rotate(45deg)'},         
+    {borderRadius:'50% 50% 12% 50%'},                       
+    {clipPath:'polygon(50% 0%,100% 38%,82% 100%,18% 100%,0% 38%)',borderRadius:'2px'}, 
+    {clipPath:'polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%)',borderRadius:'2px'}, 
   ];
   return shapes[(n-1)%shapes.length];
 }
@@ -15360,11 +14719,7 @@ function slCourtShapeName(courtLabel){
   const n=Number(String(courtLabel||'').replace(/\D/g,''))||0;
   return n?['circles','squares','diamonds','teardrops','pentagons','hexagons'][(n-1)%6]:'circles';
 }
-/* Initials: first-name initial normally, but where two players on the same court
-   share it, both fall back to first+surname initials (Laya Sabry LS, Leo Ivlenkov LI). */
-/* v799 (coach, 2 Oct): one colour list for the scorer, the wall display and the race display
-   (the display had two players sharing the same teal), and players whose names start with the
-   same letter get different token SHAPES — Leo a circle, Laya a square, Laura an octagon. */
+
 const SL_TOKEN_COLORS=['#2f9bff','#ff8a80','#6fae8b','#ff5fd0','#ffe000','#a98bff','#6bd6d6','#c8e66b'];
 const SL_PLAYER_SHAPES=[
   {borderRadius:'50%'},
@@ -15416,44 +14771,30 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
   const [streak,setStreak]=useState(()=>seed?seed.streak:{holder:null,n:0});
   const [activeBonuses,setActiveBonuses]=useState(new Set());
   const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{});
-  /* v808 (coach, 4 Oct): {rosterIdx: square} — a ladder LOST by losing the rally while waiting on
-     it. It stays lost while the player stands there: the next win moves them past it. */
-  const [forfeited,setForfeited]=useState(()=>seed?(seed.forfeited||{}):{}); // {rosterIdx: ladderTargetSquare} — landed on a ladder, awaiting their own next result
-  // Optional coach-attached challenge text per ladder-bottom square (this board only —
-  // square numbers only mean something in the context of THIS randomly generated board).
-  // Empty/unset = current behaviour (climb resolves purely on win/lose next rally).
+
+  const [forfeited,setForfeited]=useState(()=>seed?(seed.forfeited||{}):{}); 
+
   const [challengeSquares,setChallengeSquares]=useState(()=>seed?(seed.challengeSquares||{}):{});
   const [challengeAll,setChallengeAll]=useState(()=>seed?(seed.challengeAll||setupChallenge||''):(setupChallenge||''));
   const lastChallengeRef=useRef(seed&&seed.challengeAll||'');
   useEffect(()=>{if(challengeAll)lastChallengeRef.current=challengeAll;},[challengeAll]);
-  // One value, everywhere: on coach courts the whole-board challenge IS the setup box. Setup edits land here instantly; the on-court editor and status strips write back through to setup, so the two can never disagree. Two road tests were lost to versions of them disagreeing (2 Sep: couldn't clear it; 3 Sep: set it and it didn't take). Scoring-link instances (seed) manage their own copy with their own on-screen toggle.
+
   function setChallengeEverywhere(text){setChallengeAll(text);if(!seed&&onSetSetupChallenge)onSetSetupChallenge(text);}
   useEffect(()=>{
     if(seed)return;
     setChallengeAll(setupChallenge||'');
   },[setupChallenge]);
   useEffect(()=>{
-    /* No challenge anywhere on the board → any armed "win AND show" reverts
-       to a plain "win the next rally": the climb stays armed, the demand goes. */
+
     if(!challengeAll&&Object.keys(challengeSquares).length===0){setPendingChallenge(prev=>Object.keys(prev).length?{}:prev);setAwaitingConfirm(null);}
   },[challengeAll,challengeSquares]);
   const chFor=(sq)=>challengeSquares[sq]||challengeAll||'';
-  const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); // {rosterIdx: challengeText}
-  /* v820 (coach, 13 Oct road test): opponents tinned the ball on purpose so a player on a challenged
-     ladder won rallies without ever showing the challenge — throwing cost them only the rally and kept
-     the rival stuck (P22: declining to compete was cheaper than competing). Price, not prohibition:
-     after showLimit wins in a row without showing it, the player climbs the ladder anyway (coach:
-     "climbs to the top"); the same on a challenged snake — they escape. {rosterIdx:{sq, n}} */
+  const [pendingChallenge,setPendingChallenge]=useState(()=>seed?(seed.pendingChallenge||{}):{}); 
+
   const [unshown,setUnshown]=useState(()=>seed?(seed.unshown||{}):{});
   const showLimit=Math.max(2,Number(settings&&settings.showLimit)||3);
   useEffect(()=>{
-    /* A mid-game change to who's on this court (late arrival, attendance edit,
-       Playing/Not-playing tap) must never re-deal the board. The component no
-       longer remounts on group changes; instead the roster reconciles here:
-       survivors keep their square, newcomers start on square 1 at the back of
-       the queue, leavers drop out, and everything keyed by roster index
-       (queue, pending climbs, armed challenges, winner) is remapped by name.
-       Road test 2 Sep: "the board seemed to change during the game". */
+
     if(seed)return;
     const want=(players||[]).map(String);
     const have=roster.map(p=>p.name);
@@ -15470,16 +14811,16 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
     setQueue([...survivedQueue,...newcomers]);
     setPending(prev=>remap(prev));
     setPendingChallenge(prev=>remap(prev));
-    setForfeited(prev=>remap(prev)); /* v820: was not remapped — a late arrival could move a forfeit marker to another player */
+    setForfeited(prev=>remap(prev)); 
     setUnshown(prev=>remap(prev));
     setWinner(w=>w==null?null:mapIdx(w));
     setAwaitingConfirm(null);
     setUndoStack([]);
   },[(players||[]).join('|')]);
-  const [awaitingConfirm,setAwaitingConfirm]=useState(null); // {slot, idx, text}
+  const [awaitingConfirm,setAwaitingConfirm]=useState(null); 
   const [showChallengeEditor,setShowChallengeEditor]=useState(false);
   const [undoStack,setUndoStack]=useState([]);
-  const [rallyWins,setRallyWins]=useState({});   /* every point won, per player */
+  const [rallyWins,setRallyWins]=useState({});   
 
   function slSnapshot(){return {rallyWins:{...rallyWins},roster:roster.map(p=>({...p})),queue:[...queue],winner,revealed:new Set(revealed),events:[...events],streak:{...streak},activeBonuses:new Set(activeBonuses),pending:{...pending},pendingChallenge:{...pendingChallenge},forfeited:{...forfeited},unshown:{...unshown}};}
   function undoMove(){if(winner!=null&&autoKeyRef.current){ladderUndoAutoRecord(autoKeyRef.current);autoKeyRef.current=null;}setUndoStack(prev=>{if(!prev.length)return prev;const s=prev[prev.length-1];if(s.rallyWins)setRallyWins(s.rallyWins);setRoster(s.roster);setQueue(s.queue);setWinner(s.winner);setRevealed(s.revealed);setEvents(s.events);setStreak(s.streak);setActiveBonuses(s.activeBonuses);setPending(s.pending||{});setPendingChallenge(s.pendingChallenge||{});setForfeited(s.forfeited||{});setUnshown(s.unshown||{});setAwaitingConfirm(null);return prev.slice(0,-1);});}
@@ -15517,8 +14858,6 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       else{nextUnshown[wIdx]={sq:W.pos,n:prevN+1};keepUnshown=true;}
     }
 
-    /* A challenge written after a player landed still applies: if the winner is
-       standing on a challenged ladder, arm it now rather than only at landing. */
     if(nextPending[wIdx]==null&&board.ladders[W.pos]!=null&&chFor(W.pos)&&nextForfeited[wIdx]!==W.pos){
       nextPending[wIdx]=board.ladders[W.pos];
       nextPendingChallenge[wIdx]=chFor(W.pos);
@@ -15535,10 +14874,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       const top=nextPending[wIdx],fromSquare=W.pos;
       if(forfeitPending){
         if(nextPendingChallenge[wIdx]){
-          /* Winning is never punished like losing (P4): the rally is won, the
-             player holds the square, and the ladder stays armed for another go.
-             v808 (coach): in every mode — "if he keeps winning he deserves the
-             rewards of challenging for the promotion". */
+
           ev.push(`${W.name} wins the rally but the challenge wasn't shown — holds ${fromSquare}, the ladder stays armed (${showLimit-nextUnshown[wIdx].n} more win${showLimit-nextUnshown[wIdx].n===1?'':'s'} and it climbs anyway)`);
         }else{
           ev.push(`${W.name} won the rally but the challenge wasn't confirmed — ladder forfeited, stays on ${fromSquare}`);
@@ -15584,15 +14920,9 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
       }
     }
     if(activeBonuses.size>0)setActiveBonuses(new Set());
-    /* The loser never moves. Road test 4 Sep: an armed ladder at 19 with a snake at 18 —
-       the old knock-back rule sent her 19→18 and the old loser-slide rule then took her
-       18→15, two penalties on one lost rally, in a mode named "fate stays armed" that
-       had just un-armed her fate. Earn-it now means what it says: lose and you stay on
-       the ladder, still armed, still needing the win and the challenge. In win-next mode
-       a loss forfeits the climb but never moves you. The loser-slide is gone with the
-       knock-back — it could also drop a snake-pinned player who was told "stays pinned". */
+
     if(nextPending[lIdx]!=null){
-      if(false){ /* v809: losing while waiting always forfeits (coach, 4 Oct) */
+      if(false){ 
         ev.push(`${L.name} loses — stays on the armed ladder at ${L.pos}; the climb still needs a win and "${nextPendingChallenge[lIdx]}"`);
       }else{
         ev.push(`${L.name} loses while waiting on the ladder at ${L.pos} — the ladder is forfeited; the next win moves on past it`);
@@ -15600,13 +14930,7 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
         nextForfeited[lIdx]=L.pos;
       }
     }else if(board.snakes[L.pos]!=null){
-      /* v807 (coach, 4 Oct: "players not moving to the correct place", standard game): the
-         snake bite. A player standing on a snake's head who LOSES the rally slides to its tail —
-         the mirror of the ladder (climb only if you win next), and what the board tells them
-         ("Lose here and it bites"). The 4 Sep change that stopped losers moving removed the
-         knock-back and the loser-slide, and took the bite out with them: in the standard game no
-         snake ever did anything, while the screen still promised it would. One move per lost
-         rally, never two: a loser on an armed ladder is handled above and never also bitten. */
+
       const from=L.pos,to=board.snakes[from];
       ev.push(`${L.name} loses on the snake at ${from} — bitten, slides to ${to}`);
       reveal.add(from);
@@ -15778,9 +15102,8 @@ function SnakesLaddersCourt({players,settings,project=false,courtLabel='',roomId
 }
 
 function SnakesLaddersGame({setSession,setScreen}={}){
-  useWakeLock(); /* coach device is the source of the player view — never let it sleep */
-  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
-  // only — the live board, court hand-offs and active court are never restored.
+  useWakeLock(); 
+
   const SL_SETUP_KEY='cbSnakesLaddersSetupV1';
   const SL_DEFAULT_SETTINGS={size:21,snakeCount:5,ladderCount:5,drop:{min:2,max:7},rise:{min:2,max:7},visible:true,exactFinish:false,mode:'winner',streakCap:0,bonuses:[],fateMode:'winNext',showLimit:3};
   const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(SL_SETUP_KEY))||{};}catch{return{};}},[]);
@@ -15788,10 +15111,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
-  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
-  // Auto court allocation and remount a court, wiping progress and re-pairing players at
-  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
+
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -15824,8 +15144,8 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
   const [handedOff,setHandedOff]=useState(()=>new Set());
   const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
-  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto'); // 'auto' (ranked block, ordered by level) | 'manual' (coach assigns)
-  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{}); // playerName -> courtIndex (0-based)
+  const [allocMode,setAllocMode]=useState(()=>savedSetup.allocMode||'auto'); 
+  const [manualAssign,setManualAssign]=useState(()=>savedSetup.manualAssign||{}); 
   function assignPlayerToCourt(name,ci){setManualAssign(prev=>{const next={...prev};if(ci==null)delete next[name];else next[name]=ci;return next;});}
   const [setupChallenge,setSetupChallenge]=useState(()=>{try{return localStorage.getItem('checkerboard_sl_setup_challenge')||'';}catch{return '';}});
   useEffect(()=>{try{localStorage.setItem('checkerboard_sl_setup_challenge',setupChallenge);}catch{}},[setupChallenge]);
@@ -15843,16 +15163,14 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   function startRace(){setRaceBoard(slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise));}
   useEffect(()=>{setRaceBoard(rb=>rb?slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise):rb);},[settings.size]);
   function resetRace(){setRaceBoard(null);setHandedOff(new Set());}
-  // One button that means what coaches mean by "new game": every court's board, tokens and
-  // positions are cleared and re-dealt, hand-offs return to this device, a race unlocks.
+
   const [gameNonce,setGameNonce]=useState(0);
   const [gameKey,setGameKey]=useState(()=>Date.now().toString(36));
   const courtStateRef=useRef({});
   const [courtSeeds,setCourtSeeds]=useState({});
   function clearGame(){setGameNonce(n=>n+1);setGameKey(Date.now().toString(36));setHandedOff(new Set());setRaceBoard(null);setCourtSeeds({});courtStateRef.current={};}
   async function copyRaceLink(){
-    // Without this the courts never write and the display waits forever — every court
-    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+
     setProjecting(true);
     const url=buildSlRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
@@ -15892,25 +15210,17 @@ function SnakesLaddersGame({setSession,setScreen}={}){
   }
   async function copySLScoreLink(n,how='copy'){
     const url=buildSlScoreLink(n,base,courts===1);
-    /* v806: the copy (or the share sheet) must start inside the tap. It used to run after two
-       network calls, and iPad/iPhone Safari refuses clipboard writes once the tap has 'expired' —
-       the coach couldn't paste the link on his phone (4 Oct). */
+
     let clip=null;
     if(how==='share'&&navigator.share){try{clip=navigator.share({title:'Snakes & Ladders — Court '+n+' scoring',text:'Scoring link for Court '+n,url});}catch(e){clip=Promise.reject(e);}}
     else{try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}}
     setProjecting(true);
-    // Seed the room with the CURRENT setup before handing off. Marking the court handed
-    // off unmounts its SnakesLaddersCourt in the same render, so without this write the
-    // first-copied court's room is never seeded and its scoring link waits forever —
-    // exactly the fault Hangman and Ludo already carry this fix for.
+
     const seedRoomId=courtRoomId(base,n);
     const names=allocation[n-1]||[];
     const label=courts>1?`Court ${n}`:'';
     try{
-      /* v806: hand the referee EXACTLY the game on this screen — board, squares, turn order.
-         Before, it re-used whatever was last in the room when the players' names matched (an
-         earlier game's positions), or dealt a brand-new random board — either way the phone
-         and the coach screen disagreed and players appeared on the wrong squares. */
+
       const live=courtStateRef.current[n];
       const liveMatches=!!live&&(live.players||[]).length===names.length&&(live.players||[]).every((p,i)=>p.name===names[i]);
       const row=liveMatches?null:await readLivePlayerRoom(seedRoomId);
@@ -15919,7 +15229,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       if(liveMatches){
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{...live,settings,size:settings.size,courtLabel:label,gameKey});
       }else if(samePlayers){
-        // Court already live with these players — keep their board and positions, refresh config.
+
         await writeLivePlayerRoom(seedRoomId,'snakesladders',{...existing,settings,size:settings.size,courtLabel:label,challengeAll:existing.challengeAll||setupChallenge||''});
       }else{
         const seedBoard=(competitionMode==='race'&&raceBoard)?slClampBoard(raceBoard,settings.size):slGenerateBoard(settings.size,settings.snakeCount,settings.ladderCount,settings.drop,settings.rise);
@@ -15933,8 +15243,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
     try{await clip;if(how!=='share'){setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}}
     catch(e){if(!(e&&e.name==='AbortError'))window.prompt('Court '+n+' SCORING link — press and hold to copy, then send it to the referee\'s phone:',url);}
   }
-  /* v806: taking control back loads the referee's latest game onto this screen (it used to
-     restart the court on a new random board and broadcast that over the referee's game). */
+
   async function takeBackControl(n){
     try{const row=await readLivePlayerRoom(courtRoomId(base,n));const p=row&&row.payload&&row.payload.type==='snakesladders'?row.payload:null;if(p)setCourtSeeds(prev=>({...prev,[n]:slSeedFromPayload(p)}));}catch{}
     setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});
@@ -16106,7 +15415,6 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <button type="button" className="primaryBtn" onClick={startRace}>Start race — lock the board</button>
     </div>}
 
-
     <div className="slStepHd"><span className="n">3</span><span><span className="t">Challenge &amp; scoring extras</span> <span className="h">One challenge for every snake and ladder, plus optional bonus squares</span></span></div>
     <div style={{background:'#0b1320',border:'1px solid #223044',borderRadius:'12px',padding:'12px 14px',marginBottom:'10px'}}>
       <div className="slModeStrip" style={{marginBottom:'8px'}}>
@@ -16127,7 +15435,7 @@ function SnakesLaddersGame({setSession,setScreen}={}){
         <input value={setupChallenge} onChange={e=>setSetupChallenge(e.target.value)} placeholder="Or type your own challenge" style={{flex:'1',minWidth:'180px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',padding:'9px 11px'}}/>
         {setupChallenge&&<button type="button" className="secondaryBtn" onClick={()=>setSetupChallenge('')}>Clear</button>}
       </div>
-      {/* v809: the coach's rule (4 Oct) replaces the old "Chance is gone / keep trying" choice */}
+      {}
       <p className="mutedText" style={{margin:'10px 0 0',fontSize:'0.85rem'}}><b>Ladder:</b> win <b>and</b> show the challenge to climb. Win without showing it — stay on the ladder and keep trying; win {Number(settings.showLimit)||3} in a row without showing it and climb anyway. Lose while waiting — the ladder is forfeited. <b>Snake:</b> win and show it to escape; win without showing it — stay pinned, and {Number(settings.showLimit)||3} wins in a row escape anyway; lose — it bites.</p>
       <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',margin:'8px 0 0'}}><span className="mutedText" style={{fontSize:'0.85rem',fontWeight:700}}>Wins in a row without showing the challenge, then climb or escape anyway</span><PointStepper value={Number(settings.showLimit)||3} min={2} max={6} sign="" onChange={v=>setSettings(s=>({...s,showLimit:v}))}/></div>
       <p className="mutedText" style={{margin:'4px 0 0',fontSize:'0.8rem'}}>This stops opponents losing rallies on purpose to keep a player stuck on a challenged square.</p>
@@ -16156,7 +15464,6 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <span style={{color:'#6eaac8',fontWeight:800}}>{umOpen?'− Hide':'Change'}</span>
     </button>
     {umOpen&&<UniversalModifierEngine title=""/>}
-
 
     <div className="slStepHd"><span className="n">▶</span><span><span className="t">The game</span> <span className="h">Everything above is set — run it here</span></span></div>
     {(competitionMode==='separate'||(competitionMode==='race'&&raceBoard)||courts<=1)&&<>
@@ -16233,9 +15540,7 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   const winnerName=payload.winnerName||null;
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealed.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
   const pendingByName=payload.pending||{};
-  // A ladder is "active" (pending) when a player is currently standing on that exact
-  // square awaiting their next result — flash it so everyone can see the live stake,
-  // vs. an "inactive" ladder marker that's just sitting there on the board unclaimed.
+
   const activeLadderSquares=new Set(players.filter(p=>pendingByName[p.name]!=null).map(p=>p.pos));
   return <div className="playerDisplayPage slDisplayPage">
     <style>{`
@@ -16272,7 +15577,6 @@ function SnakesLaddersPlayerDisplay({payload={}}){
   </div>;
 }
 
-// ─── DOUBLE BOUNCE SUITE™ ─────────────────────────────────────────────────────
 const DB_GAMES=[
   {id:'db1',title:'Bank & Spend',tag:'Foundation · court-tested',
    principle:'Spend a bounce to survive — earn it back through pressure.',
@@ -16439,25 +15743,18 @@ function DBSuiteStyles(){
 `}</style>;
 }
 
-
-/* A player's own DB allowance (Double Bounce module / DB Handicap panel) is the
-   source of truth for where their counter starts. 'No DB' means 0; 'Unlimited'
-   is capped at maxCap so the counter stays meaningful. */
 function dbAllowanceFor(name,fallback,maxCap){
   try{
     const a=(JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations)||{};
     const v=a[name];
     if(v==null)return Math.min(fallback,maxCap);
     if(v==='No DB')return 0;
-    if(v==='Unlimited DB')return null;  /* no bank to spend from — flagged, not guessed */
+    if(v==='Unlimited DB')return null;  
     const n=parseInt(String(v),10);
     return isFinite(n)?Math.min(n,maxCap):Math.min(fallback,maxCap);
   }catch{return Math.min(fallback,maxCap);}
 }
-/* Standard earn conditions: a shared vocabulary so any coach picking up the app
-   sets the same thing the same way. Every entry is decided by something visible
-   on court — a named shot from SHOT_BONUS_REGISTRY, a painted line, or where the
-   opponent is standing — and each says which kind of check it is. */
+
 const DB_EARN_LIBRARY=[
   {group:'Finish quality',items:[
     {t:'Win the rally with a Straight Drop',c:'Ball check — the named shot ends the rally.'},
@@ -16493,9 +15790,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   function readPresentNames(){try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}}
   const [presents,setPresents]=useState(readPresentNames);
   useEffect(()=>{
-    /* Attendance can change on the Players screen while this module stays mounted
-       (tab switch, or the coach fixing a mistake); re-read the register instead
-       of trusting a snapshot taken once when the screen first opened. */
+
     function refresh(){setPresents(readPresentNames());}
     const id=setInterval(refresh,4000);
     window.addEventListener('focus',refresh);
@@ -16517,8 +15812,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
 
   const [startingDB,setStartingDB]=useState(3);
   const [maxCap,setMaxCap]=useState(3);
-  /* v838 (coach, Oct 2026, court-tested): who has double bounces, a give-up penalty judged
-     by the waiting player, the DB Ladder step and The Whistle. */
+
   const [whoHas,setWhoHas]=useState('All players');
   const [giveUp,setGiveUp]=useState(0);
   const [ladderStep,setLadderStep]=useState(1);
@@ -16528,9 +15822,8 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   const [losePointOnUse,setLosePointOnUse]=useState(false);
   const [debtPenalty,setDebtPenalty]=useState(1);
   const [showSettings,setShowSettings]=useState(false);
-  const [liveEarn,setLiveEarn]=useState(null); /* which earn-condition is live this game */
-  /* Earn conditions are the coach's to write: the three shipped with each game are
-     a starting point, not the vocabulary. Stored per game and kept between sessions. */
+  const [liveEarn,setLiveEarn]=useState(null); 
+
   const [earnEdits,setEarnEdits]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_db_earn_conditions')||'{}');}catch{return {};}});
   useEffect(()=>{try{localStorage.setItem('checkerboard_db_earn_conditions',JSON.stringify(earnEdits));}catch{}},[earnEdits]);
   const [newEarn,setNewEarn]=useState('');
@@ -16540,7 +15833,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   function addEarn(){const t=newEarn.trim();if(!t)return;saveEarnList([...earnList,t]);setNewEarn('');}
   function removeEarn(t){saveEarnList(earnList.filter(x=>x!==t));if(liveEarn===t)setLiveEarn(null);}
   function resetEarn(){setEarnEdits(prev=>{const n={...prev};delete n[gameId];return n;});setLiveEarn(null);}
-  /* Players set to Unlimited have no bank the economy can deduct from. */
+
   const unlimitedPlayers=useMemo(()=>{
     try{const a=(JSON.parse(localStorage.getItem(DB_HANDICAP_KEY)||'{}').allocations)||{};
       return names.filter(n=>a[n]==='Unlimited DB');}catch{return [];}
@@ -16566,8 +15859,6 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
     setDb(init);setGolden(g);setPoints(pt);setTcount(tc);setRecovery(null);setLastSteal(null);setStealFrom(null);setUndoStack([]);setLog([]);
   },[gameId,startingDB,maxCap,namesKey]);
 
-  /* Ladder and Whistle set every counter directly (Infinity = unlimited). Declared after the
-     reset effect so it wins on game change. */
   useEffect(()=>{
     if(gameId!=='db10'&&gameId!=='db11')return;
     const val=gameId==='db10'?({1:Infinity,2:3,3:2,4:1,5:0})[ladderStep]:(whistled?0:Infinity);
@@ -16823,7 +16114,6 @@ function DoubleBounceSuitePlayerDisplay({payload={}}){
   </div>;
 }
 
-
 function TinWarStyles(){
   return <style>{`
 .twSuite{display:flex;flex-direction:column;gap:16px;}
@@ -16881,7 +16171,6 @@ function TinWarStyles(){
 `}</style>;
 }
 
-
 const TIN_LADDER=[
   {key:'OPEN',label:'FULL WALL',cm:'full legal wall',desc:'No restriction'},
   {key:'NO15',label:'15cm REMOVED',cm:'no tin–15cm',desc:'Bottom 15cm removed'},
@@ -16895,10 +16184,7 @@ const TIN_HARDEST=TIN_LADDER.length-1;
 const TINWAR_TRIGGERS=['Volley winner','Straight drop winner','Crosscourt drop winner','Boast winner','Trickle boast winner','Straight kill winner','Crosscourt kill winner','Counter-drop winner','Combination winner'];
 const TINWAR_DEFAULTS={tw1:{win:1},tw2:{win:1,climb:3},tw3:{win:1,bonus:3},tw4:{win:1,bonus:3},tw5:{win:1},tw6:{win:1,bonus:3},tw7:{win:1},tw8:{win:1}};
 const TINWAR_BONUS_TABLE_DEFAULT={1:1,2:2,3:3,4:4,5:5};
-/* v853 (coach, 29 Oct): Bonus Shots (was Rising Tax). No shot lists — players work out which
-   winners still clear their line. Coach picks Soft or Strict and a stage: 1 Discover, 2 Name it
-   (call the Checkerboard code, a learning call), 3 Code it (only chosen codes earn the bonus).
-   Levels: 0 = tin, 1–4 = taped lines; bonus-table keys are level+1. */
+
 const TW_LINE_NAMES=['Tin','Line 1','Line 2','Line 3','Line 4'];
 const TW_CODE_CHOICES=['[5-4]','[6-3]','[5-3]','[6-4]','[7-2]','[8-1]','[7-1]','[8-2]','[7-3]','[8-4]'];
 const TINWAR_GAMES=[
@@ -17091,8 +16377,6 @@ function TinWarPlayerDisplay({payload={}}){
     {game.note&&<p className="twDisplayNote">{game.note}</p>}
   </div></div>;
 }
-
-
 
 function DisruptionStyles(){
   return <style>{`
@@ -17358,7 +16642,7 @@ function DisruptionRotations({setScreen,setSession,embedded=false}){
   function addToSessionCard(){
     if(typeof setSession!=='function')return;
     setSession(prev=>appendToSessionState(prev,{id:Date.now()+Math.random(),title:'Disruption Rotations — '+rot.title,category:'Rotations',format:'3-player disruption rotation',duration:10,task:rot.sequence+' '+rot.objective,scoring:'Cooperative: complete a full cycle (one pass through the sequence) = 1 point; first to '+target+' cycles wins. Competitive: run with tramlines — a shot outside the tramline loses the point, loser out.',rationale:'Challenges the prescriptive boast-and-drive view: the rotation is a scaffold; the disruption ('+rot.purpose+') breaks autopilot and pushes players from reproducing a pattern toward reading affordances.',coach:rot.coaching,playerFocus:rot.objective,layers:[],rld:rotId==='dr6'||rotId==='dr7'||rotId==='dr8'?6:4}));
-    
+
   }
   function setName(i,v){setNames(prev=>{const c=[...prev];c[i]=v;return c;});}
   const usingDefaults=presents.length<2;
@@ -17514,8 +16798,6 @@ function DisruptionPlayerDisplay({payload={}}){
   </div>;
 }
 
-
-// ── HANGMAN™ SQUASH — escalating public jeopardy (Tin War family variant) ──
 function HangmanStyles(){
   return <style>{`
 .hsWrap{display:flex;flex-direction:column;gap:16px;}
@@ -17628,9 +16910,7 @@ const HANGMAN_MAX_STEPS=7;
 const HANGMAN_ESCAPE_STEP=6;
 const HANGMAN_CHALLENGE_PRESETS=['Win the rally via a straight drive','Win the rally via a boast','Win the rally via a volley','Win the rally into the back-left zone','Win the rally into the back-right zone','Clean winner','Front wall finish'];
 const HANGMAN_SERIES_OPTIONS=[{n:1,label:'Single rally'},{n:3,label:'Best of 3'},{n:5,label:'Best of 5'}];
-// The resolution style decides what a rally window actually means. Every screen that
-// names it — coach setup, in-court scoreline, scoring device, player display — reads it
-// from here, so they cannot drift apart and quietly disagree with the coach's setting.
+
 function hangmanResolutionLabel(seriesLength,resolutionStyle){
   const n=Number(seriesLength)||1;
   if(n<=1)return 'Single rally';
@@ -17640,7 +16920,7 @@ function hangmanResolutionLabel(seriesLength,resolutionStyle){
 }
 
 function hangmanFigureParts(steps){
-  // Non-linear staging, one body part per step: rope/beam(1) head(2) body(3) armL(4) armR(5) legL(6, last-chance) legR+face(7, out).
+
   return {
     post: true,
     beam: steps>=1,
@@ -17691,11 +16971,8 @@ function hangmanStatusLabel(entity){
   return {text:`${entity.steps}/${HANGMAN_MAX_STEPS}`,cls:''};
 }
 
-// ── Per-court engine — one instance per court, own entities/state ──────────
 function hangmanNewEntity(id,name){return {id,name,steps:0,eliminated:false,escapePending:false,escapeUsed:false,windowResults:[],attempted:false};}
-// Shared so the coach screen can seed a court's room with the exact entities that court
-// would have built for itself — needed when handing off scoring before the court has ever
-// been mounted to write them.
+
 function hangmanBuildEntities(players,teamMode,teamOf){
   if(!teamMode){
     return (players||[]).filter(n=>n&&n.trim()).map(n=>hangmanNewEntity(n,n));
@@ -17722,16 +16999,14 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   const winner=entities.length>1&&activeCount===1?entities.find(e=>!e.eliminated):null;
 
   const activeIds=entities.filter(e=>!e.eliminated).map(e=>e.id);
-  // Queue decides pairing automatically (randomised, not coach-picked) — same idea as
-  // Snakes & Ladders: the two at the front of the queue are on court; "Next pairing"
-  // rotates them to the back and brings up the next two.
+
   const [queue,setQueue]=useState(()=>seed?(seed.queue||hangmanShuffle(activeIds)):hangmanShuffle(activeIds));
   useEffect(()=>{
     if(seed)return;
     setQueue(hangmanShuffle(buildEntities().map(e=>e.id)));
   },[players.join('|'),teamMode,JSON.stringify(teamOf)]);
   useEffect(()=>{
-    // Drop anyone eliminated from the queue; add anyone new (e.g. Quick Add mid-game) to the back.
+
     setQueue(prev=>{
       const kept=prev.filter(id=>activeIds.includes(id));
       const missing=activeIds.filter(id=>!kept.includes(id));
@@ -17762,17 +17037,8 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     }
     return {...e,steps:nextSteps,windowResults:[],attempted:false};
   }
-  // Resolves what happens to an entity after one recorded rally-attempt at the challenge.
-  // Single rally is strict: only actually MEETING the challenge keeps you safe — winning
-  // the rally some other way still counts as a miss, same as a loss.
-  // Best of N (default resolutionStyle): standard best-of-N — ends as soon as either side
-  // reaches the majority of rally wins (2 of 3, or 3 of 5), not always all N rallies.
-  // Play all N rallies (resolutionStyle='fullWindow'): always plays the full N regardless
-  // of when a majority is reached — same safety rule, just evaluated at the end every time.
-  // Either way: safe if the challenge was met on any rally played, OR they reach/finish
-  // ahead on rally wins; fails otherwise. (If requireAttempt is on, the score fallback
-  // alone can't save them — they must have gone for the challenge at least once.)
-  function applyWindowOutcome(e,outcome){ // outcome: 'met' | 'won' | 'lost' — returns {entity, resolved, safe}
+
+  function applyWindowOutcome(e,outcome){ 
     const results=[...e.windowResults,outcome];
     const attempted=e.attempted||outcome==='met';
     if(seriesLength<=1){
@@ -17797,13 +17063,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
     const safe=met||(wins>=majority&&(!requireAttempt||attempted));
     return {entity:safe?{...e,windowResults:[],attempted:false}:applyFailure({...e,windowResults:results,attempted}),resolved:true,safe};
   }
-  // One tap records the whole rally for a pairing at once: the winning side gets
-  // 'met' or 'won', the losing side automatically gets 'lost' — exactly one rally,
-  // one tap, both tracks updated together (same physical rally, same moment).
-  // Works the same way whether it's a single-rally decision or one rally inside a window.
-  // When the pairing's window RESOLVES (someone ends up safe, someone takes a step),
-  // the queue auto-advances winner-stays-on — same as Snakes & Ladders: the safe player
-  // stays on court, the next challenger comes up automatically, no coach tap needed.
+
   function recordPairedRally(winnerId,winnerOutcome){
     if(!pairing[1])return;
     const winnerEntity=entities.find(e=>e.id===winnerId);
@@ -17814,9 +17074,7 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
 
     let updatedWinner,updatedLoser,resolved=false,safeId=null,failId=null;
     if(seriesLength>1&&resolutionStyle==='suddenDeath'&&winnerOutcome==='met'){
-      // Sudden-death mode: meeting the challenge ends the window right there —
-      // winner safe outright, opponent takes a step immediately, remaining
-      // rallies in the window aren't played out.
+
       updatedWinner={...winnerEntity,windowResults:[],attempted:false};
       updatedLoser=applyFailure({...loserEntity,windowResults:[],attempted:false});
       resolved=true;safeId=winnerId;failId=loserId;
@@ -17824,23 +17082,16 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
       const rW=applyWindowOutcome(winnerEntity,winnerOutcome);
       updatedWinner=rW.entity;
       if(!rW.resolved){
-        // Window still open — just record this rally on the loser's running tally too
-        // (for the scoreline), nobody's fate is decided yet.
+
         updatedLoser={...loserEntity,windowResults:[...loserEntity.windowResults,'lost']};
       }else{
         resolved=true;
-        // The loser's fate is FORCED by the winner's own resolution, never computed
-        // independently from the loser's own tally. Previously each side's safety was
-        // evaluated separately, so a loser who'd once tagged a 'met' rally earlier in a
-        // losing window could still come out "safe" too — nobody took a step and the
-        // board stalled. Now exactly one consequence always happens per resolved pairing.
+
         if(rW.safe){
           updatedLoser=applyFailure({...loserEntity,windowResults:[...loserEntity.windowResults,'lost']});
           safeId=winnerId;failId=loserId;
         }else{
-          // Winner reached the decision point but didn't qualify (requireAttempt gate,
-          // majority reached without ever attempting the challenge) — nobody earned
-          // safety this pairing, so both take a step rather than a stalemate.
+
           updatedWinner=applyFailure({...winnerEntity,windowResults:[],attempted:false});
           updatedLoser=applyFailure({...loserEntity,windowResults:[...loserEntity.windowResults,'lost']});
         }
@@ -17851,12 +17102,10 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
       setQueue(prev=>{
         const rest=prev.filter(id=>id!==winnerId&&id!==loserId);
         if(safeId&&failId){
-          // Winner stays on: the safe player stays on court, next challenger comes up to face them.
-          // Rotate through: the player who just took a step stays on to face a fresh challenger,
-          // the safe player rotates to the back of the queue (gets a breather).
+
           return pairingMode==='rotate' ? [failId,...rest,safeId] : [safeId,...rest,failId];
         }
-        // Rare edge case (both took a step, nobody earned safety) — just send both to the back.
+
         return [...rest,winnerId,loserId];
       });
     }
@@ -17947,33 +17196,27 @@ function HangmanSquashCourt({players=[],teamMode=false,teamOf={},challenge='',se
   </div>;
 }
 
-// ── Coach setup + multi-court orchestrator (up to 6 courts) ────────────────
 function HangmanSquashGame({setSession,setScreen}={}){
-  // Setup persists across navigation — leaving this screen (e.g. to Court Monitor and
-  // back) used to silently reset everything to Single rally / 1 court. Saved/restored as
-  // one JSON blob; only the coach's configuration choices, not live game/player state.
+
   const HS_SETUP_KEY='cbHangmanSetupV1';
   const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(HS_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
-  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
-  // Auto court allocation and remount a court, wiping progress and re-pairing players at
-  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
+
   const usingAttendance=presentsObj.length>=2;
   const [courtCount,setCourtCount]=useState(()=>savedSetup.courtCount||1);
   const [activeCourt,setActiveCourt]=useState(0);
   const [manualCount,setManualCount]=useState(()=>savedSetup.manualCount||2);
   const [manualNames,setManualNames]=useState(()=>savedSetup.manualNames||['Player 1','Player 2']);
   const [teamMode,setTeamMode]=useState(()=>savedSetup.teamMode||false);
-  const [teamOf,setTeamOf]=useState(()=>savedSetup.teamOf||{}); // name -> 'A' | 'B'
+  const [teamOf,setTeamOf]=useState(()=>savedSetup.teamOf||{}); 
   const [challenge,setChallenge]=useState(()=>savedSetup.challenge||HANGMAN_CHALLENGE_PRESETS[0]);
   const [seriesLength,setSeriesLength]=useState(()=>savedSetup.seriesLength||1);
   const [requireAttempt,setRequireAttempt]=useState(()=>savedSetup.requireAttempt||false);
-  const [resolutionStyle,setResolutionStyle]=useState(()=>savedSetup.resolutionStyle||'bestOfN'); // 'bestOfN' | 'fullWindow' | 'suddenDeath'
-  const [pairingMode,setPairingMode]=useState(()=>savedSetup.pairingMode||'winnerStays'); // 'winnerStays' | 'rotate'
+  const [resolutionStyle,setResolutionStyle]=useState(()=>savedSetup.resolutionStyle||'bestOfN'); 
+  const [pairingMode,setPairingMode]=useState(()=>savedSetup.pairingMode||'winnerStays'); 
   const [projecting,setProjecting]=useState(()=>!!getCourtModeFromUrl());
   const [copiedCourt,setCopiedCourt]=useState(null);
   const [copiedScoreCourt,setCopiedScoreCourt]=useState(null);
@@ -18033,10 +17276,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
   async function copyHsScoreLink(n){
     setProjecting(true);
     const url=buildHsScoreLink(n,base);
-    // Seed the room with the CURRENT setup before handing off. Marking the court handed
-    // off unmounts its HangmanSquashCourt in the same render, so if we do not write here
-    // nothing ever writes, and the scoring device opens onto whatever payload was last
-    // left in this room — a previous pairing, previous session, wrong names.
+
     const roomId=courtRoomId(base,n);
     const wanted=hangmanBuildEntities(allocation[n-1]||[],teamMode,teamOf);
     const label=courts>1?`Court ${n}`:'';
@@ -18046,8 +17286,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       const samePairing=!!existing&&(existing.entities||[]).length===wanted.length
         &&(existing.entities||[]).every((e,i)=>e.name===wanted[i].name);
       if(samePairing){
-        // This court is already live with these players — the coach may have scored a few
-        // rallies here before handing off, so keep that progress and only refresh config.
+
         await writeLivePlayerRoom(roomId,'hangmansquash',{...existing,challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,courtLabel:label});
       }else{
         await writeLivePlayerRoom(roomId,'hangmansquash',{type:'hangmansquash',challenge,seriesLength,requireAttempt,resolutionStyle,pairingMode,
@@ -18066,20 +17305,6 @@ function HangmanSquashGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(null),1500);}catch{window.prompt('All-courts display link:',url);}
   }
 
-  // Once a court's scoring is handed off, this device stops rendering that court's
-  // HangmanSquashCourt entirely — which used to mean setup changes (challenge, pacing
-  // settings) made afterward had NO path to reach that room at all, so display screens
-  // kept showing stale setup. This reads the current room, merges in just the config
-  // fields (never touching entities/queue/eliminationLog, which the scoring device owns),
-  // and writes it back — so config changes now reach an already-handed-off court too.
-  //
-  // This RE-ASSERTS on an interval rather than pushing once when a value changes. The
-  // scoring device owns the room and rewrites the whole payload — its own copy of the
-  // config included — on every rally tap. A rally landing between the coach's push and
-  // the scorer's next poll would overwrite the new challenge with the scorer's stale one;
-  // the scorer would then read back its own stale value and keep it, and a push that only
-  // fired on change never retried. The change was lost silently, while this device still
-  // showed it applied. Re-asserting means any such clobber self-heals on the next tick.
   useEffect(()=>{
     if(!projecting||!handedOff.size)return;
     let cancelled=false;
@@ -18091,8 +17316,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
         if(cancelled)return;
         const existing=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
         if(!existing)continue;
-        // Only write when the room actually disagrees, so an untouched court costs one
-        // read per tick rather than a constant stream of writes.
+
         const inSync=existing.challenge===challenge
           &&Number(existing.seriesLength||1)===Number(seriesLength||1)
           &&!!existing.requireAttempt===!!requireAttempt
@@ -18122,7 +17346,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       coach:'Set a real tactical challenge, not just "win the rally" — a specific shot or zone creates a genuine problem for the opponent. Watch composure at the last-chance-escape moment.',
       playerFocus:'Meet the challenge, stay off the gallows.',
       layers:['Escalating Jeopardy','Tin War Family'],rld:4}));
-    
+
   }
 
   return <div className="hsWrap">
@@ -18300,12 +17524,11 @@ function HangmanSquashGame({setSession,setScreen}={}){
   </div>;
 }
 
-// ── Per-court scoring device (hand-off) ─────────────────────────────────
 function HangmanSquashCourtScorer({court,host}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
   const [seedData,setSeedData]=useState(null);
-  const [pendingResume,setPendingResume]=useState(null); // raw payload p, awaiting Resume/Start fresh choice
+  const [pendingResume,setPendingResume]=useState(null); 
   const [status,setStatus]=useState('Connecting…');
   function buildSeed(p){
     const seed={entities:(p.entities||[]).map(e=>({id:e.name,windowResults:[],attempted:false,...e})),eliminationLog:p.eliminationLog||[],queue:p.queue||undefined};
@@ -18319,19 +17542,12 @@ function HangmanSquashCourtScorer({court,host}){
       const row=await readLivePlayerRoom(roomId);
       if(cancelled)return;
       const p=row&&row.payload&&row.payload.type==='hangmansquash'?row.payload:null;
-      // Keep polling even while the confirmation is on screen. It used to stop the moment
-      // it found anything, so if the room was corrected underneath it — coach re-seating
-      // players, re-sending the link — this screen sat frozen on the old names with no way
-      // to refresh but a reload.
+
       if(p&&pendingResume&&JSON.stringify(p)===JSON.stringify(pendingResume))return;
       if(p&&pendingResume){setPendingResume(p);return;}
       if(!p&&pendingResume){setPendingResume(null);setStatus('Waiting for coach device to set up this court…');return;}
       if(p){
-        // Always confirm before using whatever's sitting in this room — a court with the
-        // wrong players and stale settings (challenge, rally decision) but zero steps
-        // taken used to sail straight through silently, since only real step progress
-        // triggered a check. That's exactly what let a stale "Single rally" setting
-        // silently override a freshly-set "Best of 5" and cost a live session.
+
         setPendingResume(p);setStatus('Live');
       }else setStatus('Waiting for coach device to set up this court…');
     }
@@ -18340,10 +17556,6 @@ function HangmanSquashCourtScorer({court,host}){
     return ()=>{cancelled=true;clearInterval(id);};
   },[roomId,seedData,pendingResume]);
 
-  // Once seeded, this device owns entities/queue/eliminationLog and writes them itself —
-  // but it still needs to pick up config changes (challenge, pacing settings) made on the
-  // coach's device afterward. Poll for just those fields, never touching the live game
-  // state this device itself is scoring.
   useEffect(()=>{
     if(!seedData)return;
     let cancelled=false;
@@ -18393,10 +17605,10 @@ function HangmanSquashPlayerDisplay({payload={}}){
   const entities=payload.entities||[];
   const winner=payload.winnerName;
   const queue=payload.queue||[];
-  const byId=Object.fromEntries(entities.map(e=>[e.name,e])); // individual mode: id===name
+  const byId=Object.fromEntries(entities.map(e=>[e.name,e])); 
   const [pairA,pairB]=entities.length===2
-    ? [entities[0],entities[1]] // Teams mode (queue stores A/B, not names) or a straight 2-player duel
-    : [queue[0]?byId[queue[0]]:null,queue[1]?byId[queue[1]]:null]; // 3+ individual players, queue holds names
+    ? [entities[0],entities[1]] 
+    : [queue[0]?byId[queue[0]]:null,queue[1]?byId[queue[1]]:null]; 
   const onCourtNames=new Set([pairA?.name,pairB?.name].filter(Boolean));
   return <div className="hsDisplayPage">
     <HangmanStyles/>
@@ -18428,16 +17640,12 @@ function HangmanSquashPlayerDisplay({payload={}}){
   </div>;
 }
 
-// ── Combined view — every court's hangman figures on one screen ──────────
 function HangmanSquashRaceDisplay({host,courtCount}){
   useWakeLock();
   const [courts,setCourts]=useState([]);
   useEffect(()=>{
     let cancelled=false;
-    // host is already the fully-qualified Hangman base (includes -hangman) — it's built
-    // via buildHsRaceLink(base,...) where base = getHangmanLiveRoomId(), which already
-    // has the suffix. Appending it again here was the bug: it polled a room that could
-    // never exist, so this screen was stuck on "Waiting for courts to start" forever.
+
     const hsBase=host;
     async function load(){
       const rows=await Promise.all(Array.from({length:courtCount},(_,i)=>readLivePlayerRoom(courtRoomId(hsBase,i+1))));
@@ -18491,15 +17699,6 @@ function HangmanSquashRaceDisplay({host,courtCount}){
   </div>;
 }
 
-// ── MASTER GAME LIBRARY (v747) ──────────────────────────────────────────────
-// The ONE list of Games Library families. The home grid, each heading, the class
-// screen, the search index and the stale-class guard all read from here — there is no
-// other list to keep in step. A family that belongs under more than one heading carries
-// every heading in `groups` and is still one entry, one render: it cannot drift or go
-// missing in one place and not the other (the coach's multi-home principle, 18 Sep).
-// To add a family: one entry here. `render` gets {setSession,setScreen,addAndGo,addStay,
-// saveCard,setActiveClassId}; `route` sends the tile to its own app screen instead.
-// Order within a heading follows the order of this list.
 const GAME_LIBRARY_GROUPS=[
   {id:'board',title:'The Board — Spatial',emoji:'🎯'},
   {id:'pressure',title:'Pressure & Consequence',emoji:'⏱️'},
@@ -18599,7 +17798,6 @@ const GAME_LIBRARY=[
 ];
 function gameLibraryGroups(){return GAME_LIBRARY_GROUPS.map(g=>({...g,ids:GAME_LIBRARY.filter(e=>e.groups.includes(g.id)).map(e=>e.id)}));}
 
-// Families whose games live as flat cards in standardGames() (Volley & Intercept).
 function StandardGamesByCategory({category,onAdd}){
   const games=useMemo(()=>standardGames().filter(g=>g.category===category),[category]);
   const[sel,setSel]=useState(null);
@@ -18752,7 +17950,6 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClass&&activeClass.render&&<React.Fragment key={activeClass.id}>{activeClass.render({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})}</React.Fragment>}
 
-
     {message&&<div className="statusBox">{message}</div>}
 
     {activeClassId&&visibleCards.length>0&&<div>
@@ -18821,9 +18018,7 @@ function editPlayer(player,index){const{originalIndex,...clean}=player;setForm({
 function deletePlayer(index){saveSnapshot();setPlayers(players.filter((_,i)=>i!==index));}
 function togglePresent(index){const updated=[...players];updated[index]={...updated[index],present:!updated[index].present};setPlayers(updated);}
 function startNewAttendanceDate(nextDate=sessionDate){
-  /* Reset presence only. This button used to filter out every Guest Player —
-     silently deleting them from the roster instead of resetting them to
-     absent, with no warning and no way back. Never delete players here. */
+
   saveSnapshot();
   setSessionDate(nextDate);
   setPlayers(players.map(p=>({...p,present:false})));
@@ -18831,7 +18026,7 @@ function startNewAttendanceDate(nextDate=sessionDate){
 function saveAttendanceRecord(){
   const record={id:Date.now(),date:sessionDate,createdAt:new Date().toISOString(),players:players.map(p=>({name:p.name,playerType:p.playerType,category:p.category,level:p.level,juniorRanking:p.juniorRanking||p.ranking||'',present:!!p.present}))};
   setAttendanceHistory(prev=>[record,...prev.filter(r=>r.date!==sessionDate)].slice(0,200));
-  
+
 }
 function addGuest(){if(!guestName.trim())return;const level=guestEstimate.includes('5')?5:guestEstimate.includes('4')?4:guestEstimate.includes('3')?3:guestEstimate.includes('2')?2:1;const guestRank=String(guestRanking||'').trim();saveSnapshot();setPlayers([...players,{...EMPTY_PLAYER,name:guestName.trim(),playerType:'Guest Player',category:'Guest',level,juniorRanking:guestRank,ranking:guestRank,guestEstimate,attendance:'Guest today',present:true}]);setGuestName('');setGuestEstimate('Level 3 guest');setGuestRanking('');}
 function exportPlayers(){
@@ -18867,8 +18062,7 @@ return <div className="page">
 <div className="attendanceControlPanel"><div><strong>Session Date</strong><input type="date" value={sessionDate} onChange={e=>setSessionDate(e.target.value)}/><span>Absent is the default. Tap players present as they arrive.</span></div><div className="buttonRow"><button className="primaryBtn" onClick={()=>{saveSnapshot();setPlayers(players.map(p=>({...p,present:false})));}} title="Marks every player absent. Players are never deleted; Undo restores them.">Clear all present</button><button className="secondaryBtn" onClick={()=>startNewAttendanceDate(sessionDate)}>Start / Reset Date</button><button className="primaryBtn" onClick={saveAttendanceRecord}>Save Attendance Record</button>{history.length>0&&<button className="secondaryBtn" onClick={undo} title={'Restores '+history[history.length-1].length+' players to how they were before the last change'}>↺ Undo last change ({history.length})</button>}</div></div>
 {lastRecord&&<div className="hintBox"><strong>Saved record for this date:</strong> {lastRecord.players.filter(p=>p.present).length} present · {lastRecord.players.filter(p=>!p.present).length} absent · saved {new Date(lastRecord.createdAt).toLocaleString()}</div>}
 
-{/* Saved attendance records were being written but never displayed anywhere —
-    every record saved was invisible. This shows them, newest first. */}
+{}
 {attendanceHistory.length>0&&<div className="mePanel meOpen" style={{margin:'12px 0'}}>
   <div className="mePanelHead" style={{cursor:'pointer'}} onClick={()=>setShowAttendanceHistory(v=>!v)}>
     <span className="mePanelTitle">Past attendance ({attendanceHistory.length} {attendanceHistory.length===1?'record':'records'})</span>
@@ -18920,14 +18114,10 @@ return <div className="page">
 </div>;
 }
 
-
-
-
-
 function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatChange=()=>{}}){
   const competitionRestoredRef=useRef(false);
   function getSavedCompetitionState(){try{return JSON.parse(localStorage.getItem(COMPETITION_STATE_KEY)||'{}')}catch{return {}}}
-  // v100h43: restore competition / box / NSSL state when returning to the page.
+
   const [mode,setMode]=useState(()=>getSavedCompetitionState().mode||'invasion');
   const [competitionModifier,setCompetitionModifier]=useState(()=>{
     try{const saved=JSON.parse(localStorage.getItem('checkerboard_competition_modifier_v147')||'null');if(saved)return saved;}catch{}
@@ -18936,7 +18126,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   useEffect(()=>{try{localStorage.setItem('checkerboard_competition_modifier_v147',JSON.stringify(competitionModifier));}catch{}},[competitionModifier]);
   const [invasionFormat,setInvasionFormat]=useState(()=>{
     try{
-      // v100h21: first use the App-level remembered format. This survives page changes.
+
       if(initialInvasionFormat==='points'||initialInvasionFormat==='lives') return initialInvasionFormat;
       const direct=localStorage.getItem('checkerboardInvasionFormat');
       if(direct==='points'||direct==='lives') return direct;
@@ -18966,7 +18156,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionStartingLives||5}catch{return 5}
   });
   useEffect(()=>{
-    // v100h21: restore from App-level state first, then the stable direct key.
+
     try{
       const direct=localStorage.getItem('checkerboardInvasionFormat');
       const saved=JSON.parse(localStorage.getItem('checkerboardCompetitionProjection')||'{}');
@@ -18992,8 +18182,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [invasionTeamPoints,setInvasionTeamPoints]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboardCompetitionProjection'))?.invasionTeamPoints||{}}catch{return{}}
   });
-  /* Lives format keeps a shared team pot, so individual credit needs its own
-     record: who won and lost the rallies, tapped as they happen. */
+
   const [invasionRallyRecord,setInvasionRallyRecord]=useState(()=>{
     try{return JSON.parse(localStorage.getItem('checkerboard_invasion_rally_record'))||{};}catch{return {};}
   });
@@ -19069,9 +18258,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   const [matchplayMatchFormat,setMatchplayMatchFormat]=useState(()=>getSavedCompetitionState().matchplayMatchFormat||'Best of 1');
   const [scoringMode,setScoringMode]=useState(()=>getSavedCompetitionState().scoringMode||'normal');
   const [competitionMatchScores,setCompetitionMatchScores]=useState(()=>getSavedCompetitionState().competitionMatchScores||{});
-  // Matchplay across up to 6 simultaneous courts. matchplayCourts holds every court's
-  // pairing; court 1 is still exposed as `matchPlayers` (and keeps the 'matchplay-main'
-  // score id) so the projection, status panel, snapshot and Player Display are unchanged.
+
   const [matchplayCourtCount,setMatchplayCourtCount]=useState(()=>getSavedCompetitionState().matchplayCourtCount||1);
   const [matchplayCourts,setMatchplayCourts]=useState(()=>{
     const saved=getSavedCompetitionState();
@@ -19095,8 +18282,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     });
   }
   function matchplayScoreId(ci){return ci===0?'matchplay-main':`matchplay-court${ci+1}`;}
-  // Grow the array to match the court count, but never truncate it: dropping to 2 courts
-  // and back to 4 restores the pairings that were already set rather than blanking them.
+
   useEffect(()=>{
     setMatchplayCourts(prev=>{
       if(prev.length>=matchplayCourtCount)return prev;
@@ -19105,7 +18291,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       return next;
     });
   },[matchplayCourtCount]);
-  const [matchScoring,setMatchScoring]=useState(()=>{const v=getSavedCompetitionState().matchScoring||'PAR 11';return v==='Conditioned Match'?'Constrained Match':v /* legacy saved value (v824) — keep this literal */;});
+  const [matchScoring,setMatchScoring]=useState(()=>{const v=getSavedCompetitionState().matchScoring||'PAR 11';return v==='Conditioned Match'?'Constrained Match':v ;});
   const [rrFixtures,setRrFixtures]=useState(()=>getSavedCompetitionState().rrFixtures||[]);
   const [rrResults,setRrResults]=useState(()=>getSavedCompetitionState().rrResults||{});
   const [rrMatchFormat,setRrMatchFormat]=useState(()=>getSavedCompetitionState().rrMatchFormat||'Best of 1');
@@ -19246,8 +18432,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     return [...(list||[])].sort((a,b)=>invasionRankForName(b)-invasionRankForName(a));
   }
 
-
-
   const overlayOptions=['Clean Winner','Opponent Off T','T Challenge','Blind Finish','Volley Finish','4-Shot Window','2-Shot Window','Double Bounce','DB Handicap','Quality Length Before Attack'];
   const cbOptions=['None','[5-4] + [5-1]','[6-3] + [6-2]','[5-4] + [8-1]','[6-3] + [7-2]','Custom'];
 
@@ -19263,10 +18447,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     setMatchScore({a:0,b:0});
   }
 
-  // Live court sync for Matchplay. One room per court under the '-matchplay' namespace so
-  // Court Monitor can show every simultaneous pairing without colliding with any other
-  // module's court rooms. Courts with no pairing set are cleared via the overwrite path
-  // (never a DELETE — RLS on live_sessions makes that silently do nothing).
   const mpBase=useMemo(()=>getMatchplayLiveRoomId(),[]);
   useEffect(()=>{
     if(mode!=='matchplay')return;
@@ -19313,7 +18493,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }
   }
 
-
   function scoreKey(prefix,roundIndex,matchIndex,extra=''){
     return `${prefix}-${roundIndex}-${matchIndex}-${extra}`;
   }
@@ -19351,10 +18530,10 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     function calcGameWinner(g){
       if(!g||g.a===''||g.b==='') return null;
       if(scoringMode==='normal'){
-        // loserSide tells us who lost
-        if(g.loserSide==='a') return 'b'; // A typed = A is loser, B wins
-        if(g.loserSide==='b') return 'a'; // B typed = B is loser, A wins
-        // fallback: higher score wins
+
+        if(g.loserSide==='a') return 'b'; 
+        if(g.loserSide==='b') return 'a'; 
+
         const a=Number(g.a);const b=Number(g.b);
         if(a===b) return null;
         return a>b?'a':'b';
@@ -19388,14 +18567,13 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         const next=[...prev];
         while(next.length<=gameIdx) next.push({a:'',b:'',loserSide:''});
         if(scoringMode==='normal'){
-          // whichever box the coach types in is the LOSER score
-          // winner score auto-fills to the other box
+
           const winnerScore=normalWinningScore(cleaned);
           if(side==='a'){
-            // typed in P1 box = P1 is the loser, P2 wins
+
             next[gameIdx]={a:cleaned,b:winnerScore,loserSide:'a'};
           } else {
-            // typed in P2 box = P2 is the loser, P1 wins
+
             next[gameIdx]={a:winnerScore,b:cleaned,loserSide:'b'};
           }
         } else {
@@ -19526,10 +18704,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     };
   }
 
-  /* Uneven courts decide outcomes: on a smaller court each player is on for a
-     larger share of the rallies, so raw points are not comparable. Points are
-     scaled by (this court's players / largest court's players) — the same
-     equalisation the Lives format does with capacity. */
   function getInvasionPointsBalance(sourceTeams=invasionTeams){
     const list=(sourceTeams||[]).filter(t=>(t.players||[]).length>0);
     if(!list.length)return {maxPlayers:0,rows:[],uneven:false};
@@ -19732,10 +18906,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function stopInvasionPlayerDisplay(){
-    /* Points format only. Lives are a shared team pot, so there is no individual
-       record to credit — inferring one would score a player for a teammate's
-       survival, which is exactly the shared-totals trap. A Lives result reaches
-       the ladder only if the coach logs finishing order by hand. */
+
     try{
       if(invasionFormat==='points'){
         const pts=invasionPlayerPoints||{};
@@ -19745,7 +18916,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           ladderAutoRecordGame(key,'Invasion \u2014 Points',names.map(n=>({player:n,wins:Number(pts[n])||0})));
         }
       }else{
-        /* Lives: credit only from the individual rally record, never the team pot. */
+
         const rec=invasionRallyRecord||{};
         const names=Object.keys(rec).filter(n=>n&&((rec[n].won||0)+(rec[n].lost||0))>0);
         if(names.length>=2){
@@ -20012,24 +19183,15 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }
   }
 
-  /* Round robin results were being recorded in the standings and going no
-     further \u2014 a whole tournament left no trace on the Performance Ladder.
-     Record it whenever results change: the dedupe key carries every player's
-     win count, so an updated result replaces nothing and simply records the
-     tournament again at its current state, and a finished tournament is only
-     ever counted once. */
   function recordRoundRobinToLadder(){
     try{
-      /* Flat round robin. */
+
       const table=getRoundRobinStandings().filter(r=>r&&r.name&&r.played>0);
       if(table.length>=2){
         const key='rr|'+table.map(r=>r.name).sort().join(',')+'|'+table.map(r=>r.name+':'+r.wins).sort().join('-');
         ladderAutoRecordGame(key,'Round Robin',table.map(r=>({player:r.name,wins:r.wins})));
       }
-      /* Box round robin \u2014 a separate structure the flat standings never see.
-         Each box is recorded as its own result, since players in different
-         boxes have not played each other and should not be ranked against
-         one another. */
+
       (rrBoxes||[]).forEach((box,bidx)=>{
         const fixtures=(rrBoxFixtures||[])[bidx];
         const rows=getBoxStandings(box,fixtures,rrBoxResults||{},bidx,'group').filter(r=>r&&r.name&&r.played>0);
@@ -20037,7 +19199,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         const key='rrbox|'+bidx+'|'+rows.map(r=>r.name).sort().join(',')+'|'+rows.map(r=>r.name+':'+r.wins).sort().join('-');
         ladderAutoRecordGame(key,'Round Robin \u2014 '+(box.name||('Box '+(bidx+1))),rows.map(r=>({player:r.name,wins:r.wins})));
       });
-      /* Finals boxes, where they have been played. */
+
       (rrFinalBoxes||[]).forEach((box,bidx)=>{
         const fixtures=(rrFinalFixtures||[])[bidx];
         const rows=getBoxStandings(box,fixtures,rrFinalResults||{},bidx,'final').filter(r=>r&&r.name&&r.played>0);
@@ -20286,7 +19448,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function getMonradFinalTable(){
-    // Compute live placings from all placing rounds + results without needing generateNextRound
+
     const livePlaces={...monradFinalPlaces};
     monradPlacingRounds.forEach((round,ridx)=>{
       round.forEach(group=>{
@@ -20307,7 +19469,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           if(!isByeName(loser)) livePlaces[loser]=end;
           return;
         }
-        // For larger groups, assign placings for any decided matches
+
         let winnersCount=0;let losersCount=0;
         (group.matches||[]).forEach((match,midx)=>{
           const auto=isByeName(match.a)?match.b:isByeName(match.b)?match.a:null;
@@ -20331,7 +19493,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   }
 
   function getNslGeneratedTeams(){
-    // Snake seed: sort by seed/rank first (strongest -> weakest), then serpentine-distribute so teams are balanced by strength.
+
     const names=[...playerNames].sort((a,b)=>rankForTeamName(a)-rankForTeamName(b)||String(a).localeCompare(String(b)));
     const count=Math.max(2,Number(nslTeams)||2);
     const teams=Array.from({length:count},(_,idx)=>({name:`Team ${idx+1}`,players:[]}));
@@ -20371,7 +19533,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     if(nslStage==='finals'&&Array.isArray(nslFinalsFixtures)&&nslFinalsFixtures.length)return nslFinalsFixtures;
     return nsslDetailedFixtures();
   }
-
 
   function nslTeamKey(name){return String(name||'Team').replace(/\s+/g,'_');}
   function nslFixtureKey(idx){return `fixture-${idx}`;}
@@ -20415,7 +19576,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   function nslPlayoffPoint(court,side){const k=nslPlayoffKey(court);setNslPlayoffs(prev=>{const p=prev[k];if(!p||p.winner)return prev;const hist=[...(p.hist||[]),side];const r=nslPlayoffFrom(p,hist);return {...prev,[k]:{...p,hist,aPts:r.aPts,bPts:r.bPts,rally:hist.length,winner:r.winner}};});}
   function undoNslPlayoffPoint(court){const k=nslPlayoffKey(court);setNslPlayoffs(prev=>{const p=prev[k];if(!p||!(p.hist&&p.hist.length))return prev;const hist=p.hist.slice(0,-1);const r=nslPlayoffFrom(p,hist);return {...prev,[k]:{...p,hist,aPts:r.aPts,bPts:r.bPts,rally:hist.length,winner:r.winner}};});}
   function clearNslPlayoff(court){const k=nslPlayoffKey(court);setNslPlayoffs(prev=>{const n={...prev};delete n[k];return n;});}
-
 
   useEffect(()=>{
     if(!nslTimerRunning){clockEndRef.current=null;return;}
@@ -20474,7 +19634,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     document.addEventListener('visibilitychange',onVis);
     return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
   },[mode]);
-  // v100h43 NSSL round timer and competition persistence
 
   const modeInfo={
     invasion:{
@@ -20574,10 +19733,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       invasionEliminated,
       competitionLayers,
       competitionCbCode,
-      /* v856 (coach, 2 Nov): every active universal modifier reaches the player display as a
-         short rule line — game logic and constraints (with their points) and Negative Scoring. */
-      /* v860: the players' display shows exactly what the coach screen shows — each court's
-         defending team and the visiting invader (Final Invasion Engine), not a team's own name. */
+
       invasionCourtView:(invasionTeams||[]).map((_,idx)=>{const d=getFinalDefendingTeamForCourt(idx);const v=getFinalInvadingTeamForCourt(idx);
         return {court:idx+1,defendingTeam:d?displayTeamName(d,idx):'',defenders:(d&&d.players)||[],invader:v?getFinalInvader(v):'',invadingTeam:v?displayTeamName(v,(invasionTeams||[]).indexOf(v)):'',lives:v?getFinalStartLives(v):null};}),
       invasionCurrentInvaders:Object.fromEntries((invasionTeams||[]).map(t=>[t.id,getFinalInvader(t)])),
@@ -20729,7 +19885,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     }catch{}
   },[mode,invasionFormat,competitionLayers,competitionCbCode,playerBounces,manualPlayers,matchScore,matchPlayers,matchScoring,competitionMatchScores,rrFixtures,rrResults,rrBoxFixtures,rrFinalFixtures,monradRounds,monradResults,monradPlacingRounds,monradPlacingResults,monradFinalPlaces,invasionTeams,invasionTeamPoints,invasionPlayerPoints,invasionCarryLives,invasionFinishLives,invasionPlayerRound,invasionCourtRound,invasionGameStarted,nslTeams,nslPlayersPerTeam,nslPeriod1,nslPeriod2,nslPeriod3,nslOvertime,nslScores,nslActivePeriod,nslRoundSeconds,nslPowerPlayTeam,nslPowerPlaySeconds,nslPowerPlayActive,current.title,current.tactical,current.purpose]);
 
-
   return (
     <div className="page">
       <div className="pageTop">
@@ -20793,9 +19948,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             </p>
           </div>
 
-          {/* v859 (coach, 2 Nov): no tall empty boxes — the short cards stack in the left column
-              beside the rules; the Checkerboard card only shows when a code is set; overlays list
-              every active universal modifier, not only constraints. */}
+          {}
           <div className="projectionInfoGrid" style={{alignItems:'start'}}>
             <div style={{display:'flex',flexDirection:'column',gap:'14px',minWidth:0}}>
               <div className="projectionInfoCard" style={{minHeight:0,height:'auto'}}>
@@ -20890,7 +20043,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
                     {(()=>{
                       const scores=monradPlayerScores();
                       const placingTable=getMonradFinalTable();
-                      // Find each player's next opponent from the latest round
+
                       const latestRound=monradPlacingRounds.length>0
                         ?monradPlacingRounds[monradPlacingRounds.length-1]
                         :null;
@@ -20955,7 +20108,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
           )}
         </div>
       )}
-
 
       <div className="gameCard">
         <div className="categoryTag">Competition Mode</div>
@@ -21338,8 +20490,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
 
             {Array.from({length:matchplayCourtCount},(_,ci)=>{
               const pair=matchplayCourts[ci]||{a:'',b:''};
-              // A player already on another court is offered but marked, rather than hidden —
-              // the coach may legitimately want the same name twice (e.g. a coach playing in).
+
               const usedElsewhere=name=>matchplayCourts.some((p,j)=>j!==ci&&j<matchplayCourtCount&&p&&(p.a===name||p.b===name));
               return <div key={ci} className="hsSetup" style={{marginTop:'12px'}}>
                 <div className="hsLabel">Court {ci+1}{ci===0?' — drives the Player Display':''}</div>
@@ -21496,7 +20647,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
             )}
           </div>
         )}
-
 
         {mode==='monrad'&&(
           <div className="competitionEnginePanel competitionDrawPanel">
@@ -21830,14 +20980,6 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
   );
 }
 
-
-/* ── CLOUD BACKUP ─────────────────────────────────────────────────────────────
-   Everything below is irreplaceable coaching history: a season of ladder points,
-   what each player has been working on, road-test reports, suggestions. It lived
-   only in this browser, where a cleared cache or a lost device destroyed it.
-   These records now mirror to the same Supabase table the live displays already
-   use, under a backup code the coach controls, and can be restored onto any
-   device. Local storage stays the working copy; the cloud is the safety net. */
 const CB_BACKUP_CODE_KEY='checkerboard_backup_code_v1';
 const CB_BACKUP_KEYS=[
   {key:'checkerboard_season_ladder_v1',label:'Performance Ladder \u2014 season points'},
@@ -21871,19 +21013,28 @@ function cbCollectBackup(){
   });
   return {savedAt:new Date().toISOString(),appVersion:APP_VERSION.split(' ')[0],data};
 }
+const CB_TRUST_KEY='checkerboard_backup_trusted';
+function cbTimeout(p,ms){return Promise.race([Promise.resolve(p),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);}
+function cbDataSize(d){return Object.values((d&&d.data)||{}).reduce((n,v)=>n+String(v||'').length,0);}
+function cbIsTrusted(){try{return !!(localStorage.getItem(CB_TRUST_KEY)||localStorage.getItem('checkerboard_backup_last'));}catch{return false;}}
+function cbTrust(){try{localStorage.setItem(CB_TRUST_KEY,'1');}catch{}}
 function cbBackupNow(){
-  /* Reuses the proven live-sync write path \u2014 no new infrastructure. */
   const payload=cbCollectBackup();
-  return writeLivePlayerRoom(cbBackupCode(),'cbbackup',payload);
+  return cbTimeout(writeLivePlayerRoom(cbBackupCode(),'cbbackup',payload),15000);
+}
+function cbAutoBackup(){
+  if(!cbIsTrusted())return Promise.resolve(false);
+  return cbBackupNow();
 }
 async function cbRestoreBackup(){
-  const row=await readLivePlayerRoom(cbBackupCode());
+  const row=await cbTimeout(readLivePlayerRoom(cbBackupCode()),15000);
   const p=row&&row.payload;
   if(!p||!p.data)return null;
   let restored=0;
   Object.entries(p.data).forEach(([k,v])=>{
     try{localStorage.setItem(k,v);restored++;}catch{}
   });
+  cbTrust();
   return {restored,savedAt:p.savedAt,appVersion:p.appVersion};
 }
 function cbBackupSummary(){
@@ -21900,8 +21051,15 @@ function CloudBackupPanel(){
   const [lastAuto,setLastAuto]=useState(()=>{try{return localStorage.getItem('checkerboard_backup_last')||'';}catch{return '';}});
   const summary=cbBackupSummary();
   const total=summary.reduce((n,r)=>n+r.size,0);
-  function backup(){
-    setBusy(true);setStatus('Backing up\u2026');
+  async function backup(){
+    setBusy(true);setStatus('Checking the cloud copy\u2026');
+    try{
+      const row=await cbTimeout(readLivePlayerRoom(cbBackupCode()),15000);
+      const cloud=cbDataSize(row&&row.payload),here=cbDataSize(cbCollectBackup());
+      if(cloud>0&&here<cloud*0.8&&!window.confirm('The cloud backup under this code holds more ('+Math.round(cloud/1024)+' KB) than this device ('+Math.round(here/1024)+' KB). Backing up now would replace it with the smaller copy. Continue?')){setBusy(false);setStatus('Backup cancelled \u2014 the cloud copy is unchanged.');return;}
+    }catch(e){setBusy(false);setStatus('\u2717 No answer from the cloud \u2014 check this device has a connection, then try again.');return;}
+    setStatus('Backing up\u2026');
+    cbTrust();
     cbBackupNow().then(ok=>{
       setBusy(false);
       if(ok){
@@ -21910,7 +21068,7 @@ function CloudBackupPanel(){
         setLastAuto(now);
         setStatus('\u2713 Backed up \u2014 your records are safe on the cloud under this code.');
       }else setStatus('\u2717 Backup failed \u2014 check this device has a connection, then try again.');
-    }).catch(()=>{setBusy(false);setStatus('\u2717 Backup failed \u2014 check this device has a connection, then try again.');});
+    }).catch(()=>{setBusy(false);setStatus('\u2717 No answer from the cloud \u2014 check this device has a connection, then try again.');});
   }
   function restore(){
     if(!window.confirm('Restore from the cloud? This replaces the records on THIS device with the last backup saved under this code. Anything on this device that has not been backed up will be lost.'))return;
@@ -21919,7 +21077,7 @@ function CloudBackupPanel(){
       setBusy(false);
       if(r){setStatus('\u2713 Restored '+r.restored+' record sets from '+new Date(r.savedAt).toLocaleString()+' (saved on '+(r.appVersion||'an earlier version')+'). Reload the app to see them.');}
       else setStatus('\u2717 Nothing found under this code. Check the code is exactly right.');
-    }).catch(()=>{setBusy(false);setStatus('\u2717 Restore failed \u2014 check this device has a connection.');});
+    }).catch(()=>{setBusy(false);setStatus('\u2717 No answer from the cloud \u2014 check this device has a connection, then try again.');});
   }
   return <div className="mePanel meOpen" style={{margin:'12px 0'}}>
     <div className="mePanelHead" style={{cursor:'default'}}><span className="mePanelTitle">Cloud Backup</span><span className="mePanelSub">Your season, player history and road-test reports — kept safe off this device</span></div>
@@ -21929,7 +21087,7 @@ function CloudBackupPanel(){
       <input value={code} onChange={e=>setCode(e.target.value)} onBlur={()=>cbSetBackupCode(code)}
         style={{flex:'1',minWidth:'200px',background:'#0b1118',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#eaf4fb',padding:'8px 11px',fontFamily:'monospace'}}/>
     </div>
-    <p className="mutedText" style={{margin:'0 0 10px',fontSize:'0.78rem'}}>Write this code down. It is the only way to reach your backup from another device.</p>
+    <p className="mutedText" style={{margin:'0 0 10px',fontSize:'0.78rem'}}>Write this code down. It is the only way to reach your backup from another device.{!cbIsTrusted()&&' This device does not back up automatically yet: restore onto it, or tap Back up now, first — so a new device can never overwrite your real backup.'}</p>
     <div style={{display:'flex',gap:'8px',flexWrap:'wrap',marginBottom:'10px'}}>
       <button type="button" className="primaryBtn" disabled={busy} onClick={backup}>Back up now</button>
       <button type="button" className="secondaryBtn" disabled={busy} onClick={restore}>Restore onto this device</button>
@@ -22060,8 +21218,6 @@ function Storage({players,setPlayers,session,setSession}){
     {status && <div className="statusBox">{status}</div>}
   </div>;
 }
-
-
 
 function ProjectionPlayerDisplay({session=[],players=[]}){
   const [projectionTab,setProjectionTab]=useState('session');
@@ -22483,7 +21639,6 @@ function ProjectionPlayerDisplay({session=[],players=[]}){
     </div>
   </div>;
 }
-
 
 function RotationalAffordanceGames({setScreen,setSession}){
   const [playerGroup,setPlayerGroup]=useState('2 Player');
@@ -22933,7 +22088,6 @@ function LiveSessionDelivery({session=[],setScreen}){
   </div>;
 }
 
-
 function JuniorLadder({players=[],setPlayers=()=>{}}){
   const [showAll,setShowAll]=useState(false);
   const [dragName,setDragName]=useState(null);
@@ -23086,19 +22240,6 @@ function PlayerPlans({players}){
   </div>;
 }
 
-/* ───────────────────── PLAYER DEVELOPMENT (v810) ─────────────────────
-   Step 1 of the Player Development Loop (agreed 7 Oct). P28 simplicity first: plain words, the
-   fewest fields — a card is one line in the coach's words, where it's at (4 options), where it
-   shows (3 ticks) and an optional coach-only note. History is kept automatically, shown on tap.
-   Coach rule (7 Oct): only a habit that does not work is marked Change. A solution that works in
-   some situations is never removed — the player is given New options to sit beside it.
-   Stored per player name, like Player Plans; included in Storage & Backup.
-   v813 (Renshaw, Chow, Davids & Hammond 2010 brief, 9 Oct): a card may OPTIONALLY name the game or
-   constraint being used (c.link) and carry coach reviews — Keep / Adjust / Remove plus a short
-   observation once the rule, bonus or support is reduced or removed. Reviews are stored as dated
-   entries in the card's existing history ({at,what,review:{decision,obs,link},editedAt?}) and stay
-   editable there. Older cards without these fields work unchanged. Nothing is automated: a review
-   never changes the card's status or ticks — the coach judges transfer. Coach-only screen. */
 const PLAYER_DEV_KEY='checkerboard_player_development_v1';
 const DEV_STATUSES=[
   {id:'secure',label:'Secure',meaning:'It holds up, even under pressure.',color:'#6fae8b'},
@@ -23116,8 +22257,7 @@ const DEV_REVIEW_CHOICES=[
 const DEV_REVIEW_HINT='Once the rule, bonus or support is reduced or removed, watch ordinary matchplay: does the player still find the behaviour when it is useful? That is transfer — not compliance with the bonus. A review never changes the card’s status; that remains the coach’s decision.';
 function devReviewChoice(id){return DEV_REVIEW_CHOICES.find(r=>r.id===id)||DEV_REVIEW_CHOICES[0];}
 function devReviewWhat(r){return 'Review: '+devReviewChoice(r.decision).label+(r.link?' “'+r.link+'”':'')+(r.obs?' — '+r.obs:'');}
-/* Suggestions only — the link is free text so an ad-hoc constraint ("volley bonus ×2") is fine too.
-   Each catalogue is read inside its own try so a renamed list can never break this screen. */
+
 function devLinkSuggestions(){
   const out=[];
   const add=v=>{if(typeof v==='string'&&v.trim())out.push(v.trim());};
@@ -23142,8 +22282,8 @@ function PlayerDevelopment({players}){
   const [draft,setDraft]=useState('');
   const [openHist,setOpenHist]=useState({});
   const [openNote,setOpenNote]=useState({});
-  const [linkDraft,setLinkDraft]=useState({}); /* cardId → text while the link editor is open */
-  const [review,setReview]=useState(null);     /* {cardId, idx (history index when editing) | null, decision, obs} */
+  const [linkDraft,setLinkDraft]=useState({}); 
+  const [review,setReview]=useState(null);     
   const cards=who?(byPlayer[who]||[]):[];
   const linkOptions=useMemo(()=>{const used=Object.values(byPlayer).flat().map(c=>c&&c.link).filter(Boolean);return [...new Set([...used,...devLinkSuggestions()])];},[byPlayer]);
   function save(list){setByPlayer(prev=>({...prev,[who]:list}));}
@@ -23252,10 +22392,6 @@ function PlayerHub({players,setPlayers,session,setSession}){
     {tab==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
   </div>;
 }
-
-
-
-
 
 function DiagnosticIntervention({setScreen}){
   const [tab,setTab]=useState('foundations');
@@ -23397,7 +22533,6 @@ function DiagnosticIntervention({setScreen}){
     ['Adaptability','Modify movement solutions in response to changing task, opponent and environmental demands.','Effective movement is adaptable rather than identical.']
   ];
 
-
   const habitOrigins=[
     {title:'Functional At Lower Level',type:'Origin',text:'The behaviour worked against slower pace, weaker pressure or simpler opponents. It becomes non-functional when the environment becomes more demanding.',coach:'Do not shame the habit. Explain that the game has outgrown it.',intervention:'Add new solutions and increase selectivity under pressure.'},
     {title:'Solo Practice / Repetition With Repetition',type:'Origin',text:'The behaviour stabilised in self-paced practice with no opponent, limited variability and known timing.',coach:'Look for collapse when opponent, time pressure or uncertainty returns.',intervention:'Reintroduce variability, opponent information and representative consequences.'},
@@ -23430,7 +22565,6 @@ function DiagnosticIntervention({setScreen}){
     ['Compensation Error','Visible behaviour is secondary. Find the primary problem it is compensating for.']
   ];
 
-
   const quickFixHabits=[
     {issue:'Late Preparation',visible:'Preparation begins after the ball has already solved the player.',origin:'Often repetition-induced by predictable feeding, or historically functional at a slower level.',type:'Type 2 — dominant non-functional habit',addReplace:'Usually expand first, then replace if it collapses under all pressure.',coachQuestion:'When did the player first know forehand / backhand / volley / bounce?',constraint:'Early Recognition Rally: player calls FOREHAND, BACKHAND, VOLLEY or BOUNCE as soon as they know, then play continues.',checkerboard:'[6-4] volley or [6-4]+[8-1] with early recognition requirement.',progression:'Increase feed variability, reduce time, then move to live rally with opponent cues.',regression:'Slow the ball and ask for earlier call only; no tactical finish required.',cue:'Recognise early. Prepare with the movement, not after it.'},
     {issue:'Hard Hitter Only',visible:'Player drives hard regardless of opponent, space, score or ball quality.',origin:'Functional at lower level; often rewarded by early success and dominance against weaker movers.',type:'Add rather than replace — power has limited functionality.',addReplace:'Do not remove power. Add soft, dying, height, hold and working pace options with equal selectivity.',coachQuestion:'What information told the player that hard was the best solution?',constraint:'Shape Change Game: player must win one rally with pace, one with height, one with soft dying ball before hard winners count again.',checkerboard:'[6-4]+[8-1], [6-4]+[5-4], and variable pace overlays.',progression:'Score only when the chosen shape matches opponent position.',regression:'Coach feeds three obvious affordances: drive, soft, height.',cue:'Power stays. Predictability goes.'},
@@ -23451,7 +22585,6 @@ function DiagnosticIntervention({setScreen}){
 
   const [quickFixIssue,setQuickFixIssue]=useState('Late Preparation');
   const selectedQuickFix=quickFixHabits.find(item=>item.issue===quickFixIssue)||quickFixHabits[0];
-
 
   const overlayOptions=[
     {id:'none',name:'None',category:'None',description:'No additional overlay selected.',behaviour:'Base game only.',cue:'Play the base game.'},
@@ -23644,7 +22777,6 @@ function DiagnosticIntervention({setScreen}){
       <div className="errorComparisonGrid">{movementPrinciples.map(item=><div className="errorMiniCard" key={item[0]}><h3>{item[0]}</h3><p>{item[1]}</p><small>{item[2]}</small>{item[0]==='Elastic Energy & Reactivity'&&<InfoButton id="elastic"/>}</div>)}</div>
     </div>}
 
-
     {tab==='habits'&&<div className="diagnosticStagePanel habitOriginsPage">
       <h2>Non-Functional Habits, Missing Solutions & Their Origins</h2>
       <div className="bernsteinBox">
@@ -23681,8 +22813,6 @@ function DiagnosticIntervention({setScreen}){
       <div className="infoBox"><strong>Key Coaching Shift</strong><p>Do not ask only: “How do we stop the error?” Ask: “What type of error is this, where did it originate, and should we replace, rebuild, or expand the player’s solution landscape?”</p><InfoButton id="errors"/></div>
     </div>}
 
-
-
     {tab==='quickfix'&&<div className="diagnosticStagePanel quickFixEnginePage">
       <h2>Quick Fix · Habits Integration</h2>
       <p>Three-tap courtside workflow: select the visible behaviour, identify the origin, then choose add / replace / expand with a representative constraint.</p>
@@ -23708,8 +22838,6 @@ function DiagnosticIntervention({setScreen}){
       </div>
       <div className="infoBox"><strong>Key Principle</strong><p>Quick Fix does not mean quick technical correction. It means quickly identifying the player’s current solution landscape: missing solution, dominant non-functional habit, compensation attractor, or useful solution that needs more selectable alternatives.</p></div>
     </div>}
-
-
 
     {tab==='science'&&<div className="diagnosticStagePanel habitSciencePage">
       <h2>Science of Habit Formation</h2>
@@ -23778,8 +22906,6 @@ function DiagnosticIntervention({setScreen}){
       <div className="scienceQuote"><p>A constraint is worth a 1000 words.</p></div>
     </div>}
 
-
-
     {tab==='overlayEngine'&&<div className="diagnosticStagePanel overlayEnginePage">
       <h2>Overlay Architecture Engine</h2>
       <p>Base games stay unchanged. Overlays sit on top of them as developmental filters. The coach decides what the game should encourage for the players in front of them.</p>
@@ -23821,7 +22947,6 @@ function DiagnosticIntervention({setScreen}){
 
       <div className="infoBox"><strong>Example ATL Use</strong><p>Base game: ATL. Overlay 1: Opponent Not Set In T. Consequence: Unlock scoring. Overlay 2: Finish Window. Consequence: Finish within 3 shots. Overlay 3: Recover Before Score Unlock. Consequence: +2 bonus.</p><p>This keeps ATL intact while making the attack below the line dependent on perception of opponent state.</p></div>
     </div>}
-
 
     {tab==='builder'&&<div className="diagnosticStagePanel">
       <h2>Intervention Builder</h2>
@@ -23865,13 +22990,6 @@ function DiagnosticIntervention({setScreen}){
     </div>}
   </div>;
 }
-
-
-
-
-
-
-
 
 function OverlayBuilderStandalone({setScreen,setSession}){
   const baseTemplates={
@@ -23923,10 +23041,6 @@ function OverlayBuilderStandalone({setScreen,setSession}){
   </div>;
 }
 
-
-
-
-/* ── VISION & PERCEPTION MODULE — v100h68 ─────────────────────────────── */
 const VISION_ACTIVITIES=[
   {title:'Two-Colour Racquet',rld:'RLD 3',section:'Visual Search',purpose:'Guide gaze back toward the opponent at or before contact.',setup:'Use a racquet with two clearly different colours or add temporary coloured tape/markers to opposite sides of the frame.',task:'During live or semi-live rallies, coach randomly asks what colour was visible when the opponent struck the ball.',rationale:'The coloured racquet is not the cue. It is an attentional guide that helps the player search in the right general area so they can begin detecting specifying information from the whole opponent-racquet scene.',fade:'Fade questioning as soon as the player naturally looks back towards the opponent. Reintroduce only if gaze regresses to ball/front-wall watching.',risk:'If overused, the colour or racquet may become the exclusive cue and narrow attention away from earlier body cues such as shoulders, trunk, preparation, racquet path and weight transfer.'},
   {title:'White Ball on White Court',rld:'RLD 4',section:'Opponent Information',purpose:'Reduce dependency on late ball flight and increase use of opponent body cues.',setup:'Use a white ball on a white or light court only where safe and appropriate. Start with controlled rallies before competitive versions.',task:'Players rally or compete while the reduced ball contrast forces earlier information pickup from the opponent.',rationale:'Less visible ball flight increases the value of shoulder rotation, racquet preparation, swing speed and contact information.',fade:'Return to normal ball once players are searching earlier and reading the opponent more reliably. Reintroduce briefly if visual search collapses back to late ball tracking.',risk:'Do not use where safety or confidence is compromised. The aim is better information pickup, not making the task artificially impossible.'},
@@ -23948,7 +23062,6 @@ function VisionPerceptionModule({setScreen}){
   </div>;
 }
 
-/* ── BLIND TARGET SCORE™ — INFORMATIONAL PRESSURE FAMILY ─────────────────── */
 const BTS_THEME={ink:'#10161c',panel:'#161f28',panel2:'#1d2832',line:'#2b3947',felt:'#1f7a52',feltLo:'#13301f',gold:'#d4a13b',goldLo:'#3a2f14',text:'#e8edf2',dim:'#92a2b1',red:'#c0473b',white:'#f4f7fa'};
 const BTS_SUITS={hidden:'♠',slow:'♦',reset:'♥',betfold:'♠',stake:'♦',identity:'♣',image:'♥',siege:'♣'};
 const BTS_DECKS=[
@@ -24128,7 +23241,6 @@ function BlindTargetScoreModule({setScreen,players=[],setSession}){
   </div>;
 }
 
-
 const SOLO_GOOD_CARDS=[
   {title:'Exploration',text:'Players can discover how pace, cut, height, spin, angle and trajectory change the ball. The question becomes: what happens if I do this?'},
   {title:'Confidence',text:'Solo practice can build familiarity, ownership and comfort with the racquet-ball relationship. Confidence matters, but it must later be tested against reality.'},
@@ -24151,7 +23263,6 @@ function SoloFlow({type}){
     : ['Exploration','Variability','Multiple attractors','Calibrated confidence','Pressure','Adaptive search','Flexible performance'];
   return <div className={solo?'soloFlow soloFlowRisk':'soloFlow soloFlowAdaptive'}>{steps.map((step,i)=><React.Fragment key={step}><div className="soloFlowStep"><span>{i+1}</span><strong>{step}</strong></div>{i<steps.length-1&&<div className="soloFlowArrow">↓</div>}</React.Fragment>)}</div>;
 }
-
 
 const TACTICAL_INTENTION_GAMES=[
   {title:'Pressure Before Attack',rld:'4',quick:'Maintain [6-3] or [5-4] until opponent leaves T-zone. Attack only when pressure creates opportunity.',logic:'Build rear-court pressure using working length or lob length. Once opponent is off T, attack to [8-1], [7-2] or a coach-selected front zone.',score:'Win rally = 1 · Opponent Off T before attack = +1 · Attack winner = +2 · Clean winner bonus may sit on top.',constraints:['No Repeat','Height Change','Volley Attack Optional','Quality Length First'],coach:'Pressure creates opportunity. Do not attack because you can; attack because the game has offered it.'},
@@ -24223,20 +23334,6 @@ const PATTERN_LEVEL_META={
   5:{label:'Level V',subtitle:'Full affordance landscape',note:'Back court attack introduced. Full disguise and no-repeat solution diversity.'},
 };
 
-// ── PATTERN LAB · PLAIN-LANGUAGE DESCRIPTIONS ────────────────────────────────
-// Steps are derived from each card's structured `shots` array, so every card in
-// the library — and any card added later — reads the same way with no rewrite.
-// Order is sequence order: what you do first, first.
-// Two different seam ideas, deliberately kept apart:
-//   n/nS  - the seam is the path. Only the boast: that is where the ball travels.
-//   (SA)  - "seam allowed". Derived, never stored. The codes dictate where the
-//           previous shot left the player; if the next shot crosses, the seam is
-//           on. Only [7-2] and [8-1] qualify - one path, three shots (boast,
-//           crosscourt drop, straight drop), so context decides which. Every
-//           other code is strict: it names the shot, and the player engineers his
-//           position to play it. Uses the same rule object as Checkerboard, so
-//           there is one source of truth. Never word (SA) as an instruction to
-//           hit the seam.
 function isSeamPath(code){return /\d\/\dS/.test(code||'');}
 function plSideOf(code){
   const m=/\[(?:[A-Z]+-)?(\d)/.exec(code||'');
@@ -24245,27 +23342,14 @@ function plSideOf(code){
   if(m[1]==='6'||m[1]==='7')return 'R';
   return '';
 }
-// Height suffix aside, is this option on a seam-eligible path? Returns its own
-// side, or '' if it can never carry the allowance.
+
 function plSeamSide(code){
   const m=/^\[(\d)[HL]?-(\d)\]$/.exec((code||'').trim());
   return m?(CB_SEAM_ON_TURN[`[${m[1]}-${m[2]}]`]||''):'';
 }
-// The slash is a choice: the player picks one option and plays it strictly, so a
-// choice never carries the allowance — nothing is known about what precedes the
-// option they take. Only a single code can carry it, judged against where the
-// previous shot left the player. Bare slashes inside a code ([7L/8L-1/2],
-// [LBL-8/7S-2]) are not choice separators.
+
 function plIsChoice(code){return (code||'').includes(' / ');}
-// The boast family shares one path: front of the side wall (A), front wall 8,
-// floor 1. Trickle and Aussie are literally the same code. What names them is
-// which side wall the player took, relative to where they were standing - so the
-// previous shot supplies the origin and the code supplies the wall, the same way
-// the sequence decides (SA). The code is the path; the sequence is the shot.
-//   same-side wall, from the front (origin 1 or 2)  -> trickle
-//   same-side wall, from deep     (origin 3 or 4)   -> Aussie
-//   opposite-side wall, front or deep               -> reverse
-// Floor runs clockwise from front left, so left is 1 and 4, right is 2 and 3.
+
 const FLOOR_SIDE={'1':'L','2':'R','3':'R','4':'L'};
 function plIsFrontBoast(code){return /^\[[LR]AL-/.test((code||'').trim());}
 function plBoastWall(code){
@@ -24279,8 +23363,7 @@ function plBoastName(code,prevFloor){
   if(wall!==side)return 'reverse boast';
   return (prevFloor==='1'||prevFloor==='2')?'trickle boast':'Aussie boast';
 }
-// Where the previous shot left the ball. A choice leaves it unknown - the player
-// picks - so no origin, and nothing gets named off a guess.
+
 function plFloorOf(code){
   const c=(code||'').trim();
   if(plIsChoice(c))return '';
@@ -24293,17 +23376,7 @@ function plShotCode(code,prevSide){
   const own=plSeamSide(c);
   return (own&&prevSide&&prevSide!==own)?`${c} (SA)`:c;
 }
-// Intention, constraint, illustration - in that order, and never confused.
-//   The intention is the rule: what the card is training.
-//   The code is the constraint: the ball must travel that path. It narrows the
-//     space without naming a solution, which is the task simplification.
-//   The shot name is only an illustration: the way that path is usually taken. It
-//     helps a player picture it, but it is never the instruction - if they find
-//     another shot that meets the code and moves the opponent, it counts.
-// How much freedom a code leaves is readable from the code itself. A side-wall
-// code (LBL, LAL, RAL) forces the shot: nothing but a boast goes side wall then
-// front wall, so the shot is entailed, not suggested. A front-wall code names only
-// a path, so a drop, a kill or anything else that gets there satisfies it.
+
 function plIsSideWallCode(code){return /^\[[LR][A-C][HL]?-/.test((code||'').trim());}
 function shotParts(s,prevSide,prevFloor){
   const c=s.code||'';
@@ -24317,7 +23390,7 @@ function shotParts(s,prevSide,prevFloor){
   if(out!==c)notes.push('seam allowed if it is on');
   return {name,code:out,note:notes.join(', '),entailed};
 }
-// The illustration line. Entailed shots are stated; everything else is offered.
+
 function shotHint(p){
   if(!p||!p.name)return '';
   return p.entailed?`That path is a ${p.name} - no other shot makes it.`:`Usually a ${p.name}.`;
@@ -24326,39 +23399,26 @@ function shotText(s,prevSide,prevFloor){
   const p=shotParts(s,prevSide,prevFloor);
   return `${p.code}${p.note?' - '+p.note:''}  ${shotHint(p)}`.trim();
 }
-// Every card sends the opponent to the front: the shot before the recovery always
-// lands in floor 1 or 2. From there the answer is not one shot but a set, and which
-// one is on depends on where the opponent is - so this step carries no code at all.
-// The three length types are DIFFERENT CODES, not one code relabelled. Down each
-// side, into the same floor zone, the ladder is:
-//   lob         top zone, high        5H (left)   6H (right)
-//   working     side vertical seam    5/8S (left) 6/7S (right)
-//   penetrating bottom zone, low      8  (left)   7  (right)
-// So forcing a type rewrites a length code onto its ladder rung, keeping the floor
-// zone. A length is any drive/lob code landing floor 3 or 4 (the back corners).
+
 const LENGTH_LADDER={
-  // side -> type -> [frontwall, heightMarker]  (heightMarker: 'H' | 'S' | '' )
+
   left:  {lob:['5','H'], working:['5/8','S'], penetrating:['8','']},
   right: {lob:['6','H'], working:['6/7','S'], penetrating:['7','']}
 };
-// The player-facing note for each forced length type. Defined here, beside the
-// ladder and before patternLogicSteps uses it - a const does not hoist, so if it
-// sat after its first use the whole app white-screened on a temporal-dead-zone
-// ReferenceError (which is exactly what happened in v414-v419).
+
 const LENGTH_NOTE={
   any:'Lengths as the card sets them - lob or drive, the player chooses. Force a single type to train it on its own.',
   lob:'Lengths must be lobs: high, into the back, resetting the rally and buying time to the T.',
   working:'Lengths must be working drives: a controlled length to the back that resets and lets you recover to the T. The most common length.',
   penetrating:'Lengths must be penetrating drives: harder and flatter, taking time from the opponent and pinning them back for a weak return.'
 };
-// Which side a length code sits on, from its floor zone: left = 1/4, right = 2/3.
+
 function lengthSideFromFloor(floor){return (floor==='1'||floor==='4')?'left':(floor==='2'||floor==='3')?'right':'';}
-// Rewrite a single back-corner length code to the forced type. Non-length codes,
-// and codes that are not a back-corner length, are returned unchanged.
+
 function forceLengthCode(code,lengthType){
   if(!lengthType||lengthType==='any'||!code)return code;
   const m=/^\[(\d)[HL]?-([34])\]$/.exec(code.trim());
-  if(!m)return code;                       // not a plain back-corner length
+  if(!m)return code;                       
   const floor=m[2];
   const side=lengthSideFromFloor(floor);
   const rung=LENGTH_LADDER[side]&&LENGTH_LADDER[side][lengthType];
@@ -24366,14 +23426,12 @@ function forceLengthCode(code,lengthType){
   const [fw,mark]=rung;
   return mark==='S'?`[${fw}S-${floor}]`:`[${fw}${mark}-${floor}]`;
 }
-// Apply to a whole code cell, which may be a choice ("[6L-3] / [7L-3]").
+
 function forceLength(codeCell,lengthType){
   if(!lengthType||lengthType==='any')return codeCell;
   return String(codeCell||'').split(' / ').map(c=>forceLengthCode(c,lengthType)).join(' / ');
 }
-// The recovery resolves the rally back into the rotating-lengths pattern, so it can
-// only be a length shot: a straight or crosscourt lob or drive. Not a drop, kill or
-// boast - those do not restart the length rotation the pattern loops on.
+
 const RECOVERY_FAMILIES='straight or crosscourt lob or drive';
 function isLengthLabel(label){return /\b(drive|lob)\b/i.test(label||'');}
 function forcedLengthWord(lengthType){
@@ -24387,21 +23445,14 @@ function recoveryPhrase(game,lengthType){
   const base=forced?('straight or crosscourt '+forced):RECOVERY_FAMILIES;
   return base+(short?', or hold it short with a drop':'');
 }
-// Walk the shots once, carrying the side and the origin forward, so every gloss
-// is judged against the shot that actually precedes it.
-// When Direction is set to the right side, the whole card mirrors across the
-// centre line - a left-side build cannot feed a right-side attack, so it is all
-// or nothing. Left and right zones swap; height and the front/back axis do not.
-//   front wall  5<->6, 8<->7        floor  1<->2, 4<->3
-//   side wall prefix L<->R          H / L unchanged
+
 const MIRROR_FW={'5':'6','6':'5','7':'8','8':'7'};
 const MIRROR_FLOOR={'1':'2','2':'1','3':'4','4':'3'};
 function mirrorCode(code){
   if(!code)return code;
-  // side-wall prefix: [LBL-...] / [RAL-...]
+
   let out=code.replace(/^\[([LR])([ABC])/,(m,lr,seg)=>`[${lr==='L'?'R':'L'}${seg}`);
-  // front-wall digits and floor digits. A code is [ (prefix-) FW (H|L) - FLOOR ].
-  // Swap every front-wall zone (5-8) and every floor zone (1-4), leaving H/L alone.
+
   out=out.replace(/\d/g,d=>MIRROR_FW[d]||MIRROR_FLOOR[d]||d);
   return out;
 }
@@ -24409,11 +23460,7 @@ function mirrorGame(game,side){
   if(side!=='right'||!game||!Array.isArray(game.shots))return game;
   return {...game,shots:game.shots.map(s=>({...s,code:mirrorCode(s.code)}))};
 }
-// Derive the compact notation from shots, so it can never drift from the pattern the
-// way the hand-written `quick` field did. The last shot is the recovery: by the
-// recovery rule it is a choice of families, not a fixed code, so it is rendered as
-// that phrase rather than its stored code (which was where the impossible mirrored
-// drive came from). Everything before it shows label + code, mirrored if on the right.
+
 function deriveQuick(game,side,lengthType,firstShot){
   const g=mirrorGame(game,side);
   const shots=Array.isArray(g.shots)?g.shots:[];
@@ -24447,15 +23494,9 @@ function plWalk(game,side){
     return {shot:s,parts,text,sa:/\(SA\)/.test(parts.code)};
   });
 }
-// A crosscourt is never specifiable in advance: it is on only if it moves the
-// opponent. The test is the effect, not the landing zone - which is why it is one
-// rule for every cross, a drive to the back and a drop to the front alike.
+
 const FUNCTIONAL_CROSS_RULE='Functional crosscourt only - it must move them more than one step, forward or back';
-// A kill is not a target, and must never be worded as one. It is an intention with
-// a test: hit at pace with a closed face, to make the ball bounce twice quickly. The
-// double bounce is whether it worked; the code is only where the ball happened to go,
-// which is why it is the same [8L-1] as the drop and why no sequence can tell the two
-// apart. Declared on the label, never derived.
+
 const KILL_VS_DROP_RULE='A kill is not a target - it is hit at pace with a closed face to make the ball bounce twice quickly. The drop is open-faced with cut';
 function gameHasKill(game){
   return (game.shots||[]).some(s=>/kill/i.test(s.label||''));
@@ -24463,8 +23504,7 @@ function gameHasKill(game){
 function gameHasCross(game){
   return (game.shots||[]).some(s=>/cross/i.test(s.label||'')||s.crossable);
 }
-// One-line key for the compact notation and the live display, so a player never
-// has to decode S or (SA), or wonder when a cross is on.
+
 function patternSeamKey(game,side){
   const walked=plWalk(game,side);
   const parts=[];
@@ -24474,15 +23514,11 @@ function patternSeamKey(game,side){
   if(gameHasKill(game))parts.push(KILL_VS_DROP_RULE);
   return parts.join('  ·  ');
 }
-// Rotating drives are only broken by a trigger, so the step names the live one
-// rather than pointing at a panel. There is no untriggered state.
+
 const TRIGGER_PHRASE={offT:'Once the opponent is off the T',inFront:'Once the player is in front',both:'Once the opponent is off the T or the player is in front'};
 const TRIGGER_RELEASE={offT:'the opponent is off the T',inFront:'the player is in front',both:'the opponent is off the T or the player is in front'};
 const PATTERN_LAB_PLAYER_SUMMARY="Pattern Lab helps you discover effective ways to build rallies by exploring different options, recognising opportunities and adapting to your opponent. Rather than memorising set patterns, you'll learn to make better decisions as the rally changes, allowing successful patterns to emerge naturally from the situation.";
-// The card "rationale" text is really a run DESCRIPTION with a coaching focus line
-// tacked on the end ("...a functional crosscourt moves the opponent more than one
-// step..."). Split it: the description stays on the card as Description; the focus
-// sentence moves into Player Focus.
+
 function splitPatternLogic(logicText,trigger){
   const raw=(logicText||'').replace('the attack trigger releases',TRIGGER_RELEASE[trigger]||'the attack trigger releases');
   const marker='; a functional crosscourt';
@@ -24536,7 +23572,7 @@ function patternLogicSteps(game,trigger='offT',side,lengthType,firstShot){
   steps.push({k:'Repeat',v:'Run the cycle again - see the Cycle panel for how it ends.'});
   return steps;
 }
-// Ordered most-common first, rarest last.
+
 const PATTERN_SCORE_RULES=[
   {k:'Win the rally',v:'1 point'},
   {k:'Complete the pattern under the run-rules',v:'+1'},
@@ -24546,13 +23582,9 @@ const PATTERN_SCORE_RULES=[
 function patternCrossRule(game){
   return (game.shots||[]).some(s=>s.crossable)?'A cross only counts if it lands 3/4 — it has to send the opponent back.':'';
 }
-// Plain-text versions for session cards, search results and the live display,
-// which take a string rather than a node.
+
 function patternLogicText(game,trigger){return patternLogicSteps(game,trigger).map(s=>`${s.k}: ${s.v}`).join(' ');}
-/* Player-facing version: the actions only, numbered, no intention or rationale.
-   A player on court has seconds to read this — coach content belongs on the
-   module screen, not on the wall. Renders as "1) ... 2) ..." which the player
-   display already turns into separate steps. */
+
 function patternPlayerText(game,trigger,side,lengthType,firstShot){
   const skip={Intention:1,Serve:1,Length:1,Repeat:1};
   const steps=patternLogicSteps(game,trigger,side,lengthType,firstShot)
@@ -24614,7 +23646,7 @@ function PatternDetailPage({game,meta,onBack,onAdd,viewSession,setScreen,initial
   const dirLabel=direction==='rightStraight'?'Right straight only':direction==='leftStraight'?'Left straight only':direction==='both'?'Both sides':('Cross allowed'+(crossCap>0?(' · max '+crossCap+'/cycle'):' · no cap'));
   const cycleLabel=cycleMode==='breakdown'?'Cycle continues until it breaks down':('Open play after '+openAfter+' cycle'+(openAfter===1?'':'s'));
   const serveSide=direction==='rightStraight'?'Serve from the left box (opposite the rotating side)':direction==='leftStraight'?'Serve from the right box (opposite the rotating side)':'Serve alternates sides';
-  // Right straight only mirrors the whole card to the right; left and both keep the authored (left) side.
+
   const patternSide=direction==='rightStraight'?'right':'left';
   const firstShotVolleyLabel={volley:'volley only',novolley:'no volley (let it bounce)',choice:'player\'s choice'}[firstShotVolley];
   const crossVolleyLabel={volley:'volley only',novolley:'no volley (let it bounce)',choice:'player\'s choice'}[crossVolley];
@@ -24800,9 +23832,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
     const layers=[...(game.flags||[]),...(runRules||[]),...modLayers];
     const split=splitPatternLogic(game.logic,trigger);
     const card=normaliseGameCard({title:`Pattern Lab — ${game.title}`,category:'Tactical Intentions',format:'Pattern Lab',duration:8,
-      /* The player display reads the task. Give it the numbered action sequence
-         rather than a one-line summary, so a player on court sees 1) 2) 3) 4)
-         and can find their place at a glance. Coach detail stays in description. */
+
       task:quickOverride||patternPlayerText(game,trigger)||game.quick,description:desc,rationale:split.description,scoring:scoreOverride!=null?scoreOverride:patternScoreText(),layers:layers,modifierScores:modifier?modifier.scoring:undefined,rld:game.rld,coach:game.coach,playerFocus:'Recognise the affordance and choose a functional solution.'+(split.focus?(' '+split.focus):'')});
     card.plConfig=plConfig;
     if(editing&&editing.cardId){
@@ -24990,15 +24020,9 @@ function SoloPracticeModule({setScreen}){
   </div>;
 }
 
-
-/* ═══ CLA LEXICON DATA — self-contained block. Safe to lift into its own module
-   later: nothing outside this block references it except the screen below. ═══ */
 const CLA_LEXICON_TERMS=[{"id":"action-fidelity","n":"Action fidelity","tile":"Coaching Concepts","sub":"Representative learning","def":"Whether the movements performed in practice — shots, footwork and recovery — are the same as those in real play.","plain":"Are they actually moving and hitting the way they would in a match?","why":"One of the four fidelity lenses. An activity can be demanding and well-run yet produce movements that never occur in a match.","squash":"Ghosting to cones produces footwork patterns; whether those patterns match how a player actually moves to a live ball is the action fidelity question.","tips":["Compare practice video with match video, movement by movement.","High physical load with low action fidelity is a fitness session, not a skill session.","Check recovery as well as the shot itself.","An activity can pass action fidelity and still fail the other three lenses."],"myth":"Action fidelity is not overall representativeness. It is one of four lenses, and scoring well on it says nothing about whether the decisions or emotional stakes are representative.","hist":"Developed from Stoffregen and colleagues' work on fidelity in simulated environments, and used in the app as one of the four fidelity lenses in RLD Assess.","rel":["affective-fidelity","conceptual-fidelity","physiological-fidelity","representative-learning-design"],"read":["Stoffregen, T. A., Bardy, B. G., Smart, L. J., & Pagulayan, R. J. (2003). On the nature and evaluation of fidelity in virtual environments. In L. J. Hettinger & M. W. Haas (Eds.), Virtual and adaptive environments (pp. 111-128). Erlbaum.","Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"refs":["Stoffregen, T. A., Bardy, B. G., Smart, L. J., & Pagulayan, R. J. (2003). On the nature and evaluation of fidelity in virtual environments. In L. J. Hettinger & M. W. Haas (Eds.), Virtual and adaptive environments (pp. 111-128). Erlbaum."],"inApp":1},{"id":"action-selection","n":"Action selection","tile":"Skill Acquisition","sub":"Decision making","def":"The emergence of one action from among the possibilities available in a situation.","plain":"How one shot ends up being the one that gets played.","why":"Ecological accounts treat this as emergent from constraints rather than as a deliberate internal choice.","squash":"Shot selection in a fast rally is not deliberated; it emerges from what is available and what stands out.","rel":["affordance-competition","affordances-as-invitations","decision-window"]},{"id":"adaptive-systems","n":"Adaptive systems","tile":"Complex Systems","sub":"Complex systems","def":"Systems that change their own behaviour in response to their environment.","plain":"Things that adjust themselves to what is happening.","why":"It is the category a player belongs to, which is why prescribing fixed solutions works poorly.","squash":"A player who changes their length and pace in response to a particular opponent within a single game.","rel":["complex-adaptive-systems","skill-adaptation","co-adaptation"]},{"id":"affective-fidelity","n":"Affective fidelity","tile":"Coaching Concepts","sub":"Representative learning","def":"Whether an activity produces the same emotional states as real play — consequence, pressure and stakes.","plain":"Does it feel like it matters, the way a match does?","why":"It is the lens most often failed. Practice without consequence produces skill that has never been tested under the conditions that determine whether it survives.","squash":"A constrained game with no score attached rarely produces the emotional state of a tie-break, however technically similar it looks.","tips":["Attach real consequence — scoring, standings, something at stake.","Emotional stakes are a constraint, not an optional extra.","Watch for skills that hold in practice and disappear in matches; that gap is usually here.","Consequence need not mean punishment — it means the result counts for something."],"myth":"Affective fidelity is not about making practice stressful or unpleasant. It is about the result mattering enough that the player's emotional state resembles competition.","hist":"One of the four fidelity lenses used in the app's RLD Assess module, developed from the fidelity literature on representative design.","rel":["action-fidelity","conceptual-fidelity","physiological-fidelity","individual-constraints"],"read":["Stoffregen, T. A., Bardy, B. G., Smart, L. J., & Pagulayan, R. J. (2003). On the nature and evaluation of fidelity in virtual environments. In L. J. Hettinger & M. W. Haas (Eds.), Virtual and adaptive environments (pp. 111-128). Erlbaum.","Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"refs":["Stoffregen, T. A., Bardy, B. G., Smart, L. J., & Pagulayan, R. J. (2003). On the nature and evaluation of fidelity in virtual environments. In L. J. Hettinger & M. W. Haas (Eds.), Virtual and adaptive environments (pp. 111-128). Erlbaum.","Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"inApp":1},{"id":"affordance","n":"Affordance","tile":"Foundations","sub":"Gibson","def":"An opportunity for action that the environment offers a particular performer.","plain":"Affordances are relational: they exist in the fit between the properties of the environment and the capabilities of the performer. A gap is 'passable' only relative to a player's speed, size and skill, so the same pitch offers different affordances to different athletes, and to the same athlete on a tired day. Affordances are perceived directly rather than inferred, which is why skilled performers appear to 'see' options that novices do not.","alias":["Action possibility"],"why":"Affordances are the unit coaches actually work with. If skill is the ability to perceive and act on opportunities, then practice design is really the design of which opportunities exist and which get noticed. Changing what a player can do changes what the court offers them.","squash":"A loose ball sitting up mid-court affords a drive, a drop, a kill or a crosscourt nick - but only some of those are available to this player, at this moment, given their position, balance and racket preparation. An off-balance player behind the ball has fewer affordances than a player who arrived early, even though the ball is identical.","tips":["Ask what the court is offering this player, not what the textbook says the shot should be.","When a player keeps choosing the same shot, check whether alternatives are genuinely available to them or merely theoretically available.","Improving movement and early racket preparation expands the affordance set without teaching a single new stroke.","Two players facing the same ball are not facing the same situation."],"myth":"Affordances are not objects, and not the same as options on a list. They are relationships between the player's current capabilities and the situation. A drop shot is not an affordance in itself; a drop shot being available to this player, from this position, right now, is.","hist":"Introduced by James J. Gibson in the 1960s-70s and set out fully in 1979. The concept moved perception from something happening inside the head to something happening in the relationship between animal and environment, and became the cornerstone of ecological approaches to coaching.","rel":["effectivity","direct-perception","landscape-of-affordances"],"read":["Gibson (1979), Chapter 8","Gray (2021), How We Learn to Move"],"refs":["Gibson, J. J. (1979). The ecological approach to visual perception. Houghton Mifflin.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."]},{"id":"affordance-amplification","n":"Affordance amplification","tile":"Coaching Concepts","sub":"Constraints","def":"Designing a constraint so that one particular action possibility becomes markedly more available or more rewarding.","plain":"Making the thing you want to see the obvious thing to do.","why":"It is the positive form of constraint design. Rather than banning what you do not want, you make what you do want stand out — which is more durable because the player chooses it.","squash":"Scoring double for a winner hit in front of the short line amplifies the attacking affordance without forbidding anything.","tips":["Amplify before you prohibit — prohibition removes options, amplification creates pull.","Name the affordance you are amplifying before designing the constraint.","Check the amplified behaviour survives when the bonus is removed.","If players comply only while scored, the affordance was not amplified, it was bought."],"myth":"Amplification is not the same as instruction or reward for compliance. The aim is that the opportunity genuinely stands out in the situation, not that the player remembers a rule about points.","hist":"One of the named mechanisms in the Checkerboard CLA rationale standard, drawn from constraint design in the constraints-led literature.","rel":["affordances-as-invitations","constraint-manipulation","attractor-removal","task-constraints"],"read":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach. Routledge."],"refs":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"inApp":1},{"id":"affordance-competition","n":"Affordance competition","tile":"Skill Acquisition","sub":"Decision making","def":"The process by which several available action possibilities are simultaneously live and one comes to dominate.","plain":"Several options are all on the table at once and one wins out.","why":"It explains deception and hesitation better than a sequential decide-then-act model.","squash":"Holding the ball with drop and drive both still genuinely available is affordance competition maintained deliberately.","rel":["metastability","action-selection","skilled-intentionality"]},{"id":"affordance-based-control","n":"Affordance-based control","tile":"Foundations","sub":"Gibson","def":"Regulating action by continuously perceiving whether an affordance remains available, rather than by pre-planning a trajectory.","plain":"Warren's account describes performers as prospectively monitoring whether an action is still possible — whether the gap is still passable, the ball still reachable — and adjusting as they go. Control is continuous and forward-looking rather than computed in advance. It connects affordance theory directly to the mechanics of ongoing movement regulation.","squash":"Actions performed against fixed, unchanging conditions are not being controlled this way, which is part of why they transfer poorly.","hist":"Origin: Warren (2006)","rel":["affordance","perception-action-coupling","tau"],"refs":["Warren (2006)"]},{"id":"affordances-as-invitations","n":"Affordances as invitations","tile":"Foundations","sub":"Gibson","def":"The idea that affordances don't merely permit action, they solicit it with varying strength.","plain":"Some options actively pull at a performer — an open gap, a stumbling opponent, a short ball. This framing helps explain behaviour selection: performers don't neutrally survey all options, they respond to the most inviting ones. Coaches can design environments where the desired behaviour is the most inviting one rather than the instructed one.","squash":"If you want more switches of play, make the far side visibly and repeatedly the most inviting option.","hist":"Origin: Withagen et al. (2012)","rel":["affordance","constraint-manipulation"],"refs":["Withagen et al. (2012)"]},{"id":"ambient-optic-array","n":"Ambient optic array","tile":"Foundations","sub":"Gibson","def":"The structured pattern of light surrounding a point of observation, containing information about surfaces and events.","plain":"As a performer moves, the optic array transforms in lawful ways. Those transformations, rather than static snapshots, carry the information used to control action. This is why perception is inseparable from movement: moving generates the very information that guides moving.","hist":"Origin: Gibson (1979)","rel":["optic-flow","direct-perception"],"refs":["Gibson (1979)"]},{"id":"analogy-learning","n":"Analogy learning","tile":"Coaching Concepts","sub":"Coaching","def":"Using a single biomechanical metaphor to convey a whole movement pattern implicitly.","plain":"An analogy compresses many technical instructions into one image, reducing the explicit rule-following that tends to break down under pressure. Effective analogies come from the athlete's own experience rather than the coach's.","squash":"'Throw like you're skimming a stone across water.'","rel":["external-focus-of-attention","education-of-attention"]},{"id":"anticipation","n":"Anticipation","tile":"Skill Acquisition","sub":"Decision making","def":"Preparing or initiating action on the basis of information available before an event occurs.","plain":"Moving early because you have picked up what is about to happen.","why":"Ecological accounts treat this as earlier information pickup rather than prediction from stored patterns.","squash":"Starting to move before the opponent's contact because their body position has already specified the shot.","rel":["prospectivity","attunement","visual-search"]},{"id":"athlete-centred-coaching","n":"Athlete-centred coaching","tile":"Coaching Concepts","sub":"Coaching","def":"Practice organised around the learner's capabilities, intentions and emerging solutions rather than a prescribed model.","plain":"Because constraints and effectivities differ between individuals, functional solutions legitimately differ too. Taking the athlete's own intentions seriously matters because intention is itself a constraint shaping what emerges. This follows from individuality in nonlinear systems rather than being a separate coaching philosophy.","rel":["individual-constraints","intention-as-a-constraint","nonlinear-pedagogy"]},{"id":"athlete-environment-system","n":"Athlete-environment system","tile":"Foundations","sub":"Foundations","def":"The unit of analysis in ecological dynamics: performer and environment treated together.","plain":"Analysing the athlete alone produces technical descriptions detached from the conditions that generated them. Analysing the system keeps the question 'why did this movement emerge here?' in view, which is where coaching has most influence.","rel":["organism-environment-mutuality","ecological-dynamics"]},{"id":"attractor","n":"Attractor","tile":"Complex Systems","sub":"Complex systems","def":"A stable coordination state the system tends to settle into and return to after disturbance.","plain":"Attractors are valleys in a landscape: deep ones are hard to leave (robust technique, but also entrenched habits), shallow ones are easy to escape (flexible, but inconsistent). Good practice deepens useful attractors and destabilises unhelpful ones.","why":"It explains why habits are hard to change and why some technical patterns resist years of correction. A deeply grooved pattern is a stable state the system falls back into, especially under pressure.","squash":"A player with an entrenched open racket face on the backhand may hold a corrected version in calm drilling and revert instantly at 8-8 in the fifth. The old pattern is the deeper attractor.","tips":["To change a deep pattern you must destabilise it first - comfortable practice preserves it.","Test any change under pressure and fatigue, not just in calm conditions.","Expect temporary performance loss during the change; that is the pattern being destabilised.","Some attractors are worth keeping - stability is not automatically the enemy."],"myth":"An attractor is not a fixed movement stored in memory. It is a stable region in the system's behaviour that the system tends to settle into given current constraints.","hist":"Central to dynamical systems accounts of coordination, established for human movement through Kelso's work from the early 1980s.","rel":["attractor-landscape","stability","perturbation"],"read":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."],"refs":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."]},{"id":"attractor-landscape","n":"Attractor landscape","tile":"Complex Systems","sub":"Complex systems","def":"The metaphorical terrain of valleys and ridges representing all coordination states available to a performer.","plain":"Learning reshapes the landscape: new valleys form, old ones flatten. It's a useful image for explaining why change is initially unstable, why performers regress under pressure to well-worn patterns, and why a period of getting worse often precedes real improvement.","rel":["attractor","phase-transition"]},{"id":"attractor-removal","n":"Attractor removal","tile":"Coaching Concepts","sub":"Constraints","def":"Designing a constraint that makes a habitual, over-stable coordination pattern unavailable, forcing exploration of alternatives.","plain":"Taking away the thing they always do so they have to find something else.","why":"It is the direct practical use of attractor theory. A deeply grooved pattern will not change through instruction; removing its availability is what creates the search for alternatives.","squash":"A player who drives every loose ball is banned from driving in the front third, forcing them to find the drop, the kill and the hold.","tips":["Identify the default pattern precisely before removing it.","Expect performance to drop immediately — that is the attractor destabilising.","Restore the removed option afterwards and check the player now has genuine choice.","Remove availability, do not just discourage it verbally."],"myth":"The goal is not to eliminate the habitual shot permanently. It is to break its automatic dominance so the player ends up with several live options rather than one.","hist":"One of the named mechanisms in the Checkerboard CLA rationale standard, following from Kelso's account of attractors in coordination dynamics.","rel":["attractor","perturbation","degeneracy","constraint-manipulation"],"read":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press.","McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"refs":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."],"inApp":1},{"id":"attunement","n":"Attunement","tile":"Foundations","sub":"Gibson","def":"Becoming increasingly sensitive to the most useful information for a task.","plain":"Attunement is a shift in what the performer is picking up, not a change in their eyesight. It is why two athletes watching the same event can perceive entirely different things, and why 'look at the ball' rarely helps — the useful variable is usually more specific than that.","why":"Attunement explains improvement that involves no visible change in technique. A player who begins reading the game better has changed on the perception side, and that change is often invisible on video.","squash":"A young player initially reacts to the ball leaving the opponent's racket. Over time they become sensitive to the opponent's hip rotation and racket preparation, and start moving fractionally earlier - with no change to their movement technique at all.","tips":["Expect perceptual progress to be invisible in stroke technique; measure it in timing and positioning.","Use questioning to find out what a player is currently noticing before telling them what to notice.","Vary opponents so players do not become attuned to one person's habits.","Give time. Attunement is slow and does not respond to instruction."],"myth":"Attunement is not the same as concentrating harder or watching more carefully. Telling a player to watch the ball does not make them sensitive to the information that matters.","hist":"Developed by Eleanor J. Gibson from the 1960s as part of her account of perceptual learning as differentiation - learning to detect distinctions that were always available.","rel":["education-of-attention","information-specifying","calibration"],"read":["Gibson, E. J., & Pick, A. D. (2000). An ecological approach to perceptual learning and development. Oxford University Press."],"refs":["Gibson, E. J., & Pick, A. D. (2000). An ecological approach to perceptual learning and development. Oxford University Press.","Jacobs, D. M., & Michaels, C. F. (2007). Direct learning. Ecological Psychology, 19(4), 321-349."]},{"id":"bifurcation","n":"Bifurcation","tile":"Complex Systems","sub":"Complex systems","def":"A point at which a small change in a control parameter causes a qualitative change in system behaviour.","plain":"The tipping point where behaviour splits into a new pattern.","why":"The formal term for the moment a phase transition becomes possible.","squash":"The rally speed at which a player switches from driving to volleying as their default.","rel":["phase-transition","control-parameter","multi-stability"]},{"id":"body-scaled-and-action-scaled-information","n":"Body-scaled and action-scaled information","tile":"Foundations","sub":"Gibson","def":"Information expressed in units of the performer's own body or action capabilities rather than absolute units.","plain":"People judge a step as climbable at a fairly constant ratio of riser height to leg length, not at a fixed number of centimetres. Similarly, whether a gap is passable is scaled to current speed and turning ability. This is why absolute equipment and pitch dimensions can systematically distort what young athletes learn.","alias":["Pi numbers"],"squash":"Full-size goals and adult balls change the affordance structure of the game for children, not just its difficulty.","hist":"Origin: Warren (1984)","rel":["affordance","constraint-manipulation"],"refs":["Warren (1984)"]},{"id":"calibration","n":"Calibration","tile":"Foundations","sub":"Gibson","def":"Scaling a perceived variable accurately to one's own action capabilities.","plain":"Attunement is about using the right information; calibration is about mapping it correctly onto what you can actually do. A returning athlete may be well attuned but poorly calibrated — they read the situation correctly but misjudge what they can now reach.","why":"Calibration explains sudden, temporary drops in accuracy that have nothing to do with technique. Knowing this prevents coaches from rebuilding a stroke that was never broken.","squash":"A junior returning after a growth spurt consistently overhits length. Their perception of the court is intact; the mapping from what they see to how hard they need to hit has shifted because their body and reach have changed.","tips":["After growth, injury, illness or a racket or ball change, allow a recalibration period.","Look for systematic over- or under-shooting rather than random error - that pattern signals miscalibration.","Give lots of varied-distance repetitions with clear outcome information and minimal instruction.","Resist technical intervention for the first sessions back."],"myth":"Miscalibration is often mistaken for a technical fault or a loss of confidence. It is neither - it is a scaling problem that generally resolves with exposure.","hist":"Formalised alongside attunement within direct learning theory by Jacobs and Michaels in the 2000s, building on Gibson's account of perceptual learning.","rel":["attunement","effectivity"],"read":["Jacobs & Michaels (2007)"],"refs":["Jacobs, D. M., & Michaels, C. F. (2007). Direct learning. Ecological Psychology, 19(4), 321-349."]},{"id":"challenge-point","n":"Challenge point","tile":"Coaching Concepts","sub":"Coaching","def":"The difficulty at which the information available to a learner is optimal — in Checkerboard, approximately 70% success.","plain":"The sweet spot where it is hard enough to learn from but not so hard that nothing works.","why":"The Checkerboard 70% Rule makes this operational: success frequent enough to maintain confidence, failure frequent enough to require adaptation. It is the app's standing test for whether a task is pitched right.","squash":"If a player is winning almost every rally in a constrained game, the task is below their challenge point; if they are barely winning any, it is above. Around 70% is the target band.","tips":["Apply the 70% Rule: are they in the learning zone?","Pitch individually — the same game can be at challenge point for one player and past it for their partner.","Adjust by scaling space, time or opponent rather than by lowering intent.","Re-check as the player improves; the challenge point moves."],"myth":"The 70% figure is a practical target band, not a precise measurement to be calculated. It is a prompt to look at whether success and failure are both frequent enough.","hist":"Origin: Guadagnoli & Lee (2004)","rel":["scaling","task-complexity","learning-versus-performance"],"refs":["Guadagnoli & Lee (2004)"],"inApp":1},{"id":"choking","n":"Choking","tile":"Skill Acquisition","sub":"Skill acquisition","def":"A marked drop in performance under pressure, in which a normally reliable skill breaks down.","plain":"Performing far below your level when it matters most.","why":"Understanding it as a mechanism rather than a character flaw changes the response from motivational talk to practice design.","squash":"A player who has served reliably all match double-faults twice at 10-9 down.","tips":["Build pressure into practice regularly rather than saving it for competition.","Reduce explicit technical instruction, which supplies the material for reinvestment.","Keep cues external and outcome-focused under pressure.","Normalise it — treating it as a flaw increases the anxiety that drives it."],"myth":"Choking is not simply trying too hard or wanting it too much. The most supported mechanism is conscious monitoring of movement that normally runs automatically.","hist":"Studied extensively from the 1980s, with the reinvestment account developed by Masters from 1992 providing the mechanism most relevant to skill acquisition.","rel":["reinvestment","implicit-learning","internal-focus"],"read":["Masters, R., & Maxwell, J. (2008). The theory of reinvestment. International Review of Sport and Exercise Psychology, 1(2), 160-183."],"refs":["Masters, R. S. W. (1992). Knowledge, knerves and know-how: The role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology, 83(3), 343-358.","Masters, R., & Maxwell, J. (2008). The theory of reinvestment. International Review of Sport and Exercise Psychology, 1(2), 160-183."],"inApp":1},{"id":"co-adaptation","n":"Co-adaptation","tile":"Complex Systems","sub":"Complex systems","def":"The mutual, ongoing adjustment between two or more performers in an interactive context.","plain":"In one-on-one and team contexts, each performer is part of the other's environment, so behaviour cannot be understood individually. Practice that removes the opponent removes the co-adaptive dynamic that defines the skill.","squash":"Attacker and defender continually reshaping each other's affordances as a duel unfolds.","rel":["shared-affordances","interpersonal-coordination"]},{"id":"collective-behaviour","n":"Collective behaviour","tile":"Complex Systems","sub":"Complex systems","def":"Coordinated group-level patterns emerging from local interactions between individuals.","plain":"Group patterns nobody organised.","why":"Explains team and pair coordination without needing shared plans, and is a useful frame for doubles.","squash":"In doubles, court coverage patterns emerge from each player responding locally to the other.","rel":["shared-affordances","interpersonal-coordination","emergence"]},{"id":"complex-adaptive-systems","n":"Complex adaptive systems","tile":"Complex Systems","sub":"Complex systems","def":"Systems of many interacting components that adapt to their environment and produce emergent, non-linear behaviour.","plain":"Lots of parts interacting, changing in response to conditions, producing patterns nobody designed.","why":"It is the category human performers and squash matches belong to, which is why simple cause-and-effect coaching logic underperforms.","squash":"A tight rally is a complex adaptive system: two players continuously adjusting to each other, producing patterns neither planned.","rel":["emergence","self-organisation","nonlinearity","collective-behaviour"]},{"id":"conceptual-fidelity","n":"Conceptual fidelity","tile":"Coaching Concepts","sub":"Representative learning","def":"Whether the decisions available in an activity are the same as those available in real play.","plain":"Are they making the same choices they would in a match?","why":"It is the lens that separates a rehearsal from a game. An activity where the answer is known in advance has removed the decision that defines the skill.","squash":"A drill where the player knows the next shot is a straight drive has no conceptual fidelity, however realistic the ball and movement are.","tips":["Ask what the player has to decide — if the answer is nothing, this lens fails.","Predictable sequences remove decisions even when they preserve movement.","Adding a genuine choice is often a single-rule change.","This is usually the cheapest fidelity lens to fix."],"myth":"Conceptual fidelity is not about tactical complexity. A simple two-option choice under real uncertainty scores better than an elaborate pre-set pattern.","hist":"One of the four fidelity lenses used in the app's RLD Assess module.","rel":["action-fidelity","affective-fidelity","physiological-fidelity","decision-window"],"read":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684","McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"refs":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"inApp":1},{"id":"constraint","n":"Constraint","tile":"Coaching Concepts","sub":"Constraints","def":"A boundary that reduces the number of configurations a system can adopt, thereby shaping which behaviours emerge.","plain":"Constraints are not obstacles in the everyday sense. By narrowing possibilities they make coordinated behaviour possible at all. Every practice already has constraints; the question is only whether they were chosen deliberately.","why":"Constraints are the coach's actual tools. You cannot install a technique, but you can change the problem so that a better solution becomes the natural one. Every decision you make in a session is a constraint whether you intended it or not.","squash":"Narrowing the playing area to the back two-thirds of the court makes length and width matter more, and drop shots less rewarding - without a word being said about shot selection.","tips":["Change one constraint at a time so you can see what it did.","If behaviour does not change, the constraint was too weak or was aimed at the wrong thing.","Audit the constraints you did not choose: queue length, ball temperature, court number, your own commentary.","A constraint that needs explaining is usually doing too little work on its own."],"myth":"Constraints are not restrictions or punishments, and they are not the same as rules imposed for discipline. They shape the space of possible solutions so that useful ones become more likely to emerge.","hist":"Karl Newell's 1986 chapter gave the field its three-category structure of individual, task and environmental constraints, which remains the organising framework for the whole approach.","rel":["newell-s-model-of-constraints","constraint-manipulation"],"read":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."]},{"id":"constraint-interaction","n":"Constraint interaction","tile":"Coaching Concepts","sub":"Constraints","def":"The way individual, task and environmental constraints combine, so that the effect of any one depends on the others.","plain":"Constraints do not act separately - they multiply and cancel each other out.","why":"It is why the same constraint produces different behaviour in different players and on different days.","squash":"A narrowed target area produces attacking play in a confident player and paralysis in an anxious one.","rel":["constraint","individual-constraints","constraint-manipulation"]},{"id":"constraint-manipulation","n":"Constraint manipulation","tile":"Coaching Concepts","sub":"Constraints","def":"Deliberately altering one or more constraints to invite different behaviour to emerge.","plain":"Effective manipulation is targeted: it changes the specific constraint most likely to reshape the behaviour in question, and only that one, so the effect is legible. A common failure mode is stacking many constraints at once, producing a task nobody can read.","why":"This is the practical core of the whole approach - the skill that separates a coach who understands CLA from one who merely uses its vocabulary. Good manipulation invites a behaviour without prescribing it.","squash":"To encourage volleying, reduce the size of the back court rather than telling players to volley more. The behaviour emerges because it is now the best available solution, not because it was requested.","tips":["Name the target behaviour, change one constraint, observe, then keep or revise.","Aim to make the desired behaviour the most attractive option, not the only legal one.","If players comply verbally but revert under pressure, the constraint was really an instruction.","Keep a record of which constraints reliably produce which behaviours in your context."],"myth":"Constraint manipulation is not just adding rules to a game. A constraint that forces a behaviour removes the search process that makes the learning durable.","hist":"Emerged as applied practice through Davids, Button and Bennett (2008) and was set out as a coaching methodology by Renshaw and colleagues (2019).","rel":["constraint","control-parameter","task-constraints"],"read":["Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge.","Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics."],"refs":["Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."]},{"id":"constraints-led-approach","n":"Constraints-led approach","tile":"Coaching Concepts","sub":"Constraints","def":"A pedagogical approach in which coaches shape learning by manipulating constraints rather than prescribing technique.","plain":"The CLA treats the learner as a self-organising system embedded in an environment. The coach's primary craft becomes designing tasks whose constraints invite the desired behaviour, supported by questioning, framing of intention, and carefully chosen information. It is not the absence of coaching — it relocates coaching from instruction to design.","alias":["CLA"],"why":"It reframes the coach from instructor to designer. Instead of transmitting a technique and rehearsing it, the coach builds the conditions in which each player finds a solution that works for their own body and game.","squash":"Rather than teaching a model straight drive and drilling it, the coach sets a task with a narrow target channel, a live opponent and scoring that rewards depth - and lets each player converge on a swing that achieves it.","tips":["Ask what you can change about the problem before asking what you can tell the player about the answer.","Accept that two players may solve the same problem differently and both be right.","Design first, instruct second, and expect to instruct much less than before.","Judge the session on the behaviour it produced, not on how orderly it looked."],"myth":"CLA does not mean never giving information, never using technical language, or abandoning structure. It means information is used to direct attention rather than to prescribe movement, and structure lives in the design rather than in the instruction.","hist":"Grew out of Newell's constraints model, combined with Gibsonian perception and dynamical systems theory. Formalised for sport by Davids, Button and Bennett (2008) and translated into applied coaching practice by Renshaw and colleagues (2019).","rel":["newell-s-model-of-constraints","nonlinear-pedagogy","ecological-dynamics"],"read":["Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge.","Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."]},{"id":"constraints-led-questioning","n":"Constraints-led questioning","tile":"Coaching Concepts","sub":"Coaching","def":"Using questions to direct attention, prompt exploration and surface the learner's own solutions.","plain":"Questions work as informational constraints. Good ones point at relationships ('what did the defender's hips tell you?') rather than requesting a technical self-report. Poor ones function as disguised instructions and remove the exploration they were meant to provoke.","rel":["education-of-attention","search"]},{"id":"contextual-interference","n":"Contextual interference","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The finding that interleaved, varied practice depresses immediate performance but improves retention and transfer.","plain":"The practical consequence is that the practice that looks best on the day is often not the practice that produces the most learning. It provides a useful bridge for coaches sceptical of messy sessions: the mess is doing something measurable.","alias":["Blocked vs random practice"],"hist":"Origin: Shea & Morgan (1979)","rel":["functional-variability","transfer"],"refs":["Shea & Morgan (1979)"]},{"id":"control-parameter","n":"Control parameter","tile":"Complex Systems","sub":"Complex systems","def":"A variable that, when scaled, drives the system through changes in coordination without prescribing the new pattern.","plain":"Speed, distance, number of players, time available and surface friction are common control parameters. The coach's lever is usually here: change the parameter, and let the new pattern emerge rather than instructing it.","squash":"Progressively increasing feed speed until a player's footwork pattern reorganises of its own accord.","rel":["order-parameter","phase-transition","constraint-manipulation"]},{"id":"coordination","n":"Coordination","tile":"Skill Acquisition","sub":"Bernstein","def":"The organisation of the body's many components into a functional relationship that achieves a task goal.","plain":"Getting the parts of the body working together to do the job.","why":"Coordination is the first thing to develop; refinement of the pattern comes afterwards.","squash":"A beginner who gets racket and feet arriving together has solved coordination before they have any control of length.","rel":["coordinative-structure","degrees-of-freedom-problem","coordination-control-skill"]},{"id":"coordination-control-skill","n":"Coordination-control-skill","tile":"Skill Acquisition","sub":"Skill acquisition","def":"Newell's three-stage account of learning: assembling a pattern, parameterising it, then optimising it.","plain":"In the coordination stage the learner establishes a workable pattern. In the control stage they learn to scale it to task demands (harder, faster, further). In the skill stage they optimise efficiency and exploit the constraints of the environment. Practice design should match the stage — variability that helps a skilled performer can overwhelm someone still assembling the pattern.","alias":["Newell's stages of learning"],"hist":"Origin: Newell (1985)","rel":["freezing-and-freeing-degrees-of-freedom","constraint-manipulation"],"refs":["Newell (1985)"]},{"id":"coordinative-structure","n":"Coordinative structure","tile":"Skill Acquisition","sub":"Bernstein","def":"A temporary, task-specific assembly of muscles and joints that behaves as a single functional unit.","plain":"By linking elements together, the system reduces the number of things it must control from hundreds to a handful. These synergies are soft-assembled — they form for the task at hand and dissolve afterwards — which is why they are flexible rather than fixed motor programmes.","alias":["Synergy","Muscle linkage","Synergies"],"squash":"A cricket bowler's whole kinetic chain acting as one unit, rather than a sequence of separately controlled segments.","rel":["degrees-of-freedom-problem","soft-assembly"]},{"id":"creativity-in-movement","n":"Creativity (in movement)","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The generation of novel, functional solutions to a movement problem.","plain":"In this framework creativity is not a personality trait but a property of the athlete-environment system, most likely to appear near metastable regions and in performers with a rich history of varied experience. It can therefore be designed for.","rel":["metastability","degeneracy","search"]},{"id":"critical-fluctuation","n":"Critical fluctuation","tile":"Complex Systems","sub":"Complex systems","def":"A rise in variability immediately before a coordination pattern reorganises.","plain":"Increased inconsistency is often read as deterioration when it is in fact a signal of imminent change. Recognising this helps coaches hold their nerve rather than intervening and pulling the athlete back to the old, stable pattern.","rel":["phase-transition","stability"]},{"id":"decision-window","n":"Decision window","tile":"Skill Acquisition","sub":"Decision making","def":"The period during which a particular action remains available.","plain":"The time you have before the option disappears.","why":"It makes decision quality a matter of timing and positioning rather than of thinking faster.","squash":"The window for volleying a crosscourt closes as the ball passes the service box.","rel":["opportunity-window","affordance-based-control","prospectivity"]},{"id":"decoupling","n":"Decoupling","tile":"Coaching Concepts","sub":"Representative learning","def":"Breaking the link between the information an athlete uses and the movement they produce.","plain":"Cone drills, hand-fed feeds, shadow work and isolated technical reps all decouple to some degree. Decoupling is not automatically bad — it can be a deliberate temporary simplification — but the coupling has to be restored before the skill transfers, and a practice diet that is mostly decoupled produces performers who look good in training and struggle in competition.","why":"It is the most common hidden fault in otherwise well-run sessions. Decoupled practice often looks better than coupled practice, which is exactly why it survives.","squash":"A player performing beautiful straight drives from a boast feed is being regulated by a predictable ball on a known trajectory. In a match the same shot is regulated by an opponent's shot they did not choose and cannot predict.","tips":["Audit each activity for what is actually guiding the movement.","Watch for practice looking cleaner than match play - that gap is often decoupling.","Predictability is the main culprit: known feed, known sequence, known target.","If you decouple deliberately, keep it brief and return to coupled work."],"myth":"Decoupling is not the same as simplification. You can make a task much easier while keeping perception and action coupled; decoupling removes the link entirely.","hist":"A practical corollary of Gibson's perception-action work, given emphasis in applied coaching by Davids, Renshaw and Gray.","rel":["perception-action-coupling","task-simplification"],"read":["Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155."]},{"id":"degeneracy","n":"Degeneracy","tile":"Skill Acquisition","sub":"Variability","def":"The capacity of structurally different components or patterns to produce the same functional outcome.","plain":"Degeneracy is what gives a performer a repertoire of routes to the same goal, and it underpins robustness: if one route is blocked by fatigue, injury or an opponent, another is available. It is distinct from redundancy, which implies identical duplicates.","why":"It is what a genuinely rich game looks like from the inside - many different ways to achieve the same end. Degeneracy is the source of adaptability when fatigue, injury or an opponent closes off the preferred solution.","squash":"A player can win the front-left corner with a straight drop, a crosscourt trickle boast, a hard low drive or a lob to reset. Under fatigue or when read by an opponent, having several routes to the same outcome is what keeps the game functioning.","tips":["Value multiple solutions to the same problem rather than one correct technique.","Deliberately remove a player's favourite option in practice to force alternatives.","Ask players to achieve the same outcome three different ways.","Insisting on one model technique reduces degeneracy by design."],"myth":"Degeneracy is not the same as redundancy. Redundant parts are identical spares; degenerate solutions are structurally different routes to the same functional outcome.","hist":"Borrowed from Edelman and Gally's work in biology (2001) and applied to movement systems by Davids, Seifert and colleagues.","rel":["motor-equivalence","skill-adaptation","functional-variability"],"read":["Seifert, Button & Davids (2013)"],"refs":["Edelman, G. M., & Gally, J. A. (2001). Degeneracy and complexity in biological systems. PNAS, 98(24), 13763-13768.","Seifert, L., Button, C., & Davids, K. (2013). Key properties of expert movement systems in sport. Sports Medicine, 43(3), 167-178."]},{"id":"degrees-of-freedom-problem","n":"Degrees of freedom problem","tile":"Skill Acquisition","sub":"Bernstein","def":"The problem of controlling a body with vastly more independent movement possibilities than there are task requirements.","plain":"The human body has hundreds of joints and muscles that can each vary independently, so any goal can be achieved in effectively infinite ways. Bernstein's insight was that the nervous system cannot be issuing separate commands to each element; control must instead operate on assembled groups of elements.","alias":["Bernstein problem","DoF problem","Degrees of freedom"],"why":"It is the reason technique cannot be installed by instruction. There are far too many moving parts for anyone - coach or player - to specify a solution consciously. Coordination has to be organised, not dictated.","squash":"A squash swing involves shoulder, elbow, wrist, trunk rotation, hip and both legs, each with several axes of movement, all whilst moving. No player can consciously control that many variables in the time available between shots.","tips":["Stop trying to specify positions for multiple body parts at once.","Give one clear outcome goal and let the coordination organise around it.","Use the environment to do the organising - targets, ball speed, opponent pressure.","Expect early solutions to look stiff; that is the system reducing the problem."],"myth":"The degrees of freedom problem is not solved by giving more detailed instruction. More detail makes the conscious control problem worse, not better.","hist":"Framed by Nikolai Bernstein in the 1930s-60s, published in English in 1967. It remains the founding problem of movement science and the reason self-organisation accounts were needed.","rel":["coordinative-structure","freezing-and-freeing-degrees-of-freedom"],"read":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","Bernstein, N. A. (1996). On dexterity and its development. In M. L. Latash & M. T. Turvey (Eds.), Dexterity and its development (pp. 3-244). Erlbaum."],"refs":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press."]},{"id":"dexterity","n":"Dexterity","tile":"Skill Acquisition","sub":"Bernstein","def":"Bernstein's term for the ability to find a movement solution for any situation, in any condition.","plain":"Bernstein located dexterity not in the movement itself but in the performer's relationship with changing circumstances. Dexterity cannot be trained in stable conditions, because stability removes the very thing it consists of responding to.","hist":"Origin: Bernstein (1996)","rel":["skill-adaptation","repetition-without-repetition"],"refs":["Bernstein (1996)"]},{"id":"differential-learning","n":"Differential learning","tile":"Coaching Concepts","sub":"Coaching","def":"A practice method that deliberately introduces large movement variations without corrective feedback.","plain":"Rather than converging on a model technique, learners are exposed to systematically varied and even deliberately 'wrong' executions, on the premise that the fluctuations drive self-organised discovery of an individually optimal solution. It shares intellectual roots with the CLA but is a distinct method with its own literature.","hist":"Origin: Schöllhorn","rel":["noise","functional-variability"],"refs":["Schöllhorn"]},{"id":"direct-learning","n":"Direct learning","tile":"Foundations","sub":"Gibson","def":"A theory describing learning as movement along dimensions of an information space.","plain":"It models attunement and calibration as trajectories through spaces of candidate variables, giving a formal account of how learners converge on more specifying information. Useful mainly as a conceptual model of what improving perception actually consists of.","hist":"Origin: Jacobs & Michaels (2007)","rel":["attunement","calibration"],"refs":["Jacobs & Michaels (2007)"]},{"id":"direct-perception","n":"Direct perception","tile":"Foundations","sub":"Gibson","def":"The view that perception picks up information from the environment without needing internal computation or enrichment.","plain":"Rather than the performer building an internal model from impoverished sensory data, ecological psychology holds that the ambient energy arrays contain lawful information that specifies the environment and the performer's relation to it. Skill development is then a matter of becoming better attuned to that information, not of building better internal representations.","why":"It changes what coaching is for. If information is already available in the environment, the coach's job is to design contact with that information rather than to explain it. Talking about what to look for is a poor substitute for arranging conditions where it can be found.","squash":"Experienced players read an opponent's boast from racket face and shoulder position before contact. They are not calculating - they have become sensitive to information that was always present in the opponent's movement.","tips":["Give players more exposure to real opponents rather than more description of what opponents do.","Reduce verbal instruction about cues; increase the number of opportunities to pick them up.","If a player is not seeing something, ask whether the information is actually available in your practice design.","Feeding by hand removes the very information the skill depends on."],"myth":"Direct perception does not mean perception is instant, effortless or infallible. It means it does not require internal computation. Becoming attuned to the right information still takes a great deal of time and exposure.","hist":"Gibson's central claim, developed from the 1950s and completed in 1979. It broke with the prevailing view that the senses deliver impoverished data requiring interpretation by the brain.","rel":["ambient-optic-array","information-specifying","attunement"],"read":["Gibson (1979)","Gray (2021)"],"refs":["Gibson, J. J. (1979). The ecological approach to visual perception. Houghton Mifflin.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."]},{"id":"discovery-learning","n":"Discovery learning","tile":"Coaching Concepts","sub":"Coaching","def":"Learning in which the performer finds solutions through exploration rather than being told them.","plain":"Letting players work it out.","why":"It produces solutions fitted to the individual and tends to hold up better under pressure.","squash":"Setting a target and letting a player find their own way to keep the ball tight to the wall.","rel":["guided-discovery","search","nonlinear-pedagogy"]},{"id":"distributed-cognition","n":"Distributed cognition","tile":"Foundations","sub":"Foundations","def":"The view that cognitive work is spread across people, tools and the environment rather than contained in one mind.","plain":"Thinking gets shared out between players, equipment and surroundings.","why":"Useful for doubles and for coach-player systems, where the unit that solves the problem is bigger than one person.","squash":"In doubles, court coverage decisions are made across the pair, not independently by each player.","rel":["situated-cognition","shared-affordances","collective-behaviour"]},{"id":"dynamical-systems-theory","n":"Dynamical systems theory","tile":"Foundations","sub":"Foundations","def":"The study of how complex systems change over time under the influence of interacting constraints.","plain":"Applied to movement, it treats coordination as an emergent property of a many-component system rather than an output of a central plan. Note the terminology: 'system dynamics' usually refers to Forrester's stock-and-flow modelling in management science, which is a different tradition. The movement science term is dynamical systems.","alias":["DST"],"rel":["self-organisation","ecological-dynamics"]},{"id":"ecological-dynamics","n":"Ecological dynamics","tile":"Foundations","sub":"Foundations","def":"The theoretical framework combining ecological psychology with dynamical systems theory.","plain":"Ecological psychology supplies the account of information and affordances; dynamical systems supplies the account of how coordination emerges and changes. Together they form the theory that the CLA and nonlinear pedagogy are the applied expressions of.","rel":["constraints-led-approach","nonlinear-pedagogy","dynamical-systems-theory"]},{"id":"ecological-psychology","n":"Ecological psychology","tile":"Foundations","sub":"Foundations","def":"The branch of psychology holding that perception and action are grounded in the direct relationship between an organism and its environment.","plain":"It studies behaviour by looking at the fit between performer and surroundings rather than at processes inside the head alone.","why":"It supplies the perception half of ecological dynamics and the reason coaches design environments rather than deliver instructions.","squash":"Explains why a player's shot selection depends on where they are and who they are playing, not on a stored decision rule.","hist":"Origin: Gibson (1979)","rel":["ecological-dynamics","direct-perception","affordance"],"refs":["Gibson (1979)"]},{"id":"education-of-attention","n":"Education of attention","tile":"Foundations","sub":"Gibson","def":"The guided process by which a learner comes to attend to more useful information.","plain":"Coaches can direct attention through constraint design, exaggerated information, questioning, and analogy rather than by describing the variable in technical terms. The aim is that the athlete discovers what to look for, since a description of an optical variable is rarely usable in real time.","squash":"Rather than explaining release cues, use a task where only early release information can succeed.","hist":"Origin: E. J. Gibson","rel":["attunement","constraints-led-questioning"],"refs":["E. J. Gibson"]},{"id":"education-of-intention","n":"Education of intention","tile":"Coaching Concepts","sub":"Coaching","def":"Guiding what a player is trying to achieve, so that the coordination assembles around a different goal.","plain":"Changing what they are aiming to do, rather than how they are doing it.","why":"Intention is a constraint. Changing it reorganises the whole movement without a single technical instruction, and it is often the fastest available intervention.","squash":"Asking a player to make the ball die before the back wall rather than to hit it hard reorganises swing, contact point and pace together.","tips":["Change the goal before changing the mechanics.","State intentions as effects on the ball or the opponent, never as body positions.","One intention at a time.","Check what the player thinks they are trying to do — it is often not what you assumed."],"myth":"Education of intention is not motivation or effort. It concerns the specific outcome the player is organising their movement around.","hist":"Paired with education of attention in the ecological account of learning; both are named mechanisms in the Checkerboard CLA rationale standard.","rel":["education-of-attention","calibration","intention-as-a-constraint","external-focus-of-attention"],"read":["Jacobs, D. M., & Michaels, C. F. (2007). Direct learning. Ecological Psychology, 19(4), 321-349.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Jacobs, D. M., & Michaels, C. F. (2007). Direct learning. Ecological Psychology, 19(4), 321-349."],"inApp":1},{"id":"effectivity","n":"Effectivity","tile":"Foundations","sub":"Gibson","def":"The performer-side counterpart of an affordance: the action capabilities a performer brings.","plain":"Effectivities are the abilities that make an affordance available — reach, acceleration, strength, technical repertoire, confidence. Affordance and effectivity are two sides of one relation; neither exists without the other. Changing effectivities (through physical development or skill acquisition) changes the affordance landscape without changing the environment at all.","why":"Effectivity explains why the same coaching input produces different results in different players, and why physical development is never separate from technical development. Improve a player's capability and you have changed the meaning of the court to them.","squash":"A player who improves their split-step timing and first stride now reaches balls that were previously unreachable. Nothing about the court or the opponent changed - but a whole set of retrievals and counter-attacks became possible.","tips":["Treat physical and technical work as one system, not two departments.","When a shot selection looks poor, ask whether the better option was actually within the player's capability.","Re-check assumptions after growth spurts, injury or a change in fitness.","Match constraints to current effectivities so the task is solvable but not trivial."],"myth":"Effectivities are not just physical attributes. Confidence, fatigue and current intention are equally part of what a player can do right now.","hist":"Developed by Turvey, Shaw and colleagues in the late 1970s as the necessary complement to Gibson's affordances, making explicit that the affordance relation has two sides.","rel":["affordance"],"read":["Turvey (1992), Ecological foundations of cognition"],"refs":["Turvey, M. T. (1992). Affordances and prospective control: An outline of the ontology. Ecological Psychology, 4(3), 173-187."]},{"id":"embodied-cognition","n":"Embodied cognition","tile":"Foundations","sub":"Foundations","def":"The view that thinking is shaped by the body's form and its interaction with the world, rather than occurring in abstraction from it.","plain":"Your body is part of how you think, not just the machinery that carries out decisions.","why":"It supports treating tactical understanding as something built through moving and playing rather than through classroom explanation.","squash":"A player understands when a drop is on through having played thousands of them, not through a rule about ball height.","rel":["situated-cognition","ecological-psychology","affordance"]},{"id":"emergence","n":"Emergence","tile":"Complex Systems","sub":"Complex systems","def":"The appearance of system-level behaviour that isn't contained in any individual component.","plain":"A team's defensive shape, a rally's rhythm, a group's spacing — none is stored in any one player. Emergent patterns can be influenced but not directly installed, which is why instruction alone rarely produces collective behaviour.","rel":["self-organisation","order-parameter"]},{"id":"environmental-constraints","n":"Environmental constraints","tile":"Coaching Concepts","sub":"Constraints","def":"Physical and sociocultural features of the surroundings that shape behaviour.","plain":"Physical: light, temperature, surface, altitude, wind. Sociocultural: teammates, spectators, family expectations, the norms of the sporting culture. Environmental constraints are often the least controllable and the most influential over a long development pathway.","why":"They cover the physical and the sociocultural, and the second is easily overlooked. What a player believes squash should look like constrains what they will explore.","squash":"Cold courts and a cold ball reward length and patience; a hot court and a bouncy ball reward attacking play. A squad culture that treats a lost point from an attempted drop as a mistake will suppress attacking exploration entirely.","tips":["Vary ball type and court conditions rather than always practising in ideal ones.","Notice the culture you are creating - it constrains behaviour more than any drill.","Where competition conditions are known, sample them in practice.","Treat crowd, noise and occasion as constraints worth exposing players to."],"myth":"Environmental constraints are not only physical. Cultural expectations, squad norms and coach reactions are environmental constraints that shape learning powerfully.","hist":"Part of Newell's 1986 model; the sociocultural dimension has been emphasised more recently through work on forms of life and affordance landscapes.","rel":["newell-s-model-of-constraints","form-of-life"],"read":["Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Rietveld, E., & Kiverstein, J. (2014). A rich landscape of affordances. Ecological Psychology, 26(4), 325-352."]},{"id":"essential-vs-elemental-variables","n":"Essential vs elemental variables","tile":"Skill Acquisition","sub":"Bernstein","def":"Essential variables must stay low in variability to achieve the outcome; elemental variables can and should vary between repetitions.","plain":"Some parts of a movement are non-negotiable and some are meant to change every time.","why":"It gives coaches language for exactly what to correct and what to leave alone — the most common practical question in technical coaching, and one that functional variability alone does not answer.","squash":"In a straight drive from the back corner, the racquet face at contact is essential — square, travelling toward the target, sending the ball above the tin and close to the side wall. Where the feet land, how low the player gets, swing length and the elbow and wrist angles are elemental: they change with every ball so the racquet face stays right.","tips":["Before correcting anything, decide whether it is essential or elemental.","Correcting elemental variables removes the adaptation that makes the outcome repeatable.","If the outcome is achieved, the varying element was probably elemental.","Keep the essential list short — most of what looks like a fault is elemental."],"myth":"This is not a licence to ignore technique. Essential variables genuinely do need low variability; the point is that most of what coaches correct is elemental.","hist":"Rooted in Bernstein's work on how the body solves the same task in many ways; the app's wording follows McBroom and Gray (2025), who wrote it for tennis — the squash examples are the app's own.","rel":["functional-variability","repetition-without-repetition","uncontrolled-manifold","movement-variability"],"read":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"refs":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"inApp":1},{"id":"exploratory-vs-performatory-movement","n":"Exploratory vs performatory movement","tile":"Foundations","sub":"Gibson","def":"Movements made to generate information versus movements made to achieve a task outcome.","plain":"Exploratory movements (a scan, a feint, a probing touch, shifting weight to test a surface) exist to reveal affordances. Performatory movements exploit them. Learners need permission and time to explore; practice designs that punish every error suppress exploration and slow adaptation.","squash":"A defender's small shuffles before committing are exploratory — they generate information about the attacker's intentions.","hist":"Origin: Gibson (1979)","rel":["search","perception-action-coupling"],"refs":["Gibson (1979)"]},{"id":"external-focus-of-attention","n":"External focus of attention","tile":"Coaching Concepts","sub":"Coaching","def":"Directing attention to the movement's effect on the environment rather than to the body.","plain":"Focusing outward tends to preserve self-organisation, while focusing on body parts disrupts automatic coordination. Note that this line of work comes from a somewhat different theoretical tradition, but it is routinely integrated into nonlinear pedagogy because its practical implications align.","alias":["External focus"],"why":"One of the most robust practical findings in motor learning, and one of the easiest to apply immediately. Where a player directs attention changes performance and retention without any change in the practice task.","squash":"Cueing a player to hit the ball so it dies before the back wall works better than cueing them to keep their wrist firm. The first directs attention to the effect; the second directs it inward and interferes with self-organisation.","tips":["Cue effects and outcomes rather than body parts.","Talk about what the ball should do, where it should land, what the opponent should experience.","Convert every internal cue you habitually use into an external equivalent.","The further the focus from the body, the better the effect tends to be."],"myth":"External focus does not mean players should never be aware of their bodies. It concerns where attention is directed during performance, not during reflection afterwards.","hist":"Established by Gabriele Wulf and colleagues from 1998 onwards, with the constrained action hypothesis proposing that internal focus disrupts automatic self-organising processes.","rel":["nonlinear-pedagogy","analogy-learning"],"read":["Wulf (2013), Attentional focus and motor learning"],"refs":["Wulf, G. (2013). Attentional focus and motor learning: A review of 15 years. International Review of Sport and Exercise Psychology, 6(1), 77-104."]},{"id":"feedback","n":"Feedback","tile":"Coaching Concepts","sub":"Coaching","def":"Information about performance or its outcome, arising from the task itself or provided externally.","plain":"What tells a player how it went.","why":"Much of the most useful feedback is already in the task; added feedback can crowd it out.","squash":"The ball dying in the back corner tells the player more than the coach saying good length.","rel":["knowledge-of-results","knowledge-of-performance","feedback-scheduling"]},{"id":"feedback-loops","n":"Feedback loops","tile":"Complex Systems","sub":"Complex systems","def":"Circular causal relationships in which the output of a process feeds back to influence it.","plain":"What happens next affects what caused it in the first place.","why":"The basic mechanism behind self-organisation and behaviour that runs away or settles down.","squash":"Momentum in a match: winning points builds confidence which produces better play which wins more points.","rel":["positive-feedback","negative-feedback","self-organisation"]},{"id":"feedback-scheduling","n":"Feedback scheduling","tile":"Coaching Concepts","sub":"Coaching","def":"Decisions about how often, when and in what form feedback is provided.","plain":"How much you say, and when.","why":"Reduced and delayed feedback generally supports better retention than constant commentary.","squash":"Waiting until the end of a game rather than commenting after each rally.","rel":["feedback","learning-versus-performance"]},{"id":"flexibility","n":"Flexibility","tile":"Skill Acquisition","sub":"Variability","def":"The capacity to change behaviour readily when circumstances require it.","plain":"Being able to switch when the situation changes.","why":"It is the counterweight to stability, and both are needed in different measures.","squash":"Changing from an attacking to a containing game when an opponent starts volleying everything.","rel":["skill-adaptation","metastability","degeneracy"]},{"id":"form-of-life","n":"Form of life","tile":"Foundations","sub":"Foundations","def":"The sociocultural practices, norms and values that shape which affordances a performer becomes responsive to.","plain":"Borrowed from Wittgenstein into ecological work, it captures why athletes from different cultures perceive different possibilities in the same situation. It's a reminder that environmental constraints include the human and cultural, not just the physical.","hist":"Origin: Rietveld & Kiverstein (2014)","rel":["environmental-constraints","landscape-of-affordances"],"refs":["Rietveld & Kiverstein (2014)"]},{"id":"freezing-and-freeing-degrees-of-freedom","n":"Freezing and freeing degrees of freedom","tile":"Skill Acquisition","sub":"Bernstein","def":"A common learning progression in which performers first rigidify joints, then progressively release them.","plain":"Beginners often lock joints to make the movement manageable, producing stiff, effortful action. With practice they free those joints and eventually exploit reactive and elastic forces. Seeing stiffness in a learner is therefore often a normal stage rather than a fault to be corrected directly.","alias":["Freezing degrees of freedom","Releasing degrees of freedom","Exploiting degrees of freedom"],"why":"It gives coaches a way to read early-stage movement as a normal stage rather than a fault. Stiff, rigid beginner movement is the system making an unmanageable problem manageable.","squash":"A beginner locks the wrist and elbow and swings mostly from the shoulder, producing a stiff, armed shot. As competence develops the wrist and elbow are released, and eventually the player exploits racket-head lag and elastic recoil rather than muscling the ball.","tips":["Do not correct beginner stiffness directly - design so that releasing becomes rewarding.","Targets requiring pace with control tend to encourage freeing more effectively than instruction.","The final stage is about using passive forces, not producing more effort.","The three stages are a description, not a fixed sequence to be taught."],"myth":"These stages are not something the coach applies to the player. They are what the learner's system does. Deliberately telling a beginner to freeze joints is not the point of the concept.","hist":"Described by Bernstein and demonstrated experimentally by Vereijken and colleagues in 1992 using a ski-simulator task.","rel":["degrees-of-freedom-problem","coordination-control-skill"],"read":["Bernstein, N. A. (1996). On dexterity and its development. In M. L. Latash & M. T. Turvey (Eds.), Dexterity and its development (pp. 3-244). Erlbaum."],"refs":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","Vereijken, B., van Emmerik, R. E. A., Whiting, H. T. A., & Newell, K. M. (1992). Free(z)ing degrees of freedom in skill acquisition. Journal of Motor Behavior, 24(1), 133-142."]},{"id":"functional-variability","n":"Functional variability","tile":"Skill Acquisition","sub":"Variability","def":"Movement variation that serves adaptation rather than indicating error.","plain":"Not all inconsistency is noise. Variation that keeps the outcome stable while adjusting to conditions is a signature of skill, and elite performers often show more variability in their movement components than intermediates. Distinguishing functional from dysfunctional variability is a core observational skill for coaches.","why":"It reverses the traditional assumption that variability is error. Skilled players are often more variable in their joints while being less variable in outcome - the variation is what absorbs the endless small differences between situations.","squash":"Two straight drives to the same target from the same position will differ in elbow angle, wrist position and footwork because the ball, balance and timing were never identical. That adaptation is what makes the outcome repeatable.","tips":["Measure outcome consistency, not movement uniformity.","Before correcting a movement difference, check whether the outcome was achieved.","Design tasks that require the same outcome from varied starting conditions.","Distinguish adaptive variation from genuine instability - the test is whether the outcome holds."],"myth":"Not all variability is functional. Variability that degrades the outcome indicates a lack of stability and does need addressing. The distinction is whether the outcome survives.","hist":"Follows from Bernstein's work and was formalised through the uncontrolled manifold approach of Scholz and Schoner (1999) and Latash's work on motor abundance.","rel":["uncontrolled-manifold","repetition-without-repetition","degeneracy"],"read":["Bernstein, N. A. (1996). On dexterity and its development. In M. L. Latash & M. T. Turvey (Eds.), Dexterity and its development (pp. 3-244). Erlbaum.","Seifert, Button & Davids (2013), Key properties of expert movement systems in sport"],"refs":["Scholz, J. P., & Schoner, G. (1999). The uncontrolled manifold concept: Identifying control variables for a functional task. Experimental Brain Research, 126(3), 289-306.","Seifert, L., Button, C., & Davids, K. (2013). Key properties of expert movement systems in sport. Sports Medicine, 43(3), 167-178."]},{"id":"functionality","n":"Functionality","tile":"Coaching Concepts","sub":"Representative learning","def":"Whether the actions performed in practice have the same role and purpose as in performance.","plain":"Alongside action fidelity, functionality is one of the two pillars of RLD. It asks whether the athlete is doing the same thing for the same reason, not merely making a similar shape.","rel":["representative-learning-design","action-fidelity"]},{"id":"guided-discovery","n":"Guided discovery","tile":"Coaching Concepts","sub":"Coaching","def":"Shaping conditions and using questioning so that learners arrive at solutions rather than receiving them.","plain":"The coach stays highly active — designing, observing, questioning, adjusting — but stops supplying answers. Questions direct attention toward relevant information without prescribing a movement. It is the interactional counterpart to constraint manipulation.","why":"It defines the coach's active role in an approach that is often wrongly assumed to be hands-off. The coach designs, observes, questions and adjusts constantly - they simply stop supplying answers.","squash":"Instead of telling a player to take the ball earlier, ask what they noticed about how much time they had on that rally, and what would have to change to get there sooner.","tips":["Ask what the player noticed and tried before offering anything.","Use questions that direct attention to information, not to body position.","Silence after a question is the player working - let it run.","If your question has one right answer you had in mind, it is instruction in disguise."],"myth":"Guided discovery is not the absence of coaching, and it is not endless questioning. Direct information is sometimes appropriate; the default is simply shifted.","hist":"Long-standing in physical education pedagogy and integrated into nonlinear pedagogy as the interactional counterpart of constraint manipulation.","rel":["constraints-led-questioning","search","nonlinear-pedagogy"],"read":["Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge."]},{"id":"hkb-model","n":"HKB model","tile":"Complex Systems","sub":"Complex systems","def":"The Haken-Kelso-Bunz model of coordination dynamics, formalising stability and transitions between phase patterns.","plain":"The classic finger-oscillation experiment showed anti-phase coordination spontaneously switching to in-phase as frequency increased, and never the reverse. It provided the mathematical backbone for treating movement coordination as a dynamical system.","hist":"Origin: Haken, Kelso & Bunz (1985)","rel":["relative-phase","phase-transition"],"refs":["Haken, Kelso & Bunz (1985)"]},{"id":"hysteresis","n":"Hysteresis","tile":"Complex Systems","sub":"Complex systems","def":"The dependence of a system's current state on its history, so transitions occur at different points depending on direction.","plain":"Speeding up into a new pattern happens at a different threshold than slowing back out of it. Practically, this means the order in which you present conditions matters — progressions and regressions are not mirror images of each other.","rel":["phase-transition"]},{"id":"implicit-learning","n":"Implicit learning","tile":"Coaching Concepts","sub":"Coaching","def":"Skill acquired without accumulating explicit, verbalisable rules about how the movement is performed.","plain":"Learning to do it without building a list of instructions in your head.","why":"Implicitly acquired skill is more robust under pressure, because there are few explicit rules available to reinvest.","squash":"A player who develops a reliable drop through constrained games rather than through technical rules has less to fall back on consciously when the pressure rises.","tips":["Use external focus, analogies and representative games rather than technical rule-giving.","Fewer explicit rules is a design goal, not a shortcut.","Guided questioning can direct attention without creating explicit rules.","Test under pressure — that is where the difference appears."],"myth":"Implicit learning does not mean the player learns nothing consciously, or that explanation is forbidden. It means the movement itself is not encoded as a set of remembered instructions.","hist":"Developed alongside reinvestment theory by Masters and colleagues from the early 1990s.","rel":["reinvestment","analogy-learning","external-focus-of-attention","guided-discovery"],"read":["Masters, R. S. W. (1992). Knowledge, knerves and know-how: The role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology, 83(3), 343-358.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Masters, R. S. W. (1992). Knowledge, knerves and know-how: The role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology, 83(3), 343-358.","Masters, R., & Maxwell, J. (2008). The theory of reinvestment. International Review of Sport and Exercise Psychology, 1(2), 160-183."],"inApp":1},{"id":"individual-constraints","n":"Individual constraints","tile":"Coaching Concepts","sub":"Constraints","def":"Characteristics of the performer that shape which movement solutions are available.","plain":"These divide into structural constraints (body dimensions, strength, limb length) which change slowly, and functional constraints (intention, motivation, anxiety, fatigue, attentional focus) which change moment to moment. Intention is a particularly powerful individual constraint and often the fastest lever a coach has.","alias":["Organismic constraints","Performer constraints"],"why":"They explain why one session lands differently on different players, and why the same player needs different things on different days. Emotional and intentional states are genuine constraints on coordination, not a separate psychological topic.","squash":"A tall player with long levers will naturally develop a different swing path and movement pattern from a short, compact player. Neither is incorrect. A tired or anxious player also has a genuinely narrower set of available solutions.","tips":["Separate slow-changing structural constraints from fast-changing functional ones.","Check fatigue and emotional state before concluding a skill has regressed.","Expect and permit different technical solutions between players of different builds.","Ask what the player is trying to do - intention shapes what emerges."],"myth":"Individual constraints are not just body size. Intention, confidence, fear of losing and fatigue all belong in this category and often matter more.","hist":"Part of Newell's 1986 model, where they were termed organismic constraints.","rel":["newell-s-model-of-constraints","intention-as-a-constraint"],"read":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff."]},{"id":"information-specifying","n":"Information (specifying)","tile":"Foundations","sub":"Gibson","def":"Environmental structure that lawfully corresponds to a property of the world or the performer-environment relation.","plain":"Specifying information has a one-to-one relation with what it is about, so relying on it is reliable. Non-specifying information correlates only loosely — it works sometimes and fails under pressure. Much of expertise is the shift from using non-specifying to specifying information.","alias":["Ecological information"],"squash":"A young batter who reads a bowler's run-up length is using non-specifying information; reading the wrist and hand at release is closer to specifying.","hist":"Origin: Jacobs & Michaels (2007)","rel":["attunement","education-of-attention"],"refs":["Jacobs & Michaels (2007)"]},{"id":"information-pickup","n":"Information pickup","tile":"Foundations","sub":"Decision making","def":"The active detection of specifying information by a perceiver.","plain":"Actually noticing the thing that tells you what is happening.","why":"It reframes perception as something a player does, often by moving, rather than something that happens to them.","squash":"Adjusting head and body position to see an opponent's racket face is information pickup in progress.","rel":["direct-perception","attunement","exploratory-vs-performatory-movement"]},{"id":"initial-conditions","n":"Initial conditions","tile":"Complex Systems","sub":"Complex systems","def":"The state of a system at the start of a process, which can strongly shape its later development.","plain":"Where you start from affects where you end up.","why":"Small differences early in learning can lead to very different long-term outcomes, which argues against rigid uniform pathways.","squash":"Two players given identical programmes from different starting movement habits will develop differently.","rel":["nonlinearity","individual-constraints","hysteresis"]},{"id":"instability","n":"Instability","tile":"Complex Systems","sub":"Complex systems","def":"A condition in which a coordination pattern is easily disrupted and does not reliably return after a disturbance.","plain":"The pattern will not hold when something goes wrong.","why":"Deliberate instability is a tool for change; unwanted instability under pressure is a target for development.","squash":"A player whose length collapses the moment the pace rises has an unstable pattern, not a technical fault.","rel":["stability","perturbation","phase-transition"]},{"id":"intention-as-a-constraint","n":"Intention as a constraint","tile":"Coaching Concepts","sub":"Constraints","def":"The performer's goal or intent acting as a powerful organiser of the emergent movement solution.","plain":"Changing what an athlete is trying to do reorganises how they do it, often instantly and more effectively than technical instruction. Setting the intention is frequently the cheapest and most potent constraint available to a coach.","squash":"'Beat him on the outside' produces a different body shape than 'get past him', with no technical instruction given.","rel":["individual-constraints","constraints-led-questioning"]},{"id":"internal-focus","n":"Internal focus","tile":"Coaching Concepts","sub":"Coaching","def":"Directing attention to the movements of one's own body during performance.","plain":"Thinking about your body parts while you play.","why":"Generally less effective than external focus and prone to disrupting automatic coordination under pressure.","squash":"Cueing wrist position mid-rally usually degrades the shot it was meant to improve.","hist":"Origin: Wulf (2013)","rel":["external-focus-of-attention","analogy-learning"],"refs":["Wulf (2013)"]},{"id":"interpersonal-coordination","n":"Interpersonal coordination","tile":"Complex Systems","sub":"Complex systems","def":"The emergence of stable relational patterns between performers.","plain":"Studied using the same tools as intra-personal coordination — relative phase, order parameters, stability — applied to distances, angles and timings between players. It provides quantitative measures of team behaviour that don't reduce to individual statistics.","rel":["relative-phase","co-adaptation"]},{"id":"invariant","n":"Invariant","tile":"Foundations","sub":"Gibson","def":"A property that stays constant across transformations of the perceptual array.","plain":"Invariants are what make a chaotic-looking flow of stimulation usable. The relative proportions of a person's body remain invariant as they approach, so their identity persists; the expansion pattern of a ball remains lawfully tied to time-to-contact regardless of ball size.","alias":["Invariants"],"rel":["tau","information-specifying"]},{"id":"knowledge-of-performance","n":"Knowledge of performance","tile":"Coaching Concepts","sub":"Coaching","def":"Feedback about the movement pattern used, rather than its outcome.","plain":"Information about how the movement was done.","why":"Useful sparingly, but it tends to direct attention internally and can create dependence.","squash":"Telling a player their racket was late is knowledge of performance; frequent use invites an internal focus.","rel":["feedback","internal-focus","knowledge-of-results"]},{"id":"knowledge-of-results","n":"Knowledge of results","tile":"Coaching Concepts","sub":"Coaching","def":"Feedback about the outcome of a movement relative to the goal.","plain":"Information about whether it worked.","why":"In well-designed tasks this is usually available from the environment without the coach saying anything.","squash":"Whether the drive landed in the target channel is knowledge of results, visible to the player instantly.","rel":["feedback","knowledge-of-performance"]},{"id":"landscape-of-affordances","n":"Landscape of affordances","tile":"Foundations","sub":"Gibson","def":"The full set of action possibilities available to a performer in a given situation.","plain":"The landscape is broader than what the performer actually notices. The subset they are currently responsive to is often called the field of affordances. Skill development both widens the landscape (new capabilities) and sharpens the field (attending to the right options at the right moment).","alias":["Field of affordances"],"hist":"Origin: Rietveld & Kiverstein (2014)","rel":["affordance","affordances-as-invitations"],"refs":["Rietveld & Kiverstein (2014)"]},{"id":"learning-versus-performance","n":"Learning versus performance","tile":"Skill Acquisition","sub":"Skill acquisition","def":"Learning is a durable change in capability; performance is a momentary observation that can mislead.","plain":"Conditions that flatter performance during a session frequently depress learning, and conditions that make sessions look messy often improve it. Learning can only be inferred from retention and transfer, never from how the session appeared on the day. This is the most common measurement error in coaching.","alias":["Desirable difficulties"],"squash":"Test after a delay and in a different context. Judging a session by how good it looked measures performance, not learning.","hist":"Origin: Bjork; Schmidt & Bjork (1992)","rel":["contextual-interference","transfer","critical-fluctuation"],"refs":["Bjork; Schmidt & Bjork (1992)"]},{"id":"levels-of-movement-construction","n":"Levels of movement construction","tile":"Skill Acquisition","sub":"Bernstein","def":"Bernstein's hierarchy of control levels, from tone through synergies and space to actions and meaning.","plain":"Level A governs tone and posture; Level B builds muscular-articular synergies; Level C handles spatial field movements; Level D organises object-directed actions and their sequencing. Leading levels vary by task, and problems at one level often show up as apparent faults at another.","hist":"Origin: Bernstein (1996)","rel":["coordinative-structure"],"refs":["Bernstein (1996)"]},{"id":"metastability","n":"Metastability","tile":"Complex Systems","sub":"Complex systems","def":"A regime in which the system is poised between coordination states, neither locked in nor unstable.","plain":"In this region, small changes in conditions produce large changes in behaviour, and performers spontaneously generate creative, unexpected solutions. Designing practice near metastable regions is one of the more powerful ideas for developing adaptability and creativity.","why":"It is where creative and adaptive play lives. In a metastable region no single option dominates, so the player remains genuinely available to several actions - which is what makes them hard to read.","squash":"A player taking the ball early at the front with the racket held in a position from which drop, flick crosscourt and hard drive are all still available. The opponent cannot commit, because the player has not.","tips":["Design tasks that sit near decision boundaries - even numbers, ambiguous space, competing targets.","Deception is not a trick to be taught; it emerges from delaying commitment.","Avoid over-constraining to a single correct answer if adaptability is the goal.","Reward holding options open, not just outcome."],"myth":"Metastability is not indecision or instability. It is a poised readiness across several patterns, which requires competence in all of them.","hist":"Developed by Kelso and colleagues, and applied to sport performance and creativity by Davids, Hristovski, Araujo and others from the mid-2000s.","rel":["stability","attractor","creativity-in-movement"],"read":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press.","Hristovski et al. (2011) on metastability and creativity"],"refs":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press.","Hristovski, R., Davids, K., Araujo, D., & Passos, P. (2011). Constraints-induced emergence of functional novelty in complex neurobiological systems. Nonlinear Dynamics, Psychology, and Life Sciences, 15(2), 175-206."]},{"id":"modified-games","n":"Modified games","tile":"Coaching Concepts","sub":"Coaching","def":"Games with altered rules, scoring, area or equipment used to shape behaviour.","plain":"Changing the game so different things happen.","why":"The simplest and most reliable form of constraint manipulation available to a coach.","squash":"Front-court-only games, or scoring double for volleyed winners.","rel":["representative-games","constraint-manipulation","task-constraints"]},{"id":"motor-abundance","n":"Motor abundance","tile":"Skill Acquisition","sub":"Bernstein","def":"The view that surplus degrees of freedom are a resource rather than a problem to be eliminated.","plain":"Rather than framing redundancy as noise to be suppressed, abundance recognises that extra degrees of freedom let the system stabilise the important variable while everything else varies. This is the basis for compensation: if one element deviates, others adjust to preserve the outcome.","alias":["Bliss of motor abundance"],"hist":"Origin: Latash","rel":["uncontrolled-manifold","degeneracy"],"refs":["Latash"]},{"id":"motor-equivalence","n":"Motor equivalence","tile":"Skill Acquisition","sub":"Bernstein","def":"The ability to achieve the same goal through different movement patterns.","plain":"Writing your signature with your hand, your foot or your mouth produces a recognisably similar output from entirely different musculature. Motor equivalence is direct evidence that what is learned is the solution to a problem, not a fixed set of muscle commands.","rel":["degeneracy","repetition-without-repetition"]},{"id":"motor-learning","n":"Motor learning","tile":"Skill Acquisition","sub":"Foundations","def":"The study of how practice and experience produce relatively permanent changes in the capability for skilled movement.","plain":"The science of how people get better at moving, and what practice conditions help or hinder that.","why":"It is the parent field within which CLA sits, and much of its evidence base on practice design remains directly useful.","squash":"Explains why a session that felt poor can produce better match play three weeks later.","rel":["skill-acquisition","learning-versus-performance","transfer"]},{"id":"movement-organisation","n":"Movement organisation","tile":"Skill Acquisition","sub":"Bernstein","def":"How the components of a movement are assembled and sequenced to meet the demands of a task.","plain":"The way a movement is put together for the job in front of you.","why":"Emphasises that the assembly is task-specific and temporary rather than a stored template.","squash":"The same drop shot is organised differently when moving forward at pace than when stretching from a defensive position.","rel":["soft-assembly","coordinative-structure","coordinative-structure"]},{"id":"movement-variability","n":"Movement variability","tile":"Skill Acquisition","sub":"Variability","def":"Differences between repetitions of the same movement.","plain":"The fact that two shots are never exactly the same.","why":"Whether it helps or hurts depends entirely on whether the outcome is preserved.","squash":"Two identical-target drives will differ in joint angles because the incoming ball was never identical.","rel":["functional-variability","noise","productive-variability"]},{"id":"multi-stability","n":"Multi stability","tile":"Complex Systems","sub":"Complex systems","def":"The existence of more than one stable pattern under the same conditions.","plain":"More than one way of doing it that both hold up.","alias":["Multistability"],"why":"It underpins degeneracy and explains why a player can have two reliable solutions available at once.","squash":"A player with both a reliable straight drop and a reliable trickle boast from the same position.","rel":["attractor-landscape","degeneracy","metastability"]},{"id":"negative-feedback","n":"Negative feedback","tile":"Complex Systems","sub":"Complex systems","def":"A loop that counteracts change, returning a system toward a stable state.","plain":"Something that self-corrects.","why":"Explains why well-grooved patterns resist disturbance and why some habits are so persistent.","squash":"A player who drifts off the T is drawn back to it by the demands of the next shot.","rel":["feedback-loops","stability","attractor"]},{"id":"nested-affordances","n":"Nested affordances","tile":"Foundations","sub":"Gibson","def":"An affordance whose availability depends on a prior action having created it — opportunities chained in sequence.","plain":"One shot creates the opening for the next.","why":"It moves coaching from single-shot thinking to chains, which is how rallies actually work. The skill is not the finishing shot but the sequence that made it available.","squash":"Serve for Advantage builds the chain directly: a serve that denies a clean response forces a boast, and the forced boast creates the front-zone conversion.","tips":["Coach the shot that created the opportunity, not just the one that finished it.","When a winner is missed, look one or two shots earlier for the real error.","Design games that score the chain rather than the final shot.","Ask players which shot opened the point up."],"myth":"Nested affordances are not set plays or pre-planned combinations. The chain emerges from what each shot makes available, and it can be abandoned at any point if the opponent responds differently.","hist":"Developed in the constraints-led coaching literature and used in the app as the named mechanism for Serve for Advantage.","rel":["affordance","landscape-of-affordances","affordance-competition","opportunity-window"],"read":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"inApp":1},{"id":"newell-s-model-of-constraints","n":"Newell's model of constraints","tile":"Coaching Concepts","sub":"Constraints","def":"The framework identifying three interacting sources of constraint: individual, task and environment.","plain":"Individual constraints are the performer's structural and functional characteristics (height, strength, anxiety, intention, prior experience). Task constraints are the goal, rules, equipment and area. Environmental constraints are the physical and social surroundings — weather, surface, crowd, culture. Behaviour emerges from their interaction, not from any one alone.","alias":["Constraints model","Individual-task-environment"],"squash":"Constraints interact: a small pitch (task) affects a tall, slow player (individual) differently on a wet surface (environment).","hist":"Origin: Newell (1986)","rel":["constraint","constraint-manipulation"],"refs":["Newell (1986)"]},{"id":"noise","n":"Noise","tile":"Skill Acquisition","sub":"Variability","def":"Random or unpredictable variation in a system, which can be destabilising or functionally useful.","plain":"Noise is not simply error. It provides the exploration that lets a system escape a local attractor and find a better solution, which is one theoretical justification for deliberately variable and messy practice.","rel":["functional-variability","perturbation","differential-learning"]},{"id":"nonlinear-pedagogy","n":"Nonlinear pedagogy","tile":"Foundations","sub":"Foundations","def":"The pedagogical framework built on ecological dynamics, emphasising exploration, variability and emergent solutions.","plain":"Its usual principles are representative design, constraint manipulation, functional variability, attentional focus directed externally, and the maintenance of perception-action coupling. It sits alongside the CLA as the broader teaching philosophy in which constraint manipulation is one tool.","hist":"Origin: Chow, Davids, Button & Renshaw","rel":["constraints-led-approach","ecological-dynamics"],"refs":["Chow, Davids, Button & Renshaw"]},{"id":"nonlinearity","n":"Nonlinearity","tile":"Complex Systems","sub":"Complex systems","def":"The property that outputs are not proportional to inputs, so small changes can have disproportionate effects.","plain":"A tiny adjustment to pitch dimensions can transform the game; months of practice can produce no visible change and then a sudden leap. Nonlinearity is why dose-response coaching logic ('more reps equals more improvement') repeatedly disappoints.","rel":["phase-transition","nonlinear-pedagogy"]},{"id":"offline-vs-online-information","n":"Offline vs online information","tile":"Foundations","sub":"Decision making","def":"Offline information is available before the event begins; online information only exists once the ball is struck.","plain":"Some of what guides a shot is known in advance, and some only arrives in the moment.","why":"It separates two things coaches often lump together. Reading an opponent's habits over several points is a different skill from tracking a ball in flight, and they need different practice design.","squash":"Knowing an opponent has served the same width three times is offline. Racket face at contact, ball flight and time-to-contact are online.","tips":["Design some tasks that reward pre-point reading and others that strip it away.","Removing offline information (varied serve order) forces reliance on online pickup.","Ask what the player knew before the rally and what they had to find during it.","Both matter — do not treat anticipation as guessing."],"myth":"Offline information is not the same as guessing or gambling. It is legitimate probabilistic reading built from real evidence, and it becomes a problem only when it replaces online pickup rather than supporting it.","hist":"Set out in the CLA Update block of WHY CLA?, drawn from McBroom and Gray's treatment of information in the constraints-led coaching literature.","rel":["anticipation","prospectivity","tau","information-pickup"],"read":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"inApp":1},{"id":"opportunity-window","n":"Opportunity window","tile":"Skill Acquisition","sub":"Decision making","def":"The interval in which conditions favour a particular action.","plain":"The moment when something is genuinely on.","why":"Focuses coaching on creating and recognising moments rather than on executing shots in isolation.","squash":"A loose ball creates a brief window for attacking the front - arriving late closes it.","rel":["decision-window","affordance","anticipation"]},{"id":"optic-flow","n":"Optic flow","tile":"Foundations","sub":"Gibson","def":"The pattern of visual motion generated at the eye as the performer moves through the environment.","plain":"Optic flow specifies heading, speed, and time-to-contact. Radial expansion from a focus of expansion tells a runner where they are heading; the rate of expansion of an approaching object specifies when it will arrive. Practice environments that remove self-generated motion also remove this information.","squash":"Catching drills where the athlete stands still remove the flow information they'll actually use in the game.","rel":["tau","ambient-optic-array"]},{"id":"order-parameter","n":"Order parameter","tile":"Complex Systems","sub":"Complex systems","def":"A low-dimensional variable that captures the coordination state of a many-component system.","plain":"Instead of tracking every joint, you track the one variable that summarises the pattern — typically a relative phase or a relational measure. Order parameters change abruptly at transitions, which makes them useful markers of learning.","alias":["Collective variable"],"rel":["control-parameter","relative-phase","phase-transition"]},{"id":"organism-environment-mutuality","n":"Organism-environment mutuality","tile":"Foundations","sub":"Gibson","def":"The principle that performer and environment form a single system and must be analysed together.","plain":"Neither athlete nor environment can be described adequately in isolation. This is the philosophical commitment underneath the whole approach, and the reason the unit of analysis in coaching is the athlete-environment system rather than the athlete's technique.","alias":["Reciprocity"],"rel":["athlete-environment-system","ecological-dynamics"]},{"id":"pattern-recognition","n":"Pattern recognition","tile":"Skill Acquisition","sub":"Decision making","def":"The identification of recurring configurations of play.","plain":"Spotting situations you have seen before.","why":"Widely used in coaching but sitting in a cognitivist tradition; ecological accounts prefer attunement to information over matching to stored templates.","squash":"Recognising that an opponent's crosscourt from the back is usually followed by a boast.","rel":["anticipation","attunement","visual-search"]},{"id":"perception","n":"Perception","tile":"Foundations","sub":"Decision making","def":"The pickup of information that specifies the environment and the performer's relation to it.","plain":"Taking in what is going on around you in a way that guides what you do.","why":"In this framework perception is an activity, not a passive input stage before thinking.","squash":"Reading an opponent's shot is perception in action, and it happens continuously through the rally.","rel":["direct-perception","information-pickup","perception-action-coupling"]},{"id":"perception-action-coupling","n":"Perception-action coupling","tile":"Foundations","sub":"Gibson","def":"The continuous, reciprocal relationship in which perception guides movement and movement generates new information for perception.","plain":"This is arguably the central practical idea in the whole framework. Perception and action are not sequential stages but one ongoing loop. Whenever a practice task breaks the loop — removing the real ball, the real opponent, the real timing — the athlete practises something structurally different from the skill they need.","alias":["PAC","Information movement coupling"],"why":"This is the single most useful design test available to a coach. Most poor practice is not poor because it is unrealistic in appearance, but because the information that normally guides the movement has been removed.","squash":"A player hitting straight drives from a hand feed is performing a different skill from one hitting straight drives off an opponent's shot. The stroke may look the same, but in the first case the movement is not being regulated by ball flight, opponent position or rally context.","tips":["Ask of every drill: what is guiding this movement, and is it what guides it in a match?","Replace hand feeds with racket feeds, racket feeds with live balls, wherever possible.","If you must decouple to work on something, recouple before the session ends.","Keep the opponent in the picture - the opponent is information, not just an obstacle."],"myth":"Coupling is not simply about having a ball moving. A ball fed from a predictable position at a predictable pace still removes most of the information that regulates the real shot.","hist":"Follows directly from Gibson's work and became central to sport application through Davids, Renshaw and colleagues from the 1990s onwards.","rel":["representative-learning-design","decoupling"],"read":["Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Gibson, J. J. (1979). The ecological approach to visual perception. Houghton Mifflin.","Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics."]},{"id":"perturbation","n":"Perturbation","tile":"Complex Systems","sub":"Complex systems","def":"A disturbance applied to a system to reveal or challenge the stability of its current pattern.","plain":"Perturbations serve two purposes: diagnostic (how robust is this pattern?) and developmental (destabilising an unhelpful attractor so a new one can form). They should be calibrated — too small and nothing changes, too large and the athlete simply fails.","squash":"Unexpected surface change, an extra defender, a delayed cue, an odd bounce.","rel":["stability","attractor","noise"]},{"id":"phase-transition","n":"Phase transition","tile":"Complex Systems","sub":"Complex systems","def":"An abrupt, qualitative shift from one coordination pattern to another as a control parameter is scaled.","plain":"The classic example is walking spontaneously becoming running at a critical speed — not a gradual blend but a switch. In learning, sudden reorganisations of technique are transitions, and they're often preceded by a period of increased variability.","alias":["Bifurcation","Bifurcation point"],"why":"It explains why learning is lumpy rather than smooth, and why apparent deterioration often precedes a breakthrough. Variability rises just before a pattern reorganises.","squash":"As rally pace increases, a player who has been driving everything suddenly switches to volleying as their default. The change is abrupt, not gradual - one pattern gave way to another at a critical speed.","tips":["Scale a constraint gradually until behaviour reorganises - that point is where learning is available.","Read rising inconsistency as a possible signal of imminent change, not failure.","Do not retreat to easier conditions at the first sign of mess.","The path into a change is not the path back out of it."],"myth":"A plateau followed by a jump is not evidence that the earlier work was wasted. Reorganisation is often being prepared during the flat period.","hist":"Demonstrated in human coordination by Haken, Kelso and Bunz in 1985 through the finger-oscillation experiments that became the HKB model.","rel":["control-parameter","hysteresis","critical-fluctuation"],"read":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."],"refs":["Haken, H., Kelso, J. A. S., & Bunz, H. (1985). A theoretical model of phase transitions in human hand movements. Biological Cybernetics, 51(5), 347-356.","Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."]},{"id":"physiological-fidelity","n":"Physiological fidelity","tile":"Coaching Concepts","sub":"Representative learning","def":"Whether an activity mimics the physical demands of real play.","plain":"Does it load the body the way a match does?","why":"It is the lens most easily achieved and most often mistaken for representativeness on its own. A hard physical drill with no decisions has physiological fidelity and nothing else.","squash":"A demanding ghosting block has high physiological fidelity while failing action, conceptual and affective fidelity simultaneously.","tips":["High physical fidelity alone does not make an activity representative.","Check work-to-rest ratios against real rally and recovery patterns.","Beware equating exhaustion with quality practice.","Combine with the other three lenses rather than trading against them."],"myth":"Scoring highly here is not evidence of a good session. It is the lens most likely to be satisfied by activities that transfer poorly.","hist":"One of the four fidelity lenses used in the app's RLD Assess module.","rel":["action-fidelity","affective-fidelity","conceptual-fidelity","representative-practice"],"read":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"refs":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"inApp":1},{"id":"positive-feedback","n":"Positive feedback","tile":"Complex Systems","sub":"Complex systems","def":"A loop that amplifies change, driving a system further from its current state.","plain":"Something that snowballs.","why":"Explains rapid collapses and surges in performance that seem out of proportion to their cause.","squash":"A player who starts rushing hits looser, gets more pressure, and rushes more.","rel":["feedback-loops","negative-feedback","phase-transition"]},{"id":"practice-landscape","n":"Practice landscape","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The overall diet of tasks, contexts and constraints an athlete experiences over time.","plain":"Individual sessions matter less than the shape of the whole landscape: how varied, how representative, how much exploration it permits. Auditing the landscape often reveals more than analysing any single session.","rel":["representative-learning-design","functional-variability"]},{"id":"productive-variability","n":"Productive variability","tile":"Skill Acquisition","sub":"Variability","def":"Variation that supports exploration, adaptation or learning rather than degrading performance.","plain":"The useful kind of inconsistency.","why":"Names the variability a coach should protect rather than eliminate.","squash":"A player trying three different heights on the same shot is producing variability that informs their calibration.","rel":["functional-variability","search","differential-learning"]},{"id":"prospectivity","n":"Prospectivity","tile":"Foundations","sub":"Decision making","def":"The forward-looking regulation of action using information that specifies what is about to become possible.","plain":"Acting on what is coming, not on what has already happened.","why":"It captures the continuous, anticipatory nature of skilled movement without invoking internal prediction.","squash":"Adjusting stride pattern mid-movement based on how the ball is coming off the side wall.","rel":["anticipation","tau","affordance-based-control"]},{"id":"quiet-eye","n":"Quiet eye","tile":"Foundations","sub":"Decision making","def":"A final prolonged fixation on a task-relevant location, beginning before movement initiation and associated with better performance.","plain":"The steady last look before you commit.","why":"It is one of the most robust perceptual markers separating expert from novice performance, and it can be developed through practice design rather than instruction.","squash":"A longer, steadier final fixation on the ball and opponent before committing to the shot, rather than eyes already moving to where the player intends to hit.","tips":["Do not instruct gaze position directly — it produces looking without seeing.","Design tasks that reward waiting for information before committing.","Call the Shot style tasks build the read without prescribing where to look.","Rushed commitment usually indicates a movement or positioning problem upstream."],"myth":"Quiet eye is not simply watching the ball or concentrating harder. It is a specific, measurable gaze behaviour, and telling a player to hold their gaze does not reliably produce it.","hist":"Identified by Joan Vickers in the 1990s across aiming and interceptive tasks, and now one of the most replicated findings in sport perception research.","rel":["visual-search","information-pickup","anticipation","attunement"],"read":["Vickers, J. N. (2007). Perception, cognition, and decision training: The quiet eye in action. Human Kinetics."],"refs":["Vickers, J. N. (1996). Visual control when aiming at a far target. Journal of Experimental Psychology: Human Perception and Performance, 22(2), 342-354.","Vickers, J. N. (2007). Perception, cognition, and decision training: The quiet eye in action. Human Kinetics."],"inApp":1},{"id":"rate-limiter","n":"Rate limiter","tile":"Complex Systems","sub":"Complex systems","def":"The single constraint currently gating the emergence of a new coordination pattern.","plain":"In a system with many interacting components, one factor often holds everything back — insufficient strength, a restricted range of motion, fear, or an unhelpful intention. Removing it can allow rapid reorganisation, while working on anything else produces little. Thelen's infant stepping work made this concrete: leg mass, not neural maturation, gated the behaviour.","alias":["Rate controller"],"squash":"Before adding volume, ask what one thing is actually gating the change. It is frequently not the thing being drilled.","hist":"Origin: Thelen (1984)","rel":["individual-constraints","constraint"],"refs":["Thelen (1984)"]},{"id":"redundancy","n":"Redundancy","tile":"Skill Acquisition","sub":"Variability","def":"The presence of surplus components that can substitute for one another.","plain":"Having spare parts that do the same job.","why":"Distinguishing it from degeneracy clarifies why movement systems are robust: the routes are different, not duplicate.","squash":"Extra reach in a stretched retrieval is not a spare copy of a shot - it is a structurally different solution.","rel":["degeneracy","motor-abundance","robustness"]},{"id":"reinvestment","n":"Reinvestment","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The tendency, under pressure, to consciously monitor and control movement mechanics that normally run without attention.","plain":"Thinking about your technique at exactly the moment you should not be.","why":"It explains why well-grooved skills fail in the fifth game, and why explicitly taught technique is more vulnerable than implicitly acquired skill.","squash":"A player who has been technically drilled on the backhand starts checking their wrist position at 9-9, and the shot deteriorates.","tips":["Reduce explicit technical rules — they are what gets reinvested.","Use analogies and external cues, which give nothing to consciously monitor.","Practise under real consequence so the tendency shows up before it matters.","Return attention to information and intention, not to mechanics."],"myth":"Reinvestment is not a lack of mental toughness or focus. It is a predictable consequence of how the skill was learned, and it is addressed through practice design rather than exhortation.","hist":"Identified by Rich Masters in 1992 and developed into reinvestment theory with Maxwell; it is the main evidence base for implicit learning approaches.","rel":["implicit-learning","choking","internal-focus","analogy-learning"],"read":["Masters, R., & Maxwell, J. (2008). The theory of reinvestment. International Review of Sport and Exercise Psychology, 1(2), 160-183.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Masters, R. S. W. (1992). Knowledge, knerves and know-how: The role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure. British Journal of Psychology, 83(3), 343-358.","Masters, R., & Maxwell, J. (2008). The theory of reinvestment. International Review of Sport and Exercise Psychology, 1(2), 160-183."],"inApp":1},{"id":"relative-phase","n":"Relative phase","tile":"Complex Systems","sub":"Complex systems","def":"A measure of the timing relationship between two oscillating components.","plain":"Widely used as an order parameter for coordination — between limbs, between joints, or between two players. In-phase and anti-phase are the two intrinsically stable modes, and everything else requires learning to stabilise.","rel":["order-parameter","hkb-model"]},{"id":"repetition-without-repetition","n":"Repetition without repetition","tile":"Skill Acquisition","sub":"Bernstein","def":"Bernstein's principle that practice repeats the problem, not the solution.","plain":"Because conditions never recur exactly, every attempt is a fresh solving of the same movement problem. Skill is therefore the improving ability to solve, not an increasingly exact copy. This reframes what practice is for: not grooving a pattern, but building an adaptable solution-finding capacity.","why":"It overturns the rationale for grooving identical repetitions. What improves with practice is the ability to solve the problem, not the ability to reproduce a copy - so practice must repeat the problem, not the solution.","squash":"Fifty straight drives from fifty slightly different balls, positions and body states is practice. Fifty straight drives engineered to be as identical as possible is rehearsal of one solution that will never recur in a match.","tips":["Vary something on every repetition - position, pace, height, timing, pressure.","Treat identical-looking repetitions in changing conditions as a warning sign.","Judge consistency of outcome, not consistency of movement.","Resist the temptation to make practice tidy."],"myth":"This does not mean repetition is useless or that volume does not matter. It means the repeated element should be the problem being solved, not the movement pattern used to solve it.","hist":"Bernstein's most quoted principle, from his observations of expert blacksmiths in the 1930s, who showed more variability at the hammer-holding joints than at the hammer tip itself.","rel":["functional-variability","degeneracy","skill-adaptation"],"read":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","Bernstein, N. A. (1996). On dexterity and its development. In M. L. Latash & M. T. Turvey (Eds.), Dexterity and its development (pp. 3-244). Erlbaum.","Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills. Perception Action Consulting & Education."],"refs":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press."]},{"id":"representative-practice-assessment-tool","n":"Representative Practice Assessment Tool","tile":"Coaching Concepts","sub":"Representative learning","def":"A coach self-assessment instrument for rating how representative a practice activity is across several dimensions.","plain":"A structured way of scoring how much an activity really looks and feels like the sport.","alias":["RPAT"],"why":"It converts representative learning design from a principle into something a coach can actually rate and act on.","squash":"Rating a constrained game across information-movement coupling, perception-action fidelity, decision demand, representative constraints, effort and transfer intent returns an RLD level.","tips":["Rate honestly — the value is in finding the weak dimension, not the total.","A low score on one dimension is more useful information than the average.","Re-rate after changing a constraint to see whether it did what you intended.","The validated instrument is tennis-specific; the squash version is an adaptation in its spirit."],"myth":"The app's version is an adaptation in the spirit of the published tool, not the validated instrument itself. For the validated tennis version, use the original paper.","hist":"Developed and validated by Krause, Farrow and colleagues in 2018 for tennis, and adapted here as the RLD Assess module.","rel":["representative-learning-design","action-fidelity","transfer"],"read":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"refs":["Krause, L., Farrow, D., Reid, M., Buszard, T., & Pinder, R. (2018). Helping coaches apply the principles of representative learning design: Validation of a tennis specific practice assessment tool. Journal of Sports Sciences, 36(11), 1277-1286. https://doi.org/10.1080/02640414.2017.1374684"],"inApp":1},{"id":"representative-games","n":"Representative games","tile":"Coaching Concepts","sub":"Coaching","def":"Game-based activities designed to retain the key informational constraints of competition.","plain":"Games built to keep the real problem in them.","why":"The main practical vehicle for representative practice in a squad setting.","squash":"Constrained games that restrict shot options but keep a live opponent and open decisions.","rel":["modified-games","representative-practice","constraint-manipulation"]},{"id":"representative-learning-design","n":"Representative learning design","tile":"Coaching Concepts","sub":"Representative learning","def":"Designing practice so that the information and action possibilities faithfully sample those of the performance environment.","plain":"RLD extends Brunswik's representative design into learning. It asks two questions: does the practice contain the same specifying information the athlete will use in competition, and can they act on it in the same way? A drill can be physically demanding, well-organised and popular while being poorly representative.","alias":["RLD"],"why":"It is the design standard that determines whether practice transfers, and in this app it is operationalised twice: as the RLD 0-6 scale that every game card carries, and as the RPAT self-assessment in RLD Assess.","squash":"Ghosting to cones develops movement patterns but contains no opponent, no ball flight and no decision - so it trains movement in the absence of everything that normally regulates it. Constrained games with live opponents preserve those couplings.","tips":["Apply the two tests: is the information the same, and can the player act on it the same way?","Realistic-looking is not the same as representative - check information, not appearance.","Compare video of practice behaviour with match behaviour; divergence indicates a fidelity problem.","Where you simplify, keep the couplings intact and scale something else instead."],"myth":"Representative does not mean identical to a match, and RLD 6 is not the goal of every activity. The scale describes where an activity sits, not how good it is — a session needs work at several levels.","hist":"Extends Egon Brunswik's 1950s concept of representative design from experimental psychology into learning, formalised for sport by Pinder, Davids, Renshaw and Araujo in 2011.","rel":["representativeness","action-fidelity","perception-action-coupling"],"read":["Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Brunswik, E. (1956). Perception and the representative design of psychological experiments. University of California Press.","Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155."],"inApp":1},{"id":"representative-practice","n":"Representative practice","tile":"Coaching Concepts","sub":"Representative learning","def":"Practice activities that preserve the informational and action demands of competition.","plain":"Practice that keeps the real problem in it.","why":"It is the applied output of representative learning design and the everyday test of a session plan.","squash":"Constrained games with live opponents are representative; ghosting to cones is not.","rel":["representative-learning-design","action-fidelity","representative-games"]},{"id":"representative-tasks","n":"Representative tasks","tile":"Coaching Concepts","sub":"Representative learning","def":"Practice tasks selected or designed to sample the constraints a performer meets in competition.","plain":"Tasks chosen because they contain the real problem, not because they are convenient.","why":"Gives coaches a selection criterion for activities beyond tradition or habit.","squash":"Playing constrained games from the back corners is representative of the situation it targets.","rel":["representative-practice","representative-learning-design","modified-games"]},{"id":"representativeness","n":"Representativeness","tile":"Coaching Concepts","sub":"Representative learning","def":"The degree to which practice preserves the information sources of the performance context.","plain":"Judged by whether the same perceptual variables are present and usable, not by whether the practice looks like the game. Two tasks can look similar and differ in representativeness, and vice versa.","rel":["representative-learning-design","functionality","action-fidelity"]},{"id":"resilience","n":"Resilience","tile":"Skill Acquisition","sub":"Variability","def":"The capacity to recover function after significant disruption.","plain":"Getting back to working after something goes badly wrong.","why":"Distinguishes bouncing back from never being knocked off - a different quality from robustness.","squash":"Losing a game heavily and re-establishing the same quality of play in the next.","rel":["robustness","skill-adaptation","perturbation"]},{"id":"robustness","n":"Robustness","tile":"Skill Acquisition","sub":"Variability","def":"The capacity of a system to maintain function despite disturbance.","plain":"Keeping the outcome when things go wrong.","why":"It is what practice under pressure and fatigue is actually building.","squash":"A player who still finds length at the end of a long rally has robust length, not just good length.","rel":["resilience","skill-adaptation","stability"]},{"id":"scaffolding","n":"Scaffolding","tile":"Coaching Concepts","sub":"Coaching","def":"Temporary support that enables a performer to attempt something currently beyond them, withdrawn as competence grows.","plain":"Propping the task up until it can stand on its own.","why":"Compatible with CLA when the support is built into the task design rather than delivered as instruction.","squash":"A cooperative opponent feeding a predictable pattern early on, becoming progressively less cooperative.","hist":"Origin: Vygotsky; Wood, Bruner & Ross (1976)","rel":["scaling","task-simplification","challenge-point"],"refs":["Vygotsky; Wood, Bruner & Ross (1976)"]},{"id":"scaling","n":"Scaling","tile":"Coaching Concepts","sub":"Coaching","def":"Adjusting task dimensions such as court size, equipment or ball speed to suit the performer.","plain":"Sizing the task to the player.","why":"It is the main mechanism for simplifying without decoupling.","squash":"Using a bouncier ball and a shortened court for beginners keeps a real rally going.","rel":["task-simplification","challenge-point","individual-constraints"]},{"id":"search","n":"Search","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The learner's active exploration of the space of possible movement solutions.","plain":"Learning is reframed as a search process across a perceptual-motor workspace. The coach's role is to shape where and how the athlete searches — narrowing the space when it's overwhelming, widening it when the athlete has settled prematurely on a mediocre solution.","alias":["Search strategies"],"why":"It reframes messy early practice as the process working rather than failing. The player is exploring a space of possible solutions, and that exploration is how functional ones are found.","squash":"Given a task of winning the point from a loose ball without hitting a straight drive, a player will try several options, most of them poor, before converging on ones that work for them. The poor attempts are the search.","tips":["Protect exploration time - correcting too early installs your solution instead of theirs.","Ask what the player tried before offering an alternative.","Constraints narrow the search space without specifying where the search ends.","Some inefficiency early is the cost of a solution that belongs to the player."],"myth":"Search is not aimless trial and error. Constraints shape it, and it becomes progressively more targeted as the player learns what does not work.","hist":"Central to Newell's account of learning as a search through a perceptual-motor workspace, developed from the mid-1980s.","rel":["exploratory-vs-performatory-movement","attractor-landscape"],"read":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff."]},{"id":"self-organisation","n":"Self-organisation","tile":"Complex Systems","sub":"Complex systems","def":"The spontaneous emergence of ordered patterns from local interactions, without a central controller.","plain":"Coordination patterns arise because of the interaction of constraints, in the same way that convection cells or flocking patterns emerge in nature. For coaching, this means behaviour can be shaped by arranging conditions rather than by prescribing movements — and that some patterns will emerge whether you asked for them or not.","alias":["Self organisation"],"why":"It is the mechanism that makes the whole approach work. Coordinated behaviour emerges from the interaction of player, task and environment under constraints - no one has to specify it, and no one could.","squash":"Put four players in a small-court game with a scoring system that rewards volleying, and volleying behaviour appears within minutes without a word of technical instruction. The pattern emerged from the constraints.","tips":["Set up conditions and let solutions appear before intervening.","Give the system time - self-organisation is not instant.","If nothing useful emerges, change the constraints rather than adding instruction.","Trust it more than feels comfortable at first."],"myth":"Self-organisation does not mean anything goes, or that the coach is passive. Constraints do the shaping, and designing them well is demanding work.","hist":"Developed in physics and biology through the 1970s-80s (Haken, Prigogine) and brought into movement science by Kelso, Kugler, Turvey and colleagues.","rel":["emergence","constraint","attractor"],"read":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press."],"refs":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press.","Kugler, P. N., Kelso, J. A. S., & Turvey, M. T. (1980). On the concept of coordinative structures as dissipative structures. In G. E. Stelmach & J. Requin (Eds.), Tutorials in motor behavior. North-Holland."]},{"id":"shared-affordances","n":"Shared affordances","tile":"Complex Systems","sub":"Complex systems","def":"Action possibilities available to a group and depending on the group's collective capabilities.","plain":"Teammates create affordances for each other — a run creates space, a screen creates a passing lane. Shared affordances explain how collective behaviour coheres without a shared internal plan.","rel":["co-adaptation","affordance"]},{"id":"situated-cognition","n":"Situated cognition","tile":"Foundations","sub":"Foundations","def":"The view that knowing is inseparable from the context and activity in which it is used.","plain":"Knowledge lives in the doing and in the setting, not only in the head.","why":"It explains why players can articulate the right answer in a debrief and fail to produce it on court.","squash":"A player who can explain the T position perfectly may still not occupy it under pressure.","rel":["embodied-cognition","distributed-cognition","transfer"]},{"id":"six-activity-design-questions","n":"Six Activity Design Questions","tile":"Coaching Concepts","sub":"Coaching","def":"A six-part gate applied before building a challenge, covering outcome goal, decisions, match consistency, guidance plan, constraint type and assessment.","plain":"Six questions to answer before you build a game, all of which have to pass.","why":"It stops well-intentioned activities being built without a named target affordance or a real decision — the two most common design failures.","squash":"Before shipping a new constrained game, checking that it has a named affordance being amplified and decisions consistent with real match play.","tips":["Use it as a gate, not a checklist — if one fails, redesign before building.","The first question is the one most often skipped: what affordance is being amplified?","If you cannot name the constraint type, the design is not finished.","Pair it with the on-court walk test before shipping."],"myth":"The questions are a design gate, not an evaluation of an activity already running. For assessing an existing activity, use the RPAT dimensions instead.","hist":"Drawn from McBroom and Gray and implemented in the app as the entry gate in RLD Assess.","rel":["representative-practice-assessment-tool","constraint-manipulation","affordance-amplification"],"read":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"refs":["McBroom, I., & Gray, R. (2025). A constraints-led approach to coaching tennis. Routledge."],"inApp":1},{"id":"skill-acquisition","n":"Skill acquisition","tile":"Skill Acquisition","sub":"Foundations","def":"The process by which a performer becomes able to achieve a task goal reliably and adaptively under performance conditions.","plain":"How players actually get good, from first attempts to expert adaptability.","why":"Framing it as acquiring adaptability rather than acquiring a technique changes what practice is designed to do.","squash":"A skilled player is not one who repeats a model swing but one who solves the front-left corner under any circumstances.","rel":["motor-learning","skill-adaptation","dexterity"]},{"id":"skill-adaptation","n":"Skill adaptation","tile":"Skill Acquisition","sub":"Variability","def":"The capacity to adjust an existing movement solution to changing conditions.","plain":"Increasingly preferred to 'skill acquisition', because it captures that the aim is not to obtain a fixed capability but to maintain functional performance across varying constraints. It shifts the evaluation question from 'can they do it?' to 'can they still do it when things change?'","alias":["Adaptability"],"rel":["dexterity","degeneracy","transfer"]},{"id":"skilled-intentionality","n":"Skilled intentionality","tile":"Foundations","sub":"Gibson","def":"The expert's responsiveness to multiple relevant affordances at once, tending toward an optimal grip on the situation.","plain":"Rietveld and Kiverstein describe skilled action as being simultaneously sensitive to many competing invitations, with the field organising itself so the most relevant stands out. The performer is not selecting from a menu but continuously improving their grip. It captures from the inside what coaches call reading the game.","alias":["Grip on the situation"],"squash":"Practise in situations dense with competing possibilities; isolating one option at a time removes the very thing being learned.","hist":"Origin: Rietveld & Kiverstein (2014)","rel":["landscape-of-affordances","affordances-as-invitations"],"refs":["Rietveld & Kiverstein (2014)"]},{"id":"soft-assembly","n":"Soft assembly","tile":"Skill Acquisition","sub":"Bernstein","def":"The temporary, on-the-fly formation of a movement solution for a specific set of constraints.","plain":"Soft assembly contrasts with a hard-wired programme retrieved from storage. Because the solution assembles in response to current conditions, it naturally accommodates fatigue, opponents, surfaces and equipment — and it explains why the 'same' skill is never mechanically identical twice.","rel":["coordinative-structure","self-organisation"]},{"id":"specificity-of-learning","n":"Specificity of learning","tile":"Skill Acquisition","sub":"Skill acquisition","def":"The principle that learning is bound to the conditions and information sources under which it occurred.","plain":"Practise with information the game won't give you and you become skilled at a game nobody plays. Specificity is the empirical pressure behind representative learning design.","hist":"Origin: Proteau","rel":["representative-learning-design","transfer"],"refs":["Proteau"]},{"id":"specifying-vs-non-specifying-variables","n":"Specifying vs non-specifying variables","tile":"Foundations","sub":"Gibson","def":"Some informational variables lawfully specify the property of interest; others merely correlate with it and eventually mislead.","plain":"A learner often latches onto a variable that works most of the time, performing adequately until conditions change and the correlation breaks down. Expertise involves converging on variables that hold under all relevant conditions. This explains why performance can collapse in an unfamiliar context despite looking secure in training.","squash":"Vary conditions deliberately so that unreliable variables stop working. The failures this produces are how better attunement gets forced.","hist":"Origin: Jacobs & Michaels (2007)","rel":["information-specifying","attunement","direct-learning"],"refs":["Jacobs & Michaels (2007)"]},{"id":"stability","n":"Stability","tile":"Complex Systems","sub":"Complex systems","def":"The tendency of a coordination pattern to persist and to return after being disturbed.","plain":"Stability is measured by how quickly a pattern recovers from perturbation and how variable it is at rest. Note that stability is not the same as correctness — a poor pattern can be highly stable, which is exactly what makes technical change difficult.","rel":["attractor","perturbation","metastability"]},{"id":"task-complexity","n":"Task complexity","tile":"Coaching Concepts","sub":"Coaching","def":"The number of components and the degree of interaction within a task.","plain":"How much is going on at once.","why":"Complexity can be reduced by scaling without decomposing the task into disconnected parts.","squash":"A three-shot constrained rally is less complex than open play but still contains decisions.","rel":["task-simplification","task-decomposition","challenge-point"]},{"id":"task-constraints","n":"Task constraints","tile":"Coaching Concepts","sub":"Constraints","def":"The goal, rules, equipment, scoring, area and information available in a practice task.","plain":"These are the constraints coaches most directly control and therefore the main design surface of the CLA. Changing the scoring system usually changes behaviour faster and more durably than telling players what to do.","why":"This is the category you control most directly and can change fastest. Rules, scoring, area, equipment and player numbers are the levers that do most of the work in a well-designed session.","squash":"Awarding two points for a winner hit in front of the short line changes attacking behaviour immediately and far more reliably than instructing a player to attack more.","tips":["Manipulate scoring to change behaviour - it is the most underused lever in squash coaching.","Change court dimensions, target areas or number of allowed shots before changing technique.","Name the behaviour you want before you design the constraint, then check whether you got it.","Beware constraints that produce the right-looking behaviour for the wrong reason."],"myth":"Task constraints are not just rules of the game. Equipment, targets, time limits, scoring and the information you make available are all task constraints.","hist":"Part of Newell's 1986 model; developed extensively for applied coaching by Renshaw, Davids and colleagues.","rel":["newell-s-model-of-constraints","constraint-manipulation"],"read":["Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge.","Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge."],"refs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children: Aspects of coordination and control (pp. 341-360). Martinus Nijhoff.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."]},{"id":"task-decomposition","n":"Task decomposition","tile":"Coaching Concepts","sub":"Coaching","def":"Breaking a skill into component parts practised separately.","plain":"Because most sporting skills are continuous and coupled, decomposition typically destroys the information the athlete needs, producing parts that don't reassemble. It has a legitimate but narrow role, mainly for genuinely discrete, serial tasks.","rel":["task-simplification","decoupling"]},{"id":"task-fidelity","n":"Task fidelity","tile":"Coaching Concepts","sub":"Representative learning","def":"The degree to which the surface features and demands of a practice task correspond to the performance task.","plain":"How closely the task looks and feels like the real thing.","why":"Useful but weaker than action fidelity - a task can look right and still produce the wrong behaviour.","squash":"A constrained game on a full court has high task fidelity; whether behaviour matches a match is a separate question.","rel":["action-fidelity","representativeness","representative-learning-design"]},{"id":"task-simplification","n":"Task simplification","tile":"Coaching Concepts","sub":"Coaching","def":"Reducing task difficulty while preserving the essential information-movement relationship.","plain":"Simplification keeps the coupling intact — smaller court, lighter ball, slower feed, larger target. It is the preferred alternative to decomposition, which breaks the skill into parts and severs the coupling. The test is whether the athlete is still perceiving and acting on the same relationship, just an easier version of it.","why":"It is the CLA answer to the objection that games are too hard for beginners. You can reduce difficulty without destroying the skill, provided you scale rather than dismantle.","squash":"For a beginner, use a bouncier ball, a smaller court area and a cooperative opponent - but keep a real ball, a real opponent and a real decision. Do not replace them with a hand feed to a static player.","tips":["Make it easier by changing scale, speed, space, numbers or equipment.","Do not make it easier by removing the opponent, the decision or the information.","A slower ball preserves coupling; a fed ball does not.","Check that the simplified task still contains the thing you are trying to develop."],"myth":"Simplification is often confused with decomposition. Decomposition breaks the task into parts and destroys the couplings that define it; simplification keeps the whole task and scales its difficulty.","hist":"A core principle of nonlinear pedagogy as set out by Chow, Davids, Button and Renshaw.","rel":["task-decomposition","perception-action-coupling","constraint-manipulation"],"read":["Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge."],"refs":["Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge."]},{"id":"tau","n":"Tau","tile":"Foundations","sub":"Gibson","def":"The optical variable specifying time-to-contact: the size of an object's image divided by its rate of expansion.","plain":"Tau allows a performer to time an action without knowing distance or speed independently. Its existence is a key demonstration that complex interceptive timing can be controlled by simple, directly available information rather than by internal calculation.","alias":["Time-to-contact"],"squash":"Catching, hurdling, braking into a turn and timing a tackle are all commonly described as tau-guided.","hist":"Origin: Lee (1976)","rel":["optic-flow","perception-action-coupling"],"refs":["Lee (1976)"]},{"id":"transfer","n":"Transfer","tile":"Skill Acquisition","sub":"Representative learning","def":"The extent to which what is learned in one context supports performance in another.","plain":"In ecological terms, transfer depends on shared information-movement couplings rather than on surface similarity of movement shapes. This explains why apparently similar drills transfer poorly and why apparently unrelated games sometimes transfer well.","why":"Transfer is the only real measure of whether coaching worked. Everything that happens in a session is a means to behaviour that appears in matches, weeks later, against someone who does not cooperate.","squash":"A player who executes flawless drops in a drill but never plays one in a match has not transferred the skill. The drill contained the movement but not the perceptual conditions under which the shot is chosen.","tips":["Judge sessions by what appears in matches, not by how they felt on the day.","Test after a delay and in a different context - immediate performance is a poor guide.","Poor transfer is usually a representativeness problem, not a motivation problem.","Shared information matters more than shared appearance."],"myth":"Transfer is not guaranteed by surface similarity. A practice that looks like squash can transfer poorly if the information guiding the action is different.","hist":"A long-standing concern in motor learning, reframed by ecological approaches around shared information-movement couplings rather than shared movement elements.","rel":["specificity-of-learning","skill-adaptation","representative-learning-design"],"read":["Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155.","Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition: An introduction. Routledge."],"refs":["Pinder, R. A., Davids, K., Renshaw, I., & Araujo, D. (2011). Representative learning design and functionality of research and practice in sport. Journal of Sport and Exercise Psychology, 33(1), 146-155.","Schmidt, R. A., & Bjork, R. A. (1992). New conceptualizations of practice. Psychological Science, 3(4), 207-217."]},{"id":"transfer-appropriate-processing","n":"Transfer appropriate processing","tile":"Skill Acquisition","sub":"Representative learning","def":"The principle that learning transfers best when the processing demands of practice match those of performance.","plain":"You get good at what you actually do in practice, including the mental work involved.","why":"It arrives from cognitive psychology rather than ecological dynamics but reaches a compatible conclusion about practice design.","squash":"Practising shot execution without decisions builds execution without decisions.","hist":"Origin: Morris, Bransford & Franks (1977)","rel":["transfer","representative-learning-design","specificity-of-learning"],"refs":["Morris, Bransford & Franks (1977)"]},{"id":"uncontrolled-manifold","n":"Uncontrolled manifold","tile":"Skill Acquisition","sub":"Bernstein","def":"The set of element configurations that all produce the same task outcome.","plain":"Variability within this set doesn't hurt performance; variability outside it does. Measuring the two separately reveals that skilled performers are often more variable in their joint angles while being less variable in the outcome — a finding that overturns the naive equation of consistency with skill.","alias":["UCM"],"hist":"Origin: Scholz & Schöner (1999)","rel":["motor-abundance","functional-variability"],"refs":["Scholz & Schöner (1999)"]},{"id":"visual-search","n":"Visual search","tile":"Skill Acquisition","sub":"Decision making","def":"The pattern of eye and head movement by which a performer samples the available visual information.","plain":"Where players look, and in what order.","why":"Expert and novice search patterns differ markedly, and the difference is trainable through exposure rather than instruction.","squash":"Experienced players fixate the opponent's trunk and racket preparation rather than tracking the ball continuously.","rel":["information-pickup","anticipation","attunement"]}];
 const CLA_LEXICON_PEOPLE=[{"id":"nikolai-bernstein","n":"Nikolai Bernstein","dates":"1896-1966","def":"Soviet physiologist who identified the degrees of freedom problem and redefined what skill is.","bio":"Worked in Moscow from the 1920s, studying human movement with cyclography - photographing workers such as blacksmiths and runners to capture movement in fine detail. His work fell out of official favour under Stalin and reached the West only after translation in 1967, decades after it was written.","contrib":["Identified the degrees of freedom problem as the central issue in motor control","Proposed synergies and coordinative structures as the solution","Formulated repetition without repetition","Described freezing, freeing and exploiting degrees of freedom","Defined dexterity in terms of adaptability rather than precision"],"pubs":["Bernstein, N. A. (1967). The co-ordination and regulation of movements. Pergamon Press.","Bernstein, N. A. (1996). On dexterity and its development. In M. L. Latash & M. T. Turvey (Eds.), Dexterity and its development. Erlbaum."],"legacy":"Anticipated most of what became dynamical systems movement science by several decades. Almost every modern account of coordination traces back to his framing of the problem.","impact":"Gave coaching its strongest argument against grooving identical repetitions, and the vocabulary for treating variability as functional rather than as error."},{"id":"james-j-gibson","n":"James J. Gibson","dates":"1904-1979","def":"American psychologist who founded ecological psychology and introduced affordances.","bio":"Worked on aviation training during the Second World War, where the failure of existing perceptual theory to explain how pilots land aircraft pushed him toward a radically different account. Spent much of his career at Cornell, developing the position over three books.","contrib":["Theory of direct perception","The concept of affordances","Ambient optic array and optic flow","Invariants as the basis of perceptual constancy","Reframing perception as an activity of an organism in an environment"],"pubs":["Gibson, J. J. (1979). The ecological approach to visual perception. Houghton Mifflin.","Gibson, J. J. (1966). The senses considered as perceptual systems. Houghton Mifflin."],"legacy":"Reoriented perceptual psychology away from internal computation and toward the organism-environment relationship, providing the theoretical foundation for ecological approaches across many fields.","impact":"Underpins the shift from instructing players what to do to designing environments that offer the right opportunities and information."},{"id":"karl-newell","n":"Karl Newell","dates":"b. 1945","def":"Movement scientist whose constraints model gave the constraints-led approach its structure.","bio":"British-born and long based in the United States, principally at Penn State and later Georgia. His 1986 chapter is among the most cited pieces of work in the field.","contrib":["The three-category model of individual, task and environmental constraints","Learning framed as a search through a perceptual-motor workspace","Coordination, control and skill as stages of learning","Extensive work on variability and degrees of freedom"],"pubs":["Newell, K. M. (1986). Constraints on the development of coordination. In M. G. Wade & H. T. A. Whiting (Eds.), Motor development in children (pp. 341-360). Martinus Nijhoff."],"legacy":"Provided the organising framework that made ecological and dynamical ideas usable in applied settings.","impact":"Every constraints-led session design is built on his three categories, whether or not the coach knows the source."},{"id":"scott-kelso","n":"Scott Kelso","dates":"b. 1947","def":"Neuroscientist who established coordination dynamics and co-developed the HKB model.","bio":"Northern Irish-born, based at Florida Atlantic University, where he founded the Center for Complex Systems and Brain Sciences. His finger-oscillation experiments gave dynamical systems ideas hard empirical footing in human movement.","contrib":["The HKB model of coordination, with Haken and Bunz","Experimental demonstration of phase transitions in human movement","The concept of metastability in brain and behaviour","Coordination dynamics as a research programme"],"pubs":["Kelso, J. A. S. (1995). Dynamic patterns: The self-organization of brain and behavior. MIT Press.","Haken, H., Kelso, J. A. S., & Bunz, H. (1985). A theoretical model of phase transitions in human hand movements. Biological Cybernetics, 51(5), 347-356."],"legacy":"Showed that human coordination exhibits the signatures of self-organising systems, making the dynamical systems account testable rather than merely plausible.","impact":"Gives coaches the concepts of attractors, transitions and metastability - and the understanding that entrenched patterns must be destabilised before they change."},{"id":"michael-turvey","n":"Michael Turvey","dates":"1942-2023","def":"Psychologist who developed the theoretical foundations linking Gibson's ecology with dynamical systems.","bio":"Based at the University of Connecticut and Haskins Laboratories for decades, where he built one of the most influential ecological psychology research groups.","contrib":["Formalised effectivities as the complement of affordances","Developed coordinative structure theory","Extensive work on haptic perception and dynamic touch","Bridged ecological psychology and dynamical systems theory"],"pubs":["Turvey, M. T. (1990). Coordination. American Psychologist, 45(8), 938-953.","Turvey, M. T. (2007). Action and perception at the level of synergies. Human Movement Science, 26(4), 657-697."],"legacy":"Much of the theoretical rigour behind ecological dynamics is his, particularly the integration of two traditions that could easily have remained separate.","impact":"His work on dynamic touch explains how a player perceives racket properties through the racket itself - relevant to equipment change and feel."},{"id":"mark-latash","n":"Mark Latash","dates":"b. 1953","def":"Motor control scientist known for reframing surplus degrees of freedom as abundance rather than redundancy.","bio":"Based at Penn State, working extensively on synergies, motor control in clinical populations and the uncontrolled manifold framework.","contrib":["The principle of motor abundance","Development of the uncontrolled manifold approach with Scholz and Schoner","Detailed theory of synergies and error compensation","Editor and translator of Bernstein's later work into English"],"pubs":["Latash, M. L. (2012). The bliss (not the problem) of motor abundance (not redundancy). Experimental Brain Research, 217(1), 1-5.","Latash, M. L. (2008). Synergy. Oxford University Press."],"legacy":"Turned Bernstein's problem into a resource, showing that extra degrees of freedom are what make stable outcomes possible.","impact":"Provides the strongest technical argument for why joint-level variability can increase while outcome consistency improves."},{"id":"esther-thelen","n":"Esther Thelen","dates":"1941-2004","def":"Developmental psychologist who applied dynamical systems theory to motor development.","bio":"Based at Indiana University. Her studies of infant stepping and reaching overturned the prevailing view that motor development unfolds from a genetic programme.","contrib":["Demonstrated that developmental change emerges from multiple interacting components","Introduced the concept of rate limiters","Showed that infant stepping disappearance was a matter of leg mass, not neural regression","Extended dynamical systems thinking into cognitive development"],"pubs":["Thelen, E., & Smith, L. B. (1994). A dynamic systems approach to the development of cognition and action. MIT Press.","Thelen, E. (1995). Motor development: A new synthesis. American Psychologist, 50(2), 79-95."],"legacy":"Established that development is emergent and context-dependent rather than programmed, with implications far beyond infancy.","impact":"Gives coaches the rate limiter concept - the discipline of asking what single factor is actually gating a change before adding volume."},{"id":"keith-davids","n":"Keith Davids","dates":"b. 1953","def":"Sport scientist principally responsible for translating ecological dynamics into coaching practice.","bio":"Has held positions in the UK, Australia and New Zealand, most recently at Sheffield Hallam University. Has published prolifically with a large network of collaborators.","contrib":["Co-developed ecological dynamics as an applied framework","Central to the development of the constraints-led approach in sport","Extensive work on representative learning design and degeneracy","Built the research network that produced most applied CLA literature"],"pubs":["Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach. Routledge."],"legacy":"More than anyone else, made these ideas usable by practising coaches rather than only by researchers.","impact":"The applied vocabulary most coaches now use - constraints-led, representative design, functional variability - largely comes through his work."},{"id":"chris-button","n":"Chris Button","dates":"b. 1974","def":"Sport scientist and co-author of the foundational applied text on skill acquisition dynamics.","bio":"Based at the University of Otago, New Zealand, with research spanning skill acquisition, water safety and movement variability.","contrib":["Co-authored Dynamics of Skill Acquisition","Research on movement variability and expertise","Work on nonlinear pedagogy","Applied research in aquatic skills and drowning prevention"],"pubs":["Davids, K., Button, C., & Bennett, S. J. (2008). Dynamics of skill acquisition: A constraints-led approach. Human Kinetics.","Chow, J. Y., Davids, K., Button, C., & Renshaw, I. (2016). Nonlinear pedagogy in skill acquisition. Routledge."],"legacy":"Helped establish the applied textbook literature through which most coaches encounter these ideas.","impact":"His work on variability supports the practical case for designing variation into every session."},{"id":"ian-renshaw","n":"Ian Renshaw","dates":"b. 1963","def":"Sport scientist focused on the practical implementation of the constraints-led approach.","bio":"Based at Queensland University of Technology, with a strong background in coaching practice as well as research, particularly in cricket.","contrib":["Lead author of the main practical text on the constraints-led approach","Work on representative learning design in cricket","Research on the role of emotion and intention as constraints","Development of coach education around CLA"],"pubs":["Renshaw, I., Davids, K., Newcombe, D., & Roberts, W. (2019). The constraints-led approach: Principles for sports coaching and practice design. Routledge.","Renshaw, I., & Chow, J. Y. (2019). A constraint-led approach to sport and physical education pedagogy. Physical Education and Sport Pedagogy, 24(2), 103-116."],"legacy":"Bridged the gap between the theory and what a coach does on Monday morning.","impact":"His work is the most directly usable starting point for a coach new to the approach."},{"id":"rob-gray","n":"Rob Gray","dates":"b. 1970","def":"Perception-action researcher and the most prominent communicator of ecological ideas to coaches.","bio":"Based at Arizona State University, with a research background in visual perception and interceptive action, particularly in baseball. Hosts the Perception & Action podcast.","contrib":["Research on interceptive action and visual control of hitting","Work on the effects of attentional focus and instruction","Major role in translating research for practitioners","Critique of decontextualised practice"],"pubs":["Gray, R. (2021). How we learn to move: A revolution in the way we coach and practice sports skills.","Gray, R. (2023). Learning to be an athlete: Constraints and coaching in sports skills."],"legacy":"Has done more than anyone to make this research accessible outside academia.","impact":"His writing and podcast are usually the most efficient entry point for a coach who wants depth without wading through journals."},{"id":"egon-brunswik","n":"Egon Brunswik","dates":"1903-1955","def":"Psychologist who originated representative design.","bio":"Hungarian-born, trained in Vienna, later at the University of California, Berkeley. Argued against the artificiality of laboratory experiments long before it became a mainstream concern.","contrib":["The principle of representative design","Probabilistic functionalism","The lens model of perception","Argued that stimuli must be sampled from the organism's natural environment"],"pubs":["Brunswik, E. (1956). Perception and the representative design of psychological experiments. University of California Press."],"legacy":"His central argument was neglected for decades before becoming foundational to representative learning design.","impact":"The source of the question every coach should ask: does this practice sample the conditions the player will actually face?"},{"id":"edward-reed","n":"Edward Reed","dates":"1954-2002","def":"Philosopher and psychologist who developed and defended Gibson's ecological programme.","bio":"Worked closely with the Gibsons' intellectual legacy, writing extensively on the philosophy and history of ecological psychology before his early death.","contrib":["Definitive intellectual biography of James Gibson","Extended ecological psychology into questions of learning and culture","Work on the ecology of human development and experience","Defended direct perception against cognitivist critique"],"pubs":["Reed, E. S. (1988). James J. Gibson and the psychology of perception. Yale University Press.","Reed, E. S. (1996). Encountering the world: Toward an ecological psychology. Oxford University Press."],"legacy":"Preserved and clarified the ecological programme at a time when it was under sustained attack.","impact":"Useful for coaches who want to understand why the ecological position is philosophically serious rather than merely a coaching fashion."},{"id":"tim-ingold","n":"Tim Ingold","dates":"b. 1948","def":"Anthropologist whose work on skill, environment and dwelling connects with ecological approaches.","bio":"Based at the University of Aberdeen. Writes on perception, craft, skill and the relationship between people and their environments from an anthropological perspective.","contrib":["The concept of skill as an education of attention within a practice","Work on dwelling and the perception of the environment","Critique of the separation between body, mind and environment","Writing on craft, making and the transmission of skill"],"pubs":["Ingold, T. (2000). The perception of the environment: Essays on livelihood, dwelling and skill. Routledge."],"legacy":"Broadened ecological thinking into culture, apprenticeship and how skill is passed between people.","impact":"Offers coaches a rich way of thinking about squad culture and apprenticeship as part of how skill develops."},{"id":"jean-cote","n":"Jean Cote","dates":"b. 1963","def":"Sport psychologist known for research on athlete development pathways and coaching effectiveness.","bio":"Based at Queen's University, Canada. His work concerns how sporting careers develop over time and what environments support them.","contrib":["The Developmental Model of Sport Participation","Research on deliberate play versus deliberate practice","Work on sampling versus early specialisation","Research on coaching effectiveness and athlete-centred environments"],"pubs":["Cote, J. (1999). The influence of the family in the development of talent in sport. The Sport Psychologist, 13(4), 395-417.","Cote, J., Baker, J., & Abernethy, B. (2007). Practice and play in the development of sport expertise. In Handbook of sport psychology."],"legacy":"Provided the evidence base for early sampling and play rather than early specialisation.","impact":"Supports the case for varied, playful early experience - which aligns closely with an exploratory, constraints-led philosophy."}];
 
-/* ───────────────────────── CLA LEXICON™ — coach education ─────────────────────────
-   Searchable reference for the language of ecological dynamics. Every entry answers
-   what it means, why it matters, how it looks in squash, and what coaches get wrong. */
 const LEX_TILES=[
   {id:'Foundations',label:'Foundations',blurb:'Core concepts underpinning CLA.',color:'#4a9de0'},
   {id:'Key Researchers',label:'Key Researchers',blurb:'People who shaped the field.',color:'#c084fc'},
@@ -25202,7 +24226,6 @@ function LexiconScreen({setScreen}){
   </div>;
 }
 
-
 const PARENT_SECTIONS=[{"id":"look","t":"What a session looks like","b":["Coaching approaches differ mainly in one thing: how much a player is told, and how much they are asked to work out.","Every coach uses both. A grip has to be shown. Reading an opponent cannot be. The difference between approaches is the proportion and the timing, not whether one uses instruction and the other does not.","Our sessions sit further towards the working-it-out end than you may be used to. Players solve problems, compete, adapt and experiment, and the coach often says less than you might expect.","That is deliberate rather than casual. Each activity is built so the situations your child meets in practice are the situations they meet in a match."]},{"id":"two","t":"Two ways of teaching the same skill","b":["Take a drop shot. One approach shows the player the correct technique, breaks it into parts, and has them repeat it until it is reliable, then puts it into a game.","The other puts the player in situations where a drop is the best available answer, and lets them find a version that works for them, shaping it as they go.","The first is quicker to produce something that looks right. The second is slower to look good and tends to hold up better when someone is trying to stop them.","Most skills need some of both. What matters is which one is doing the heavy lifting, and at what stage."]},{"id":"bike","t":"Why some things cannot be told","b":["Someone can explain balance on a bicycle clearly and helpfully, and you still have to get on and wobble.","Some things are best explained. Others can only be found by doing, because they depend on a situation that has to be present to be learned.","A player can be told where to stand. Reading an opponent, choosing between three options in half a second, and staying composed at 9-9 have to be discovered in conditions that demand them."]},{"id":"diff","t":"Every child is different","b":["Children grow at different rates and have different heights, strengths, limb lengths and temperaments. A movement that suits a tall, long-limbed player will not suit a small, quick one.","So there are principles of good movement that apply to everyone, and details that should differ between players.","Our job is to hold the principles firm while letting each child find the version that works for their body."]},{"id":"correct","t":"How and when we correct","b":["We do correct things. The question is when, and how often.","Correcting immediately and every time is right for some things — anything unsafe, anything with an injury risk, anything limiting what a player can do at all, and anything a player has asked about directly.","For most match skills we hold back a little, because a player who is always told the answer does not get practice at finding one. In a match nobody can tell them what to do.","So we choose the moment rather than avoiding it. If your child is doing something that genuinely needs fixing, we will fix it."]},{"id":"direct","t":"What clear instruction does well","b":["It would be wrong to suggest technical teaching has no place. It does, and we use it.","It is the fastest way to give a beginner a starting point when they have no solution at all. It is right for grip, for safety, and for anything carrying an injury risk.","It is valuable when a player has hit a genuine ceiling and something in how they move is closing off options that need naming plainly.","And it is far better than vague encouragement. A coach who can explain precisely what is happening is a good coach, whichever approach they lean towards."]},{"id":"games","t":"Why so many games","b":["Children have learned through play for as long as there have been children. Play develops decision making, creativity, adaptability, resilience and competitiveness at the same time.","The games are not there only to keep sessions enjoyable, though they do. Each is built to develop particular behaviours while keeping the realism of a match.","If a game looks like it is just a game, that usually means it is working."]},{"id":"comp","t":"Why practice looks like competition","b":["Skills tend to stay attached to the conditions they were learned in. A shot practised from a gentle feed, with no opponent and no consequence, is being learned under conditions that never quite occur in a match.","So we keep the opponent, the decision and the pressure in place, and make things easier by changing the space, the ball or the scoring instead.","It also means practice looks messier. A shot always looks cleaner without an opponent — that is true of any coach's session, including ours. It is worth remembering when judging what you are watching."]},{"id":"var","t":"Mistakes and messy patches","b":["A run of errors is not always a sign that something has gone wrong. When a player is reorganising how they do something, performance usually gets less consistent before it gets better.","If a child never struggles in practice, the task is probably too easy for them to be learning much from it.","We aim for roughly 70% success — enough to keep confidence, enough failure to require adaptation."]},{"id":"judge","t":"How to judge any coaching, including ours","b":["You do not need to take a view on coaching theory to work out whether something is working. These are the questions we would apply to ourselves, and we would encourage you to apply them to us.","Does it show up in matches? A shot can work perfectly in practice and disappear the moment an opponent is trying to stop it.","Can they do it when nobody is telling them? That is the difference between a player who has learned something and a player who is being operated.","Does it survive a change of venue, opponent or ball? Skills that only work in familiar conditions tend to be narrower than they look.","Are they getting better at solving problems, or better at one solution? Both matter, but only one of them keeps working as opponents improve.","And a question worth asking any coach: what were you trying to produce today, and how would you know if it worked? Any good coach has a clear answer, whatever their approach."]},{"id":"cost","t":"What this approach costs","b":["It would be dishonest to present this as free of trade-offs.","It looks less impressive to watch, and progress is harder for a parent to see week to week. Early on, a player drilled intensively on one shot will often produce a tidier-looking version of it sooner.","It asks more of the coach, because designing a good game is harder than delivering a good drill and a badly designed game teaches nothing.","We accept those costs because of what happens later, in unfamiliar venues against unfamiliar players when nobody can help."]},{"id":"indep","t":"Building independent players","b":["The goal is players who no longer need us: who can read a situation, adapt under pressure, stay composed and keep learning on their own.","That is what people mean by sporting intelligence, and it is what keeps players in the game long after junior results stop mattering."]}];
 const PARENT_HELP=["Ask what they tried, not whether they won. It changes what they pay attention to next time.","Resist coaching from the side of the court during matches. It splits their attention at the worst moment.","Get them playing against as many different people as possible. Variety of opponent does more than variety of drill.","Protect unstructured play and other sports. Early variety is associated with better long-term outcomes, not worse.","Tell us who else is coaching your child, so everyone can work to the same picture.","Do not panic at a run of losses during a change. It is usually the middle of the change, not the end of the progress."];
 const PARENT_FAQ=[{"q":"Should we also book individual lessons?","a":["Often yes. More court time and individual attention are valuable, and many of our players do both.","The question is less about group or individual than about how a session is run. An individual session can be built around problems and decisions just as a group can, and a group can be run as a drill just as a lesson can.","The only thing we would ask is that you tell us who else is working with your child. Children progress faster when the adults around them are pulling in the same direction, and that is much easier to arrange when we know who to call."]},{"q":"One coach’s sessions look neater than the other’s.","a":["Neatness is mostly a property of the setting, not the coach. Any shot looks better without an opponent. A fed ball, time to prepare, no pressure and no consequence produce a cleaner stroke than the same stroke in a rally.","So a quiet, controlled session is a flattering place to watch a player. It is an excellent place to see technique and a difficult place to judge how that technique will hold up on Saturday morning.","The test is the same for everything, including our own sessions: does it survive contact with an opponent?"]},{"q":"Will my child still develop good technique?","a":["Yes. Sound technique comes both from clear teaching of the basics and from solving the same problems repeatedly in realistic situations.","We do technical work; it is often less visible. Changing what a player is trying to achieve reorganises their movement without a word being said about elbows."]},{"q":"Why is the coach asking questions instead of giving answers?","a":["Because a solution a player works out is one they can still use when nobody is there to remind them.","Questions also tell the coach what the player is actually noticing, which is more useful than whether they can repeat an instruction back."]},{"q":"My child seems to be making more mistakes than before.","a":["That is common when someone is genuinely changing how they do something, and it usually settles at a higher level than before.","If it lasts more than a few weeks, please tell us. That is worth looking at properly."]},{"q":"Why are they not practising one shot over and over?","a":["They sometimes do, particularly when learning something new. But no two shots in a match are identical: the ball, position, balance and opponent differ every time.","So most of our practice repeats the problem rather than the solution."]},{"q":"It looks less structured than the coaching I remember.","a":["The structure sits in the design rather than the delivery. The rules, court size, scoring and constraints of each game are chosen to produce particular behaviours.","A quiet coach is often a sign of a carefully built task rather than an inattentive one."]},{"q":"Does this mean winning does not matter?","a":["Winning matters and we compete hard. Junior results are simply an unreliable guide to how good a player becomes later.","We would rather your child be the one still improving at eighteen."]}];
@@ -25211,9 +24234,6 @@ const PARENT_EVIDENCE=["Bernstein, N. A. (1967). The co-ordination and regulatio
 const PARENT_COACH_NOTE=["The difference lies in method, not session format. You can coach this way one-to-one and you can run a group as a drill. Framing it as group versus individual concedes ground you do not need to concede, and it closes a door you want open with colleagues.","Individual sessions come with a built-in commentary — “today we worked on X”. Group sessions do not, because we deliberately do not narrate. Nobody is taking credit; there is only one story being told.","Close that gap at pick-up. Two sentences naming what the player found today and the game that produced it.","Use the Breakthrough Log as a shared record with a player’s other coaches, not as evidence for your side. Offered that way it is collaboration; offered the other way it is an argument.","If a colleague coaches more traditionally, the persuasive move is a shared player and a shared record, not a document. Ask what they are seeing before offering what you are seeing. Disagreement about method survives that conversation; suspicion about motive does not."];
 const PARENT_QA_GUIDE=[{"h":"Run it one parent at a time","b":["Fifteen minutes, booked, not at pick-up. A parent with a queue behind them cannot ask the question they actually came with.","Ask what they are hoping their child gets out of squash before you explain anything. The answer tells you which parts of this matter to them, and half of what you were going to say will turn out to be irrelevant."]},{"h":"Open with a question, not a pitch","b":["“What have you noticed about her game over the last couple of months?” beats any opening you could prepare.","If they describe something tactical or adaptive, that is your answer already and you can simply agree with them."]},{"h":"Never name the other coach","b":["Talk about approaches, settings and stages. The moment a colleague is named, the conversation becomes about people and the parent has to take a side.","If the parent names them, stay on method: “That sounds like the telling-first approach, which is exactly right for what he was working on.”"]},{"h":"Concede the genuine strengths early","b":["Say what clear instruction is good for before you say what it is not. A parent who hears a balanced account trusts the rest.","Say the costs of our approach out loud too. It looks messier, progress is harder to see, and a badly designed game teaches nothing."]},{"h":"Hand over the test, not the verdict","b":["Give them the four questions: does it hold up against someone trying to win, can they do it unprompted, does it survive a change of conditions, are they getting better at solving problems.","Then let them apply those to everything, including you. A parent who reaches a conclusion themselves defends it; a parent who is handed one repeats it to the wrong person."]},{"h":"Close with a request, not a conclusion","b":["“Tell me who else is working with her and I will give them a ring” is the outcome you want from the meeting.","You do not need the parent to agree with you. You need them to introduce you."]}];
 
-/* ───────────────── PARENT EDUCATION — "Why We Coach This Way" ─────────────────
-   Two audiences on one screen: content to show or send to parents, and short
-   answers a coach can use in the conversation on the night. */
 function ParentStyles(){return <style>{`
 .parWrap{display:flex;flex-direction:column;gap:14px;}
 .parTabs{display:flex;flex-wrap:wrap;gap:8px;}
@@ -25255,17 +24275,6 @@ function parentPackText(){
   return L.join('\n');
 }
 
-// ── WHERE DID THE IMPROVEMENT COME FROM? (v777) ──────────────────────────────────
-// Coach, 27 Sep: players (young teenagers) credit their 1-2-1s and solo practice for their
-// progress, not the CLA group sessions — a belief that keeps the traditional approach
-// going. The research on the feeling of learning explains why. Complements, and links to,
-// Parents → "Getting the credit" (the coach's actions) rather than repeating it.
-// ── MATCH PROBLEM INDEX (v784) ──────────────────────────────────────────────────
-// Coach, 28 Sep: tie the games back to the problems coaches see in match play. Each entry
-// names what the problem looks like in a match and opens the games that address it (a
-// Games Library family via its classId, or an app screen). Add problems here; the screen,
-// the search entries and the groups all read from this one list. v786: titles marked ma:true
-// use the Match Analysis app's own cause tags word for word, so an analysed match leads here.
 const MATCH_PROBLEMS=[{"group": "Return of serve", "title": "Return Of Serve – No Volley", "ma": true, "see": "Waiting for the serve to come off the back wall instead of taking it early on the volley, handing the server the initiative.", "games": [{"label": "Common Game Errors — Take The Serve Early", "c": "errors", "note": "Taking the serve early is rewarded"}, {"label": "Serve & Return", "s": "serveReturn", "note": "Serve and return games"}]}, {"group": "Loose shots", "title": "Loose Drive", "ma": true, "see": "The drive is short, wide of the wall or high enough to volley; the opponent steps in and takes it early.", "games": [{"label": "Power Driver — Penetrating Drive", "c": "powerdriver", "note": "Low drives that must still reach the back"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "Scored by where the opponent’s feet are, with a progressive pin line"}, {"label": "Length games", "c": "length", "note": "Length as the scoring condition"}, {"label": "Movement Lab — Pinned", "c": "movementlab", "note": "Rewarded for trapping the opponent at the back"}, {"label": "Corridor Games", "c": "corridorgames", "note": "NFL strand: a drive cut off from the corridor loses the rally — court-tested corridor"}]}, {"group": "Loose shots", "title": "Loose Drop", "ma": true, "see": "The drop sits up away from the front or the side wall, giving the opponent an easy attack.", "games": [{"label": "Drop & Lob — Tramline Drop", "c": "dropboastlob", "note": "A drop counts only if it hugs the side wall"}, {"label": "Drop & Lob — Drop and Convert", "c": "dropboastlob", "note": "A drop is judged by what it sets up"}, {"label": "ATL / BTL", "c": "atl", "note": "Attack below the line only when it has been earned"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "How the rally is finished"}]}, {"group": "Loose shots", "title": "Loose Boast", "ma": true, "see": "The boast lands in mid-court or bounces out, handing the opponent the front of the court.", "games": [{"label": "Boast — Punish the Boast", "c": "boast", "note": "A loose boast hands the opponent a bonus"}, {"label": "Boast — Dead Boast", "c": "boast", "note": "The boast must die in the far front corner"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "Boasting from a ball that could be driven is priced"}]}, {"group": "Loose shots", "title": "Loose Lob", "ma": true, "see": "The lob is too low, too short or wide of the side wall, and the opponent volleys it.", "games": [{"label": "Drop & Lob — Lob Over", "c": "dropboastlob", "note": "Over the opponent and pinned behind the line"}, {"label": "Drop & Lob — Lob to Reset", "c": "dropboastlob", "note": "The lob that buys time to recover"}, {"label": "Bucket Lob", "s": "bucketLob", "note": "Lob height, width and depth as the target"}]}, {"group": "Loose shots", "title": "Loose Mid-court", "ma": true, "see": "The ball finishes in the middle of the court, where the opponent can attack from the T.", "games": [{"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Common Game Errors — Length That Pins", "c": "errors", "note": "The ball must finish deep enough to pin"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Loose shots", "title": "Forced Loose Return", "ma": true, "see": "Under pressure from the opponent’s shot, the reply comes back loose.", "games": [{"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Getting back in time buys time for the next ball"}, {"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Reading earlier leaves more time to play a better reply"}]}, {"group": "Loose shots", "title": "Hitting Back To Opponent", "ma": true, "see": "The ball returns to where the opponent is standing, so they never have to move.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Common Game Errors — Move Them, Don’t Feed Them", "c": "errors", "note": "Moving the opponent is what scores"}, {"label": "Checkerboard", "s": "checkerboard", "note": "Zone targets that make space the goal"}]}, {"group": "Shot choice", "title": "Non-Functional Cross Court", "ma": true, "see": "Crossing for no reason: the opponent volleys it, or plays an easy straight reply and takes over the rally.", "games": [{"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "Crosscourt Choice", "c": "crosscourtchoice", "note": "Earn it from straight play, cross away not at, choose it"}, {"label": "Cross Court Friend or Foe", "c": "crosscourtfof", "note": "Volley Toll, The Functional Cross, Crosscourt Licence"}, {"label": "Common Game Errors — Functional Crosscourt", "c": "errors", "note": "A crosscourt counts only if it moves the opponent"}, {"label": "T Zone Games", "c": "tzonegames", "note": "A crosscourt cut off from the T Zone loses the rally — court-tested"}, {"label": "Corridor Games", "c": "corridorgames", "note": "NFC strand: a crosscourt cut off from the corridor loses the rally — court-tested corridor"}]}, {"group": "Shot choice", "title": "Self Created Pressure Attacking", "ma": true, "see": "Attacking before any pressure has been built, so the attack itself produces the error or the opening.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "The attack only pays after a length that pins"}, {"label": "Cross Court Friend or Foe — Crosscourt Licence", "c": "crosscourtfof", "note": "Attack only off a crosscourt"}, {"label": "ATL / BTL — Earn the Below", "c": "atl", "note": "The attack must be earned"}, {"label": "Patience → Urgency", "c": "patienceurgency", "note": "When to wait and when to go"}]}, {"group": "Shot choice", "title": "Opponent Set When Attacking", "ma": true, "see": "Attacking while the opponent is balanced and waiting on the T.", "games": [{"label": "Classic Games — Length Before Attack", "c": "classic", "note": "Pin the opponent first, then attack"}, {"label": "Movement Lab — Off the T", "c": "movementlab", "note": "Winning while the opponent is off the T is worth more"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "T Zone Games", "c": "tzonegames", "note": "Short only when the opponent is outside the T Zone — court-tested"}]}, {"group": "Shot choice", "title": "Predictable patterns", "ma": false, "see": "The same shot from the same position; the opponent reads it and waits for it.", "games": [{"label": "Common Game Errors — Break The Pattern", "c": "errors", "note": "Varying the reply is rewarded"}, {"label": "Tactical Intentions", "s": "tacticalIntentions", "note": "Intention-led play"}]}, {"group": "Shot choice", "title": "Unnecessary Boast", "ma": true, "see": "Boasting from a ball that could be driven back to length — the boast may be tight, but it was the wrong choice.", "games": [{"label": "Boast — Back-Wall Boast Only", "c": "boast", "note": "Boast only when the straight ball has gone"}, {"label": "Boast — Boast with a Plan", "c": "boast", "note": "Boast only when the opponent is at the back"}, {"label": "Common Game Errors — Don’t Boast Good Length", "c": "errors", "note": "The boast from good length is priced"}]}, {"group": "Movement and recovery", "title": "No T Recovery", "ma": true, "see": "Watching the shot, then recovering late or not at all; the next ball is always a chase.", "games": [{"label": "Common Game Errors — Hold The T", "c": "errors", "note": "Recovery is part of the score"}, {"label": "Movement Lab — Recovery Race, Off the T", "c": "movementlab", "note": "Rewarded for getting back first"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Movement cued by an opponent’s swing"}, {"label": "T Zone Games", "c": "tzonegames", "note": "Rotating drives: back to the T Zone or lose the rally — court-tested"}]}, {"group": "Movement and recovery", "title": "Poor Spacing", "ma": true, "see": "Arriving too close to or too far past the ball, leaving no room to swing.", "games": [{"label": "Movement Lab — Overrun, Two Steps", "c": "movementlab", "note": "Spacing problems priced in the game"}, {"label": "Learning to Intercept", "s": "learningToIntercept", "note": "Coach module for early hitters"}]}, {"group": "Movement and recovery", "title": "Late Preparation", "ma": true, "see": "Preparation starts after the ball has already beaten the player.", "games": [{"label": "Diagnostics — habits and quick fixes", "s": "diagnosticIntervention", "note": "Late Preparation: origins and game-based fixes"}]}, {"group": "Reading the opponent", "title": "Vision – Not Reading Opponent", "ma": true, "see": "Moving late or the wrong way; the opponent’s shot — often the sudden crosscourt — regularly wrong-foots the player.", "games": [{"label": "Common Game Errors — Eyes On The Striker", "c": "errors", "note": "Watching the opponent is rewarded"}, {"label": "PERCEPTION™ — Early Read, Interception", "s": "perception", "note": "Reading the opponent before the ball"}, {"label": "Ghosting — Coach’s shadow shot", "s": "ghosting", "note": "Reading an opponent’s preparation and swing"}, {"label": "Onside Offside", "c": "onsideoffside", "note": "Cross only when the opponent is onside — five court-tested games"}, {"label": "T Zone Games", "c": "tzonegames", "note": "The waiting player calls “Go” when the opponent leaves the T Zone"}]}, {"group": "Attack and finishing", "title": "Not punishing loose balls", "ma": false, "see": "A loose ball arrives mid-court and is sent back to length instead of attacked.", "games": [{"label": "Common Game Errors — Punish The Loose Ball", "c": "errors", "note": "The loose ball must be attacked"}, {"label": "Cross Court Friend or Foe — Punish the Cross, One-Lunge Finish", "c": "crosscourtfof", "note": "Converting the loose crosscourt"}, {"label": "Power Driver — Kill", "c": "powerdriver", "note": "A low kill that dies in the front court"}, {"label": "Tactical Finish", "c": "tacticalfinish", "note": "Finishing games"}]}, {"group": "Errors", "title": "Unforced Error", "ma": true, "see": "The rally ends in the tin or out with nothing forcing it — including at key points under pressure.", "games": [{"label": "Tactical Pressure", "c": "tacticalpressure", "note": "Scoring that raises the stakes"}, {"label": "Power Play", "c": "powerplay", "note": "Tokens that double the pressure on a point"}, {"label": "Why CLA? — Reinvestment", "s": "whyCLA", "note": "Why explicit rules break down under pressure"}]}];
 function MatchProblemIndex({setScreen}){
   const groups=[...new Set(MATCH_PROBLEMS.map(p=>p.group))];
@@ -25288,9 +24297,6 @@ function MatchProblemIndex({setScreen}){
   </div>;
 }
 
-// ── LEARNING TO INTERCEPT (v782) ────────────────────────────────────────────────
-// Coach-authored module on early hitters (coach, 28 Sep), revised for the app: the original
-// "observations" and "module" parts merged so each point is told once; P25/P26/P27 applied.
 const INTERCEPT_MODULE=[{"h": "Where this module comes from", "b": [{"t": "p", "v": "This module grew out of the author’s observations of early hitters in feeding, solo practice and rallies. Its central question is not simply whether a young player can reproduce a stroke, but what information is controlling the player’s movement — and whether that information remains useful when the task changes."}, {"t": "p", "v": "Young players can behave in ways that appear contradictory. A child may hit ten predictable feeds successfully and then miss completely when the ball travels slightly faster. They may keep stepping sideways for a shorter ball when moving forward would give a better hitting position — yet move well as soon as they are told the next ball will be short. Some children who look awkward in a controlled feeding exercise appear transformed once a rally begins."}, {"t": "p", "v": "These behaviours should not automatically be read as poor concentration, poor footwork or an inability to reproduce technique. They show how children learn to perceive and control interception."}]}, {"h": "1. Hitting a ball is an interception problem", "b": [{"t": "p", "v": "Before it is a technical stroke, hitting a moving ball is a perception–action problem. The player must keep working out where the ball is going, when it will arrive, where it can be intercepted, whether they can get there, and how to organise their movement to make contact."}, {"t": "p", "v": "None of this is normally calculated consciously. The changing relationship between player, ball and court continuously provides information that regulates movement."}, {"t": "flow", "v": "Perception → action → new information → adjustment → contact"}]}, {"h": "2. Information for time-to-contact", "b": [{"t": "p", "v": "Tau (τ) describes optical information about time-to-contact: as an approaching object expands in the visual field, the relationship between its current optical size and its rate of expansion can indicate how long remains before it arrives (Lee, 1976). Sensitivity to this kind of looming information develops in infancy. Infants even show the same shift this module describes: the youngest infants in one study timed a protective blink from the approaching object’s apparent size and blinked too late when it approached fast, while older infants used time-based information and blinked in time for every approach (Kayed & van der Meer, 2000, 2007)."}, {"t": "p", "v": "Having that sensitivity does not mean a child will automatically use the most useful information when learning a new and complex interception task such as striking a squash ball with a racquet. The learner has to coordinate running, balance, racquet movement, ball flight, bounce, walls and a suitable place to intercept the ball. A 4–6-year-old who uses time-to-contact information well in everyday life may, when first learning squash, settle on a simpler relationship that works only under restricted conditions."}]}, {"h": "3. When the wrong information works", "b": [{"t": "p", "v": "Feed the same ball repeatedly at a similar speed, trajectory and bounce, and the child may become increasingly successful by relying on a simple relationship — “when the ball looks about this big, swing”, or “when it reaches this position, step and swing”."}, {"t": "p", "v": "Under constant conditions those solutions work. The difficulty is that the information is non-specifying: it matches the right moment under those conditions, but it does not reliably indicate what is needed when the conditions change. Varying the conditions is how a learner is helped to move from non-specifying to specifying information (Jacobs & Michaels, 2007)."}]}, {"h": "4. Change the ball and reveal the solution", "b": [{"t": "p", "v": "If the same ball travels faster, it reaches the familiar position with less time remaining, and a swing started from the old cue is late. If the ball is physically larger, it reaches a familiar apparent size while still further away; if smaller, it must come closer. A solution based on apparent size therefore produces an early or late swing. Changes in trajectory, bounce or starting position can break a previously reliable relationship in the same way."}, {"t": "p", "v": "The child has not suddenly lost their technique. The change has exposed the information their action had become tuned to. Impressive performance with a constant feed is not, on its own, evidence of adaptable interception skill."}]}, {"h": "5. The short-ball problem", "b": [{"t": "p", "v": "After repeated feeds that need similar sideways movement, a 5–7-year-old’s solution can settle into: feed → sideways step → swing. When one feed lands slightly shorter, the child often repeats the same sideways step instead of moving forward. Contact happens too far in front, and the ball frequently goes crosscourt."}, {"t": "p", "v": "If the coach announces that the next ball will be short and asks the child to get into a comfortable hitting position, the child often moves much better and makes better contact. Their physical ability has not changed. The announcement has changed the task intention and supplied information the child was not yet reliably picking up from the ball. The child now organises their movement around a relationship with the ball, rather than repeating the familiar step and swing — and as they move, the changing ball–body relationship gives them more information to adjust with."}]}, {"h": "6. Announced variability as a temporary scaffold", "b": [{"t": "ol", "v": ["Stabilise — give several similar feeds and let a workable coordination pattern emerge.", "Announced change — tell the child that the next ball will be shorter, faster or otherwise different.", "Announced alternation — alternate the named conditions so the child experiences different ball–movement relationships.", "Unannounced choice — present either condition without naming it. The child must now pick up the difference from the ball itself.", "Continuous variation — vary depth, pace, trajectory and bounce progressively, rather than offering only two categories.", "Rally — return to the game, where the opponent’s shot produces the ball and the player must perceive, move and adapt continuously."]}, {"t": "p", "v": "Announcing the change is a scaffold, not the method. It is removed at step 4, so that the information comes from the ball rather than from the coach’s voice — consistent with the app’s principle that perception–action work should not depend on calls or pointing."}]}, {"h": "7. Why some children look better in a rally", "b": [{"t": "p", "v": "Some early hitters look awkward when a ball is presented under instruction, yet become noticeably more accomplished once a rally begins. The rally is mechanically harder but carries more meaningful information. The intention is simple — get to the ball and hit it back — and the child’s movement stays coupled to the changing ball."}, {"t": "p", "v": "A prescribed feed, by contrast, can ask the child to remember where to stand, which foot to move, when to prepare, where contact should occur and what the racquet should do. Attention becomes organised around reproducing instructions rather than solving the interception problem. The rally restores the real problem and allows functional movement to organise itself around the goal."}, {"t": "p", "v": "Rallying is therefore not just the reward once technique has been learned. For early hitters it can be a powerful learning environment in its own right."}]}, {"h": "8. Affordances", "b": [{"t": "p", "v": "In a rally the child meets opportunities for action that depend on their own size and ability: Can I reach that ball? Can I hit it from here? Do I need another step? Can I keep it going? The same ball may need one step from one child and three from another. Gibson (1979) called these opportunities affordances."}, {"t": "p", "v": "The coach does not always need to supply the movement solution. Often the better intervention is to design the problem so that the player discovers a solution that suits their own capabilities."}]}, {"h": "9. Why movement helps perception", "b": [{"t": "p", "v": "Movement is not only the result of perception; it also creates information. As the child moves towards the ball, the relationship between ball, body, racquet, wall and space keeps changing, and those changes guide the next adjustment. A child who has to move several steps therefore has more opportunity to regulate spacing than a child waiting for a perfect feed and making one set step."}, {"t": "p", "v": "Movement that looks untidier can therefore produce better functional behaviour than standing still and waiting for a perfectly delivered ball."}]}, {"h": "10. Case study — the opposite-wall feed", "b": [{"t": "p", "v": "Instead of setting the player on the T, start the early hitter near the opposite side wall and feed so that they must travel across the court. From the T the solution can become: familiar feed → one familiar step → hit, with spacing that depends on the coach reproducing the expected feed; a slightly different ball leaves the player cramped or too far away."}, {"t": "p", "v": "From the opposite wall, both the ball and the player are moving. The child has to regulate the approach — speed up, slow down, change stride length — so that arrival and contact coincide. A larger final step often appears, not as a technique imposed in advance but as a functional solution to the interception problem."}, {"t": "p", "v": "Keep the feed fairly stable at first so the player can find the relationship between running and intercepting, then introduce small changes in depth and pace. Do not prescribe the number of steps; watch whether the earlier steps adjust naturally while the final step sets up the hitting position."}, {"t": "p", "v": "Coach cue: “Time your run so you arrive with the ball in comfortable hitting space.”"}, {"t": "p", "v": "The player may be coordinating their own closing movement with the ball’s arrival — a time-to-contact coupling (Lee, 1998). It is more accurate, however, to describe this as prospective control and perception–action coupling than to claim that tau alone is controlling it."}]}, {"h": "11. Constant feeding — useful, with limits", "b": [{"t": "p", "v": "Constant feeding is useful for reducing complexity, allowing exploration and helping a workable pattern emerge. The risk is letting the stable conditions last so long that success depends on information that only exists in the feed. Research in cricket shows why this matters: batters facing a bowling machine rather than a live bowler started their movement later, swung more slowly and made poorer contact, because the machine removes the information in the bowler’s action (Pinder, Davids, Renshaw & Araújo, 2011); developing batters showed similar changes (Pinder, Renshaw & Davids, 2009). Practice should keep the information of the real task — representative learning design (Pinder, Davids, Renshaw & Araújo, 2011)."}, {"t": "ul", "v": ["Use constancy to reduce complexity and let a solution emerge.", "Once success is stable, change one meaningful constraint.", "Observe whether the solution adapts or collapses.", "If it collapses completely, reduce the size of the change.", "If it adapts easily, increase the variability."]}, {"t": "flow", "v": "Stabilise → Perturb → Observe → Recalibrate"}]}, {"h": "12. Solo practice", "b": [{"t": "p", "v": "Solo practice can provide a great deal of useful perception–action experience. But because the player produces the incoming ball, the outgoing shot predicts much of what comes back: rhythm and consistency can improve while the information the player has to read becomes very predictable."}, {"t": "p", "v": "The problem is not repetition; it is repetition that keeps the same information relationship. Good solo practice keeps a clear task while varying pace, height, depth, distance from the wall, starting position, movement before contact, recovery position and shot intention — repetition without identical repetition. See Unopposed Practice for games built this way."}]}, {"h": "13. Do not confuse feeding performance with ability", "b": [{"t": "p", "v": "A child who looks poorly coordinated in a feeding exercise may move very well in a simple rally. Conversely, a child who looks technically accomplished with repetitive feeds may struggle once the predictability disappears."}, {"t": "p", "v": "Before concluding that a child “doesn’t move properly”, give them a simple game problem and watch how they move when the solution is not prescribed."}]}, {"h": "14. Information, not randomness", "b": [{"t": "p", "v": "Variable practice does not mean random practice. Every change should have a purpose:"}, {"t": "ul", "v": ["What information currently appears to be controlling the player’s action?", "Does that information still work when conditions change?", "Can one constraint be changed to test it?", "Can the player discover a more adaptable relationship without being told exactly how to move?"]}, {"t": "p", "v": "The question to ask is not only “Did the player reproduce the movement correctly?” but “What information allowed the player to organise that movement?” An error after a constraint changes can be valuable: it reveals the solution the player was relying on and tells the coach what to change next."}]}, {"h": "15. The Checkerboard coaching framework", "b": [{"t": "ul", "v": ["Stabilise — give enough repetition for a workable solution to emerge.", "Perturb — change one meaningful constraint: speed, depth, trajectory, bounce, starting position or the ball itself.", "Support — if necessary, announce the change so the child can experience a successful alternative.", "Remove support — present the alternatives without announcing them; the ball must now provide the information.", "Explore — increase variation gradually and allow different functional solutions to emerge.", "Play — return to rallies and games, where perception and action are coupled to representative information.", "Observe — look at what the child actually does, not only at what the movement is supposed to look like."]}]}, {"h": "Key messages for junior coaches", "b": [{"t": "ul", "v": ["Young children are capable perceivers. Poor performance in a feeding exercise does not necessarily mean poor coordination.", "Successful repetition can hide fragile learning.", "A solution can fail when the conditions change without the player losing their technique.", "Movement helps perception by changing the information available.", "Instruction can scaffold perception, but the scaffold should be removed.", "Rallying is a learning environment, not only a reward after technique.", "Adding movement before contact can improve spacing, because it forces continuous regulation of the player–ball relationship.", "Variability should be purposeful and informationally meaningful.", "Technique and perception should not be separated unnecessarily."]}, {"t": "p", "v": "The Checkerboard principle: do not repeatedly give young players the solution and ask them to reproduce it. Create conditions in which they can discover, stabilise, test and adapt their own functional solutions. The goal is not a child who can reproduce the coach’s feed. It is a child who can see the problem, move to solve it and adapt as the problem changes."}]}];
 function LearningToInterceptScreen({setScreen}){
   const block=(b,i)=>b.t==='ul'?<ul key={i}>{b.v.map((x,j)=><li key={j}>{x}</li>)}</ul>
@@ -25451,10 +24457,6 @@ function ParentEducation({setScreen}){
   </div>;
 }
 
-
-
-/* ───────────── BREAKTHROUGH LOG — dated evidence of where change happened ─────────────
-   Attribution arguments are settled by a record written at the time, not by memory. */
 const BREAKTHROUGH_KEY='cb_breakthroughs_v1';
 const BREAKTHROUGH_PICKS=[
  'Found a new solution to a familiar problem',
@@ -25562,8 +24564,6 @@ const CP_TRAD_STRENGTHS=["Direct instruction is the fastest route to a starting 
 const CP_ECO_LIMITS=["It is harder to do well. Designing a game that reliably produces a target behaviour is more demanding than delivering a good drill, and a badly designed game teaches nothing while looking like coaching.","It looks less impressive to watch, and progress is harder for an athlete or parent to see week to week. That is a real cost, not just a perception problem.","Controlled trials comparing whole coaching programmes are fewer and smaller than the theory deserves, because they are difficult and expensive to run. That is a gap in one narrow kind of evidence, not a weak foundation. The underlying science of perception and action is deep and long-established, and it converges with what we see everywhere else: how animals learn through play, how children acquire movement before anyone instructs them, and how humans acquired complex skills for millennia before a coaching manual existed. The honest caution is narrow \u2014 do not lean on a single small study as proof that one session design beats another.","Representativeness can be over-applied. A beginner who cannot yet rally has little to be representative of, and insisting on full context can leave them with no entry point.","The vocabulary is off-putting. Affordances, degeneracy and self-organisation are precise terms doing real work, but they can function as a barrier to coaches who are already doing much of this intuitively."];
 const CP_NOTE_DEMO="Ecological dynamics does not reject demonstration. Both paradigms use it, and from the balcony the two look identical. What differs is what the athlete is asked to take from it. In traditional coaching, a shape to copy. In an ecological frame, information about how the problem can be solved — where the time comes from, what the rhythm is, what the ball does when struck that way.";
 
-/* ───────────────────────── COACHING PARADIGMS — where skill comes from ─────────────────────────
-   Not who is right. Why two good coaches, watching the same player, design different sessions. */
 function CoachingParadigmsStyles(){return <style>{`
 .cpWrap{display:flex;flex-direction:column;gap:14px;}
 .cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
@@ -25751,19 +24751,13 @@ function CoachingParadigms({setScreen}){
   </div>;
 }
 
-
-/* ───────────────────────── POKER TABLES — multi-court blind target ─────────────────────────
-   Poker with several tables. Every player draws their own blind target; scoring stays
-   individual so opponents on a court remain opponents. First player anywhere to complete
-   takes the round, all courts stop, ladder rotates. Round points scale with court so that
-   being demoted is never the profitable move. Targets are NEVER shown on the display. */
 function pokerCourtRoom(base,n){return `${base}__poker${n}`;}
 function pokerControlRoom(base){return `${base}__pokerctl`;}
 function buildPokerScoreLink(n,base){const b=window.location.origin+window.location.pathname;return `${b}?pokerScore=${n}&host=${encodeURIComponent(base)}`;}
 function getPokerScoreFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const c=p.get('pokerScore');const h=p.get('host');if(c&&h)return {court:Number(c),host:h};}catch{}return null;}
 function buildPokerTablesLink(base,n){const b=window.location.origin+window.location.pathname;return `${b}?pokerTables=${encodeURIComponent(base)}&n=${n}`;}
 function getPokerTablesFromUrl(){try{const p=new URLSearchParams(window.location.search||'');const h=p.get('pokerTables');const n=p.get('n');if(h)return {host:h,courtCount:Number(n)||2};}catch{}return null;}
-function pokerRoundValue(court){return Math.max(1,4-court);}   /* C1=3, C2=2, C3=1, floor 1 */
+function pokerRoundValue(court){return Math.max(1,4-court);}   
 
 function PokerTablesStyles(){return <style>{`
 .ptWrap{display:flex;flex-direction:column;gap:12px;}
@@ -25808,7 +24802,6 @@ function PokerTablesStyles(){return <style>{`
 .ptBig{background:#12203a;border:1px solid #2E6E8E;color:#eaf4fb;border-radius:12px;padding:16px;font-size:1.1rem;font-weight:800;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent;}
 `}</style>;}
 
-/* ── Court device: scores its own table, holds its players' blind targets ── */
 function PokerCourtScorer({court,host}){
   useWakeLock();
   const roomId=pokerCourtRoom(host,court);
@@ -25882,7 +24875,6 @@ function PokerCourtScorer({court,host}){
   </div>;
 }
 
-/* ── Projector: every table side by side. Scores only, never targets. ── */
 function PokerTablesDisplay({host,courtCount}){
   useWakeLock();
   const [courts,setCourts]=useState([]);
@@ -25925,7 +24917,6 @@ function PokerTablesDisplay({host,courtCount}){
   </div>;
 }
 
-/* ── Coach device: allocation, links, round control, ladder rotation ── */
 function PokerTablesControl({deckRange,mult}){
   const base=useMemo(()=>getPersistentLiveRoomId(),[]);
   const roster=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>playerDisplayName(p));}catch{return[];}},[]);
@@ -25988,8 +24979,8 @@ function PokerTablesControl({deckRange,mult}){
     for(let i=0;i<next.length-1;i++){
       const m=Math.min(move,next[i].length,next[i+1].length);
       if(!m)continue;
-      const down=next[i].splice(next[i].length-m,m);   /* bottom m of this court drop */
-      const up=next[i+1].splice(0,m);                  /* top m of the court below climb */
+      const down=next[i].splice(next[i].length-m,m);   
+      const up=next[i+1].splice(0,m);                  
       next[i].push(...up); next[i+1].unshift(...down);
     }
     setOrder(next.flat());
@@ -26054,8 +25045,6 @@ function PokerTablesControl({deckRange,mult}){
   </div>;
 }
 
-
-/* ── Poker: pick a game, configure it, allocate players, start it ── */
 const PF_EVENT_GAMES={hold:1,gambler:1};
 function pokerIsPlayable(g){return g.id!=='court-blind-target';}
 
@@ -26220,7 +25209,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Match Problem Index',sub:'Match problems → games',kw:'match problems index issues errors what is going wrong games for problem',screen:'matchProblems'},
   {label:'Learning to Intercept',sub:'Coach module · early hitters',kw:'intercept interception early hitters feeding tau time to contact short ball opposite wall feed young children beginners',screen:'learningToIntercept'},
   {label:'Data / Storage',sub:'Backup & data',kw:'storage data backup export',screen:'storage'},
-  // ── game-library classes ──
+
   {label:'Checkerboard Games',sub:'Games Library',kw:'checkerboard zone',screen:'games',classId:'checkerboard'},
   {label:'ATL Builder',sub:'Games Library',kw:'atl above tin line builder',screen:'games',classId:'atl'},
   {label:'ATB / BTL Builder',sub:'Games Library',kw:'atb btl below tin builder',screen:'games',classId:'atb'},
@@ -26278,7 +25267,6 @@ function buildSearchIndex(){
   return out;
 }
 
-/* ───────────────────────── SERVE & RETURN™ ───────────────────────── */
 const SR_TABS=[
   {id:'serve',label:'Serve Quality',blurb:'Serve = affordance creation. Build functional length, width, variation, disguise and pressure tolerance.'},
   {id:'return',label:'Return Quality',blurb:'Return = affordance disruption. Neutralise the serve under pressure.'},
@@ -26487,7 +25475,6 @@ function ServeReturnPlayerDisplay({payload={}}){
   </div>;
 }
 
-/* ───────────────────────── BUCKET LOB™ ───────────────────────── */
 function LobStyles(){return <style>{`
 .lobWrap{max-width:1000px;margin:0 auto;}
 .lobBoard{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0;}
@@ -26529,8 +25516,8 @@ function LobModule({setScreen,setSession,embedded=false}){
   const TARGET=20;
 
   const roster=names.slice(0,count);
-  const shortLine=Math.max(0,count-4); // standing guards on the short line
-  // role cycle (anticlockwise): 0 Learner · 1..shortLine Short line · then Bucket sit · Collector · Feeder
+  const shortLine=Math.max(0,count-4); 
+
   function playerAtPos(p){return roster[(((p-rot)%count)+count)%count];}
   const learnerName=playerAtPos(0);
   const shortLineNames=Array.from({length:shortLine},(_,i)=>playerAtPos(1+i));
@@ -26544,7 +25531,7 @@ function LobModule({setScreen,setSession,embedded=false}){
   function pushUndo(){setUndo(p=>[...p.slice(-29),{attempts,scores:{...scores},rot,side}]);}
   function record(pts){if(done)return;pushUndo();setScores(s=>({...s,[curName]:(s[curName]||0)+pts}));setAttempts(a=>a+1);}
   function doUndo(){setUndo(p=>{if(!p.length)return p;const s=p[p.length-1];setAttempts(s.attempts);setScores(s.scores);setRot(s.rot);setSide(s.side);return p.slice(0,-1);});}
-  function rotate(){pushUndo();setRot(r=>(r+1)%count);setAttempts(0);} // everyone moves one spot anticlockwise
+  function rotate(){pushUndo();setRot(r=>(r+1)%count);setAttempts(0);} 
   function flipSide(){pushUndo();setSide(s=>s==='right'?'left':'right');setAttempts(0);}
 
   const leaderboard=roster.map(n=>({name:n,score:scores[n]||0})).sort((a,b)=>b.score-a.score);
@@ -26648,13 +25635,11 @@ function LobPlayerDisplay({payload={}}){
   </div>;
 }
 
-/* ───────────────────── COURT MONITOR (King of Courts) ───────────────────── */
 function cmOrdinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
 
-// ── LUDO SQUASH™ — v1 build ──────────────────────────────────────────────
 const LUDO_LOOP_LEN=24;
 const LUDO_HOME_STRETCH=6;
-const LUDO_FINISH=LUDO_LOOP_LEN+LUDO_HOME_STRETCH; // piece distance value meaning "Home"
+const LUDO_FINISH=LUDO_LOOP_LEN+LUDO_HOME_STRETCH; 
 const LUDO_COLORS=['#2f9bff','#2e6e8e','#6fae8b','#ff5fd0'];
 const LUDO_SAFE_SQUARES=[1,4,7,10,13,16,19,22];
 function ludoEntry(playerIdx){return 1+((playerIdx%4)*(LUDO_LOOP_LEN/4));}
@@ -26666,7 +25651,7 @@ function ludoPieceLabel(d){
   if(d==null||d<0)return 'Start';
   if(d>=LUDO_FINISH)return 'Home';
   if(d>=LUDO_LOOP_LEN)return `Stretch ${d-LUDO_LOOP_LEN+1}/${LUDO_HOME_STRETCH}`;
-  return `Step ${d+1}/${LUDO_LOOP_LEN}`; // progress-relative — actual board square depends on the player's own entry offset
+  return `Step ${d+1}/${LUDO_LOOP_LEN}`; 
 }
 function ludoDefaultRoster(names){return names.map(n=>({name:n,pieces:[{d:-1},{d:-1},{d:-1},{d:-1}]}));}
 
@@ -26710,10 +25695,6 @@ function ludoRules(settings){
   return {principle,setup,player,steps,scoring,example,rationale};
 }
 
-// ── Cross-shaped board layout (visual only — underlying loop/entry/safe-square
-// logic above is unchanged). 8x8 grid: four 3x3 colour corner bases (players
-// 0=TL,1=TR,2=BR,3=BL), four 6-cell arms forming the 24-square ring, 2x2 centre
-// Home zone. Entries (1,7,13,19) land adjacent to each player's own corner.
 const LUDO_RING_COORDS=[[1,4],[1,5],[2,4],[2,5],[3,4],[3,5],[4,6],[4,7],[4,8],[5,6],[5,7],[5,8],[8,5],[8,4],[7,5],[7,4],[6,5],[6,4],[5,3],[5,2],[5,1],[4,3],[4,2],[4,1]];
 const LUDO_CORNER_COORDS=[{r1:1,r2:3,c1:1,c2:3},{r1:1,r2:3,c1:6,c2:8},{r1:6,r2:8,c1:6,c2:8},{r1:6,r2:8,c1:1,c2:3}];
 function LudoBoardGrid({roster,variant='coach'}){
@@ -26840,16 +25821,15 @@ function LudoStyles(){return <style>{`
 .ludoDisplayThreat{color:#ff8a80;font-weight:700;font-size:0.85rem;}
 `}</style>;}
 
-// ── Per-court engine ─────────────────────────────────────────────────────
 function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=null,seed=null}){
-  /* Auto-credit the Performance Ladder when a game finishes (see v598). */
+
   const [roster,setRoster]=useState(()=>seed?seed.roster:ludoDefaultRoster(players));
   const [ladderWins,setLadderWins]=useState({});
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
   const [winner,setWinner]=useState(()=>seed?seed.winner:null);
-  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); // {attackerIdx:[{targetIdx,targetPieceIdx,atSquare}]}
+  const [pending,setPending]=useState(()=>seed?(seed.pending||{}):{}); 
   const [events,setEvents]=useState([]);
-  const [pendingRally,setPendingRally]=useState(null); // {wIdx,lIdx,stage:'confirm'|'choose'}
+  const [pendingRally,setPendingRally]=useState(null); 
   const [undoStack,setUndoStack]=useState([]);
 
   function snapshot(){return {roster:roster.map(p=>({name:p.name,pieces:p.pieces.map(pc=>({...pc}))})),queue:[...queue],winner,pending:JSON.parse(JSON.stringify(pending)),events:[...events]};}
@@ -26881,8 +25861,6 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
     setPendingRally(null);
   }
 
-  // autoPick lets Beginner mode (no piece-choice UI shown yet) fall through to a
-  // piece-choice step too, rather than silently auto-selecting — keeps the coach in control.
   function finalizeRally(wIdx,lIdx,achieved,moverIdx,pieceIdx,needsPieceChoice){
     if(achieved&&needsPieceChoice){
       setPendingRally({wIdx,lIdx,stage:'choose'});
@@ -26899,7 +25877,6 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
       const mover=nextRoster[moverIdx];
       const piece=mover.pieces[pieceIdx];
 
-      // 1) does this move evade a threat against this exact piece?
       Object.keys(nextPending).forEach(atkIdx=>{
         nextPending[atkIdx]=(nextPending[atkIdx]||[]).filter(t=>{
           const evades=t.targetIdx===moverIdx&&t.targetPieceIdx===pieceIdx;
@@ -26909,7 +25886,6 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
         if(nextPending[atkIdx].length===0)delete nextPending[atkIdx];
       });
 
-      // 2) does this player have a live pending capture to confirm?
       if(nextPending[moverIdx]&&nextPending[moverIdx].length){
         nextPending[moverIdx].forEach(t=>{
           const targetPiece=nextRoster[t.targetIdx].pieces[t.targetPieceIdx];
@@ -26921,12 +25897,10 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
         delete nextPending[moverIdx];
       }
 
-      // 3) apply the actual move (always +1 — no dice; Bonus Challenge is a future build)
       const newD=Math.min(piece.d+1,LUDO_FINISH);
       piece.d=newD;
       ev.push(`${mover.name} moves a piece — ${ludoPieceLabel(newD)}`);
 
-      // 4) landing on the shared loop — check capture (pending, not instant)
       if(settings.captureOn&&newD>=0&&newD<LUDO_LOOP_LEN){
         const square=ludoPieceSquare(moverIdx,newD);
         if(!LUDO_SAFE_SQUARES.includes(square)){
@@ -26946,7 +25920,6 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
         }
       }
 
-      // 5) winner check
       if(mover.pieces.every(pc=>pc.d>=LUDO_FINISH))newWinner=moverIdx;
     }else if(!achieved){
       ev.push(`${nextRoster[wIdx].name} won the rally — objective not achieved, no movement`);
@@ -27033,20 +26006,15 @@ function LudoSquashCourt({players,settings,project=false,courtLabel='',roomId=nu
   </div>;
 }
 
-// ── Coach setup screen ───────────────────────────────────────────────────
 function LudoSquashGame({setSession,setScreen}={}){
-  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
-  // only — live piece positions and court hand-offs are never restored.
+
   const LUDO_SETUP_KEY='cbLudoSetupV1';
   const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(LUDO_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
-  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
-  // Auto court allocation and remount a court, wiping progress and re-pairing players at
-  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
+
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -27064,9 +26032,7 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [manualCount,setManualCount]=useState(()=>savedSetup.manualCount||4);
   const [manualNames,setManualNames]=useState(()=>savedSetup.manualNames||['Player 1','Player 2','Player 3','Player 4']);
   const [objectiveGroup,setObjectiveGroup]=useState(()=>savedSetup.objectiveGroup||'Tactical');
-  // Guard the restored objective against a renamed/removed preset: if the saved string
-  // is no longer in its group's list, fall back to that group's first objective rather
-  // than restoring an objective that no longer exists.
+
   const [objective,setObjective]=useState(()=>{
     const grp=savedSetup.objectiveGroup||'Tactical';
     const pool=LUDO_OBJECTIVES[grp]||LUDO_OBJECTIVES.Tactical;
@@ -27076,9 +26042,7 @@ function LudoSquashGame({setSession,setScreen}={}){
   const [captureOn,setCaptureOn]=useState(()=>savedSetup.captureOn!==undefined?savedSetup.captureOn:true);
   const [mode,setMode]=useState(()=>savedSetup.mode||'winner');
   const [competitionMode,setCompetitionMode]=useState(()=>savedSetup.competitionMode||'separate');
-  // competitionMode rides along so each court's room records whether it is part of a
-  // race or its own separate game. The all-courts display cannot infer it otherwise —
-  // `mode` here is the rotation setting, not race-vs-separate.
+
   const settings=useMemo(()=>({objectiveGroup,objective,difficulty,captureOn,mode,competitionMode}),[objectiveGroup,objective,difficulty,captureOn,mode,competitionMode]);
   const rules=useMemo(()=>ludoRules(settings),[settings]);
   const [showSettings,setShowSettings]=useState(false);
@@ -27117,10 +26081,7 @@ function LudoSquashGame({setSession,setScreen}={}){
   async function copyLudoScoreLink(n){
     setProjecting(true);
     const url=buildLudoScoreLink(n,base);
-    // Seed the room with the CURRENT setup before handing off. Marking the court handed
-    // off unmounts its LudoSquashCourt in the same render, so without this nothing ever
-    // writes and the scoring device opens onto an empty room, or onto a previous pairing.
-    // Same fix as Hangman v391.
+
     const roomId=courtRoomId(base,n);
     const g=allocation[n-1]||[];
     try{
@@ -27129,8 +26090,7 @@ function LudoSquashGame({setSession,setScreen}={}){
       const samePairing=!!existing&&(existing.players||[]).length===g.length
         &&(existing.players||[]).every((p,i)=>p.name===g[i]);
       if(samePairing){
-        // Already live with these players — the coach may have played a few rallies here
-        // before handing off, so keep the pieces where they are and refresh config only.
+
         await writeLivePlayerRoom(roomId,'ludosquash',{...existing,objective,objectiveGroup,difficulty,captureOn,mode,competitionMode});
       }else{
         await writeLivePlayerRoom(roomId,'ludosquash',{type:'ludosquash',
@@ -27144,8 +26104,7 @@ function LudoSquashGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
   async function copyLudoRaceLink(){
-    // Without this the courts never write and the display waits forever — every court
-    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+
     setProjecting(true);
     const url=buildLudoRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
@@ -27329,7 +26288,6 @@ function LudoSquashGame({setSession,setScreen}={}){
   </div>;
 }
 
-// ── Per-court scoring device (reads room once, becomes sole writer) ───────
 function LudoSquashCourtScorer({court,host}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
@@ -27357,7 +26315,7 @@ function LudoSquashCourtScorer({court,host}){
             const targetIdx=idxOf(t.targetName);
             if(targetIdx<0)return null;
             const targetPieceIdx=roster[targetIdx].pieces.findIndex(pc=>ludoPieceSquare(targetIdx,pc.d)===t.atSquare);
-            if(targetPieceIdx<0)return null; // piece already moved on — stale pending, drop it
+            if(targetPieceIdx<0)return null; 
             return {targetIdx,targetPieceIdx,atSquare:t.atSquare};
           }).filter(Boolean);
           if(list.length)pendingByIdx[i]=list;
@@ -27386,7 +26344,6 @@ function LudoSquashCourtScorer({court,host}){
   </div>;
 }
 
-// ── Combined read-only Race Display (polls every court's own room) ────────
 function LudoSquashRaceDisplay({host,courtCount}){
   useWakeLock();
   const [courts,setCourts]=useState([]);
@@ -27408,8 +26365,7 @@ function LudoSquashRaceDisplay({host,courtCount}){
   }
   const homeOf=p=>(p.pieces||[]).filter(d=>d>=LUDO_FINISH).length;
   const progressOf=p=>(p.pieces||[]).reduce((s,d)=>s+Math.max(0,d)+1,0);
-  // Only a race has a single winner across courts. In separate-games mode each court is
-  // its own game, so ranking every player into one table would state something untrue.
+
   const isRace=(courts.find(Boolean)||{}).competitionMode==='race';
 
   if(!isRace){
@@ -27463,7 +26419,6 @@ function LudoSquashRaceDisplay({host,courtCount}){
   </div>;
 }
 
-// ── Big-screen single-court Player Display (?liveRoom= route) ─────────────
 function LudoSquashPlayerDisplay({payload={}}){
   useWakeLock();
   const players=payload.players||[];
@@ -27489,7 +26444,6 @@ function LudoSquashPlayerDisplay({payload={}}){
   </div>;
 }
 
-// ── NOUGHTS & CROSSES SQUASH™ — v1 build ────────────────────────────────
 const NC_MODES=['Technical','Tactical','Mental Performance','Diversity','Checkerboard'];
 const NC_FAMILIES={
   'Technical':TECHNICAL_OVERLAYS.map(o=>o.title),
@@ -27660,7 +26614,6 @@ function NcStyles(){return <style>{`
 
 const NC_FFA_SYMBOLS=['X','O','\u25b3','\u25a1'];
 
-// ── Per-court engine ─────────────────────────────────────────────────────
 function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode='boardWin',bestOf3=false,fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
   const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge)));
   const [rosterA,setRosterA]=useState(()=>seed?seed.rosterA:[...teamA.roster]);
@@ -27834,8 +26787,6 @@ function NoughtsCrossesCourt({teamA,teamB,mode,requireChallenge=true,scoringMode
   </div>;
 }
 
-// ── Free-for-all per-court engine (2-4 individual players, own symbol each,
-// single flat winner-stays-on queue — same rotation pattern as S&L/Ludo) ────
 function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode='boardWin',bestOf3=false,fixedBoard=null,project=false,courtLabel='',roomId=null,seed=null}){
   const [board,setBoard]=useState(()=>seed?seed.board:(fixedBoard?ncBoardFromChallenges(fixedBoard):ncDefaultBoard(mode,requireChallenge)));
   const [queue,setQueue]=useState(()=>seed?seed.queue:players.map((_,i)=>i));
@@ -28012,22 +26963,15 @@ function NoughtsCrossesCourtFFA({players,mode,requireChallenge=true,scoringMode=
   </div>;
 }
 
-// ── Coach setup screen ───────────────────────────────────────────────────
 function NoughtsCrossesGame({setSession,setScreen}={}){
-  // Setup persists across navigation (see Hangman's cbHangmanSetupV1). Coach config
-  // only — the live board, claimed squares and court hand-offs are never restored.
-  // fixedChallenges is deliberately excluded: it is regenerated from mode +
-  // requireChallenge by the effect below, so persisting it would just fight that.
+
   const NC_SETUP_KEY='cbNoughtsCrossesSetupV1';
   const savedSetup=useMemo(()=>{try{return JSON.parse(localStorage.getItem(NC_SETUP_KEY))||{};}catch{return{};}},[]);
   const [presentsObj,setPresentsObj]=useState(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name);}catch{return[];}});
   function refreshPlayers(){
     try{setPresentsObj((JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name));}catch{}
   }
-  // NOTE: deliberately no automatic visibilitychange/focus refresh — that caused a real
-  // bug: switching tabs mid-session silently re-read attendance, which could reshuffle
-  // Auto court allocation and remount a court, wiping progress and re-pairing players at
-  // random. Refresh is manual-only (button below) so it only happens when the coach means it.
+
   function quickAddPlayer(){
     const nm=(window.prompt('New player name:')||'').trim();
     if(!nm)return;
@@ -28105,8 +27049,7 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
     try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link \u2014 open on the device standing at that court:',url);}
   }
   async function copyNcRaceLink(){
-    // Without this the courts never write and the display waits forever — every court
-    // gates its writes on `projecting`, and copying a link is the coach saying go live.
+
     setProjecting(true);
     const url=buildNcRaceLink(base,courtCount);
     try{await navigator.clipboard.writeText(url);setCopiedRaceLink(true);setTimeout(()=>setCopiedRaceLink(false),1500);}catch{window.prompt('Race display link (projector):',url);}
@@ -28237,7 +27180,6 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
       <div className="ncTeamGrid" style={{marginTop:'8px'}}>{Array.from({length:manualCountFfa}).map((_,i)=><input key={i} value={manualRosterFfa[i]||''} onChange={e=>setManualRosterFfaName(i,e.target.value)} placeholder={`Player ${i+1}`} style={{background:'#0b1118',border:'1px solid #223044',borderRadius:'8px',padding:'8px 10px',color:'#eaf4fb'}}/>)}</div>
     </div>}
 
-
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowSettings(!showSettings)}>{showSettings?'\u2212 Hide game settings':'\u2699 Mode, challenge & scoring settings'}</button>
     {showSettings&&<div className="ncSettings">
       <label className="ncCheck"><input type="checkbox" checked={requireChallenge} onChange={e=>setRequireChallenge(e.target.checked)}/> Require a challenge to claim (default off — classic noughts & crosses: nominate a square, win the rally, claim it)</label>
@@ -28356,7 +27298,6 @@ function NoughtsCrossesGame({setSession,setScreen}={}){
   </div>;
 }
 
-// ── Per-court scoring device ────────────────────────────────────────────
 function NoughtsCrossesCourtScorer({court,host}){
   useWakeLock();
   const roomId=courtRoomId(host,court);
@@ -28403,7 +27344,6 @@ function NoughtsCrossesCourtScorer({court,host}){
   </div>;
 }
 
-// ── Combined read-only Race Display ─────────────────────────────────────
 function NoughtsCrossesRaceDisplay({host,courtCount}){
   const [courts,setCourts]=useState([]);
   useEffect(()=>{
@@ -28451,7 +27391,6 @@ function NoughtsCrossesRaceDisplay({host,courtCount}){
   </div>;
 }
 
-// ── Big-screen single-court Player Display ──────────────────────────────
 function NoughtsCrossesPlayerDisplay({payload={}}){
   useWakeLock();
   const board=payload.board||[];
@@ -28519,10 +27458,7 @@ function normalizeCourtPayload(row){
   if(!row||!row.payload)return null;
   const p=row.payload,t=p.type;
   const ageMs=row.updated_at?(Date.now()-new Date(row.updated_at).getTime()):(p.updatedAt?Date.now()-p.updatedAt:null);
-  // Anything more than 90 minutes old is treated as a different/earlier session, not a
-  // "paused" court — otherwise a match from hours (or days) ago sits here forever as a
-  // ghost winner card. Genuinely paused mid-session courts (brief disconnect etc.) stay
-  // well under this.
+
   if(ageMs!=null&&ageMs>5400000)return null;
   if(t==='cleared')return null;
   const stale=ageMs!=null&&ageMs>20000;
@@ -28565,8 +27501,7 @@ function normalizeCourtPayload(row){
     game='Matchplay';
     const winsA=Number(p.winsA||0),winsB=Number(p.winsB||0);
     players=[{name:p.a||'P1',score:winsA},{name:p.b||'P2',score:winsB}];
-    // 'Best of 5' -> 3 games needed. Progress is measured against that, not the raw
-    // format number, so a 2-0 lead in a Best of 3 reads as complete rather than 66%.
+
     const bestOf=Number(String(p.matchFormat||'Best of 1').replace(/[^0-9]/g,''))||1;
     target=Math.max(1,Math.ceil(bestOf/2));
     leaderName=winsA===winsB?'':(winsA>winsB?(p.a||'P1'):(p.b||'P2'));
@@ -28652,10 +27587,7 @@ function CourtMonitor({setScreen}){
         const normNc=normalizeCourtPayload(rowNc);
         const normHs=normalizeCourtPayload(rowHs);
         const normMp=normalizeCourtPayload(rowMp);
-        // Ludo, N&C, Hangman and Matchplay each have their own namespaced court rooms so
-        // they can never collide with another module's court rooms — check all five and
-        // show whichever is actually live (freshest non-stale one wins if more than one
-        // has data).
+
         let chosen=normStd,chosenBase=base;
         [[normLudo,ludoBase],[normNc,ncBase],[normHs,hsBase],[normMp,mpBase]].forEach(([norm,nsBase])=>{
           if(norm&&norm.game&&(!chosen||!chosen.game||(chosen.stale&&!norm.stale))){chosen=norm;chosenBase=nsBase;}
@@ -28806,9 +27738,7 @@ function CourtStandingsPlayerDisplay({payload={}}){
 }
 
 function slSetupFingerprint(p){
-  /* Identifies the SETUP, not the progress: players, board shape, size and the
-     challenge set. Positions, scores and pending fates are deliberately excluded
-     so a live game is never mistaken for a new one. */
+
   if(!p)return '';
   const names=(p.players||[]).map(x=>x.name).join('|');
   const lad=Object.entries((p.board&&p.board.ladders)||{}).map(([a,b])=>a+'>'+b).sort().join(',');
@@ -28816,9 +27746,7 @@ function slSetupFingerprint(p){
   const ch=Object.entries(p.challengeSquares||{}).map(([a,b])=>a+'='+b).sort().join(',');
   return [names,(p.settings&&p.settings.size)||p.size||'',lad,sn,ch,p.challengeAll||'',p.gameKey||''].join('#');
 }
-/* v806: one converter from a room payload to a court seed — used by the referee phone and by
-   'Take back control' on the coach screen (which used to remount the court on a NEW random board
-   with everyone on square 1, overwriting the referee's game). */
+
 function slSeedFromPayload(p){
   const roster=(p.players||[]).map(x=>({name:x.name,pos:Number(x.pos)||1}));
   const names=roster.map(x=>x.name);
@@ -28860,10 +27788,6 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
     return ()=>{cancelled=true;clearInterval(id);};
   },[roomId,seedData]);
 
-  /* After seeding, keep watching this court: a genuinely different setup from the
-     coach (new race, new board, new players, changed challenges) is picked up
-     without anyone remembering to refresh. A game already in progress is never
-     auto-swapped — it offers a choice instead, so live scoring is never lost. */
   const [newSetup,setNewSetup]=useState(null);
   useEffect(()=>{
     if(!seedData)return;
@@ -28903,7 +27827,7 @@ function SnakesLaddersCourtScorer({court,host,mirror}){
 function SnakesLaddersRaceDisplay({host,courtCount}){
   useWakeLock();
   const SL_COLORS=SL_TOKEN_COLORS;
-  const [courts,setCourts]=useState([]); // array of payloads, one per court, index 0 = Court 1
+  const [courts,setCourts]=useState([]); 
   useEffect(()=>{
     let cancelled=false;
     async function load(){
@@ -28929,7 +27853,6 @@ function SnakesLaddersRaceDisplay({host,courtCount}){
   const visible=first.settings?first.settings.visible!==false:true;
   const cellInfo=(n)=>{const isL=board.ladders[n]!=null,isS=board.snakes[n]!=null;const show=visible||revealedSet.has(n);return{isL,isS,show,to:isL?board.ladders[n]:isS?board.snakes[n]:null};};
 
-  // merge every court's roster into one combined list, tagging each player with their court + colour
   const combined=[];
   courts.forEach((c,ci)=>{
     if(!c)return;
@@ -29034,8 +27957,8 @@ function NsslCourtScorer({court,host}){
     if(teamsKeyRef.current===key)return;
     const firstResolve=teamsKeyRef.current==='';
     teamsKeyRef.current=key;
-    if(firstResolve)return; // keep restored state on first load (survives a reload mid-match)
-    // teams changed -> a new match/final: start clean so the player timer and clock are in sync from 0-0
+    if(firstResolve)return; 
+
     setPeriods({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
     setPlayerTime({a:{},b:{}});
     setSubsUsed({p1:{a:0,b:0},p2:{a:0,b:0},p3:{a:0,b:0},ot:{a:0,b:0}});
@@ -29064,7 +27987,7 @@ function NsslCourtScorer({court,host}){
       ptLastRef.current=now;
       const t=tickRef.current;
       if(!t.running||dt<=0)return;
-      const add=Math.min(dt,3); // wall-clock delta; cap guards against a long background gap over-counting one player
+      const add=Math.min(dt,3); 
       setPlayerTime(pt=>{const next={a:{...pt.a},b:{...pt.b}}; if(t.aName)next.a[t.aName]=(next.a[t.aName]||0)+add; if(t.bName)next.b[t.bName]=(next.b[t.bName]||0)+add; return next;});
     },1000);
     return ()=>clearInterval(id);
@@ -29080,12 +28003,12 @@ function NsslCourtScorer({court,host}){
       try{
         const row=await readLivePlayerRoom(roomId);
         const rem=row&&row.payload;
-        // If another device/tab holds a further-along score for THIS court (higher rev), adopt it instead of overwriting with our older score. Stops two tabs ping-ponging the score.
+
         if(!cancelled&&rem&&rem.type==='nssl'&&rem.instanceId&&rem.instanceId!==instanceIdRef.current&&Number(rem.rev||0)>revRef.current){
           if(rem.periods)setPeriods(rem.periods);
           if(rem.subsUsed)setSubsUsed(rem.subsUsed);
           if(rem.ppUsed)setPpUsed(rem.ppUsed);
-          // player time is a local monotonic accrual — never adopt a remote copy (it could lower it / make time vanish)
+
           setRev(Number(rem.rev)||0);
           return;
         }
@@ -29338,9 +28261,6 @@ function NsslMasterDisplay({host}){
   </div>;
 }
 
-/* ───────────────────────── ROTATION ENGINE™ — group formats ─────────────────────────
-   Lever 4 of the small-sided conversion: rotate instead of queue. Any Games Library
-   game can be dropped in as the rotation's rule set. */
 const ROTATION_FORMATS=[
   {id:'winnerStays',title:'Winner Stays On',tag:'King of the Court',onCount:2,minPlayers:3,
    blurb:'The winner holds the court. The loser goes to the back of the queue and the next player comes on.',
@@ -29465,11 +28385,6 @@ function RotationStyles(){return <style>{`
 .rotDisplayNext b{color:#eaf4fb;}
 `}</style>;}
 
-/* ── SEASON LADDER ─────────────────────────────────────────────────────────────
-   Season-long performance points built from what the app already records:
-   Rotation Engine winners (promotion / demotion) and ranked one-off games.
-   Scoring core is pure and unit-tested; events are append-only so the season
-   can always be recomputed and audited. */
 const LADDER_KEY='checkerboard_season_ladder_v1';
 const LADDER_OVERVIEW='The ladder rates a whole season, not a single night, and it measures four things. How often you win — and where: a win is worth most on Court 1 and least further down, so the only way to score big is to keep beating the best. How far you climb — finishing a session higher up the courts than you started. How close you finish — in one-off games, finishing place earns most of the points and your share of the rallies tops them up, so a narrow loss is always worth more than a blow-out. And how often you turn up — one point a session, so consistency counts but never outweighs performance. Every point traces back to something recorded on the night, which is what makes the year-end table, and the award, fair to stand behind.';
 function ladderDefaultStore(){
@@ -29492,9 +28407,7 @@ function ladderAppendEvents(list){
   list.forEach(ev=>{store.events.push({id:makeLocalId(),at,sessionKey:ladderSessionKey(),...ev});});
   ladderSaveStore(store);
 }
-/* Automatic capture: a game scored in the app credits the ladder without anyone
-   remembering to log it. Recorded once per game via a dedupe key, using real
-   per-rally tallies (not board position, which ladders and snakes distort). */
+
 function ladderUndoAutoRecord(key){if(!key)return;try{const st=ladderLoadStore();st.events=(st.events||[]).filter(e=>e.autoKey!==key);st.autoKeys=(st.autoKeys||[]).filter(k=>k!==key);ladderSaveStore(st);}catch{}}
 function ladderAutoRecordGame(key,gameName,tallies){
   const rows=(tallies||[]).filter(r=>r&&r.player);
@@ -29517,7 +28430,7 @@ function ladderCanonName(name,aliases){
   return (mapped&&String(mapped).trim())||raw;
 }
 function ladderCourtWinValue(court){
-  /* House rule: demotion must not pay. Court 1 = 3, Court 2 = 2, Court 3+ = 1. */
+
   const n=Number(court)||1;
   return n<=1?3:n===2?2:1;
 }
@@ -29558,7 +28471,7 @@ function ladderScoreSeason(events,aliases,opts){
         touchSession(winner,ev.sessionKey);
       }
       others.forEach(n=>{if(n===winner)return;const r=row(n);r.rotations+=1;touchSession(n,ev.sessionKey);});
-      /* Climb tracking: Monarch only — court rank is meaningful there. */
+
       if(ev.format==='monarch'&&ev.sessionKey){
         [winner,...others].filter(Boolean).forEach(n=>{
           const key=n+'||'+ev.sessionKey;
@@ -29567,10 +28480,7 @@ function ladderScoreSeason(events,aliases,opts){
         });
       }
     }else if(ev.type==='promotion'){
-      /* Rotation Recorder: several players can go up or down from one court in
-         the same rotation. Everyone promoted from a court earns the same — the
-         ladder records promotion, not the order within it. Court 1 holds count
-         as the win on Court 1. */
+
       const court=Number(ev.court)||1;
       const up=(ev.up||[]).map(x=>ladderCanonName(x,aliases)).filter(Boolean);
       const down=(ev.down||[]).map(x=>ladderCanonName(x,aliases)).filter(Boolean);
@@ -29601,14 +28511,14 @@ function ladderScoreSeason(events,aliases,opts){
       });
     }
   });
-  /* Climb bonus: +1 per net court climbed toward Court 1, per Monarch session. Never negative. */
+
   Object.keys(climbTrack).forEach(key=>{
     const name=key.split('||')[0];
     const t=climbTrack[key];
     const climbed=Math.max(0,(t.first-t.last));
     if(climbed>0)row(name).climbPts+=climbed;
   });
-  /* Attendance: +1 per distinct session a player appears in. */
+
   Object.keys(rows).forEach(name=>{
     const n=Object.keys(sessionsByPlayer[name]||{}).length;
     rows[name].sessions=n;
@@ -29632,9 +28542,7 @@ function ladderCsv(list){
   list.forEach((r,i)=>{lines.push([i+1,'"'+String(r.player).replace(/"/g,'""')+'"',r.total,r.rotationPts,r.rankedPts,r.climbPts,r.attendancePts,r.rotationWins,r.rotations,r.rankedGames,r.avgWinShare,r.sessions,r.eligible?'Yes':'No'].join(','));});
   return lines.join('\n');
 }
-/* Pull individual win counts out of a live court-room payload, for logging a
-   ranked game straight from a scoring link. Individual formats only — team
-   totals never feed the individual ladder. */
+
 function ladderParseCourtPayload(payload){
   if(!payload||!payload.type)return null;
   const t=payload.type;
@@ -29667,9 +28575,7 @@ function ladderParseCourtPayload(payload){
   return null;
 }
 function ladderRecorderApplyMoves(courts,marks){
-  /* courts: array of name arrays, index 0 = Court 1. marks: {name:'up'|'down'|'hold'}.
-     Ups join the court above, downs the court below; Court 1 holds and bottom-court
-     downs stay put. Everyone unmarked stays. Conservation by construction. */
+
   const last=courts.length-1;
   const next=courts.map(c=>c.filter(nm=>{const m=marks[nm];return !m||m==='hold';}));
   courts.forEach((c,i)=>{
@@ -29781,7 +28687,7 @@ function SeasonLadder({setScreen}){
       const parsed=ladderParseCourtPayload(row.payload);
       if(parsed)games.push(parsed);
     });
-    /* De-duplicate identical rosters (a game can echo in more than one room). */
+
     const seen=new Set();
     const unique=games.filter(g=>{const k=g.game+'|'+g.players.map(p=>p.name+':'+p.wins).join(',');if(seen.has(k))return false;seen.add(k);return true;});
     setFound(unique);setSearching(false);
@@ -29809,8 +28715,7 @@ function SeasonLadder({setScreen}){
   }
   function saveRanked(){
     if(entries.length<2)return;
-    /* Wins left blank (a tournament scored off-app) score on finishing place
-       alone — the engine skips the rally-share component when no wins exist. */
+
     ladderAppendEvents([{type:'ranked',game:gameName||'Ranked game',weight,entries:entries.map(e=>({player:e.player,rank:e.rank,wins:e.wins}))}]);
     setEntries([]);setGameName('');setWeight(1);
     setStore(ladderLoadStore());
@@ -30047,7 +28952,6 @@ function SeasonLadder({setScreen}){
     </>}
   </div>;
 }
-/* ── END SEASON LADDER ── */
 
 function RotationEngine({setScreen,setSession}){
   const presents=useMemo(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}},[]);
@@ -30224,12 +29128,6 @@ function RotationPlayerDisplay({payload={}}){
   </div>;
 }
 
-
-
-/* ───────────────────────── TACTICAL FINISH — four-suite progression ─────────────────────────
-   One game pattern — normal rally, bonus for the designated finish — tightened across
-   four suites: floor/wall zone → wall-into-floor combo → shot → combo + shot.
-   All vocabulary is existing: ATB zones, CB codes, SHOT_BONUS_REGISTRY, point choices. */
 const TF_FLOOR={'1':'Front left','2':'Front right','3':'Back right','4':'Back left'};
 const TF_WALL={'5':'Front wall top left','6':'Front wall top right','7':'Front wall bottom right','8':'Front wall bottom left'};
 const TF_SUITES=[
@@ -30392,11 +29290,7 @@ useEffect(()=>{
   document.addEventListener('visibilitychange',onVis);
   return ()=>{document.removeEventListener('visibilitychange',onVis);try{lock&&lock.release();}catch{}lock=null;};
 },[screen]);
-/* v811 (coach, 7 Oct: "how can the app update itself, like the CRM app does?"). Each deploy gives
-   the app a new script file name. Whenever the app comes back to the front (and every 10 minutes)
-   it asks the server which file is current. If it has changed: on the Home screen the app simply
-   reloads itself; anywhere else a bar offers "Update now", so a game in progress is never cut off —
-   and it updates by itself the next time the coach goes back to Home. */
+
 const[updateReady,setUpdateReady]=useState(false);
 const screenRef=useRef(screen);
 useEffect(()=>{screenRef.current=screen;},[screen]);
@@ -30470,15 +29364,12 @@ const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
 });
 useEffect(()=>{localStorage.setItem(PLAYER_KEY,JSON.stringify(players));},[players]);
 useEffect(()=>{
-  /* Automatic cloud backup. Coaching history is irreplaceable, so this does not
-     wait to be asked: once shortly after load, then every 10 minutes the app is
-     open. Silent by design — failures never interrupt a session; the Storage
-     screen shows the last successful backup time. */
+
   let stopped=false;
   function run(){
     if(stopped)return;
     try{
-      cbBackupNow().then(ok=>{
+      cbAutoBackup().then(ok=>{
         if(ok){try{localStorage.setItem('checkerboard_backup_last',new Date().toISOString());}catch{}}
       }).catch(()=>{});
     }catch{}
@@ -30712,12 +29603,3 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 }
 
 createRoot(document.getElementById('root')).render(<App/>);
-
-
-/* LEVEL 0 PLACEHOLDER ROUTE
-Add navigation tab:
-LEVEL 0
-
-Add route:
-tab==='LEVEL 0'&&<Level0Exploration/>
-*/
