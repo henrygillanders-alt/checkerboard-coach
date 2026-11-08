@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v869 Squad Clock Rotation';
+const APP_VERSION='v872 Saved Sessions';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -1124,7 +1124,13 @@ function NetworkedSquadClock({setScreen}){
       <div className="buttonRow sessionActionButtons" style={{marginTop:'12px'}}>
         <button type="button" className="primaryBtn" onClick={startAll}>▶ Start on all courts</button>
         <button type="button" className="secondaryBtn" onClick={join}>🔊 Arm sound (this court)</button>
+        <button type="button" className="secondaryBtn" onClick={()=>{
+          const url=(window.location.origin||'')+(window.location.pathname||'/')+'?squadRoom='+encodeURIComponent(room);
+          if(navigator.share){navigator.share({title:'Squad Clock',text:'Open on this court, then tap to arm sound.',url}).then(()=>setMsg('Link sent.')).catch(()=>{});}
+          else{try{navigator.clipboard.writeText(url);setMsg('Copied ✓ — paste the link to each court device.');}catch(e){setMsg('Link: '+url);}}
+        }}>📤 Send clock link</button>
       </div>
+      <p className="mutedText" style={{fontSize:'0.82rem',margin:'6px 0 0'}}>Send the link to each court device. It opens straight into this room's clock; tap “Arm sound” there, then press Start here.</p>
       {msg&&<div className="statusBox">{msg}</div>}
     </div>:<div style={{textAlign:'center',padding:'12px'}}>
       {!joined&&<button type="button" className="primaryBtn" style={{padding:'14px 22px',marginBottom:'10px'}} onClick={join}>🔊 Tap to arm sound on this court</button>}
@@ -8818,6 +8824,65 @@ function SessionAllGamesLibrary({onAddToSession,setScreen}){
   </div>;
 }
 
+const SAVED_SESSIONS_KEY='checkerboard_saved_sessions_v1';
+function loadSavedSessions(){try{const v=JSON.parse(localStorage.getItem(SAVED_SESSIONS_KEY));return Array.isArray(v)?v:[];}catch{return [];}}
+function SavedSessionsPanel({session,setSession,beforeChange}){
+  const [list,setList]=useState(loadSavedSessions);
+  const [name,setName]=useState('');
+  const [msg,setMsg]=useState('');
+  function persist(next){setList(next);try{localStorage.setItem(SAVED_SESSIONS_KEY,JSON.stringify(next));}catch{}}
+  function saveCurrent(){
+    const n=name.trim();if(!n){setMsg('Give the session a name first.');return;}
+    if(!session.length){setMsg('The current session is empty.');return;}
+    const exists=list.find(x=>x.name.toLowerCase()===n.toLowerCase());
+    if(exists&&!window.confirm('Replace the saved session “'+exists.name+'”?'))return;
+    const entry={name:n,savedAt:new Date().toISOString(),rotations:JSON.parse(JSON.stringify(session))};
+    persist([...list.filter(x=>x.name.toLowerCase()!==n.toLowerCase()),entry]);setName('');setMsg('✓ Saved “'+n+'”.');
+  }
+  function load(x){
+    if(session.length&&!window.confirm('Load “'+x.name+'”? It replaces the current session (Undo brings it back).'))return;
+    beforeChange&&beforeChange();setSession(uniqueSessionIds(JSON.parse(JSON.stringify(x.rotations||[]))));setMsg('✓ Loaded “'+x.name+'”.');
+  }
+  function del(x){if(!window.confirm('Delete the saved session “'+x.name+'”?'))return;persist(list.filter(y=>y!==x));}
+  const mins=x=>(x.rotations||[]).reduce((a,g)=>a+Number(g.duration||0),0);
+  return <details className="statusBox" style={{marginBottom:'12px'}} open={list.length>0}>
+    <summary style={{cursor:'pointer',fontWeight:800}}>Saved sessions{list.length?` · ${list.length}`:''}</summary>
+    <div style={{display:'flex',gap:'8px',flexWrap:'wrap',margin:'8px 0'}}>
+      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Name this session, e.g. Tournament 1" style={{flex:'1 1 220px',padding:'10px',borderRadius:'8px',border:'1px solid #2a4a63',background:'#0e2033',color:'#eaf4fb'}}/>
+      <button type="button" className="primaryBtn" onClick={saveCurrent}>Save current session</button>
+    </div>
+    {msg&&<p className="mutedText" style={{margin:'4px 0'}}>{msg}</p>}
+    {list.map(x=><div key={x.name} style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px',padding:'7px 0',borderTop:'1px solid rgba(255,255,255,0.08)',flexWrap:'wrap'}}>
+      <div><strong>{x.name}</strong><span className="mutedText" style={{fontSize:'0.82rem'}}> · {(x.rotations||[]).length} games · {mins(x)} min</span></div>
+      <div style={{display:'flex',gap:'6px'}}><button type="button" className="primaryBtn" onClick={()=>load(x)}>Load</button><button type="button" className="secondaryBtn" onClick={()=>del(x)}>Delete</button></div>
+    </div>)}
+  </details>;
+}
+function devTodayPriorities(){
+  let present=[];try{present=(JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{}
+  const dev=loadPlayerDev();const groups={};const unlinked=[];
+  present.forEach(name=>{(dev[name]||[]).forEach(c=>{if(!c||(c.status!=='developing'&&c.status!=='new'))return;
+    const row={name,title:c.title,status:c.status==='new'?'New':'Developing'};
+    if(c.link){(groups[c.link]=groups[c.link]||[]).push(row);}else unlinked.push(row);});});
+  return {present:present.length,groups:Object.entries(groups).sort((a,b)=>b[1].length-a[1].length),unlinked};
+}
+function devLinkClass(link){
+  const fam=String(link||'').split(' — ')[0];
+  const g=GAME_LIBRARY.find(x=>x&&x.label&&(x.label===link||x.label===fam||fam.indexOf(x.label)===0||x.label.indexOf(fam)===0));
+  return g?g.id:null;
+}
+function DevPrioritiesPanel({setScreen}){
+  const d=devTodayPriorities();
+  if(!d.present)return <div className="statusBox" style={{marginBottom:'12px'}}><strong>Today’s player priorities</strong><p>Mark players present (Players page) to see the games linked to their Developing and New cards.</p></div>;
+  if(!d.groups.length&&!d.unlinked.length)return null;
+  return <details className="statusBox" open style={{marginBottom:'12px'}}><summary style={{cursor:'pointer',fontWeight:800}}>Today’s player priorities · {d.present} present</summary>
+    {d.groups.map(([link,rows])=>{const cls=devLinkClass(link);return <div key={link} style={{padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.08)',display:'flex',justifyContent:'space-between',gap:'10px',alignItems:'center',flexWrap:'wrap'}}>
+      <div><strong>{link}</strong><div className="mutedText" style={{fontSize:'0.85rem'}}>{rows.map(r=>`${r.name} — ${r.title} (${r.status})`).join(' · ')}</div></div>
+      {cls&&<button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,cls);}catch{}setScreen&&setScreen('games');}}>Open →</button>}
+    </div>;})}
+    {d.unlinked.length>0&&<p className="mutedText" style={{fontSize:'0.85rem',marginTop:'8px'}}>No game linked yet: {d.unlinked.map(r=>`${r.name} — ${r.title}`).join(' · ')}. Link one on the player’s Development tab.</p>}
+  </details>;
+}
 function Sessions({session,setSession,setScreen}){session=Array.isArray(session)?session:(session&&Array.isArray(session.rotations)?session.rotations:[]);const[sessionHistory,setSessionHistory]=useState([]);const[showLibrary,setShowLibrary]=useState(false);function saveSessionSnapshot(){setSessionHistory(prev=>[...prev,clone(session)]);}function undoSession(){const last=sessionHistory[sessionHistory.length-1];if(!last)return;setSession(last);setSessionHistory(sessionHistory.slice(0,-1));}
 const total=session.reduce((sum,game)=>sum+Number(game.duration||0),0);
 function addGame(game){saveSessionSnapshot();setSession(prev=>appendToSessionState(prev,game));}
@@ -8859,6 +8924,8 @@ const toggleRot=id=>setOpenRot(o=>({...o,[id]:!o[id]}));
 function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
+<SavedSessionsPanel session={session} setSession={setSession} beforeChange={saveSessionSnapshot}/>
+<DevPrioritiesPanel setScreen={setScreen}/>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
 {showLibrary&&<SessionAllGamesLibrary onAddToSession={addGame} setScreen={setScreen}/>} 
 <h2>Session Rotations</h2>
@@ -20989,6 +21056,7 @@ const CB_BACKUP_KEYS=[
   {key:'checkerboard_master_coach_suggestions_v1',label:'Coach suggestions'},
   {key:'checkerboard_player_plans_v1',label:'Player plans'},
   {key:'checkerboard_player_development_v1',label:'Player development cards'},
+  {key:'checkerboard_saved_sessions_v1',label:'Saved sessions'},
   {key:'checkerboard_master_v54_players',label:'Players & attendance'},
   {key:'checkerboard_universal_db_handicap_v97',label:'Double bounce allowances'},
   {key:'checkerboard_hdl_scoring_v1',label:'Hold & Deception scoring settings'},
@@ -29264,7 +29332,7 @@ const[sharedPlayerCompetition]=useState(()=>sharedPlayerPayload?.type==='competi
 const liveCompetition=livePayload?.type==='competition'?(livePayload.competition||livePayload):((livePayload?.mode&&['matchplay','roundRobin','monrad','invasion','nsl'].includes(livePayload.mode))?livePayload:null);
 const liveGame=livePayload?.type==='game'?normaliseGameCard(livePayload.game):null;
 const initialPlayerDisplay=!!liveRoomParam||!!sharedPlayerGame||!!sharedPlayerCompetition;
-const[screen,setScreen]=useState(()=>{if(initialPlayerDisplay)return 'playerDisplay';try{if(!localStorage.getItem(PURPOSE_SEEN_KEY))return 'purpose';}catch{}return 'home';});
+const[screen,setScreen]=useState(()=>{if(initialPlayerDisplay)return 'playerDisplay';try{const sr=new URLSearchParams(window.location.search||'').get('squadRoom');if(sr){localStorage.setItem('SQUAD_CLOCK_ROOM',String(sr).toUpperCase());return 'squadClockNet';}}catch{}try{if(!localStorage.getItem(PURPOSE_SEEN_KEY))return 'purpose';}catch{}return 'home';});
 const[livePollAttempts,setLivePollAttempts]=useState(0);
 useEffect(()=>{
   if(!liveRoomParam) return;
