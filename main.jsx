@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v876 Big Score';
+const APP_VERSION='v877 Links & Back';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -249,6 +249,10 @@ const __backInterceptors=[];
 function __pushBack(fn){__backInterceptors.push(fn);}
 function __popBack(fn){const i=__backInterceptors.lastIndexOf(fn);if(i>=0)__backInterceptors.splice(i,1);}
 function __runBack(){for(let i=__backInterceptors.length-1;i>=0;i--){try{if(__backInterceptors[i]())return true;}catch{}}return false;}
+function useBackFallback(active,handler){
+  const ref=useRef(handler);ref.current=handler;
+  useEffect(()=>{if(!active)return;const fn=()=>ref.current();__backInterceptors.unshift(fn);return ()=>__popBack(fn);},[active]);
+}
 function useBackIntercept(active,handler){
   const ref=useRef(handler);ref.current=handler;
   useEffect(()=>{if(!active)return;const fn=()=>ref.current();__pushBack(fn);return ()=>__popBack(fn);},[active]);
@@ -8937,12 +8941,21 @@ function startRotationProjection(index){
 function stopRotationProjection(){
   stopCoachProjectionSession();
 }
-async function pushSessionPlayerDisplay(index=0){
+function flashLinkMsg(key,text){setLinkMsg({key,text});setTimeout(()=>setLinkMsg(m=>m&&m.key===key?null:m),2500);}
+function linkLabel(key,label){return linkMsg&&linkMsg.key===key?linkMsg.text:label;}
+async function pushSessionPlayerDisplay(index=0,key='push'+index){
   const game=session[index]||session[0];
   if(!game){return;}
-  const {url,ok}=await copyLiveGameLink(game);
-  try{if(navigator.clipboard) await navigator.clipboard.writeText(url);}catch{}
-
+  const url=buildLivePlayerViewUrl(getPersistentLiveRoomId());
+  let clip;
+  try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}
+  clip.catch(()=>{});
+  let ok=false;
+  try{ok=(await copyLiveGameLink(game)).ok;}catch{}
+  let copied=false;
+  try{await clip;copied=true;}catch{}
+  if(!copied)window.prompt('Player display link \u2014 press and hold to copy, then open it on the court screen:',url);
+  flashLinkMsg(key,ok?(copied?'Sent and copied \u2713':'Sent \u2713'):'Not sent \u2014 check the connection');
 }
 
 function addLayer(index,layer){saveSessionSnapshot();const updated=clone(session);updated[index].layers=safeLayersForSession(updated[index]);if(!updated[index].layers.includes(layer))updated[index].layers.push(layer);updated[index].modifierScores={...(updated[index].modifierScores||{})};if(!updated[index].modifierScores[layer])updated[index].modifierScores[layer]=defaultModifierScore(layer);setSession(updated);}
@@ -8951,11 +8964,12 @@ function updateCb(index,code){saveSessionSnapshot();const updated=clone(session)
 function updateDuration(index,value){saveSessionSnapshot();const updated=clone(session);const next=Math.max(1,Number(value)||1);updated[index].duration=next;setSession(updated);}
 function bumpDuration(index,delta){const current=Number(session[index]?.duration||8);updateDuration(index,current+delta);}
 const [editIndex,setEditIndex]=useState(null);
+const [linkMsg,setLinkMsg]=useState(null);
 const [openRot,setOpenRot]=useState({}); 
 const toggleRot=id=>setOpenRot(o=>({...o,[id]:!o[id]}));
 function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
-<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0)}>Push Player Display</button></div></div>
+<div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0,'pushTop')}>{linkLabel('pushTop','Push Player Display')}</button></div></div>
 <SavedSessionsPanel session={session} setSession={setSession} beforeChange={saveSessionSnapshot}/>
 <DevPrioritiesPanel setScreen={setScreen}/>
 <div className="sessionBuilderIntro"><strong>Current Session</strong><span>{session.length} rotation{session.length===1?'':'s'} · {total} mins</span><p>Session Builder opens to the current session. Open Games Library only when you want to add more games.</p></div>
@@ -8979,8 +8993,8 @@ return <div className="page sessionBuilderPage">
 <button type="button" className="secondaryBtn" onClick={()=>{if(game.category==='Checkerboard'){if(setScreen)setScreen('checkerboard');return;}if(game.category==='Perception'){if(setScreen)setScreen('perception');return;}setEditIndex(index);}}>✏️ Edit Game</button>
 <button type="button" className="secondaryBtn" onClick={()=>duplicate(index)}>Duplicate + Progress</button>
 {game.format==='Pattern Lab'&&<button type="button" className="secondaryBtn" onClick={()=>{try{localStorage.setItem('PL_EDIT',JSON.stringify({patternId:(game.plConfig&&game.plConfig.patternId)||((String(game.title||'').match(/Pattern Lab — (L\d+-\d+)/)||[])[1]),cardId:game.id,config:game.plConfig||null}));}catch{}if(setScreen)setScreen('tacticalIntentions');}}>Edit Pattern in Lab →</button>}
-<button type="button" className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>Push Player Display</button>
-<button type="button" className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game); if(navigator.clipboard&&url){navigator.clipboard.writeText(url);} }}>Copy Player Link</button>
+<button type="button" className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(index)}>{linkLabel('push'+index,'Push Player Display')}</button>
+<button type="button" className="secondaryBtn" onClick={()=>{const url=buildPlayerDisplayUrl(game);if(!url)return;let clip;try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}clip.then(()=>flashLinkMsg('copy'+index,'Copied \u2713')).catch(()=>window.prompt('Player display link \u2014 press and hold to copy:',url));}}>{linkLabel('copy'+index,'Copy Player Link')}</button>
 </div>
 </>}
 </>}
@@ -17375,6 +17389,9 @@ function HangmanSquashGame({setSession,setScreen}={}){
   async function copyHsScoreLink(n){
     setProjecting(true);
     const url=buildHsScoreLink(n,base);
+    let clip;
+    try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}
+    clip.catch(()=>{});
 
     const roomId=courtRoomId(base,n);
     const wanted=hangmanBuildEntities(allocation[n-1]||[],teamMode,teamOf);
@@ -17395,7 +17412,7 @@ function HangmanSquashGame({setSession,setScreen}={}){
       }
     }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
-    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+    try{await clip;setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
   function takeBackControl(n){setHandedOff(prev=>{const s=new Set(prev);s.delete(n);return s;});}
   async function copyHsRaceLink(){
@@ -18014,6 +18031,11 @@ function Games({setSession,setScreen,onClassChange}){
     setMessage('');
     setLogicCard(null);
   }
+  useBackFallback(!!activeClassId||!!editingCard,()=>{
+    if(editingCard){setEditingCard(null);return true;}
+    if(activeClassId){selectClass(null);try{window.scrollTo(0,0);}catch{}return true;}
+    return false;
+  });
 
   return <div className="page">
     {!activeClassId&&<>
@@ -19913,6 +19935,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     const ok=await writeLivePlayerRoom(room,'competition',livePayload);
     return {room,state,ok};
   }
+  const [compLinkMsg,setCompLinkMsg]=useState('');
   async function copyCompetitionPlayerLink(){
     if(mode==='nsl'){
       const nurl=buildNsslMasterLink(nsslHostBase);
@@ -19920,14 +19943,18 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
       window.prompt('LIVE NSSL player display link — open on the second device:', nurl);
       return;
     }
-    const {room,ok}=await publishCompetitionLiveState();
+    const room=liveRoomId||makeLiveRoomId();
     const url=buildLivePlayerViewUrl(room);
+    let clip;
+    try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}
+    clip.catch(()=>{});
+    let ok=false;
+    try{ok=(await publishCompetitionLiveState(room)).ok;}catch{}
     let copied=false;
-    try{
-      if(navigator.clipboard){ await navigator.clipboard.writeText(url); copied=true; }
-    }catch{}
-    if(copied){  }
-    else{ window.prompt('LIVE competition player link — open this on the second device:', url); }
+    try{await clip;copied=true;}catch{}
+    if(!copied){ window.prompt('LIVE competition player link — open this on the second device:', url); }
+    setCompLinkMsg(ok?(copied?'Sent and copied \u2713':'Sent \u2713'):'Not sent \u2014 check the connection');
+    setTimeout(()=>setCompLinkMsg(''),2500);
   }
 
   useEffect(()=>{
@@ -19999,7 +20026,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
     <div className="page">
       <div className="pageTop">
         <h1>Competition</h1>
-        <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Start a new competition? This clears the current teams, scores, rounds and results. Players and DB handicaps are kept.')){try{localStorage.removeItem(COMPETITION_STATE_KEY);localStorage.removeItem('checkerboardCompetitionProjection');}catch{}window.location.reload();}}}>+ NEW COMPETITION</button><button type="button" className="secondaryBtn" onClick={resetCurrentMode}>RESET {(mode==='roundRobin'?'ROUND ROBIN':mode==='nsl'?'NSSL':mode||'').toUpperCase()}</button><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button></div>
+        <div className="buttonRow"><button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Start a new competition? This clears the current teams, scores, rounds and results. Players and DB handicaps are kept.')){try{localStorage.removeItem(COMPETITION_STATE_KEY);localStorage.removeItem('checkerboardCompetitionProjection');}catch{}window.location.reload();}}}>+ NEW COMPETITION</button><button type="button" className="secondaryBtn" onClick={resetCurrentMode}>RESET {(mode==='roundRobin'?'ROUND ROBIN':mode==='nsl'?'NSSL':mode||'').toUpperCase()}</button><button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>{compLinkMsg||'COPY PLAYER LINK'}</button></div>
       </div>
       <div className="gameClassGrid">
         <button type="button" className={mode==='invasion'?'gameClassBtn activeGameClass':'gameClassBtn'} onClick={()=>setMode('invasion')}>Invasion Game</button>
@@ -20034,7 +20061,7 @@ function Competition({players=[],initialInvasionFormat='lives',onInvasionFormatC
         <button type="button" className={showCompetitionProjection?'primaryBtn':'secondaryBtn'} onClick={()=>{setShowCompetitionProjection(!showCompetitionProjection);publishCompetitionLiveState();}}>
           {showCompetitionProjection?'Hide Player Display':'Show Player Display'}
         </button>
-        <button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>COPY PLAYER LINK</button>
+        <button type="button" className="primaryBtn" onClick={copyCompetitionPlayerLink}>{compLinkMsg||'COPY PLAYER LINK'}</button>
       </div>
       <div className="competitionLiveStatusBox">
         <strong>Live Player View</strong>
@@ -26193,6 +26220,9 @@ function LudoSquashGame({setSession,setScreen}={}){
   async function copyLudoScoreLink(n){
     setProjecting(true);
     const url=buildLudoScoreLink(n,base);
+    let clip;
+    try{clip=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(url):Promise.reject(new Error('no clipboard'));}catch(e){clip=Promise.reject(e);}
+    clip.catch(()=>{});
 
     const roomId=courtRoomId(base,n);
     const g=allocation[n-1]||[];
@@ -26213,7 +26243,7 @@ function LudoSquashGame({setSession,setScreen}={}){
       }
     }catch{}
     setHandedOff(prev=>new Set(prev).add(n));
-    try{await navigator.clipboard.writeText(url);setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
+    try{await clip;setCopiedScoreCourt(n);setTimeout(()=>setCopiedScoreCourt(null),1500);}catch{window.prompt('Court '+n+' SCORING link — open on the device standing at that court:',url);}
   }
   async function copyLudoRaceLink(){
 
