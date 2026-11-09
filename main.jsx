@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v877 Links & Back';
+const APP_VERSION='v878 Volley Bonus';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -587,6 +587,36 @@ if(o.cbRef&&o.cbRef!=='None')autoLayers.push('CB Code');
 return{id:Date.now()+Math.random(),title:title,category:'Length Games',duration:8,format:'Constrained Game',task:(heightText+' '+depthText+' '+shortsText+ccText+' '+sideText+cbText).replace(/\s+/g,' ').trim(),rationale:'This length game '+rBits.join(', ')+'.',coach:coach,playerFocus:player,scoring:'Win the rally = +1. A ball short of the target, or a short ball beyond the allowance, concedes. Overlays add bonus points.',layers:[...new Set(autoLayers)],cbCode:o.cbRef};
 }
 
+function atlKidShot(shot,method){
+  const name=(!shot||shot==='Any shot')?'any shot':('a '+shot.toLowerCase());
+  if(method==='Must be volley')return name+', played as a volley';
+  if(method==='No volley')return name+', played after the bounce';
+  return name;
+}
+function atlKidLines({isAllBtl,count,shots,methods,atlNum,consecutive,side,cbRef}){
+  const L=[];
+  if(isAllBtl){
+    L.push('Every shot must hit the front wall below the line.');
+    if(shots[0]&&shots[0]!=='Any shot'||methods[0]!=='Players choice')L.push('Every shot must be '+atlKidShot(shots[0],methods[0])+'.');
+    L.push('A shot above the line loses the rally.');
+  }else{
+    if(atlNum===null){if(count===0)L.push('Every shot must hit the front wall above the line.');}
+    else if(atlNum===0)L.push('Shots can hit the front wall at any height.');
+    else L.push('Each player must hit '+atlNum+' shot'+(atlNum===1?'':'s')+' above the line in each rally.');
+    if(count>0&&atlNum!==0){
+      L.push('Each player may hit '+count+' shot'+(count===1?'':'s')+' below the line in each rally.');
+      shots.forEach((sh,i)=>{if((sh&&sh!=='Any shot')||methods[i]!=='Players choice')L.push((count===1?'The shot below the line':'Shot '+(i+1)+' below the line')+' must be '+atlKidShot(sh,methods[i])+'.');});
+      if(count>1&&consecutive==='Yes')L.push('The shots below the line must be one after another.');
+    }
+    if(atlNum===null)L.push(count>0?'Any other shot below the line loses the rally.':'A shot below the line loses the rally.');
+  }
+  const sd=String(side||'Both sides');
+  if(/^right/i.test(sd))L.push('Play on the right side of the court only.');
+  else if(/^left/i.test(sd))L.push('Play on the left side of the court only.');
+  else if(/choice/i.test(sd))L.push('Players choose which side to play: left or right.');
+  if(cbRef&&cbRef!=='None')L.push('Checkerboard code: '+cbRef+'.');
+  return L.map((x,i)=>(i+1)+'. '+x).join('\n');
+}
 function buildAtl(options){
 const isAllBtl=options.btlCount==='All BTL shots';
 const count=isAllBtl?1:options.btlCount.startsWith('0')?0:options.btlCount.startsWith('1')?1:options.btlCount.startsWith('2')?2:3;
@@ -629,7 +659,8 @@ if(shots.includes('Boast')||shots.includes('Crosscourt drop'))autoLayers.push('B
 if(isAllBtl||count>=2)autoLayers.push('Opponent Off T');
 if(options.cbRef!=='None')autoLayers.push('CB Code');
 autoLayers.push('Clean Winner');
-return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:`${options.btlCount}: ${shotText}. ${atlText} ${consecutiveText} ${sideText}${cbText}`,rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
+const kidTask=atlKidLines({isAllBtl,count,shots,methods,atlNum,consecutive:options.consecutive,side:options.playSide||options.side,cbRef:options.cbRef});
+return{id:Date.now()+Math.random(),title:'ATL / BTL Structure',category:'ATL / BTL',duration:8,format:'King of Court',task:kidTask,scoring:'Win the rally = 1 point.',rationale:`This ATL / BTL structure ${rationale.join(', ')}.`,coach:'Use the tape as an external visual cue. Keep rallies live. Coach balance, vision and shot choice rather than fixed technique.',layers:[...new Set(autoLayers)],cbCode:options.cbRef};
 }
 
 const CLASSIC_CONSTRAINT_GAMES=[
@@ -757,6 +788,7 @@ const CONSTRAINT_BONUS_POINTS={
   'T Challenge':'+1',
   'Blind Finish':'+2',
   'Volley Finish':'+2',
+  'Volley Bonus':'+1',
   'Backhand Half Finish':'+1',
   'Pressing Length':'+1',
   '4-Shot Window':'+3 if converted inside 4 shots',
@@ -783,6 +815,25 @@ const CONSTRAINT_BONUS_POINTS={
 };
 const MODIFIER_SCORE_CHOICES=['constraint only','+1','+2','+3','+4','+5'];
 function defaultModifierScore(layer){return CONSTRAINT_BONUS_POINTS[layer]||'constraint only';}
+const LAYER_RENAMES={'Volley Opportunity':'Volley Bonus'};
+function migrateCardLayers(card){
+  if(!card||typeof card!=='object')return card;
+  const has=Array.isArray(card.layers)&&card.layers.some(l=>LAYER_RENAMES[l]);
+  const hasScore=card.modifierScores&&Object.keys(card.modifierScores).some(k=>LAYER_RENAMES[k]);
+  if(!has&&!hasScore)return card;
+  const layers=Array.isArray(card.layers)?[...new Set(card.layers.map(l=>LAYER_RENAMES[l]||l))]:card.layers;
+  const modifierScores=card.modifierScores?Object.fromEntries(Object.entries(card.modifierScores).map(([k,v])=>[LAYER_RENAMES[k]||k,v])):card.modifierScores;
+  return {...card,layers,modifierScores};
+}
+const PD_LAYER_LINES={
+  'Volley Bonus':v=>'Every volley = '+v+' point'+(v==='+1'?'':'s')+' to the player who hits it.'
+};
+function playerLayerLine(layer,value){
+  const clean=value||defaultModifierScore(layer);
+  if(!layerScoresPoints(layer,value))return '';
+  const f=PD_LAYER_LINES[layer];
+  return f?f(clean):`${layer}: ${clean}`;
+}
 
 const CONSTRAINT_ONLY_VALUES=['constraint only','focus constraint','handicap constraint','diversity constraint'];
 function layerScoresPoints(layer,value){
@@ -834,7 +885,7 @@ function getPlayerDisplayFields(game){
   const title=item.title||'Player Display';
   const _t=String(item.task||'').trim(),_d=String(item.description||'').trim();
   const what=moderniseCodes((_t&&_d.length>_t.length&&_d.indexOf(_t.replace(/\.$/,''))===0)?_d:(_t||_d||'Play the selected game.'));
-  const scoringLogic=item.scoring||'Win rally = 1. Apply the displayed bonus rules.';
+  const scoringLogic=item.scoring==='Base scoring applies unless modified by the coach.'?'Win the rally = 1 point.':(item.scoring||'Win the rally = 1 point.');
   const focus=item.playerFocus||item.coach||'Solve the game problem.';
   const layers=safeLayersForSession(item);
   const storedDb=activeDbSummaryFromStorage();
@@ -842,9 +893,10 @@ function getPlayerDisplayFields(game){
   const dbText=dbActive ? (item.dbHandicap || item.dbSummary || (String(item.title||'').toLowerCase().includes('db handicap') ? item.playerView || item.coach : '') || storedDb) : '';
   const constraintText=layers.length?layers.join(' · '):'No extra constraints selected.';
   const layerScoring=scoringLogicForLayers(layers,item.modifierScores||{});
-  const baseScore=layerScoring ? `${scoringLogic} · ${layerScoring}` : scoringLogic;
+  const scoreBase=String(scoringLogic).includes('\n')?String(scoringLogic):pdSentenceParts(scoringLogic).join('\n');
+  const layerLines=editableModifierLayers(layers).map(layer=>playerLayerLine(layer,(item.modifierScores||{})[layer])).filter(Boolean);
   const penaltySummary=item.penaltySummary||'';
-  const score=penaltySummary ? `${baseScore} · Penalties: ${penaltySummary}` : baseScore;
+  const score=[scoreBase,...layerLines,...(penaltySummary?['Penalties: '+penaltySummary]:[])].filter(Boolean).join('\n');
   const rationale=item.rationale||'Use the task constraints to shape player behaviour.';
   const rldLevelRaw=Number(item.rld);
   const rldLevel=Number.isFinite(rldLevelRaw)?Math.max(0,Math.min(6,Math.round(rldLevelRaw))):3;
@@ -960,7 +1012,7 @@ function pdBullets(text,sep){
 function pdPlayerLines(text){
   const raw=String(text||'').trim();if(!raw)return [];
   let parts=pdBullets(raw,'\n')||[raw];
-  parts=parts.map(x=>x.replace(/^\s*\d+\s*[.)]\s*/,'').trim()).filter(Boolean);
+  parts=parts.map(x=>x.replace(/^[\s\u00b7\u2022]+/,'').replace(/^\s*\d+\s*[.)]\s*/,'').trim()).filter(Boolean);
   return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed)/i.test(x));
 }
 function PdLines({text,bullets}){
@@ -2135,7 +2187,7 @@ const TECHNICAL_OVERLAYS = [
 
 const TACTICAL_OVERLAYS = [
   {category:'Advantage', title:'Attack Only On Advantage', rule:'Attack only after a clear pressure cue: opponent late, off-balance, unrecovered or outside useful court position.', coach:'Ask: what did you see before attacking?', pairings:['Quiet Eye Before Attack','Recognise Opponent Vulnerability']},
-  {category:'Volley', title:'Volley Opportunity', rule:'Player must look to volley when the opponent gives time/height through the middle or loose width.', coach:'Coach observes early split, racquet readiness and decision timing.', pairings:['Eagle','Second Eye']},
+  {category:'Volley', title:'Volley Bonus', rule:'Every volley earns a bonus for the player who hits it. Players count their own volleys in each rally.', coach:'Coach design. A volley is easy to see, so players can count it themselves. If two players trade soft volleys to collect points, pay the bonus only to a player who wins the rally.', pairings:['Eagle','Second Eye']},
   {category:'Width', title:'Width Before Attack', rule:'Point/bonus only counts if player first creates width or body-line separation before attacking short.', coach:'Prevents reckless front-court attacks.', pairings:['Cat','Attack Only On Advantage']},
   {category:'Checkerboard', title:'Checkerboard Pair Challenge', rule:'Complete a chosen checkerboard pair such as [6-3] or [5-4] before scoring bonus opens.', coach:'Use as tactical intention layer over live rallies.', pairings:['Quiet Eye','External Target Focus']},
   {category:'Tempo', title:'Route Breaker', rule:'Player must change route or rhythm when opponent begins to predict the pattern.', coach:'Look for perception, not pre-planned variety.', pairings:['Wolf','See Space Before Strike']},
@@ -10192,7 +10244,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   const [atlDbPlayer,setAtlDbPlayer]=useState('');
   const [atlDbAmount,setAtlDbAmount]=useState('No DB');
 
-  const builtAtl=useMemo(()=>buildAtl(atl),[atl]);
+  const builtAtl=useMemo(()=>buildAtl({...atl,playSide:side}),[atl,side]);
   function sideToCbZone(value){
     if(value==='Right side') return '[6-3] + [6-2]';
     if(value==='Left side') return '[5-4] + [5-1]';
@@ -10201,7 +10253,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
     return '[6-3] + [6-2]';
   }
   const autoCbZone=sideToCbZone(side);
-  const composedAtl=useMemo(()=>{const layers=[...new Set([...manualLayers])];const cbCode=useCustomCb&&customCbZone.trim()?customCbZone.trim():autoCbZone;return {...builtAtl,side,cbCode,task:`${builtAtl.task} Side: ${side}.`,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side,useCustomCb,customCbZone,autoCbZone]);
+  const composedAtl=useMemo(()=>{const layers=[...new Set([...manualLayers])];const cbCode=useCustomCb&&customCbZone.trim()?customCbZone.trim():autoCbZone;return {...builtAtl,side,cbCode,task:builtAtl.task,layers,modifierScores:{...Object.fromEntries(editableModifierLayers(layers).map(layer=>[layer,defaultModifierScore(layer)])),...builderModifierScores}};},[builtAtl,manualLayers,builderModifierScores,side,useCustomCb,customCbZone,autoCbZone]);
   useEffect(()=>{
     localStorage.setItem(GAME_LIBRARY_ATL_DRAFT_KEY,JSON.stringify({atl,side,useCustomCb,customCbZone,manualLayers,modifierScores:builderModifierScores}));
   },[atl,side,useCustomCb,customCbZone,manualLayers,builderModifierScores]);
@@ -10272,7 +10324,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
         {atl.btlCount==='3 BTL shots'&&<label>BTL Shot 3<select value={atl.shot3} onChange={e=>setAtlOption('shot3',e.target.value)}>{ATL_LISTS.shotChoice.map(option=><option key={option}>{option}</option>)}</select></label>}
         {atl.btlCount==='3 BTL shots'&&<label>Shot 3 Method<select value={atl.method3} onChange={e=>setAtlOption('method3',e.target.value)}>{ATL_LISTS.method.map(option=><option key={option}>{option}</option>)}</select></label>}
       </div>
-      <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p>{composedAtl.task}</p></div>
+      <div className="infoBox" style={{marginTop:'10px'}}><strong>Task</strong><p style={{whiteSpace:'pre-line'}}>{composedAtl.task}</p></div>
     </div>
 
     <CollapsibleLayer num="1" title="Game Logic" subtitle="What counts — eligibility and validity" color="green">
@@ -14634,6 +14686,7 @@ function moderniseCodes(text){
   return LEGACY_CODE_FIXES.reduce((s,[from,to])=>s.split(from).join(to),text);
 }
 function normaliseGameCard(card={}){
+  card=migrateCardLayers(card||{});
   const now=Date.now()+Math.random();
   const layers=Array.isArray(card.layers)?card.layers:(card.layers?[card.layers]:[]);
   const title=card.title||card.name||'Custom Game';
@@ -14642,7 +14695,7 @@ function normaliseGameCard(card={}){
   const finalRationale=card.rationale||card.description||card.logic||'Use the task constraints to shape player behaviour.';
   const finalTask=card.task||card.description||card.quick||'Run the selected game.';
   const finalCoach=card.coach||card.coachMsg||card.focus||'Set the constraint clearly, then observe the solution.';
-  const finalScoring=card.scoring||card.score||'Base scoring applies unless modified by the coach.';
+  const finalScoring=card.scoring||card.score||'Win the rally = 1 point.';
   const finalPlayerFocus=card.playerFocus||card.focus||'Solve the game problem, not a fixed technical shape.';
   return {
     id:card.id||now,
@@ -29494,7 +29547,7 @@ function goBack(){
 }
 const[players,setPlayers]=useState(()=>{try{return JSON.parse(localStorage.getItem(PLAYER_KEY))||[]}catch{return[]}});
 const presentCount=useMemo(()=>(players||[]).filter(p=>p&&p.present).length,[players]);
-const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return uniqueSessionIds(Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[]));}catch{return[]}});
+const[session,setSession]=useState(()=>{try{const s=JSON.parse(localStorage.getItem(SESSION_KEY));return uniqueSessionIds((Array.isArray(s)?s:(s&&Array.isArray(s.rotations)?s.rotations:[])).map(migrateCardLayers));}catch{return[]}});
 const[lastInvasionFormat,setLastInvasionFormat]=useState(()=>{
   try{
     const direct=localStorage.getItem('checkerboardInvasionFormat');
