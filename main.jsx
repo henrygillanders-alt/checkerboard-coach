@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v875 Player Lines';
+const APP_VERSION='v876 Big Score';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -959,9 +959,11 @@ function pdPlayerLines(text){
   parts=parts.map(x=>x.replace(/^\s*\d+\s*[.)]\s*/,'').trim()).filter(Boolean);
   return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed)/i.test(x));
 }
-function PdLines({text}){
+function PdLines({text,bullets}){
   const lines=pdPlayerLines(text);
-  if(lines.length<=1)return <>{lines[0]||''}</>;
+  if(!lines.length)return null;
+  if(bullets)return <ul className="pdScoreList">{lines.map((l,i)=><li key={i}>{l}</li>)}</ul>;
+  if(lines.length===1)return <>{lines[0]}</>;
   return <ol className="pdTaskList">{lines.map((l,i)=><li key={i}>{l}</li>)}</ol>;
 }
 function PdField({label,text,sep,className=''}){
@@ -1360,6 +1362,20 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
    landscape screen the Checkerboard map sits beside the rules so both fit without scrolling. */
 .pdTaskList{margin:0;padding-left:1.4em;}
 .pdTaskList li{margin:0 0 .35em;}
+/* v876 (coach, 8 Nov: "rules are in big print but the scoring is very small"): the score box
+   matches the rules — same size and weight, one bullet per way to score. */
+.pdScoreBox{font-size:clamp(1.5rem,3.2vw,2.4rem)!important;font-weight:700!important;line-height:1.35!important;color:#fff3c9!important;border-left:6px solid #f0b94a!important;background:#1f1a0c!important;border-color:#5c4a1f!important;padding:18px 24px!important;}
+.pdScoreBox .pdGlanceLabel{font-size:clamp(0.9rem,1.4vw,1.1rem)!important;color:#f0c96a!important;}
+.pdScoreList{margin:0;padding-left:1.2em;list-style:disc;}
+.pdScoreList li{margin:0 0 .3em;}
+.pdWithMap .pdScoreBox{font-size:clamp(1.2rem,2.5vw,2.2rem)!important;}
+.pdSideCol{display:flex;flex-direction:column;gap:12px;margin-top:12px;}
+@media (min-width:900px) and (orientation:landscape){
+  .pdTwoCol{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px;align-items:start;}
+  .pdTwoCol .pdSideCol{margin-top:0;}
+  .pdTwoCol .pdTaskText{font-size:clamp(1.2rem,2.5vw,2.1rem);}
+  .pdTwoCol .pdScoreBox{font-size:clamp(1.15rem,2.2vw,1.9rem)!important;}
+}
 .playerDisplayPage.pdGamePage{overflow-y:auto!important;-webkit-overflow-scrolling:touch;height:auto!important;min-height:100vh;min-height:100dvh;max-height:none!important;padding-bottom:calc(60px + env(safe-area-inset-bottom));box-sizing:border-box;}
 @media (min-width:900px) and (orientation:landscape){
   .pdWithMap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start;}
@@ -1368,10 +1384,12 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
   .pdWithMap .pdMapCol svg{width:100%!important;max-width:100%!important;height:calc(100dvh - 300px)!important;min-height:320px;}
 }
 `}</style>
-    <div className="pdTaskOnly">
+    <div className={'pdTaskOnly'+((dbText||(chosen&&chosen.showScoring))&&!isCb?' pdTwoCol':'')}>
       <div className="pdTaskText"><PdLines text={what}/></div>
-      {dbText&&<div className="pdTaskExtra"><div className="pdGlanceLabel">DB ALLOCATIONS</div><div>{dbText}</div></div>}
-      {chosen&&chosen.showScoring&&<div className="pdTaskExtra"><div className="pdGlanceLabel">SCORE</div><div><PdLines text={score}/></div></div>}
+      {(dbText||(chosen&&chosen.showScoring))&&<div className="pdSideCol">
+        {chosen&&chosen.showScoring&&<div className="pdTaskExtra pdScoreBox"><div className="pdGlanceLabel">SCORE</div><div><PdLines text={score} bullets/></div></div>}
+        {dbText&&<div className="pdTaskExtra"><div className="pdGlanceLabel">DB ALLOCATIONS</div><div>{dbText}</div></div>}
+      </div>}
     </div>
     {isCb&&
       <div className="claRationaleBox pdMapCol" style={{borderLeftColor:'#4a90d6',background:'#0c1a2e'}}>
