@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v878 Volley Bonus';
+const APP_VERSION='v880 Straight Return';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -865,7 +865,7 @@ function activePenaltyEntriesFromStorage(){
     return [...fromPresets,...fromCustom];
   }catch{return [];}
 }
-function activePenaltySummaryFromStorage(){return activePenaltyEntriesFromStorage().map(e=>`${e.label} = -${e.points}`).join(' · ');}
+function activePenaltySummaryFromStorage(){return activePenaltyEntriesFromStorage().map(e=>penaltyRuleText(e.label,e.points)).join(' · ');}
 
 function clearPendingPenalties(){try{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));window.dispatchEvent(new CustomEvent('cbPenaltiesCleared'));}catch{}}
 try{if(!localStorage.getItem('checkerboard_penalty_per_game_v790')){localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled:false,presetPoints:{},customList:[]}));localStorage.setItem('checkerboard_penalty_per_game_v790','1');}}catch{}
@@ -1009,14 +1009,30 @@ function pdBullets(text,sep){
   const parts=pdSentenceParts(t);
   return parts.length>1?parts:null;
 }
+function overlayRuleFor(name){
+  try{
+    const lists=[typeof TECHNICAL_OVERLAYS!=='undefined'?TECHNICAL_OVERLAYS:[],typeof TACTICAL_OVERLAYS!=='undefined'?TACTICAL_OVERLAYS:[],typeof DIVERSITY_OVERLAYS!=='undefined'?DIVERSITY_OVERLAYS:[],typeof UNIVERSAL_MENTAL_OVERLAYS!=='undefined'?UNIVERSAL_MENTAL_OVERLAYS:[]];
+    const low=String(name||'').toLowerCase();
+    for(const L of lists){const o=L.find(x=>String(x.title||x.name||'').toLowerCase()===low);if(o&&o.rule)return o.rule;}
+    const c=(typeof getCustomConstraints==='function'?getCustomConstraints():[]).find(x=>String(x.title||'').toLowerCase()===low);
+    if(c&&c.rule)return c.rule;
+  }catch{}
+  return '';
+}
+function pdConstraintLines(layers,scores){
+  /* v879 (coach, 10 Nov: "constraint not carrying through"): constraint-only layers become rule
+     lines; layers that score already appear as a line in the SCORE box (v878). */
+  const sc=scores||{};
+  return (layers||[]).filter(l=>l&&!/^(DB Handicap|Double Bounce)$/i.test(l)&&!(typeof layerScoresPoints==='function'&&layerScoresPoints(l,sc[l]))).map(l=>{const r=overlayRuleFor(l);return r?r:l;});
+}
 function pdPlayerLines(text){
   const raw=String(text||'').trim();if(!raw)return [];
   let parts=pdBullets(raw,'\n')||[raw];
-  parts=parts.map(x=>x.replace(/^[\s\u00b7\u2022]+/,'').replace(/^\s*\d+\s*[.)]\s*/,'').trim()).filter(Boolean);
-  return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed)/i.test(x));
+  parts=parts.map(x=>x.replace(/^[\s\u00b7\u2022]+/,'').replace(/^\s*\d+\s*[.)]\s*/,'').replace(/^(Both \(recommended\)|Strict|Reward|Straight return \(pre-tournament\)):\s*/,'').trim()).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1));
+  return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed|enforcement:)/i.test(x));
 }
-function PdLines({text,bullets}){
-  const lines=pdPlayerLines(text);
+function PdLines({text,bullets,extra}){
+  const lines=[...pdPlayerLines(text),...(extra||[])];
   if(!lines.length)return null;
   if(bullets)return <ul className="pdScoreList">{lines.map((l,i)=><li key={i}>{l}</li>)}</ul>;
   if(lines.length===1)return <>{lines[0]}</>;
@@ -1441,7 +1457,7 @@ function PlayerDisplayCard({game,session=[],selectedIndex=0,onSelect}){
 }
 `}</style>
     <div className={'pdTaskOnly'+((dbText||(chosen&&chosen.showScoring))&&!isCb?' pdTwoCol':'')}>
-      <div className="pdTaskText"><PdLines text={what}/></div>
+      <div className="pdTaskText"><PdLines text={what} extra={pdConstraintLines(layers,chosen&&chosen.modifierScores)}/></div>
       {(dbText||(chosen&&chosen.showScoring))&&<div className="pdSideCol">
         {chosen&&chosen.showScoring&&<div className="pdTaskExtra pdScoreBox"><div className="pdGlanceLabel">SCORE</div><div><PdLines text={score} bullets/></div></div>}
         {dbText&&<div className="pdTaskExtra"><div className="pdGlanceLabel">DB ALLOCATIONS</div><div>{dbText}</div></div>}
@@ -8077,7 +8093,7 @@ function CourtGeometryModule({setSession}){
 function CommonGameErrors({setSession}){
   const errors=[
     {id:'cge-cross',tag:'Non-functional crosscourt',title:'Functional Crosscourt',error:'Non-functional crosscourt — played from the central corridor where the opponent can intercept it without much movement.',cost:'Donates time and the T: a cuttable cross lets the opponent volley from the middle, stay central and keep the open court. A classic time-giver.',train:'Functional crosscourt only — one that moves the opponent more than one step, forward or back. Width, depth and the opponent’s position decide whether it is on, not habit.',format:'Constrained game',duration:9,rld:4,task:'Free game. A crosscourt counts only if it is functional — it makes the opponent move, passes beyond the central corridor and finds width and depth so it cannot be cut off without travelling. A non-functional cross (interceptable from the central corridor without much movement) is the error. Straight play and drives are unrestricted.',rationale:'Re-couples the crosscourt to its function — make the opponent move — instead of a default reset. The opponent’s position in the central corridor becomes the information that decides whether the cross is functional or a free ball.',coach:'Score the effect, not the shot: did the cross move them, or could they cut it from the middle? Between games: “only go cross when it moves them — functional, not a free ball through the corridor.”',playerFocus:'Cross only when it’s functional — when it moves them more than one step and beats the cut.',layers:['Tactical: Width & Depth'],scoringOptions:['Functional cross (moves the opponent, beats the cut) = rally on; a non-functional cross is the error.','Win the rally = 1; +1 if the rally was won with a functional cross that moved the opponent off the T.','Coach call only: tally functional vs non-functional crosses across the game; fewest non-functional crosses wins.']},
-    {id:'cge-serve',tag:'Not volleying the serve',title:'Take The Serve Early',error:'Letting the serve travel to the back instead of taking the return early — then having to boast out of the corner.',cost:'Concedes the T and the initiative; the server dictates how the rally opens.',train:'Read the serve early and volley the return to take time and seize the T.',format:'Constrained serve + return',duration:8,rld:4,task:'1. The server serves as normal.\n2. Serve going to bounce on the floor in the back corner (behind the service box)? Volley it — even off the side wall.\n3. Serve lands in the service box, or hits the back wall first? Volley it or let it bounce — your choice.\n4. Then play the rally out.\n5. The waiting player calls where the serve landed.',rationale:'Couples return choice to serve quality with an objective test (court-tested Nov 2026): the first bounce decides, not a judgement of reach. A serve heading for the back corner — with or without the side wall — must be taken early, which removes the habit of letting it drop and boasting out. Short serves and serves hitting the back wall on the full stay the returner\u2019s choice (the back-wall serve often sits up and is an attacking chance).',coach:'The waiting player (or the server, with two players) calls the first bounce: floor behind the service box = it had to be volleyed. Choose the scoring mode below: Both is the default. Watch for volleys hit loose into the middle — the corridor bonus rewards a volley the server cannot cut off. Between games: \u201cvolley the serve — don\u2019t let it drag you back.\u201d',playerFocus:'Back-corner serve? Volley it.',layers:['Volley & Intercept'],scoringOptions:['Both (recommended): let a back-corner serve bounce = point to the server. Volley return the server can\u2019t take from the corridor = +1 bonus.','Strict: let a back-corner serve bounce = point to the server.','Reward: volley return the server can\u2019t take from the corridor = +1 bonus. No penalty for letting it bounce.']},
+    {id:'cge-serve',tag:'Not volleying the serve',title:'Take The Serve Early',error:'Letting the serve travel to the back instead of taking the return early — then having to boast out of the corner.',cost:'Concedes the T and the initiative; the server dictates how the rally opens.',train:'Read the serve early and volley the return to take time and seize the T.',format:'Constrained serve + return',duration:8,rld:4,task:'1. The server serves as normal.\n2. Serve going to bounce on the floor in the back corner (behind the service box)? Volley it — even off the side wall.\n3. Serve lands in the service box, or hits the back wall first? Volley it or let it bounce — your choice.\n4. Then play the rally out.\n5. The waiting player calls where the serve landed.',rationale:'Couples return choice to serve quality with an objective test (court-tested Nov 2026): the first bounce decides, not a judgement of reach. A serve heading for the back corner — with or without the side wall — must be taken early, which removes the habit of letting it drop and boasting out. Short serves and serves hitting the back wall on the full stay the returner\u2019s choice (the back-wall serve often sits up and is an attacking chance).',coach:'The waiting player (or the server, with two players) calls the first bounce: floor behind the service box = it had to be volleyed. Choose the scoring mode below: Both is the default. Straight return adds +2 for a straight volley return landing in the back corner on the same side (3 to 3 / 4 to 4) — for players who default to crosscourt returns (coach, 10 Nov); pair it with the Negative Scoring preset “Non-functional crosscourt (NFC)” so a loose crosscourt return costs the rally. Watch for volleys hit loose into the middle — the corridor bonus rewards a volley the server cannot cut off. Between games: \u201cvolley the serve — don\u2019t let it drag you back.\u201d',playerFocus:'Back-corner serve? Volley it.',layers:['Volley & Intercept'],scoringOptions:['Both (recommended): let a back-corner serve bounce = point to the server. Volley return the server can\u2019t take from the corridor = +1 bonus.','Strict: let a back-corner serve bounce = point to the server.','Reward: volley return the server can\u2019t take from the corridor = +1 bonus. No penalty for letting it bounce.','Straight return (pre-tournament): let a back-corner serve bounce = point to the server. Straight volley return, first bounce in the back corner on the same side (3 to 3, or 4 to 4) = +2 bonus.']},
     {id:'cge-volley',tag:'Not volleying volley-able balls',title:'Intercept On',error:'Letting a takeable ball bounce and run to the back.',cost:'Donates time, drags you off the T and turns an attacking chance into a defensive one.',train:'Recognise the affordance to intercept — take the ball early when the information says it is on.',format:'Constrained game',duration:9,rld:4,task:'Free game. Any ball reachable in front of the player above the cut line must be volleyed; letting a takeable ball pass to the back is the error. Opponent plays normally and tries to deny the volley with width and depth.',rationale:'Trains the affordance to intercept — reading the loose or floaty ball as a chance to take time, not a ball to chase to the back.',coach:'Call “that was on” when a volley is passed up. Between games: “if you can reach it in front, take it.”',playerFocus:'See the takeable ball, volley it, keep the T.',layers:['Volley & Intercept'],scoringOptions:['Reachable ball volleyed = rally continues; a takeable ball let go to the back = loss of point.','Win the rally = 1; +1 if the rally was won off an interception, taken-early volley.','Coach call only: each passed-up volley = a point to the opponent.']},
     {id:'cge-length',tag:'Losing length',title:'Length That Pins',error:'Length floats, sits short or comes off the side wall.',cost:'Opponent steps in, volleys and attacks — the pressure transfers onto you.',train:'Judge working length by its effect on the opponent (late arrival, no volley, no attack), not by a target zone alone.',format:'Length constrained game',duration:9,rld:4,task:'Length game scored by effect: a drive counts as good length only if the opponent cannot volley it and has to take it behind the back of the service box. A ball the opponent volleys or attacks from short scores nothing for the hitter.',rationale:'Defines working length by its effect on the opponent — late arrival, no volley, no attack — rather than a static target zone. Function before form.',coach:'Judge length by what it does to the opponent, not where it lands. Between games: “get your length back behind them — stop feeding the volley.”',playerFocus:'Length is good only if they can’t volley or attack it.',layers:['Quality Length Before Attack'],scoringOptions:['Each drive the opponent must take behind the box, no volley = 1; a length they volley or attack = 0.','Win the rally = 1; −1 if you lost it off your own short or floated length.','First to a target number of “pinning” lengths (uncuttable, deep) wins the game.']},
     {id:'cge-space',tag:'Hitting back to the opponent',title:'Move Them, Don’t Feed Them',error:'Returning the ball into the space the opponent already occupies.',cost:'Demands no movement — opponent stays on the T and the rally stays neutral or turns against you.',train:'Read where the opponent is and play into the space they must cover. Move them, do not feed them.',format:'Constrained game (space-based)',duration:9,rld:4,task:'Free game with one rule: you must play into the half of the court the opponent is not standing in, read at your contact. Playing into the opponent’s space (no movement demanded) is the error. Opponent plays freely.',rationale:'Forces perception of the opponent’s position as the information that selects placement — the rally becomes about creating movement, not just returning the ball.',coach:'Reward shots that move the opponent off the T. Between games: “look where they are — hit where they aren’t.”',playerFocus:'Read their position; play into the space they must cover.',layers:['Opponent Information'],scoringOptions:['Shot into open space (opponent has to move to it) = rally on; ball fed into the opponent’s space = loss of point.','Win the rally = 1; +1 if the winner came from a shot that wrong-footed or stretched the opponent.','Coach call only: each ball played straight at the opponent = a point against.']},
@@ -9019,7 +9035,7 @@ const [editIndex,setEditIndex]=useState(null);
 const [linkMsg,setLinkMsg]=useState(null);
 const [openRot,setOpenRot]=useState({}); 
 const toggleRot=id=>setOpenRot(o=>({...o,[id]:!o[id]}));
-function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration};setSession(updated);setEditIndex(null);}
+function applyEdit(index,g){saveSessionSnapshot();const updated=clone(session);const orig=updated[index]||{};const pen=activePenaltySummaryFromStorage();updated[index]={...g,id:orig.id||g.id,duration:orig.duration||g.duration,...(pen?{penaltySummary:pen}:{})};if(pen)clearPendingPenalties();setSession(updated);setEditIndex(null);}
 return <div className="page sessionBuilderPage">
 <div className="pageTop"><h1>Session Builder</h1><div className="buttonRow"><div className="totalBox">Total: {total} mins</div><button className="secondaryBtn" onClick={undoSession} disabled={sessionHistory.length===0}>Undo</button><button className="secondaryBtn" onClick={()=>{saveSessionSnapshot();setSession([])}}>Clear Session</button><button className="primaryBtn" onClick={()=>setShowLibrary(v=>!v)}>{showLibrary?'Hide Games Library':'Open Games Library'}</button><button className="secondaryBtn" onClick={()=>pushSessionPlayerDisplay(0,'pushTop')}>{linkLabel('pushTop','Push Player Display')}</button></div></div>
 <SavedSessionsPanel session={session} setSession={setSession} beforeChange={saveSessionSnapshot}/>
@@ -13486,7 +13502,8 @@ const PENALTY_PRESETS=[
   {id:'ccCutOffCorr',label:'Non-functional crosscourt (NFC): crosscourt cut off from the corridor'},
 
   {id:'nflCutOffCorr',label:'Non-functional length (NFL): straight length cut off from the corridor'},
-  {id:'anyCutOffCorr',label:'Any shot cut off from the corridor (NFC, NFL or boast)'}
+  {id:'anyCutOffCorr',label:'Any shot cut off from the corridor (NFC, NFL or boast)'},
+  {id:'notBackTZone',label:'Not back in the T Zone before the opponent hits'}
 ];
 const PENALTY_POINT_OPTIONS=[0,1,2,3,4,5];
 
@@ -13519,7 +13536,7 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   const rules=activeRules();
   return <CollapsibleLayer num="6" title="Negative Scoring" subtitle="This game only — deduct points for named faults" color="red" defaultOpen={false}>
     <div className="universalDbHeader">
-      <div><p>Punish specific faults by taking points off — or, for a rule that must not be broken at all, step past -5 to <strong>Forfeit rally</strong>, and the rally is lost outright when it happens.</p><p className="mutedText" style={{fontSize:'0.85rem'}}>These penalties are attached to the <strong>next game you add to the session</strong>, and then cleared — they do not carry over to other games.</p></div>
+      <div><p>Punish specific faults by taking points off — or, for a rule that must not be broken at all, step past −5 to <span style={{fontWeight:800,color:'#f0c96a'}}>Forfeit rally</span>, and the rally is lost outright when it happens.</p><p className="mutedText" style={{fontSize:'0.85rem'}}>These penalties attach to the game when you tap Add To Session (or Save Changes when editing a game in Session Builder), and then clear — they do not carry over to other games.</p></div>
       <button type="button" className={enabled?'primaryBtn':'secondaryBtn'} onClick={(e)=>{e.preventDefault();setEnabled(!enabled);}}>{enabled?'Negative Scoring On':'Enable Negative Scoring'}</button>
     </div>
     {enabled&&<>
@@ -13530,7 +13547,7 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
         {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}{presetPoints[p.id]>=PENALTY_FORFEIT&&<em style={{display:'block',color:'#c98a8a',fontSize:'0.78rem'}}>Rally is forfeited on this fault</em>}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={PENALTY_FORFEIT} zeroLabel="Off" sign="-"/></div>)}
       </div>
       <div className="statusBox"><strong>Add your own fault</strong></div>
-      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. two runners in the tramline"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={PENALTY_FORFEIT} sign="-"/><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. two runners in the tramline"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={PENALTY_FORFEIT} sign="-"/>{customPoints>=PENALTY_FORFEIT&&<em style={{color:'#f0c96a',fontWeight:800,alignSelf:'center'}}>= Forfeit rally</em>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
       {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{penaltyRuleText(c.label,c.points)}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
       <div className="dbSummaryBox"><strong>Active penalties</strong><p>{rules.length?rules.join(' · '):'No penalties set yet.'}</p></div>
       <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();savePenalties();}} disabled={!rules.length}>Save Negative Scoring</button>{onAddToSession&&<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();savePenalties(); if(setScreen)setScreen('sessions');}} disabled={!rules.length}>Save + View Session</button>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearAll();}}>Clear</button></div>
