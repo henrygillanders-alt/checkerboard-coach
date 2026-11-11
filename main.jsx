@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v880 Straight Return';
+const APP_VERSION='v881 Game Builder Fix';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -1029,7 +1029,7 @@ function pdPlayerLines(text){
   const raw=String(text||'').trim();if(!raw)return [];
   let parts=pdBullets(raw,'\n')||[raw];
   parts=parts.map(x=>x.replace(/^[\s\u00b7\u2022]+/,'').replace(/^\s*\d+\s*[.)]\s*/,'').replace(/^(Both \(recommended\)|Strict|Reward|Straight return \(pre-tournament\)):\s*/,'').trim()).filter(Boolean).map(x=>x.charAt(0).toUpperCase()+x.slice(1));
-  return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed|enforcement:)/i.test(x));
+  return parts.filter(x=>!/^(mark|tape|set ?up|place the|lay out|coach\b|before (the )?(session|play)|layer |apply the displayed|enforcement:|describe what players must do|add any bonus scoring here|describe why this game helps|give one clear coach cue)/i.test(x));
 }
 function PdLines({text,bullets,extra}){
   const lines=[...pdPlayerLines(text),...(extra||[])];
@@ -10532,7 +10532,7 @@ function ClassicConstraintBuilder({onAddToSession}){
     const g=selected;
     return <div className="gameCard classicConstraintDetail">
       <div className="pageTop">
-        <div><div className="categoryTag">{g.theme}</div><h2>{COACH_STAR_GAMES[g.id]?'★ ':''}{g.title}</h2>{COACH_STAR_GAMES[g.id]&&<p className="mutedText" style={{margin:'2px 0 0'}}>{COACH_STAR_GAMES[g.id]}</p>}</div>
+        <div><div className="categoryTag">{g.theme}</div><h2>{COACH_STAR_GAMES[g.id]&&<span style={{color:'#f0c96a'}}>★ </span>}{g.title}</h2>{COACH_STAR_GAMES[g.id]&&<p className="mutedText" style={{margin:'2px 0 0'}}>{COACH_STAR_GAMES[g.id]}</p>}</div>
         <button className="secondaryBtn" onClick={()=>setSelected(null)}>← Back to games</button>
       </div>
       <div className="chips">
@@ -10559,7 +10559,7 @@ function ClassicConstraintBuilder({onAddToSession}){
     {THEMES.map(theme=>{const list=games.filter(g=>g.theme===theme);if(!list.length)return null;return <div key={theme} className="gameOptionList">
       <h3>{theme}</h3>
       {list.map(g=><button key={g.id} className="gameOption" onClick={()=>pick(g)} title={COACH_STAR_GAMES[g.id]||undefined}>
-        <span>{COACH_STAR_GAMES[g.id]?'★ ':''}{g.title}</span><small>RLD {g.rld} · {g.level} · {g.shortRationale}</small>
+        <span>{COACH_STAR_GAMES[g.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>★ </span>}{g.title}</span><small>RLD {g.rld} · {g.level} · {g.shortRationale}</small>
       </button>)}
     </div>;})}
   </div>;
@@ -14734,19 +14734,21 @@ function normaliseGameCard(card={}){
 }
 
 function emptyUniversalGame(category='Custom'){
-  return normaliseGameCard({
+  const g=normaliseGameCard({
     id:Date.now()+Math.random(),
     title:'New Coach Game',
     category,
     duration:8,
     format:'Coach Card',
-    task:'Describe what players must do.',
-    rationale:'Describe why this game helps.',
-    coach:'Give one clear coach cue.',
-    scoring:'Win rally = 1. Add any bonus scoring here.',
+    task:'',
+    rationale:'',
+    coach:'',
+    scoring:'Win the rally = 1 point.',
     rld:4,
     layers:[]
   });
+  g.task='';g.rationale='';g.coach='';
+  return g;
 }
 
 function appendToSessionState(prev,card){
@@ -14798,7 +14800,7 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}
   const COURT_AREAS=['Full court','3/4 Court','Egyptian 3/4','Front 3/4','Back 3/4','Half court'];
   function update(key,value){setDraft(prev=>({...prev,[key]:value}));}
   function toggleSpaceZone(z){setDraft(prev=>({...prev,spaceZones:prev.spaceZones.includes(z)?prev.spaceZones.filter(x=>x!==z):[...prev.spaceZones,z]}));}
-  function onModifierChange(next){setDraft(prev=>({...prev,modifier:next,layers:next.constraints||[]}));}
+  function onModifierChange(next){setDraft(prev=>({...prev,modifier:next,layers:[...new Set([...(next.gameLogic||[]),...(next.constraints||[])])],modifierScores:{...(prev.modifierScores||{}),...(next.scoring||{})}}));}
   function doSaveCard(){if(onSaveCard){onSaveCard(normaliseGameCard(draft));setStatus('Saved as a card in the library.');}}
   function doAddToSession(){if(onAddToSession){onAddToSession(normaliseGameCard(draft));setStatus('Added to the current session.');}}
   const spaceRestricted=draft.spaceZones.length>0&&draft.spaceZones.length<SHOT_BONUS_ZONES.length;
@@ -14824,7 +14826,8 @@ function UniversalGameEditor({game,onSaveCard,onAddToSession,onCancel,saveLabel}
     </div>
 
     <div className="editorGrid">
-      <label className="wide">Task<textarea value={draft.task||''} onChange={e=>update('task',e.target.value)}/></label>
+      <label className="wide">Task (the rules players see — one per line)<textarea value={draft.task||''} placeholder={'1. Normal rallies.\n2. …'} onChange={e=>update('task',e.target.value)}/></label>
+      <label className="wide">Scoring (one line per way to score)<textarea value={draft.scoring||''} placeholder={'Win the rally = 1 point.\n…'} onChange={e=>update('scoring',e.target.value)}/></label>
       <label className="wide">Rationale<textarea value={draft.rationale||''} onChange={e=>update('rationale',e.target.value)}/></label>
       <label className="wide">Coach Focus<textarea value={draft.coach||''} onChange={e=>update('coach',e.target.value)}/></label>
     </div>
@@ -18132,7 +18135,7 @@ function Games({setSession,setScreen,onClassChange}){
           {isOpen&&<div className="gameGroupBody"><div className="gameClassGrid">
             {items.map(gc=>
               <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)} title={COACH_STARS[gc.id]||undefined}>
-                {COACH_STARS[gc.id]?'★ ':''}{gc.label}
+                {COACH_STARS[gc.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>★ </span>}{gc.label}
               </button>
             )}
           </div></div>}
@@ -18142,7 +18145,7 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClassId&&<div className="pageTop">
       <button type="button" className="secondaryBtn" onClick={()=>selectClass(null)}>← Back to Games Library</button>
-      <h1>{COACH_STARS[activeClass?.id]?'★ ':''}{activeClass?.label}</h1>
+      <h1>{COACH_STARS[activeClass?.id]&&<span style={{color:'#f0c96a'}}>★ </span>}{activeClass?.label}</h1>
       {COACH_STARS[activeClass?.id]&&<p className="mutedText" style={{marginTop:0}}>{COACH_STARS[activeClass.id]}</p>}
     </div>}
 
