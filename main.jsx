@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v884 Plain English Rules';
+const APP_VERSION='v886 Declared Shot Steppers';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -2466,12 +2466,12 @@ function parseBonusValue(name){
   const m=String(raw).match(/-?\d+/);
   return m?Number(m[0]):'';
 }
-function PointStepper({value=0,onChange,min=0,max=9,zeroLabel='-',sign='+'}){
+function PointStepper({value=0,onChange,min=0,max=9,zeroLabel='-',sign='+',fmt}){
   const v=Number(value)||0;
   const bs={cursor:'pointer',background:'#0d1620',border:'1px solid #2c3c4e',borderRadius:'9px',color:'#cde0ee',width:'38px',height:'38px',fontSize:'1.3rem',fontWeight:800,lineHeight:1,padding:0};
   return <div style={{display:'inline-flex',alignItems:'center',gap:'10px'}}>
     <button type="button" style={bs} onClick={(e)=>{e.preventDefault();onChange(Math.max(min,v-1));}}>-</button>
-    <span style={{minWidth:'96px',textAlign:'center',fontWeight:800,color:'#eaf4fb',fontSize:'1.05rem'}}>{v===0?zeroLabel:sign+v}</span>
+    <span style={{minWidth:'96px',textAlign:'center',fontWeight:800,color:'#eaf4fb',fontSize:'1.05rem'}}>{fmt?fmt(v):(v===0?zeroLabel:sign+v)}</span>
     <button type="button" style={bs} onClick={(e)=>{e.preventDefault();onChange(Math.min(max,v+1));}}>+</button>
   </div>;
 }
@@ -10176,6 +10176,28 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
   const[bf,setBf]=React.useState({shots:3,mode:'passes',bonusMode:'decay',bonus:3,openBonus:5,firstStrike:2});
   const[eb,setEb]=React.useState({stage:1,bonus:2,target:'both'});
   const[er,setEr]=React.useState({stage:1,seqBonus:false,bonus:2,target:'both'});
+  const DS_NOLIMIT=6;
+  const[ds,setDs]=React.useState({when:'rotation',times:1,bonus:0});
+  function dsCard(){
+    /* v885 (coach, 11 Nov): ABL with one declared below-the-line shot. Progression: once per rally → as often as they like. Variation: name it before each rally. */
+    const each=ds.when==='rally',t=Math.max(1,Number(ds.times)||1),many=t>=DS_NOLIMIT,b=Number(ds.bonus)||0;
+    const L=['Every shot hits the front wall above the service line.',
+      each?'Before each rally, each player names one shot to play below the line.':'Before the rotation starts, each player names one shot to play below the line.',
+      'Name the shot and its direction, for example straight drop, crosscourt kill or boast.',
+      'Both players hear both shots.',
+      many?'Each player may play their named shot as often as they like.':t===1?'Each player may play their named shot once per rally.':'Each player may play their named shot up to '+t+' times per rally.',
+      many?'Any other shot below the line loses the rally.':t===1?'Any other shot below the line, or the named shot a second time, loses the rally.':'Any other shot below the line, or the named shot more than '+t+' times, loses the rally.',
+      'The waiting player calls it. With two players, the player not hitting calls it.'];
+    const S=['Win a rally = 1 point.',...(b>0?['Win the rally with the named shot = +'+b+' to the player who played it.']:[])];
+    const stage=(each?'named before each rally':'named for the rotation')+' \u00b7 '+(many?'as often as they like':t===1?'once per rally':'up to '+t+' times per rally');
+    return {id:'atl-declared-shot',title:'Declared Shot',category:'ATL / BTL',format:'ATL / BTL constrained game \u2014 one declared shot below the line ('+stage+')',duration:8,rld:4,
+      task:L.map((x,k)=>(k+1)+'. '+x).join('\n'),
+      scoring:S.map((x,k)=>(k+1)+'. '+x).join('\n'),
+      rationale:'Coach design (Nov 2026), run on court. Each player has one attacking shot below the line, and both players know what it is. The attacker has to manage the rally to create the chance to play it; the opponent tries to deny that chance. It trains building an attack instead of forcing one, and defending against a shot you know is coming. '+(each?'Naming the shot before each rally makes the choice tactical: pick the shot this opponent, on this rally, is least able to stop.':'Keeping one shot for the whole rotation makes the opponent\u2019s job easier rally by rally, so the attacker must work harder to create the opening.'),
+      coach:'Progression: once per rally, then two or three times, then no limit. Variation: name the shot before each rally instead of once for the rotation. Decide how exact the name must be: shot and direction (\u201cstraight drop\u201d) is the default; adding the side (\u201cforehand straight drop\u201d) makes it harder. Watch for a player who never plays the named shot \u2014 playing safe above the line costs nothing'+(b>0?', although the bonus makes the named shot worth trying':'; if that happens, add the named-shot bonus')+'. Watch the defender too: are they covering the named shot, or just playing their own game? Related: Earn the Below and Earn & Reload, where the below-the-line shot is earned with a deep drive first. Debrief: what did you do to set up your named shot? What did you do to stop theirs?',
+      playerFocus:'Set up the named shot. Stop the opponent\u2019s.',
+      layers:['Decision Making','Attacking Conversion','Opponent Awareness']};
+  }
   function bfCard(){
     const decay=bf.bonusMode==='decay';
     const bonusText=(decay
@@ -10239,6 +10261,23 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
       layers:['Decision Making','Attacking Conversion','Spatial Constraint','Temporal Constraint']};
   }
   return <>
+  {}
+  <div className="gameCard">
+    <div className="categoryTag">ATL / BTL</div><h2>📣 Declared Shot</h2>
+    <p className="mutedText" style={{marginTop:'-4px'}}>Above the line, plus one below-the-line shot that each player names out loud. The attacker sets it up; the opponent tries to stop it. Coach design, Nov 2026.</p>
+    <div className="atlOptionsGrid">
+    <label>When to name the shot<select value={ds.when} onChange={e=>setDs(x=>({...x,when:e.target.value}))}><option value="rotation">Before the rotation</option><option value="rally">Before each rally</option></select></label>
+    </div>
+    <div style={{display:'grid',gap:'10px',margin:'4px 0 12px'}}>
+      <div><div className="mutedText" style={{fontWeight:800,fontSize:'0.85rem',marginBottom:'4px'}}>Named shot: times per rally</div><PointStepper value={ds.times} min={1} max={DS_NOLIMIT} onChange={v=>setDs(x=>({...x,times:v}))} fmt={v=>v>=DS_NOLIMIT?'No limit':v===1?'1 time':v+' times'}/></div>
+      <div><div className="mutedText" style={{fontWeight:800,fontSize:'0.85rem',marginBottom:'4px'}}>Named-shot winner bonus</div><PointStepper value={ds.bonus} min={0} max={5} zeroLabel="No bonus" sign="+" onChange={v=>setDs(x=>({...x,bonus:v}))}/></div>
+    </div>
+    <div className="infoBox"><strong>Task / Rules</strong><p style={{whiteSpace:'pre-line'}}>{dsCard().task}</p></div>
+    <div className="infoBox"><strong>Scoring</strong><p style={{whiteSpace:'pre-line'}}>{dsCard().scoring}</p></div>
+    <div className="infoBox"><strong>Rationale</strong><p>{dsCard().rationale}</p></div>
+    <div className="infoBox"><strong>Coach Help</strong><p>{dsCard().coach}</p></div>
+    <button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();onAdd(dsCard());}}>{label}</button>
+  </div>
   {}
   <div className="gameCard">
     <div className="categoryTag">ATL / BTL</div><h2>🔁 Earn & Reload</h2>
@@ -25535,6 +25574,7 @@ function buildSearchIndex(){
   pushGames(typeof DISRUPTION_ROTATIONS!=='undefined'&&DISRUPTION_ROTATIONS,'Disruption Rotations',{screen:'games',classId:'rotations'});
   const libCat={};try{GAME_LIBRARY.forEach(e=>{if(!e.route)libCat[e.category]=e.id;});}catch{}
   try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games',...(libCat[g.category]?{classId:libCat[g.category]}:{})});});}catch{}
+  [['Declared Shot','declared named shot below the line abl atl one shot announce call tactical set up deny'],['Earn & Reload','earn reload deep drive below the line'],['Earn the Below','earn below tramline deep drive'],['Break & Finish','break finish attack window pot']].forEach(([t,k])=>idx.push({label:t,sub:'ATL / BTL · Library',kw:t+' atl btl '+k,screen:'games',classId:'atl'}));
   try{MATCH_PROBLEMS.forEach(p=>idx.push({label:p.title,sub:'Match Problem Index · '+p.group,kw:p.title+' '+p.see+' '+p.games.map(g=>g.label).join(' '),screen:'matchProblems'}));}catch{}
   try{GAME_LIBRARY.forEach(e=>{const heads=GAME_LIBRARY_GROUPS.filter(gr=>e.groups.includes(gr.id)).map(gr=>gr.title);idx.push({label:e.label,sub:'Games Library · '+heads.join(' · '),kw:e.label+' '+e.category+' '+heads.join(' '),...(e.route?{screen:e.route}:{screen:'games',classId:e.id})});});}catch{}
   const pushOv=(arr,fam)=>{try{(arr||[]).forEach(o=>{if(o&&o.title)idx.push({label:o.title,sub:'Modifier Engine · '+fam,kw:o.title+' '+(o.rule||'')+' '+(o.category||''),screen:'technical'});});}catch{}};
