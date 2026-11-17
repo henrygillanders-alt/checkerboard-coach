@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v892 RLD Reading Style';
+const APP_VERSION='v893 RLD Example Explanations';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -4792,8 +4792,10 @@ function WhyCLAScreen({setScreen}){
     <p className="whyCLAClose">{d3Close}</p>
   </div>;
 }
+const RLD_EXAMPLE_HELP={"Tau Development": "Judging when the ball will arrive. For example, the coach feeds and the player calls \"now\" at the moment the ball reaches the hitting point. No opponent and no rally.", "Ball Tracking": "Watching the ball off the front wall, side wall and floor, and moving to where it will be. Often with a coach feed and no shot needed.", "Chipping (0A–0G)": "Short, controlled hits at targets, often with different balls (bigger, slower, bouncier), to build feel for contact and ball flight. Fed by the coach or a partner.", "Arrive and Strike": "The coach feeds to different places. The player moves, finds the ball with a final lunge, and hits. The feed changes, so the player cannot stand in position early.", "Movement Calibration": "Moving to the ball and back to the T in time with the feed, so the player learns how far and how fast to travel. Movement first, shot second.", "Catch and Track": "Catching the ball instead of hitting it, to practise judging its flight and where it will land, without worrying about the swing.", "Coach calls zone sequence 1→2→3→4": "The coach tells the player which zone to hit next: 1, then 2, then 3, then 4. The player just hits; the coach has made every decision.", "Coach directs feed to specified area": "The coach feeds to the same planned place each time, and the player plays the shot asked for. A predictable ball and a predictable task.", "Coach calls shot type before rally": "Before the rally the coach says, for example, \"drives only\" or \"drop, then drive\", and the player plays that whatever the rally offers.", "Structured feed with called targets": "A set feeding pattern, such as the coach feeding from the front and the player hitting length, with the coach calling each target as the ball comes.", "Player selects own zone sequence": "The player, not the coach, decides the order of the zones to hit. There is still no opponent to read, but the decision is now theirs.", "Player chooses shot type": "The player picks the shot (drive, drop or boast) to suit the ball they get. The coach no longer calls it.", "Player-directed Around The Board": "The player works round the numbered zones in an order they choose, instead of the coach calling each one.", "Self-selected ATL/BTL pattern": "The player decides when to play above the line and when to go below it, within the game’s rules, instead of following a set pattern.", "Leader-Follower Around The Board": "One player (the leader) chooses where to hit; the other (the follower) has to read it and respond. What the follower does depends on the leader.", "ATL/BTL with leader-follower": "One player leads by choosing above-the-line or below-the-line shots; the partner has to read and answer each one, so the rally keeps changing.", "Cooperative rally with zone targets": "Two players keep a rally going together while aiming at target zones. They work with each other, not against, but every shot changes what the other must do.", "Checkerboard with partner interaction": "A Checkerboard game where the two players feed off each other’s shots to hit the squares, so each has to adapt to the partner’s ball.", "Checkerboard challenge scoring": "A Checkerboard game with points at stake: hitting a target square earns a bonus, so players start weighing risk against reward.", "Power Play games": "King of Court games where a player can call \"Power Play\" before a rally. Win it for +3, lose it for nothing. They choose when to gamble, and the opponent knows.", "Constrained games with point scoring": "Real rallies against an opponent with one rule changed (for example, a bonus for volleys or no boasts), and every rally is scored.", "Around The Board with scoring": "Around The Board played for points, so finishing the zones matters and choices are made under some pressure.", "Competitive Checkerboard": "Checkerboard played to win against an opponent: full rallies, real tactics and a score that counts.", "Constrained matchplay": "A full game against an opponent with one small rule added. Very close to a real match.", "Pressure games": "Games that start at a tight score (for example 8–8, next point wins) or with something at stake, so every rally matters.", "Competitive Around The Board": "Around The Board head to head, in live rallies, with each player trying to finish their zones first.", "Invasion games": "Team games across several courts where players move between courts and win or lose lives. Fast, noisy and competitive.", "Tournament match": "A real match in a tournament: official scoring, an opponent you may not know, and a result that counts.", "League match": "A match in a club or team league, where the result counts for the team.", "Box league": "A small group of players (a \"box\") who all play each other, then move up or down boxes on their results.", "National League": "The national inter-club league: the highest level of club competition.", "Monrad draw": "A tournament format where players keep playing after a loss, against players with the same record, so every match decides a final position.", "Championship finals": "The final rounds of a championship: the most pressure a junior player meets.", "Invasion finals": "The final rounds of an Invasion competition, played for a result."};
 function RLDScreen({setScreen}){
   const [activeSection,setActiveSection]=useState('rld');
+  const [openEx,setOpenEx]=useState(null);
   const RPAT_DIMS=[
     {id:'coupling',label:'Information–movement coupling',q:'Is the player acting on the same perceptual information (a live opponent, real ball flight) that is available in a match — rather than a fed, predictable feed?'},
     {id:'fidelity',label:'Perception–action fidelity',q:'Are the actions the same as competition — the same shots, footwork and recovery — performed at match-like speed and quality?'},
@@ -4893,6 +4895,13 @@ function RLDScreen({setScreen}){
 .rldPage .rldLevelSectionLabel{display:block!important;margin-bottom:6px!important;text-transform:uppercase;font-weight:800}
 .rldPage .rldExamplePills{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
 .rldPage .rldExamplePills span{display:inline-block!important;border:1px solid #2c4a63!important;border-radius:999px!important;padding:5px 12px!important;line-height:1.3!important}
+.rldPage .rldExHint{display:block;color:#8aa0b6;font-size:0.9rem;margin:-2px 0 8px}
+.rldPage .rldExBtn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:800;font-size:0.95rem;line-height:1.3;color:#eaf4fb;background:#132233;border:1px solid #2c4a63;border-radius:999px;padding:7px 14px;cursor:pointer;text-align:left}
+.rldPage .rldExBtn.on{background:#1c5d7e;border-color:#6eaac8}
+.rldPage .rldExamplePills .rldExMark{color:#9fd3f0!important;font-size:1rem!important;border:none!important;background:none!important;padding:0!important;display:inline!important}
+.rldPage .rldExExplain{margin-top:10px;background:#0b1520;border:1px solid #2c4a63;border-left:5px solid #6eaac8;border-radius:10px;padding:12px 16px}
+.rldPage .rldExExplain strong{display:block;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.1rem;color:#eaf4fb;margin-bottom:4px}
+.rldPage .rldExExplain p{margin:0!important;color:#dde7ef!important}
 .rldPage .rldCharList{display:flex!important;flex-direction:column!important;gap:4px!important}
 .rldPage .rldCPFGuide{margin-top:16px!important;border:1px solid #2c4a63!important;border-radius:10px!important;padding:12px 14px!important}
 .rldPage .rldCPFGuide span{display:block}
@@ -4990,9 +4999,11 @@ function RLDScreen({setScreen}){
             <div className="rldLevelCardBody">
               <div className="rldLevelSection">
                 <span className="rldLevelSectionLabel">Examples</span>
+                <span className="rldExHint">Tap an example to see what it looks like on court.</span>
                 <div className="rldExamplePills">
-                  {ex.activities.map(a=><span key={a} style={{borderColor:r.color+'66',color:r.textColor}}>{a}</span>)}
+                  {ex.activities.map(a=>{const k=r.level+'|'+a,on=openEx===k,help=RLD_EXAMPLE_HELP[a];return help?<button type="button" key={a} className={'rldExBtn'+(on?' on':'')} aria-expanded={on} onClick={()=>setOpenEx(on?null:k)}>{a}<span className="rldExMark">{on?'▴':'ⓘ'}</span></button>:<span key={a} style={{borderColor:r.color+'66',color:r.textColor}}>{a}</span>;})}
                 </div>
+                {openEx&&openEx.indexOf(r.level+'|')===0&&RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)]&&<div className="rldExExplain" style={{borderLeftColor:r.color}}><strong>{openEx.slice(String(r.level).length+1)}</strong><p>{RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)]}</p></div>}
               </div>
               <div className="rldLevelSection">
                 <span className="rldLevelSectionLabel">Characteristics</span>
