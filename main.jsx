@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v889 Stars Without Reasons';
+const APP_VERSION='v891 Reading Typeface';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -4134,6 +4134,19 @@ function PurposeScreen({setScreen}){
 .purposeSection strong{color:#eaf4fb}
 .purposeQuestion{color:#9fd3f0!important;font-weight:800;font-size:1.1rem!important}
 .purposeWip{color:#8aa0b6;font-style:italic;margin:6px 0 22px}
+/* v891 reading typeface (coach, 17 Nov: newspaper-style, easier to read) */
+.purposePage .pageTop h1,.purposeLead,.purposeSection,.purposeSection h2,.purposeWip{font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;}
+.purposePage .pageTop h1{font-weight:700!important;letter-spacing:-0.01em}
+.purposePage .pageTop,.purposePage>div:last-child,.purposeLead,.purposeSection,.purposeWip{max-width:44rem;margin-left:auto!important;margin-right:auto!important}
+.purposeLead{font-size:1.45rem;font-weight:400;line-height:1.5;color:#f2f7fb;margin-top:10px;margin-bottom:24px}
+.purposeSection{padding:22px 26px;margin-bottom:18px}
+.purposeSection h2{font-size:1.55rem;font-weight:700;line-height:1.25;margin-bottom:14px}
+.purposeSection p,.purposeSection li{font-size:1.24rem;line-height:1.7;color:#dde7ef;font-weight:400}
+.purposeSection p{margin-bottom:14px}
+.purposeSection li{margin-bottom:10px}
+.purposeSection strong{font-weight:700}
+.purposeQuestion{font-size:1.32rem!important;font-weight:700!important;font-style:italic;line-height:1.45!important}
+.purposeWip{font-size:1.1rem}
 `}</style>
     <div className="pageTop">
       <div><h1>What Checkerboard Squash Is For</h1>
@@ -4716,6 +4729,22 @@ function WhyCLAScreen({setScreen}){
 .whyCLATakeaways ul{margin:0;padding-left:20px;color:#c7e2cf}
 .whyCLATakeaways li{margin-bottom:8px;line-height:1.55}
 .whyCLAClose{color:#9fb3c4;font-style:italic;margin-top:16px;text-align:center;line-height:1.6;font-size:1.02rem;padding:0 8px}
+/* v891 reading typeface (coach, 17 Nov) */
+.whyCLAPage .pageTop h1,.whyCLASection,.whyCLASection h2,.whyCLATakeaways,.whyCLATakeaways h2,.whyCLAClose,.whyCLAQuote,.whyCLABeat{font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;}
+.whyCLAPage .pageTop h1{font-weight:700!important;letter-spacing:-0.01em}
+.whyCLAPage .pageTop,.whyCLASection,.whyCLATakeaways,.whyCLAClose,.whyCLADivider{max-width:44rem;margin-left:auto!important;margin-right:auto!important}
+.whyCLASection{padding:24px 28px 24px 60px;margin-bottom:18px}
+.whyCLASection::before{font-family:inherit;top:28px}
+.whyCLASection h2,.whyCLATakeaways h2{font-size:1.6rem;font-weight:700;line-height:1.25;margin-bottom:16px}
+.whyCLASection h3{font-size:1rem;margin-top:22px}
+.whyCLASection p,.whyCLASection li,.whyCLATakeaways li{font-size:1.24rem;line-height:1.7;color:#dde7ef;font-weight:400}
+.whyCLASection p{margin-bottom:14px}
+.whyCLASection li,.whyCLATakeaways li{margin-bottom:8px}
+.whyCLATakeaways li{color:#d6ecdd}
+.whyCLABeat{font-size:1.26rem;font-weight:600;line-height:1.55;margin:10px 0!important;padding-left:16px}
+.whyCLAQuote{font-size:1.75rem;font-weight:700;line-height:1.35;margin:22px 0!important}
+.whyCLAClose{font-size:1.2rem;line-height:1.65}
+@media (max-width:600px){.whyCLASection{padding:20px 18px 20px 46px}.whyCLASection p,.whyCLASection li,.whyCLATakeaways li,.purposeSection p,.purposeSection li{font-size:1.12rem}.purposeLead{font-size:1.25rem}}
 `}</style>
     <div className="pageTop">
       <div><h1>Why CLA?</h1><p className="mutedText">Origins · principles · the science behind Checkerboard</p>
@@ -15603,8 +15632,52 @@ function SnakesLaddersGame({setSession,setScreen}={}){
 .slStepHd .n{background:#101d18;border:1px solid #2f5c46;color:#8fbfa4;border-radius:999px;min-width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;flex:none;}
 .slStepHd .t{color:#6eaac8;font-weight:800;font-size:0.98rem;}
 .slStepHd .h{color:#8aa0b6;font-size:0.79rem;font-weight:600;}
+.slBoardBtn{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:76px;padding:16px 18px;margin:0 0 12px;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,#1c5d7e,#174a63);border:2px solid #6eaac8;box-shadow:0 8px 22px rgba(0,0,0,.32);color:#ffffff;}
+.slBoardBtn:active{transform:translateY(1px);}
+.slBoardBtnTxt{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.slBoardBtnT{color:#ffffff;font-weight:900;font-size:1.3rem;line-height:1.2;}
+.slBoardBtnS{color:#d9ecf7;font-weight:700;font-size:0.95rem;}
+.slBoardBtnGo{flex:none;background:#f0c96a;color:#10202e;font-weight:900;font-size:0.95rem;border-radius:999px;padding:9px 16px;}
 `}</style>
-    <div className="slStepHd"><span className="n">1</span><span><span className="t">Who is playing</span> <span className="h">Players come from tonight’s register — set the courts, then choose who plays</span></span></div>
+    <div className="slStepHd"><span className="n">1</span><span><span className="t">The board</span> <span className="h">Length, how many snakes and ladders, and how far each moves a player</span></span></div>
+    <button type="button" className="slBoardBtn" aria-expanded={showSettings} onClick={()=>setShowSettings(!showSettings)}>
+      <span className="slBoardBtnTxt">
+        <span className="slBoardBtnT">⚙️ Board settings</span>
+        <span className="slBoardBtnS">{settings.size} squares · {settings.snakeCount} snakes · {settings.ladderCount} ladders{settings.exactFinish?' · exact finish':''}</span>
+      </span>
+      <span className="slBoardBtnGo">{showSettings?'Done ▲':'Change ▼'}</span>
+    </button>
+    {showSettings&&<div className="slSettings">
+      <div className="hsChipBlock">
+        <div className="hsLabel">Rotation</div>
+        <div className="hsModeRow">
+          {[{v:'winner',label:'Winner stays on'},{v:'loserstays',label:'Players rotate through'},{v:'rotation',label:'Fixed rotation'}].map(o=>
+            <button type="button" key={o.v} className={settings.mode===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,mode:o.v}))}>{o.label}</button>)}
+        </div>
+        <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>{settings.mode==='winner'
+          ?'Winner stays on court, next challenger comes up.'
+          :settings.mode==='loserstays'
+            ?'The loser stays on to face a fresh challenger — the winner rotates off.'
+            :'Both players rotate off after each rally, giving even rally counts.'}</p>
+      </div>
+      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,streakCap:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,streakCap:0}));}}/></label>}
+      <div className="hsChipBlock">
+        <div className="hsLabel">Board size</div>
+        <div className="hsModeRow">
+          {[15,21,30,50].map(v=><button type="button" key={v} className={settings.size===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,size:v}))}>1–{v}</button>)}
+        </div>
+      </div>
+      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,snakeCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,snakeCount:0}));}}/></label>
+      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,ladderCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,ladderCount:0}));}}/></label>
+      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,min:1}}));}}/></label>
+      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,max:1}}));}}/></label>
+      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,min:1}}));}}/></label>
+      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,max:1}}));}}/></label>
+      <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
+      <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
+      <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
+    </div>}
+    <div className="slStepHd"><span className="n">2</span><span><span className="t">Who is playing</span> <span className="h">Players come from tonight’s register — set the courts, then choose who plays</span></span></div>
     <div className="slSessionBar" style={{flexDirection:'column',alignItems:'stretch',gap:'8px'}}>
       <div className="slSessionInfo">{usingAttendance?`${presentsObj.length} players present`:'No attendance set'}</div>
       {usingAttendance
@@ -15638,44 +15711,6 @@ function SnakesLaddersGame({setSession,setScreen}={}){
       <div className="slNameGrid">{Array.from({length:manualCount}).map((_,i)=><label key={i} className="slNameField"><span>P{i+1}</span><input value={manualNames[i]||''} onChange={e=>setManualName(i,e.target.value)}/></label>)}</div>
     </div>}
 
-    <div className="slStepHd"><span className="n">2</span><span><span className="t">The board</span> <span className="h">Length, how many snakes and ladders, and how far each moves a player</span></span></div>
-    <button type="button" onClick={()=>setShowSettings(!showSettings)} style={{width:'100%',textAlign:'left',background:'#0c1626',border:'1px solid #2f5c46',borderRadius:'12px',padding:'13px 15px',marginBottom:'10px',cursor:'pointer',display:'flex',justifyContent:'space-between',alignItems:'center',gap:'10px'}}>
-      <span>
-        <span style={{display:'block',color:'#6eaac8',fontWeight:800,fontSize:'1rem'}}>Board settings</span>
-        <span style={{display:'block',color:'#8aa0b6',fontSize:'0.84rem'}}>{settings.size} squares · {settings.snakeCount} snakes · {settings.ladderCount} ladders{settings.exactFinish?' · exact finish':''}</span>
-      </span>
-      <span style={{color:'#8fbfa4',fontWeight:800,fontSize:'0.86rem',flex:'none'}}>{showSettings?'Done':'Change'}</span>
-    </button>
-    {showSettings&&<div className="slSettings">
-      <div className="hsChipBlock">
-        <div className="hsLabel">Rotation</div>
-        <div className="hsModeRow">
-          {[{v:'winner',label:'Winner stays on'},{v:'loserstays',label:'Players rotate through'},{v:'rotation',label:'Fixed rotation'}].map(o=>
-            <button type="button" key={o.v} className={settings.mode===o.v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,mode:o.v}))}>{o.label}</button>)}
-        </div>
-        <p className="mutedText" style={{margin:0,fontSize:'0.78rem'}}>{settings.mode==='winner'
-          ?'Winner stays on court, next challenger comes up.'
-          :settings.mode==='loserstays'
-            ?'The loser stays on to face a fresh challenger — the winner rotates off.'
-            :'Both players rotate off after each rally, giving even rally counts.'}</p>
-      </div>
-      {settings.mode==='winner'&&<label>Win streak cap (0 = off)<input type="number" min="0" max="9" value={settings.streakCap} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,streakCap:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,streakCap:0}));}}/></label>}
-      <div className="hsChipBlock">
-        <div className="hsLabel">Board size</div>
-        <div className="hsModeRow">
-          {[15,21,30,50].map(v=><button type="button" key={v} className={settings.size===v?'hsModeBtn on':'hsModeBtn'} onClick={()=>setSettings(s=>({...s,size:v}))}>1–{v}</button>)}
-        </div>
-      </div>
-      <label>Snakes<input type="number" min="0" max="10" value={settings.snakeCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,snakeCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,snakeCount:0}));}}/></label>
-      <label>Ladders<input type="number" min="0" max="10" value={settings.ladderCount} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,ladderCount:v===''?'':Number(v)}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,ladderCount:0}));}}/></label>
-      <label>Snake drop min<input type="number" min="1" max="15" value={settings.drop.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,min:1}}));}}/></label>
-      <label>Snake drop max<input type="number" min="1" max="15" value={settings.drop.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,drop:{...s.drop,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,drop:{...s.drop,max:1}}));}}/></label>
-      <label>Ladder rise min<input type="number" min="1" max="15" value={settings.rise.min} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,min:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,min:1}}));}}/></label>
-      <label>Ladder rise max<input type="number" min="1" max="15" value={settings.rise.max} onChange={e=>{const v=e.target.value;setSettings(s=>({...s,rise:{...s.rise,max:v===''?'':Number(v)}}));}} onBlur={e=>{if(e.target.value==='')setSettings(s=>({...s,rise:{...s.rise,max:1}}));}}/></label>
-      <label className="slCheck"><input type="checkbox" checked={settings.visible} onChange={e=>setSettings(s=>({...s,visible:e.target.checked}))}/> Visible board (off = hidden until landed on)</label>
-      <label className="slCheck"><input type="checkbox" checked={settings.exactFinish} onChange={e=>setSettings(s=>({...s,exactFinish:e.target.checked}))}/> Exact finish (overshoot bounces back)</label>
-      <p className="mutedText">Board size applies immediately. Other board changes apply on the next “New Board”. In Race mode, set this BEFORE tapping "Start race" — the board locks in at that point.</p>
-    </div>}
 
     {courts>1&&<div className="slSettings" style={{alignItems:'flex-start'}}>
       <div>
