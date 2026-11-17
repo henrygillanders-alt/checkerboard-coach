@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v886 Declared Shot Steppers';
+const APP_VERSION='v889 Stars Without Reasons';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -2945,7 +2945,7 @@ function DoubleBounceTool({setScreen,embedded=false}){
   ];
   return <div className="page doubleBounceToolPage">
     {!embedded&&<div className="pageTop">
-      <div><h1>Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p></div>
+      <div><h1>{COACH_STARS.doubleBounce&&<span style={{color:'#f0c96a'}}>★ </span>}Double Bounce</h1><p className="mutedText">Development constraint · rally extender · tactical intelligence tool</p>{COACH_STARS.doubleBounce&&<p className="mutedText" style={{margin:'4px 0 0',color:'#f0c96a'}}>{COACH_STARS.doubleBounce}</p>}</div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
     </div>}
     <section className="doubleBounceHero">
@@ -6780,7 +6780,7 @@ ${homeGradedTileCss()}`}</style>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
       <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>{COACH_STARS.tacticalIntentions&&<span style={{color:'#f0c96a'}}>★ </span>}Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
@@ -10263,7 +10263,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
   return <>
   {}
   <div className="gameCard">
-    <div className="categoryTag">ATL / BTL</div><h2>📣 Declared Shot</h2>
+    <div className="categoryTag">ATL / BTL</div><h2>{COACH_STARS.atl&&<span style={{color:'#f0c96a'}}>★ </span>}📣 Declared Shot</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Above the line, plus one below-the-line shot that each player names out loud. The attacker sets it up; the opponent tries to stop it. Coach design, Nov 2026.</p>
     <div className="atlOptionsGrid">
     <label>When to name the shot<select value={ds.when} onChange={e=>setDs(x=>({...x,when:e.target.value}))}><option value="rotation">Before the rotation</option><option value="rally">Before each rally</option></select></label>
@@ -10280,7 +10280,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
   </div>
   {}
   <div className="gameCard">
-    <div className="categoryTag">ATL / BTL</div><h2>🔁 Earn & Reload</h2>
+    <div className="categoryTag">ATL / BTL</div><h2>{COACH_STARS.atl&&<span style={{color:'#f0c96a'}}>★ </span>}🔁 Earn & Reload</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Earn the attack with depth, then reload to the back if the short ball isn't on — as many times as you like. Five-stage progression.</p>
     <div className="atlOptionsGrid">
     <label>Stage<select value={er.stage} onChange={e=>setEr(x=>({...x,stage:Number(e.target.value)}))}><option value={1}>1 — one below, reload</option><option value={2}>2 — two consecutive</option><option value={3}>3 — three consecutive</option><option value={4}>4 — reducing target (adv.)</option><option value={5}>5 — must win below (adv.)</option></select></label>
@@ -10295,7 +10295,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
   </div>
   {}
   <div className="gameCard">
-    <div className="categoryTag">ATL / BTL</div><h2>🎯 Earn the Below</h2>
+    <div className="categoryTag">ATL / BTL</div><h2>{COACH_STARS.atl&&<span style={{color:'#f0c96a'}}>★ </span>}🎯 Earn the Below</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Attack below the line only after you earn it with a deep tramline drive. A four-stage progression that tightens the vice.</p>
     <div className="atlOptionsGrid">
     <label>Stage<select value={eb.stage} onChange={e=>setEb(x=>({...x,stage:Number(e.target.value)}))}><option value={1}>1 — one below</option><option value={2}>2 — two below</option><option value={3}>3 — two below, consecutive</option><option value={4}>4 — three below</option></select></label>
@@ -10310,7 +10310,7 @@ function ATLBTLPresetCards({onAdd,label='Add To Session'}){
   </div>
   {}
   <div className="gameCard">
-    <div className="categoryTag">ATL / BTL</div><h2>⚡ Break & Finish</h2>
+    <div className="categoryTag">ATL / BTL</div><h2>{COACH_STARS.atl&&<span style={{color:'#f0c96a'}}>★ </span>}⚡ Break & Finish</h2>
     <p className="mutedText" style={{marginTop:'-4px'}}>Both above the line until a player attacks; the attack must convert inside a shot budget.</p>
     <div className="atlOptionsGrid">
     <label>Finish within<select value={bf.shots} onChange={e=>setBf(b=>({...b,shots:Number(e.target.value)}))}>{[1,2,3,4,5,6].map(n=><option key={n} value={n}>{n} shot{n>1?'s':''}</option>)}</select></label>
@@ -10400,7 +10400,7 @@ function ATLBTLDirectBuilder({onAddToSession,setScreen}){
   return <div className="gameCard">
 
     <div className="categoryTag">ATL / BTL</div>
-    <h2>ATL / BTL Builder</h2>
+    <h2>{COACH_STARS.atl&&<span style={{color:'#f0c96a'}}>★ </span>}ATL / BTL Builder</h2>
 
     <div className="baseGamePanel">
       <div className="baseGamePanelHeader"><span className="baseGamePanelNum">Base</span><strong>Base Game</strong><span className="baseGamePanelSub">ATL/BTL structure</span></div>
@@ -16242,7 +16242,7 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
   return <div className={embedded?'dbSuite dbSuiteEmbedded':'gameCard dbSuite'}>
     <DBSuiteStyles/>
     {!embedded&&<div className="moduleHead">
-      <div><h1>Double Bounce Suite™</h1><p className="mutedText">The double bounce as a resource economy — spend to survive, earn to dominate.</p></div>
+      <div><h1>{COACH_STARS.doubleBounce&&<span style={{color:'#f0c96a'}}>★ </span>}Double Bounce Suite™</h1><p className="mutedText">The double bounce as a resource economy — spend to survive, earn to dominate.</p></div>
       <button type="button" className="homeBtn" onClick={()=>setScreen&&setScreen('home')}>Home</button>
     </div>}
 
@@ -16259,11 +16259,11 @@ function DoubleBounceSuiteModule({setScreen,players=[],embedded=false,setSession
     </CoachRationale>}
 
     <div className="dbGameTabs">
-      {DB_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'dbGameTab dbGameTabActive':'dbGameTab'} onClick={()=>setGameId(g.id)}><strong>{g.title}</strong><span>{g.tag}</span></button>)}
+      {DB_GAMES.map(g=><button type="button" key={g.id} className={gameId===g.id?'dbGameTab dbGameTabActive':'dbGameTab'} onClick={()=>setGameId(g.id)}><strong>{COACH_STARS.doubleBounce&&<span style={{color:'#f0c96a'}}>★ </span>}{g.title}</strong><span>{g.tag}</span></button>)}
     </div>
 
     <div className="dbGameInfo">
-      <div className="dbGameInfoHead"><h2>{game.title}</h2><span className="dbTag">{game.tag}</span></div>
+      <div className="dbGameInfoHead"><h2>{COACH_STARS.doubleBounce&&<span style={{color:'#f0c96a'}}>★ </span>}{game.title}</h2><span className="dbTag">{game.tag}</span></div>
       <p className="dbPrinciple">{game.principle}</p>
       <div className="dbInfoGrid">
         <div><h4>Game logic</h4><p>{game.logic}</p></div>
@@ -18009,7 +18009,7 @@ const GAME_LIBRARY=[
   {id:'tinwar',label:'Tin War',category:'Tin War',groups:['pressure'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Tin War</div><h2>Tin War™</h2><p className="mutedText"><strong>TIN WAR™ — {TINWAR_GAMES.length} GAME SUITE:</strong> Constraint rules cards, self-officiated on court. Climb starts Full Wall and each win removes more bottom wall. Bonus Shots (was Rising Tax) moves each player’s own line up as they hit winners above it. Race to 25 climbs the wall by score band. Scoring on-screen is fully configurable per game.</p><TinWarModule embedded setSession={setSession}/></div>},
   {id:'doubleBounce',label:'Double Bounce',category:'Double Bounce',groups:['pressure'],
-    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>},
+    render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><div className="gameCard"><div className="categoryTag">Double Bounce</div><h2>{COACH_STARS.doubleBounce&&<span style={{color:'#f0c96a'}}>★ </span>}Double Bounce</h2><p className="mutedText">The coaching rationale comes first; the resource-economy games follow below.</p><DoubleBounceTool setScreen={setScreen} embedded/><DoubleBounceSuiteModule embedded setSession={setSession}/><DoubleBounceAllocation/></div>},
   {id:'tacticalpressure',label:'Tactical Pressure',category:'Tactical Pressure',groups:['pressure'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><TacticalPressureModule onAddToSession={addAndGo}/>},
   {id:'shotbonus',label:'Shot Bonus',category:'Shot Bonus Rally',groups:['pressure'],
@@ -18082,7 +18082,9 @@ const COACH_STARS={
   corridorgames:'Coach’s star: the corridor interception rule worked very well on court (Nov 2026) — a strong deterrent to non-functional crosscourts and loose balls.',
   tzonegames:'Coach’s star: exposes the loose ball — after a loose shot there is little chance of getting back to the T Zone, and the opponent takes the T Zone to play their shot (Nov 2026).',
   snakesladders:'Coach’s star: builds a movement mindset (Nov 2026).',
-  doubleBounce:'Coach’s star: builds a movement mindset (Nov 2026).'
+  doubleBounce:'Coach’s star: builds a movement mindset (Nov 2026).',
+  atl:true,
+  tacticalIntentions:true
 };
 const COACH_STAR_GAMES={
   CCG12:'Coach’s star: encourages volleying, and regulated swing size against an opponent with the pace to reach the back wall (Nov 2026).',
@@ -18227,7 +18229,7 @@ function Games({setSession,setScreen,onClassChange}){
           </button>
           {isOpen&&<div className="gameGroupBody"><div className="gameClassGrid">
             {items.map(gc=>
-              <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)} title={COACH_STARS[gc.id]||undefined}>
+              <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)} title={typeof COACH_STARS[gc.id]==='string'?COACH_STARS[gc.id]:undefined}>
                 {COACH_STARS[gc.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>★ </span>}{gc.label}
               </button>
             )}
@@ -18239,7 +18241,7 @@ function Games({setSession,setScreen,onClassChange}){
     {activeClassId&&<div className="pageTop">
       <button type="button" className="secondaryBtn" onClick={()=>selectClass(null)}>← Back to Games Library</button>
       <h1>{COACH_STARS[activeClass?.id]&&<span style={{color:'#f0c96a'}}>★ </span>}{activeClass?.label}</h1>
-      {COACH_STARS[activeClass?.id]&&<p className="mutedText" style={{marginTop:0}}>{COACH_STARS[activeClass.id]}</p>}
+      {typeof COACH_STARS[activeClass?.id]==='string'&&<p className="mutedText" style={{marginTop:0}}>{COACH_STARS[activeClass.id]}</p>}
     </div>}
 
     {logicCard&&!['checkerboard','atl','atb','powerplay','tacticalpressure','custom'].includes(activeClassId)&&<div className="logicDraftSection"><div className="statusBox"><strong>Built Base Game Held:</strong> {logicCard.title||'Game'} · Add Game Logic or add base game only below.</div><InlineGameLogicBuilder baseGame={logicCard} onAddBase={(game)=>{addStay(game);setLogicCard(null);}} onAddLogic={(game)=>{addStay(game);setLogicCard(null);}} onCancel={()=>setLogicCard(null)}/></div>}
@@ -24157,7 +24159,7 @@ function TacticalIntentionsModule({setScreen,setSession}){
   const meta=PATTERN_LEVEL_META[active.level]||PATTERN_LEVEL_META[1];
   if(detailOpen)return <PatternDetailPage game={active} meta={meta} onBack={()=>{setDetailOpen(false);setEditing(null);}} onAdd={addGame} viewSession={viewSession} setScreen={setScreen} initialConfig={editing?editing.config:null} editingCardId={editing?editing.cardId:null}/>;
   return <div className="page tacticalIntentionsPage">
-    <div className="pageTop"><div><h1>Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>{COACH_STARS.tacticalIntentions&&<span style={{color:'#f0c96a'}}>★ </span>}Pattern Lab</h1><p className="mutedText">CLA revisited Patterns of Play · Plug & Play + customise</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="tiHero"><h2>Lots of games on tap. No return to rigid prescription.</h2><p>Pattern Lab keeps the practical value of the original patterns — a large courtside library — while reframing each card through Checkerboard zones, flight constraints, disguise and diversity constraints.</p></div>
     <CoachRationale label="Why these games — coach rationale">
       <p>Pattern Lab keeps the practical value of the classic <strong>Patterns of Play</strong> — a large library of recognisable tactical situations — while removing the rigid prescription that turns patterns into rehearsed routines.</p>
