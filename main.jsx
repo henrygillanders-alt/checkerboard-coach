@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v891 Reading Typeface';
+const APP_VERSION='v892 RLD Reading Style';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -4865,6 +4865,39 @@ function RLDScreen({setScreen}){
   };
 
   return <div className="page rldPage">
+    <style>{`
+/* v892 RLD page reading style (coach, 17 Nov: "an assault on the eyes"; same treatment as Start Here / Why CLA) */
+.rldPage>div,.rldPage>.pageTop,.rldPage .rldSectionNav,.rldPage .rldHero,.rldPage .rldLevelsStack,.rldPage .cpVisualZones,.rldPage .cpReference,.rldPage .rldTogetherGrid,.rldPage .rldDecisionFlow,.rldPage .rldPrincipleFinal,.rldPage .cpUniversalNote{max-width:46rem;margin-left:auto!important;margin-right:auto!important}
+.rldPage h1,.rldPage h2,.rldPage h3,.rldPage p,.rldPage li,.rldPage .rldHeroPrinciple,.rldPage .rldLevelCardTitle strong,.rldPage .rldCharList span,.rldPage .rldFlowStep strong,.rldPage .cpVisualLabel,.rldPage .cpVisualSigns,.rldPage .cpVisualAction{font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif!important}
+.rldPage>.pageTop h1{font-weight:700!important;letter-spacing:-0.01em}
+.rldPage .pageTop .mutedText{font-family:inherit!important}
+.rldPage h2{font-size:1.55rem!important;font-weight:700!important;line-height:1.25!important;color:#eaf4fb!important}
+.rldPage h3{font-size:1.3rem!important;font-weight:700!important;color:#eaf4fb!important}
+.rldPage p,.rldPage li{font-size:1.15rem!important;line-height:1.65!important;font-weight:400}
+.rldPage .rldHero p,.rldPage .rldHero li,.rldPage .cpAttributionCard p,.rldPage .rldTogetherCard p,.rldPage .rldFlowStep p,.rldPage .cpReference p,.rldPage .cpUniversalNote p,.rldPage .cpUniversalNote li{color:#dde7ef!important}
+.rldPage .rldHero .mutedText{color:#b8c8d6!important}
+.rldPage .rldHero{padding:22px 26px!important}
+.rldPage .rldHeroPrinciple{font-size:1.3rem!important;font-style:italic;font-weight:600!important;line-height:1.45!important;color:#eaf4fb!important}
+/* level cards: one calm background; the level colour stays on the left edge, the dot and the title */
+.rldPage .rldLevelCardFull{background:#0f1822!important;border-top-color:#223044!important;border-right-color:#223044!important;border-bottom-color:#223044!important;border-left-width:6px!important;border-left-style:solid!important;padding:18px 22px!important}
+.rldPage .rldLevelCardTitle strong{font-size:1.35rem!important;line-height:1.3}
+.rldPage .rldLevelCardFull p,.rldPage .rldLevelCardTitle p{color:#dde7ef!important;opacity:1!important;font-size:1.15rem!important}
+.rldPage .rldLevelCardTitle p{color:#b8c8d6!important}
+.rldPage .rldLevelSectionLabel{color:#8aa0b6!important;font-size:0.8rem!important;letter-spacing:0.06em}
+.rldPage .rldExamplePills span{color:#dde7ef!important;border-color:#2c4a63!important;background:#132233!important;font-size:0.95rem!important}
+.rldPage .rldCharList span{color:#dde7ef!important;font-size:1.1rem!important;line-height:1.6!important}
+.rldPage .rldCPFGuide{background:#132233!important;border-color:#2c4a63!important}
+.rldPage .rldCPFGuide span{color:#9fd3f0!important}
+.rldPage .rldLevelsStack{display:flex!important;flex-direction:column!important;gap:18px!important}
+.rldPage .rldLevelSection{margin-top:14px!important}
+.rldPage .rldLevelSectionLabel{display:block!important;margin-bottom:6px!important;text-transform:uppercase;font-weight:800}
+.rldPage .rldExamplePills{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+.rldPage .rldExamplePills span{display:inline-block!important;border:1px solid #2c4a63!important;border-radius:999px!important;padding:5px 12px!important;line-height:1.3!important}
+.rldPage .rldCharList{display:flex!important;flex-direction:column!important;gap:4px!important}
+.rldPage .rldCPFGuide{margin-top:16px!important;border:1px solid #2c4a63!important;border-radius:10px!important;padding:12px 14px!important}
+.rldPage .rldCPFGuide span{display:block}
+@media (max-width:600px){.rldPage p,.rldPage li{font-size:1.05rem!important}.rldPage .rldHero{padding:18px!important}}
+`}</style>
     <div className="pageTop">
       <div><h1>RLD & Challenge Point</h1><p className="mutedText">Representativeness · When to move · How to progress</p></div>
       <button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button>
