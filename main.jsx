@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v901 Level Rules Per Player';
+const APP_VERSION='v902 Finish Rule On Display';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -880,6 +880,12 @@ function pdShortScore(score){
   const first=String(score).split(/[·.]/)[0].trim();
   return first||String(score).trim();
 }
+function pdFinishLine(fin){
+  /* v902 (coach, 18 Nov: "this game has a challenge finish 'clean winner' but it is not identified in the player display") */
+  const f=String(fin||'').trim();if(!f)return '';
+  const M={'clean winner':'Finish rule: the winning shot must be a clean winner. The opponent gets no racket on the ball.','volley finish':'Finish rule: the winning shot must be a volley.','volley finish in front of short line':'Finish rule: the winning shot must be a volley played in front of the short line.','opposite side finish':'Finish rule: the winning shot must go to the side away from the opponent.'};
+  return M[f.toLowerCase()]||('Finish rule: '+f.replace(/\.$/,'')+'.');
+}
 function getPlayerDisplayFields(game){
   const item=normaliseGameCard(game||{});
   const title=item.title||'Player Display';
@@ -889,6 +895,8 @@ function getPlayerDisplayFields(game){
   const PD_WIN=/^(\d+\s*[.)]\s*)?win(ning)?\s+(the\s+|a\s+)?rally\s*(=|:|scores|is)\s*\d+(\s*points?)?\.?$/i;
   const PD_PTS=/(^|[\s(:])\+\s?\d+\b|=\s*\d+\s*points?\b/i;
   const scoreOnlyRally=String(scoringLogic).split(/\n|\.\s+/).map(x=>x.trim()).filter(x=>x&&!/^(add any bonus scoring here|layer any game-specific)/i.test(x)).every(x=>PD_WIN.test(x));
+  const finLine=pdFinishLine(item.modifier&&item.modifier.completion);
+  if(finLine&&!String(what).toLowerCase().includes(finLine.toLowerCase())){const n=String(what).split('\n').filter(x=>x.trim()).length;const numbered=/^\s*1\s*[.)]/.test(String(what));what=String(what).trim()+'\n'+(numbered?(n+1)+'. ':'')+finLine;}
   if(item.showScoring&&scoreOnlyRally&&String(what).includes('\n')){
     const keep=[],moved=[];
     String(what).split('\n').forEach(x=>{const t=x.trim();if(!t)return;const bare=t.replace(/^\d+\s*[.)]\s*/,'');if(PD_WIN.test(bare))return;if(PD_PTS.test(bare))moved.push(bare);else keep.push(bare);});
@@ -9667,8 +9675,9 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       task,
       description:'Land the ball in the nominated zone or sequence. '+(seamAllowance?'Seam allowance on.':'Strict zones.'),
       scoring,
-      coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'. Full rules: '+coachTask.replace(/\n/g,' | ')+'  Full scoring: '+coachScoring,
-      playerFocus:'Find the solution to the code within the live rally.'
+      coach:'Checkerboard challenge — '+scopeLabel.toLowerCase()+'. Full rules: '+coachTask.replace(/\n/g,' | ')+'  Full scoring: '+coachScoring+(modifier&&modifier.completion?'  Finish rule: '+modifier.completion+'.':''),
+      playerFocus:'Find the solution to the code within the live rally.',
+      modifier,layers:(modifier&&modifier.constraints)||[],modifierScores:(modifier&&modifier.scoring)||{}
     });
     setSession(prev=>appendToSessionState(prev,card));
     setStatus(card.title+' added to Session Builder.');
