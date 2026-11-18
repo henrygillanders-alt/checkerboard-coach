@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v899 Unopposed Rally Options';
+const APP_VERSION='v901 Level Rules Per Player';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -3081,7 +3081,17 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
   const [family,setFamily]=useState('Tactical');
   const [customByFamily,setCustomByFamily]=useState({Technical:[],Tactical:[],'Mental Performance':[],Diversity:[]});
   const [customText,setCustomText]=useState('');
+  const [customRule,setCustomRule]=useState('');
   const [showCustom,setShowCustom]=useState(false);
+  function addFamilyCustom(){
+    /* v900 (coach, 10 Nov pin): optional rule line. With a rule, the constraint is saved to My Constraints so it reaches the player display and every builder; without one it stays for this session only. */
+    const n=customText.trim();if(!n)return;const rule=customRule.trim();
+    if(rule){const list=getCustomConstraints();const k=n.toLowerCase();
+      if(!list.some(c=>String(c.title||'').trim().toLowerCase()===k))persistCustomConstraints([{id:'cc'+Date.now()+Math.floor(Math.random()*1000),kind:'constraint',title:n,family,rule,coach:'',by:'',scope:'private',sharedId:null,createdAt:Date.now()},...list]);}
+    else setCustomByFamily(prev=>({...prev,[family]:(prev[family]||[]).includes(n)?prev[family]:[...(prev[family]||[]),n]}));
+    if(!selectedOverlays.includes(n))onToggle(n);
+    setCustomText('');setCustomRule('');
+  }
 
   const [,customLibBump]=useState(0);
   useEffect(()=>{const h=()=>customLibBump(x=>x+1);window.addEventListener('customlib-changed',h);return()=>window.removeEventListener('customlib-changed',h);},[]);
@@ -3093,7 +3103,7 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
   const diversityOptions=[...customFor('Diversity'),...DIVERSITY_OVERLAYS.map(o=>({name:o.title,category:o.category,rule:o.rule,coach:o.coach}))];
   const source = family==='Technical' ? technicalOptions : family==='Tactical' ? tacticalOptions : family==='Diversity' ? diversityOptions : mentalOptions;
   const allOptions=[...technicalOptions,...tacticalOptions,...mentalOptions,...diversityOptions];
-  const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'Legacy overlay selected.',coach:''});
+  const active = selectedOverlays.map(name=>allOptions.find(o=>o.name===name)||{name,category:'Overlay',rule:'No rule text — players will not see this constraint. Add it again with a rule, or add one in My Constraints.',coach:''});
 
   return <div className="overlayFamilyEngine">
     <div className="overlayFamilyTabs">
@@ -3116,8 +3126,10 @@ function OverlayFamilyTabs({selectedOverlays=[],onToggle,context='Competition'})
 
     <button type="button" className="meAddOwnBtn" onClick={()=>setShowCustom(!showCustom)}>{showCustom?`− Hide custom ${family.toLowerCase()} constraint`:`+ Add your own ${family.toLowerCase()} constraint`}</button>
     {showCustom&&<div className="overlayCustomAdd">
-      <input value={customText} onChange={e=>setCustomText(e.target.value)} placeholder={`New ${family.toLowerCase()} constraint`} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();const n=customText.trim();if(n){setCustomByFamily(prev=>({...prev,[family]:(prev[family]||[]).includes(n)?prev[family]:[...(prev[family]||[]),n]}));if(!selectedOverlays.includes(n))onToggle(n);setCustomText('');}}}}/>
-      <button type="button" className="meChip meChipOn" onClick={()=>{const n=customText.trim();if(!n)return;setCustomByFamily(prev=>({...prev,[family]:(prev[family]||[]).includes(n)?prev[family]:[...(prev[family]||[]),n]}));if(!selectedOverlays.includes(n))onToggle(n);setCustomText('');}}>+ Add</button>
+      <input value={customText} onChange={e=>setCustomText(e.target.value)} placeholder={`New ${family.toLowerCase()} constraint (name)`} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addFamilyCustom();}}}/>
+      <input value={customRule} onChange={e=>setCustomRule(e.target.value)} placeholder="Rule players will see (optional), e.g. Every drive must pass the short line." onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addFamilyCustom();}}}/>
+      <button type="button" className="meChip meChipOn" onClick={addFamilyCustom}>+ Add</button>
+      <p className="mutedText" style={{width:'100%',margin:'6px 0 0',fontSize:'0.84rem'}}>It is switched on when added. With a rule, it is saved to My Constraints and shown to players; without one it is for this session only and players do not see it.</p>
     </div>}
 
     <div className="activeOverlayPanel">
@@ -4792,7 +4804,7 @@ function WhyCLAScreen({setScreen}){
     <p className="whyCLAClose">{d3Close}</p>
   </div>;
 }
-const RLD_EXAMPLE_HELP={"Tau Development": "Timing contact with a ball that arrives differently each time. The coach feeds with changing pace and height (by hand, then off the front wall) and the player has to meet the ball and hit it. Timing is learned by hitting, not by judging out loud. No opponent and no rally.", "Ball Tracking": "Watching the ball off the front wall, side wall and floor, and moving to where it will be. Often with a coach feed and no shot needed.", "Chipping (0A–0G)": "Short, controlled hits at targets, often with different balls (bigger, slower, bouncier), to build feel for contact and ball flight. Fed by the coach or a partner.", "Arrive and Strike": "The coach feeds to different places. The player moves, finds the ball with a final lunge, and hits. The feed changes, so the player cannot stand in position early.", "Movement Calibration": "Moving to the ball and back to the T in time with the feed, so the player learns how far and how fast to travel. Movement first, shot second.", "Catch and Track": "Catching the ball instead of hitting it, to practise judging its flight and where it will land, without worrying about the swing.", "Coach calls zone sequence 1→2→3→4": "The coach tells the player which zone to hit next: 1, then 2, then 3, then 4. The player just hits; the coach has made every decision.", "Coach directs feed to specified area": "The coach feeds to the same planned place each time, and the player plays the shot asked for. A predictable ball and a predictable task.", "Coach calls shot type before rally": "Before the rally the coach says, for example, \"drives only\" or \"drop, then drive\", and the player plays that whatever the rally offers.", "Structured feed with called targets": "A set feeding pattern, such as the coach feeding from the front and the player hitting length, with the coach calling each target as the ball comes.", "Player selects own zone sequence": "The player, not the coach, decides the order of the zones to hit. There is still no opponent to read, but the decision is now theirs.", "Player chooses shot type": "The player picks the shot (drive, drop or boast) to suit the ball they get. The coach no longer calls it.", "Player-directed Around The Board": "The player works round the numbered zones in an order they choose, instead of the coach calling each one.", "Self-selected ATL/BTL pattern": "The player decides when to play above the line and when to go below it, within the game’s rules, instead of following a set pattern.", "Leader-Follower Around The Board": "One player (the leader) chooses where to hit; the other (the follower) has to read it and respond. What the follower does depends on the leader.", "ATL/BTL with leader-follower": "One player leads by choosing above-the-line or below-the-line shots; the partner has to read and answer each one, so the rally keeps changing.", "Cooperative rally with zone targets": "Two players keep a rally going together while aiming at target zones. They work with each other, not against, but every shot changes what the other must do.", "Checkerboard with partner interaction": "A Checkerboard game where the two players feed off each other’s shots to hit the squares, so each has to adapt to the partner’s ball.", "Checkerboard challenge scoring": "A Checkerboard game with points at stake: hitting a target square earns a bonus, so players start weighing risk against reward.", "Power Play games": "King of Court games where a player can call \"Power Play\" before a rally. Win it for +3, lose it for nothing. They choose when to gamble, and the opponent knows.", "Constrained games with point scoring": "Real rallies against an opponent with one rule changed (for example, a bonus for volleys or no boasts), and every rally is scored.", "Around The Board with scoring": "Around The Board played for points, so finishing the zones matters and choices are made under some pressure.", "Competitive Checkerboard": "Checkerboard played to win against an opponent: full rallies, real tactics and a score that counts.", "Constrained matchplay": "A full game against an opponent with one small rule added. Very close to a real match.", "Pressure games": "Games that start at a tight score (for example 8–8, next point wins) or with something at stake, so every rally matters.", "Competitive Around The Board": "Around The Board head to head, in live rallies, with each player trying to finish their zones first.", "Invasion games": "Team games across several courts where players move between courts and win or lose lives. Fast, noisy and competitive.", "Tournament match": "A real match in a tournament: official scoring, an opponent you may not know, and a result that counts.", "League match": "A match in a club or team league, where the result counts for the team.", "Box league": "A small group of players (a \"box\") who all play each other, then move up or down boxes on their results.", "National League": "The national inter-club league: the highest level of club competition.", "Monrad draw": "A tournament format where players keep playing after a loss, against players with the same record, so every match decides a final position.", "Championship finals": "The final rounds of a championship: the most pressure a junior player meets.", "Invasion finals": "The final rounds of an Invasion competition, played for a result."};
+const RLD_EXAMPLE_HELP={"Tau Development": {"setup": "Coach and one player. The coach feeds by hand, then off the front wall.", "rule": "Every feed changes pace and height. The player meets the ball and hits it to a large target.", "score": "Clean contacts out of 10.", "why": "No opponent and no rally. The coach controls the ball, so the player only has to time contact."}, "Ball Tracking": {"setup": "Coach feeds; the player starts on the T.", "rule": "Follow the ball off the front wall, side wall and floor, get to where it will be, and catch it or stop it on the racket.", "score": "Balls reached in time, out of 10.", "why": "One ball, no opponent, no shot to choose."}, "Chipping (0A–0G)": {"setup": "Player alone or with a feeder, close to the front wall, with mixed balls (foam, red dot, orange dot).", "rule": "Short, controlled hits to a target on the front wall. Stages 0A to 0G change the ball, the distance and the target.", "score": "Hits on target in a row.", "why": "No opponent and a simplified task: the player builds feel for contact and ball flight."}, "Arrive and Strike": {"setup": "Coach feeds from the front to different places; the player starts on the T.", "rule": "Move, find the ball with a final lunge, and strike it. The feed changes every time, so the player cannot set up early.", "score": "Shots struck in balance, out of 10.", "why": "A real ball to move to, but it is coach-fed and there is no opponent or shot choice."}, "Movement Calibration": {"setup": "Coach feeds to the four corners, in order or at random.", "rule": "Get to the ball, play it, and be back on the T before the next feed.", "score": "Feeds reached and returned in time.", "why": "Movement is timed by a real ball, but nobody is trying to make it hard."}, "Catch and Track": {"setup": "Coach feeds a large or bouncy ball; the player uses a hand or the racket face.", "rule": "Catch the ball, or stop it dead on the racket, at the right moment instead of hitting it.", "score": "Catches out of 10.", "why": "The simplest link between seeing the ball and acting on it. No opponent."}, "Coach calls zone sequence 1→2→3→4": {"setup": "Player and coach; target zones 1 to 4 marked on the floor.", "rule": "Before each shot the coach calls the zone: 1, then 2, then 3, then 4. The player hits that zone.", "score": "Zones hit, out of the sequence.", "why": "The coach makes every decision; the player only carries it out."}, "Coach directs feed to specified area": {"setup": "Coach feeds to the same place every time, for example the back left.", "rule": "The player plays the shot the coach asked for, for example a straight drive to length.", "score": "Good-length shots out of 10.", "why": "A predictable ball and a set task chosen by the coach."}, "Coach calls shot type before rally": {"setup": "Two players rally.", "rule": "Before each rally the coach names the shots allowed, for example \"drives only\" or \"drop, then drive\".", "score": "Normal rally scoring.", "why": "There is a rally, but the coach decides the shots, not the players."}, "Structured feed with called targets": {"setup": "Coach feeds in a set pattern, for example from the front.", "rule": "As the ball comes, the coach calls the target (\"length\", \"volley\", \"drop\") and the player plays it.", "score": "Targets hit, out of 10.", "why": "A set pattern with every target called by the coach."}, "Player selects own zone sequence": {"setup": "Player alone or with a feeder; zones 1 to 4 marked.", "rule": "The player decides the order of the zones and hits them, then changes the order each round.", "score": "Zones hit in the chosen order.", "why": "The decision is the player’s, but nobody is trying to stop it."}, "Player chooses shot type": {"setup": "Coach or partner feeds, cooperatively.", "rule": "The player picks the shot to suit each ball: drive, drop or boast.", "score": "Shots that land where the player intended.", "why": "The player decides; there is no opponent to read."}, "Player-directed Around The Board": {"setup": "Around The Board zones marked on the court.", "rule": "The player works round the zones in an order they choose, instead of the coach calling each one.", "score": "Fewest shots to complete all the zones.", "why": "Own choices, but no opponent pressure."}, "Self-selected ATL/BTL pattern": {"setup": "Solo, or with a partner feeding. ATL / BTL = above or below the service line on the front wall.", "rule": "The player chooses their own pattern, for example two drives above the line, then a drop below, plays it repeatedly, then changes it.", "score": "Patterns completed without an error.", "why": "The player sets the pattern (at RLD 1 the coach does), and nobody tries to stop it (from RLD 4 an opponent does, as in Declared Shot)."}, "Leader-Follower Around The Board": {"setup": "Two players. Swap roles every few minutes.", "rule": "The leader chooses where to hit; the follower reads it and must answer with a shot to a set zone.", "score": "Rallies of 10 shots or more.", "why": "The follower has to read another player’s shot, but the leader is helping, not trying to win."}, "ATL/BTL with leader-follower": {"setup": "Two players.", "rule": "The leader chooses above-the-line or below-the-line shots; the follower must answer each one, for example a drop with a drive.", "score": "Longest rally.", "why": "Reading a partner’s choices in a cooperative rally."}, "Cooperative rally with zone targets": {"setup": "Two players; target zones marked.", "rule": "Keep the rally going together, with every shot landing in a target zone.", "score": "Shots in a zone in one rally; beat the best.", "why": "The players work with each other, but every shot changes what the other must do."}, "Checkerboard with partner interaction": {"setup": "Two players on the Checkerboard.", "rule": "Players hit the squares together, each playing off the partner’s ball.", "score": "Shared total of squares hit.", "why": "Adapting to a partner’s ball, with no competition yet."}, "Checkerboard challenge scoring": {"setup": "Two players compete on the Checkerboard.", "rule": "Normal rallies; hitting a target square earns a bonus.", "score": "Rally point, plus the square bonus.", "why": "An opponent is trying to win, so players weigh risk against reward."}, "Power Play games": {"setup": "King of Court.", "rule": "Before any rally a player may call \"Power Play\" (a limited number per game). Win that rally for +3; lose it for nothing.", "score": "As the rule.", "why": "Competitive, with a gamble chosen under pressure and known to the opponent."}, "Constrained games with point scoring": {"setup": "Two players, normal rallies.", "rule": "One rule changed, for example a bonus for a volley or no boasts.", "score": "Every rally scored.", "why": "A real opponent, with the constraint shaping the play."}, "Around The Board with scoring": {"setup": "Two players.", "rule": "Each player tries to complete the zones in live rallies; points for each zone.", "score": "Zone points plus rally points.", "why": "Competitive choices under some pressure."}, "Competitive Checkerboard": {"setup": "A full Checkerboard game, played to win.", "rule": "Full rallies, with the board’s rules.", "score": "Game score.", "why": "Very close to a match: real opponent, real tactics."}, "Constrained matchplay": {"setup": "A full game or match.", "rule": "One small rule added, for example an extra point for a winner from the front.", "score": "Normal match scoring.", "why": "Almost a real match."}, "Pressure games": {"setup": "Two players.", "rule": "The game starts at a tight score (for example 8–8, next point wins) or with something at stake.", "score": "As set.", "why": "A real opponent and real pressure on every rally."}, "Competitive Around The Board": {"setup": "Two players, head to head.", "rule": "A race to complete the zones in live rallies.", "score": "First to finish.", "why": "Close to a match: choices against an opponent who is trying to stop them."}, "Invasion games": {"setup": "A team game across several courts.", "rule": "Players move between courts and win or lose lives.", "score": "Team lives or points.", "why": "Fast and competitive, with many opponents."}, "Tournament match": {"setup": "A real match in a tournament.", "rule": "The rules of squash, with official scoring.", "score": "Result counts.", "why": "The real thing: an opponent the player may not know, and a result that matters."}, "League match": {"setup": "A match in a club or team league.", "rule": "The rules of squash.", "score": "Result counts for the team.", "why": "Real competition."}, "Box league": {"setup": "A small group of players (a \"box\") who all play each other.", "rule": "The rules of squash; players move up or down boxes on their results.", "score": "Results across the box.", "why": "Real competition, repeated."}, "National League": {"setup": "The national inter-club league.", "rule": "The rules of squash.", "score": "Result counts for the club.", "why": "The highest level of club competition."}, "Monrad draw": {"setup": "A tournament format.", "rule": "Players keep playing after a loss, against players with the same record, so every match decides a final position.", "score": "Final position.", "why": "Real competition with a match that counts every round."}, "Championship finals": {"setup": "The final rounds of a championship.", "rule": "The rules of squash.", "score": "Title.", "why": "The most pressure a junior player meets."}, "Invasion finals": {"setup": "The final rounds of an Invasion competition.", "rule": "The Invasion rules.", "score": "Result counts.", "why": "Competition for a result."}};
 function RLDScreen({setScreen}){
   const [activeSection,setActiveSection]=useState('rld');
   const [openEx,setOpenEx]=useState(null);
@@ -4902,6 +4914,12 @@ function RLDScreen({setScreen}){
 .rldPage .rldExExplain{margin-top:10px;background:#0b1520;border:1px solid #2c4a63;border-left:5px solid #6eaac8;border-radius:10px;padding:12px 16px}
 .rldPage .rldExExplain strong{display:block;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.1rem;color:#eaf4fb;margin-bottom:4px}
 .rldPage .rldExExplain p{margin:0!important;color:#dde7ef!important}
+.rldPage .rldExDl{margin:4px 0 0}
+.rldPage .rldExDl>div{display:grid;grid-template-columns:8.5rem 1fr;gap:10px;padding:6px 0;border-top:1px solid #1d2c3c}
+.rldPage .rldExDl>div:first-child{border-top:none}
+.rldPage .rldExDl dt{color:#9cc4ec;font-weight:800;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.04em;padding-top:4px}
+.rldPage .rldExDl dd{margin:0;color:#dde7ef;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.08rem;line-height:1.55}
+@media (max-width:600px){.rldPage .rldExDl>div{grid-template-columns:1fr;gap:2px}}
 .rldPage .rldCharList{display:flex!important;flex-direction:column!important;gap:4px!important}
 .rldPage .rldCPFGuide{margin-top:16px!important;border:1px solid #2c4a63!important;border-radius:10px!important;padding:12px 14px!important}
 .rldPage .rldCPFGuide span{display:block}
@@ -5003,7 +5021,7 @@ function RLDScreen({setScreen}){
                 <div className="rldExamplePills">
                   {ex.activities.map(a=>{const k=r.level+'|'+a,on=openEx===k,help=RLD_EXAMPLE_HELP[a];return help?<button type="button" key={a} className={'rldExBtn'+(on?' on':'')} aria-expanded={on} onClick={()=>setOpenEx(on?null:k)}>{a}<span className="rldExMark">{on?'▴':'ⓘ'}</span></button>:<span key={a} style={{borderColor:r.color+'66',color:r.textColor}}>{a}</span>;})}
                 </div>
-                {openEx&&openEx.indexOf(r.level+'|')===0&&RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)]&&<div className="rldExExplain" style={{borderLeftColor:r.color}}><strong>{openEx.slice(String(r.level).length+1)}</strong><p>{RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)]}</p></div>}
+                {openEx&&openEx.indexOf(r.level+'|')===0&&RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)]&&<div className="rldExExplain" style={{borderLeftColor:r.color}}><strong>{openEx.slice(String(r.level).length+1)}</strong>{(()=>{const h=RLD_EXAMPLE_HELP[openEx.slice(String(r.level).length+1)];return typeof h==='string'?<p>{h}</p>:<dl className="rldExDl">{[['Set-up',h.setup],['Rule',h.rule],['Score',h.score],['Why this level',h.why]].filter(x=>x[1]).map(([t,v])=><div key={t}><dt>{t}</dt><dd>{v}</dd></div>)}</dl>;})()}</div>}
               </div>
               <div className="rldLevelSection">
                 <span className="rldLevelSectionLabel">Characteristics</span>
@@ -9613,7 +9631,7 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
         :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter);
 
     const K=[];const codesSeen=[];
-    const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`;};
+    const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);const lv=(scope!=='group'&&r&&r.level)?cbKidLevel(r.level):null;return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`+(lv?' '+lv:'');};
     if(scope==='group'){K.push(codeLine('Everyone’s codes',group));}
     else if(scope==='court'){courtChallenges.forEach((c,i)=>K.push(codeLine(`Court ${i+1}`,c)));}
     else{presents.forEach(n=>{const r=alloc[n];if(r)K.push(codeLine(n,r));});}
@@ -9981,6 +9999,7 @@ function CheckerboardPlayerDisplay({payload}){
           {row.optionB&&<div className="cbPdLabel" style={{marginTop:'6px'}}>↔ Mirror alt: {cbWithSeam(row.optionB,seam)}</div>}
         </>}
       {cbHasSeam(row,seam)&&!blindLocked&&<p className="cbPdSeam">(SA) = seam allowed — take it only if it's on. Your coach has set the width.</p>}
+      {!blindLocked&&row.level&&cbKidLevel(row.level)&&<p className="cbPdSeam" style={{fontWeight:800,color:'#f0c96a'}}>{cbKidLevel(row.level)}</p>}
     </div>
     {blindLocked&&<button type="button" className="cbPdReveal" onClick={()=>setLocalReveal(true)}>Reveal My Challenge</button>}
   </div>;
@@ -13664,6 +13683,23 @@ function penaltyPointLabel(p){return p>=PENALTY_FORFEIT?'Forfeit rally':(p>0?('-
 function penaltyRuleText(label,points){
   return points>=PENALTY_FORFEIT?(label+': rally forfeited'):(label+': -'+points);
 }
+function penaltyTokens(t){
+  const STOP=new Set(['the','and','or','of','to','in','on','a','an','is','it','its','with','for','from','before','after','rally','forfeit','forfeited','lose','loses','lost','point','points','player','players','shot','shots','ball','not','no','any','must','be','get','gets']);
+  const x=String(t||'').toLowerCase().replace(/\bt[\s-]*zone\b/g,'tzone').replace(/\bnon[\s-]*functional\s+cross[\s-]*court\b/g,'nfc').replace(/\bnon[\s-]*functional\s+length\b/g,'nfl').replace(/[^a-z0-9]+/g,' ');
+  const SYN={return:'back',returns:'back',recover:'back',recovery:'back',crosscourt:'cross',cross:'cross'};
+  return new Set(x.split(' ').map(w=>SYN[w]||w).filter(w=>w.length>=3&&!STOP.has(w)));
+}
+function penaltyPresetMatch(label){
+  /* v900 (coach, 10 Nov pin): warn when a custom fault repeats a preset. */
+  const STRONG=['tzone','nfc','nfl','corridor','tramline','boast','volley','service','serve','tin'];
+  const a=penaltyTokens(label);if(!a.size)return null;
+  let best=null,bestScore=0;
+  for(const p of PENALTY_PRESETS){const b=penaltyTokens(p.label);const shared=[...a].filter(w=>b.has(w));
+    if(!(shared.some(w=>STRONG.includes(w))||shared.length>=2))continue;
+    const score=shared.length+shared.filter(w=>STRONG.includes(w)).length;
+    if(score>bestScore){best=p;bestScore=score;}}
+  return best;
+}
 function UniversalPenaltyPanel({onAddToSession,setScreen}){
   const [enabled,setEnabled]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').enabled||false;}catch{return false;}});
   const [presetPoints,setPresetPoints]=useState(()=>{try{return JSON.parse(localStorage.getItem(PENALTY_KEY)||'{}').presetPoints||{};}catch{return {};}});
@@ -13673,7 +13709,12 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
   useEffect(()=>{localStorage.setItem(PENALTY_KEY,JSON.stringify({enabled,presetPoints,customList}));},[enabled,presetPoints,customList]);
   useEffect(()=>{const f=()=>{setEnabled(false);setPresetPoints({});setCustomList([]);};window.addEventListener('cbPenaltiesCleared',f);return()=>window.removeEventListener('cbPenaltiesCleared',f);},[]);
   function setPreset(id,pts){setPresetPoints(prev=>({...prev,[id]:pts}));}
-  function addCustom(){const l=customLabel.trim();if(!l)return;setCustomList(prev=>[...prev,{label:l,points:customPoints}]);setCustomLabel('');setCustomPoints(1);}
+  const [dupWarn,setDupWarn]=useState(null);
+  function addCustom(force){const l=customLabel.trim();if(!l)return;
+    if(customList.some(c=>c.label.trim().toLowerCase()===l.toLowerCase())){setDupWarn({label:l,same:true});return;}
+    const m=force?null:penaltyPresetMatch(l);if(m){setDupWarn({label:l,preset:m});return;}
+    setCustomList(prev=>[...prev,{label:l,points:customPoints}]);setCustomLabel('');setCustomPoints(1);setDupWarn(null);}
+  function usePresetInstead(){if(dupWarn&&dupWarn.preset){setPreset(dupWarn.preset.id,customPoints);}setCustomLabel('');setCustomPoints(1);setDupWarn(null);}
   function removeCustom(i){setCustomList(prev=>prev.filter((_,idx)=>idx!==i));}
   function activeRules(){
     const fromPresets=PENALTY_PRESETS.filter(p=>presetPoints[p.id]>0).map(p=>penaltyRuleText(p.label,presetPoints[p.id]));
@@ -13699,7 +13740,8 @@ function UniversalPenaltyPanel({onAddToSession,setScreen}){
         {PENALTY_PRESETS.map(p=><div className="dbAllocationRow" key={p.id}><span>{p.label}{presetPoints[p.id]>=PENALTY_FORFEIT&&<em style={{display:'block',color:'#c98a8a',fontSize:'0.78rem'}}>Rally is forfeited on this fault</em>}</span><PointStepper value={presetPoints[p.id]||0} onChange={v=>setPreset(p.id,v)} min={0} max={PENALTY_FORFEIT} zeroLabel="Off" sign="-"/></div>)}
       </div>
       <div className="statusBox"><strong>Add your own fault</strong></div>
-      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>setCustomLabel(e.target.value)} placeholder="Describe the fault, e.g. two runners in the tramline"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={PENALTY_FORFEIT} sign="-"/>{customPoints>=PENALTY_FORFEIT&&<em style={{color:'#f0c96a',fontWeight:800,alignSelf:'center'}}>= Forfeit rally</em>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      <div className="dbAllocationRow"><input type="text" value={customLabel} onChange={e=>{setCustomLabel(e.target.value);setDupWarn(null);}} placeholder="Describe the fault, e.g. two runners in the tramline"/><PointStepper value={customPoints} onChange={v=>setCustomPoints(Math.max(1,v))} min={1} max={PENALTY_FORFEIT} sign="-"/>{customPoints>=PENALTY_FORFEIT&&<em style={{color:'#f0c96a',fontWeight:800,alignSelf:'center'}}>= Forfeit rally</em>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom();}}>Add</button></div>
+      {dupWarn&&<div className="statusBox" style={{borderColor:'#f0c96a'}}>{dupWarn.same?<p style={{margin:0}}><strong>“{dupWarn.label}”</strong> is already in your list.</p>:<><p style={{margin:'0 0 8px'}}><strong>This looks like a preset:</strong> “{dupWarn.preset.label}”. Using both would show the same fault twice.</p><div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();usePresetInstead();}}>Use the preset instead</button><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();addCustom(true);}}>Add mine anyway</button></div></>}</div>}
       {customList.length>0&&<div className="dbAllocationGrid">{customList.map((c,i)=><div className="dbAllocationRow" key={i}><span>{penaltyRuleText(c.label,c.points)}</span><button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();removeCustom(i);}}>Remove</button></div>)}</div>}
       <div className="dbSummaryBox"><strong>Active penalties</strong><p>{rules.length?rules.join(' · '):'No penalties set yet.'}</p></div>
       <div className="buttonRow"><button type="button" className="primaryBtn" onClick={(e)=>{e.preventDefault();savePenalties();}} disabled={!rules.length}>Save Negative Scoring</button>{onAddToSession&&<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();savePenalties(); if(setScreen)setScreen('sessions');}} disabled={!rules.length}>Save + View Session</button>}<button type="button" className="secondaryBtn" onClick={(e)=>{e.preventDefault();clearAll();}}>Clear</button></div>
@@ -23632,6 +23674,7 @@ const SOLO_GOOD_CARDS=[
   {title:'Confidence',text:'Solo practice can build familiarity, ownership and comfort with the racquet-ball relationship. Confidence matters, but it must later be tested against reality.'},
   {title:'Ball Familiarity',text:'Players learn bounce, rebound, timing and the feel of different contacts without needing constant instruction.'},
   {title:'Self-Organisation',text:'Players may find useful solutions independently. The coach does not always need to prescribe the answer.'},
+  {title:'Warm-Up',text:'Activation and basic calibration before playing: retuning the feel of the ball and the swing to squash after time away or after other sports.'},
 ];
 const SOLO_CONTINUUM=[
   {side:'Healthy solo practice',items:['Curiosity','Experimentation','Discovery','Variation','Questions about ball behaviour','Confidence with humility']},
@@ -23639,8 +23682,8 @@ const SOLO_CONTINUUM=[
 ];
 const SOLO_LEVEL_GUIDE=[
   {level:'Level 0–1',amount:'High value',purpose:'Ball-racquet relationship, chipping, bounce/rebound familiarity, simple exploration and confidence building.'},
-  {level:'Level 2–3',amount:'Mixed use',purpose:'Solo practice remains useful, but must be blended with representative tasks, opponent information and decision making.'},
-  {level:'Level 4–5',amount:'Limited isolated use',purpose:'Greater emphasis shifts to opponents, anticipation, pressure, tactical adaptation and representative learning design.'},
+  {level:'Level 2–3',amount:'Limited share',purpose:'Solo practice can remain useful as a limited share of training, with the emphasis on exploration and variability. It must be blended with representative tasks, opponent information and decision making.'},
+  {level:'Level 4–5',amount:'Very little value',purpose:'Of very little value on its own. Mainly useful as a warm-up: activation, and recalibration of the player’s sensorimotor network back towards squash movement (Ajemian, D’Ausilio, Moorman and Bizzi, 2010, suggest the network keeps re-weighting towards whatever the player did last). Greater emphasis shifts to opponents, anticipation, pressure, tactical adaptation and representative learning design.',example:'For example, after a period of playing tennis, a player needs time to recalibrate to squash movement.'},
 ];
 function SoloFlow({type}){
   const solo=type==='solo';
@@ -24347,6 +24390,14 @@ function SoloPracticeModule({setScreen,setSession}){
 .soloPracticePage .soloPillarLabel,.soloPracticePage .soloEyebrow{background:none!important;border:none!important;padding:0!important;border-radius:0!important;color:#8aa0b6!important;box-shadow:none!important}
 .soloPracticePage .soloFinalQuestion,.soloPracticePage .soloKeyQuestion,.soloPracticePage .soloRldNote{background:#132233!important;background-image:none!important;border:1px solid #2c4a63!important;border-radius:12px!important;padding:14px 16px!important;box-shadow:none!important}
 .soloPracticePage .soloPosition>strong{color:#eaf4fb!important}
+/* v900: neutral RLD badge on this page (level colour on the dot and a thin left edge only), bigger subtitle, calm value labels */
+.soloPracticePage .rldBadgeLg{background:#0f1822!important;border:1px solid #223044!important;border-left:5px solid #e05252!important;border-radius:12px!important;padding:12px 16px!important;display:flex;gap:12px;align-items:flex-start}
+.soloPracticePage .rldBadgeLg strong{color:#eaf4fb!important;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.1rem}
+.soloPracticePage .rldBadgeLg p{color:#dde7ef!important;margin:2px 0 0!important}
+.soloPracticePage>.pageTop .mutedText{font-size:1.3rem!important;line-height:1.4!important;color:#b8c8d6!important;font-family:'Charter','Iowan Old Style',Georgia,serif!important}
+.soloPracticePage .soloLevelCard>span{display:inline-block;background:#132233!important;color:#9cc4ec!important;border:1px solid #2c4a63!important;border-radius:999px!important;padding:3px 12px!important;font-weight:800;font-size:0.85rem!important;margin:6px 0 8px}
+.soloPracticePage .soloLevelCard>strong{color:#eaf4fb!important;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.2rem}
+.soloPracticePage .soloLevelExample{font-style:italic;color:#b8c8d6!important}
 .soloPracticePage .categoryTag{background:none!important;border:none!important;padding:0!important;color:#8aa0b6!important;font-size:0.8rem!important;letter-spacing:0.08em;text-transform:uppercase;font-weight:800!important;box-shadow:none!important}
 .soloPracticePage .soloUrToggle{display:flex;gap:8px}
 .soloPracticePage .soloUrToggle button{min-width:84px;padding:9px 16px;border-radius:999px;border:1px solid #2c4a63;background:#132233;color:#dde7ef;font-weight:800;font-size:0.95rem;cursor:pointer}
@@ -24361,10 +24412,10 @@ function SoloPracticeModule({setScreen,setSession}){
 
     <div className="soloHero">
       <span className="soloEyebrow">FOUNDATIONAL COMMENTARY</span>
-      <h2>Solo practice is not the enemy. The question is what kind of learning it creates.</h2>
+      <h2>Solo practice doesn’t have to be the enemy. The question is what kind of learning it creates.</h2>
       <p>Traditional coaching often treats solo practice as a way to groove technique. Checkerboard asks whether the player is exploring possibilities or installing solutions that reality may later reject.</p>
       <RLDBadge level={1} size="lg"/>
-      <div className="soloRldNote"><strong>RLD position:</strong> Solo practice usually sits around RLD 0–1. Low representativeness does not mean low value. It means limited direct transfer to competitive performance.</div>
+      <div className="soloRldNote"><strong>RLD position:</strong> Solo practice usually sits around RLD 0–1. Low representativeness means limited value and limited direct transfer to competitive performance.</div>
     </div>
 
     <section className="soloSection">
@@ -24456,18 +24507,18 @@ function SoloPracticeModule({setScreen,setSession}){
 
     <section className="soloSection">
       <h2>Solo Practice Continuum</h2>
-      <p>Solo practice is not good or bad. It exists on a continuum from exploration to installation.</p>
+      <p>Solo practice is not simply good or bad. It exists on a continuum from exploration to installation.</p>
       <div className="soloCompareGrid">{SOLO_CONTINUUM.map(col=><div className="soloListCard" key={col.side}><h3>{col.side}</h3><ul>{col.items.map(i=><li key={i}>{i}</li>)}</ul></div>)}</div>
     </section>
 
     <section className="soloSection">
       <h2>Practical Guidelines</h2>
-      <div className="soloLevelGrid">{SOLO_LEVEL_GUIDE.map(g=><div className="soloLevelCard" key={g.level}><strong>{g.level}</strong><span>{g.amount}</span><p>{g.purpose}</p></div>)}</div>
+      <div className="soloLevelGrid">{SOLO_LEVEL_GUIDE.map(g=><div className="soloLevelCard" key={g.level}><strong>{g.level}</strong><span>{g.amount}</span><p>{g.purpose}</p>{g.example&&<p className="soloLevelExample">{g.example}</p>}</div>)}</div>
     </section>
 
     <section className="soloSection soloPosition">
       <h2>The Checkerboard Position</h2>
-      <p>Solo practice is valuable. Solo practice is not the enemy. The danger is not repetition itself. The danger is creating confidence in solutions that reality may later reject. The danger is creating attractor states that become difficult to adapt under pressure.</p>
+      <p>Solo practice can be valuable as a warm-up tool, for activation and basic calibration. Beyond that its value is limited, and it doesn’t have to be the enemy. The danger is not repetition itself. The danger is creating confidence in solutions that reality may later reject. The danger is creating attractor states that become difficult to adapt under pressure.</p>
       <strong>The goal is not perfect repetition. The goal is adaptable performance.</strong>
       <div className="soloFinalQuestion">When your player practises alone, are they exploring possibilities, or installing solutions that reality may later reject?</div>
     </section>
@@ -25743,7 +25794,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Patience and Pounce',sub:'Patience → Urgency · base game',kw:'patience pounce base game window finish',screen:'games',classId:'patienceurgency'},
   {label:'The Patient Player',sub:'Patience → Urgency · one player constrained',kw:'patient player one conditioned survive signal constrained',screen:'games',classId:'patienceurgency'},
   {label:'Hunter and Survivor',sub:'Patience → Urgency · roles',kw:'hunter survivor roles asymmetric attack defend clock',screen:'games',classId:'patienceurgency'},
-  {label:'Earn the Attack',sub:'Patience → Urgency · condition during patience',kw:'earn the attack playing condition patience overlay length checkerboard',screen:'games',classId:'patienceurgency'},
+  {label:'Earn the Attack',sub:'Patience → Urgency · condition during patience',kw:'earn the attack playing condition patience overlay length checkerboard not back where it came from same quarter no repeat two lengths then change alternate back corners short every third no boast no drop',screen:'games',classId:'patienceurgency'},
   {label:'Individual Rally Bands',sub:'Patience → Urgency · per-player release',kw:'individual rally bands per player release split asymmetric',screen:'games',classId:'patienceurgency'},
   {label:'Blind Transition',sub:'Patience → Urgency · random signal',kw:'blind transition random signal no countdown',screen:'games',classId:'patienceurgency'},
   {label:'Shrinking Urgency',sub:'Patience → Urgency · window shrinks by round',kw:'shrinking urgency window shorter rounds finishing speed',screen:'games',classId:'patienceurgency'},
@@ -25762,6 +25813,7 @@ function buildSearchIndex(){
   pushGames(typeof DISRUPTION_ROTATIONS!=='undefined'&&DISRUPTION_ROTATIONS,'Disruption Rotations',{screen:'games',classId:'rotations'});
   const libCat={};try{GAME_LIBRARY.forEach(e=>{if(!e.route)libCat[e.category]=e.id;});}catch{}
   try{(standardGames()||[]).forEach(g=>{if(g&&g.title)idx.push({label:g.title,sub:(g.category||'Game')+' · Library',kw:g.title+' '+(g.category||'')+' '+(g.task||''),screen:'games',...(libCat[g.category]?{classId:libCat[g.category]}:{})});});}catch{}
+  [["Functional Crosscourt", "Non-functional crosscourt"], ["Take The Serve Early", "Not volleying the serve"], ["Intercept On", "Not volleying volley-able balls"], ["Length That Pins", "Losing length"], ["Move Them, Don’t Feed Them", "Hitting back to the opponent"], ["Eyes On The Striker", "Not looking at the opponent"], ["Hold The T", "Unnecessary retreat off the T"], ["Break The Pattern", "Predictable patterns"], ["Punish The Loose Ball", "Not punishing the loose ball"], ["Don’t Boast Good Length", "Boasting good length"]].forEach(([t,k])=>idx.push({label:t,sub:'Common Game Errors · Library',kw:t+' common game errors match error fault '+k,screen:'games',classId:'errors'}));
   [['Declared Shot','declared named shot below the line abl atl one shot announce call tactical set up deny'],['Earn & Reload','earn reload deep drive below the line'],['Earn the Below','earn below tramline deep drive'],['Break & Finish','break finish attack window pot']].forEach(([t,k])=>idx.push({label:t,sub:'ATL / BTL · Library',kw:t+' atl btl '+k,screen:'games',classId:'atl'}));
   try{MATCH_PROBLEMS.forEach(p=>idx.push({label:p.title,sub:'Match Problem Index · '+p.group,kw:p.title+' '+p.see+' '+p.games.map(g=>g.label).join(' '),screen:'matchProblems'}));}catch{}
   try{GAME_LIBRARY.forEach(e=>{const heads=GAME_LIBRARY_GROUPS.filter(gr=>e.groups.includes(gr.id)).map(gr=>gr.title);idx.push({label:e.label,sub:'Games Library · '+heads.join(' · '),kw:e.label+' '+e.category+' '+heads.join(' '),...(e.route?{screen:e.route}:{screen:'games',classId:e.id})});});}catch{}
