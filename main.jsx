@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v897 Unopposed Rally Card';
+const APP_VERSION='v899 Unopposed Rally Options';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -24289,22 +24289,23 @@ function TacticalIntentionsModule({setScreen,setSession}){
   </div>;
 }
 
-function unopposedRallyCard(limit){
+function unopposedRallyCard(limit,db){
   const n=Math.max(1,Math.min(4,Number(limit)||2));
   const limitLine=n===1?'Never play the same shot twice in a row.':'Do not play the same shot more than '+n+' times in a row.';
-  const rules=['Play on your own, with a bouncy ball.','Start the rally with a boast.','Move to the ball and play the next shot.','Choose every shot: length, boast, drop or volley.',limitLine,'Hit high enough to have time to reach the next ball.','Keep the rally going as long as possible.'];
-  return {id:'solo-unopposed-rally-'+Date.now().toString(36),title:'Unopposed Rally',category:'Unopposed Practice',format:'Solo \u2014 combined solo hitting and ghosting',duration:8,rld:2,
+  const rules=['Play on your own, with a bouncy ball.','Start the rally with a boast.','Move to the ball and play the next shot.','Choose every shot: length, boast, drop or volley.',limitLine,'Hit high enough to have time to reach the next ball.',...(db?['The ball may bounce twice before you hit it.']:[]),'Keep the rally going as long as possible.'];
+  return {id:'solo-unopposed-rally-'+Date.now().toString(36),title:'Unopposed Rally'+(db?' \u00b7 Double Bounce':''),category:'Unopposed Practice',format:'Solo \u2014 combined solo hitting and ghosting',duration:8,rld:2,
     task:rules.map((x,i)=>(i+1)+'. '+x).join('\n'),
-    scoring:'1. Count the shots in each rally.\n2. Beat the best rally.',
+    scoring:'1. Count the shots in each rally.\n2. Second count: the most shots in a row, each different from the one before.\n3. Beat the best for each count.',
     rationale:'Coach design (Nov 2026). A combined solo-hitting and ghosting exercise for when no opponent is available. Solo hitting on its own can groove a skill that does not transfer or adapt; ghosting on its own takes movement apart from the ball, and a skill taken apart like that cannot be put back together usefully in a rally. Here movement and hitting stay together: every move is timed by the real ball\u2019s flight and bounce, and the player chooses every shot to keep the rally alive. The same-shot limit ('+(n===1?'never twice in a row':'no more than '+n+' in a row')+') stops it turning back into traditional solo hitting.',
-    coach:'Use a red or orange dot for most juniors so there is time to move. Same shot = same shot type (a length, a boast, a drop, a volley); for a harder version count the side as well (a forehand length is not a backhand length). Easier: a bouncier ball, higher shots, a looser limit. Harder: a less bouncy ball, lower and faster shots, a target area for each length, a limit of 1. Watch for the player choosing only the safe shot: the limit forces a change, so the next choice has to be read from where the ball is. This is conditioning and movement control together; for pure conditioning use the Ghosting tool. Debrief: which shot gave you the most time? Which shot made the next ball hardest to reach?',
+    coach:'Use a red or orange dot for most juniors so there is time to move. Same shot = same shot type (a length, a boast, a drop, a volley); for a harder version count the side as well (a forehand length is not a backhand length). Easier: a bouncier ball, higher shots, a looser limit. Harder: a less bouncy ball, lower and faster shots, a target area for each length, a limit of 1. Double bounce'+(db?' is on':' (switch it on)')+': makes it easier by giving more time, or use it to practise holding the shot and deception \u2014 the extra time lets the player show one shot and play another. The second count (shots in a row, each different from the one before) rewards variety and stops the player settling on two safe shots. Watch for the player choosing only the safe shot: the limit forces a change, so the next choice has to be read from where the ball is. This is conditioning and movement control together; for pure conditioning use the Ghosting tool. Debrief: which shot gave you the most time? Which shot made the next ball hardest to reach?',
     playerFocus:'Read the ball. Choose the shot that keeps the rally going.',
     layers:['Decision Making','Movement']};
 }
 function SoloPracticeModule({setScreen,setSession}){
   const[urLimit,setUrLimit]=React.useState(2);
+  const[urDb,setUrDb]=React.useState(false);
   const[urAdded,setUrAdded]=React.useState('');
-  const urCard=unopposedRallyCard(urLimit);
+  const urCard=unopposedRallyCard(urLimit,urDb);
   return <div className="page soloPracticePage">
     <style>{`
 .soloPracticePage .soloCompareCard{background:#0e1a28 !important;border:1px solid #26405a !important}
@@ -24340,8 +24341,16 @@ function SoloPracticeModule({setScreen,setSession}){
 .soloPracticePage .soloTrainCard{background:#101d20;border:1px solid #37624f;border-radius:12px;padding:14px 16px}
 .soloPracticePage .soloTrainCard strong{display:block;font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;font-size:1.12rem;color:#8fcfad;margin-bottom:4px}
 .soloPracticePage .soloTrainCard p{margin:0!important;font-size:1.06rem!important}
-.soloPracticePage .soloBetter{border:2px solid #37624f!important;background:linear-gradient(180deg,#0f1e1c,#0d1822)!important;border-radius:16px!important}
-.soloPracticePage .soloBetter .soloPillarLabel{color:#8fcfad!important}
+.soloPracticePage .soloBetter{border-radius:16px!important}
+/* v898 (coach, 18 Nov: yellow tabs unreadable; no different background colours) — one background for every section, plain labels */
+.soloPracticePage .soloSection,.soloPracticePage .soloHero,.soloPracticePage .soloPosition,.soloPracticePage .soloBetter,.soloPracticePage .soloTyson,.soloPracticePage .soloPillar{background:#0f1822!important;background-image:none!important;border:1px solid #223044!important;box-shadow:none!important}
+.soloPracticePage .soloPillarLabel,.soloPracticePage .soloEyebrow{background:none!important;border:none!important;padding:0!important;border-radius:0!important;color:#8aa0b6!important;box-shadow:none!important}
+.soloPracticePage .soloFinalQuestion,.soloPracticePage .soloKeyQuestion,.soloPracticePage .soloRldNote{background:#132233!important;background-image:none!important;border:1px solid #2c4a63!important;border-radius:12px!important;padding:14px 16px!important;box-shadow:none!important}
+.soloPracticePage .soloPosition>strong{color:#eaf4fb!important}
+.soloPracticePage .categoryTag{background:none!important;border:none!important;padding:0!important;color:#8aa0b6!important;font-size:0.8rem!important;letter-spacing:0.08em;text-transform:uppercase;font-weight:800!important;box-shadow:none!important}
+.soloPracticePage .soloUrToggle{display:flex;gap:8px}
+.soloPracticePage .soloUrToggle button{min-width:84px;padding:9px 16px;border-radius:999px;border:1px solid #2c4a63;background:#132233;color:#dde7ef;font-weight:800;font-size:0.95rem;cursor:pointer}
+.soloPracticePage .soloUrToggle button.on{background:#1c5d7e;border-color:#6eaac8;color:#ffffff}
 .soloPracticePage .soloUrCard{margin-top:16px;background:#0f1822;border:1px solid #2c4a63;border-left:5px solid #37624f;border-radius:14px;padding:16px 18px}
 .soloPracticePage .soloUrRules{margin:14px 0;background:#0b1520;border:1px solid #223044;border-radius:10px;padding:12px 14px}
 .soloPracticePage .soloUrRules strong{display:block;color:#9cc4ec;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-top:6px}
@@ -24485,15 +24494,19 @@ function SoloPracticeModule({setScreen,setSession}){
         <div className="soloTrainCard"><strong>Movement control</strong><p>Every move is timed and directed by the ball’s flight and bounce: real information, not a call or a light.</p></div>
         <div className="soloTrainCard"><strong>Shot choice</strong><p>The player picks the shot that keeps the rally alive, given where the ball is and how much time there is.</p></div>
       </div>
-      <div className="soloReflectionBox"><strong>Make it easier or harder</strong><p>Easier: a bouncier ball, higher shots, more time between them. Harder: a less bouncy ball, lower and faster shots, or a target area for each length.</p></div>
+      <div className="soloReflectionBox"><strong>Make it easier or harder</strong><p>Easier: a bouncier ball, higher shots, more time between them. Harder: a less bouncy ball, lower and faster shots, or a target area for each length.</p><p><strong style={{display:'inline',fontSize:'inherit'}}>Double bounce:</strong> let the ball bounce twice to make it easier when needed, or to practise holding the shot and deception. The extra time lets the player show one shot and play another.</p></div>
+      <div className="soloReflectionBox"><strong>Two counts</strong><p>Count the shots in each rally. As a second challenge, count the most shots in a row that are each different from the one before. The first count rewards keeping the rally going; the second rewards variety.</p></div>
       <div className="soloRldNote" style={{marginTop:'14px'}}><strong>RLD position:</strong> still unopposed, with no opponent to read or beat, so around RLD 2. But every movement answers a real ball, which ghosting can never offer.</div>
       <div className="soloUrCard">
         <div className="categoryTag">Session card</div>
         <h3 style={{margin:'4px 0 10px'}}>Unopposed Rally</h3>
         <div className="mutedText" style={{fontWeight:800,fontSize:'0.85rem',marginBottom:'4px'}}>Same shot in a row: limit</div>
         <PointStepper value={urLimit} min={1} max={4} onChange={v=>{setUrLimit(v);setUrAdded('');}} fmt={v=>v===1?'Never twice':'Up to '+v}/>
+        <div className="mutedText" style={{fontWeight:800,fontSize:'0.85rem',margin:'12px 0 4px'}}>Double bounce</div>
+        <div className="soloUrToggle">{[[false,'Off'],[true,'On']].map(([v,l])=><button type="button" key={l} className={urDb===v?'on':''} aria-pressed={urDb===v} onClick={()=>{setUrDb(v);setUrAdded('');}}>{l}</button>)}</div>
+        <p className="mutedText" style={{margin:'4px 0 0',fontSize:'0.95rem'}}>On: easier, or for practising holding the shot and deception.</p>
         <div className="soloUrRules"><strong>Players see</strong><p style={{whiteSpace:'pre-line'}}>{urCard.task}</p><strong>Score</strong><p style={{whiteSpace:'pre-line'}}>{urCard.scoring}</p></div>
-        <button type="button" className="primaryBtn" disabled={typeof setSession!=='function'} onClick={()=>{if(typeof setSession!=='function')return;const c=unopposedRallyCard(urLimit);setSession(prev=>appendToSessionState(prev,c));setUrAdded(c.title);}}>Add to Session</button>
+        <button type="button" className="primaryBtn" disabled={typeof setSession!=='function'} onClick={()=>{if(typeof setSession!=='function')return;const c=unopposedRallyCard(urLimit,urDb);setSession(prev=>appendToSessionState(prev,c));setUrAdded(c.title);}}>Add to Session</button>
         {urAdded&&<p className="mutedText" style={{margin:'8px 0 0'}}>✓ Added to the session: {urAdded}</p>}
       </div>
     </section>
