@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v895 Interceptive Tracking';
+const APP_VERSION='v897 Unopposed Rally Card';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -24289,7 +24289,22 @@ function TacticalIntentionsModule({setScreen,setSession}){
   </div>;
 }
 
-function SoloPracticeModule({setScreen}){
+function unopposedRallyCard(limit){
+  const n=Math.max(1,Math.min(4,Number(limit)||2));
+  const limitLine=n===1?'Never play the same shot twice in a row.':'Do not play the same shot more than '+n+' times in a row.';
+  const rules=['Play on your own, with a bouncy ball.','Start the rally with a boast.','Move to the ball and play the next shot.','Choose every shot: length, boast, drop or volley.',limitLine,'Hit high enough to have time to reach the next ball.','Keep the rally going as long as possible.'];
+  return {id:'solo-unopposed-rally-'+Date.now().toString(36),title:'Unopposed Rally',category:'Unopposed Practice',format:'Solo \u2014 combined solo hitting and ghosting',duration:8,rld:2,
+    task:rules.map((x,i)=>(i+1)+'. '+x).join('\n'),
+    scoring:'1. Count the shots in each rally.\n2. Beat the best rally.',
+    rationale:'Coach design (Nov 2026). A combined solo-hitting and ghosting exercise for when no opponent is available. Solo hitting on its own can groove a skill that does not transfer or adapt; ghosting on its own takes movement apart from the ball, and a skill taken apart like that cannot be put back together usefully in a rally. Here movement and hitting stay together: every move is timed by the real ball\u2019s flight and bounce, and the player chooses every shot to keep the rally alive. The same-shot limit ('+(n===1?'never twice in a row':'no more than '+n+' in a row')+') stops it turning back into traditional solo hitting.',
+    coach:'Use a red or orange dot for most juniors so there is time to move. Same shot = same shot type (a length, a boast, a drop, a volley); for a harder version count the side as well (a forehand length is not a backhand length). Easier: a bouncier ball, higher shots, a looser limit. Harder: a less bouncy ball, lower and faster shots, a target area for each length, a limit of 1. Watch for the player choosing only the safe shot: the limit forces a change, so the next choice has to be read from where the ball is. This is conditioning and movement control together; for pure conditioning use the Ghosting tool. Debrief: which shot gave you the most time? Which shot made the next ball hardest to reach?',
+    playerFocus:'Read the ball. Choose the shot that keeps the rally going.',
+    layers:['Decision Making','Movement']};
+}
+function SoloPracticeModule({setScreen,setSession}){
+  const[urLimit,setUrLimit]=React.useState(2);
+  const[urAdded,setUrAdded]=React.useState('');
+  const urCard=unopposedRallyCard(urLimit);
   return <div className="page soloPracticePage">
     <style>{`
 .soloPracticePage .soloCompareCard{background:#0e1a28 !important;border:1px solid #26405a !important}
@@ -24300,6 +24315,38 @@ function SoloPracticeModule({setScreen}){
 .soloPracticePage .soloCompareCard.success strong{color:#8fcfad !important}
 .soloPracticePage .soloCompareCard.traditional strong{color:#c9b98f !important}
 .soloPracticePage .soloCompareCard.cla strong{color:#8fb8d4 !important}
+/* v896 reading style (coach, 18 Nov: same treatment as Start Here / Why CLA / RLD) */
+.soloPracticePage>*{max-width:46rem;margin-left:auto!important;margin-right:auto!important}
+.soloPracticePage h1,.soloPracticePage h2,.soloPracticePage h3,.soloPracticePage p,.soloPracticePage li,.soloPracticePage blockquote,.soloPracticePage .soloKeyQuestion,.soloPracticePage .soloFinalQuestion,.soloPracticePage .soloRldNote,.soloPracticePage .soloPosition strong,.soloPracticePage .soloCompareCard strong,.soloPracticePage .soloGrooveBox strong,.soloPracticePage .soloReflectionBox strong{font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif!important}
+.soloPracticePage>.pageTop h1{font-weight:700!important;letter-spacing:-0.01em}
+.soloPracticePage h2{font-size:1.55rem!important;font-weight:700!important;line-height:1.25!important;color:#eaf4fb!important;margin-bottom:12px!important}
+.soloPracticePage h3{font-size:1.2rem!important;font-weight:700!important;color:#eaf4fb!important}
+.soloPracticePage p,.soloPracticePage li{font-size:1.15rem!important;line-height:1.65!important;font-weight:400!important;color:#dde7ef!important}
+.soloPracticePage .soloSection,.soloPracticePage .soloHero{padding:22px 26px!important;margin-bottom:18px!important}
+.soloPracticePage .soloPillarLabel,.soloPracticePage .soloEyebrow{display:inline-block;color:#8aa0b6!important;font-size:0.8rem!important;letter-spacing:0.08em;text-transform:uppercase;font-weight:800;margin-bottom:6px}
+.soloPracticePage .soloCompareGrid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:12px!important;margin:14px 0!important}
+.soloPracticePage .soloCompareCard{padding:14px 16px!important;border-radius:12px!important}
+.soloPracticePage .soloCompareCard strong{display:block;font-size:1.12rem!important;margin-bottom:4px}
+.soloPracticePage .soloCompareCard p{margin:0!important;font-size:1.08rem!important}
+.soloPracticePage blockquote,.soloPracticePage .soloQuote{font-size:1.35rem!important;font-style:italic;font-weight:600!important;line-height:1.45!important;color:#eaf4fb!important;border-left:4px solid #6eaac8!important;padding:4px 0 4px 16px!important;margin:16px 0!important;background:none!important}
+.soloPracticePage .soloKeyQuestion,.soloPracticePage .soloFinalQuestion{font-size:1.3rem!important;font-style:italic;font-weight:600!important;line-height:1.45!important;color:#eaf4fb!important}
+.soloPracticePage .soloReflectionBox,.soloPracticePage .soloGrooveBox{background:#132233!important;border:1px solid #2c4a63!important;border-radius:12px!important;padding:14px 16px!important;margin-top:14px!important}
+.soloPracticePage .soloReflectionBox p,.soloPracticePage .soloGrooveBox p{margin:4px 0 0!important}
+.soloPracticePage .soloReflectionBox strong,.soloPracticePage .soloGrooveBox strong,.soloPracticePage .soloRldNote strong{font-size:1.12rem!important;color:#eaf4fb!important}
+.soloPracticePage .soloRldNote{font-size:1.08rem!important;line-height:1.6!important;color:#dde7ef!important}
+.soloPracticePage .soloSteps{counter-reset:none;padding-left:1.4em!important;margin:8px 0 4px!important}
+.soloPracticePage .soloSteps li{margin-bottom:8px!important}
+.soloPracticePage .soloTrainGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+.soloPracticePage .soloTrainCard{background:#101d20;border:1px solid #37624f;border-radius:12px;padding:14px 16px}
+.soloPracticePage .soloTrainCard strong{display:block;font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif;font-size:1.12rem;color:#8fcfad;margin-bottom:4px}
+.soloPracticePage .soloTrainCard p{margin:0!important;font-size:1.06rem!important}
+.soloPracticePage .soloBetter{border:2px solid #37624f!important;background:linear-gradient(180deg,#0f1e1c,#0d1822)!important;border-radius:16px!important}
+.soloPracticePage .soloBetter .soloPillarLabel{color:#8fcfad!important}
+.soloPracticePage .soloUrCard{margin-top:16px;background:#0f1822;border:1px solid #2c4a63;border-left:5px solid #37624f;border-radius:14px;padding:16px 18px}
+.soloPracticePage .soloUrRules{margin:14px 0;background:#0b1520;border:1px solid #223044;border-radius:10px;padding:12px 14px}
+.soloPracticePage .soloUrRules strong{display:block;color:#9cc4ec;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-top:6px}
+.soloPracticePage .soloUrRules p{margin:4px 0 6px!important;font-size:1.08rem!important}
+@media (max-width:600px){.soloPracticePage p,.soloPracticePage li{font-size:1.05rem!important}.soloPracticePage .soloSection,.soloPracticePage .soloHero{padding:18px!important}}
 `}</style>
     <div className="pageTop"><div><h1>Unopposed Practice</h1><p className="mutedText">Exploration vs Installation · Confidence, attractors and adaptability</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
 
@@ -24310,12 +24357,6 @@ function SoloPracticeModule({setScreen}){
       <RLDBadge level={1} size="lg"/>
       <div className="soloRldNote"><strong>RLD position:</strong> Solo practice usually sits around RLD 0–1. Low representativeness does not mean low value. It means limited direct transfer to competitive performance.</div>
     </div>
-
-    <button type="button" className="gameCard" style={{width:'100%',textAlign:'left',cursor:'pointer',border:'1px solid #35557a',background:'linear-gradient(135deg,#12263b,#0d1b2a)'}} onClick={()=>setScreen&&setScreen('ghosting')}>
-      <div className="categoryTag">Unopposed Movement</div>
-      <h2 style={{margin:'4px 0'}}>🏃 Ghosting →</h2>
-      <p className="mutedText" style={{margin:0}}>Rally-band movement blocks (5:10:4:1) for your Rox / lights, tagged RLD 1–2, with a visualise + produce-the-shot prompt. The unopposed movement tool, made the most CLA way possible.</p>
-    </button>
 
     <section className="soloSection">
       <h2>The Great Debate</h2>
@@ -24375,6 +24416,24 @@ function SoloPracticeModule({setScreen}){
       </div>
     </section>
 
+    <section className="soloSection soloPillar">
+      <span className="soloPillarLabel">Pillar 5</span>
+      <h2>Ghosting: Fitness, Not Footwork</h2>
+      <p>Ghosting is moving around the court to called corners, cones or lights, with no ball. It is the most familiar way of practising squash movement alone. The same question applies to it as to solo hitting: what is the player moving to, and will that be there in a match?</p>
+      <p>In a rally, movement is controlled by information. The opponent’s position and swing, the ball’s flight off the front wall, its bounce and its pace tell the player when to move, where to go, how fast, and where to stop. Ghosting removes all of it. The player moves to a pattern, a call or a light: signals that never appear in a match.</p>
+      <div className="soloCompareGrid">
+        <div className="soloCompareCard success"><strong>What ghosting does well</strong><p>Builds movement capacity: speed, endurance, repeated sprints and strength in the lunge. It is physical conditioning, like court sprints or cycling, with the bonus of squash-like directions and distances.</p></div>
+        <div className="soloCompareCard warning"><strong>What ghosting cannot do</strong><p>Teach the player to control their movement in a rally. With no opponent, no ball flight and no bounce, there is nothing to read, so the timing, route and stopping point of every move are set in advance instead of found.</p></div>
+      </div>
+      <blockquote className="soloQuote">A player who met every ball the way they move in a ghosting pattern would lose the rally.</blockquote>
+      <div className="soloReflectionBox"><strong>Use ghosting for what it is</strong><p>Plan it as conditioning, like court sprints: work, rest and intensity. Do not count it as movement-skill training. Squash movement is learned against a ball and an opponent.</p></div>
+      <button type="button" className="gameCard" style={{width:'100%',textAlign:'left',cursor:'pointer',border:'1px solid #35557a',background:'linear-gradient(135deg,#12263b,#0d1b2a)',marginTop:'14px'}} onClick={()=>setScreen&&setScreen('ghosting')}>
+        <div className="categoryTag">Conditioning</div>
+        <h3 style={{margin:'4px 0'}}>🏃 Ghosting tool →</h3>
+        <p className="mutedText" style={{margin:0}}>Rally-band work blocks (5:10:4:1) for building movement capacity, with three ways to signal the corner.</p>
+      </button>
+    </section>
+
     <section className="soloSection soloTyson">
       <h2>The Tyson Principle</h2>
       <blockquote>“Everybody has a plan until they get punched in the mouth.”</blockquote>
@@ -24402,6 +24461,41 @@ function SoloPracticeModule({setScreen}){
       <p>Solo practice is valuable. Solo practice is not the enemy. The danger is not repetition itself. The danger is creating confidence in solutions that reality may later reject. The danger is creating attractor states that become difficult to adapt under pressure.</p>
       <strong>The goal is not perfect repetition. The goal is adaptable performance.</strong>
       <div className="soloFinalQuestion">When your player practises alone, are they exploring possibilities, or installing solutions that reality may later reject?</div>
+    </section>
+
+    <section className="soloSection soloBetter">
+      <span className="soloPillarLabel">When no opponent is available</span>
+      <h2>A Better Solo Option: The Unopposed Rally</h2>
+      <p>Sometimes there is nobody to play. The unopposed rally is a <strong>combined solo-hitting and ghosting exercise</strong> for those times.</p>
+      <p>Each practice on its own carries a risk. Solo hitting can groove a skill that does not transfer to a match or adapt when the ball changes. Ghosting takes movement apart from the ball, and a skill taken apart like that cannot be put back together in a useful way in a rally.</p>
+      <p>Put together, they avoid both risks. Movement and hitting stay joined, every move is timed by a real ball, and the player chooses every shot to keep the rally alive.</p>
+      <h3>How it works</h3>
+      <ol className="soloSteps">
+        <li>Use a ball with plenty of bounce, such as a red or orange dot, so there is time to move between shots.</li>
+        <li>Start the rally with a boast.</li>
+        <li>Move to the ball and play a shot off the boast, for example a length.</li>
+        <li>Move again and play the next shot: another length, then a boast, and so on.</li>
+        <li>The player chooses every shot.</li>
+        <li>Set a limit on playing the same shot in a row, for example no more than two lengths before a different shot. Without a limit, it turns back into traditional solo hitting.</li>
+        <li>Give each shot enough height and pace to leave time to reach the next one. The aim is to keep the rally going.</li>
+      </ol>
+      <h3>What it trains</h3>
+      <div className="soloTrainGrid">
+        <div className="soloTrainCard"><strong>Movement capacity</strong><p>Continuous movement between the corners, as in ghosting.</p></div>
+        <div className="soloTrainCard"><strong>Movement control</strong><p>Every move is timed and directed by the ball’s flight and bounce: real information, not a call or a light.</p></div>
+        <div className="soloTrainCard"><strong>Shot choice</strong><p>The player picks the shot that keeps the rally alive, given where the ball is and how much time there is.</p></div>
+      </div>
+      <div className="soloReflectionBox"><strong>Make it easier or harder</strong><p>Easier: a bouncier ball, higher shots, more time between them. Harder: a less bouncy ball, lower and faster shots, or a target area for each length.</p></div>
+      <div className="soloRldNote" style={{marginTop:'14px'}}><strong>RLD position:</strong> still unopposed, with no opponent to read or beat, so around RLD 2. But every movement answers a real ball, which ghosting can never offer.</div>
+      <div className="soloUrCard">
+        <div className="categoryTag">Session card</div>
+        <h3 style={{margin:'4px 0 10px'}}>Unopposed Rally</h3>
+        <div className="mutedText" style={{fontWeight:800,fontSize:'0.85rem',marginBottom:'4px'}}>Same shot in a row: limit</div>
+        <PointStepper value={urLimit} min={1} max={4} onChange={v=>{setUrLimit(v);setUrAdded('');}} fmt={v=>v===1?'Never twice':'Up to '+v}/>
+        <div className="soloUrRules"><strong>Players see</strong><p style={{whiteSpace:'pre-line'}}>{urCard.task}</p><strong>Score</strong><p style={{whiteSpace:'pre-line'}}>{urCard.scoring}</p></div>
+        <button type="button" className="primaryBtn" disabled={typeof setSession!=='function'} onClick={()=>{if(typeof setSession!=='function')return;const c=unopposedRallyCard(urLimit);setSession(prev=>appendToSessionState(prev,c));setUrAdded(c.title);}}>Add to Session</button>
+        {urAdded&&<p className="mutedText" style={{margin:'8px 0 0'}}>✓ Added to the session: {urAdded}</p>}
+      </div>
     </section>
   </div>;
 }
@@ -25597,7 +25691,7 @@ const SEARCH_DESTINATIONS=[
   {label:'Pressure',sub:'Pressure module',kw:'pressure index tactical pressure',screen:'pressure'},
   {label:'Vision & Perception',sub:'Gaze & anticipation',kw:'vision perception gaze anticipation quiet eye early read',screen:'visionPerception'},
   {label:'Perception',sub:'Perceptual training',kw:'perception perceptual',screen:'perception'},
-  {label:'Unopposed Practice',sub:'Practice with opponent removed',kw:'solo unopposed practice alone feeding',screen:'soloPractice'},
+  {label:'Unopposed Practice',sub:'Practice with opponent removed',kw:'solo unopposed practice alone feeding unopposed rally ghosting conditioning no opponent',screen:'soloPractice'},
   {label:'Where Did the Improvement Come From?',sub:'Why 1-2-1s and solo practice get the credit',kw:'credit attribution lesson one to one 121 solo practice feeling of learning blocked mixed illusion parents players',screen:'creditLearning'},
   {label:'Checkerboard',sub:'Flagship · per-player challenge allocation',kw:'checkerboard flagship per player allocation single pair triple blind optional mirror challenge',screen:'checkerboard'},
   {label:'Universal Modifier Engine',sub:'Overlays · constraints',kw:'overlays modifier engine technical tactical mental diversity constraints',screen:'technical'},
@@ -29962,7 +30056,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='perception'&&<PerceptionModule setScreen={go} setSession={setSession}/>}
       {screen==='peakWeek'&&<PeakWeekModule setScreen={go} setSession={setSession}/>}
       {screen==='tacticalIntentions'&&<TacticalIntentionsModule setScreen={go} setSession={setSession}/>}
-      {screen==='soloPractice'&&<SoloPracticeModule setScreen={go}/>}
+      {screen==='soloPractice'&&<SoloPracticeModule setScreen={go} setSession={setSession}/>}
       {screen==='rld'&&<RLDScreen setScreen={go}/>}
       {screen==='purpose'&&<PurposeScreen setScreen={go}/>}
       {screen==='whyCLA'&&<WhyCLAScreen setScreen={go}/>}
