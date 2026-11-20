@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v906 Challenge Finish Only With A Finish Rule';
+const APP_VERSION='v907 Plug & Play Rules, Difficulty Guide, Partial Credit';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -4010,9 +4010,10 @@ function PlugAndPlay({setScreen,setSession}){
     const card={
       title:game.title,
       category:game.tags.includes('Power Play')?'Power Play':'Plug & Play',
-      task:`${game.type} · ${game.players} · ${game.level} · Constraint: ${constraintAppliesTo} · ${constraintTiming}`,
+      task:game.what||game.task||game.description||'',
       rationale:game.why,
-      coach:game.coach,
+      coach:`${game.type} · ${game.players} · ${game.level} · Constraint: ${constraintAppliesTo} · ${constraintTiming}.`+(game.coach?' '+game.coach:''),
+      setupNote:`${game.type} · ${game.players} · ${game.level} · Constraint: ${constraintAppliesTo} · ${constraintTiming}`,
       playerFocus:game.player,
       scoring:game.score,
       whatToDo:game.what,
@@ -9549,6 +9550,28 @@ const CB_PD_CSS=`
 .cbPlayLevel{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:#8199ac;font-size:0.8rem;font-weight:700;letter-spacing:.04em;}
 `;
 
+/* v907 (coach, 20 Nov): triples got very hard; coaches should row back. One ladder, easiest to hardest, confirmed by the coach. */
+function cbDifficulty(row,orderMode,finishOn){
+  const kind=cbBaseKind(row&&row.type?row.type:(CB_LEVEL_DEFAULTS[(row&&row.level)||1]||CB_LEVEL_DEFAULTS[1]).type);
+  const w=(CB_LEVEL_DEFAULTS[(row&&row.level)||1]||CB_LEVEL_DEFAULTS[1]).window;
+  const k={single:0,pair:1,triple:2}[kind]||0;
+  const win=w==='2-shot window'?2:w==='4-shot window'?1:0;
+  const score=k+orderMode+win+(finishOn?1:0);
+  const band=score>=7?{label:'Very hard',note:'Very hard, even for strong adults. Step down a rung unless players are finishing codes.',col:'#d98c6a'}
+    :score>=5?{label:'Hard',note:'Hard. Watch the first few rallies and step down if nobody is finishing a code.',col:'#d8b86a'}
+    :score>=3?{label:'Moderate',note:'',col:'#9cc4ec'}:{label:'Easy start',note:'',col:'#8fcfad'};
+  return {score,max:8,kind,win,...band};
+}
+const CB_GUIDE_CSS=`.cbGuide{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:0;margin:0 0 18px}
+.cbGuide>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.15rem;color:#eaf4fb;font-weight:700}
+.cbGuide>summary::-webkit-details-marker{display:none}
+.cbGuideBody{padding:0 18px 16px;font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;color:#dde7ef;font-size:1.06rem;line-height:1.55}
+.cbGuideBody p{margin:0 0 10px}
+.cbGuideBody h3{font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.08rem;color:#eaf4fb;margin:14px 0 6px}
+.cbGuideBody ol{margin:0 0 10px 1.2em;padding:0}.cbGuideBody li{margin:0 0 4px}
+.cbGuideRung{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border-left:4px solid #223044;background:#0c141d;margin:4px 0;border-radius:4px;font-size:1rem}
+.cbGuideNow{font-family:'Charter','Iowan Old Style',Georgia,serif;background:#0c141d;border:1px solid #223044;border-radius:8px;padding:10px 12px;margin:10px 0 0}`;
+
 function CheckerboardSetup({setScreen,setSession}){
   const [presents,setPresents]=useState(cbReadPresents);
 
@@ -9580,8 +9603,9 @@ const [stWinAfterFrom,setStWinAfterFrom]=useState(()=>{try{return JSON.parse(loc
 const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfter??2;}catch{return 2;}});
 const [stStyle,setStStyle]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stStyle||'standard';}catch{return 'standard';}});
 const [raceBonus,setRaceBonus]=useState(()=>{try{return {single:2,pair:3,triple:5,...(JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').raceBonus||{})};}catch{return {single:2,pair:3,triple:5};}});
-const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').raceSecond??0;}catch{return 0;}});
-  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget,stPerSquare,stWinAfterFrom,stWinAfter,stStyle,raceBonus,raceSecond}));}catch{}},[stStyle,raceBonus,raceSecond,anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget,stPerSquare,stWinAfterFrom,stWinAfter]);
+const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').partial??1;}catch{return 1;}});
+const [stepDown,setStepDown]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stepDown??4;}catch{return 4;}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget,stPerSquare,stWinAfterFrom,stWinAfter,stStyle,raceBonus,partial:raceSecond,stepDown}));}catch{}},[stStyle,raceBonus,raceSecond,stepDown,anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget,stPerSquare,stWinAfterFrom,stWinAfter]);
 
   useEffect(()=>{try{localStorage.setItem(CB_SEAM_KEY,seamAllowance?'1':'0');}catch{}},[seamAllowance]);
 
@@ -9683,7 +9707,8 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
         ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
         :(stStyle==='race'
           ?('Race scoring (coach, Nov 2026: players ignored the challenge and played for the rally point; a zero rally point or a penalty after banking created new gaming): Win the rally = +1  \u00b7  Complete the challenge = +'+raceBonus.single+' single / +'+raceBonus.pair+' pair / +'+raceBonus.triple+' triple, every completion counts, no cap'+(raceSecond>0?'  \u00b7  Triple: second square of the run landed = +'+raceSecond+', banked (the first square never scores, so ordinary shots cannot be farmed)':'')+'  \u00b7  Challenge finish (only with a finish rule such as Clean winner: after completing the challenge, win the rally with that finish) = +2  \u00b7  The rotation is won by the most completed challenges; total points break a tie, so the leader must keep going for the code. Level 4 and 5 windows still apply to the complete-bonus.')
-          :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter));
+          :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter)+(raceSecond>0?'  Triple: second square of the run landed = +'+raceSecond+', banked (partial credit, coach 20 Nov).':''))
+        +((!(anyOrder||!aoConsecutive)&&stepDown>0)?'  Step down: no code finished after '+stepDown+' rallies, the player drops the last target (triple to pair, pair to single) for the rest of the rotation; it scores as the shorter code; self-called, no penalty.':'');
 
     const K=[];const codesSeen=[];
     const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);const lv=(scope!=='group'&&r&&r.level)?cbKidLevel(r.level):null;return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`+(lv?' '+lv:'');};
@@ -9697,6 +9722,7 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
       K.push('The same code twice counts.');
     }else{
       K.push('Hit the code in the order shown, one shot straight after the other.','If the run is broken, start again.');
+      if(stepDown>0&&(cbHasKind('pair')||cbHasKind('triple')))K.push(`If you have not finished your code after ${stepDown} rallies, drop the last target of your code. Tell your opponent before the next rally. Your shorter code stays until the rotation ends and scores as the shorter code.`);
     }
     const lvl=scope==='group'?group&&group.level:null;
     const lvlLine=lvl?cbKidLevel(lvl):null; if(lvlLine)K.push(lvlLine);
@@ -9710,10 +9736,11 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
     }else{
       if(stStyle==='race'){
         S.push(`Finish the code = +${raceBonus.single} single, +${raceBonus.pair} pair, +${raceBonus.triple} triple. Every finished code counts.`);
-        if(raceSecond>0)S.push(`Triple: the second shot of the code landed = +${raceSecond}, kept even if the rally is lost.`);
+        if(raceSecond>0&&cbHasKind('triple'))S.push(`Triple: the second shot of the code landed = +${raceSecond}, kept even if the rally is lost.`);
       }else{
       if(stPerSquare>0)S.push(`Each part of the code landed = +${stPerSquare}.`);
       S.push('Finish the code = +1 single, +2 pair, +3 triple.');
+      if(raceSecond>0&&cbHasKind('triple'))S.push(`Triple: the second shot of the code landed = +${raceSecond}, kept even if the rally is lost.`);
       if(stWinAfter>0&&stWinAfterFrom==='commenced')S.push(`Win the rally once the code has started = +${stWinAfter}.`);
       }
     }
@@ -9734,6 +9761,13 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
     setSession(prev=>appendToSessionState(prev,card));
     setStatus(card.title+' added to Session Builder.');
   }
+  function cbScopeRows(){
+    if(scope==='group')return [group];
+    if(scope==='court')return courtChallenges.slice(0,Math.max(1,courtCount));
+    return presents.map(n=>alloc[n]).filter(Boolean);
+  }
+  function cbRowKind(r){return cbBaseKind(r&&r.type?r.type:(CB_LEVEL_DEFAULTS[(r&&r.level)||1]||CB_LEVEL_DEFAULTS[1]).type);}
+  function cbHasKind(k){return cbScopeRows().some(r=>cbRowKind(r)===k);}
   function playerLink(name){return liveUrl?`${liveUrl}&player=${encodeURIComponent(name)}`:'';}
   function copyLink(name){const u=playerLink(name);if(u&&navigator.clipboard){navigator.clipboard.writeText(u);setStatus(`Copied ${name}'s player link.`);}}
 
@@ -9809,6 +9843,38 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
   return <div className="page cbsetPage">
     <style>{CB_SET_CSS}</style>
     <div className="pageTop"><div><h1>Checkerboard</h1><p className="cbsetIntro">Flagship challenge protocol — allocate singles, pairs, triples, blind and optional challenges per player, per group or per court.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    {(()=>{
+      const orderMode=anyOrder?(aoConsecutive?1:0):(aoConsecutive?3:2);
+      const finishOn=((modifier&&modifier.gameLogic)||[]).some(x=>getFinishRules().includes(x));
+      const rows=scope==='player'?presents.map(n=>[n,alloc[n]]).filter(x=>x[1]):scope==='court'?courtChallenges.slice(0,Math.max(1,courtCount)).map((r,i)=>['Court '+(i+1),r]):[['Group',group]];
+      const rated=rows.map(([n,r])=>[n,cbDifficulty(r,orderMode,finishOn),r]);
+      const top=rated.reduce((a,b)=>(!a||b[1].score>a[1].score)?b:a,null);
+      const longOpen=rated.some(([,d,r])=>d.kind!=='single'&&!(r&&r.mode==='Random Blind'));
+      return <details className="cbGuide"><style>{CB_GUIDE_CSS}</style>
+        <summary>Coach's guide: how hard is this setup?{top?<span style={{color:top[1].col,marginLeft:10,fontSize:'1rem'}}>{top[1].label}{rated.length>1?' (hardest: '+top[0]+')':''}</span>:null}</summary>
+        <div className="cbGuideBody">
+          <p>The challenge should be hard but reachable. Triples get very hard very quickly, even for strong adults, and a player who can't reach the code gives up on it and just plays for the rally.</p>
+          <p><strong>If a player hasn't finished a code in the first few rallies, step down a rung. If they finish one nearly every rally, step up.</strong></p>
+          <h3>The ladder, easiest to hardest</h3>
+          <ol>
+            <li>Code: single → pair → triple.</li>
+            <li>Order: any order, gaps allowed → any order, consecutive → in sequence, gaps allowed → in sequence, consecutive.</li>
+            <li>Window (from the level): none → 4 shots (L4) → 2 shots (L5).</li>
+            <li>Finish rule (e.g. Clean winner): off → on.</li>
+          </ol>
+          <h3>Open or Blind</h3>
+          <p>In Open, the opponent knows the code and will try to block it. In a real match the opponent doesn't know your plan. Open suits learning the code at the low levels. Once pairs or triples are in play, Blind (Random Blind) is more match-like.</p>
+          <h3>Built in to help</h3>
+          <p>Partial credit (on by default, +1): landing the second shot of a triple scores, kept even if the rally is lost. Step down (on by default, after 4 rallies): a player who hasn't finished their code drops its last target for the rest of the rotation. Both are under Difficulty when In sequence, consecutive is chosen.</p>
+          <p>Triples are for players at least as strong as their opponent. Against a stronger opponent, give a single or a pair.</p>
+          {rated.length>0&&<div className="cbGuideNow"><strong>This setup</strong>
+            {rated.map(([n,d])=><div key={n} className="cbGuideRung" style={{borderLeftColor:d.col}}><span>{n}: {d.kind}</span><span style={{color:d.col}}>{d.label} · {d.score}/{d.max}</span></div>)}
+            {top&&top[1].note&&<p style={{marginTop:8,color:top[1].col}}>{top[1].note}</p>}
+            {longOpen&&<p style={{marginTop:8}}>Pairs or triples are set as Open. Consider Random Blind: the opponent can't block a code they don't know.</p>}
+          </div>}
+        </div>
+      </details>;
+    })()}
 
     <div className="cbsetSection">
       <h2>Court Map Reference</h2>
@@ -9871,10 +9937,6 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
               <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>{l}</span>
               <PointStepper value={raceBonus[k]} onChange={v=>setRaceBonus(b=>({...b,[k]:v}))} min={1} max={9} sign="+"/>
             </div>)}
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-              <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Triple: second shot landed<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>A start for newer players. The first shot never scores, so ordinary shots can’t be farmed.</em></span>
-              <PointStepper value={raceSecond} onChange={setRaceSecond} min={0} max={3} zeroLabel="Off" sign="+"/>
-            </div>
           </>}
           {stStyle!=='race'&&<>
           <p className="cbsetScopeNote" style={{marginTop:0}}>A pair or triple that only pays on completion can be denied by an opponent who loses the rally on purpose. Either setting below removes the incentive without anyone judging intent.</p>
@@ -9887,6 +9949,14 @@ const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorag
             <PointStepper value={stWinAfterFrom==='commenced'?stWinAfter:0} onChange={v=>{setStWinAfterFrom('commenced');setStWinAfter(v);}} min={0} max={9} zeroLabel="Off" sign="+"/>
           </div>
           </>}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Partial credit · triple: second shot landed<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Keeps players chasing a hard code. Kept even if the rally is lost. The first shot never scores, so ordinary shots can’t be farmed. Keep it small so they still go for the third shot.</em></span>
+            <PointStepper value={raceSecond} onChange={setRaceSecond} min={0} max={3} zeroLabel="Off" sign="+"/>
+          </div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Step down after this many rallies with no code finished<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>The player drops the last target of their code (triple to pair, pair to single) until the rotation ends. They call it themselves. No penalty.</em></span>
+            <PointStepper value={stepDown} onChange={setStepDown} min={0} max={9} zeroLabel="Off" sign=""/>
+          </div>
         </div>}
       </div>
       <div className="cbsetField"><label>Seam Allowance</label>
