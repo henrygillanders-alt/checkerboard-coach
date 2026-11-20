@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v904 Not Back Where It Came From';
+const APP_VERSION='v906 Challenge Finish Only With A Finish Rule';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -904,7 +904,18 @@ function getPlayerDisplayFields(game){
   const PD_WIN=/^(\d+\s*[.)]\s*)?win(ning)?\s+(the\s+|a\s+)?rally\s*(=|:|scores|is)\s*\d+(\s*points?)?\.?$/i;
   const PD_PTS=/(^|[\s(:])\+\s?\d+\b|=\s*\d+\s*points?\b/i;
   const scoreOnlyRally=String(scoringLogic).split(/\n|\.\s+/).map(x=>x.trim()).filter(x=>x&&!/^(add any bonus scoring here|layer any game-specific)/i.test(x)).every(x=>PD_WIN.test(x));
-  pdFinishNames(item).map(pdFinishLine).filter(Boolean).forEach(finLine=>{if(!String(what).toLowerCase().includes(finLine.toLowerCase())){const n=String(what).split('\n').filter(x=>x.trim()).length;const numbered=/^\s*1\s*[.)]/.test(String(what));what=String(what).trim()+'\n'+(numbered?(n+1)+'. ':'')+finLine;}});
+  const isCbCard=item.category==='Checkerboard'||/^Checkerboard/.test(String(item.title||''));
+  if(isCbCard){
+    /* v906 (coach, 18 Nov): "Winning after the challenge gives no extra benefit unless there is a finish criteria." The old blanket line goes; with a finish rule, one scoring line replaces the separate finish-rule line. */
+    const keep=String(scoringLogic).split('\n').filter(x=>x.trim()&&!/win the rally with a code shot/i.test(x)&&!/win the rally after finishing the code/i.test(x)).map(x=>x.replace(/^\s*\d+\s*[.)]\s*/,''));
+    const fins=pdFinishNames(item);
+    if(fins.length){const PH={'clean winner':'a clean winner (the opponent gets no racket on the ball)','volley finish':'a volley','volley finish in front of short line':'a volley in front of the short line','opposite side finish':'a shot to the side away from the opponent'};
+      const ph=fins.map(f=>PH[String(f).toLowerCase()]||String(f).toLowerCase()).join(' or ');
+      const line='After finishing the code, win the rally with '+ph+' = +2 (challenge finish).';
+      const lastIdx=keep.findIndex(x=>/most codes wins the rotation/i.test(x));if(lastIdx>=0)keep.splice(lastIdx,0,line);else keep.push(line);}
+    scoringLogic=keep.map((x,i)=>(i+1)+'. '+x).join('\n');
+  }
+  if(!isCbCard)pdFinishNames(item).map(pdFinishLine).filter(Boolean).forEach(finLine=>{if(!String(what).toLowerCase().includes(finLine.toLowerCase())){const n=String(what).split('\n').filter(x=>x.trim()).length;const numbered=/^\s*1\s*[.)]/.test(String(what));what=String(what).trim()+'\n'+(numbered?(n+1)+'. ':'')+finLine;}});
   if(item.showScoring&&scoreOnlyRally&&String(what).includes('\n')){
     const keep=[],moved=[];
     String(what).split('\n').forEach(x=>{const t=x.trim();if(!t)return;const bare=t.replace(/^\d+\s*[.)]\s*/,'');if(PD_WIN.test(bare))return;if(PD_PTS.test(bare))moved.push(bare);else keep.push(bare);});
@@ -9281,13 +9292,11 @@ function cbStrictScoring(perSquare,winAfterFrom,winAfter){
   const parts=['Win the rally = +1'];
   if(perSquare>0)parts.push('Each square of a pair or triple landed in the run = +'+perSquare+', banked as it lands even if the rally is then lost');
   parts.push('Complete the challenge = +1 single / +2 pair / +3 triple');
-  if(winAfter>0)parts.push(winAfterFrom==='commenced'
-    ?'Win the rally after the challenge has commenced (your first square of the run has landed) = +'+winAfter+', whether or not you completed it'
-    :'Win the rally after completing the challenge = +'+winAfter);
-  parts.push('Challenge finish (win the rally with a code shot) = +2');
+  if(winAfter>0&&winAfterFrom==='commenced')parts.push('Win the rally after the challenge has commenced (your first square of the run has landed) = +'+winAfter+', whether or not you completed it');
+  parts.push('Challenge finish (only with a finish rule such as Clean winner: after completing the challenge, win the rally with that finish) = +2');
   return parts.join('  \u00b7  ')+'  Levels 1\u20133: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the complete-bonus is lost'+(perSquare>0?', but squares already banked stay banked':'')+' \u2014 start the challenge again from scratch.';
 }
-const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Win the rally after completing the challenge = +2  ·  Challenge finish (win the rally with a code shot) = +2.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
+const CB_FULL_SCORING='Win the rally = +1  ·  Complete the challenge = +1 single / +2 pair / +3 triple  ·  Challenge finish (only with a finish rule such as Clean winner) = +2.  Levels 1–3: the challenge banks once completed. Level 4: the complete-bonus banks only if you finish within 4 shots of completing the challenge. Level 5: within 2 shots. Miss the window and the bonus is lost — start the challenge again from scratch.';
 
 function cbPoolCodes(codeText){
   const out=(String(codeText||'').match(/\[\d-\d\](?:\s*\(SA\))?/g)||[]).map(c=>c.trim());
@@ -9309,7 +9318,7 @@ function cbAnyOrderScoring(perCode,allBonus,sameRallyBonus,count,anyOrder,consec
     '  \u00b7  Each code completed = +'+perCode+
     '  \u00b7  All '+n+' completed during the game = +'+allBonus+
     (sameRallyBonus>0?('  \u00b7  All '+n+' completed inside a single rally = +'+sameRallyBonus):'')+
-    '  \u00b7  Win the rally = +1  \u00b7  Challenge finish (win the rally with a code shot) = +2.'+
+    '  \u00b7  Win the rally = +1  \u00b7  Challenge finish (only with a finish rule such as Clean winner: after completing the challenge, win the rally with that finish) = +2.'+
     (consecutive?'  A broken run restarts the challenge.':'  A missed code costs nothing \u2014 keep playing and take them as they come.');
 }
 function cbIsOptional(type){return type==='Optional Single'||type==='Optional Pair'||type==='Optional Triple';}
@@ -9386,7 +9395,7 @@ function cbLevelScoring(level){
   const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];
   const complete=`complete = +${d.bonus}`;
   const win=d.window==='No window'?'banks once completed':`banks only if you finish within ${d.window.replace('-shot window',' shots')} of completing`;
-  return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · win after +2 · challenge finish +2 · ${win}`;
+  return `Level ${level} (${d.type.toLowerCase()}): win rally +1 · ${complete} · challenge finish +2 with a finish rule · ${win}`;
 }
 
 function cbLevelBrief(level){const d=CB_LEVEL_DEFAULTS[level]||CB_LEVEL_DEFAULTS[1];return 'L'+level+' '+d.type.toLowerCase()+(d.window==='No window'?', banks once completed':', finish within '+d.window.replace('-shot window',' shots')+' of completing or the complete-bonus is lost');}
@@ -9569,7 +9578,10 @@ function CheckerboardSetup({setScreen,setSession}){
 const [stPerSquare,setStPerSquare]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stPerSquare??0;}catch{return 0;}});
 const [stWinAfterFrom,setStWinAfterFrom]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfterFrom||'complete';}catch{return 'complete';}});
 const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stWinAfter??2;}catch{return 2;}});
-  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget,stPerSquare,stWinAfterFrom,stWinAfter}));}catch{}},[anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget,stPerSquare,stWinAfterFrom,stWinAfter]);
+const [stStyle,setStStyle]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').stStyle||'standard';}catch{return 'standard';}});
+const [raceBonus,setRaceBonus]=useState(()=>{try{return {single:2,pair:3,triple:5,...(JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').raceBonus||{})};}catch{return {single:2,pair:3,triple:5};}});
+const [raceSecond,setRaceSecond]=useState(()=>{try{return JSON.parse(localStorage.getItem('checkerboard_anyorder_v1')||'{}').raceSecond??0;}catch{return 0;}});
+  useEffect(()=>{try{localStorage.setItem('checkerboard_anyorder_v1',JSON.stringify({on:anyOrder,perCode:aoPerCode,allBonus:aoAllBonus,rallyBonus:aoRallyBonus,consecutive:aoConsecutive,target:aoTarget,stPerSquare,stWinAfterFrom,stWinAfter,stStyle,raceBonus,raceSecond}));}catch{}},[stStyle,raceBonus,raceSecond,anyOrder,aoPerCode,aoAllBonus,aoRallyBonus,aoConsecutive,aoTarget,stPerSquare,stWinAfterFrom,stWinAfter]);
 
   useEffect(()=>{try{localStorage.setItem(CB_SEAM_KEY,seamAllowance?'1':'0');}catch{}},[seamAllowance]);
 
@@ -9669,7 +9681,9 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
     const scopeLabel={player:'Per-player',group:'Group (all players)',court:'Per-court'}[scope]||scope;
     const coachScoring=(anyOrder||!aoConsecutive)
         ?cbAnyOrderScoring(aoPerCode,aoAllBonus,aoRallyBonus,aoTarget,anyOrder,aoConsecutive,cbPoolCodes(cbCodeText(group,seamAllowance)))
-        :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter);
+        :(stStyle==='race'
+          ?('Race scoring (coach, Nov 2026: players ignored the challenge and played for the rally point; a zero rally point or a penalty after banking created new gaming): Win the rally = +1  \u00b7  Complete the challenge = +'+raceBonus.single+' single / +'+raceBonus.pair+' pair / +'+raceBonus.triple+' triple, every completion counts, no cap'+(raceSecond>0?'  \u00b7  Triple: second square of the run landed = +'+raceSecond+', banked (the first square never scores, so ordinary shots cannot be farmed)':'')+'  \u00b7  Challenge finish (only with a finish rule such as Clean winner: after completing the challenge, win the rally with that finish) = +2  \u00b7  The rotation is won by the most completed challenges; total points break a tie, so the leader must keep going for the code. Level 4 and 5 windows still apply to the complete-bonus.')
+          :cbStrictScoring(stPerSquare,stWinAfterFrom,stWinAfter));
 
     const K=[];const codesSeen=[];
     const codeLine=(who,r)=>{const t=cbCardCode(r,seamAllowance);codesSeen.push(t);const lv=(scope!=='group'&&r&&r.level)?cbKidLevel(r.level):null;return `${who}: ${/hidden/.test(t)?'secret code — shown on court':cbKidCode(t)}.`+(lv?' '+lv:'');};
@@ -9694,11 +9708,16 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
       if(aoAllBonus>0)S.push(`All ${aoTarget} codes during the game = +${aoAllBonus}.`);
       if(aoRallyBonus>0)S.push(`All ${aoTarget} codes in one rally = +${aoRallyBonus}.`);
     }else{
+      if(stStyle==='race'){
+        S.push(`Finish the code = +${raceBonus.single} single, +${raceBonus.pair} pair, +${raceBonus.triple} triple. Every finished code counts.`);
+        if(raceSecond>0)S.push(`Triple: the second shot of the code landed = +${raceSecond}, kept even if the rally is lost.`);
+      }else{
       if(stPerSquare>0)S.push(`Each part of the code landed = +${stPerSquare}.`);
       S.push('Finish the code = +1 single, +2 pair, +3 triple.');
-      if(stWinAfter>0)S.push(stWinAfterFrom==='commenced'?`Win the rally once the code has started = +${stWinAfter}.`:`Win the rally after finishing the code = +${stWinAfter}.`);
+      if(stWinAfter>0&&stWinAfterFrom==='commenced')S.push(`Win the rally once the code has started = +${stWinAfter}.`);
+      }
     }
-    S.push('Win the rally with a code shot = +2 (challenge finish).');
+    if(!(anyOrder||!aoConsecutive)&&stStyle==='race')S.push('The player who finishes the most codes wins the rotation. Points only break a tie.');
     const scoring=S.map((x,i)=>(i+1)+'. '+x).join('\n');
     const card=normaliseGameCard({
       title:'Checkerboard — '+scopeLabel,
@@ -9842,19 +9861,32 @@ const [stWinAfter,setStWinAfter]=useState(()=>{try{return JSON.parse(localStorag
           </div>
         </div>}
         {!anyOrder&&aoConsecutive&&<div style={{marginTop:'8px'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px',flexWrap:'wrap'}}>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Scoring style<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Race: every finished code counts, and the most finished codes wins the rotation</em></span>
+            <div className="cbsetChips"><button type="button" className={stStyle!=='race'?'cbsetChip on':'cbsetChip'} onClick={()=>setStStyle('standard')}>Standard</button><button type="button" className={stStyle==='race'?'cbsetChip on':'cbsetChip'} onClick={()=>setStStyle('race')}>Race</button></div>
+          </div>
+          {stStyle==='race'&&<>
+            <p className="cbsetScopeNote" style={{marginTop:0}}>For players who ignore the challenge and play for the rally point. The rally point stays, so rallies stay real. Finishing the code is worth more than playing safe, every finished code counts, and the rotation goes to the most finished codes, so a player who is ahead still has to keep going for it. No penalties.</p>
+            {[['single','Finish a single'],['pair','Finish a pair'],['triple','Finish a triple']].map(([k,l])=><div key={k} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+              <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>{l}</span>
+              <PointStepper value={raceBonus[k]} onChange={v=>setRaceBonus(b=>({...b,[k]:v}))} min={1} max={9} sign="+"/>
+            </div>)}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
+              <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Triple: second shot landed<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>A start for newer players. The first shot never scores, so ordinary shots can’t be farmed.</em></span>
+              <PointStepper value={raceSecond} onChange={setRaceSecond} min={0} max={3} zeroLabel="Off" sign="+"/>
+            </div>
+          </>}
+          {stStyle!=='race'&&<>
           <p className="cbsetScopeNote" style={{marginTop:0}}>A pair or triple that only pays on completion can be denied by an opponent who loses the rally on purpose. Either setting below removes the incentive without anyone judging intent.</p>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
             <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Each square landed in the run<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Banked as it lands, kept if the rally is lost</em></span>
             <PointStepper value={stPerSquare} onChange={setStPerSquare} min={0} max={5} zeroLabel="Off" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Win-after bonus</span>
-            <PointStepper value={stWinAfter} onChange={setStWinAfter} min={0} max={9} zeroLabel="Off" sign="+"/>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Win the rally once the code has started<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Started = your first square of the run has landed. Stops an opponent denying the code by losing on purpose. A bonus for winning after finishing the code comes only from a finish rule (Game Logic → Finish rules).</em></span>
+            <PointStepper value={stWinAfterFrom==='commenced'?stWinAfter:0} onChange={v=>{setStWinAfterFrom('commenced');setStWinAfter(v);}} min={0} max={9} zeroLabel="Off" sign="+"/>
           </div>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Win-after bonus paid from<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Commenced = your first square of the run has landed</em></span>
-            <div className="cbsetChips"><button type="button" className={stWinAfterFrom==='complete'?'cbsetChip on':'cbsetChip'} onClick={()=>setStWinAfterFrom('complete')}>Completion</button><button type="button" className={stWinAfterFrom==='commenced'?'cbsetChip on':'cbsetChip'} onClick={()=>setStWinAfterFrom('commenced')}>Commenced</button></div>
-          </div>
+          </>}
         </div>}
       </div>
       <div className="cbsetField"><label>Seam Allowance</label>
