@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v915 Plans Joined to Development';
+const APP_VERSION='v916 Power Driver Steps and Kill Zone';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -8632,7 +8632,9 @@ function ReadTheAttackFamily({onAdd,label,openFamily}){
 
 const SHOTS_OPEN_KEY='checkerboard_shots_open_section';
 const PD_DRIVE_TEST={'Second bounce behind the short line':'its second bounce is behind the short line','First bounce behind the short line':'its first bounce is behind the short line','First bounce behind the service box':'its first bounce is behind the back line of the service box'};
-const PD_KILL_TEST={'In front of the service-box back line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the back line of the service box','In front of the short line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the short line','In front of a halfway tape':'it hits the front wall below the service line (above the tin), and its second bounce is in front of a tape halfway between the front wall and the short line'};
+const PD_KILL_TEST={'In front of the service-box back line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the back line of the service box','In front of the short line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the short line','In the kill zone':'it hits the front wall below the service line (above the tin), its first bounce is beyond the halfway tape (a strip of tape on the floor, halfway between the front wall and the short line), and its second bounce is in front of the short line'};
+/* v916 (coach, 21 Nov): the old top kill test (second bounce in front of a halfway tape) let a drop pass more easily than a kill. The kill zone judges both bounces, so a drop cannot pass. pdKill maps any old value. */
+function pdKill(t){return PD_KILL_TEST[t]||PD_KILL_TEST[t==='In front of a halfway tape'?'In the kill zone':'In front of the short line'];}
 const PD_ABOVE={'Second bounce behind the short line':'its second bounce must be behind the short line','First bounce behind the short line':'its first bounce must be behind the short line','No bounce condition':'it has no bounce condition'};
 const PD_BANK={'Every one':'Bonuses count for whoever plays the shot, whoever wins the rally.','Rally winner only':'Bonuses count only for the player who wins the rally.'};
 const PD_WHO={'Both players':'','Player A only':'Only Player A plays to the shot rules below; Player B plays normal squash','Player B only':'Only Player B plays to the shot rules below; Player A plays normal squash'};
@@ -8650,12 +8652,14 @@ const PD_STEP_MISS={k:'pdMiss',label:'Shot fails the test',type:'select',options
 const PD_STEP_ABOVE={k:'pdAbove',label:'Above-the-line shots',type:'select',options:Object.keys(PD_ABOVE)};
 const PD_STEP_WHO={k:'pdWho',label:'Who plays to the rules',type:'select',options:Object.keys(PD_WHO)};
 const PD_STEP_ORDER={k:'pdOrder',label:'Order within each three',type:'select',options:PD_ORDER};
-const PD_KILL_NOTE='A well-placed drop can also pass this test: it is a practical game test, not proof of a hard kill. ';
+const PD_KILL_NOTE='With the easier kill tests a well-placed drop can also pass: they are practical game tests, not proof of a hard kill. The kill zone test rules the drop out; it needs a strip of tape on the floor, halfway between the front wall and the short line. ';
+const PD_KILL_NOTE_LADDER='A well-placed drop can also pass this test: it is a practical game test, not proof of a hard kill. Game 5 (the kill zone) rules the drop out. ';
+const PD_KILL_TAPE='Before the session, put a strip of tape on the floor, halfway between the front wall and the short line. A kill must land beyond the tape and die before the short line. A ball that lands in front of the tape is a drop, and it fails the test. ';
 function pdGame(series,n){
   const kill=series==='k';
   const S=kill?'Kill':'Penetrating Drive';
   const id=(kill?'pk-':'pd-')+n;
-  const ladderTest=kill?{1:'In front of the service-box back line',2:'In front of the service-box back line',3:'In front of the service-box back line',4:'In front of the short line',5:'In front of a halfway tape'}:{1:'Second bounce behind the short line',2:'Second bounce behind the short line',3:'Second bounce behind the short line',4:'First bounce behind the short line',5:'First bounce behind the service box'};
+  const ladderTest=kill?{1:'In front of the service-box back line',2:'In front of the service-box back line',3:'In front of the service-box back line',4:'In front of the short line',5:'In the kill zone'}:{1:'Second bounce behind the short line',2:'Second bounce behind the short line',3:'Second bounce behind the short line',4:'First bounce behind the short line',5:'First bounce behind the service box'};
   const base={id,stage:n,boastRule:false,duration:8,format:'Constrained game — power and penetration',layers:['Shot Selection','Attacking Conversion'],
     focus:kill?'Low on the wall, dead in the front.':'Low on the wall, deep on the floor.'};
   const nextTxt=n<9?'Next: '+S.toLowerCase()+' game '+(n+1)+'. ':'Next: Drive or Kill. ';
@@ -8664,12 +8668,14 @@ function pdGame(series,n){
     const name=n<=2?PD_SIDES[n].name:n===3?'Full Court':n===4?(kill?'Full Court, Shorter':'Full Court, Deeper'):'Full Court, Elite';
     const setup=n<=2?PD_SIDES[n].setup:'Full court.';
     const t=ladderTest[n];
-    const tags={1:'Half court, right side; every shot low',2:'Half court, left side; every shot low',3:'Full court; every shot low',4:'Full court; a tighter test',5:'Full court; the elite test'};
-    return {...base,title:n+' · '+S+' — '+name,rld:n<=2?2:3,tag:tags[n]+(kill?' and dead in the front':' and deep'),
-      from:kill?'A rally of low balls that die in the front of the court. Nobody judges pace: the test is where the ball bounces for the second time. Each game moves the line closer to the front wall.':'A rally of low drives that still reach the back. Nobody judges pace: a ball that hits the front wall below the line and still bounces deep cannot be hit slowly. Each game moves the bounce further back.',
-      rule:(v)=>setup+pdWho(v,n<=2)+' From the return of serve, every shot '+(kill?'must be a kill: '+PD_KILL_TEST[t]:'must pass the test: '+pdDriveFull(t))+'. A shot that fails the test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
-      coach:(kill&&n===5?'Put the halfway tape down before the session, halfway between the front wall and the short line. ':'')+(kill?PD_KILL_NOTE+'Start at a pace that keeps the low rally going, then let the pace rise. ':'')+scale+nextTxt+'Debrief: when the ball '+(kill?'died in the front':'reached the back')+', where did it hit the front wall?',
-      score:(v)=>'Rally win +'+(v.pdRally||1)+'. Shot fails the test: '+pdMiss(v)+'. Test: '+(kill?PD_KILL_TEST[t]:pdDriveFull(t))+'.'+pdWhoScore(v),
+    const where={1:'Half court, right side',2:'Half court, left side',3:'Full court',4:'Full court',5:'Full court'}[n];
+    const lvl=n<=3?'Levels 1–2':n===4?'Level 3':'Levels 4–5';
+    const asks=kill?{1:'every shot low, dying before the back of the service box (easiest test)',2:'every shot low, dying before the back of the service box (easiest test)',3:'every shot low, dying before the back of the service box (easiest test)',4:'every shot low, dying before the short line',5:'every shot lands in the kill zone: a real kill'}[n]:{1:'every shot low, and past the short line (easiest test)',2:'every shot low, and past the short line (easiest test)',3:'every shot low, and past the short line (easiest test)',4:'every shot low, first bounce behind the short line',5:'every shot low, first bounce behind the service box: a real penetrating drive'}[n];
+    return {...base,title:n+' · '+S+' — '+name,rld:n<=2?2:3,tag:'Step '+n+' of 5 · for '+lvl+' · '+where+'; '+asks,
+      from:kill?'A rally of low balls that die in the front of the court. Nobody judges pace: the test is where the ball bounces. Each game tightens the test, until game 5 asks for a real kill.':'A rally of low drives that get deep. Nobody judges pace: a ball that hits the front wall below the line and still bounces deep cannot be hit slowly. Each game moves the bounce further back, until game 5 asks for a real penetrating drive.',
+      rule:(v)=>setup+pdWho(v,n<=2)+' From the return of serve, every shot '+(kill?'must be a kill: '+pdKill(t):'must pass the test: '+pdDriveFull(t))+'. A shot that fails the test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
+      coach:(kill&&n===5?PD_KILL_TAPE:'')+(kill?(n<5?PD_KILL_NOTE_LADDER:'')+'Start at a pace that keeps the low rally going, then let the pace rise. ':'')+scale+nextTxt+'Debrief: when the ball '+(kill?'died in the front':'reached the back')+', where did it hit the front wall?',
+      score:(v)=>'Rally win +'+(v.pdRally||1)+'. Shot fails the test: '+pdMiss(v)+'. Test: '+(kill?pdKill(t):pdDriveFull(t))+'.'+pdWhoScore(v),
       stepper:[PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO]};
   }
   if(n===6||n===7){
@@ -8677,18 +8683,18 @@ function pdGame(series,n){
     const mix=n===6?'two above-the-line shots and one below':'one above-the-line shot and two below';
     const mixKey=kill?'pkMixTest':'pdMixTest';
     const name=kill?(n===6?'Two Above, One Kill':'One Above, Two Kills'):(n===6?'Two Above, One Below':'One Above, Two Below');
-    return {...base,title:n+' · '+S+' — '+name,rld:4,tag:'A change of pace within every three shots: '+seq,
+    return {...base,title:n+' · '+S+' — '+name,rld:4,tag:'Mixed game · for the level of the test you choose · a change of pace within every three shots: '+seq,
       from:'Above-the-line play is the habit; the game asks for a change of pace within every three shots. The player has to produce the low ball on time, not only when it feels right.',
-      rule:(v)=>'Full court.'+pdWho(v,false)+' '+(v.pdOrder==='Any order'?'Count your own shots aloud in threes; each three must contain '+mix+', in any order.':'Count your own shots aloud in threes — '+seq+' — and repeat.')+' The serve does not count: each player starts counting with their first shot after the serve. An above-the-line shot hits the front wall above the service line, and '+(PD_ABOVE[v.pdAbove]||PD_ABOVE['Second bounce behind the short line'])+'. A below-the-line shot '+(kill?'must be a kill: '+PD_KILL_TEST[v[mixKey]]:'must pass the test: '+pdDriveFull(v[mixKey]))+'. A shot out of sequence, or one that fails its test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
+      rule:(v)=>'Full court.'+pdWho(v,false)+' '+(v.pdOrder==='Any order'?'Count your own shots aloud in threes; each three must contain '+mix+', in any order.':'Count your own shots aloud in threes — '+seq+' — and repeat.')+' The serve does not count: each player starts counting with their first shot after the serve. An above-the-line shot hits the front wall above the service line, and '+(PD_ABOVE[v.pdAbove]||PD_ABOVE['Second bounce behind the short line'])+'. A below-the-line shot '+(kill?'must be a kill: '+pdKill(v[mixKey]):'must pass the test: '+pdDriveFull(v[mixKey]))+'. A shot out of sequence, or one that fails its test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
       coach:'The striker counts aloud; the opponent checks the bounce. '+(kill?PD_KILL_NOTE:'')+scale+nextTxt+'Debrief: which shot in the three was hardest to produce — and what was the ball like when you managed it?',
       score:(v)=>'Rally win +'+(v.pdRally||1)+'. Out of sequence or failed test: '+pdMiss(v)+'. Sequence: '+(v.pdOrder==='Any order'?mix+', any order':seq)+'; the serve does not count.'+pdWhoScore(v),
       stepper:[PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO,PD_STEP_ORDER,PD_STEP_ABOVE,{k:mixKey,label:kill?'Kill test':'Below-the-line test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)}]};
   }
   const testKey=kill?'pkBonusTest':'pdBonusTest';
-  const what=(v)=>kill?'kill that passes the test ('+PD_KILL_TEST[v[testKey]]+')':'drive that passes the test ('+pdDriveFull(v[testKey])+')';
+  const what=(v)=>kill?'kill that passes the test ('+pdKill(v[testKey])+')':'drive that passes the test ('+pdDriveFull(v[testKey])+')';
   if(n===8){
     const bk=kill?'pkBonus':'pdBonus';
-    return {...base,title:n+' · '+S+' — Bonus Every Time',rld:5,tag:'Normal game; a bonus for every '+(kill?'kill':'penetrating drive'),
+    return {...base,title:n+' · '+S+' — Bonus Every Time',rld:5,tag:'Mixed game · for the level of the test you choose · normal game; a bonus for every '+(kill?'kill':'penetrating drive'),
       from:'The shot is now a choice inside a normal game. Every one that passes the test is rewarded, so players look for the chance to play it.',
       rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v[bk]+' for every '+what(v)+'. '+(PD_BANK[v.pdBank]||PD_BANK['Every one'])+PD_VOLLEY_BONUS,
       coach:'The opponent calls the bonus. '+(kill?PD_KILL_NOTE:'')+nextTxt+'Debrief: when did you choose the '+(kill?'kill':'low drive')+' — and when did you hold it back?',
@@ -8697,7 +8703,7 @@ function pdGame(series,n){
       stepper:[PD_STEP_RALLY,{k:testKey,label:'Test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},{k:bk,label:'Bonus',min:1,max:3,sign:'+'},{k:'pdBank',label:'Bonus counts for',type:'select',options:Object.keys(PD_BANK)}]};
   }
   const wk=kill?'pkWin':'pdWin';
-  return {...base,title:n+' · '+S+' — Winner Bonus',rld:5,tag:'Normal game; a bonus when the '+(kill?'kill':'penetrating drive')+' wins the rally',
+  return {...base,title:n+' · '+S+' — Winner Bonus',rld:5,tag:'Mixed game · for the level of the test you choose · normal game; a bonus when the '+(kill?'kill':'penetrating drive')+' wins the rally',
     from:'Only the '+(kill?'kill':'drive')+' that wins counts. Players learn which balls the shot can actually win from, and when to keep building instead.',
     rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v[wk]+' when a '+what(v)+' wins the rally outright — your opponent cannot return it.'+PD_VOLLEY_BONUS,
     coach:'The opponent confirms the winner and the test. '+(kill?PD_KILL_NOTE:'')+nextTxt+'Debrief: what had happened in the rally just before your winning '+(kill?'kill':'drive')+'?',
@@ -8707,9 +8713,9 @@ function pdGame(series,n){
 const PD_DRIVE_GAMES=[1,2,3,4,5,6,7,8,9].map(n=>pdGame('d',n));
 const PD_KILL_GAMES=[1,2,3,4,5,6,7,8,9].map(n=>pdGame('k',n));
 const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Constrained game — power and penetration',layers:['Shot Selection','Attacking Conversion','Decision Making'],
-  title:'10 · Drive or Kill',rld:5,tag:'From a low ball: penetrate or kill — your choice',
+  title:'10 · Drive or Kill',rld:5,tag:'For the level of the tests you choose · from a low ball: penetrate or kill, your choice',
   from:'The two shots start the same way: low and firm. The striker chooses at the last moment which one to play, so the opponent cannot read it early. Each passes its own test.',
-  rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v.pdDok+' for every shot below the service line that passes either test — a penetrating drive ('+pdDriveFull(v.pdBonusTest)+') or a kill ('+PD_KILL_TEST[v.pkBonusTest]+'). If that shot wins the rally outright, it earns +'+v.pdDokWin+' instead; the two bonuses do not stack. A low shot that passes neither earns nothing.'+PD_VOLLEY_BONUS,
+  rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v.pdDok+' for every shot below the service line that passes either test — a penetrating drive ('+pdDriveFull(v.pdBonusTest)+') or a kill ('+pdKill(v.pkBonusTest)+'). If that shot wins the rally outright, it earns +'+v.pdDokWin+' instead; the two bonuses do not stack. A low shot that passes neither earns nothing.'+PD_VOLLEY_BONUS,
   coach:'The opponent calls which test, if any, the shot passed. '+PD_KILL_NOTE+'Debrief: from the same ball, when did you choose the drive and when the kill — and could your opponent tell?',
   focus:'Same start, late choice: deep or dead.',
   score:(v)=>'Rally win +'+(v.pdRally||1)+'. Low shot passing the drive or kill test: +'+v.pdDok+'; if it wins the rally: +'+v.pdDokWin+' instead (not both).',
@@ -8771,11 +8777,14 @@ function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
   return <CrossCourtFriendOrFoeFamily onAdd={onAdd} label={label} openFamily={openFamily} games={list} category="Power Driver" showReset={true} intro={<div className="gameCard"><div className="categoryTag">Power Driver</div><h2>💥 Power Driver</h2>
     <div className="infoBox"><strong>Where these games come from</strong>
       <p><strong>Published definitions.</strong> Murray (2018, PhD thesis, Middlesex University; elite men’s matches) defines a kill as a low, hard shot to the front of the court and a drop as a low, soft one, and records drives by whether they reach the back wall. Carboch and Dušek (2023, Studia Kinanthropologica; elite women’s matches) define a kill as a shot that hits the front wall as close to the tin as possible and ideally bounces twice in front of the short line; in their matches the kill left the opponent the least time of any shot. Vučković et al. (2013, Journal of Sports Science and Medicine) found that the time a player has shapes the shot they choose.</p>
-      <p><strong>What follows from them.</strong> The kill test in front of the short line follows Carboch and Dušek. Drives are judged by depth because a low ball that still travels deep removes time. Pace itself cannot be seen, so the tests are practical game tests: a well-placed drop can pass the kill test.</p>
-      <p><strong>Coach design.</strong> The ladder, the drive bounce lines, the three-shot cycles, the easiest kill line (the service-box back line) and the elite halfway tape are coaching design, not research findings. Similar conditions appear in Squash Norway’s junior programme (drives behind the service box; a back-court game with the first bounce after the short line; a low kill option when varying pace).</p></div>
+      <p><strong>What follows from them.</strong> The kill test comes from Carboch and Dušek: a kill bounces twice before the short line. Drives are judged by how deep they bounce, because a low ball that gets deep takes time away from the opponent. Pace can't be judged by eye, so every test is about where the ball lands. On the easier kill tests a good drop can pass too. The top test, the kill zone, rules it out: a kill must land beyond the halfway tape (a strip of tape on the floor, halfway between the front wall and the short line) and die before the short line.</p>
+      <p><strong>Coach design.</strong> These are our own coaching ideas, not research findings: the order of the games, the lines a drive must bounce behind, playing the shot once in every three, the service-box back line as the easiest kill line, and the kill zone for top players. Squash Norway’s junior programme uses similar ideas: drives that land behind the service box, a back-court game where the first bounce must be past the short line, and a low kill when changing pace.</p></div>
     <p>For players who play above the line and cannot change pace. Two series on the same ladder: the <strong>penetrating drive</strong> (low on the front wall, deep on the floor) and the <strong>kill</strong> (low on the front wall, dead in the front). Each series moves from half court to full court, tightens its test, mixes in the shot within every three shots, then rewards it in a normal game. <strong>Drive or Kill</strong> links the two.</p>
     <p className="mutedText">Every game is complete on its own; play them in order. All scoring is adjustable, and any game can apply to one player only.</p>
+    <p><strong>A progression.</strong> Games 1–5 are steps: 1–3 for Levels 1–2, game 4 for Level 3, game 5 for Levels 4–5. Games 6–9 mix the shot into play at the level of the test you choose.</p>
     <div className="buttonRow" style={{flexWrap:'wrap'}}>{tab('d','Penetrating Drive · 1–9')}{tab('k','Kill · 1–9')}{tab('x','Drive or Kill')}{tab('a','ABL Drives · 1–6')}</div>
+    {series==='d'&&<p style={{marginTop:10}}><strong>A penetrating drive</strong> is low on the front wall and dies at the back of the court. These games build up to it in steps.</p>}
+    {series==='k'&&<p style={{marginTop:10}}><strong>A kill</strong> is low on the front wall and dies in the front, before the short line. These games build up to it in steps.</p>}
     <div className="buttonRow" style={{flexWrap:'wrap',marginTop:'8px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('increase')}>Read: the penetrating drive (Shots) →</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('finish')}>Read: the kill (Shots) →</button></div></div>}/>;
 }
 function ccffCard(g,v,category){return {id:g.id,title:g.title.replace(/^\d+ · /,''),category:category||'Cross Court Friend or Foe',format:g.format||'Constrained game — crosscourt discipline',duration:g.duration||8,rld:g.rld,task:ccffRule(g,v),rationale:g.from,coach:g.coach,playerFocus:g.focus,scoring:g.score(v),...(g.anti?{antiGaming:g.anti}:{}),layers:g.layers||['Decision Making','Shot Selection','Attacking Conversion']};}
@@ -18352,11 +18361,13 @@ const GAME_LIBRARY=[
 const COACH_STARS={
   corridorgames:'Coach’s star: the corridor interception rule worked very well on court (Nov 2026) — a strong deterrent to non-functional crosscourts and loose balls.',
   tzonegames:'Coach’s star: exposes the loose ball — after a loose shot there is little chance of getting back to the T Zone, and the opponent takes the T Zone to play their shot (Nov 2026).',
-  snakesladders:'Coach’s star: builds a movement mindset (Nov 2026).',
+  snakesladders:'Coach’s stars: builds a competitive attitude and resilience. You have to back up a rally win several times in a row to stay alive (Nov 2026).',
   doubleBounce:'Coach’s star: builds a movement mindset (Nov 2026).',
   atl:true,
   tacticalIntentions:true
 };
+const COACH_STAR_COUNT={snakesladders:2};
+function coachStarMark(id){return '★'.repeat(COACH_STAR_COUNT[id]||1)+' ';}
 const COACH_STAR_GAMES={
   CCG12:'Coach’s star: encourages volleying, and regulated swing size against an opponent with the pace to reach the back wall (Nov 2026).',
   CCG50:'Coach’s star: encourages volleying, and regulated swing size against an opponent with the pace to reach the back wall (Nov 2026).'
@@ -18530,7 +18541,7 @@ function Games({setSession,setScreen,onClassChange}){
           {isOpen&&<div className="gameGroupBody">{GROUP_GUIDES[grp.id]&&<details className="cbGuide" style={{margin:'6px 0 12px'}}><style>{CB_GUIDE_CSS}</style><summary>{GROUP_GUIDES[grp.id].summary}</summary><div className="cbGuideBody">{GROUP_GUIDES[grp.id].render()}</div></details>}<div className="gameClassGrid">
             {items.map(gc=>
               <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)} title={typeof COACH_STARS[gc.id]==='string'?COACH_STARS[gc.id]:undefined}>
-                {COACH_STARS[gc.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>★ </span>}{gc.label}
+                {COACH_STARS[gc.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>{coachStarMark(gc.id)}</span>}{gc.label}
               </button>
             )}
           </div></div>}
@@ -18540,7 +18551,7 @@ function Games({setSession,setScreen,onClassChange}){
 
     {activeClassId&&<div className="pageTop">
       <button type="button" className="secondaryBtn" onClick={()=>selectClass(null)}>← Back to Games Library</button>
-      <h1>{COACH_STARS[activeClass?.id]&&<span style={{color:'#f0c96a'}}>★ </span>}{activeClass?.label}</h1>
+      <h1>{COACH_STARS[activeClass?.id]&&<span style={{color:'#f0c96a'}}>{coachStarMark(activeClass.id)}</span>}{activeClass?.label}</h1>
       {typeof COACH_STARS[activeClass?.id]==='string'&&<p className="mutedText" style={{marginTop:0}}>{COACH_STARS[activeClass.id]}</p>}
     </div>}
 
