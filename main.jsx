@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v909 Play & Score Coach Guide';
+const APP_VERSION='v913 Emerging and Stable';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -6924,6 +6924,8 @@ ${homeGradedTileCss()}`}</style>
       <button className="homeCard homeTitleOnly" onClick={()=>setScreen('matchProblems')}><h2>Match Problem Index</h2><span className="homeTileSubtitle">Match problems → the games that fix them</span></button>
 
       <div className="moreSectionLabel">Coach Education</div>
+      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('ltad')}><h2>The Athlete Pathway</h2><span className="homeTileSubtitle">Long-term development through a CLA lens</span></button>
+      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('periodisation')}><h2>Periodisation</h2><span className="homeTileSubtitle">Planning weeks and sessions around what the player is learning</span></button>
 
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
@@ -9150,7 +9152,7 @@ function devTodayPriorities(){
   let present=[];try{present=(JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{}
   const dev=loadPlayerDev();const groups={};const unlinked=[];
   present.forEach(name=>{(dev[name]||[]).forEach(c=>{if(!c||(c.status!=='developing'&&c.status!=='new'))return;
-    const row={name,title:c.title,status:c.status==='new'?'New':'Developing'};
+    const row={name,title:c.title,status:c.status==='new'?'New':'Emerging'};
     if(c.link){(groups[c.link]=groups[c.link]||[]).push(row);}else unlinked.push(row);});});
   return {present:present.length,groups:Object.entries(groups).sort((a,b)=>b[1].length-a[1].length),unlinked};
 }
@@ -9161,7 +9163,7 @@ function devLinkClass(link){
 }
 function DevPrioritiesPanel({setScreen}){
   const d=devTodayPriorities();
-  if(!d.present)return <div className="statusBox" style={{marginBottom:'12px'}}><strong>Today’s player priorities</strong><p>Mark players present (Players page) to see the games linked to their Developing and New cards.</p></div>;
+  if(!d.present)return <div className="statusBox" style={{marginBottom:'12px'}}><strong>Today’s player priorities</strong><p>Mark players present (Players page) to see the games linked to their Emerging and New cards.</p></div>;
   if(!d.groups.length&&!d.unlinked.length)return null;
   return <details className="statusBox" open style={{marginBottom:'12px'}}><summary style={{cursor:'pointer',fontWeight:800}}>Today’s player priorities · {d.present} present</summary>
     {d.groups.map(([link,rows])=>{const cls=devLinkClass(link);return <div key={link} style={{padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,0.08)',display:'flex',justifyContent:'space-between',gap:'10px',alignItems:'center',flexWrap:'wrap'}}>
@@ -22847,8 +22849,8 @@ function PlayerPlans({players}){
 
 const PLAYER_DEV_KEY='checkerboard_player_development_v1';
 const DEV_STATUSES=[
-  {id:'secure',label:'Secure',meaning:'It holds up, even under pressure.',color:'#6fae8b'},
-  {id:'developing',label:'Developing',meaning:'It’s appearing, but not every time.',color:'#5b9bff'},
+  {id:'secure',label:'Stable',meaning:'It holds up, even under pressure.',color:'#6fae8b'},
+  {id:'developing',label:'Emerging',meaning:'It’s appearing, but not every time.',color:'#5b9bff'},
   {id:'new',label:'New',meaning:'An extra option to sit beside what already works.',color:'#a98bff'},
   {id:'change',label:'Change',meaning:'Only a habit that doesn’t work in any situation.',color:'#ff8a80'}
 ];
@@ -22875,6 +22877,17 @@ function devLinkSuggestions(){
   fams.forEach(([fam,get])=>{try{(get()||[]).forEach(g=>{const t=g&&(g.title||g.label);if(t)add(fam+' — '+t);});}catch{}});
   return [...new Set(out)];
 }
+/* v912 (coach, 21 Nov: "build the emerging/stable module. We already have development cards"). Built onto the cards, labels renamed Emerging and Stable by the coach 21 Nov (ids stay 'developing' and 'secure' for stored cards). Emerging = settling (emerging), Secure = holds when disturbed (stable). The three ticks are the transfer test from the LTAD/Periodisation modules: practice -> pressure -> matches. */
+const DEV_FOCUS_MAX=3;
+function devNextStep(c){
+  if(!c||c.status==='secure'||c.status==='change')return null;
+  const t=c.ticks||{};
+  if(t.practice&&t.pressure&&t.matches)return {text:'Seen in practice, under pressure and in matches.',secure:true};
+  if(!t.practice)return {text:'Next: see it in practice'+(c.link?' in “'+c.link+'”.':'. Link the game you are using.')};
+  if(!t.pressure)return {text:'Next: try it under pressure. The same game started at 7–7, or a new opponent.'};
+  if(!t.matches)return {text:'Next: watch for it in a match, with no rule asking for it. If the chance rarely comes up, keep watching before deciding.'};
+  return null;
+}
 function loadPlayerDev(){try{const v=JSON.parse(localStorage.getItem(PLAYER_DEV_KEY));return v&&typeof v==='object'?v:{};}catch{return {};}}
 function devStatus(id){return DEV_STATUSES.find(s=>s.id===id)||DEV_STATUSES[1];}
 function devStamp(){return new Date().toISOString();}
@@ -22893,7 +22906,7 @@ function PlayerDevelopment({players}){
   const linkOptions=useMemo(()=>{const used=Object.values(byPlayer).flat().map(c=>c&&c.link).filter(Boolean);return [...new Set([...used,...devLinkSuggestions()])];},[byPlayer]);
   function save(list){setByPlayer(prev=>({...prev,[who]:list}));}
   function edit(id,fn){save(cards.map(c=>c.id===id?{...fn(c),updatedAt:devStamp()}:c));}
-  function addCard(){const t=draft.trim();if(!t||!who)return;const now=devStamp();save([...cards,{id:'dev-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:t,status:'developing',ticks:{practice:false,pressure:false,matches:false},note:'',createdAt:now,updatedAt:now,history:[{at:now,what:'Added as Developing'}]}]);setDraft('');}
+  function addCard(){const t=draft.trim();if(!t||!who)return;const now=devStamp();save([...cards,{id:'dev-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),title:t,status:'developing',ticks:{practice:false,pressure:false,matches:false},note:'',createdAt:now,updatedAt:now,history:[{at:now,what:'Added as Emerging'}]}]);setDraft('');}
   function setStatus(c,id){if(c.status===id)return;if(id==='change'&&!window.confirm(DEV_CHANGE_REMINDER+'\n\nMark “'+c.title+'” as Change?'))return;edit(c.id,x=>({...x,status:id,history:[...(x.history||[]),{at:devStamp(),what:devStatus(x.status).label+' → '+devStatus(id).label}]}));}
   function toggleTick(c,t){edit(c.id,x=>{const on=!(x.ticks&&x.ticks[t.id]);return {...x,ticks:{...(x.ticks||{}),[t.id]:on},history:[...(x.history||[]),{at:devStamp(),what:(on?'✓ ':'✗ ')+t.label}]};});}
   function setNote(c,v){edit(c.id,x=>({...x,note:v}));}
@@ -22934,6 +22947,24 @@ function PlayerDevelopment({players}){
   return <div className="page">
     <div className="pageTop"><h1>Player Development</h1></div>
     <p className="mutedText" style={{marginTop:0}}>One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically. Optionally, link the game or constraint in use and review it once the constraint is eased.</p>
+    <details className="cbGuide"><style>{CB_GUIDE_CSS}</style><summary>Coach's guide: following a skill from practice to matches</summary><div className="cbGuideBody">
+      <p>A new skill first has to settle, then it has to hold up when things get harder. The cards follow that.</p>
+      <ul>
+        <li><strong>Emerging:</strong> it's appearing, but not every time. Keep the game that brings it out, and give it room.</li>
+        <li><strong>Stable:</strong> it holds up when the game is harder: score pressure, a new opponent, a real match.</li>
+        <li><strong>New:</strong> an extra option beside something that already works. <strong>Change:</strong> only for a habit that doesn't work anywhere.</li>
+      </ul>
+      <h3>The three ticks are the test</h3>
+      <ol>
+        <li><strong>In practice:</strong> seen in the game you're using.</li>
+        <li><strong>Under pressure:</strong> still there when it's harder. The same game started at 7–7, or against a new opponent.</li>
+        <li><strong>In matches:</strong> used in ordinary play, with no rule asking for it.</li>
+      </ol>
+      <p>Each card shows the next step. When all three are ticked, the card offers to mark it Stable. That stays your call.</p>
+      <p>Skills come and go. If a Stable skill disappears, move it back to Emerging and untick where it stopped showing.</p>
+      <p><strong>Two or three at a time.</strong> A player can only give real attention to a few things. Keep the rest as cards for later.</p>
+      <p>More in Coach Education: The Athlete Pathway and Periodisation.</p>
+    </div></details>
     <datalist id="devLinkOptions">{linkOptions.map(o=><option key={o} value={o}/>)}</datalist>
     <div className="gameCard">
       <label style={{fontWeight:800}}>Player <select value={who} onChange={e=>{setWho(e.target.value);setReview(null);setLinkDraft({});}} style={{marginLeft:'8px'}}><option value="">Choose a player…</option>{names.map(n=><option key={n} value={n}>{n}{(byPlayer[n]||[]).length?' ('+byPlayer[n].length+')':''}</option>)}</select></label>
@@ -22943,6 +22974,7 @@ function PlayerDevelopment({players}){
         <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addCard();}} placeholder="What is this player working on? e.g. Volleys the loose crosscourt" style={{flex:'1 1 260px',minWidth:0}}/><button type="button" className="primaryBtn" onClick={addCard} disabled={!draft.trim()}>Add card</button></div>
       </div>
       {cards.length===0&&<p className="mutedText">No cards yet for {who}.</p>}
+      {(()=>{const n=cards.filter(c=>c.status==='developing'||c.status==='new').length;return n>DEV_FOCUS_MAX?<p style={{margin:'8px 0',padding:'9px 12px',border:'1px solid #4a3b1e',background:'#1a160e',borderRadius:'10px',color:'#e8c46a',fontWeight:700}}>{who} is working on {n} things. Two or three at a time gets each one real attention.</p>:null;})()}
       {DEV_STATUSES.map(st=>{const list=cards.filter(c=>c.status===st.id);if(!list.length)return null;return <div key={st.id} style={{margin:'14px 0'}}>
         <h3 style={{margin:'0 0 2px',color:st.color}}>{st.label} <span className="mutedText" style={{fontSize:'0.85rem',fontWeight:600}}>· {st.meaning}</span></h3>
         {list.map(c=>{const lr=lastReview(c);const editingLink=c.id in linkDraft;const rv=review&&review.cardId===c.id?review:null;const rvEntry=rv&&rv.idx!=null?(c.history||[])[rv.idx]:null;const rvLink=rv?(rvEntry&&rvEntry.review?rvEntry.review.link:c.link):'';return <div key={c.id} className="gameCard" style={{borderLeft:'5px solid '+st.color,padding:'12px 14px',margin:'8px 0'}}>
@@ -22950,6 +22982,7 @@ function PlayerDevelopment({players}){
           {c.link&&!editingLink&&<p className="mutedText" style={{margin:'4px 0 0'}}>🔗 Using: <b>{c.link}</b></p>}
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'10px 0 6px'}}>{DEV_STATUSES.map(s=><button key={s.id} type="button" style={pill(c.status===s.id,s.color)} onClick={()=>setStatus(c,s.id)}>{s.label}</button>)}</div>
           <div style={{display:'flex',gap:'14px',flexWrap:'wrap',margin:'6px 0'}}>{DEV_TICKS.map(t=><label key={t.id} style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:700}}><input type="checkbox" checked={!!(c.ticks&&c.ticks[t.id])} onChange={()=>toggleTick(c,t)}/>{t.label}</label>)}</div>
+          {(()=>{const nx=devNextStep(c);return nx?<p style={{margin:'4px 0 6px',color:nx.secure?'#8fcfad':'#9cc4ec',fontSize:'0.92rem',fontWeight:600}}>{nx.text}{nx.secure&&<button type="button" style={{...pill(false,'#6fae8b'),marginLeft:'8px',padding:'4px 11px'}} onClick={()=>setStatus(c,'secure')}>Mark Stable</button>}</p>:null;})()}
           <div style={{display:'flex',gap:'10px',flexWrap:'wrap',marginTop:'4px'}}>
             <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>setOpenNote(o=>({...o,[c.id]:!o[c.id]}))}>{c.note?'Note ✎':'Add note'}</button>
             <button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>toggleLink(c)}>{c.link?'Link ✎':'Link game'}</button>
@@ -25301,6 +25334,162 @@ const CP_TRAD_STRENGTHS=["Direct instruction is the fastest route to a starting 
 const CP_ECO_LIMITS=["It is harder to do well. Designing a game that reliably produces a target behaviour is more demanding than delivering a good drill, and a badly designed game teaches nothing while looking like coaching.","It looks less impressive to watch, and progress is harder for an athlete or parent to see week to week. That is a real cost, not just a perception problem.","Controlled trials comparing whole coaching programmes are fewer and smaller than the theory deserves, because they are difficult and expensive to run. That is a gap in one narrow kind of evidence, not a weak foundation. The underlying science of perception and action is deep and long-established, and it converges with what we see everywhere else: how animals learn through play, how children acquire movement before anyone instructs them, and how humans acquired complex skills for millennia before a coaching manual existed. The honest caution is narrow \u2014 do not lean on a single small study as proof that one session design beats another.","Representativeness can be over-applied. A beginner who cannot yet rally has little to be representative of, and insisting on full context can leave them with no entry point.","The vocabulary is off-putting. Affordances, degeneracy and self-organisation are precise terms doing real work, but they can function as a barrier to coaches who are already doing much of this intuitively."];
 const CP_NOTE_DEMO="Ecological dynamics does not reject demonstration. Both paradigms use it, and from the balcony the two look identical. What differs is what the athlete is asked to take from it. In traditional coaching, a shape to copy. In an ecological frame, information about how the problem can be solved — where the time comes from, what the rhythm is, what the ball does when struck that way.";
 
+/* v910 (coach, 21 Nov): LTAD through a CLA lens. Source: Jurbala (2023), Sports Coaching Review, doi:10.1080/21640629.2023.2275402. Squash tables are our adaptation of his soccer table. */
+const LTAD_CSS=`.ltadPage .ltadCol{max-width:46rem;margin:0 auto}
+.ltadPage h1,.ltadPage h2,.ltadPage h3,.ltadPage p,.ltadPage li,.ltadPage td,.ltadPage th,.ltadPage .ltadSrc{font-family:'Charter','Iowan Old Style','Source Serif 4','Source Serif Pro',Georgia,'Times New Roman',serif}
+.ltadPage h1{font-weight:700;letter-spacing:-0.01em}
+.ltadSec{background:#0f1822;border:1px solid #223044;border-radius:12px;padding:22px 26px;margin:0 0 18px}
+.ltadSec h2{font-size:1.5rem;font-weight:700;color:#eaf4fb;margin:0 0 14px;line-height:1.25}
+.ltadSec h3{font-size:1.12rem;color:#eaf4fb;margin:18px 0 6px}
+.ltadSec p,.ltadSec li{font-size:1.18rem;line-height:1.65;color:#dde7ef}
+.ltadSec p{margin:0 0 12px}.ltadSec ul{margin:0 0 12px 1.2em;padding:0}.ltadSec li{margin:0 0 6px}
+.ltadQ{font-size:1.32rem!important;font-weight:600;color:#eaf4fb!important;border-left:3px solid #4a6a8a;padding-left:14px}
+.ltadTblWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px 0 4px}
+.ltadTbl{border-collapse:collapse;width:100%;min-width:560px}
+.ltadTbl th,.ltadTbl td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid #223044;font-size:1.02rem;line-height:1.45;color:#dde7ef}
+.ltadTbl th{color:#eaf4fb;font-weight:700;background:#0c141d}
+.ltadTbl td:first-child{color:#eaf4fb;font-weight:700;width:22%}
+.ltadNote{font-size:1rem!important;color:#9fb1c2!important;font-style:italic}
+.ltadStep{border-left:4px solid #4a6a8a;background:#0c141d;border-radius:6px;padding:10px 14px;margin:8px 0}
+.ltadStep strong{color:#eaf4fb}
+.ltadSrc{font-size:0.95rem;color:#9fb1c2;max-width:46rem;margin:6px auto 24px}
+@media (max-width:600px){.ltadSec{padding:18px 16px}.ltadSec p,.ltadSec li{font-size:1.08rem}}`;
+function LTADModule({setScreen}){
+  const openPD=()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,'powerdriver');}catch(e){}setScreen('games');};
+  return <div className="page ltadPage"><style>{LTAD_CSS}</style>
+    <div className="pageTop"><div><h1>The Athlete Pathway: a CLA view</h1><p className="mutedText">Long-term athlete development, rethought around learning</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="ltadCol">
+    <section className="ltadSec"><h2>The big idea</h2>
+      <p>Most athlete pathways, LTAD among them, are a lifetime plan: stages on a fixed timetable. They put the body at the centre. Players move through stages by age and growth, with "windows" for speed, strength and stamina. Skill is the only part that isn't mainly physical, and learning is simply assumed to happen.</p>
+      <p>A constraints-led pathway turns this round. The question changes from "Which physical qualities need training today?" to:</p>
+      <p className="ltadQ">What does this player need to learn next, and what conditions will help them learn it?</p>
+      <p>Tactics sit at the centre: reading the ball, the opponent and the space, choosing a shot and playing it. Technique, fitness and mental skills grow out of that and feed back into it.</p>
+      <p>The coach designs the environment. You set the task (rules, targets, scoring) to fit the player in front of you: their growth, fitness, mood, confidence and how well they read the game. Then you adjust it as they change. Development is individual and often uneven. A player who stalls or jumps ahead isn't failing a schedule.</p>
+      <p>The social and emotional side counts as much as the physical. A supportive group is where learning starts. Players who have some say, feel they belong and can see they are improving stay in the sport longer.</p>
+      <p>Use the pathway as a "you are here" map that shows possible routes, not a GPS that promises the fastest route to the top. The player's own purpose, whether competing or lifelong play, decides the route.</p>
+      <p style={{marginTop:4}}><button type="button" className="secondaryBtn" onClick={()=>setScreen('periodisation')}>Periodisation: the next few weeks →</button></p>
+    </section>
+    <section className="ltadSec"><h2>Traditional LTAD and a CLA pathway</h2>
+      <div className="ltadTblWrap"><table className="ltadTbl"><thead><tr><th></th><th>Traditional LTAD</th><th>CLA pathway</th></tr></thead><tbody>
+        <tr><td>Starting question</td><td>Which physical qualities need training at this stage?</td><td>What does the player need to learn, and how do I design for it?</td></tr>
+        <tr><td>At the centre</td><td>Physical growth and maturation: growth spurt, "windows"</td><td>Learning to read, decide and act. Tactics lead</td></tr>
+        <tr><td>How players develop</td><td>In a line, stage by stage, on a timetable</td><td>Unevenly and individually. Stalls and jumps are normal</td></tr>
+        <tr><td>Coach's role</td><td>Plans the programme, prescribes, checks results</td><td>Designs the environment and keeps adjusting the constraints</td></tr>
+        <tr><td>Main methods</td><td>Drills, repetition, hours by stage</td><td>Games: conditioned, small-sided, competitive skill games</td></tr>
+        <tr><td>Social and emotional</td><td>Mostly in the background</td><td>Part of the task, and an outcome in its own right</td></tr>
+        <tr><td>Stage names</td><td>Point to high performance ("Train to Compete")</td><td>No names: stages of development linked to useful activities</td></tr>
+        <tr><td>How it's used</td><td>A route to follow</td><td>A "you are here" map</td></tr>
+        <tr><td>Risks</td><td>Picking early developers (relative age effect), dropout</td><td>Misused if coaches don't understand why they're using it</td></tr>
+      </tbody></table></div>
+    </section>
+    <section className="ltadSec"><h2>Stages in squash</h2>
+      <div className="ltadTblWrap"><table className="ltadTbl"><thead><tr><th>Stage</th><th>Learning to…</th><th>Squash example</th><th>Constraints to change</th></tr></thead><tbody>
+        <tr><td>Early child (0–6)</td><td>Do simple tasks</td><td>Hit a big, soft ball to the wall</td><td>Ball size, racket length, space</td></tr>
+        <tr><td>Mid-child (6–9)</td><td>Meet a basic aim</td><td>Hit front-wall targets</td><td>Court size, target size, distance</td></tr>
+        <tr><td>Late child (9 to growth spurt)</td><td>Read and react</td><td>Choose length, width or short from where the opponent is</td><td>Opponent's position, game rules (e.g. ATL/BTL, no boasts)</td></tr>
+        <tr><td>Early teens</td><td>Create an advantage</td><td>Move and hold the opponent to open space</td><td>Phase (attack, transition, defend), pressure situations</td></tr>
+        <tr><td>Late teens</td><td>Fit tactics to the opponent</td><td>Pick patterns that suit your strengths against theirs</td><td>Opponent type, handicaps, scoring</td></tr>
+        <tr><td>Young adult and adult</td><td>Adjust strategy over a match</td><td>Read the opponent's patterns as the match goes on</td><td>Whole-match problems, competition formats</td></tr>
+      </tbody></table></div>
+      <p className="ltadNote">Ages are a starting point, not a rule. Adapted from Jurbala's soccer table.</p>
+    </section>
+    <section className="ltadSec"><h2>What this means on court</h2>
+      <h3>Use stages as a guide, not a rule</h3>
+      <p>Two players of the same age or level may need different challenges. One may need a second bounce to organise their movement. Another may need a less predictable opponent to sharpen their anticipation. During a growth spurt, look again at spacing and timing, even in games the player had already mastered.</p>
+      <h3>Plan around a rally problem</h3>
+      <p>Start from a problem the player recognises, such as "How can I buy time when I'm stretched in the back corner?" The drive, the movement back to the T and the physical effort then share one purpose.</p>
+      <h3>The group is part of the task</h3>
+      <p>A new partner, public scoring or the threat of relegation changes what a junior is willing to try. Change the pairings or the scoring, let the player choose a challenge, and watch whether they get back the confidence to experiment and to reset after an error.</p>
+      <h3>Plan on three timescales</h3>
+      <ul>
+        <li><strong>In a rotation:</strong> change one constraint in response to what you see.</li>
+        <li><strong>Over a block:</strong> vary opponents and add score pressure.</li>
+        <li><strong>Over a season:</strong> review competition, workload, enjoyment and the player's goals. Leave room for other sports, and for players who move between competing and playing for fun.</li>
+      </ul>
+    </section>
+    <section className="ltadSec"><h2>Worked example: did it carry into the match?</h2>
+      <p><strong>What the player is learning:</strong> to recognise when a penetrating drive has opened up the front of the court.</p>
+      <div className="ltadStep"><strong>1. Training.</strong> Penetrate &amp; Finish (Power Driver games): a drop is allowed only straight after a penetrating drive, and the drop is optional. Watch: does the player spot the opening and take it? Do they choose length again when the opponent has recovered or their own position is poor?</div>
+      <div className="ltadStep"><strong>2. Pressure.</strong> The same game, starting the rotation at 7–7. Watch: do they still see the opening when the score matters? Ask them what they saw.</div>
+      <div className="ltadStep"><strong>3. Match.</strong> Normal scoring, no rule. Watch: when a similar opening appears, do they use it without the rule telling them to? If openings are rare, keep watching before deciding.</div>
+      <p style={{marginTop:12}}><button type="button" className="secondaryBtn" onClick={openPD}>Open the Power Driver games →</button></p>
+    </section>
+    </div>
+    <p className="ltadSrc">Source: Jurbala, P. (2023). Reimagining the athlete development pathway: constraints-led, learning-based, life-long. Sports Coaching Review. doi:10.1080/21640629.2023.2275402. The squash tables and examples are this app's adaptation.</p>
+  </div>;
+}
+
+/* v911 (coach, 21 Nov): Periodisation through a CLA lens. Source: Otte, Millar & Klatt (2019), Frontiers in Sports and Active Living 1:61, doi:10.3389/fspor.2019.00061 (the PoST framework). Squash examples are our adaptation of their soccer-goalkeeping examples. */
+function PeriodisationModule({setScreen}){
+  const openPD=()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,'powerdriver');}catch(e){}setScreen('games');};
+  return <div className="page ltadPage"><style>{LTAD_CSS}</style>
+    <div className="pageTop"><div><h1>Periodisation: a CLA view</h1><p className="mutedText">Planning weeks and sessions around what the player is learning</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="ltadCol">
+    <section className="ltadSec"><h2>The big idea</h2>
+      <p>Traditional periodisation plans the training load: volume, intensity and recovery, building from general work towards competition. That still matters. But skill doesn't develop on the same timetable as fitness, and it rarely gets planned at all.</p>
+      <p>A constraints-led plan periodises the game problem as well as the load. Start with a behaviour the player needs in matches. Plan how they will find a way to do it, adapt it as conditions change, and use it under pressure. Then adjust the plan to what you see and what the player tells you.</p>
+      <p className="ltadQ">The Athlete Pathway looks at seasons and years. Periodisation organises the next few weeks and sessions around one of those priorities.</p>
+      <p>The framework here, PoST (Periodisation of Skill Training), was written for coaches who work with one to four players at a time. That is most squash coaching.</p>
+      <p style={{marginTop:4}}><button type="button" className="secondaryBtn" onClick={()=>setScreen('ltad')}>The Athlete Pathway →</button></p>
+    </section>
+    <section className="ltadSec"><h2>Traditional and CLA periodisation</h2>
+      <div className="ltadTblWrap"><table className="ltadTbl"><thead><tr><th></th><th>Traditional</th><th>CLA</th></tr></thead><tbody>
+        <tr><td>What anchors the block</td><td>Competition dates, and the physical or technical qualities to build</td><td>Competition dates, and one game problem. Fitness and recovery are planned around the same calendar</td></tr>
+        <tr><td>What changes over time</td><td>Volume, intensity and specificity: general work first, match-like later</td><td>What the player has to read and decide: ball, opponent, space, scoring</td></tr>
+        <tr><td>How to make it easier</td><td>Fed balls, fewer variables, a simpler drill</td><td>Fewer options, but keep the real cues. A live straight-length rally still has the opponent's swing, the ball's flight and the rebound</td></tr>
+        <tr><td>When to move on</td><td>The planned phase ends, targets are met</td><td>The player can do it in these conditions. Add one thing, or take one away, to see where it breaks down</td></tr>
+        <tr><td>How to judge learning</td><td>Technique, training numbers, results</td><td>Does the player see the chance, choose well, and adapt to different opponents and scores?</td></tr>
+        <tr><td>Near a competition</td><td>Taper the load, make training more specific</td><td>Match-like games first, then short, familiar, confident play just before. Manage bouts and recovery</td></tr>
+        <tr><td>Typical session</td><td>Mostly isolated technical work, a little game play at the end</td><td>Mostly games, with the drill as the exception, used briefly when a player needs it</td></tr>
+      </tbody></table></div>
+    </section>
+    <section className="ltadSec"><h2>The three stages of skill training</h2>
+      <p>PoST has three stages. Players move back and forth between them. They are not a one-way ladder.</p>
+      <div className="ltadTblWrap"><table className="ltadTbl"><thead><tr><th>Stage</th><th>The aim</th><th>In squash</th></tr></thead><tbody>
+        <tr><td>1. Coordination</td><td>Find a way to do it. Keep things fairly steady so a solution can settle</td><td>A simpler game with the real cues kept: one side of the court, a live rally, fewer shot choices</td></tr>
+        <tr><td>2. Adaptability</td><td>Make the solution work as conditions change. This is where most learning happens</td><td>Open the court, change opponents, add choices, vary the ball and the pace, add score pressure</td></tr>
+        <tr><td>3. Performance</td><td>Close to competition: use what you have, with confidence</td><td>Match-like games early in the week. Just before a match, short familiar games the player handles well, and a warm-up the player leads</td></tr>
+      </tbody></table></div>
+      <h3>Inside the adaptability stage</h3>
+      <ul>
+        <li><strong>Vary one skill:</strong> the same shot, but every ball a little different (pace, height, position, a different ball).</li>
+        <li><strong>Mix several skills:</strong> the player has to choose between shots, so reading and deciding come in.</li>
+        <li><strong>Play the game:</strong> conditioned games and full rallies against an opponent. The most match-like.</li>
+      </ul>
+      <p>Move on when the player is steady in the current conditions, often over several sessions. Step back when the task is too much for them.</p>
+    </section>
+    <section className="ltadSec"><h2>Two dials, and a balance</h2>
+      <h3>How match-like is it?</h3>
+      <p>How close the game is to what the player will face in a match: a real opponent, real cues, real choices. Squash games with two players and a live ball can be very match-like. Fed drills are not.</p>
+      <h3>How hard does it feel to this player?</h3>
+      <p>The same game can feel easy to one player and overwhelming to another. That is why the Checkerboard difficulty ladder rates each player's setup. Watch the player, not the plan.</p>
+      <h3>Steady and unsettled</h3>
+      <p>A player needs some stability: it gives structure, confidence and motivation. They also need to be unsettled, so they learn to find the same result in different ways. Good planning swaps between the two. Settle a new solution, then disturb it, then let it settle again.</p>
+    </section>
+    <section className="ltadSec"><h2>Example: a four-week block</h2>
+      <p><strong>Player priority:</strong> use a penetrating drive to create space at the front, then read whether the drop is on.</p>
+      <div className="ltadStep"><strong>Week 1. Find a solution (coordination).</strong> Power Driver stage 1, Length Before Power: one side of the court, a penetrating drive is the only way below the line. Watch: can they create pressure with length and arrive balanced?</div>
+      <div className="ltadStep"><strong>Week 2. Adapt it (adaptability).</strong> Penetrate &amp; Finish: full court, a drop is allowed only straight after a penetrating drive, and it's optional. Rotate opponents. Watch: do they go short when the opponent is still recovering, and play length again when the opening closes?</div>
+      <div className="ltadStep"><strong>Week 3. Add pressure (adaptability).</strong> The same game, starting each rotation at 7–7. Watch: do they still see the opening when the score matters? Ask what they saw when they attacked and when they played deep.</div>
+      <div className="ltadStep"><strong>Week 4. Competition week (performance).</strong> Early in the week, match-like games with normal scoring. Close to the match, short games the player handles well, and a warm-up they lead. In the match, note the openings, the shot chosen and what happened. If openings were rare, keep watching before deciding.</div>
+      <p style={{marginTop:10}}>If the player forces drops at 7–7, go back briefly to the one-side game. Check whether they read the opponent's recovery when there are fewer options, then try open play again.</p>
+      <p><button type="button" className="secondaryBtn" onClick={openPD}>Open the Power Driver games →</button></p>
+    </section>
+    <section className="ltadSec"><h2>A week and a session</h2>
+      <h3>The week</h3>
+      <p>Put the learning sessions (adaptability) early in the week, and the performance sessions in the days before a match. Plan the week ahead, then change it if the player needs something else.</p>
+      <h3>The session</h3>
+      <ul>
+        <li>Start with a short warm-up the players lead.</li>
+        <li>Move quickly into games where they have to choose between shots.</li>
+        <li>Then split the group by what you have seen. A player who is struggling goes back to a simpler game with one skill varied. The others move to a more match-like game.</li>
+      </ul>
+    </section>
+    </div>
+    <p className="ltadSrc">Source: Otte, F. W., Millar, S.-K., &amp; Klatt, S. (2019). Skill training periodization in "specialist" sports coaching: an introduction of the "PoST" framework for skill development. Frontiers in Sports and Active Living, 1, 61. doi:10.3389/fspor.2019.00061. The paper uses soccer goalkeeping; the squash examples are this app's adaptation.</p>
+  </div>;
+}
+
 function CoachingParadigmsStyles(){return <style>{`
 .cpWrap{display:flex;flex-direction:column;gap:14px;}
 .cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
@@ -25893,6 +26082,8 @@ function PokerGameRunner({game,deck,setDeck,deckRange,mult,setMult,mirror,setMir
 
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Periodisation',sub:'Coach education \u00b7 planning weeks and sessions through a CLA lens',kw:'periodisation periodization post skill training block plan week session coordination adaptability performance taper otte millar klatt',screen:'periodisation'},
+  {label:'The Athlete Pathway (LTAD)',sub:'Coach education \u00b7 long-term development through a CLA lens',kw:'ltad long term athlete development pathway adp jurbala stages growth spurt maturation periodisation transfer worked example',screen:'ltad'},
   {label:'Coaching Paradigms',sub:'Traditional vs ecological \u00b7 where skill comes from',kw:'coaching paradigms traditional ecological dynamics emergence emergent behaviour comparator technique skill motor programme schema blocked practice grooving automaticity self correcting assumptions reflection',screen:'paradigms'},
   {label:'Tactical Finish',sub:'Game suite \u00b7 how the rally is finished',kw:'tactical finish suite off t corner kill two shot conversion volley finish judge earn winner games',screen:'games',classId:'tacticalfinish'},
   {label:'Breakthrough Log',sub:'Dated evidence \u00b7 what a player found and where',kw:'breakthrough log progress record evidence attribution first seen dated parent one to one credit development milestone',screen:'breakthrough'},
@@ -30329,6 +30520,8 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='gameSuggestions'&&<GameSuggestions setScreen={go} session={session}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
       {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
+      {screen==='ltad'&&<LTADModule setScreen={go}/>}
+      {screen==='periodisation'&&<PeriodisationModule setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
       {screen==='creditLearning'&&<CreditForLearningScreen setScreen={go}/>}
       {screen==='learningToIntercept'&&<LearningToInterceptScreen setScreen={go}/>}
