@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v913 Emerging and Stable';
+const APP_VERSION='v915 Plans Joined to Development';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -6894,7 +6894,7 @@ ${homeGradedTileCss()}`}</style>
 
       {showMore&&<>
       <div className="moreSectionLabel">Planning & Building</div>
-      <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2></button>
+      <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2><span className="homeTileSubtitle">Now part of Player Development</span></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
       <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
@@ -22892,10 +22892,111 @@ function loadPlayerDev(){try{const v=JSON.parse(localStorage.getItem(PLAYER_DEV_
 function devStatus(id){return DEV_STATUSES.find(s=>s.id===id)||DEV_STATUSES[1];}
 function devStamp(){return new Date().toISOString();}
 function devDate(iso){try{return new Date(iso).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}catch{return iso;}}
-function PlayerDevelopment({players}){
+/* v914 (coach, 21 Nov: integrate Player Plans with Player Development — "rather than having 2 separate modules"). One page per player: Working on now (cards) · The plan (season → blocks → weeks, in plain words) · Constraints carried. Same store as before (PLAYER_PLANS_KEY); blocks gain cardIds (priorities chosen from the cards), weeks gain stage (PoST, from the Periodisation module). Old typed priorities and weekly objectives are kept and shown. */
+const DEV_WEEK_STAGES=[
+  {id:'find',label:'Find it',meaning:'A simpler game that keeps the real cues, so a solution can settle.',color:'#8fcfad'},
+  {id:'adapt',label:'Adapt it',meaning:'Open the court, change opponents, add choices.',color:'#9cc4ec'},
+  {id:'pressure',label:'Add pressure',meaning:'The same game with the score at 7–7, or a new opponent.',color:'#d8b86a'},
+  {id:'competition',label:'Competition week',meaning:'Match-like early in the week; short, familiar, confident play just before.',color:'#d98c6a'}
+];
+function devWeekStage(id){return DEV_WEEK_STAGES.find(s=>s.id===id)||null;}
+function devAddDays(iso,n){try{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}catch{return '';}}
+function devTodayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function devPlanFor(plan,cardId){
+  if(!plan||plan.status==='Archived'||!cardId)return [];
+  const today=devTodayISO();
+  return (plan.mesocycles||[]).filter(m=>(m.cardIds||[]).includes(cardId)).map(m=>{
+    const wk=(m.microcycles||[]).find(w=>w.startDate&&w.startDate<=today&&today<devAddDays(w.startDate,7));
+    return {block:m.name||'Untitled block',week:wk?(wk.weekLabel||'This week'):'',stage:wk?devWeekStage(wk.stage):null};
+  });
+}
+function DevTechCarried({who}){
+  const h=techConstraintHistory(who);
+  if(!h.length)return <p className="mutedText">No individual technical constraints applied yet. Assign them in any game’s Universal Modifiers — panel 5.</p>;
+  const byC={};h.forEach(e=>{const k=e.constraint||'Constraint';(byC[k]=byC[k]||[]).push(e);});
+  return <div>{Object.keys(byC).map(k=>{
+    const list=byC[k];const first=new Date(list[list.length-1].at),last=new Date(list[0].at);
+    return <div key={k} style={{background:'#0c1626',border:'1px solid #223044',borderRadius:'10px',padding:'9px 12px',marginBottom:'7px'}}>
+      <strong style={{color:'#6eaac8'}}>{k}</strong>
+      {list[0].penalty!=null&&<span style={{color:'#c98a8a',fontWeight:800}}> −{list[0].penalty}</span>}
+      <span style={{color:'#8aa0b6',fontSize:'0.8rem'}}> · applied {list.length}× · first {first.toLocaleDateString()}{list.length>1?' · most recent '+last.toLocaleDateString():''}</span>
+      {list[0].cue&&<p className="mutedText" style={{margin:'3px 0 0',fontSize:'0.8rem'}}>{list[0].cue}</p>}
+    </div>;})}</div>;
+}
+function DevPlan({who,plan,setPlan,cards}){
+  const [open,setOpen]=useState({});
+  const chip=(on,color)=>({padding:'6px 11px',borderRadius:'999px',border:'1px solid '+(on?color:'#2a3a4f'),background:on?color:'#0f1a2a',color:on?'#0a1322':'#cfe0ee',fontWeight:800,fontSize:'0.85rem',cursor:'pointer'});
+  if(!plan)return <div className="gameCard"><h3 style={{marginTop:0}}>No plan yet for {who}</h3><p className="mutedText">A season, split into blocks of a few weeks. Each block works on up to three of {who}’s cards.</p><button type="button" className="primaryBtn" onClick={()=>setPlan({...emptyAnnualPlan(who),title:who+'’s season'})}>+ Start a season plan</button></div>;
+  const upd=(f,v)=>setPlan({...plan,[f]:v});
+  const updBlock=(id,fn)=>setPlan({...plan,mesocycles:plan.mesocycles.map(m=>m.id===id?fn(m):m)});
+  const addBlock=()=>{const m={...emptyMesocycle(),cardIds:[]};const prev=plan.mesocycles[plan.mesocycles.length-1];if(prev&&prev.endDate)m.startDate=devAddDays(prev.endDate,1);setPlan({...plan,mesocycles:[...plan.mesocycles,m]});setOpen(o=>({...o,[m.id]:true}));};
+  const delBlock=id=>{if(!window.confirm('Delete this block and its weeks?'))return;setPlan({...plan,mesocycles:plan.mesocycles.filter(m=>m.id!==id)});};
+  const toggleCard=(m,cid)=>updBlock(m.id,x=>{const ids=x.cardIds||[];if(ids.includes(cid))return {...x,cardIds:ids.filter(i=>i!==cid)};if(ids.length>=3)return x;return {...x,cardIds:[...ids,cid]};});
+  const addWeek=m=>updBlock(m.id,x=>{const ws=x.microcycles||[];const last=ws[ws.length-1];const w={...emptyMicrocycle(),stage:'',weekLabel:'Wk '+(ws.length+1),startDate:last&&last.startDate?devAddDays(last.startDate,7):(x.startDate||'')};return {...x,microcycles:[...ws,w]};});
+  const updWeek=(m,wid,f,v)=>updBlock(m.id,x=>({...x,microcycles:x.microcycles.map(w=>w.id===wid?{...w,[f]:v}:w)}));
+  const delWeek=(m,wid)=>updBlock(m.id,x=>({...x,microcycles:x.microcycles.filter(w=>w.id!==wid)}));
+  const pickable=cards.filter(c=>c.status!=='change');
+  return <>
+    <div className="gameCard">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
+        <h3 style={{margin:0}}>Season <span className={'ppStatusBadge'+(plan.status==='Archived'?' archivedPP':'')} style={{fontSize:'0.75rem',padding:'2px 8px',borderRadius:'20px',border:'1px solid #6fae8b',color:plan.status==='Archived'?'#bbb':'#7fe0a0'}}>{plan.status||'Active'}</span></h3>
+        <div className="buttonRow">
+          <button type="button" className="secondaryBtn" onClick={()=>{if(window.confirm(plan.status==='Archived'?'Make this plan active again?':'Archive this plan? It stays saved, hidden from the cards.'))upd('status',plan.status==='Archived'?'Active':'Archived');}}>{plan.status==='Archived'?'Reactivate':'Archive'}</button>
+          <button type="button" className="secondaryBtn dangerBtn" onClick={()=>{if(window.confirm('Delete the plan for '+who+'? This cannot be undone.'))setPlan(null);}}>Delete plan</button>
+        </div>
+      </div>
+      <input className="devFull" placeholder="Plan title" value={plan.title||''} onChange={e=>upd('title',e.target.value)}/>
+      <div className="buttonRow"><label>Start<input type="date" value={plan.startDate||''} onChange={e=>upd('startDate',e.target.value)}/></label><label>End<input type="date" value={plan.endDate||''} onChange={e=>upd('endDate',e.target.value)}/></label></div>
+      <textarea placeholder="Main competitions and dates" value={plan.competitions||''} onChange={e=>upd('competitions',e.target.value)}/>
+      <textarea placeholder="What this season is for (optional)" value={plan.mainObjectives||''} onChange={e=>upd('mainObjectives',e.target.value)}/>
+    </div>
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',margin:'14px 0 6px'}}><h3 style={{margin:0}}>Blocks</h3><button type="button" className="primaryBtn" onClick={addBlock}>+ Add block</button></div>
+    {plan.mesocycles.length===0&&<p className="mutedText">No blocks yet. A block is usually 2–6 weeks with one purpose and up to three of the player’s cards.</p>}
+    {plan.mesocycles.map(m=>{const ids=m.cardIds||[];const isOpen=!!open[m.id];const legacy=[m.priority1,m.priority2,m.priority3].some(x=>x&&x.trim());
+      return <div key={m.id} className="gameCard" style={{borderLeft:'5px solid #4a6a8a',padding:'12px 14px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',gap:8,cursor:'pointer'}} onClick={()=>setOpen(o=>({...o,[m.id]:!o[m.id]}))}>
+        <span><strong>{m.name||'Untitled block'}</strong><span className="mutedText">{m.startDate?' · '+devDate(m.startDate):''}{m.endDate?' → '+devDate(m.endDate):''}</span>
+          {ids.length>0&&<span style={{display:'block',color:'#9cc4ec',fontSize:'0.88rem',marginTop:2}}>Working on: {ids.map(i=>(cards.find(c=>c.id===i)||{}).title||'(deleted card)').join(' · ')}</span>}</span>
+        <span>{isOpen?'▲':'▼'}</span>
+      </div>
+      {isOpen&&<div style={{marginTop:8}}>
+        <input className="devFull" placeholder="Block name, e.g. Attack the front" value={m.name||''} onChange={e=>updBlock(m.id,x=>({...x,name:e.target.value}))}/>
+        <div className="buttonRow"><label>Start<input type="date" value={m.startDate||''} onChange={e=>updBlock(m.id,x=>({...x,startDate:e.target.value}))}/></label><label>End<input type="date" value={m.endDate||''} onChange={e=>updBlock(m.id,x=>({...x,endDate:e.target.value}))}/></label></div>
+        <textarea placeholder="What this block is for" value={m.purpose||''} onChange={e=>updBlock(m.id,x=>({...x,purpose:e.target.value}))}/>
+        <div style={{margin:'8px 0'}}><strong>Working on</strong> <span className="mutedText" style={{fontSize:'0.85rem'}}>· up to three of {who}’s cards</span>
+          {pickable.length===0?<p className="mutedText" style={{margin:'4px 0'}}>No cards yet. Add one under Working on now.</p>
+          :<div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:6}}>{pickable.map(c=>{const on=ids.includes(c.id);const st=devStatus(c.status);return <button key={c.id} type="button" disabled={!on&&ids.length>=3} style={{...chip(on,st.color),opacity:!on&&ids.length>=3?0.45:1}} onClick={()=>toggleCard(m,c.id)}>{on?'✓ ':''}{c.title}</button>;})}</div>}
+        </div>
+        {legacy&&<div style={{margin:'8px 0'}}><span className="mutedText" style={{fontSize:'0.85rem'}}>Typed priorities (from the old Player Plans)</span><div className="ppPriorityRow" style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+          {['priority1','priority2','priority3'].map(k=><input key={k} style={{flex:'1 1 150px'}} value={m[k]||''} onChange={e=>{const v=e.target.value;updBlock(m.id,x=>({...x,[k]:v}));}}/>)}</div></div>}
+        <textarea placeholder="Coach notes" value={m.notes||''} onChange={e=>updBlock(m.id,x=>({...x,notes:e.target.value}))}/>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10}}><strong>Weeks</strong><button type="button" className="secondaryBtn" onClick={()=>addWeek(m)}>+ Add week</button></div>
+        {(m.microcycles||[]).length===0&&<p className="mutedText" style={{margin:'4px 0'}}>No weeks yet. Give each week a stage: Find it, Adapt it, Add pressure or Competition week.</p>}
+        {(m.microcycles||[]).map(w=>{const st=devWeekStage(w.stage);return <div key={w.id} style={{background:'#0e141b',borderRadius:8,padding:'8px',margin:'6px 0'}}>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+            <input style={{flex:'0 0 80px'}} placeholder="Wk" value={w.weekLabel||''} onChange={e=>updWeek(m,w.id,'weekLabel',e.target.value)}/>
+            <input type="date" value={w.startDate||''} onChange={e=>updWeek(m,w.id,'startDate',e.target.value)}/>
+            {DEV_WEEK_STAGES.map(s=><button key={s.id} type="button" style={chip(w.stage===s.id,s.color)} onClick={()=>updWeek(m,w.id,'stage',w.stage===s.id?'':s.id)}>{s.label}</button>)}
+            <button type="button" className="secondaryBtn dangerBtn" style={{padding:'4px 10px'}} onClick={()=>delWeek(m,w.id)}>✕</button>
+          </div>
+          {st&&<p className="mutedText" style={{margin:'5px 0 0',fontSize:'0.85rem'}}>{st.meaning}</p>}
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',marginTop:6}}>
+            <input style={{flex:'1 1 200px'}} placeholder="Game or focus this week (optional)" value={w.objective||''} onChange={e=>updWeek(m,w.id,'objective',e.target.value)}/>
+            <input style={{flex:'1 1 200px'}} placeholder="Notes" value={w.notes||''} onChange={e=>updWeek(m,w.id,'notes',e.target.value)}/>
+          </div>
+        </div>;})}
+        <div className="buttonRow" style={{marginTop:8}}><button type="button" className="secondaryBtn dangerBtn" onClick={()=>delBlock(m.id)}>Delete block</button></div>
+      </div>}
+    </div>;})}
+  </>;
+}
+function PlayerDevelopment({players,startView}){
   const [byPlayer,setByPlayer]=useState(()=>loadPlayerDev());
   useEffect(()=>{try{localStorage.setItem(PLAYER_DEV_KEY,JSON.stringify(byPlayer));}catch{}},[byPlayer]);
-  const names=useMemo(()=>[...new Set([...(players||[]).map(p=>p&&p.name).filter(Boolean),...Object.keys(byPlayer)])].sort((a,b)=>a.localeCompare(b)),[players,byPlayer]);
+  const [plans,setPlans]=useState(()=>loadAllPlayerPlans());
+  useEffect(()=>{try{localStorage.setItem(PLAYER_PLANS_KEY,JSON.stringify(plans));}catch{}},[plans]);
+  const [view,setView]=useState(startView||'cards');
+  const names=useMemo(()=>[...new Set([...(players||[]).map(p=>p&&p.name).filter(Boolean),...Object.keys(byPlayer),...Object.keys(plans)])].sort((a,b)=>a.localeCompare(b)),[players,byPlayer,plans]);
   const [who,setWho]=useState('');
   const [draft,setDraft]=useState('');
   const [openHist,setOpenHist]=useState({});
@@ -22944,9 +23045,13 @@ function PlayerDevelopment({players}){
   function lastReview(c){const h=(c.history||[]).filter(e=>e&&e.review);return h.length?h[h.length-1]:null;}
   const pill=(on,color)=>({padding:'7px 12px',borderRadius:'999px',border:'1px solid '+(on?color:'#2a3a4f'),background:on?color:'#0f1a2a',color:on?'#0a1322':'#cfe0ee',fontWeight:800,fontSize:'0.88rem',cursor:'pointer'});
   const smallBtn={padding:'4px 10px'};
-  return <div className="page">
+  return <div className="page devPage"><style>{`.devPage input:not([type=checkbox]),.devPage textarea,.devPage select{background:#0b1118;border:1px solid #2c3c4e;border-radius:9px;color:#eaf4fb;padding:9px 11px;font-size:0.95rem;font-family:inherit;box-sizing:border-box;-webkit-appearance:none;appearance:none;color-scheme:dark;margin:4px 0}
+.devPage textarea{width:100%;min-height:64px;display:block}
+.devPage input::placeholder,.devPage textarea::placeholder{color:#6b8299}
+.devPage .devFull{width:100%;display:block}
+.devPage label{color:#cfe0ee;font-weight:700;display:inline-flex;align-items:center;gap:6px;margin-right:12px}`}</style>
     <div className="pageTop"><h1>Player Development</h1></div>
-    <p className="mutedText" style={{marginTop:0}}>One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically. Optionally, link the game or constraint in use and review it once the constraint is eased.</p>
+    <p className="mutedText" style={{marginTop:0}}>What each player is working on, and the plan for when. One card for each thing a player is working on. Tap where it’s at and where it shows. Changes are dated automatically. Optionally, link the game or constraint in use and review it once the constraint is eased.</p>
     <details className="cbGuide"><style>{CB_GUIDE_CSS}</style><summary>Coach's guide: following a skill from practice to matches</summary><div className="cbGuideBody">
       <p>A new skill first has to settle, then it has to hold up when things get harder. The cards follow that.</p>
       <ul>
@@ -22969,7 +23074,10 @@ function PlayerDevelopment({players}){
     <div className="gameCard">
       <label style={{fontWeight:800}}>Player <select value={who} onChange={e=>{setWho(e.target.value);setReview(null);setLinkDraft({});}} style={{marginLeft:'8px'}}><option value="">Choose a player…</option>{names.map(n=><option key={n} value={n}>{n}{(byPlayer[n]||[]).length?' ('+byPlayer[n].length+')':''}</option>)}</select></label>
     </div>
-    {who&&<>
+    {who&&<div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'4px 0 10px'}}>{[['cards','Working on now'],['plan','The plan'],['carried','Constraints carried']].map(([id,l])=><button key={id} type="button" style={pill(view===id,'#6eaac8')} onClick={()=>setView(id)}>{l}{id==='plan'&&plans[who]&&plans[who].status!=='Archived'?' ✓':''}</button>)}</div>}
+    {who&&view==='plan'&&<DevPlan who={who} cards={cards} plan={plans[who]||null} setPlan={p=>setPlans(prev=>{const n={...prev};if(p)n[who]=p;else delete n[who];return n;})}/>}
+    {who&&view==='carried'&&<div className="gameCard"><h3 style={{marginTop:0}}>Technical constraints carried</h3><DevTechCarried who={who}/></div>}
+    {who&&view==='cards'&&<>
       <div className="gameCard">
         <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')addCard();}} placeholder="What is this player working on? e.g. Volleys the loose crosscourt" style={{flex:'1 1 260px',minWidth:0}}/><button type="button" className="primaryBtn" onClick={addCard} disabled={!draft.trim()}>Add card</button></div>
       </div>
@@ -22980,6 +23088,7 @@ function PlayerDevelopment({players}){
         {list.map(c=>{const lr=lastReview(c);const editingLink=c.id in linkDraft;const rv=review&&review.cardId===c.id?review:null;const rvEntry=rv&&rv.idx!=null?(c.history||[])[rv.idx]:null;const rvLink=rv?(rvEntry&&rvEntry.review?rvEntry.review.link:c.link):'';return <div key={c.id} className="gameCard" style={{borderLeft:'5px solid '+st.color,padding:'12px 14px',margin:'8px 0'}}>
           <div style={{display:'flex',justifyContent:'space-between',gap:'8px',alignItems:'flex-start'}}><strong style={{fontSize:'1.08rem'}}>{c.title}</strong><span style={{display:'flex',gap:'6px'}}><button type="button" className="secondaryBtn" style={smallBtn} onClick={()=>rename(c)}>Edit</button><button type="button" className="secondaryBtn" style={smallBtn} title="Delete" onClick={()=>remove(c)}>✕</button></span></div>
           {c.link&&!editingLink&&<p className="mutedText" style={{margin:'4px 0 0'}}>🔗 Using: <b>{c.link}</b></p>}
+          {devPlanFor(plans[who],c.id).map((pf,i)=><p key={i} className="mutedText" style={{margin:'3px 0 0'}}>📅 In the plan: <b>{pf.block}</b>{pf.week?<> · {pf.week}{pf.stage?<>: <b style={{color:pf.stage.color}}>{pf.stage.label}</b></>:null}</>:null}</p>)}
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',margin:'10px 0 6px'}}>{DEV_STATUSES.map(s=><button key={s.id} type="button" style={pill(c.status===s.id,s.color)} onClick={()=>setStatus(c,s.id)}>{s.label}</button>)}</div>
           <div style={{display:'flex',gap:'14px',flexWrap:'wrap',margin:'6px 0'}}>{DEV_TICKS.map(t=><label key={t.id} style={{display:'flex',alignItems:'center',gap:'6px',fontWeight:700}}><input type="checkbox" checked={!!(c.ticks&&c.ticks[t.id])} onChange={()=>toggleTick(c,t)}/>{t.label}</label>)}</div>
           {(()=>{const nx=devNextStep(c);return nx?<p style={{margin:'4px 0 6px',color:nx.secure?'#8fcfad':'#9cc4ec',fontSize:'0.92rem',fontWeight:600}}>{nx.text}{nx.secure&&<button type="button" style={{...pill(false,'#6fae8b'),marginLeft:'8px',padding:'4px 11px'}} onClick={()=>setStatus(c,'secure')}>Mark Stable</button>}</p>:null;})()}
@@ -30527,7 +30636,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='learningToIntercept'&&<LearningToInterceptScreen setScreen={go}/>}
       {screen==='matchProblems'&&<MatchProblemIndex setScreen={go}/>}
       {screen==='breakthrough'&&<BreakthroughLog setScreen={go}/>}
-{screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerPlans players={players}/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
+{screen==='players'&&<PlayerHub players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}{screen==='playerPlans'&&<PlayerDevelopment players={players} startView='plan'/>}{screen==='technical'&&<UniversalOverlays setScreen={go}/>} {screen==='doubleBounce'&&<DoubleBounceTool setScreen={go}/>} {screen==='mentalSkills'&&<MentalSkillsPlaceholder setScreen={go}/>} 
 {screen==='competition'&&<Competition players={players} initialInvasionFormat={lastInvasionFormat} onInvasionFormatChange={setLastInvasionFormat}/>} {screen==='storage'&&<Storage players={players} setPlayers={setPlayers} session={session} setSession={setSession}/>}
 </main>
 
