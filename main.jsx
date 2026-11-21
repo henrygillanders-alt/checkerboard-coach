@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v907 Plug & Play Rules, Difficulty Guide, Partial Credit';
+const APP_VERSION='v909 Play & Score Coach Guide';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -9568,7 +9568,7 @@ const CB_GUIDE_CSS=`.cbGuide{background:#0f1822;border:1px solid #223044;border-
 .cbGuideBody{padding:0 18px 16px;font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;color:#dde7ef;font-size:1.06rem;line-height:1.55}
 .cbGuideBody p{margin:0 0 10px}
 .cbGuideBody h3{font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.08rem;color:#eaf4fb;margin:14px 0 6px}
-.cbGuideBody ol{margin:0 0 10px 1.2em;padding:0}.cbGuideBody li{margin:0 0 4px}
+.cbGuideBody ol{margin:0 0 10px 1.2em;padding:0}.cbGuideBody li{margin:0 0 6px}.cbGuideBody ul{margin:4px 0 4px 1.1em;padding:0}
 .cbGuideRung{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border-left:4px solid #223044;background:#0c141d;margin:4px 0;border-radius:4px;font-size:1rem}
 .cbGuideNow{font-family:'Charter','Iowan Old Style',Georgia,serif;background:#0c141d;border:1px solid #223044;border-radius:8px;padding:10px 12px;margin:10px 0 0}`;
 
@@ -9722,7 +9722,7 @@ const [stepDown,setStepDown]=useState(()=>{try{return JSON.parse(localStorage.ge
       K.push('The same code twice counts.');
     }else{
       K.push('Hit the code in the order shown, one shot straight after the other.','If the run is broken, start again.');
-      if(stepDown>0&&(cbHasKind('pair')||cbHasKind('triple')))K.push(`If you have not finished your code after ${stepDown} rallies, drop the last target of your code. Tell your opponent before the next rally. Your shorter code stays until the rotation ends and scores as the shorter code.`);
+      if(stepDown>0&&(cbHasKind('pair')||cbHasKind('triple')))K.push(`If you have not finished your code after ${stepDown} rallies, your code gets shorter: leave off the last target. A triple becomes a pair, a pair becomes a single. Tell your opponent. Keep the shorter code until the rotation ends.`);
     }
     const lvl=scope==='group'?group&&group.level:null;
     const lvlLine=lvl?cbKidLevel(lvl):null; if(lvlLine)K.push(lvlLine);
@@ -9865,7 +9865,9 @@ const [stepDown,setStepDown]=useState(()=>{try{return JSON.parse(localStorage.ge
           <h3>Open or Blind</h3>
           <p>In Open, the opponent knows the code and will try to block it. In a real match the opponent doesn't know your plan. Open suits learning the code at the low levels. Once pairs or triples are in play, Blind (Random Blind) is more match-like.</p>
           <h3>Built in to help</h3>
-          <p>Partial credit (on by default, +1): landing the second shot of a triple scores, kept even if the rally is lost. Step down (on by default, after 4 rallies): a player who hasn't finished their code drops its last target for the rest of the rotation. Both are under Difficulty when In sequence, consecutive is chosen.</p>
+          <p><strong>Partial credit</strong> (on, +1). With a triple, landing the second shot scores +1. The player keeps it even if they lose the rally.</p>
+          <p><strong>Step down</strong> (on, after 4 rallies). If a player hasn't finished their code after 4 rallies, their code gets shorter for the rest of the rotation. A triple becomes a pair and a pair becomes a single. For example, [6-3] then [8-1] then [5-4] becomes [6-3] then [8-1].</p>
+          <p>To change either one, go to step 2, Difficulty, and choose 4 · In sequence, consecutive. Both settings are below the scoring style.</p>
           <p>Triples are for players at least as strong as their opponent. Against a stronger opponent, give a single or a pair.</p>
           {rated.length>0&&<div className="cbGuideNow"><strong>This setup</strong>
             {rated.map(([n,d])=><div key={n} className="cbGuideRung" style={{borderLeftColor:d.col}}><span>{n}: {d.kind}</span><span style={{color:d.col}}>{d.label} · {d.score}/{d.max}</span></div>)}
@@ -9954,7 +9956,7 @@ const [stepDown,setStepDown]=useState(()=>{try{return JSON.parse(localStorage.ge
             <PointStepper value={raceSecond} onChange={setRaceSecond} min={0} max={3} zeroLabel="Off" sign="+"/>
           </div>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'12px',padding:'6px 2px'}}>
-            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Step down after this many rallies with no code finished<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>The player drops the last target of their code (triple to pair, pair to single) until the rotation ends. They call it themselves. No penalty.</em></span>
+            <span style={{color:'#eaf4fb',fontSize:'0.86rem'}}>Step down after this many rallies with no code finished<em style={{display:'block',color:'#8aa0b6',fontSize:'0.78rem'}}>Their code gets shorter for the rest of the rotation: a triple becomes a pair, a pair becomes a single. They say so themselves. No penalty.</em></span>
             <PointStepper value={stepDown} onChange={setStepDown} min={0} max={9} zeroLabel="Off" sign=""/>
           </div>
         </div>}
@@ -18357,6 +18359,35 @@ const COACH_STAR_GAMES={
   CCG12:'Coach’s star: encourages volleying, and regulated swing size against an opponent with the pace to reach the back wall (Nov 2026).',
   CCG50:'Coach’s star: encourages volleying, and regulated swing size against an opponent with the pace to reach the back wall (Nov 2026).'
 };
+/* v909 (coach, 21 Nov): a coach's explainer at the top of each Games Library group. One pattern: why these games, then how to set one up. Formats first; other groups to follow once the coach approves their text. */
+const GROUP_GUIDES={
+  formats:{summary:"Coach's guide: why these games, and how to set one up",render:()=><>
+    <h3>Why these games</h3>
+    <p>Board and card games are built on all-or-nothing moments: one roll, one card, one move can win the game or lose it. These formats bring that risk and reward onto the squash court.</p>
+    <p>Every rally now comes with a decision: play safe, or go for it? And every decision has a consequence players can see on the board. That's the same pressure they meet in competitive matches, and it's rarely felt in ordinary practice.</p>
+    <p>Because the games are familiar and fun, players get absorbed. They stop thinking of it as training. They commit to shots, take risks, defend a lead and fight back from behind the way they do in a real match.</p>
+    <p>The effect on how they play can be striking. You'll see competitive behaviour and commitment that a normal practice session seldom brings out.</p>
+    <h3>How to set up a game</h3>
+    <p>Snakes &amp; Ladders is the example here. The other games follow the same idea: set the board, choose the players, play it plain, then add challenges at the big moments.</p>
+    <ol>
+      <li><strong>Pick a game.</strong> Start with one your players already know. They pick up the rules straight away and the game takes over.</li>
+      <li><strong>Set the board</strong> (step 1, The board). Board size, how many snakes and ladders, and how far each moves a player. A shorter board suits a short slot.</li>
+      <li><strong>Choose who plays</strong> (step 2, Who is playing). Players come from tonight's register. With more than one court, choose separate games per court, or a race on the same board.</li>
+      <li><strong>Play it plain first</strong> (step 3, Standard game). Win the rally, move on the board. Let players feel the swings before you add anything.</li>
+      <li><strong>Add a challenge at the high-pressure squares</strong> (step 3, Challenge game). Landing on a snake or a ladder is the big moment. Pick a challenge (Volley Finish, Straight Drop wins it, Clean Winner, Hold your technical constraint) or type your own.
+        <ul>
+          <li>On a snake: win the next rally and show the challenge to escape. Lose, and the snake bites.</li>
+          <li>On a ladder: win the next rally and show the challenge to climb. Lose, and the ladder is gone.</li>
+          <li>Set "Wins in a row without showing the challenge". After that many wins the player escapes or climbs anyway, so an opponent can't lose rallies on purpose to keep them stuck.</li>
+        </ul>
+      </li>
+      <li><strong>Add rally modifiers</strong> (optional). Bonus squares for a winning rally that meets a finish rule, for example Clean winner = +2 squares.</li>
+      <li><strong>Fine-tune with Universal Modifiers</strong> (optional). Game logic, constraints, scoring and handicaps.</li>
+      <li><strong>Go live</strong> (step 4). Put the board on the wall and give each court its scoring link, or Add to Session.</li>
+    </ol>
+    <p>Add one thing at a time. If the challenge stops players moving round the board, make it easier.</p>
+  </>}
+};
 function gameLibraryGroups(){return GAME_LIBRARY_GROUPS.map(g=>({...g,ids:GAME_LIBRARY.filter(e=>e.groups.includes(g.id)).map(e=>e.id)}));}
 
 function StandardGamesByCategory({category,onAdd}){
@@ -18494,7 +18525,7 @@ function Games({setSession,setScreen,onClassChange}){
             <span className="gcText"><span className="gcTitle">{grp.title}</span><span className="gcSub">{items.length} games{isOpen?'':' · tap to open'}</span></span>
             <span className="gcChev">{isOpen?'▲':'▾'}</span>
           </button>
-          {isOpen&&<div className="gameGroupBody"><div className="gameClassGrid">
+          {isOpen&&<div className="gameGroupBody">{GROUP_GUIDES[grp.id]&&<details className="cbGuide" style={{margin:'6px 0 12px'}}><style>{CB_GUIDE_CSS}</style><summary>{GROUP_GUIDES[grp.id].summary}</summary><div className="cbGuideBody">{GROUP_GUIDES[grp.id].render()}</div></details>}<div className="gameClassGrid">
             {items.map(gc=>
               <button type="button" key={gc.id} className="gameClassBtn" onClick={()=>gc.route?setScreen(gc.route):selectClass(gc.id)} title={typeof COACH_STARS[gc.id]==='string'?COACH_STARS[gc.id]:undefined}>
                 {COACH_STARS[gc.id]&&<span style={{color:'#f0c96a',fontWeight:900}}>★ </span>}{gc.label}
