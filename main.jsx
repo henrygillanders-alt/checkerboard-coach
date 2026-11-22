@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v916 Power Driver Steps and Kill Zone';
+const APP_VERSION='v917 Coach Education Tile';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -6864,22 +6864,9 @@ ${homeGradedTileCss()}`}</style>
       <div className="homeBrandCard compactHomeBrand"><h1>Checkerboard Squash™</h1><p className="homeBrandSubtitle">"A Constraint Is Worth a Thousand Words"</p></div>
 
       {}
-      <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('purpose')}>
-        <strong>START HERE</strong>
-        <p>What Checkerboard Squash is for · the principles behind it · what we develop in players</p>
-      </button>
-      <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('whyCLA')}>
-        <strong>WHY CLA?</strong>
-        <p>Origins · principles · the science behind Checkerboard — the reason this app exists</p>
-      </button>
-      <button className="homeRLDTile homeBrandCard" onClick={()=>setScreen('rld')}>
-        <div className="homeRLDLeft">
-          <strong>RLD & Challenge Point Framework</strong>
-          <p>Representativeness scale · 70% rule · Move players toward competition</p>
-        </div>
-        <div className="homeRLDDots">
-          {RLD_LEVELS.map(r=><span key={r.level} className="homeRLDDot" style={{background:r.color}}>{r.doubleDot&&<><span className="rldInnerDotSm"/><span className="rldInnerDotSm"/></>}</span>)}
-        </div>
+      <button className="whyCLABrandTile homeBrandCard" onClick={()=>setScreen('coachEducation')}>
+        <strong>COACH EDUCATION</strong>
+        <p>Start Here · Why CLA? · RLD · The Athlete Pathway · Periodisation · and more</p>
       </button>
 
       {}
@@ -6894,6 +6881,7 @@ ${homeGradedTileCss()}`}</style>
 
       {showMore&&<>
       <div className="moreSectionLabel">Planning & Building</div>
+      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
       <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2><span className="homeTileSubtitle">Now part of Player Development</span></button>
       <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
       <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
@@ -6923,11 +6911,6 @@ ${homeGradedTileCss()}`}</style>
       <button className="homeCard homeTitleOnly" onClick={()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,'crosscourtfof');}catch(e){}setScreen('games');}}><h2>Cross Court Friend or Foe</h2><span className="homeTileSubtitle">The crosscourt games for competition</span></button>
       <button className="homeCard homeTitleOnly" onClick={()=>setScreen('matchProblems')}><h2>Match Problem Index</h2><span className="homeTileSubtitle">Match problems → the games that fix them</span></button>
 
-      <div className="moreSectionLabel">Coach Education</div>
-      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('ltad')}><h2>The Athlete Pathway</h2><span className="homeTileSubtitle">Long-term development through a CLA lens</span></button>
-      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('periodisation')}><h2>Periodisation</h2><span className="homeTileSubtitle">Planning weeks and sessions around what the player is learning</span></button>
-
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
 
       <div className="moreSectionLabel">Diagnostics & Tools</div>
       <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
@@ -25610,6 +25593,36 @@ function PeriodisationModule({setScreen}){
   </div>;
 }
 
+/* v917 (coach, 22 Nov): one Coach Education tile at the top of Home, replacing Start Here, Why CLA? and RLD. Every page keeps its own route and search entry. */
+const COACH_ED_PAGES=[
+  {screen:'purpose',title:'Start Here',sub:'What Checkerboard Squash is for, the principles behind it, and what we develop in players.'},
+  {screen:'whyCLA',title:'Why CLA?',sub:'Origins, principles and the science behind the constraints-led approach.'},
+  {screen:'rld',title:'RLD & Challenge Point',sub:'How match-like a game is, the 70% rule, and moving players towards competition.'},
+  {screen:'ltad',title:'The Athlete Pathway',sub:'Long-term development through a CLA lens.'},
+  {screen:'periodisation',title:'Periodisation',sub:'Planning weeks and sessions around what the player is learning.'},
+  {screen:'paradigms',title:'Coaching Paradigms',sub:'Traditional and CLA coaching, side by side.'},
+  {screen:'lexicon',title:'CLA Lexicon',sub:'The terms and the researchers, in plain English.'},
+  {screen:'creditLearning',title:'Where Did the Improvement Come From?',sub:'Why lessons get the credit.'},
+  {screen:'perception',title:'Perception',sub:'Reading the game: what players see, and when.'},
+  {screen:'visionPerception',title:'Vision & Perception',sub:'Where the eyes go, and why it matters.'},
+  {screen:'learningToIntercept',title:'Learning to Intercept',sub:'Meeting the ball: timing and interception.'},
+  {screen:'parents',title:'For Parents',sub:'How we coach, explained for parents.'}
+];
+function CoachEducationHub({setScreen}){
+  return <div className="page ltadPage"><style>{LTAD_CSS+`.ceList{list-style:none;margin:0;padding:0;counter-reset:ce}
+.ceItem{counter-increment:ce;display:flex;gap:16px;align-items:flex-start;width:100%;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 20px;margin:0 0 10px;cursor:pointer;color:#dde7ef}
+.ceItem:hover{border-color:#4a6a8a}
+.ceItem::before{content:counter(ce);font-family:'Charter','Iowan Old Style',Georgia,serif;font-size:1.4rem;font-weight:700;color:#7f9bb5;min-width:1.6em}
+.ceItem h2{font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;font-size:1.3rem;margin:0 0 3px;color:#eaf4fb}
+.ceItem p{font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;font-size:1.05rem;margin:0;color:#b9c8d6;line-height:1.45}
+.ceFirst{border-color:#4a6a8a;background:#122030}`}</style>
+    <div className="pageTop"><div><h1>Coach Education</h1><p className="mutedText">The thinking behind the games. Start at the top.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="ltadCol"><div className="ceList">
+      {COACH_ED_PAGES.map((pg,i)=><button key={pg.screen} type="button" className={'ceItem'+(i===0?' ceFirst':'')} onClick={()=>setScreen(pg.screen)}><span><h2>{pg.title}</h2><p>{pg.sub}</p></span></button>)}
+    </div></div>
+  </div>;
+}
+
 function CoachingParadigmsStyles(){return <style>{`
 .cpWrap{display:flex;flex-direction:column;gap:14px;}
 .cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
@@ -26202,6 +26215,9 @@ function PokerGameRunner({game,deck,setDeck,deckRange,mult,setMult,mirror,setMir
 
 const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
+  {label:'Start Here',sub:'Coach education \u00b7 what Checkerboard Squash is for',kw:'start here purpose principles what is checkerboard for introduction new coach',screen:'purpose'},
+  {label:'Why CLA?',sub:'Coach education \u00b7 origins, principles, the science',kw:'why cla constraints led approach science origins bernstein gibson ecological dynamics',screen:'whyCLA'},
+  {label:'Coach Education',sub:'All the reading pages: Start Here, Why CLA?, RLD, Pathway, Periodisation and more',kw:'coach education start here why cla rld reading learn theory principles hub',screen:'coachEducation'},
   {label:'Periodisation',sub:'Coach education \u00b7 planning weeks and sessions through a CLA lens',kw:'periodisation periodization post skill training block plan week session coordination adaptability performance taper otte millar klatt',screen:'periodisation'},
   {label:'The Athlete Pathway (LTAD)',sub:'Coach education \u00b7 long-term development through a CLA lens',kw:'ltad long term athlete development pathway adp jurbala stages growth spurt maturation periodisation transfer worked example',screen:'ltad'},
   {label:'Coaching Paradigms',sub:'Traditional vs ecological \u00b7 where skill comes from',kw:'coaching paradigms traditional ecological dynamics emergence emergent behaviour comparator technique skill motor programme schema blocked practice grooving automaticity self correcting assumptions reflection',screen:'paradigms'},
@@ -30640,6 +30656,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 {screen==='gameSuggestions'&&<GameSuggestions setScreen={go} session={session}/>}
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
       {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
+      {screen==='coachEducation'&&<CoachEducationHub setScreen={go}/>}
       {screen==='ltad'&&<LTADModule setScreen={go}/>}
       {screen==='periodisation'&&<PeriodisationModule setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
