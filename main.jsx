@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v917 Coach Education Tile';
+const APP_VERSION='v918 Home Reorganised';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -6870,54 +6870,14 @@ ${homeGradedTileCss()}`}</style>
       </button>
 
       {}
-      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2></button>
-      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2></button>
+      <button className="tile green homeTitleOnly" onClick={()=>setScreen('players')}><h2>Players</h2><span className="homeTileSubtitle">Register · development · breakthroughs · mental performance</span></button>
       <button className="homeCard checkerboardHomeCard homeTitleOnly" onClick={()=>setScreen('checkerboard')}><h2>Checkerboard</h2><span className="homeTileSubtitle">Flagship challenge protocol · allocate per player</span></button>
-      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2></button>
-      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2></button>
-
-      {}
-      <button className="homeCard moreStuffCard homeTitleOnly" onClick={()=>setShowMore(v=>!v)}><h2>{showMore?'▲ Less':'▾ More Stuff'}</h2><span className="homeTileSubtitle">{showMore?'Hide the rest':'All the other modules'}</span></button>
-
-      {showMore&&<>
-      <div className="moreSectionLabel">Planning & Building</div>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('breakthrough')}><h2>Breakthrough Log</h2><span className="homeTileSubtitle">Dated record of what each player found, and where</span></button>
-      <button className="homeCard playerPlansHomeCard homeTitleOnly" onClick={()=>setScreen('playerPlans')}><h2>Player Plans™</h2><span className="homeTileSubtitle">Now part of Player Development</span></button>
-      <button className="homeCard plugPlayHomeCard homeTitleOnly" onClick={()=>setScreen('plugPlay')}><h2>Plug & Play</h2></button>
-      <button className="homeCard constraintsHomeCard homeTitleOnly" onClick={()=>setScreen('constraints')}><h2>Game Constraints</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('customLibrary')}><h2>My Constraints</h2><span className="homeTileSubtitle">Add your own · share with the team</span></button>
-      <button className="homeCard shotsHomeCard homeTitleOnly" onClick={()=>setScreen('shots')}><h2>Shots</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('tacticalIntentions')}><h2>{COACH_STARS.tacticalIntentions&&<span style={{color:'#f0c96a'}}>★ </span>}Pattern Lab</h2><span className="homeTileSubtitle">CLA Patterns of Play</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('differential')}><h2>Differential Learning</h2><span className="homeTileSubtitle">De-groove · perturbation deck</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('analogies')}><h2>Analogy Library</h2><span className="homeTileSubtitle">External-focus cues per shot · CLA Update</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('ghosting')}><h2>Ghosting</h2><span className="homeTileSubtitle">Rally-band blocks · for Rox · visualise</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('warmUp')}><h2>Warm Up Activities</h2><span className="homeTileSubtitle">First ten minutes · ball, body and eyes</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('trafficLight')}><h2>Traffic Light Zones</h2><span className="homeTileSubtitle">Front-wall height bands · purpose per band</span></button>
-
-      <div className="moreSectionLabel">Live & Match Day</div>
-      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>{if(MATCH_ANALYSIS_APP_URL){window.open(MATCH_ANALYSIS_APP_URL,'_blank');}else{alert('Match Analysis is now its own app (v745 split). Paste its URL into MATCH_ANALYSIS_APP_URL next to APP_VERSION at the top of main.jsx and redeploy.');}}}><h2>Live Match Coaching</h2><span className="homeTileSubtitle">{MATCH_ANALYSIS_APP_URL?'Match analysis · opens the standalone app':'Match analysis · separate app · URL not set yet'}</span></button>
-      <button className="homeCard blindTargetHomeCard homeTitleOnly" onClick={()=>setScreen('courtMonitor')}><h2>Court Monitor</h2><span className="homeTileSubtitle">King of Courts — live</span></button>
-      <button className="homeCard playerDisplayHomeCard homeTitleOnly" onClick={()=>setScreen('playerDisplay')}><h2>Player Display</h2><span className="homeTileSubtitle">Second device view</span></button>
-      <button className="homeCard peakWeekHomeCard homeTitleOnly" onClick={()=>setScreen('peakWeek')}><h2>⚡ PEAK WEEK™</h2><span className="homeTileSubtitle">Pre-competition readiness</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('squadClockNet')}><h2>Squad Clock — All Courts</h2><span className="homeTileSubtitle">📡 Networked · synced across courts</span></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rotation')}><h2>Rotation Engine™</h2><span className="homeTileSubtitle">Group formats · more players than courts</span></button>
-
-      <div className="moreSectionLabel">Pressure & Perception</div>
-      <button className="homeCard pressureHomeCard homeTitleOnly" onClick={()=>setScreen('pressure')}><h2>Physical Pressure</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" onClick={()=>setScreen('rallyBand')}><h2>Rally Band</h2><span className="homeTileSubtitle">Land the rally in its duration band</span></button>
-      <button className="homeTile mentalSkillsTile homeTitleOnly" onClick={()=>setScreen('mentalSkills')}><h2>Mental Performance</h2></button>
-      <button className="homeCard soloPracticeHomeCard homeTitleOnly" onClick={()=>setScreen('soloPractice')}><h2>Unopposed Practice</h2><span className="homeTileSubtitle">Exploration vs Installation</span></button>
-      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('creditLearning')}><h2>Where Did the Improvement Come From?</h2><span className="homeTileSubtitle">Why lessons get the credit</span></button>
-      <button className="homeCard homeTitleOnly" onClick={()=>{try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,'crosscourtfof');}catch(e){}setScreen('games');}}><h2>Cross Court Friend or Foe</h2><span className="homeTileSubtitle">The crosscourt games for competition</span></button>
-      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('matchProblems')}><h2>Match Problem Index</h2><span className="homeTileSubtitle">Match problems → the games that fix them</span></button>
-
-
-      <div className="moreSectionLabel">Diagnostics & Tools</div>
-      <button className="homeCard diagnosticHomeCard homeTitleOnly" onClick={()=>setScreen('diagnosticIntervention')}><h2>Diagnostic & Intervention</h2></button>
-      <button className="homeCard toolsHomeCard homeTitleOnly" onClick={()=>setScreen('tools')}><h2>Tools</h2><span className="homeTileSubtitle">Quick Fix Intervention</span></button>
-      <button className="homeTile technicalOverlayTile homeTitleOnly" onClick={()=>setScreen('technical')}><h2>Universal Modifier Engine</h2></button>
-      <button className="homeCard tacticalIntentionsHomeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachSuggestions')}><CoachSuggestUnreadBadge/><h2>Suggestions</h2><span className="homeTileSubtitle">Players & coaches · improve games and activities</span></button>
-      </>}
+      <button className="homeCard gamesLibraryHomeCard homeTitleOnly" onClick={()=>setScreen('gamesLibrary')}><h2>Games Library</h2><span className="homeTileSubtitle">Every game in one place</span></button>
+      <button className="tile blue homeTitleOnly" onClick={()=>setScreen('sessions')}><h2>Sessions</h2><span className="homeTileSubtitle">Build and run a session · Plug & Play · warm-ups</span></button>
+      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('onCourt')}><h2>On Court</h2><span className="homeTileSubtitle">Player display · court monitor · squad clock · rotations</span></button>
+      <button className="tile red homeTitleOnly" onClick={()=>setScreen('competition')}><h2>Competition</h2><span className="homeTileSubtitle">Ladder and match prep · Peak Week</span></button>
+      <button className="homeCard homeTitleOnly" onClick={()=>setScreen('matchReview')}><h2>Match Review</h2><span className="homeTileSubtitle">From the match back to training</span></button>
+      <button className="homeCard homeTitleOnly" style={{position:'relative'}} onClick={()=>setScreen('coachTools')}><CoachSuggestUnreadBadge/><h2>Coach Tools</h2><span className="homeTileSubtitle">Modifier engine · constraints · shots · suggestions</span></button>
     </div>;
 }
 
@@ -25603,12 +25563,53 @@ const COACH_ED_PAGES=[
   {screen:'paradigms',title:'Coaching Paradigms',sub:'Traditional and CLA coaching, side by side.'},
   {screen:'lexicon',title:'CLA Lexicon',sub:'The terms and the researchers, in plain English.'},
   {screen:'creditLearning',title:'Where Did the Improvement Come From?',sub:'Why lessons get the credit.'},
+  {screen:'soloPractice',title:'Unopposed Practice',sub:'Solo hitting and ghosting: where they help, and where they don’t.'},
   {screen:'perception',title:'Perception',sub:'Reading the game: what players see, and when.'},
   {screen:'visionPerception',title:'Vision & Perception',sub:'Where the eyes go, and why it matters.'},
   {screen:'learningToIntercept',title:'Learning to Intercept',sub:'Meeting the ball: timing and interception.'},
+  {screen:'trafficLight',title:'Traffic Light Zones',sub:'Front-wall height bands and the purpose of each.'},
+  {screen:'analogies',title:'Analogy Library',sub:'External-focus cues for each shot.'},
   {screen:'parents',title:'For Parents',sub:'How we coach, explained for parents.'}
 ];
-function CoachEducationHub({setScreen}){
+/* v918 (coach, 22 Nov: "reorganise the app so it is coherent and flows logically"). Home follows the coach's cycle: Learn (Coach Education) → Players → Plan (Checkerboard, Games Library, Sessions) → Run (On Court, Competition) → Review (Match Review) → Coach Tools. More Stuff retired; every screen keeps its route and search entry. */
+function hubOpen(pg,setScreen){
+  if(pg.url){try{window.open(pg.url,'_blank');}catch(e){}return;}
+  if(pg.libClass){try{localStorage.setItem(GAME_LIBRARY_CLASS_KEY,pg.libClass);}catch(e){}}
+  setScreen(pg.screen);
+}
+const HUB_PAGES={
+  onCourt:{title:'On Court',sub:'Live tools while the games are running.',pages:[
+    {screen:'playerDisplay',title:'Player Display',sub:'The rules and scores on a second screen for the players.'},
+    {screen:'courtMonitor',title:'Court Monitor',sub:'King of Courts, live.'},
+    {screen:'squadClockNet',title:'Squad Clock — All Courts',sub:'One clock, synced across every court.'},
+    {screen:'rotation',title:'Rotation Engine',sub:'Group formats when there are more players than courts.'}]},
+  matchReview:{title:'Match Review',sub:'From what you see in matches back to what you train.',pages:[
+    {url:MATCH_ANALYSIS_APP_URL,title:'Match Analysis',sub:'The separate match analysis app. Opens in a new tab.'},
+    {screen:'matchProblems',title:'Match Problem Index',sub:'Match problems and the games that address them.'},
+    {screen:'diagnosticIntervention',title:'Diagnostic & Intervention',sub:'From a problem you see to the constraint that fixes it.'},
+    {screen:'tools',title:'Tools',sub:'Quick Fix Intervention.'}]},
+  coachTools:{title:'Coach Tools',sub:'Set-up and reference behind the games.',pages:[
+    {screen:'technical',title:'Universal Modifier Engine',sub:'Game logic, constraints, scoring and handicaps for any game.'},
+    {screen:'constraints',title:'Game Constraints',sub:'The constraint library.'},
+    {screen:'customLibrary',title:'My Constraints',sub:'Add your own and share them with the team.'},
+    {screen:'shots',title:'Shots',sub:'Each shot: what it is for and how to read it.'},
+    {screen:'coachSuggestions',title:'Suggestions',sub:'Ideas from players and coaches to improve games and activities.'}]}
+};
+/* Shortcuts shown at the top of the main screens for modules that moved there from More Stuff. */
+const HUB_STRIPS={
+  players:[{screen:'breakthrough',title:'Breakthrough Log'},{screen:'mentalSkills',title:'Mental Performance'}],
+  sessions:[{screen:'plugPlay',title:'Plug & Play'},{screen:'warmUp',title:'Warm Up Activities'}],
+  gamesLibrary:[{screen:'tacticalIntentions',title:'Pattern Lab'},{screen:'differential',title:'Differential Learning'},{screen:'ghosting',title:'Ghosting'},{screen:'rallyBand',title:'Rally Band'},{screen:'pressure',title:'Physical Pressure'},{screen:'soloPractice',title:'Unopposed Practice'},{screen:'games',libClass:'crosscourtfof',title:'Cross Court Friend or Foe'}],
+  competition:[{screen:'peakWeek',title:'Peak Week'}]
+};
+function HubStrip({which,setScreen}){
+  const items=HUB_STRIPS[which]||[];if(!items.length)return null;
+  return <div style={{maxWidth:1200,margin:'12px auto 0',padding:'0 16px',display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+    <span style={{color:'#7f9bb5',fontWeight:700,fontSize:'0.8rem',letterSpacing:'.06em',textTransform:'uppercase',marginRight:4}}>Also here</span>
+    {items.map(it=><button key={it.title} type="button" className="secondaryBtn" style={{padding:'6px 12px'}} onClick={()=>hubOpen(it,setScreen)}>{it.title}</button>)}
+  </div>;
+}
+function ReadingHub({title,sub,pages,setScreen,firstHighlight}){
   return <div className="page ltadPage"><style>{LTAD_CSS+`.ceList{list-style:none;margin:0;padding:0;counter-reset:ce}
 .ceItem{counter-increment:ce;display:flex;gap:16px;align-items:flex-start;width:100%;text-align:left;background:#0f1822;border:1px solid #223044;border-radius:12px;padding:16px 20px;margin:0 0 10px;cursor:pointer;color:#dde7ef}
 .ceItem:hover{border-color:#4a6a8a}
@@ -25616,13 +25617,15 @@ function CoachEducationHub({setScreen}){
 .ceItem h2{font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;font-size:1.3rem;margin:0 0 3px;color:#eaf4fb}
 .ceItem p{font-family:'Charter','Iowan Old Style','Source Serif 4',Georgia,serif;font-size:1.05rem;margin:0;color:#b9c8d6;line-height:1.45}
 .ceFirst{border-color:#4a6a8a;background:#122030}`}</style>
-    <div className="pageTop"><div><h1>Coach Education</h1><p className="mutedText">The thinking behind the games. Start at the top.</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
+    <div className="pageTop"><div><h1>{title}</h1><p className="mutedText">{sub}</p></div><button className="secondaryBtn" onClick={()=>setScreen('home')}>Home</button></div>
     <div className="ltadCol"><div className="ceList">
-      {COACH_ED_PAGES.map((pg,i)=><button key={pg.screen} type="button" className={'ceItem'+(i===0?' ceFirst':'')} onClick={()=>setScreen(pg.screen)}><span><h2>{pg.title}</h2><p>{pg.sub}</p></span></button>)}
+      {pages.map((pg,i)=><button key={pg.title} type="button" className={'ceItem'+(firstHighlight&&i===0?' ceFirst':'')} onClick={()=>hubOpen(pg,setScreen)}><span><h2>{pg.title}</h2><p>{pg.sub}</p></span></button>)}
     </div></div>
   </div>;
 }
-
+function CoachEducationHub({setScreen}){
+  return <ReadingHub title="Coach Education" sub="The thinking behind the games. Start at the top." pages={COACH_ED_PAGES} setScreen={setScreen} firstHighlight={true}/>;
+}
 function CoachingParadigmsStyles(){return <style>{`
 .cpWrap{display:flex;flex-direction:column;gap:14px;}
 .cpTabs{display:flex;flex-wrap:wrap;gap:8px;}
@@ -26217,6 +26220,9 @@ const SEARCH_DESTINATIONS=[
   {label:'Home',sub:'Main menu',kw:'home start',screen:'home'},
   {label:'Start Here',sub:'Coach education \u00b7 what Checkerboard Squash is for',kw:'start here purpose principles what is checkerboard for introduction new coach',screen:'purpose'},
   {label:'Why CLA?',sub:'Coach education \u00b7 origins, principles, the science',kw:'why cla constraints led approach science origins bernstein gibson ecological dynamics',screen:'whyCLA'},
+  {label:'On Court',sub:'Live tools: player display, court monitor, squad clock, rotations',kw:'on court live player display court monitor squad clock rotation engine',screen:'onCourt'},
+  {label:'Match Review',sub:'Match analysis, match problem index, diagnostic & intervention, tools',kw:'match review analysis problem index diagnostic intervention quick fix tools',screen:'matchReview'},
+  {label:'Coach Tools',sub:'Modifier engine, constraints, shots, suggestions',kw:'coach tools modifier engine constraints my constraints shots suggestions',screen:'coachTools'},
   {label:'Coach Education',sub:'All the reading pages: Start Here, Why CLA?, RLD, Pathway, Periodisation and more',kw:'coach education start here why cla rld reading learn theory principles hub',screen:'coachEducation'},
   {label:'Periodisation',sub:'Coach education \u00b7 planning weeks and sessions through a CLA lens',kw:'periodisation periodization post skill training block plan week session coordination adaptability performance taper otte millar klatt',screen:'periodisation'},
   {label:'The Athlete Pathway (LTAD)',sub:'Coach education \u00b7 long-term development through a CLA lens',kw:'ltad long term athlete development pathway adp jurbala stages growth spurt maturation periodisation transfer worked example',screen:'ltad'},
@@ -30614,6 +30620,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
 </header>
 <main className="container">
 {screen==='home'&&<Home setScreen={go}/>}
+      {HUB_STRIPS[screen]&&<HubStrip which={screen} setScreen={go}/>}
 {screen==='coachSuggestions'&&<CoachSuggestionsModule/>}
 {screen==='customLibrary'&&<CustomConstraintLibrary setScreen={go}/>}
 {screen==='differential'&&<DifferentialLearning setScreen={go} setSession={setSession}/>}
@@ -30657,6 +30664,7 @@ body .sessionActionButtons .secondaryBtn,body .sessionActionButtons .primaryBtn~
       {screen==='lexicon'&&<LexiconScreen setScreen={go}/>}
       {screen==='paradigms'&&<CoachingParadigms setScreen={go}/>}
       {screen==='coachEducation'&&<CoachEducationHub setScreen={go}/>}
+      {HUB_PAGES[screen]&&<ReadingHub {...HUB_PAGES[screen]} setScreen={go}/>}
       {screen==='ltad'&&<LTADModule setScreen={go}/>}
       {screen==='periodisation'&&<PeriodisationModule setScreen={go}/>}
       {screen==='parents'&&<ParentEducation setScreen={go}/>}
