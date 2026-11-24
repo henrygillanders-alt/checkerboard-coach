@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v922 Volley Everything Levels';
+const APP_VERSION='v923 Take It Early and Light Constraints';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -18280,6 +18280,68 @@ function HangmanSquashRaceDisplay({host,courtCount}){
   </div>;
 }
 
+/* v923 (coach, 23 Nov): two series pages that gather games from around the library. Every game also stays where it lives; "Open full game" goes there for the settings.
+   Take It Early — coach's order (no back wall first: "a simple constraint so should be first").
+   Light Constraints — "flowing pre-tournament training": full court, normal rallies, one simple rule that scores a bonus and play goes on, little or no tape, close to a real match. */
+function seriesCgeCard(id,opt){
+  const e0=CGE_ERRORS.find(x=>x.id===id);if(!e0)return null;
+  let e=e0,extra={};
+  if(id==='cge-volleyall'){const t=volleyEverythingText(opt.veLine||1,opt.veStage||1);e={...e0,...t,coach:(t.coachSetup||'')+e0.coach};extra={cgeParams:{veLine:opt.veLine||1,veStage:opt.veStage||1}};}
+  let sc=e.scoringOptions[opt.score||0]||'';
+  let enf;
+  if(e.noEnf)enf='Enforcement: as in the rules.';
+  else if(e.playOn){sc=sc.replace(/server bonus/g,'server +1 bonus');enf='Enforcement: the rally is always played out.';}
+  else enf=opt.enf||'Enforcement: as in the rules.';
+  return {id:id+'-'+Date.now().toString(36),title:e.title,category:'Common Game Errors',format:e.format,duration:e.duration,task:e.task,scoring:sc+'  ·  '+enf,rationale:e.rationale,coach:e.coach,playerFocus:e.playerFocus,layers:e.layers||[],rld:e.rld,...extra};
+}
+function seriesCcgCard(id){
+  const g=CLASSIC_CONSTRAINT_GAMES.find(x=>x.id===id);if(!g)return null;
+  return {id:g.id,title:g.title,category:'Classic Constraint',format:g.type||'Constrained game',duration:8,task:g.what||g.task||'',rationale:g.why||g.rationale||'',coach:g.coach||'',playerFocus:g.player||'',scoring:g.score||'Win the rally = 1.',rld:g.rld,layers:[]};
+}
+function seriesLibCard(id){const g=standardGames().find(x=>x.id===id);return g?{...g}:null;}
+const TAKE_IT_EARLY=[
+  {title:'Length Game (No Back Wall)',rule:'Every ball must be played before it reaches the back wall. If it bounces and then reaches the back wall, the player who let it through loses the rally.',home:'Classic Constraint Games',cls:'classicconstraint',card:()=>seriesCcgCard('CCG50')},
+  {title:'No Back Wall · Play On',rule:'Same rule, but play goes on: a ball that bounces and then reaches the back wall gives +1 to the player who hit it.',home:'Corridor Games',cls:'corridorgames',card:()=>seriesLibCard('corridor-nbw')},
+  {title:'Take The Serve Early',rule:'A serve heading for a back corner must be volleyed. Left to bounce there: server +1, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-serve',{score:0})},
+  {title:'Intercept On',rule:'A ball you could take early, let go to the back, loses the rally.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-volley',{score:0})},
+  {title:'Volley Everything',rule:'+1 for every volley, except the return of serve. The line on the front wall comes down step by step, from above the service line to the full wall.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-volleyall',{veLine:1,veStage:1})},
+  {title:'No Back Wall · Corridor Intercept',rule:'No Back Wall · Play On and the corridor volley bonus together.',home:'Corridor Games',cls:'corridorgames',card:()=>seriesLibCard('corridor-nbwci')}
+];
+const TAKE_IT_EARLY_RELATED=[
+  {title:'1 Player Length Game (No Back Wall)',rule:'The same no back wall rule for one player only — the other plays freely.',home:'Classic Constraint Games',cls:'classicconstraint',card:()=>seriesCcgCard('CCG12')},
+  {title:'Midcourt Intercept',rule:'Earn the volley from pressure and position.',home:'Volley & Intercept',card:()=>seriesLibCard('midcourt-intercept')},
+  {title:'ATL / BTL — Volley Bonus',rule:'Every volley earns a bonus, inside the ATL / BTL builder.',home:'ATL / BTL (step 2, Volley add-ons)',cls:'atl',card:null}
+];
+const LIGHT_CONSTRAINTS=[
+  {title:'No Back Wall · Play On',rule:'Ball bounces and then reaches the back wall: +1 to the hitter, play on.',home:'Corridor Games',cls:'corridorgames',card:()=>seriesLibCard('corridor-nbw')},
+  {title:'Take The Serve Early',rule:'Back-corner serve left to bounce: server +1, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-serve',{score:0})},
+  {title:'Volley Everything — full wall',rule:'Every volley +1, except the return of serve. Serve left to bounce in a back corner: server +1, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-volleyall',{veLine:5,veStage:2})},
+  {title:'Penetrating Drive — Bonus Every Time',rule:'Normal game; a bonus for every penetrating drive that passes its test.',home:'Power Driver',cls:'powerdriver',card:()=>seriesLibCard('pd-8')},
+  {title:'Penetrating Drive — Winner Bonus',rule:'Normal game; a bonus when the penetrating drive wins the rally.',home:'Power Driver',cls:'powerdriver',card:()=>seriesLibCard('pd-9')},
+  {title:'Drive or Kill',rule:'Normal game; a bonus for a low shot that passes either test.',home:'Power Driver',cls:'powerdriver',card:()=>seriesLibCard('pd-dok')},
+  {title:'Hold The T — coach call',rule:'The coach calls an unnecessary retreat off the T: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-tee',{score:2})},
+  {title:'Punish The Loose Ball — coach call',rule:'The coach calls a loose ball passed up: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-loose',{score:2})},
+  {title:'Move Them, Don’t Feed Them — coach call',rule:'The coach calls a ball played straight at the opponent: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-space',{score:2})}
+];
+function SeriesPage({title,intro,items,related,numbered,onAdd,openFamily}){
+  const [added,setAdded]=useState('');
+  const row=(it,i,num)=>{const c=it.card?it.card():null;return <div key={it.title} className="gameCard" style={{padding:'14px 16px',marginBottom:10}}>
+    {num&&<div className="mutedText" style={{fontWeight:800,fontSize:'0.82rem',letterSpacing:'.04em'}}>STEP {i+1} OF {items.length}</div>}
+    <h3 style={{margin:'2px 0 6px'}}>{it.title}</h3>
+    <p style={{margin:'0 0 6px'}}>{it.rule}</p>
+    <p className="mutedText" style={{margin:'0 0 8px',fontSize:'0.85rem'}}>Also in: {it.home}{num&&i<items.length-1?' · Next: '+items[i+1].title:''}{num&&i>0?' · Too hard? Go back to: '+items[i-1].title:''}</p>
+    <div className="buttonRow" style={{flexWrap:'wrap'}}>
+      {c&&<button type="button" className="primaryBtn" onClick={()=>{onAdd(it.card());setAdded(it.title);}}>Add to Session</button>}
+      {it.cls&&<button type="button" className="secondaryBtn" onClick={()=>openFamily&&openFamily(it.cls)}>Open full game →</button>}
+      {added===it.title&&<span className="mutedText">✓ Added</span>}
+    </div>
+  </div>;};
+  return <div>
+    <p>{intro}</p>
+    {items.map((it,i)=>row(it,i,numbered))}
+    {related&&related.length>0&&<><h3 style={{marginTop:18}}>Related</h3>{related.map((it,i)=>row(it,i,false))}</>}
+  </div>;
+}
 const GAME_LIBRARY_GROUPS=[
   {id:'board',title:'The Board — Spatial',emoji:'🎯'},
   {id:'pressure',title:'Pressure & Consequence',emoji:'⏱️'},
@@ -18373,6 +18435,10 @@ const GAME_LIBRARY=[
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><BoastFamily onAdd={addAndGo}/>},
   {id:'dropboastlob',label:'Drop & Lob',category:'Drop & Lob',groups:['technique','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><DropBoastLobFamily onAdd={addAndGo}/>},
+  {id:'takeitearly',label:'Take It Early',category:'Take It Early',groups:['fault'],
+    render:({addStay,setActiveClassId})=><SeriesPage title="Take It Early" numbered={true} intro="Six games that teach players to take the ball before it gets past them, simplest first. Start with no back wall — one rule, no markings — and move on when most rallies flow." items={TAKE_IT_EARLY} related={TAKE_IT_EARLY_RELATED} onAdd={addStay} openFamily={setActiveClassId}/>},
+  {id:'lightconstraints',label:'Light Constraints',category:'Light Constraints',groups:['pressure','fault'],
+    render:({addStay,setActiveClassId})=><SeriesPage title="Light Constraints" numbered={false} intro="For flowing pre-tournament training. Full court, normal rallies and one simple rule: the rule scores a bonus and play goes on, so nobody loses a rally to it. Little or no tape, and close to a real match." items={LIGHT_CONSTRAINTS} onAdd={addStay} openFamily={setActiveClassId}/>},
   {id:'errors',label:'Common Game Errors',category:'Common Game Errors',groups:['tools','fault'],
     render:({setSession,setScreen,addAndGo,addStay,saveCard,setActiveClassId})=><CommonGameErrors setSession={setSession}/>},
   {id:'custom',label:'Game Builder',category:'Custom',groups:['tools'],
@@ -25179,6 +25245,8 @@ const MATCH_ERROR_SET=[
   {c:'corridorgames',label:'Corridor Games — No Back Wall · Play On',error:'Waiting for the back wall',note:'Softer version: letting the ball reach the back wall costs a point, not the rally'},
   {c:'corridorgames',label:'Corridor Games — Corridor Intercept',error:'Loose balls through the middle',note:'Volley from inside the corridor = bonus; play on'},
   {c:'corridorgames',label:'Corridor Games — NFC and NFL',error:'Non-functional crosscourt and length',note:'★ A ball cut off from the corridor loses the rally'},
+  {c:'lightconstraints',label:'Light Constraints — flowing pre-tournament games',error:'Rallies breaking up close to a tournament',note:'One simple rule, a bonus, play on'},
+  {c:'takeitearly',label:'Take It Early — the series',error:'Letting the ball get past you',note:'Six steps, no back wall first'},
   {c:'errors',label:'Common Game Errors — Volley Everything',error:'Not volleying, in a full game',note:'Start at step 1 (above the service line); lower the line as the volleys come. Player design: Izzy'},
   {c:'atl',label:'ATL / BTL — Volley Bonus',error:'Not volleying',note:'Add the “Not back in the T Zone” fault in Negative Scoring'}
 ];
