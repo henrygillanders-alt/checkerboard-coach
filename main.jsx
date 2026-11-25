@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v924 Boast Rule and Drive Targets';
+const APP_VERSION='v925 Other Sports and Different Conditions';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -18344,7 +18344,15 @@ const TAKE_IT_EARLY_RELATED=[
   {title:'Midcourt Intercept',rule:'Earn the volley from pressure and position.',home:'Volley & Intercept',card:()=>seriesLibCard('midcourt-intercept')},
   {title:'ATL / BTL — Volley Bonus',rule:'Every volley earns a bonus, inside the ATL / BTL builder.',home:'ATL / BTL (step 2, Volley add-ons)',cls:'atl',card:null}
 ];
+/* v925 (coach, 25 Nov): adapting to conditions, after the Athletic Skills Model's adaptive training on varied surfaces. Balls first (coach: "new or old ball and different balls and bounces"), Squash 57 included. */
+function differentConditionsCard(){return {id:'different-conditions-'+Date.now().toString(36),title:'Different Conditions',category:'Light Constraints',format:'Normal game, changing conditions',duration:12,rld:5,
+  task:'Play a normal game. The ball or the court changes every game, so you have to adjust your length and pace to how the ball comes off the wall. The waiting player calls. With two players, the player not hitting calls.',
+  scoring:'Win the rally = +1.',
+  rationale:'Tournament courts and balls vary. Players who have trained in different conditions adjust faster. From the Athletic Skills Model: train sometimes in less-than-ideal conditions, not only perfect ones.',
+  coach:'Change one thing each game. Balls: a new ball, an old ball, double yellow, single yellow, a bouncier progression ball, a Squash 57 ball (bigger and bouncier: more time, longer rallies, a different rebound). Courts: the coldest court, a warm court, a glass court if you have one. Then switch back to the normal ball, so players re-tune length and timing. Between games: “What changed, and what did you change?”',
+  playerFocus:'Read how the ball comes off the wall; adjust your length.',layers:[]};}
 const LIGHT_CONSTRAINTS=[
+  {title:'Different Conditions',rule:'A normal game; the ball or the court changes every game — new or old ball, double or single yellow, a bouncier ball, Squash 57, a cold or warm court.',home:'Light Constraints',card:differentConditionsCard},
   {title:'No Back Wall · Play On',rule:'Ball bounces and then reaches the back wall: +1 to the hitter, play on.',home:'Corridor Games',cls:'corridorgames',card:()=>seriesLibCard('corridor-nbw')},
   {title:'Take The Serve Early',rule:'Back-corner serve left to bounce: server +1, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-serve',{score:0})},
   {title:'Volley Everything — full wall',rule:'Every volley +1, except the return of serve. Serve left to bounce in a back corner: server +1, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-volleyall',{veLine:5,veStage:2})},
@@ -25650,6 +25658,18 @@ function LTADModule({setScreen}){
         <li><strong>Over a season:</strong> review competition, workload, enjoyment and the player's goals. Leave room for other sports, and for players who move between competing and playing for fun.</li>
       </ul>
     </section>
+    <section className="ltadSec"><h2>Using other sports</h2>
+      <p>The Athletic Skills Model gives two reasons to borrow from other sports.</p>
+      <ul>
+        <li><strong>Multisport:</strong> broad movement — climbing, balancing, throwing, catching — that builds coordination overall. Level 0 Foundations has squash-friendly versions: catching, tracking, balance and double-bounce catch.</li>
+        <li><strong>Donor sport:</strong> a sport that shares a specific problem with squash. Squash 57 is the closest: the same court and the same movement, with a bigger, bouncier ball and a different racket. Badminton (footwork, reading the shuttle) and table tennis (fast reactions) share other problems.</li>
+      </ul>
+      <p>The one controlled study the chapter cites found that young players trained in futsal — a tighter, more time-pressured game — passed better when they moved to football, but not the other way round. That suggests the harder, faster version of a problem carries over to the easier one.</p>
+      <p>Start from a squash problem, borrow a task that shares it, then go back to a live rally and watch what carries over. Record it on the player's Development card: in practice, under pressure, in matches. Anything borrowed is a hypothesis until it shows up in a rally.</p>
+      <p>A warm-up can follow the same order: a multisport activity, then a donor task, then squash.</p>
+      <p className="ltadNote">The chapter is by the model's founders. Apart from the futsal study, its support comes from the backgrounds of famous players and from medallists who played several sports young, so it suggests rather than shows.</p>
+      <p style={{marginTop:4}}><button type="button" className="secondaryBtn" onClick={()=>setScreen('level0')}>Level 0 Foundations →</button></p>
+    </section>
     <section className="ltadSec"><h2>Worked example: did it carry into the match?</h2>
       <p><strong>What the player is learning:</strong> to recognise when a penetrating drive has opened up the front of the court.</p>
       <div className="ltadStep"><strong>1. Training.</strong> Penetrate &amp; Finish (Power Driver games): a drop is allowed only straight after a penetrating drive, and the drop is optional. Watch: does the player spot the opening and take it? Do they choose length again when the opponent has recovered or their own position is poor?</div>
@@ -25658,6 +25678,7 @@ function LTADModule({setScreen}){
       <p style={{marginTop:12}}><button type="button" className="secondaryBtn" onClick={openPD}>Open the Power Driver games →</button></p>
     </section>
     </div>
+    <p className="ltadSrc">Using other sports: Savelsbergh, G. J. P., Wormhoudt, R., &amp; Navarro, M. The Athletic Skills Model, chapter 2. doi:10.4324/9781003478515-2 (futsal study: Oppici, Panchuk, Serpiello &amp; Farrow, 2018).</p>
     <p className="ltadSrc">Source: Jurbala, P. (2023). Reimagining the athlete development pathway: constraints-led, learning-based, life-long. Sports Coaching Review. doi:10.1080/21640629.2023.2275402. The squash tables and examples are this app's adaptation.</p>
   </div>;
 }
@@ -25929,6 +25950,11 @@ function CoachingParadigms({setScreen}){
       <div className="cpCard">
         <div className="cpSub">A note on demonstration</div>
         <p className="cpBody" style={{marginBottom:0}}>{CP_NOTE_DEMO}</p>
+      </div>
+      <div className="cpCard">
+        <div className="cpSub">A note on variety: the concentric approach</div>
+        <p className="cpBody">The Athletic Skills Model contrasts a <em>linear</em> path — practising one fixed technique towards one set goal — with a <em>concentric</em> one: practising a skill in many forms. For hitting, that can mean a baseball swing, table tennis, golf or a volleyball smash. Inside squash, the Differential Learning module does the same thing around one shot.</p>
+        <button type="button" className="secondaryBtn" onClick={()=>setScreen&&setScreen('differential')}>Differential Learning →</button>
       </div>
 
       <button type="button" className="cpLink" onClick={()=>setScreen&&setScreen('lexicon')}>
