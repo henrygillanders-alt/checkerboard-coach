@@ -238,7 +238,7 @@ async function pullSharedNames(){
   return row?.payload||null;
 }
 
-const APP_VERSION='v923 Take It Early and Light Constraints';
+const APP_VERSION='v924 Boast Rule and Drive Targets';
 
 const MATCH_ANALYSIS_APP_URL='https://matchanalysis-coach.netlify.app';
 
@@ -8184,7 +8184,7 @@ const CGE_ERRORS=[
     {id:'cge-tee',tag:'Unnecessary retreat off the T',title:'Hold The T',error:'Backing off the T when the ball does not force it.',cost:'Hands over the T and time — opponent dictates, you defend from deep without needing to.',train:'Hold your ground and take the ball earlier. Only give up the T when the ball genuinely makes you.',format:'Constrained positioning game',duration:9,rld:4,task:'Free game in which the player may not retreat behind the back of the service box unless the ball genuinely forces them there; the coach flags every unforced step back. Reward taking the ball earlier and recovering tight to the T.',rationale:'Court position is a choice under most conditions; unnecessary retreat donates the T and time. The constraint rewards holding ground and taking the ball earlier.',coach:'Flag the unforced step back. Between games: “stop backing off — hold your ground and take it earlier.”',playerFocus:'Hold the T; only go back when the ball makes you.',layers:['Volley & Intercept'],scoringOptions:['Rally played without an unforced retreat = on; each unforced step behind the box is the error.','Win the rally = 1; +1 if you won it from a forward, T-holding position.','Coach call only: every unnecessary retreat = +1 bonus point to the opponent, play on.']},
     {id:'cge-pattern',tag:'Predictable patterns',title:'Break The Pattern',error:'Playing the same shot from the same place, especially under pressure.',cost:'Opponent reads you and sets early — your best shot becomes their easiest ball.',train:'Read the situation and vary. Don’t default to the habit when the opponent has it covered.',format:'Constrained game',duration:9,rld:5,task:'Free game in which you may not play the same shot twice in a row from the same corner; repeating the pattern is the error. The opponent is told the player’s tendency (from the analysis) so it is punished if they don’t vary.',rationale:'Exposes one-dimensional decision-making under pressure; the constraint pushes the player from reproducing a habit (an attractor state) toward reading the situation and varying.',coach:'Name the tendency from the analysis. Between games: “you’re going cross every time — they’re reading you; vary it.”',playerFocus:'Don’t repeat the obvious — make them guess.',layers:['Tactical Variability'],scoringOptions:['Same shot repeated from the same corner = loss of point; varied, situation-led choice = rally on.','Win the rally = 1; −1 if you lost it playing the predictable, scouted shot.','Coach tallies repeats of the named tendency; fewest repeats wins the game.']},
     {id:'cge-loose',tag:'Not punishing the loose ball',title:'Punish The Loose Ball',error:'Resetting a ball that was begging to be put away.',cost:'Lets the opponent off, extends the rally and surrenders an attacking chance you had earned.',train:'When it sits up, take it in. Recognise the attacking affordance and convert the pressure.',format:'Constrained game',duration:9,rld:5,task:'Whenever a loose ball sits up — defined as above the cut, off the side wall or short of the service box — the player must attack it (kill, volley drop, or hard low cross). Letting a loose ball go back to a rebuild length is the error.',rationale:'Trains recognition of the attacking affordance and the decision to convert pressure into a finish, rather than resetting a ball that was on.',coach:'Call “that was loose” when a chance is passed up. Between games: “when it sits up, take it in — don’t reset a loose ball.”',playerFocus:'Loose ball = attack it; don’t let them off.',layers:['Front-court Pressure'],scoringOptions:['Loose ball attacked and won = 2; loose ball reset to length = 0 even if you win the rally.','Win the rally = 1; +1 if it was won by attacking a loose ball, −1 if you passed one up.','Coach call only: each passed-up loose ball = +1 bonus point to the opponent, play on.']},
-    {id:'cge-boast',tag:'Boasting good length',title:'Don’t Boast Good Length',error:'Boasting a ball you could have driven, handing over the front court.',cost:'Volunteers the front, brings the opponent forward onto an easy attacking ball, and gives up the T.',train:'Boast only what you genuinely can’t drive. Drive or lob the good ball and keep them deep.',format:'Constrained game',duration:9,rld:4,task:'The player may only boast off a genuinely difficult ball (deep in the corner, off the back wall). Boasting a driveable good-length ball is the error. Drive or lob the good ball instead.',rationale:'Re-couples the boast to its function — an escape from a ball you cannot drive — rather than a default reset that gives away the front court and the T.',coach:'“Only boast what you can’t drive — stop handing them the front.” Name it from the analysis if it’s a repeat tendency.',playerFocus:'Boast the trouble ball; drive the good one.',layers:['Tactical: Shot Selection'],scoringOptions:['Boast off a genuine trouble ball = fine; boast off a driveable ball = loss of point.','Win the rally = 1; −1 if you boasted a ball you could have driven and gave up the front.','Coach call only: each unnecessary boast = +1 bonus point to the opponent, play on.']}
+    {id:'cge-boast',tag:'Boasting good length',title:'Don’t Boast Good Length',error:'Boasting a ball you could have driven, handing over the front court.',cost:'Volunteers the front, brings the opponent forward onto an easy attacking ball, and gives up the T.',train:'Drive or lob the good ball and keep them deep. The boast stays a last resort.',format:'Constrained game',duration:9,rld:4,task:'',rationale:'Takes the boast away, or makes it cost, so players look for the drive or the lob first. No one has to judge whether a ball was “driveable”: every boast counts the same, which keeps the game free of arguments.',coach:'Start with the boast losing the rally; move to play-on when players are choosing drives and lobs. “Drive or lob it — keep them deep.” Name it from the analysis if it’s a repeat tendency.',playerFocus:'Drive or lob it. Keep them deep.',layers:['Tactical: Shot Selection'],scoringOptions:[]},
 ];
 function CommonGameErrors({setSession}){
   const errors=CGE_ERRORS;
@@ -8192,6 +8192,9 @@ function CommonGameErrors({setSession}){
   const [pinStage,setPinStage]=useState(1);
   const [veLine,setVeLine]=useState(1);
   const [veStage,setVeStage]=useState(1);
+  const [boastMode,setBoastMode]=useState('lose');
+  const [boastBonus,setBoastBonus]=useState(1);
+  const [boastPen,setBoastPen]=useState(1);
   const [scoreIdx,setScoreIdx]=useState(0);
   const [customScore,setCustomScore]=useState('');
   const [overlays,setOverlays]=useState([]);
@@ -8201,9 +8204,9 @@ function CommonGameErrors({setSession}){
   const [penaltyByPlayer,setPenaltyByPlayer]=useState({});
   const present=(()=>{try{return (JSON.parse(localStorage.getItem(PLAYER_KEY))||[]).filter(p=>p&&p.present&&p.name).map(p=>p.name);}catch{return[];}})();
   const e0=errors.find(x=>x.id===sel);
-  const e=e0&&e0.id==='cge-length'?{...e0,...lengthThatPinsText(pinStage)}:e0&&e0.id==='cge-volleyall'?(()=>{const t=volleyEverythingText(veLine,veStage);return {...e0,...t,coach:(t.coachSetup||'')+e0.coach};})():e0;
+  const e=e0&&e0.id==='cge-length'?{...e0,...lengthThatPinsText(pinStage)}:e0&&e0.id==='cge-volleyall'?(()=>{const t=volleyEverythingText(veLine,veStage);return {...e0,...t,coach:(t.coachSetup||'')+e0.coach};})():e0&&e0.id==='cge-boast'?{...e0,...boastText(boastMode,boastBonus,boastPen)}:e0;
   useBackIntercept(!!sel,()=>{setSel(null);return true;});
-  function openErr(id){setSel(id);setPinStage(1);setVeLine(1);setVeStage(1);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');setEnfMode('penalty');setPenaltyDefault(1);setPenaltyByPlayer({});}
+  function openErr(id){setSel(id);setPinStage(1);setVeLine(1);setVeStage(1);setBoastMode('lose');setBoastBonus(1);setBoastPen(1);setScoreIdx(0);setCustomScore('');setOverlays([]);setAdded('');setEnfMode('penalty');setPenaltyDefault(1);setPenaltyByPlayer({});}
   function toggleOverlay(layer){setOverlays(prev=>prev.includes(layer)?prev.filter(x=>x!==layer):[...prev,layer]);}
   function addToSession(){
     if(!e||typeof setSession!=='function')return;
@@ -8219,7 +8222,7 @@ function CommonGameErrors({setSession}){
     }
     const scoring=`${baseScoring}  ·  ${enf}`;
     const layers=[...new Set([...(e.layers||[]),...overlays])];
-    const card={id:Date.now()+Math.random(),title:e.title,category:'Common Game Errors',format:e.format,duration:e.duration,task:e.task,scoring,...(e.id==='cge-length'?{cgeParams:{pinStage}}:e.id==='cge-volleyall'?{cgeParams:{veLine,veStage}}:{}),rationale:e.rationale,coach:e.coach,playerFocus:e.playerFocus,layers,rld:e.rld};
+    const card={id:Date.now()+Math.random(),title:e.title,category:'Common Game Errors',format:e.format,duration:e.duration,task:e.task,scoring,...(e.id==='cge-length'?{cgeParams:{pinStage}}:e.id==='cge-volleyall'?{cgeParams:{veLine,veStage}}:e.id==='cge-boast'?{cgeParams:{boastMode,boastBonus,boastPen}}:{}),rationale:e.rationale,coach:e.coach,playerFocus:e.playerFocus,layers,rld:e.rld};
     setSession(prev=>appendToSessionState(prev,card));
     setAdded(e.title);
   }
@@ -8287,6 +8290,13 @@ function CommonGameErrors({setSession}){
         </div>
         <div className="cgeBox"><strong>The activity</strong><p>{e.task}</p></div>
         {e.id==='cge-length'&&<PinLineControls value={{line:pinStage}} onChange={v=>setPinStage(v.line)}/>}
+        {e.id==='cge-boast'&&<div className="cgeBox"><strong>What a boast costs</strong>
+          <div className="cgeEnfModes" style={{marginTop:6}}>{[['lose','Lose the rally','default'],['playon','Play on','bonus and penalty']].map(([v,l,sub])=><div key={v} role="button" tabIndex={0} className={'cgeEnfMode'+(boastMode===v?' on':'')} onClick={()=>setBoastMode(v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setBoastMode(v);}}>{l}<span>{sub}</span></div>)}</div>
+          {boastMode==='playon'&&<div className="cgeEnfPen" style={{marginTop:8}}>
+            <div className="cgeEnfRow"><span className="cgeEnfName">Opponent bonus</span><div className="cgePenVals">{[0,1,2,3].map(v=><span key={v} role="button" tabIndex={0} className={'cgePenVal'+(boastBonus===v?' on':'')} onClick={()=>setBoastBonus(v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setBoastBonus(v);}}>{v===0?'Off':'+'+v}</span>)}</div></div>
+            <div className="cgeEnfRow"><span className="cgeEnfName">Boaster penalty</span><div className="cgePenVals">{[0,1,2,3].map(v=><span key={v} role="button" tabIndex={0} className={'cgePenVal'+(boastPen===v?' on':'')} onClick={()=>setBoastPen(v)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setBoastPen(v);}}>{v===0?'Off':'−'+v}</span>)}</div></div>
+          </div>}
+        </div>}
         {e.id==='cge-volleyall'&&<div className="cgeBox"><strong>Line on the front wall</strong> <span className="mutedText">· {e.tag}</span>
           <div className="cgeEnfModes" style={{flexWrap:'wrap',marginTop:6}}>{VE_LINES.map(L=><div key={L.n} role="button" tabIndex={0} className={'cgeEnfMode'+(veLine===L.n?' on':'')} onClick={()=>setVeLine(L.n)} onKeyDown={ev=>{if(ev.key==='Enter'||ev.key===' ')setVeLine(L.n);}}>{L.n} · {L.label}<span>{L.n===1?'ATL':L.n===5?'normal game':'tape'}</span></div>)}</div>
           <strong style={{display:'block',marginTop:10}}>Serve rule</strong>
@@ -8389,7 +8399,7 @@ const CCFF_LINES={'Service line':'Play above the line: every shot must hit the f
 const CCFF_LINE_KEYS=Object.keys(CCFF_LINES);
 const CCFF_ONSIDE_STEPS=['1','2','3','4','5'];
 const CCFF_OFFSIDE_PRICE={'Lose the rally':'you lose the rally','Opponent +1':'your opponent scores +1','Opponent +2':'your opponent scores +2','Minus 1':'you lose 1 point'};
-const CCFF_DEFAULTS={pdSide:'Right side',rdMin:4,rdRally:1,abSide:'Right side',abBonus:3,abKillBonus:3,abKillWin:6,abPdWin:6,abCross:1,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,corInt:1,nbwBonus:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
+const CCFF_DEFAULTS={pdLine:'Service line',pdWidth:'Any width',pdSide:'Right side',rdMin:4,rdRally:1,abSide:'Right side',abBonus:3,abKillBonus:3,abKillWin:6,abPdWin:6,abCross:1,abDrop:3,abKill:'In the service box',abRally:1,corWidth:'Medium',corBonus:1,corRally:1,corInt:1,nbwBonus:1,tzRally:1,tzSize:'Large',tzGo:'No',pdRally:1,pdMiss:'Lose the rally',pdWho:'Both players',pdOrder:'Ordered',pdAbove:'Second bounce behind the short line',pdMixTest:'First bounce behind the short line',pkMixTest:'In front of the short line',pdBonusTest:'First bounce behind the service box',pkBonusTest:'In front of the short line',pdBonus:1,pkBonus:1,pdBank:'Every one',pdWin:2,pkWin:2,pdDok:1,pdDokWin:2,rtaRally:1,rtaBonus:2,rtaAfter:'Drives only',onStep:'1',onNoVolley:'No',onRally:1,onOff:'Lose the rally',onX:1,onXwin:3,onSwin:3,xwin:6,lineW:'Service line',punish:6,volleyExtra:3,lineP:'Service line',lineT:'Service line',lineF:'Service line',lineL:'Service line',toll:1,lunge1:1,lunge2:2,lunge3:3,functional:2,licence:2,window:2,giftWin:3};
 const CCFF_GAMES=[
     {id:'ccff-winner',key:'winner',title:'1 · Crosscourt Winner',rld:3,tag:'Try the crosscourt — no risk',
      from:'Players try crosscourts freely: a crosscourt winner earns a big bonus, and one that fails costs nothing beyond the rally. Above the line, winners are hard, so only a functional crosscourt — wide, deep, past the opponent — pays. Bringing the line down makes winners easier and asks more of the crosscourt.',
@@ -8588,7 +8598,12 @@ function ReadTheAttackFamily({onAdd,label,openFamily}){
 }
 
 const SHOTS_OPEN_KEY='checkerboard_shots_open_section';
-const PD_DRIVE_TEST={'Second bounce behind the short line':'its second bounce is behind the short line','First bounce behind the short line':'its first bounce is behind the short line','First bounce behind the service box':'its first bounce is behind the back line of the service box'};
+const PD_DRIVE_TEST={'Second bounce behind the short line':'its second bounce is behind the short line','First bounce behind the short line':'its first bounce is behind the short line','Second bounce behind the service box':'its second bounce is behind the back line of the service box','First bounce behind the service box':'its first bounce is behind the back line of the service box'};
+/* v924 (coach, 25 Nov, from a 1-to-1 with Anna): tighter targets for better players — a lower front-wall line (tape below the service line) and a width target (a share of the tramline: the width of the service box out from the side wall). */
+const PD_LINE={'Service line':{wall:'below the service line',tape:''},'10 cm below the service line':{wall:'below a tape 10 cm below the service line',tape:'10'},'20 cm below the service line':{wall:'below a tape 20 cm below the service line',tape:'20'},'30 cm below the service line':{wall:'below a tape 30 cm below the service line',tape:'30'}};
+const PD_WIDTH={'Any width':'','Tramline':'its first bounce lands inside the tramline (the width of the service box, out from the side wall)','¾ tramline':'its first bounce lands inside ¾ of the tramline width, out from the side wall','½ tramline':'its first bounce lands inside ½ of the tramline width, out from the side wall','¼ tramline':'its first bounce lands inside ¼ of the tramline width, out from the side wall','⅛ tramline':'its first bounce lands inside ⅛ of the tramline width, out from the side wall'};
+const PD_STEP_LINE={k:'pdLine',label:'Front-wall line',type:'select',options:Object.keys(PD_LINE)};
+const PD_STEP_WIDTH={k:'pdWidth',label:'Width target',type:'select',options:Object.keys(PD_WIDTH)};
 const PD_KILL_TEST={'In front of the service-box back line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the back line of the service box','In front of the short line':'it hits the front wall below the service line (above the tin), and its second bounce is in front of the short line','In the kill zone':'it hits the front wall below the service line (above the tin), its first bounce is beyond the halfway tape (a strip of tape on the floor, halfway between the front wall and the short line), and its second bounce is in front of the short line'};
 /* v916 (coach, 21 Nov): the old top kill test (second bounce in front of a halfway tape) let a drop pass more easily than a kill. The kill zone judges both bounces, so a drop cannot pass. pdKill maps any old value. */
 function pdKill(t){return PD_KILL_TEST[t]||PD_KILL_TEST[t==='In front of a halfway tape'?'In the kill zone':'In front of the short line'];}
@@ -8602,10 +8617,12 @@ const PD_SIDE_SETUP={'Right side':PD_SIDES[1].setup,'Left side':PD_SIDES[2].setu
 function pdShown(n){return n<=1?1:n-1;}
 const PD_VOLLEY_ON=' If your opponent volleys a shot before it bounces, it counts — play on.';
 const PD_VOLLEY_BONUS=' A shot volleyed before it bounces earns no bonus — it never showed its bounce.';
-function pdDriveFull(t){return 'it hits the front wall below the service line (above the tin), and '+PD_DRIVE_TEST[t];}
+function pdDriveFull(t,v){const L=(PD_LINE[v&&v.pdLine]||PD_LINE['Service line']).wall;const W=PD_WIDTH[v&&v.pdWidth]||'';return 'it hits the front wall '+L+' (above the tin), '+(W?PD_DRIVE_TEST[t]+', and '+W:'and '+PD_DRIVE_TEST[t]);}
 function pdMiss(v){return CCFF_OFFSIDE_PRICE[v.pdMiss]||'you lose the rally';}
 function pdRally(v){return ' Win the rally: +'+(v.pdRally||1)+'.';}
 function pdWho(v,half){const w=PD_WHO[v.pdWho];return w?' '+w+(half?' in the same half':'')+'.':'';}
+/* v924: in the bonus games, "Who plays to the rules" means who can earn the bonus (for a 1-to-1). */
+function pdWhoBonus(v){return v.pdWho==='Player A only'?' Only Player A can earn the bonus.':v.pdWho==='Player B only'?' Only Player B can earn the bonus.':'';}
 function pdWhoScore(v){return v.pdWho&&v.pdWho!=='Both players'?' Constrained: '+v.pdWho+'.':'';}
 const PD_STEP_RALLY={k:'pdRally',label:'Rally win',min:1,max:3,sign:'+'};
 const PD_STEP_MISS={k:'pdMiss',label:'Shot fails the test',type:'select',options:Object.keys(CCFF_OFFSIDE_PRICE)};
@@ -8635,10 +8652,10 @@ function pdGame(series,n){
     const asks=kill?{1:'every shot low, dying before the back of the service box (easiest test)',2:'every shot low, dying before the back of the service box (easiest test)',3:'every shot low, dying before the back of the service box (easiest test)',4:'every shot low, dying before the short line',5:'every shot lands in the kill zone: a real kill'}[n]:{1:'every shot low, and past the short line (easiest test)',2:'every shot low, and past the short line (easiest test)',3:'every shot low, and past the short line (easiest test)',4:'every shot low, first bounce behind the short line',5:'every shot low, first bounce behind the service box: a real penetrating drive'}[n];
     return {...base,title:d+' · '+S+' — '+name,rld:n<=2?2:3,tag:'Step '+d+' of 4 · for '+lvl+' · '+where+'; '+asks,
       from:kill?'A rally of low balls that die in the front of the court. Nobody judges pace: the test is where the ball bounces. Each game tightens the test, until game 4 asks for a real kill.':'A rally of low drives that get deep. Nobody judges pace: a ball that hits the front wall below the line and still bounces deep cannot be hit slowly. Each game moves the bounce further back, until game 4 asks for a real penetrating drive.',
-      rule:(v)=>setup(v)+pdWho(v,n===1)+' From the return of serve, every shot '+(kill?'must be a kill: '+pdKill(t):'must pass the test: '+pdDriveFull(t))+'. A shot that fails the test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
+      rule:(v)=>setup(v)+pdWho(v,n===1)+' From the return of serve, every shot '+(kill?'must be a kill: '+pdKill(t):'must pass the test: '+pdDriveFull(t,v))+'. A shot that fails the test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
       coach:(kill&&n===5?PD_KILL_TAPE:'')+(kill?(n<5?PD_KILL_NOTE_LADDER:'')+'Start at a pace that keeps the low rally going, then let the pace rise. ':'')+scale+nextTxt+'Debrief: when the ball '+(kill?'died in the front':'reached the back')+', where did it hit the front wall?',
-      score:(v)=>'Rally win +'+(v.pdRally||1)+'. Shot fails the test: '+pdMiss(v)+'. Test: '+(kill?pdKill(t):pdDriveFull(t))+'.'+pdWhoScore(v),
-      stepper:n===1?[{k:'pdSide',label:'Side',type:'select',options:Object.keys(PD_SIDE_SETUP)},PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO]:[PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO]};
+      score:(v)=>'Rally win +'+(v.pdRally||1)+'. Shot fails the test: '+pdMiss(v)+'. Test: '+(kill?pdKill(t):pdDriveFull(t,v))+'.'+pdWhoScore(v),
+      stepper:[...(n===1?[{k:'pdSide',label:'Side',type:'select',options:Object.keys(PD_SIDE_SETUP)}]:[]),PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO,...(kill?[]:[PD_STEP_LINE,PD_STEP_WIDTH])]};
   }
   if(n===6||n===7){
     const seq=n===6?'above, above, below':'above, below, below';
@@ -8647,41 +8664,41 @@ function pdGame(series,n){
     const name=kill?(n===6?'Two Above, One Kill':'One Above, Two Kills'):(n===6?'Two Above, One Below':'One Above, Two Below');
     return {...base,title:d+' · '+S+' — '+name,rld:4,tag:'Mixed game · for the level of the test you choose · a change of pace within every three shots: '+seq,
       from:'Above-the-line play is the habit; the game asks for a change of pace within every three shots. The player has to produce the low ball on time, not only when it feels right.',
-      rule:(v)=>'Full court.'+pdWho(v,false)+' '+(v.pdOrder==='Any order'?'Count your own shots aloud in threes; each three must contain '+mix+', in any order.':'Count your own shots aloud in threes — '+seq+' — and repeat.')+' The serve does not count: each player starts counting with their first shot after the serve. An above-the-line shot hits the front wall above the service line, and '+(PD_ABOVE[v.pdAbove]||PD_ABOVE['Second bounce behind the short line'])+'. A below-the-line shot '+(kill?'must be a kill: '+pdKill(v[mixKey]):'must pass the test: '+pdDriveFull(v[mixKey]))+'. A shot out of sequence, or one that fails its test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
+      rule:(v)=>'Full court.'+pdWho(v,false)+' '+(v.pdOrder==='Any order'?'Count your own shots aloud in threes; each three must contain '+mix+', in any order.':'Count your own shots aloud in threes — '+seq+' — and repeat.')+' The serve does not count: each player starts counting with their first shot after the serve. An above-the-line shot hits the front wall above the service line, and '+(PD_ABOVE[v.pdAbove]||PD_ABOVE['Second bounce behind the short line'])+'. A below-the-line shot '+(kill?'must be a kill: '+pdKill(v[mixKey]):'must pass the test: '+pdDriveFull(v[mixKey],v))+'. A shot out of sequence, or one that fails its test: '+pdMiss(v)+'.'+PD_VOLLEY_ON+pdRally(v),
       coach:'The striker counts aloud; the opponent checks the bounce. '+(kill?PD_KILL_NOTE:'')+scale+nextTxt+'Debrief: which shot in the three was hardest to produce — and what was the ball like when you managed it?',
       score:(v)=>'Rally win +'+(v.pdRally||1)+'. Out of sequence or failed test: '+pdMiss(v)+'. Sequence: '+(v.pdOrder==='Any order'?mix+', any order':seq)+'; the serve does not count.'+pdWhoScore(v),
-      stepper:[PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO,PD_STEP_ORDER,PD_STEP_ABOVE,{k:mixKey,label:kill?'Kill test':'Below-the-line test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)}]};
+      stepper:[PD_STEP_RALLY,PD_STEP_MISS,PD_STEP_WHO,PD_STEP_ORDER,PD_STEP_ABOVE,{k:mixKey,label:kill?'Kill test':'Below-the-line test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},...(kill?[]:[PD_STEP_LINE,PD_STEP_WIDTH])]};
   }
   const testKey=kill?'pkBonusTest':'pdBonusTest';
-  const what=(v)=>kill?'kill that passes the test ('+pdKill(v[testKey])+')':'drive that passes the test ('+pdDriveFull(v[testKey])+')';
+  const what=(v)=>kill?'kill that passes the test ('+pdKill(v[testKey])+')':'drive that passes the test ('+pdDriveFull(v[testKey],v)+')';
   if(n===8){
     const bk=kill?'pkBonus':'pdBonus';
     return {...base,title:d+' · '+S+' — Bonus Every Time',rld:5,tag:'Mixed game · for the level of the test you choose · normal game; a bonus for every '+(kill?'kill':'penetrating drive'),
       from:'The shot is now a choice inside a normal game. Every one that passes the test is rewarded, so players look for the chance to play it.',
-      rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v[bk]+' for every '+what(v)+'. '+(PD_BANK[v.pdBank]||PD_BANK['Every one'])+PD_VOLLEY_BONUS,
+      rule:(v)=>'Normal game, full court.'+pdRally(v)+pdWhoBonus(v)+' Bonus: +'+v[bk]+' for every '+what(v)+'. '+(PD_BANK[v.pdBank]||PD_BANK['Every one'])+PD_VOLLEY_BONUS,
       coach:'The opponent calls the bonus. '+(kill?PD_KILL_NOTE:'')+nextTxt+'Debrief: when did you choose the '+(kill?'kill':'low drive')+' — and when did you hold it back?',
       anti:'Two players can trade '+(kill?'kills':'low drives')+' just to collect bonuses. That is mostly the practice this game wants. If a pair farms it, set the bonus to count only for the rally winner, or move to game 8.',
       score:(v)=>'Rally win +'+(v.pdRally||1)+'. Bonus +'+v[bk]+' per '+(kill?'kill':'penetrating drive')+' that passes the test. '+(PD_BANK[v.pdBank]||PD_BANK['Every one']),
-      stepper:[PD_STEP_RALLY,{k:testKey,label:'Test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},{k:bk,label:'Bonus',min:1,max:3,sign:'+'},{k:'pdBank',label:'Bonus counts for',type:'select',options:Object.keys(PD_BANK)}]};
+      stepper:[PD_STEP_RALLY,{k:testKey,label:'Test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},{k:bk,label:'Bonus',min:1,max:3,sign:'+'},{k:'pdBank',label:'Bonus counts for',type:'select',options:Object.keys(PD_BANK)},PD_STEP_WHO,...(kill?[]:[PD_STEP_LINE,PD_STEP_WIDTH])]};
   }
   const wk=kill?'pkWin':'pdWin';
   return {...base,title:d+' · '+S+' — Winner Bonus',rld:5,tag:'Mixed game · for the level of the test you choose · normal game; a bonus when the '+(kill?'kill':'penetrating drive')+' wins the rally',
     from:'Only the '+(kill?'kill':'drive')+' that wins counts. Players learn which balls the shot can actually win from, and when to keep building instead.',
-    rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v[wk]+' when a '+what(v)+' wins the rally outright — your opponent cannot return it.'+PD_VOLLEY_BONUS,
+    rule:(v)=>'Normal game, full court.'+pdRally(v)+pdWhoBonus(v)+' Bonus: +'+v[wk]+' when a '+what(v)+' wins the rally outright — your opponent cannot return it.'+PD_VOLLEY_BONUS,
     coach:'The opponent confirms the winner and the test. '+(kill?PD_KILL_NOTE:'')+nextTxt+'Debrief: what had happened in the rally just before your winning '+(kill?'kill':'drive')+'?',
     score:(v)=>'Rally win +'+(v.pdRally||1)+'. '+(kill?'Kill':'Penetrating drive')+' winner that passes the test: bonus +'+v[wk]+'.',
-    stepper:[PD_STEP_RALLY,{k:testKey,label:'Test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},{k:wk,label:'Winner bonus',min:1,max:6,sign:'+'}]};
+    stepper:[PD_STEP_RALLY,{k:testKey,label:'Test',type:'select',options:Object.keys(kill?PD_KILL_TEST:PD_DRIVE_TEST)},{k:wk,label:'Winner bonus',min:1,max:6,sign:'+'},PD_STEP_WHO,...(kill?[]:[PD_STEP_LINE,PD_STEP_WIDTH])]};
 }
 const PD_DRIVE_GAMES=[1,3,4,5,6,7,8,9].map(n=>pdGame('d',n));
 const PD_KILL_GAMES=[1,3,4,5,6,7,8,9].map(n=>pdGame('k',n));
 const PD_LINK_GAME={id:'pd-dok',stage:10,boastRule:false,duration:8,format:'Constrained game — power and penetration',layers:['Shot Selection','Attacking Conversion','Decision Making'],
   title:'9 · Drive or Kill',rld:5,tag:'For the level of the tests you choose · from a low ball: penetrate or kill, your choice',
   from:'The two shots start the same way: low and firm. The striker chooses at the last moment which one to play, so the opponent cannot read it early. Each passes its own test.',
-  rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v.pdDok+' for every shot below the service line that passes either test — a penetrating drive ('+pdDriveFull(v.pdBonusTest)+') or a kill ('+pdKill(v.pkBonusTest)+'). If that shot wins the rally outright, it earns +'+v.pdDokWin+' instead; the two bonuses do not stack. A low shot that passes neither earns nothing.'+PD_VOLLEY_BONUS,
+  rule:(v)=>'Normal game, full court.'+pdRally(v)+' Bonus: +'+v.pdDok+' for every shot below the service line that passes either test — a penetrating drive ('+pdDriveFull(v.pdBonusTest,v)+') or a kill ('+pdKill(v.pkBonusTest)+'). If that shot wins the rally outright, it earns +'+v.pdDokWin+' instead; the two bonuses do not stack. A low shot that passes neither earns nothing.'+PD_VOLLEY_BONUS,
   coach:'The opponent calls which test, if any, the shot passed. '+PD_KILL_NOTE+'Debrief: from the same ball, when did you choose the drive and when the kill — and could your opponent tell?',
   focus:'Same start, late choice: deep or dead.',
   score:(v)=>'Rally win +'+(v.pdRally||1)+'. Low shot passing the drive or kill test: +'+v.pdDok+'; if it wins the rally: +'+v.pdDokWin+' instead (not both).',
-  stepper:[PD_STEP_RALLY,{k:'pdBonusTest',label:'Drive test',type:'select',options:Object.keys(PD_DRIVE_TEST)},{k:'pkBonusTest',label:'Kill test',type:'select',options:Object.keys(PD_KILL_TEST)},{k:'pdDok',label:'Shot bonus',min:1,max:3,sign:'+'},{k:'pdDokWin',label:'Winner bonus',min:1,max:6,sign:'+'}]};
+  stepper:[PD_STEP_RALLY,{k:'pdBonusTest',label:'Drive test',type:'select',options:Object.keys(PD_DRIVE_TEST)},{k:'pkBonusTest',label:'Kill test',type:'select',options:Object.keys(PD_KILL_TEST)},{k:'pdDok',label:'Shot bonus',min:1,max:3,sign:'+'},{k:'pdDokWin',label:'Winner bonus',min:1,max:6,sign:'+'},PD_STEP_LINE,PD_STEP_WIDTH]};
 
 const AB_SIDES={'Right side':'Right side only: zones 2 and 3.','Left side':'Left side only: zones 1 and 4.'};
 
@@ -8746,6 +8763,7 @@ function PowerDriverFamily({onAdd,label,openFamily,setScreen}){
     <p><strong>A progression.</strong> Games 1–4 are steps: 1–2 for Levels 1–2, game 3 for Level 3, game 4 for Levels 4–5. Games 5–8 mix the shot into play at the level of the test you choose.</p>
     <div className="buttonRow" style={{flexWrap:'wrap'}}>{tab('d','Penetrating Drive · 1–8')}{tab('k','Kill · 1–8')}{tab('x','Drive or Kill')}{tab('a','ABL Drives · 1–6')}</div>
     {series==='d'&&<p style={{marginTop:10}}><strong>A penetrating drive</strong> is low on the front wall and dies at the back of the court. These games build up to it in steps.</p>}
+    {series==='d'&&<p className="mutedText">For better players, tighten the target in any drive game: the <strong>front-wall line</strong> (tape 10, 20 or 30 cm below the service line) and the <strong>width target</strong> (the tramline — the width of the service box out from the side wall — down to ¾, ½, ¼ or ⅛ of it; mark it with tape along the floor). Coach design, Nov 2026, from a 1-to-1 session. For one player in a 1-to-1, set “Who plays to the rules”.</p>}
     {series==='k'&&<p style={{marginTop:10}}><strong>A kill</strong> is low on the front wall and dies in the front, before the short line. These games build up to it in steps.</p>}
     <div className="buttonRow" style={{flexWrap:'wrap',marginTop:'8px'}}><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('increase')}>Read: the penetrating drive (Shots) →</button><button type="button" className="secondaryBtn" style={{padding:'4px 10px'}} onClick={()=>openShots('finish')}>Read: the kill (Shots) →</button></div></div>}/>;
 }
@@ -10717,6 +10735,18 @@ function volleyEverythingText(line,stage){
     coachSetup:L.tape,
     playOn:stage===2,noEnf:stage!==2,
     scoringOptions:[stage===2?'Volley bonus: every volley = +1 to the player who hits it, except the volley return of serve. Serve left to bounce in a back corner = server bonus, play on. Win the rally = +1.':'Volley bonus: every volley = +1 to the player who hits it, except the volley return of serve. Serve left to bounce in a back corner = the receiver loses the rally. Win the rally = +1.']};
+}
+/* v924 (coach, 24 Nov): the old fault ("a driveable ball") was subjective. Every boast now counts the same: lose the rally, or play on with a bonus to the opponent and a penalty to the boaster (both adjustable). */
+function boastText(mode,bonus,pen){
+  const calls=' The waiting player calls. With two players, the player not hitting calls.';
+  if(mode==='playon'){
+    const parts=[];if(pen>0)parts.push('you lose '+pen+' point'+(pen>1?'s':''));if(bonus>0)parts.push('your opponent gets +'+bonus);
+    const what=parts.length?parts.join(' and '):'nothing happens';
+    return {task:'Normal game, full court. Every boast counts, from any ball. You boast: '+what+'. Play on.'+calls,noEnf:true,
+      scoringOptions:['Win the rally = +1. You boast: '+what+', play on.']};
+  }
+  return {task:'Normal game, full court. No boasts. A boast, from any ball, loses you the rally. Drive or lob instead.'+calls,noEnf:true,
+    scoringOptions:['Win the rally = +1. A boast = you lose the rally.']};
 }
 function lengthThatPinsText(stage){
   const p=pinLine(stage);
@@ -15092,9 +15122,10 @@ function libraryVersionOf(card){
   if(card.category==='Common Game Errors'){
     const e0=CGE_ERRORS.find(x=>x.title===card.title);if(!e0)return null;
     let e=e0;
-    if(e0.id==='cge-length'||e0.id==='cge-volleyall'){
+    if(e0.id==='cge-length'||e0.id==='cge-volleyall'||e0.id==='cge-boast'){
       const pp=card.cgeParams;if(!pp)return null;
       if(e0.id==='cge-length')e={...e0,...lengthThatPinsText(pp.pinStage||1)};
+      else if(e0.id==='cge-boast')e={...e0,...boastText(pp.boastMode||'lose',pp.boastBonus??1,pp.boastPen??1)};
       else{const t=volleyEverythingText(pp.veLine||1,pp.veStage||1);e={...e0,...t,coach:(t.coachSetup||'')+e0.coach};}
     }
     const oldScore=String(card.scoring||'').split('  ·  ')[0];
@@ -18287,6 +18318,7 @@ function seriesCgeCard(id,opt){
   const e0=CGE_ERRORS.find(x=>x.id===id);if(!e0)return null;
   let e=e0,extra={};
   if(id==='cge-volleyall'){const t=volleyEverythingText(opt.veLine||1,opt.veStage||1);e={...e0,...t,coach:(t.coachSetup||'')+e0.coach};extra={cgeParams:{veLine:opt.veLine||1,veStage:opt.veStage||1}};}
+  if(id==='cge-boast'){const m=opt.boastMode||'lose';e={...e0,...boastText(m,opt.boastBonus??1,opt.boastPen??1)};extra={cgeParams:{boastMode:m,boastBonus:opt.boastBonus??1,boastPen:opt.boastPen??1}};}
   let sc=e.scoringOptions[opt.score||0]||'';
   let enf;
   if(e.noEnf)enf='Enforcement: as in the rules.';
@@ -18321,6 +18353,7 @@ const LIGHT_CONSTRAINTS=[
   {title:'Drive or Kill',rule:'Normal game; a bonus for a low shot that passes either test.',home:'Power Driver',cls:'powerdriver',card:()=>seriesLibCard('pd-dok')},
   {title:'Hold The T — coach call',rule:'The coach calls an unnecessary retreat off the T: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-tee',{score:2})},
   {title:'Punish The Loose Ball — coach call',rule:'The coach calls a loose ball passed up: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-loose',{score:2})},
+  {title:'Don’t Boast Good Length — play on',rule:'Every boast counts: you lose 1 point and your opponent gets +1. Play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-boast',{boastMode:'playon',boastBonus:1,boastPen:1})},
   {title:'Move Them, Don’t Feed Them — coach call',rule:'The coach calls a ball played straight at the opponent: +1 to the opponent, play on.',home:'Common Game Errors',cls:'errors',card:()=>seriesCgeCard('cge-space',{score:2})}
 ];
 function SeriesPage({title,intro,items,related,numbered,onAdd,openFamily}){
